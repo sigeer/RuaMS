@@ -2,6 +2,7 @@ namespace Application.Shared.Constants
 {
     public class DefaultConfigs
     {
+        public const byte BagMaxSize = 96;
         public const byte BagCashSize = 96;
         public const byte BagSize = 24;
 

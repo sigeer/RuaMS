@@ -42,12 +42,13 @@ public class UseMountFoodHandler : ChannelHandlerBase
 
         var chr = c.OnlinedCharacter;
         var mount = chr.getMount();
-        Inventory useInv = chr.getInventory(InventoryType.USE);
 
         if (c.tryacquireClient())
         {
             try
             {
+                var useInv = chr.getInventory(InventoryType.USE);
+
                 var item = useInv.getItem(pos);
                 if (item != null && item.getItemId() == itemid && mount != null)
                 {

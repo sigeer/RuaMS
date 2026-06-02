@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
@@ -32,7 +31,6 @@ using Application.Templates.Item.Cash;
 using client.inventory;
 using client.inventory.manipulator;
 using client.processor.stat;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using net.packet.outs;
 using tools;
@@ -74,7 +72,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         int itemId = p.readInt();
         int itemType = itemId / 10000;
 
-        Inventory cashInv = player.getInventory(InventoryType.CASH);
+        var cashInv = player.getInventory(InventoryType.CASH);
         var toUse = cashInv.getItem(position);
         if (toUse == null || toUse.getItemId() != itemId)
         {
@@ -605,7 +603,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             player.forceUpdateItem(equip);
         }
         else if (itemType == 561)
-        { 
+        {
             //VEGA'S SPELL
             if (p.readInt() != 1)
             {
@@ -665,10 +663,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     chr.toggleBlockCashShop();
 
-                    List<ModifyInventory> mods = new();
-                    mods.Add(new ModifyInventory(3, scrolled));
-                    mods.Add(new ModifyInventory(0, scrolled));
-                    chr.sendPacket(PacketCreator.modifyInventory(true, mods));
+                    chr.forceUpdateItem(scrolled);
 
                     var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
                     chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
@@ -691,19 +686,19 @@ public class UseCashItemHandler : ChannelHandlerBase
 
     private static void remove(IChannelClient c, short position, int itemid)
     {
-        Inventory cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
+        var cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
 
-            var it = cashInv.getItem(position);
-            if (it == null || it.getItemId() != itemid)
+        var it = cashInv.getItem(position);
+        if (it == null || it.getItemId() != itemid)
+        {
+            it = cashInv.findById(itemid);
+            if (it != null)
             {
-                it = cashInv.findById(itemid);
-                if (it != null)
-                {
-                    position = it.getPosition();
-                }
+                position = it.getPosition();
             }
+        }
 
-            InventoryManipulator.removeFromSlot(c, InventoryType.CASH, position, 1, true, false);
+        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, position, 1, true, false);
     }
 
     private static bool getIncubatedItem(IChannelClient c, int id)
@@ -718,7 +713,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 amount = quantitys[i];
             }
         }
-        if (c.OnlinedCharacter.getInventory(InventoryTypeUtils.getByType((sbyte)(id / 1000000))).isFull())
+        if (c.OnlinedCharacter.GetInventory(ItemConstants.getInventoryType(id)).isFull())
         {
             return false;
         }

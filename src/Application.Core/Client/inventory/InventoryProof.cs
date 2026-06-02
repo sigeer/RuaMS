@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Application.Core.Client.inventory;
+
 namespace client.inventory;
 
 /**
@@ -33,44 +35,27 @@ public class InventoryProof : Inventory
 
     public void cloneContents(Inventory inv)
     {
-        inventory.Clear();
-        this.setSlotLimit(inv.getSlotLimit());
+        inventory = new Item?[inv.getSlotLimit()];
 
         foreach (Item it in inv.list())
         {
             Item item = new Item(it.getItemId(), it.getPosition(), it.getQuantity());
-            inventory.AddOrUpdate(item.getPosition(), item);
+            inventory[MapServerSlot(item.getPosition())] = item;
         }
     }
 
     public void flushContents()
     {
-        inventory.Clear();
+        Array.Fill(inventory, null);
     }
 
-    public override short addSlot(Item item)
+    protected override void OnItemEnter(short position, Item item)
     {
-        if (item == null)
-        {
-            return -1;
-        }
-        short slotId = getNextFreeSlot();
-        if (slotId < 0)
-        {
-            return -1;
-        }
-        inventory.AddOrUpdate(slotId, item);
-
-        return slotId;
+        
     }
 
-    public override void addSlotFromDB(short slot, Item item)
+    protected override void OnItemLeave(Item item)
     {
-        inventory.AddOrUpdate(slot, item);
-    }
-
-    public override void removeSlot(short slot)
-    {
-        inventory.Remove(slot);
+        
     }
 }

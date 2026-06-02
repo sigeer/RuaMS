@@ -1,4 +1,7 @@
+using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.EF;
+using Application.Shared.Constants.Inventory;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +30,39 @@ namespace ServiceTest.Games.Inventory
             Console.WriteLine(str1);
             Console.WriteLine(str2);
             Assert.That(dict.Count, Is.EqualTo(dataFromDb.Count));
+        }
+
+        [Test]
+        public void InventorySortTest()
+        {
+            var chr = GameTestGlobal.TestServer.GetPlayer();
+
+            var invType = InventoryType.USE;
+            // 加入测试道具
+            chr.GainItem(2000007, 100);
+            chr.GainItem(2000004, (short)(ItemInformationProvider.getInstance().getSlotMax(chr.Client, 2000004) + 1));
+            chr.GainItem(2000005, 100);
+            chr.GainItem(2000006, 100);
+
+            var chrInv = chr.GetInventory(invType);
+            var sorter = new BagInventorySorter(chrInv);
+            sorter.Sort();
+
+            var p1 = chrInv.LoadAllSlot();
+            for (int i = 0; i < p1.Count; i++)
+            {
+                if (p1[i] != null)
+                {
+                    Assert.That(p1[i]!.getPosition() - 1 == i);
+                }
+            }
+
+            sorter.Move(1, 10);
+            sorter.Sort();
+
+            var p2 = chrInv.LoadAllSlot();
+
+            Assert.That(p2, Is.EqualTo(p1));
         }
     }
 }

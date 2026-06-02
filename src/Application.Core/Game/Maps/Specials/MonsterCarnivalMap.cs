@@ -125,7 +125,7 @@ namespace Application.Core.Game.Maps.Specials
 
         public GuardianSpawnPoint? getRandomGuardianSpawn(int team)
         {
-            bool alltaken = false;
+            bool alltaken = true;
             foreach (GuardianSpawnPoint a in this.guardianSpawns)
             {
                 if (!a.isTaken())

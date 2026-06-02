@@ -13,6 +13,11 @@ namespace Application.Templates.Item.Pet
         public bool Permanent { get; set; }
         [WZPath("info/life")]
         public int Life { get; set; }
+        /// <summary>
+        /// 不可以通过生命水复活（过期直接移除）
+        /// </summary>
+        [WZPath("info/noRevive")]
+        public bool NoRevive { get; set; }
 
         [WZPath("interact/-")]
         public PetInterActData[] InterActs

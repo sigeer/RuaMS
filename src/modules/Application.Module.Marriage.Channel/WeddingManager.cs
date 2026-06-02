@@ -109,7 +109,7 @@ namespace Application.Module.Marriage.Channel
 
         public async Task TryInviteGuest(Player chr, Item item, int marriageId, string guestName)
         {
-            if (chr.Bag.RemoveFromItem(InventoryType.ETC, item))
+            if (chr.Bag.TryRemoveFromItem(InventoryType.ETC, item))
             {
                 await _transport.TryInviteGuest(new MarriageProto.InviteGuestRequest
                 {

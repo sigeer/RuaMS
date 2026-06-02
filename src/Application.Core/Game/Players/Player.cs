@@ -37,9 +37,14 @@ namespace Application.Core.Game.Players
         public List<FameLogObject> FameLogs { get; set; }
 
 
-        public Player(IChannelClient client, IMap map, Portal portal) :base(map, portal.getPosition(), 0)
+        public Player(IChannelClient client, IMap map, Portal portal, SyncProto.PlayerGetterDto o) :base(map, portal.getPosition(), 0)
         {
             Client = client;
+
+            Equipslots = o.Character.Equipslots;
+            Useslots = o.Character.Useslots;
+            Setupslots = o.Character.Setupslots;
+            Etcslots = o.Character.Etcslots;
 
             AutobanManager = new AutobanManager(this);
             Skills = new(this);
@@ -76,10 +81,6 @@ namespace Application.Core.Game.Players
         public void Reload()
         {
             BuddyList.Capacity = BuddyCapacity;
-            Bag[InventoryType.EQUIP].setSlotLimit(Equipslots);
-            Bag[InventoryType.USE].setSlotLimit(Useslots);
-            Bag[InventoryType.SETUP].setSlotLimit(Setupslots);
-            Bag[InventoryType.ETC].setSlotLimit(Etcslots);
         }
 
         public override int GetSourceId()

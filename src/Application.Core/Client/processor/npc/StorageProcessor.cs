@@ -73,7 +73,7 @@ public class StorageProcessor
             return;
 
         InventoryType invType = ItemConstants.getInventoryType(itemId);
-        Inventory inv = storage.Owner.getInventory(invType);
+        var inv = storage.Owner.getInventory(invType);
 
         Item? item;
 

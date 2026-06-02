@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -46,6 +47,7 @@ using client.inventory.manipulator;
 using client.keybind;
 using constants.game;
 using net.server.guild;
+using OpenTelemetry.Resources;
 using scripting;
 using server;
 using server.events;
@@ -56,6 +58,8 @@ using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography;
 using tools;
 using static client.inventory.Equip;
 
@@ -90,7 +94,7 @@ public partial class Player
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
     private int localchairrate;
     private bool hidden, equipchanged = true, hasSandboxItem = false, whiteChat = false;
-    private bool equippedMesoMagnet = false, equippedItemPouch = false, equippedPetItemIgnore = false;
+
     private bool usedSafetyCharm = false;
     public CharacterLink? Link { get; set; }
 
@@ -596,7 +600,7 @@ public partial class Player
 
         foreach (InventoryType invType in Enum.GetValues<InventoryType>())
         {
-            Inventory inv = this.getInventory(invType);
+            var inv = this.getInventory(invType);
 
             foreach (Item item in inv.list())
             {
@@ -1302,8 +1306,28 @@ public partial class Player
 
     public void forceUpdateItem(Item item)
     {
-        List<ModifyInventory> mods = [new ModifyInventory(3, item), new ModifyInventory(0, item)];
-        sendPacket(PacketCreator.modifyInventory(true, mods));
+        SyncClientInventory([new InventoryRemove(item.getInventoryType(), item.getPosition()), new InventoryAdd(item.getInventoryType(), item, item.getPosition())]);
+    }
+
+    public void SyncClientInventory(IInventoryOperationCommand? op, bool updateTick = true)
+    {
+        if (op == null)
+            return;
+
+        SyncClientInventory([op], true);
+    }
+
+    public void SyncClientInventory(IEnumerable<IInventoryOperationCommand> ops, bool updateTick = true)
+    {
+        if (ops.Count() == 0)
+            return;
+
+        sendPacket(PacketCreator.InventoryOperation(updateTick, ops));
+
+        if (ops.Any(x => x.InventoryType == InventoryType.EQUIP && (x.CurrentPosition < 0 || (x is InventoryMove move && move.NewPosition < 0))))
+        {
+            equipChanged();
+        }
     }
 
     private KeyValuePair<int, int> applyFame(int delta)
@@ -2523,7 +2547,7 @@ public partial class Player
 
     public void updateCouponRates()
     {
-        Inventory cashInv = this.getInventory(InventoryType.CASH);
+        var cashInv = this.getInventory(InventoryType.CASH);
         if (cashInv == null)
         {
             return;
@@ -2929,7 +2953,7 @@ public partial class Player
                 if (bow || crossbow || claw || gun)
                 {
                     // Also calc stars into this.
-                    Inventory inv = getInventory(InventoryType.USE);
+                    var inv = getInventory(InventoryType.USE);
                     for (short i = 1; i <= inv.getSlotLimit(); i++)
                     {
                         var item = inv.getItem(i);
@@ -3334,7 +3358,7 @@ public partial class Player
         //player decides from which inventory items should be sold.
         InventoryType type = InventoryTypeUtils.getByType(invTypeId);
 
-        Inventory inv = getInventory(type);
+        var inv = getInventory(type);
         var it = inv.findByName(name);
         if (it == null)
         {
@@ -3349,7 +3373,7 @@ public partial class Player
     {
         int mesoGain = 0;
 
-        Inventory inv = getInventory(type);
+        var inv = getInventory(type);
 
         for (short i = pos; i <= inv.getSlotLimit(); i++)
         {
@@ -3371,7 +3395,7 @@ public partial class Player
             quantity = 1;
         }
 
-        Inventory inv = getInventory(type);
+        var inv = getInventory(type);
         Item? item = inv.getItem(slot);
         if (item == null)
         { //Basic check
@@ -3421,7 +3445,7 @@ public partial class Player
     {
         InventoryType type = InventoryType.EQUIP;
 
-        Inventory inv = getInventory(type);
+        var inv = getInventory(type);
         var it = inv.findByName(name);
         if (it == null)
         {
@@ -3502,7 +3526,7 @@ public partial class Player
 
     public void mergeAllItemsFromPosition(Dictionary<StatUpgrade, float> statups, short pos)
     {
-        Inventory inv = getInventory(InventoryType.EQUIP);
+        var inv = getInventory(InventoryType.EQUIP);
         for (short i = pos; i <= inv.getSlotLimit(); i++)
         {
             standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
@@ -3772,7 +3796,7 @@ public partial class Player
         return AutobanManager;
     }
 
-    public void equippedItem(Equip equip)
+    public void equippedItem(Equip equip, bool notLogin = false)
     {
         int itemid = equip.getItemId();
 
@@ -3780,23 +3804,22 @@ public partial class Player
         {
             this.equipPendantOfSpirit();
         }
-        else if (itemid == ItemId.MESO_MAGNET)
-        {
-            equippedMesoMagnet = true;
-        }
-        else if (itemid == ItemId.ITEM_POUCH)
-        {
-            equippedItemPouch = true;
-        }
-        else if (itemid == ItemId.ITEM_IGNORE)
-        {
-            equippedPetItemIgnore = true;
-        }
 
+        getRingById(equip.getRingId())?.equip();
         //if (equip.getPosition() == EquipSlot.Medal)
         //{
         //    saveCharToDB(SyncCharacterTrigger.Unknown);
         //}
+
+        if (notLogin)
+        {
+            // 登录后进入地图时会广播
+            var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+            if (petIndex != -1)
+            {
+                getPet(petIndex)?.BroadcastNameChanged();
+            }
+        }
     }
 
     public void unequippedItem(Equip equip)
@@ -3807,33 +3830,33 @@ public partial class Player
         {
             this.unequipPendantOfSpirit();
         }
-        else if (itemid == ItemId.MESO_MAGNET)
+
+        getRingById(equip.getRingId())?.unequip();
+
+        var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+        if (petIndex != -1)
         {
-            equippedMesoMagnet = false;
-        }
-        else if (itemid == ItemId.ITEM_POUCH)
-        {
-            equippedItemPouch = false;
-        }
-        else if (itemid == ItemId.ITEM_IGNORE)
-        {
-            equippedPetItemIgnore = false;
+            getPet(petIndex)?.BroadcastNameChanged();
         }
     }
 
-    public bool isEquippedMesoMagnet()
+    public bool isEquippedMesoMagnet(int petIndex)
     {
-        return equippedMesoMagnet;
+        if (petIndex < 0 || petIndex > 2)
+            return false;
+        return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].MesoMagnet);
     }
-
-    public bool isEquippedItemPouch()
+    public bool isEquippedItemPouch(int petIndex)
     {
-        return equippedItemPouch;
+        if (petIndex < 0 || petIndex > 2)
+            return false;
+        return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemPouch);
     }
-
-    public bool isEquippedPetItemIgnore()
+    public bool isEquippedPetItemIgnore(int petIndex)
     {
-        return equippedPetItemIgnore;
+        if (petIndex < 0 || petIndex > 2)
+            return false;
+        return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemIgnore);
     }
 
     private void equipPendantOfSpirit()

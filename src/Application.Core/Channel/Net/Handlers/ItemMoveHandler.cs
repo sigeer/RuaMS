@@ -21,7 +21,10 @@
 */
 
 
+using Application.Core.Client.inventory;
+using client.inventory;
 using client.inventory.manipulator;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -59,7 +62,8 @@ public class ItemMoveHandler : ChannelHandlerBase
         }
         else
         {
-            InventoryManipulator.move(c, type, src, action);
+            var ops = new BagInventorySorter(c.OnlinedCharacter.GetInventory(type)).Move(src, action);
+            c.OnlinedCharacter.SyncClientInventory(ops, true);
         }
 
         c.OnlinedCharacter.getAutobanManager().spam(6);

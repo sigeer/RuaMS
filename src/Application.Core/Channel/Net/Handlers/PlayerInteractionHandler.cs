@@ -353,7 +353,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
-                        chr.Bag.RemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
+                        chr.Bag.TryRemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
                     }
                 }
                 chr.VisitingShop.SetOpen();
@@ -573,7 +573,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             }
                         }
 
-                        Inventory inv = chr.getInventory(ivType);
+                        var inv = chr.getInventory(ivType);
                         try
                         {
                             var checkItem = chr.getInventory(ivType).getItem(pos);

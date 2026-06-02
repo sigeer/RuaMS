@@ -68,7 +68,7 @@ namespace Application.Core.Channel.DueyService
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
                 InventoryType invType = InventoryTypeUtils.getByType(invTypeId);
-                Inventory inv = c.OnlinedCharacter.getInventory(invType);
+                var inv = c.OnlinedCharacter.getInventory(invType);
 
                 Item? item;
                 item = inv.getItem(itemPos);

@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Skills;
 using client.inventory;
 using tools;
@@ -70,7 +71,7 @@ public class ScrollHandler : ChannelHandlerBase
 
                 var oldLevel = toScroll.getLevel();
                 var oldSlots = toScroll.getUpgradeSlots();
-                Inventory useInventory = chr.getInventory(InventoryType.USE);
+                var useInventory = chr.getInventory(InventoryType.USE);
                 Item? scroll = useInventory.getItem(scrollSlot);
 
                 if (scroll == null)
@@ -143,29 +144,29 @@ public class ScrollHandler : ChannelHandlerBase
                         return;
                     }
 
-                    c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
+                    c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
                 }
 
-                c.OnlinedCharacter.Bag.RemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
+                c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
 
-                List<ModifyInventory> mods = new();
+                List<IInventoryOperationCommand> ops = [];
                 if (scrollSuccess == Equip.ScrollResult.CURSE)
                 {
                     if (!ItemId.isWeddingRing(toScroll.getItemId()))
                     {
-                        mods.Add(new ModifyInventory(3, toScroll));
                         if (equipSlot < 0)
                         {
-                            Inventory inv = chr.getInventory(InventoryType.EQUIPPED);
-
-                            chr.unequippedItem(toScroll);
-                            inv.removeItem(toScroll.getPosition());
+                            var inv = chr.getInventory(InventoryType.EQUIPPED);
+                            var removeRes = inv.removeItem(toScroll.getPosition(), actualRemoved: out _);
+                            if (removeRes != null)
+                                chr.SyncClientInventory(removeRes);
                         }
                         else
                         {
-                            Inventory inv = chr.getInventory(InventoryType.EQUIP);
-
-                            inv.removeItem(toScroll.getPosition());
+                            var inv = chr.getInventory(InventoryType.EQUIP);
+                            var removeRes = inv.removeItem(toScroll.getPosition(), actualRemoved: out _);
+                            if (removeRes != null)
+                                chr.SyncClientInventory(removeRes);
                         }
                     }
                     else
@@ -173,21 +174,15 @@ public class ScrollHandler : ChannelHandlerBase
                         scrolled = toScroll;
                         scrollSuccess = Equip.ScrollResult.FAIL;
 
-                        mods.Add(new ModifyInventory(3, scrolled));
-                        mods.Add(new ModifyInventory(0, scrolled));
+                        chr.forceUpdateItem(scrolled);
                     }
                 }
                 else
                 {
-                    mods.Add(new ModifyInventory(3, scrolled));
-                    mods.Add(new ModifyInventory(0, scrolled));
+                    chr.forceUpdateItem(scrolled);
                 }
-                c.sendPacket(PacketCreator.modifyInventory(true, mods));
+
                 chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
-                if (equipSlot < 0 && (scrollSuccess == Equip.ScrollResult.SUCCESS || scrollSuccess == Equip.ScrollResult.CURSE))
-                {
-                    chr.equipChanged();
-                }
             }
             finally
             {

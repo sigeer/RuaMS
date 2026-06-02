@@ -22,7 +22,6 @@
 
 
 using client.autoban;
-using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
@@ -76,16 +75,16 @@ public class PetFoodHandler : ChannelHandlerBase
         {
             try
             {
-                Inventory useInv = chr.getInventory(InventoryType.USE);
+                var useInv = chr.getInventory(InventoryType.USE);
 
-                    var use = useInv.getItem(pos);
-                    if (use == null || (itemId / 10000) != 212 || use.getItemId() != itemId || use.getQuantity() < 1)
-                    {
-                        return;
-                    }
+                var use = useInv.getItem(pos);
+                if (use == null || (itemId / 10000) != 212 || use.getItemId() != itemId || use.getQuantity() < 1)
+                {
+                    return;
+                }
 
-                    pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
-                    InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
+                pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
+                InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
             }
             finally
             {

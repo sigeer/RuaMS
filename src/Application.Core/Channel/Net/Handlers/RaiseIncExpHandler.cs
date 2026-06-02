@@ -1,8 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using client;
-using client.inventory;
 using client.inventory.manipulator;
-using server.quest;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -45,15 +43,15 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 }
 
                 int consId;
-                Inventory inv = chr.getInventory(InventoryTypeUtils.getByType(inventorytype));
+                var inv = chr.getInventory(InventoryTypeUtils.getByType(inventorytype));
 
-                    consId = inv.getItem(slot)!.getItemId();
-                    if (!consumables.ContainsKey(consId) || !chr.haveItem(consId))
-                    {
-                        return;
-                    }
+                consId = inv.getItem(slot)!.getItemId();
+                if (!consumables.ContainsKey(consId) || !chr.haveItem(consId))
+                {
+                    return;
+                }
 
-                    InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
+                InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
 
                 int questid = quest.getId();
                 int nextValue = Math.Min(consumables.GetValueOrDefault(consId) + c.getAbstractPlayerInteraction().getQuestProgressInt(questid, infoNumber), consItem.exp * consItem.grade);

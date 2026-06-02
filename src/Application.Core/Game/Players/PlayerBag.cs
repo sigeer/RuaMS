@@ -1,18 +1,18 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Models;
-using Application.Shared.Constants.Item;
 using Application.Templates.Item;
 using Application.Utility.Tickables;
 using client.inventory;
-using client.inventory.manipulator;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Game.Players
 {
     public class PlayerBag : IDisposable, ILoopTickable
     {
-        readonly Inventory[] _dataSource;
+        readonly AbstractInventory[] _dataSource;
         private bool disposedValue;
         Player Owner { get; }
 
@@ -20,32 +20,55 @@ namespace Application.Core.Game.Players
         {
             Owner = owner;
             var typeList = EnumCache<InventoryType>.Values;
-            _dataSource = new Inventory[typeList.Length];
+            _dataSource = new AbstractInventory[typeList.Length];
 
             for (int i = 0; i < typeList.Length; i++)
             {
-                var type = typeList[i];
                 byte b = DefaultConfigs.BagSize;
-                if (type == InventoryType.CASH)
+                var type = typeList[i];
+                switch (type)
                 {
-                    b = DefaultConfigs.BagCashSize;
+                    case InventoryType.EQUIP:
+                        b = (byte)Owner.Equipslots;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
+                    case InventoryType.USE:
+                        b = (byte)Owner.Useslots;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
+                    case InventoryType.SETUP:
+                        b = (byte)Owner.Setupslots;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
+                    case InventoryType.ETC:
+                        b = (byte)Owner.Etcslots;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
+                    case InventoryType.CASH:
+                        b = DefaultConfigs.BagCashSize;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
+                    case InventoryType.CANHOLD:
+                        _dataSource[InventoryType.CANHOLD.ordinal()] = new InventoryProof(owner);
+                        break;
+                    case InventoryType.EQUIPPED:
+                        _dataSource[InventoryType.EQUIPPED.ordinal()] = new InventoryEquipped(owner);
+                        break;
+                    default:
+                        b = byte.MaxValue;
+                        _dataSource[i] = new Inventory(owner, type, b);
+                        break;
                 }
-                _dataSource[i] = new Inventory(owner, type, b);
             }
-            _dataSource[InventoryType.CANHOLD.ordinal()] = new InventoryProof(owner);
         }
 
-        public Inventory this[InventoryType type] => this[type.ordinal()];
-        public Inventory this[int typeOrdinal] => _dataSource[typeOrdinal];
+        public AbstractInventory this[InventoryType type] => this[type.ordinal()];
+        public AbstractInventory this[int typeOrdinal] => _dataSource[typeOrdinal];
 
-        public void SetValue(InventoryType type, Inventory inventory)
-        {
-            _dataSource[type.ordinal()] = inventory;
-        }
 
-        public Inventory[] GetValues()
+        public AbstractInventory[] GetValues()
         {
-            return _dataSource;
+            return _dataSource.Where((x, i) => i != InventoryType.CANHOLD.ordinal() && i != InventoryType.UNDEFINED.ordinal()).ToArray();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -57,7 +80,7 @@ namespace Application.Core.Game.Players
                     // TODO: 释放托管状态(托管对象)
                     for (int i = 0; i < _dataSource.Length; i++)
                     {
-                        _dataSource[i].dispose();
+                        _dataSource[i].Dispose();
                     }
                 }
 
@@ -80,31 +103,20 @@ namespace Application.Core.Game.Players
             Dispose(disposing: true);
         }
 
-        void UnEquip(Inventory inv, Item invItem)
+        void RemoveItemInternal(AbstractInventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
-            if (inv.getType() == InventoryType.EQUIPPED)
-            {
-                Owner.unequippedItem((Equip)invItem);
-            }
-            else if (invItem is Pet petItem)
-            {
-                petItem.MapPet?.Recall();
-            }
-        }
-
-        void RemoveItemInternal(Inventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
-        {
-            UnEquip(inv, invItem);
-
             bool allowZero = consume && ItemConstants.isRechargeable(invItem.getItemId());
-            var removedCount = inv.removeItem(invItem.getPosition(), quantity, allowZero);
-            if (inv.getType() != InventoryType.CANHOLD)
+            var removeRes = inv.removeItem(invItem.getPosition(), out var actualRemoved, quantity, allowZero);
+            if (removeRes != null)
             {
-                InventoryManipulator.AnnounceModifyInventory(Owner.Client, invItem, fromDrop, allowZero);
-            }
+                if (inv.getType() != InventoryType.CANHOLD)
+                {
+                    Owner.SyncClientInventory(removeRes, fromDrop);
+                }
 
-            if (showMessage)
-                Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-removedCount, true));
+                if (showMessage && actualRemoved > 0)
+                    Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-actualRemoved, true));
+            }
         }
 
         /// <summary>
@@ -116,18 +128,18 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <returns></returns>
-        public bool RemoveFromSlot(InventoryType type, short slot, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public bool TryRemoveFromSlot(InventoryType type, short slot, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
-            Inventory inv = this[type];
+            var inv = this[type];
             var item = inv.getItem(slot);
             if (item == null)
                 return false;
 
-            return RemoveFromItem(type, item, quantity, fromDrop, consume, showMessage);
+            return TryRemoveFromItem(type, item, quantity, fromDrop, consume, showMessage);
         }
 
         /// <summary>
-        /// 移除type栏中的物品
+        /// 移除type栏中的物品，数量不足则移除失败
         /// </summary>
         /// <param name="type"></param>
         /// <param name="invItem">必须来自<see cref="Inventory"/></param>
@@ -135,9 +147,9 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <returns></returns>
-        public bool RemoveFromItem(InventoryType type, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public bool TryRemoveFromItem(InventoryType type, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
-            Inventory inv = this[type];
+            var inv = this[type];
             if (invItem.getQuantity() < quantity)
                 return false;
 
@@ -161,33 +173,37 @@ namespace Application.Core.Game.Players
         public void RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             var inv = this[invType];
-            int slotLimit = inv.getSlotLimit();
-            var type = inv.getType();
 
             List<ItemRemovedRecord> modifiedItems = [];
-            for (short i = 0; i <= slotLimit; i++)
+            List<IInventoryOperationCommand> ops = [];
+
+            foreach (var p in inv.LoadAllItem())
             {
-                var item = inv.getItem((short)(type == InventoryType.EQUIPPED ? -i : i));
-                if (item != null)
+                if (toRemoveCount <= 0)
+                    return;
+
+                if (filter == null || filter(p.Item))
                 {
-                    if ((filter == null || filter(item)) && toRemoveCount > 0)
+                    bool allowZero = consume && ItemConstants.isRechargeable(p.Item.getItemId());
+                    var removeRes = inv.removeItem(p.Slot, out var removedCount, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
+                    if (removeRes != null)
                     {
-                        UnEquip(inv, item);
+                        ops.Add(removeRes);
 
-                        bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-                        var removedCount = inv.removeItem(i, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
                         toRemoveCount -= removedCount;
-
-                        modifiedItems.Add(new ItemRemovedRecord(item, allowZero, removedCount));
+                        modifiedItems.Add(new ItemRemovedRecord(p.Item.getItemId(), removedCount));
                     }
                 }
             }
 
-            InventoryManipulator.AnnounceModifyInventory(Owner.Client, modifiedItems, fromDrop);
+            if (invType != InventoryType.CANHOLD)
+            {
+                Owner.SyncClientInventory(ops, fromDrop);
+            }
 
             if (showMessage)
             {
-                var showData = modifiedItems.GroupBy(x => x.Item.getItemId()).ToDictionary(x => x.Key, x => x.Sum(x => x.RemovedCount));
+                var showData = modifiedItems.GroupBy(x => x.ItemId).ToDictionary(x => x.Key, x => x.Sum(x => x.RemovedCount));
                 foreach (var data in showData)
                 {
                     Owner.sendPacket(PacketCreator.getShowItemGain(data.Key, (short)-data.Value, true));
@@ -237,7 +253,7 @@ namespace Application.Core.Game.Players
                     bool deletedCoupon = false;
 
                     List<Item> toberemove = new();
-                    foreach (Inventory inv in GetValues())
+                    foreach (var inv in GetValues())
                     {
                         foreach (Item item in inv.list())
                         {
@@ -249,7 +265,7 @@ namespace Application.Core.Game.Players
                                 {
                                     pet.MapPet?.Recall(2);
 
-                                    if (ItemConstants.isExpirablePet(item.getItemId()))
+                                    if (pet.SourceTemplate.NoRevive)
                                     {
                                         Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
                                         toberemove.Add(item);
@@ -285,7 +301,7 @@ namespace Application.Core.Game.Players
                         {
                             foreach (Item item in toberemove)
                             {
-                                RemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
+                                TryRemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
                             }
 
                             ItemInformationProvider ii = ItemInformationProvider.getInstance();

@@ -130,12 +130,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            Inventory eqpInv = player.getInventory(InventoryType.EQUIPPED);
-            foreach (Item it in eqpInv.list())
-            {
-                player.equippedItem((Equip)it);
-            }
-
             c.sendPacket(PacketCreator.updateGender(player));
 
             //退出游戏/切换频道会退出聊天室，那这里的方法又有什么用？

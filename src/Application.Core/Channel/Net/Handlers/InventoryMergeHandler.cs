@@ -21,9 +21,8 @@
  */
 
 
-using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using client.inventory;
-using client.inventory.manipulator;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -51,78 +50,17 @@ public class InventoryMergeHandler : ChannelHandlerBase
         }
 
         InventoryType inventoryType = InventoryTypeUtils.getByType(invType);
-        Inventory inventory = c.OnlinedCharacter.getInventory(inventoryType);
-
-        //------------------- RonanLana's SLOT MERGER -----------------
-
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        Item? srcItem, dstItem;
-
-        for (short dst = 1; dst <= inventory.getSlotLimit(); dst++)
+        var inventory = c.OnlinedCharacter.GetInventory(inventoryType);
+        if (inventory == null)
         {
-            dstItem = inventory.getItem(dst);
-            if (dstItem == null)
-            {
-                continue;
-            }
-
-            for (short src = (short)(dst + 1); src <= inventory.getSlotLimit(); src++)
-            {
-                srcItem = inventory.getItem(src);
-                if (srcItem == null)
-                {
-                    continue;
-                }
-
-                if (dstItem.getItemId() != srcItem.getItemId())
-                {
-                    continue;
-                }
-                if (dstItem.getQuantity() == ii.getSlotMax(c, inventory.getItem(dst).getItemId()))
-                {
-                    break;
-                }
-
-                InventoryManipulator.move(c, inventoryType, src, dst);
-            }
+            c.Disconnect(false);
+            return;
         }
 
-        //------------------------------------------------------------
+        var ops = new BagInventorySorter(inventory).Merge();
+        chr.SyncClientInventory(ops, true);
 
-        inventory = c.OnlinedCharacter.getInventory(inventoryType);
-        bool sorted = false;
-
-        while (!sorted)
-        {
-            short freeSlot = inventory.getNextFreeSlot();
-
-            if (freeSlot != -1)
-            {
-                short itemSlot = -1;
-                for (short i = (short)(freeSlot + 1); i <= inventory.getSlotLimit(); i = (short)(i + 1))
-                {
-                    if (inventory.getItem(i) != null)
-                    {
-                        itemSlot = i;
-                        break;
-                    }
-                }
-                if (itemSlot > 0)
-                {
-                    InventoryManipulator.move(c, inventoryType, itemSlot, freeSlot);
-                }
-                else
-                {
-                    sorted = true;
-                }
-            }
-            else
-            {
-                sorted = true;
-            }
-        }
-
-        c.sendPacket(PacketCreator.finishedSort(inventoryType.getType()));
+        c.sendPacket(PacketCreator.finishedSort(invType));
         c.sendPacket(PacketCreator.enableActions());
     }
 }
