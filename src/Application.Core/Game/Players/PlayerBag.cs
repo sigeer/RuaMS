@@ -68,7 +68,7 @@ namespace Application.Core.Game.Players
 
         public AbstractInventory[] GetValues()
         {
-            return _dataSource;
+            return _dataSource.Where((x, i) => i != InventoryType.CANHOLD.ordinal() && i != InventoryType.UNDEFINED.ordinal()).ToArray();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -265,7 +265,7 @@ namespace Application.Core.Game.Players
                                 {
                                     pet.MapPet?.Recall(2);
 
-                                    if (ItemConstants.isExpirablePet(item.getItemId()))
+                                    if (pet.SourceTemplate.NoRevive)
                                     {
                                         Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
                                         toberemove.Add(item);

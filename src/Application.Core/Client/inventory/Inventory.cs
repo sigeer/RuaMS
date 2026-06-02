@@ -66,7 +66,7 @@ public class Inventory : AbstractInventory
     {
         if (newLimit < inventory.Length)
         {
-            for (int i = newLimit; i < inventory.Length; i++)
+            for (int i = newLimit + 1; i <= inventory.Length; i++)
             {
                 removeSlot((short)i);
             }
@@ -110,7 +110,7 @@ public class Inventory : AbstractInventory
 
     public override List<Item> list()
     {
-        return inventory.OfType<Item>().ToList();
+        return ListExsitedEnumerable().ToList();
     }
 
     protected override IEnumerable<Item> ListExsitedEnumerable()
