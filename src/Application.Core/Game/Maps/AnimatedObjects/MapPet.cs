@@ -245,13 +245,13 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
             if (forceEnjoy)
             {
-                BroadcastMap(EncodeFoodResponse(true));
+                Owner.sendPacket(EncodeFoodResponse(true));
                 // 没观察到任何效果
-                BroadcastMap(PacketCreator.PetEatCashFoodSuccess(Index));
+                Owner.sendPacket(PacketCreator.PetEatCashFoodSuccess(Index));
             }
             else
             {
-                BroadcastMap(EncodeFoodResponse(enjoyed));
+                Owner.sendPacket(EncodeFoodResponse(enjoyed));
             }
 
 
@@ -266,14 +266,15 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                 return;
             }
 
+            // 客户端再根据成功/失败触发petchat
             if (Randomizer.nextInt(100) < petCommand.Prob)
             {
                 gainTamenessFullness(petCommand.Inc, 0, command);
-                BroadcastMap(EncodeCommandResponse(command, true));
+                Owner.sendPacket(EncodeCommandResponse(command, true));
             }
             else
             {
-                BroadcastMap(EncodeCommandResponse(command, false));
+                Owner.sendPacket(EncodeCommandResponse(command, false));
             }
         }
 

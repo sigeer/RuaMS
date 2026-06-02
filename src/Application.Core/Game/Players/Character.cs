@@ -1306,7 +1306,7 @@ public partial class Player
 
     public void forceUpdateItem(Item item)
     {
-        SyncClientInventory([new InventoryRemove(item.getInventoryType(), item.getPosition()), new InventoryAdd(item.getInventoryType(), item, item.getPosition())]);
+        SyncClientInventory([new InventoryAdd(item.getInventoryType(), item, item.getPosition())]);
     }
 
     public void SyncClientInventory(IInventoryOperationCommand? op, bool updateTick = true)

@@ -216,6 +216,7 @@ namespace Application.Core.Game.Players
                 {
                     mbsvh.bestApplied = true;
                     mbsvh.Status = TickableStatus.Remove;
+                    ActiveEffects.Remove(mbs);
 
                     if (mbs == BuffStat.SUMMON || mbs == BuffStat.PUPPET)
                     {
