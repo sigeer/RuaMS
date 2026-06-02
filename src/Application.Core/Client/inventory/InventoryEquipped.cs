@@ -93,7 +93,19 @@ public class InventoryEquipped : AbstractInventory
 
         SetItemPosition(newEqp, slot);
 
-        Owner.equippedItem(newEqp, true);
+        if (oldEquip == null)
+        {
+            Owner.equippedItem(newEqp, true);
+        }
+        else
+        {
+            if (oldEquip.NeedRecalcEffect(newEqp))
+            {
+                Owner.unequippedItem(oldEquip);
+                Owner.equippedItem(newEqp, true);
+            }
+
+        }
         return oldEquip;
     }
 

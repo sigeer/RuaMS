@@ -848,4 +848,14 @@ public class Equip : Item
         return itemLevel;
     }
 
+    /// <summary>
+    /// 需要重算效果（调用 equippedItem / unequippedItem）
+    /// </summary>
+    /// <param name="another"></param>
+    /// <returns></returns>
+    public bool NeedRecalcEffect(Equip another)
+    {
+        return getItemId() != another.getItemId();
+    }
+
 }
