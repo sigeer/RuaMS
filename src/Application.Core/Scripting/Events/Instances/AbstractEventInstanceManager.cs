@@ -1025,42 +1025,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             chr.TypedMessage(type, messageKey, param);
         }
     }
+    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Dialog(string key, params string[] param)
-    {
-        foreach (Player chr in getPlayers())
-        {
-            chr.Dialog(key, param);
-        }
-    }
+    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void Yellow(string key, params string[] param)
-    {
-        foreach (Player chr in getPlayers())
-        {
-            chr.Yellow(key, param);
-        }
-    }
+    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Notice(string key, params string[] param)
-    {
-        TypedMessage(0, key, param);
-    }
+    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void Popup(string key, params string[] param)
-    {
-        TypedMessage(1, key, param);
-    }
+    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-    public void Pink(string key, params string[] param)
-    {
-        TypedMessage(5, key, param);
-    }
-
-    public void LightBlue(string key, params string[] param)
-    {
-        TypedMessage(6, key, param);
-    }
+    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
     public void LightBlue(Func<ClientCulture, string> action)
     {
@@ -1070,13 +1047,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public void TopScrolling(string key, params string[] param)
-    {
-        foreach (Player chr in getPlayers())
-        {
-            chr.TopScrolling(key, param);
-        }
-    }
 
     public bool CanGiveReward(Player chr, int stage = 1)
     {

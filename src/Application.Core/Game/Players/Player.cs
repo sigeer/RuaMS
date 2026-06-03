@@ -102,53 +102,44 @@ namespace Application.Core.Game.Players
 
             if (type == -1)
             {
-                Yellow(messageKey, param);
+                sendPacket(PacketCommon.SendYellowTip(GetMessageByKey(messageKey, param)));
             }
             else if (type == -2)
             {
                 sendPacket(PacketCreator.earnTitleMessage(GetMessageByKey(messageKey, param)));
             }
-            sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
+            else if (type == -3)
+            {
+                TempConversation.Create(Client)?.RegisterTalk(GetMessageByKey(messageKey, param));
+            }
+            else if (type == 4)
+            {
+                sendPacket(PacketCommon.serverMessage(GetMessageByKey(messageKey, param)));
+            }
+            else
+            {
+                sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
+            }
         }
-        public void Notice(string key, params string[] param)
-        {
-            TypedMessage(0, key, param);
-        }
+        public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-        public void Popup(string key, params string[] param)
-        {
-            TypedMessage(1, key, param);
-        }
+        public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-        public void Dialog(string key, params string[] param)
-        {
-            TempConversation.Create(Client)?.RegisterTalk(GetMessageByKey(key, param));
-        }
+        public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-        public void Pink(string key, params string[] param)
-        {
-            TypedMessage(5, key, param);
-        }
+        public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-        public void LightBlue(string key, params string[] param)
-        {
-            TypedMessage(6, key, param);
-        }
+        public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+
+        public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+        public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+        public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
         public void LightBlue(Func<ClientCulture, string> action)
         {
             sendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
         }
 
-        public void TopScrolling(string key, params string[] param)
-        {
-            sendPacket(PacketCommon.serverMessage(GetMessageByKey(key, param)));
-        }
-
-        public void Yellow(string key, params string[] param)
-        {
-            sendPacket(PacketCommon.SendYellowTip(GetMessageByKey(key, param)));
-        }
 
         public long Period => 1_500;
 

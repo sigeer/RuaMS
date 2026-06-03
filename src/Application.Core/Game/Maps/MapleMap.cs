@@ -3002,44 +3002,23 @@ public class MapleMap : IMap, INamedInstance
     {
         BroadcastAll(e => e.TypedMessage(type, messageKey, param));
     }
-    public void Notice(string text, params string[] param)
-    {
-        TypedMessage(0, text, param);
-    }
+    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Popup(string text, params string[] param)
-    {
-        TypedMessage(1, text, param);
-    }
+    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void Dialog(string text, params string[] param)
-    {
-        BroadcastAll(e => e.Dialog(text, param));
-    }
+    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Pink(string text, params string[] param)
-    {
-        TypedMessage(5, text, param);
-    }
+    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void LightBlue(string text, params string[] param)
-    {
-        TypedMessage(6, text, param);
-    }
+    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+
+    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
     public void LightBlue(Func<ClientCulture, string> action)
     {
         BroadcastAll(e => e.LightBlue(action));
-    }
-
-    public void TopScrolling(string text, params string[] param)
-    {
-        BroadcastAll(e => e.TopScrolling(text, param));
-    }
-
-    public void Yellow(string text, params string[] param)
-    {
-        BroadcastAll(e => e.Yellow(text, param));
     }
 
     public Task Send(ICommand command) => CommandLoop.Register(command);

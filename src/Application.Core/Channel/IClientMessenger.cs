@@ -18,10 +18,11 @@ namespace Application.Core.Channel
         /// <param name="key"></param>
         void Popup(string key, params string[] param);
         /// <summary>
-        /// 对话框
+        /// type = 4 顶部滚动
         /// </summary>
         /// <param name="key"></param>
-        void Dialog(string key, params string[] param);
+        void TopScrolling(string key, params string[] param);
+
         /// <summary>
         /// type = 5 聊天框红色
         /// </summary>
@@ -32,20 +33,28 @@ namespace Application.Core.Channel
         /// </summary>
         /// <param name="key"></param>
         void LightBlue(string key, params string[] param);
-        /// <summary>
-        /// type = 6 聊天框蓝色
-        /// </summary>
-        /// <param name="action"></param>
-        void LightBlue(Func<ClientCulture, string> action);
-        /// <summary>
-        /// type = 4 顶部滚动
-        /// </summary>
-        /// <param name="key"></param>
-        void TopScrolling(string key, params string[] param);
+
         /// <summary>
         /// 聊天框黄色
         /// </summary>
         /// <param name="key"></param>
         void Yellow(string key, params string[] param);
+        /// <summary>
+        /// 界面中心
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="param"></param>
+        void EarnTitle(string key, params string[] param);
+        /// <summary>
+        /// 对话框
+        /// </summary>
+        /// <param name="key"></param>
+        void Dialog(string key, params string[] param);
+
+        /// <summary>
+        /// type = 6 聊天框蓝色
+        /// </summary>
+        /// <param name="action"></param>
+        void LightBlue(Func<ClientCulture, string> action);
     }
 }
