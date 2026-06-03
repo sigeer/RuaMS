@@ -298,7 +298,7 @@ namespace Application.Core.Game.Players
 
                             if (inv.getType() == InventoryType.EQUIPPED && item.getItemId() == ItemId.PENDANT_OF_THE_SPIRIT)
                             {
-                                Owner.CalculateSpiritPendant(now, false);
+                                Owner.CalculateSpiritPendant(now, item.getPosition());
                             }
                         }
 

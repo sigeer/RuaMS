@@ -17,6 +17,7 @@ public class EquipSlot : EnumClass
     public const int Shoes = -7;
     public const int Shield = -10;
     public const int Weapon = -11;
+    public const int Pendant = -17;
     public const int Mount = -18;
 
     public const int Pet0Equip = -114;

@@ -3804,7 +3804,7 @@ public partial class Player
 
         if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
         {
-            CalculateSpiritPendant(Client.CurrentServer.Node.getCurrentTime(), false);
+            CalculateSpiritPendant(Client.CurrentServer.Node.getCurrentTime(), equip.getPosition());
         }
 
         getRingById(equip.getRingId())?.equip();
@@ -3866,19 +3866,9 @@ public partial class Player
     /// 
     /// </summary>
     /// <param name="now"></param>
-    /// <param name="checkItem">是否需要检测道具存在</param>
-    public void CalculateSpiritPendant(long now, bool checkItem)
+    /// <param name="itemSlot">道具槽位，客户端接受槽位</param>
+    public void CalculateSpiritPendant(long now, int itemSlot)
     {
-        if (checkItem)
-        {
-            if (!GetEquipped().HasItem(ItemId.PENDANT_OF_THE_SPIRIT))
-            {
-                PendantOfSpiritEquippedTime = -1;
-                PendantExp = 0;
-                return;
-            }
-        }
-
         if (PendantOfSpiritEquippedTime <= 0 || PendantOfSpiritEquippedTime > now)
             PendantOfSpiritEquippedTime = now;
 
@@ -3889,7 +3879,7 @@ public partial class Player
             if (PendantExp != bonusExp)
             {
                 PendantExp = bonusExp;
-                sendPacket(PacketCreator.BonusExpRateChanged(ItemId.PENDANT_OF_THE_SPIRIT, hasEquippedLength.Hours, PendantExp * 10));
+                sendPacket(PacketCreator.BonusExpRateChanged(itemSlot, hasEquippedLength.Hours, PendantExp * 10));
             }
         }
     }
