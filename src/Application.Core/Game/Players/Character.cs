@@ -46,6 +46,7 @@ using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
 using constants.game;
+using Humanizer;
 using net.server.guild;
 using OpenTelemetry.Resources;
 using scripting;
@@ -167,7 +168,8 @@ public partial class Player
 
     private ScheduledFuture? extraRecoveryTask = null;
 
-    private ScheduledFuture? pendantOfSpirit = null; //1122017
+    public long PendantOfSpiritEquippedTime { get; set; } = -1;
+    public byte PendantExp { get; private set; } = 0;
 
     /// <summary>
     /// PetId -> ItemId
@@ -184,7 +186,7 @@ public partial class Player
     private bool isbanned = false;
     private bool blockCashShop = false;
     private bool allowExpGain = true;
-    private byte pendantExp = 0, lastmobcount = 0;
+    private byte lastmobcount = 0;
 
     public Dictionary<string, Events> Events { get; set; }
 
@@ -607,7 +609,7 @@ public partial class Player
                 if (InventoryManipulator.isSandboxItem(item))
                 {
                     InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                    dropMessage(5, "[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
+                    Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                 }
             }
         }
@@ -1284,7 +1286,7 @@ public partial class Player
 
     public void Debug(int type, string message)
     {
-        if (YamlConfig.config.server.USE_DEBUG)
+        if (isGM())
         {
             TypedMessage(type, message);
             Log.Debug(message);
@@ -2465,12 +2467,12 @@ public partial class Player
                         gainSlots(i, 4, true);
                     }
 
-                    this.yellowMessage("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
+                    Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
                 }
             }
             if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
             {
-                this.yellowMessage("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
+                Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
             }
         }
 
@@ -3502,7 +3504,7 @@ public partial class Player
             }
         }
 
-        dropMessage(6, "EQUIPMENT MERGE operation results:");
+        LightBlue("EQUIPMENT MERGE operation results:");
         foreach (var eqpUpg in equipUpgrades)
         {
             List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
@@ -3517,7 +3519,7 @@ public partial class Player
                 this.forceUpdateItem(eqp);
 
                 showStr += upgdStr;
-                dropMessage(6, showStr);
+                LightBlue(showStr);
             }
         }
 
@@ -3802,7 +3804,7 @@ public partial class Player
 
         if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
         {
-            this.equipPendantOfSpirit();
+            CalculateSpiritPendant(Client.CurrentServer.Node.getCurrentTime(), false);
         }
 
         getRingById(equip.getRingId())?.equip();
@@ -3828,7 +3830,8 @@ public partial class Player
 
         if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
         {
-            this.unequipPendantOfSpirit();
+            PendantOfSpiritEquippedTime = -1;
+            PendantExp = 0;
         }
 
         getRingById(equip.getRingId())?.unequip();
@@ -3859,41 +3862,36 @@ public partial class Player
         return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemIgnore);
     }
 
-    private void equipPendantOfSpirit()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="now"></param>
+    /// <param name="checkItem">是否需要检测道具存在</param>
+    public void CalculateSpiritPendant(long now, bool checkItem)
     {
-        if (pendantOfSpirit == null)
+        if (checkItem)
         {
-            pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
+            if (!GetEquipped().HasItem(ItemId.PENDANT_OF_THE_SPIRIT))
             {
-                MapModel.Send(m =>
-                {
-                    IncreasePendantExpRate();
-                });
-            }, TimeSpan.FromHours(1)); //1 hour
+                PendantOfSpiritEquippedTime = -1;
+                PendantExp = 0;
+                return;
+            }
         }
-    }
 
-    public void IncreasePendantExpRate()
-    {
-        if (pendantExp < 3)
-        {
-            pendantExp++;
-            message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
-        }
-        else
-        {
-            pendantOfSpirit?.cancel(false);
-        }
-    }
+        if (PendantOfSpiritEquippedTime <= 0 || PendantOfSpiritEquippedTime > now)
+            PendantOfSpiritEquippedTime = now;
 
-    private void unequipPendantOfSpirit()
-    {
-        if (pendantOfSpirit != null)
+        if (PendantOfSpiritEquippedTime > 0)
         {
-            pendantOfSpirit.cancel(false);
-            pendantOfSpirit = null;
+            var hasEquippedLength = TimeSpan.FromMilliseconds(now - PendantOfSpiritEquippedTime);
+            var bonusExp = (byte)Math.Min(hasEquippedLength.Hours + 1, 3); // 10% ~ 30%
+            if (PendantExp != bonusExp)
+            {
+                PendantExp = bonusExp;
+                sendPacket(PacketCreator.BonusExpRateChanged(ItemId.PENDANT_OF_THE_SPIRIT, hasEquippedLength.Hours, PendantExp * 10));
+            }
         }
-        pendantExp = 0;
     }
 
     private ICollection<Item> getUpgradeableEquipList()
@@ -3956,12 +3954,6 @@ public partial class Player
         // already done on unregisterChairBuff
         /* if (chairRecoveryTask != null) { chairRecoveryTask.cancel(true); }
         chairRecoveryTask = null; */
-
-        if (pendantOfSpirit != null)
-        {
-            pendantOfSpirit.cancel(true);
-        }
-        pendantOfSpirit = null;
 
         _pickerProcessor.Clear();
 

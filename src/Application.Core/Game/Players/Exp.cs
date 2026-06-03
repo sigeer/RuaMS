@@ -33,7 +33,7 @@ namespace Application.Core.Game.Players
                 party = int.MaxValue;  // integer overflow, heh.
             }
 
-            int equip = (int)Math.Min((long)(gain / 10) * pendantExp, int.MaxValue);
+            int equip = (int)Math.Min((long)(gain / 10) * PendantExp, int.MaxValue);
 
             gainExpInternal(gain, equip, party, show, inChat, white);
         }

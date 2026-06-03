@@ -6097,7 +6097,7 @@ public class PacketCreator
         OutPacket p = OutPacket.create(SendOpcode.BONUS_EXP_CHANGED);
         p.writeInt(itemId);
         p.writeInt(hours);
-        p.writeInt(hours);
+        p.writeInt(rate);
         return p;
     }
 

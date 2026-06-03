@@ -11,6 +11,7 @@ using AutoMapper;
 using client;
 using client.inventory;
 using client.keybind;
+using Humanizer;
 using net.server.guild;
 using server;
 using server.events;
@@ -105,6 +106,25 @@ namespace Application.Core.Channel.Services
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
+            // 重新登录时，只计算当日的在线时长
+            if (o.LoginInfo.IsNewCommer)
+            {
+                var date = DateTimeOffset.FromUnixTimeMilliseconds(o.Character.PendantOfSpiritEquippedTime);
+                var now = _server.GetCurrentTimeDateTimeOffset();
+                if (date.Date != now.Date)
+                {
+                    player.PendantOfSpiritEquippedTime = new DateTimeOffset(now.Date, now.Offset).ToUnixTimeMilliseconds();
+                }
+                else
+                {
+                    player.PendantOfSpiritEquippedTime = o.Character.PendantOfSpiritEquippedTime;
+                }
+            }
+            else
+            {
+                player.PendantOfSpiritEquippedTime = o.Character.PendantOfSpiritEquippedTime;
+            }
+
             int sandboxCheck = 0x0;
             foreach (var item in o.InventoryItems)
             {
@@ -137,6 +157,7 @@ namespace Application.Core.Channel.Services
                 o.AccountGame.Storage.OwnerId, (byte)o.AccountGame.Storage.Slots, o.AccountGame.Storage.Meso,
                 _mapper.Map<Item[]>(o.AccountGame.Storage.Items));
             player.GachaponStorage = new(player, o.GachaponStorage.Meso, _mapper.Map<Item[]>(o.GachaponStorage.Items));
+
 
             c.SetAccount(_mapper.Map<AccountCtrl>(o.Account));
             c.SetPlayer(player);
@@ -306,6 +327,7 @@ namespace Application.Core.Channel.Services
                     playerDto.Spawnpoint = 0;
                 }
             }
+            playerDto.PendantOfSpiritEquippedTime = player.PendantOfSpiritEquippedTime;
 
             #region inventory mapping
             var itemType = ItemFactory.INVENTORY.getValue();

@@ -295,6 +295,11 @@ namespace Application.Core.Game.Players
                                     Owner.forceUpdateItem(item);   //TEST :3
                                 }
                             }
+
+                            if (inv.getType() == InventoryType.EQUIPPED && item.getItemId() == ItemId.PENDANT_OF_THE_SPIRIT)
+                            {
+                                Owner.CalculateSpiritPendant(now, false);
+                            }
                         }
 
                         if (toberemove.Count > 0)
