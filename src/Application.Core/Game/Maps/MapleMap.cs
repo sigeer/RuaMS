@@ -1256,7 +1256,7 @@ public class MapleMap : IMap, INamedInstance
         MapItem mapItem = new MapItem(this, meso, validPos, dropper, owner, droptype, playerDrop);
         AddMapObject(mapItem, c =>
         {
-            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.UpdateMapItem, dropDelay));
+            c.sendPacket(PacketCreator.dropItemFromMapObject(c.OnlinedCharacter, mapItem, dropper.getPosition(), validPos, (int)DropEnterFieldType.SpawnMapItem, dropDelay));
         });
     }
 
