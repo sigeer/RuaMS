@@ -116,11 +116,17 @@ jobs:
                 }
               },
               "tools": {
-                "core": []
+                "core": [
+                  "run_shell_command(cat)",
+                  "run_shell_command(echo)",
+                  "run_shell_command(grep)",
+                  "run_shell_command(head)",
+                  "run_shell_command(tail)"
+                ]
               }
             }
           extensions: |
             [
               "https://github.com/gemini-cli-extensions/code-review"
             ]
-          prompt: '/pr-code-review'
+          prompt: '/gemini-review'

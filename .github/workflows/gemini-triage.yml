@@ -106,7 +106,9 @@ jobs:
                 "outfile": ".gemini/telemetry.log"
               },
               "tools": {
-                "core": []
+                "core": [
+                  "run_shell_command(echo)"
+                ]
               }
             }
           prompt: '/gemini-triage'

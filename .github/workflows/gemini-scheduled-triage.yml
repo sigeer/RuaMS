@@ -137,7 +137,11 @@ jobs:
                 "outfile": ".gemini/telemetry.log"
               },
               "tools": {
-                "core": []
+                "core": [
+                  "run_shell_command(echo)",
+                  "run_shell_command(jq)",
+                  "run_shell_command(printenv)"
+                ]
               }
             }
           prompt: '/gemini-scheduled-triage'
