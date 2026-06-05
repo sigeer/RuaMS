@@ -86,10 +86,21 @@
     <Project Path="tools/XmlWzReader.SouceGenerator/XmlWzReader.SouceGenerator.csproj" />
   </Folder>
   <Folder Name="/workflow/">
+    <File Path=".gemini/commands/gemini-invoke.toml" />
+    <File Path=".gemini/commands/gemini-plan-execute.toml" />
+    <File Path=".gemini/commands/gemini-review.toml" />
+    <File Path=".gemini/commands/gemini-scheduled-triage.toml" />
+    <File Path=".gemini/commands/gemini-triage.toml" />
     <File Path=".github/workflows/build-docker-channel.yml" />
     <File Path=".github/workflows/build-docker-master-standalone.yml" />
     <File Path=".github/workflows/build-docker-master.yml" />
     <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/gemini-dispatch.yml" />
+    <File Path=".github/workflows/gemini-invoke.yml" />
+    <File Path=".github/workflows/gemini-plan-execute.yml" />
+    <File Path=".github/workflows/gemini-review.yml" />
+    <File Path=".github/workflows/gemini-scheduled-triage.yml" />
+    <File Path=".github/workflows/gemini-triage.yml" />
     <File Path=".github/workflows/release.yml" />
   </Folder>
 </Solution>
