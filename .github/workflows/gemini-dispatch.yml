@@ -83,7 +83,7 @@ jobs:
 
       - name: 'Extract command'
         id: 'extract_command'
-        uses: 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea' # ratchet:actions/github-script@v7
+        uses: 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd' # ratchet:actions/github-script@v8
         env:
           EVENT_TYPE: '${{ github.event_name }}.${{ github.event.action }}'
           REQUEST: '${{ github.event.comment.body || github.event.review.body || github.event.issue.body }}'
@@ -105,6 +105,10 @@ jobs:
               core.setOutput('command', 'triage');
             } else if (request.startsWith("@gemini-cli /approve")) {
               core.setOutput('command', 'approve');
+              const additionalContext = request.replace(/^@gemini-cli \/approve/, '').trim();
+              core.setOutput('additional_context', additionalContext);
+            } else if (request.startsWith("@gemini-cli /fix")) {
+              core.setOutput('command', 'fix');
             } else if (request.startsWith("@gemini-cli")) {
               const additionalContext = request.replace(/^@gemini-cli/, '').trim();
               core.setOutput('command', 'invoke');
@@ -151,6 +155,18 @@ jobs:
       pull-requests: 'write'
     with:
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
+    secrets: 'inherit'
+
+  fix:
+    needs: 'dispatch'
+    if: |-
+      ${{ needs.dispatch.outputs.command == 'fix' }}
+    uses: './.github/workflows/gemini-issue-fixer.yml'
+    permissions:
+      contents: 'write'
+      id-token: 'write'
+      issues: 'write'
+      pull-requests: 'write'
     secrets: 'inherit'
 
   invoke:

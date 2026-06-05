@@ -1,15 +1,10 @@
-name: '🔎 Gemini Review'
+name: '🧙 Gemini Issue Fixer'
 
 on:
   workflow_call:
-    inputs:
-      additional_context:
-        type: 'string'
-        description: 'Any additional context from the request'
-        required: false
 
 concurrency:
-  group: '${{ github.workflow }}-review-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}'
+  group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}-${{ github.event.issue.number }}'
   cancel-in-progress: true
 
 defaults:
@@ -17,15 +12,17 @@ defaults:
     shell: 'bash'
 
 jobs:
-  review:
+  create-pr:
+    timeout-minutes: 30
     runs-on: 'ubuntu-latest'
-    timeout-minutes: 7
     permissions:
-      contents: 'read'
-      id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      contents: 'write' # Enable reading and modifying code
+      id-token: 'write' # Enable minting an identity token
+      issues: 'write' # Enable updating issues, such as posting a comment
+      pull-requests: 'write' # Enable creating pull requests
+
     steps:
+      # Mint a token so that the comments show up as gemini-cli instead of github-actions.
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         if: |-
@@ -34,7 +31,7 @@ jobs:
         with:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
-          permission-contents: 'read'
+          permission-contents: 'write'
           permission-issues: 'write'
           permission-pull-requests: 'write'
 
@@ -48,27 +45,36 @@ jobs:
         run: |-
           mkdir -p .gemini
           jq -n \
+            --arg title "${TITLE}" \
+            --arg body "${BODY}" \
             --arg repo "${REPOSITORY}" \
-            --arg pr "${PULL_REQUEST_NUMBER}" \
-            --arg context "${ADDITIONAL_CONTEXT}" \
-            '{repository: $repo, pull_request_number: $pr, additional_context: $context}' > .gemini/context.json
+            --arg num "${NUMBER}" \
+            --arg branch "${BRANCH}" \
+            --arg event "${EVENT}" \
+            --arg actor "${ACTOR}" \
+            '{issue_title: $title, issue_body: $body, repository: $repo, issue_number: $num, branch_name: $branch, event_name: $event, triggering_actor: $actor}' > .gemini/context.json
         env:
+          TITLE: '${{ github.event.issue.title }}'
+          BODY: '${{ github.event.issue.body }}'
           REPOSITORY: '${{ github.repository }}'
-          PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
-          ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
+          NUMBER: '${{ github.event.issue.number }}'
+          BRANCH: 'gemini-fix-${{ github.event.issue.number }}'
+          EVENT: '${{ github.event_name }}'
+          ACTOR: '${{ github.triggering_actor }}'
 
-      - name: 'Run Gemini pull request review'
+      - name: 'Run Gemini PR Create'
         uses: 'google-github-actions/run-gemini-cli@main' # ratchet:exclude
-        id: 'gemini_pr_review'
+        id: 'gemini_pr_create'
         env:
           GEMINI_CLI_TRUST_WORKSPACE: 'true'
-          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
-          ISSUE_TITLE: '${{ github.event.pull_request.title || github.event.issue.title }}'
-          ISSUE_BODY: '${{ github.event.pull_request.body || github.event.issue.body }}'
-          PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
+          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN }}'
           REPOSITORY: '${{ github.repository }}'
-          ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
-          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          ISSUE_NUMBER: '${{ github.event.issue.number }}'
+          ISSUE_TITLE: '${{ github.event.issue.title }}'
+          ISSUE_BODY: '${{ github.event.issue.body }}'
+          BRANCH_NAME: 'gemini-fix-${{ github.event.issue.number }}'
+          EVENT_NAME: '${{ github.event_name }}'
+          TRIGGERING_ACTOR: '${{ github.triggering_actor }}'
         with:
           gcp_location: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
           gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
@@ -82,17 +88,15 @@ jobs:
           use_gemini_code_assist: '${{ vars.GOOGLE_GENAI_USE_GCA }}'
           use_vertex_ai: '${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}'
           upload_artifacts: '${{ vars.UPLOAD_ARTIFACTS }}'
-          workflow_name: 'gemini-review'
-          github_pr_number: '${{ github.event.pull_request.number }}'
+          github_issue_number: '${{ github.event.issue.number }}'
           settings: |-
             {
+              "debug": ${{ fromJSON(vars.GEMINI_DEBUG || vars.ACTIONS_STEP_DEBUG || false) }},
               "model": {
-                "maxSessionTurns": 25
+                "maxSessionTurns": 200
               },
-              "telemetry": {
-                "enabled": true,
-                "target": "local",
-                "outfile": ".gemini/telemetry.log"
+              "tools": {
+                "core": []
               },
               "mcpServers": {
                 "github": {
@@ -105,22 +109,15 @@ jobs:
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
-                  "includeTools": [
-                    "add_comment_to_pending_review",
-                    "pull_request_read",
-                    "pull_request_review_write"
-                  ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
                   }
                 }
               },
-              "tools": {
-                "core": []
+              "telemetry": {
+                "enabled": true,
+                "target": "local",
+                "outfile": ".gemini/telemetry.log"
               }
             }
-          extensions: |
-            [
-              "https://github.com/gemini-cli-extensions/code-review"
-            ]
-          prompt: '/pr-code-review'
+          prompt: '/gemini-issue-fixer'
