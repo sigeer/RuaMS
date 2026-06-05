@@ -58,7 +58,6 @@ namespace Application.Core.Login
             services.AddSingleton<RankingLoginTask>();
             services.AddSingleton<DueyFredrickTask>();
             services.AddSingleton<RankingCommandTask>();
-            services.AddSingleton<CouponTask>();
             return services;
         }
 
@@ -126,7 +125,6 @@ namespace Application.Core.Login
             services.AddSingleton<SystemManager>();
 
             services.AddSingleton<ServerManager>();
-            services.AddSingleton<CouponManager>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<TeamManager>();
             services.AddSingleton<BuffManager>();

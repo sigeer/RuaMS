@@ -162,7 +162,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
 
             player.commitExcludedItems();
 
-            player.updateCouponRates();
 
             if (newcomer)
             {

@@ -120,18 +120,7 @@ public class DebugCommand : CommandBase
                 }
                 break;
 
-            case "servercoupons":
             case "coupons":
-                string s = "Currently active SERVER coupons: ";
-                foreach (int i in c.CurrentServer.NodeService.GetActiveCoupons())
-                {
-                    s += (i + " ");
-                }
-
-                player.dropMessage(6, s);
-                break;
-
-            case "playercoupons":
                 string st = "Currently active PLAYER coupons: ";
                 foreach (int i in player.getActiveCoupons())
                 {

@@ -17,6 +17,7 @@ public class EquipSlot : EnumClass
     public const int Shoes = -7;
     public const int Shield = -10;
     public const int Weapon = -11;
+    public const int Pendant = -17;
     public const int Mount = -18;
 
     public const int Pet0Equip = -114;
@@ -70,7 +71,7 @@ public class EquipSlot : EnumClass
     public static readonly EquipSlot WEAPON_2 = new EquipSlot("WpSi", -11);
     public static readonly EquipSlot LOW_WEAPON = new EquipSlot("WpSp", -11);
     public static readonly EquipSlot RING = new EquipSlot("Ri", -12, -13, -15, -16);
-    public static readonly EquipSlot PENDANT = new EquipSlot("Pe", -17);
+    public static readonly EquipSlot PENDANT = new EquipSlot("Pe", Pendant);
     public static readonly EquipSlot TAMED_MOB = new EquipSlot("Tm", -18);
     public static readonly EquipSlot SADDLE = new EquipSlot("Sd", -19);
     public static readonly EquipSlot MEDAL = new EquipSlot("Me", Medal);

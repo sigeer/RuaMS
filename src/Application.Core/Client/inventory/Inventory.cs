@@ -21,10 +21,12 @@
 */
 
 
+using Acornima;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.model;
+using Application.Templates.Item.Cash;
 using client.inventory.manipulator;
 using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
@@ -113,7 +115,7 @@ public class Inventory : AbstractInventory
         return ListExsitedEnumerable().ToList();
     }
 
-    protected override IEnumerable<Item> ListExsitedEnumerable()
+    public override IEnumerable<Item> ListExsitedEnumerable()
     {
         return inventory.OfType<Item>();
     }
@@ -220,10 +222,11 @@ public class Inventory : AbstractInventory
 
         SetItemPosition(item, position);
 
-        OnItemEnter(position, item);
+        OnItemEnter(position, item, false);
+
         return new InventoryAdd(item.getInventoryType(), item, position);
     }
-    public override void PutItem(short position, Item item)
+    public override void PutItem(short position, Item item, bool fromLogin)
     {
         if (position <= 0)
         {
@@ -233,7 +236,7 @@ public class Inventory : AbstractInventory
 
         SetItemPosition(item, position);
 
-        OnItemEnter(position, item);
+        OnItemEnter(position, item, fromLogin);
     }
 
     public override void RemoveFromMove(short slot)
@@ -269,24 +272,30 @@ public class Inventory : AbstractInventory
     }
 
 
-    protected virtual void OnItemEnter(short position, Item item)
+    protected override void OnItemEnter(short position, Item item, bool fromLogin)
     {
-        if (ItemConstants.isRateCoupon(item.getItemId()))
+        if (!fromLogin)
         {
-            Owner.updateCouponRates();
+            // 登录时会遍历背包处理
+            if (item.SourceTemplate is CouponItemTemplate)
+            {
+                Owner.CalculateCoupon(Owner.Client.CurrentServer.Node.getCurrentTime());
+            }
         }
+        base.OnItemEnter(position, item, fromLogin);
     }
 
-    protected virtual void OnItemLeave(Item item)
+    protected override void OnItemLeave(Item item)
     {
-        if (ItemConstants.isRateCoupon(item.getItemId()))
+        if (item.SourceTemplate is CouponItemTemplate)
         {
-            Owner.updateCouponRates();
+            Owner.CalculateCoupon(Owner.Client.CurrentServer.Node.getCurrentTime());
         }
         else if (item is Pet pet)
         {
             pet.MapPet?.Recall();
         }
+        base.OnItemLeave(item);
     }
 
     public override IInventoryOperationCommand? removeSlot(short slot)
@@ -295,7 +304,6 @@ public class Inventory : AbstractInventory
         if (item != null)
         {
             inventory[MapServerSlot(slot)] = null;
-
 
             OnItemLeave(item);
             return new InventoryRemove(item!.getInventoryType(), slot);
@@ -338,7 +346,9 @@ public class Inventory : AbstractInventory
 
     public override IEnumerator<Item> GetEnumerator()
     {
-        return new InventoryEnumerator(list());
+        foreach (var item in inventory)
+            if (item != null) 
+                yield return item;
     }
 
     #region Utils

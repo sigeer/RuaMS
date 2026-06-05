@@ -440,7 +440,7 @@ public class InventoryManipulator
 
         eqpInv.removeSlot(src);
         if (originalEqp != null)
-            eqpInv.PutItem(src, originalEqp);
+            eqpInv.PutItem(src, originalEqp, false);
 
         if (chr.getBuffedValue(BuffStat.BOOSTER) != null && ItemConstants.isWeapon(source.getItemId()))
         {
@@ -449,6 +449,12 @@ public class InventoryManipulator
 
         ops.Add(new InventoryMove(InventoryType.EQUIP, src, dst));
         chr.SyncClientInventory(ops, true);
+
+        if (source.getItemId() == ItemId.PENDANT_OF_THE_SPIRIT)
+        {
+            // 需要在同步到客户端之后再发送
+            chr.CalculateSpiritPendant(chr.Client.CurrentServer.Node.getCurrentTime(), true);
+        }
     }
 
     public static void unequip(IChannelClient c, short src, short dst)
@@ -475,7 +481,7 @@ public class InventoryManipulator
         }
 
         eqpdInv.removeSlot(src);
-        eqpInv.PutItem(dst, source);
+        eqpInv.PutItem(dst, source, false);
 
         c.OnlinedCharacter.SyncClientInventory(new InventoryMove(InventoryType.EQUIP, src, dst));
     }

@@ -265,48 +265,6 @@ public class StatEffect
             hp = (short)morphEffect.HP;
         }
 
-        if (template is CouponItemTemplate coupon)
-        {
-            if (coupon.IsExp)
-            {
-                switch (coupon.Rate)
-                {
-                    case 1:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP1, 1);
-                        break;
-
-                    case 2:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP2, 1);
-                        break;
-
-                    case 3:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP3, 1);
-                        break;
-
-                    case 4:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_EXP4, 1);
-                        break;
-                }
-            }
-            if (coupon.IsDrop)
-            {
-                switch (coupon.Rate)
-                {
-                    case 1:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP1, 1);
-                        break;
-
-                    case 2:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP2, 1);
-                        break;
-
-                    case 3:
-                        addBuffStatPairToListIfNotZero(statups, BuffStat.COUPON_DRP3, 1);
-                        break;
-                }
-            }
-        }
-
         if (template is PotionItemTemplate other)
         {
             addBuffStatPairToListIfNotZero(statups, BuffStat.AURA, other.Barrier);

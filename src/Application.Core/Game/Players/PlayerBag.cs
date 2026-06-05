@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Models;
@@ -16,7 +17,7 @@ namespace Application.Core.Game.Players
         private bool disposedValue;
         Player Owner { get; }
 
-        public PlayerBag(Player owner)
+        public PlayerBag(Player owner, int equipSlots, int useSlots, int setupSlots, int etcSlots)
         {
             Owner = owner;
             var typeList = EnumCache<InventoryType>.Values;
@@ -24,29 +25,23 @@ namespace Application.Core.Game.Players
 
             for (int i = 0; i < typeList.Length; i++)
             {
-                byte b = DefaultConfigs.BagSize;
                 var type = typeList[i];
                 switch (type)
                 {
                     case InventoryType.EQUIP:
-                        b = (byte)Owner.Equipslots;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, (byte)equipSlots);
                         break;
                     case InventoryType.USE:
-                        b = (byte)Owner.Useslots;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, (byte)useSlots);
                         break;
                     case InventoryType.SETUP:
-                        b = (byte)Owner.Setupslots;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, (byte)setupSlots);
                         break;
                     case InventoryType.ETC:
-                        b = (byte)Owner.Etcslots;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, (byte)etcSlots);
                         break;
                     case InventoryType.CASH:
-                        b = DefaultConfigs.BagCashSize;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, DefaultConfigs.BagCashSize);
                         break;
                     case InventoryType.CANHOLD:
                         _dataSource[InventoryType.CANHOLD.ordinal()] = new InventoryProof(owner);
@@ -55,8 +50,7 @@ namespace Application.Core.Game.Players
                         _dataSource[InventoryType.EQUIPPED.ordinal()] = new InventoryEquipped(owner);
                         break;
                     default:
-                        b = byte.MaxValue;
-                        _dataSource[i] = new Inventory(owner, type, b);
+                        _dataSource[i] = new Inventory(owner, type, 0);
                         break;
                 }
             }
@@ -250,82 +244,9 @@ namespace Application.Core.Game.Players
             {
                 if (Next <= now)
                 {
-                    bool deletedCoupon = false;
-
-                    List<Item> toberemove = new();
                     foreach (var inv in GetValues())
                     {
-                        foreach (Item item in inv.list())
-                        {
-                            long expiration = item.getExpiration();
-
-                            if (expiration != -1 && (expiration < now))
-                            {
-                                if (item is Pet pet)
-                                {
-                                    pet.MapPet?.Recall(2);
-
-                                    if (pet.SourceTemplate.NoRevive)
-                                    {
-                                        Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                                        toberemove.Add(item);
-                                    }
-                                    else
-                                    {
-                                        item.setExpiration(-1);
-                                        Owner.forceUpdateItem(item);
-                                    }
-                                }
-                                else
-                                {
-                                    Owner.sendPacket(PacketCreator.itemExpired(item.getItemId()));
-                                    toberemove.Add(item);
-                                    if (ItemConstants.isRateCoupon(item.getItemId()))
-                                    {
-                                        deletedCoupon = true;
-                                    }
-                                }
-
-                                if ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)
-                                {
-                                    short lockObj = item.getFlag();
-                                    lockObj &= ~(ItemConstants.LOCK);
-                                    item.setFlag(lockObj); //Probably need a check, else people can make expiring items into permanent items...
-                                    item.setExpiration(-1);
-                                    Owner.forceUpdateItem(item);   //TEST :3
-                                }
-                            }
-                        }
-
-                        if (toberemove.Count > 0)
-                        {
-                            foreach (Item item in toberemove)
-                            {
-                                TryRemoveFromSlot(inv.getType(), item.getPosition(), item.getQuantity(), true);
-                            }
-
-                            ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                            foreach (Item item in toberemove)
-                            {
-                                var replace = ii.GetReplaceItemTemplate(item.getItemId());
-                                if (replace != null)
-                                {
-                                    if (!string.IsNullOrEmpty(replace.Message))
-                                    {
-                                        Owner.Notice(replace.Message);
-                                    }
-                                    Owner.GainItem(replace.ItemId, 1,
-                                        expires: replace.Period.GetExpirationFromMinutes());
-                                }
-                            }
-
-                            toberemove.Clear();
-                        }
-
-                        if (deletedCoupon)
-                        {
-                            Owner.updateCouponRates();
-                        }
+                        inv.OnTick(now);
                     }
 
                     Next = now + Period;

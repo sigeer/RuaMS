@@ -6092,12 +6092,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet BonusExpRateChanged(int itemId, int hours, int rate)
+    public static Packet BonusExpRateChanged(int slot, int hours, int rate)
     {
         OutPacket p = OutPacket.create(SendOpcode.BONUS_EXP_CHANGED);
-        p.writeInt(itemId);
+        p.writeInt(slot);
         p.writeInt(hours);
-        p.writeInt(hours);
+        p.writeInt(rate);
         return p;
     }
 

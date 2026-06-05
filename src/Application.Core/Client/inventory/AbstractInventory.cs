@@ -1,8 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Items;
+using Application.Templates;
+using Application.Templates.Item.Cash;
 using client.inventory;
+using Humanizer;
 using System.Collections;
 using System.Diagnostics;
+using tools;
 using ZLinq;
 
 namespace Application.Core.Client.inventory
@@ -12,21 +18,25 @@ namespace Application.Core.Client.inventory
         public Player Owner { get; }
         public InventoryType Type { get; }
 
+        protected readonly SortedSet<TimedItemWrapper> _timedItems;
+
         protected AbstractInventory(Player owner, InventoryType type)
         {
             Owner = owner;
             this.Type = type;
+
+            _timedItems = new();
         }
 
         public bool isExtendableInventory()
         {
             // not sure about cash, basing this on the previous one.
-            return !(Type.Equals(InventoryType.UNDEFINED) || Type.Equals(InventoryType.EQUIPPED) || Type.Equals(InventoryType.CASH));
+            return Type != InventoryType.UNDEFINED && Type != InventoryType.EQUIPPED && Type != InventoryType.CASH;
         }
 
         public bool isEquipInventory()
         {
-            return Type.Equals(InventoryType.EQUIP) || Type.Equals(InventoryType.EQUIPPED);
+            return Type == InventoryType.EQUIP || Type == InventoryType.EQUIPPED;
         }
         public InventoryType getType() => Type;
 
@@ -41,7 +51,7 @@ namespace Application.Core.Client.inventory
 
 
         #region Query
-        protected abstract IEnumerable<Item> ListExsitedEnumerable();
+        public abstract IEnumerable<Item> ListExsitedEnumerable();
         /// <summary>
         /// 加载所有物品（不含插槽信息）
         /// </summary>
@@ -91,7 +101,155 @@ namespace Application.Core.Client.inventory
 
 
         #region Management
-        public abstract void PutItem(short position, Item item);
+        List<Item> _tickToRemove = [];
+        List<Item> _tickToUpdate = [];
+        List<IInventoryOperationCommand> _tickToSync = [];
+        List<ReplaceItemTemplate> _tickToReplace = [];
+        public void OnTick(long now)
+        {
+            if (_timedItems.Count == 0)
+            {
+                return;
+            }
+
+            _tickToRemove.Clear();
+            _tickToUpdate.Clear();
+            _tickToSync.Clear();
+            _tickToReplace.Clear();
+
+            foreach (var p in _timedItems)
+            {
+                if (p.TickTime > now)
+                {
+                    // 未到时间不需要执行
+                    break;
+                }
+
+                var item = p.Item;
+                long expiration = item.getExpiration();
+
+                if (expiration != -1 && (expiration < now))
+                {
+                    if ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)
+                    {
+                        short lockObj = item.getFlag();
+                        lockObj &= ~(ItemConstants.LOCK);
+                        item.setFlag(lockObj); //Probably need a check, else people can make expiring items into permanent items...
+                        item.setExpiration(-1);
+
+                        _tickToUpdate.Add(item);
+                    }
+
+                    else if (item is Pet pet)
+                    {
+                        pet.MapPet?.Recall(2);
+
+                        if (pet.SourceTemplate.NoRevive)
+                        {
+                            _tickToRemove.Add(item);
+                        }
+                        else
+                        {
+                            item.setExpiration(-1);
+                            _tickToUpdate.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        _tickToRemove.Add(item);
+                    }
+
+
+                }
+
+                OnTickItem(now, item, _tickToUpdate, _tickToRemove);
+            }
+
+            foreach (var item in _tickToUpdate)
+            {
+                _tickToSync.Add(new InventoryAdd(item.getInventoryType(), item, item.getPosition()));
+            }
+
+
+            foreach (var item in _tickToRemove)
+            {
+                var op = removeSlot(item.getPosition());
+                if (op != null)
+                {
+                    _tickToSync.Add(op);
+
+                    if (item.SourceTemplate.Cash)
+                    {
+                        Owner.sendPacket(MessagePacket.CashItemExpireMessage(item.getItemId()));
+                    }
+
+                    if (item.SourceTemplate.ReplaceItem != null)
+                    {
+                        _tickToReplace.Add(item.SourceTemplate.ReplaceItem);
+                    }
+                }
+            }
+
+            var toRemoveGeneral = _tickToRemove.Where(x => !x.SourceTemplate.Cash).Select(x => x.getItemId()).ToArray();
+            if (toRemoveGeneral.Length > 0)
+            {
+                Owner.sendPacket(MessagePacket.GeneralItemExpireMessage(toRemoveGeneral));
+            }
+
+            Owner.SyncClientInventory(_tickToSync);
+
+            foreach (var item in _tickToReplace)
+            {
+                if (item != null)
+                {
+                    if (!string.IsNullOrEmpty(item.Message))
+                    {
+                        Owner.Notice(item.Message);
+                    }
+                    Owner.GainItem(item.ItemId, 1,
+                        expires: item.Period.GetExpirationFromMinutes());
+                }
+            }
+
+            if (getType() == InventoryType.CASH)
+            {
+                Owner.CalculateCoupon(now);
+            }
+        }
+
+        protected virtual void OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove)
+        {
+
+        }
+
+        /// <summary>
+        /// 加入背包
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="item"></param>
+        /// <param name="fromLogin"></param>
+        protected virtual void OnItemEnter(short position, Item item, bool fromLogin)
+        {
+            if (item.getExpiration() != -1)
+            {
+                _timedItems.Add(new TimedItemWrapper(item, item.getExpiration()));
+            }
+            else if (item.SourceTemplate is CouponItemTemplate c && c.TimeRangeF.Length > 0)
+            {
+                // tick > now的不会触发
+                _timedItems.Add(new TimedItemWrapper(item, 0));
+            }
+        }
+        /// <summary>
+        /// 从背包移除
+        /// </summary>
+        /// <param name="item"></param>
+        protected virtual void OnItemLeave(Item item)
+        {
+            _timedItems.RemoveWhere(x => x.Item == item);
+        }
+
+        public abstract void PutItem(short position, Item item, bool fromLogin);
 
         public abstract void SwapFromMove(short sSlot, short dSlot);
 

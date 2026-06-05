@@ -119,9 +119,6 @@ namespace Application.Core.Channel
         public float WorldFishingRate { get; private set; }
         public string WorldServerMessage { get; private set; }
 
-        public Dictionary<int, int> CouponRates { get; set; } = new(30);
-        public List<int> ActiveCoupons { get; set; } = new();
-
         #endregion
         public List<AbstractChannelModule> Modules { get; private set; }
 
@@ -233,14 +230,8 @@ namespace Application.Core.Channel
             currentTime.set(forceTime);
         }
         #endregion
-        public void UpdateCouponConfig(Config.CouponConfig config)
-        {
-            ActiveCoupons = config.ActiveCoupons.ToList();
-            CouponRates = config.CouponRates.ToDictionary();
-        }
 
-        public List<int> GetActiveCoupons() => ActiveCoupons;
-        public Dictionary<int, int> GetCouponRates() => CouponRates;
+
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         public async Task Shutdown(int delaySeconds = -1)

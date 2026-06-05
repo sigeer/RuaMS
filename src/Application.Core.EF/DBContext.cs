@@ -108,8 +108,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<CdkItemEntity> CdkItems { get; set; }
     public virtual DbSet<CdkRecordEntity> CdkRecords { get; set; }
 
-    public virtual DbSet<Nxcoupon> Nxcoupons { get; set; }
-
     public virtual DbSet<PetEntity> Pets { get; set; }
 
     public virtual DbSet<PetIgnoreEntity> Petignores { get; set; }
@@ -1275,30 +1273,6 @@ public partial class DBContext : DbContext
                 .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
         });
 
-        modelBuilder.Entity<Nxcoupon>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("nxcoupons");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Activeday)
-                .HasColumnType("int")
-                .HasColumnName("activeday");
-            entity.Property(e => e.CouponId)
-                .HasColumnType("int")
-                .HasColumnName("couponid");
-            entity.Property(e => e.Endhour)
-                .HasColumnType("int")
-                .HasColumnName("endhour");
-            entity.Property(e => e.Rate)
-                .HasColumnType("int")
-                .HasColumnName("rate");
-            entity.Property(e => e.Starthour)
-                .HasColumnType("int")
-                .HasColumnName("starthour");
-        });
 
         modelBuilder.Entity<PetEntity>(entity =>
         {

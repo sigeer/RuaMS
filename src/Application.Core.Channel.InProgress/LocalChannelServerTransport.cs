@@ -104,7 +104,6 @@ namespace Application.Core.Channel.InProgress
                 await channelServer.HandleServerRegistered(new RegisterServerResult
                 {
                     StartChannel = channelId,
-                    Coupon = _server.CouponManager.GetConfig(),
                     Config = _server.GetWorldConfig()
                 }, cancellationToken);
             }
@@ -273,11 +272,6 @@ namespace Application.Core.Channel.InProgress
         public RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount)
         {
             return _rankService.LoadPlayerRanking(topCount);
-        }
-
-        public async Task SendToggleCoupon(int v)
-        {
-            await _server.CouponManager.ToggleCoupon(v);
         }
 
         public int[][] GetMostSellerCashItems()

@@ -55,7 +55,6 @@ namespace Application.Core.Login.Datas
                 await InitializeDataBase(dbContext, cancellationToken);
 
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-                await _masterServer.CouponManager.Initialize(dbContext);
                 foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
                 {
                     await item.InitializeAsync(dbContext);

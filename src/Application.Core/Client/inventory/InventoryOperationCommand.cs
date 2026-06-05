@@ -9,7 +9,7 @@ namespace Application.Core.Client.inventory
         short CurrentPosition { get; }
     }
 
-    public class InventoryAdd : IInventoryOperationCommand
+    public record InventoryAdd : IInventoryOperationCommand
     {
         public InventoryAdd(InventoryType inventoryType, Item item, short targetPosition)
         {
@@ -26,7 +26,7 @@ namespace Application.Core.Client.inventory
         public short CurrentPosition { get; }
     }
 
-    public class InventoryUpdateQuantity : IInventoryOperationCommand
+    public record InventoryUpdateQuantity : IInventoryOperationCommand
     {
         public InventoryUpdateQuantity(InventoryType inventoryType, short targetPosition, short newQuantity)
         {
@@ -43,7 +43,7 @@ namespace Application.Core.Client.inventory
         public short NewQuantity { get; }
     }
 
-    public class InventoryMove : IInventoryOperationCommand
+    public record InventoryMove : IInventoryOperationCommand
     {
         public InventoryMove(InventoryType inventoryType, short targetPosition, short newPosition)
         {
@@ -60,7 +60,7 @@ namespace Application.Core.Client.inventory
         public short NewPosition { get; }
     }
 
-    public class InventoryRemove : IInventoryOperationCommand
+    public record InventoryRemove : IInventoryOperationCommand
     {
         public InventoryRemove(InventoryType inventoryType, short targetPosition)
         {
@@ -75,7 +75,7 @@ namespace Application.Core.Client.inventory
         public short CurrentPosition { get; }
     }
 
-    public class InventoryUpdateEquipExp : IInventoryOperationCommand
+    public record InventoryUpdateEquipExp : IInventoryOperationCommand
     {
         public InventoryUpdateEquipExp(short targetPosition, int newExp)
         {
