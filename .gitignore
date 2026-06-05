@@ -357,3 +357,9 @@ healthchecksdb
 /src/Application.Host/database.db
 /src/Application.Host/database.db-wal
 /src/Application.Host/database.db-shm
+
+# gemini-cli settings
+.gemini/
+
+# GitHub App credentials
+gha-creds-*.json
