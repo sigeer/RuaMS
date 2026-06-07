@@ -42,6 +42,11 @@ namespace ServiceTest.Infrastructure.WZ
                         && x.Contains(new DateTime(2026, 6, 2, 8, 0, 0))
                         && !x.Contains(new DateTime(2026, 6, 2, 11, 0, 1))));
 
+            var couponItem2 = provider.GetRequiredItem<CouponItemTemplate>(05211046)!;
+            Assert.That(couponItem2.Rate, Is.EqualTo(2));
+            Assert.That(couponItem2.TimeRangeF, Has.Some.Matches<WeeklyTimeRange>(x =>
+                        x.Contains(DateTime.Now)));
+
             var extendItem = provider.GetRequiredItem<ExtendItemTimeItemTemplate>(05500002)!;
             Assert.That(extendItem.AddTime, Is.EqualTo(1728000));
             Assert.That(extendItem.MaxDays, Is.EqualTo(30));

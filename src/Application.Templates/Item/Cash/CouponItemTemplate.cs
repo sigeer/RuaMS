@@ -33,16 +33,16 @@ namespace Application.Templates.Item.Cash
         public DayOfWeek DayOfWeek { get; set; }
         public TimeOnly StartTime { get; set; }   // 如 06:00
         public TimeOnly EndTime { get; set; }     // 如 10:00
-
+        bool crossesMidnight { get; set; }
         public bool Contains(DateTime moment)
         {
             // 先检查星期几是否匹配
             if (moment.DayOfWeek != DayOfWeek)
                 return false;
 
-            // 再检查时间部分是否在 [StartTime, EndTime) 区间
+            // 再检查时间部分是否在 [StartTime, EndTime] 区间
             var time = TimeOnly.FromDateTime(moment);
-            return time >= StartTime && time < EndTime;
+            return time >= StartTime && time <= EndTime;
         }
 
         public static WeeklyTimeRange Parse(string input)
@@ -73,7 +73,16 @@ namespace Application.Templates.Item.Cash
 
             // 创建 TimeOnly（默认分钟、秒为0）
             var startTime = new TimeOnly(startHour, 0);
-            var endTime = new TimeOnly(endHour, 0);
+            TimeOnly endTime;
+            if (endHour == 24)
+            {
+                endTime = new TimeOnly(23, 59, 59);
+            }
+            else
+            {
+                // 结束时间：指定小时的 59 分 59 秒，确保覆盖整个小时区间
+                endTime = new TimeOnly(endHour - 1, 59, 59);
+            }
 
             return new WeeklyTimeRange
             {
