@@ -33,7 +33,6 @@ namespace Application.Templates.Item.Cash
         public DayOfWeek DayOfWeek { get; set; }
         public TimeOnly StartTime { get; set; }   // 如 06:00
         public TimeOnly EndTime { get; set; }     // 如 10:00
-        bool crossesMidnight { get; set; }
         public bool Contains(DateTime moment)
         {
             // 先检查星期几是否匹配
