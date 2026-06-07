@@ -29,4 +29,4 @@ jobs:
           max_tokens: 10000
           MAX_PATCH_LENGTH: 10000 # 单个 diff 超过此长度将跳过评审
           INCLUDE_PATTERNS: "*.cs"
-          IGNORE_PATTERNS: /Migrations/**/*.cs
+          IGNORE_PATTERNS: "**/Migrations/**/*.cs"
