@@ -106,23 +106,20 @@ namespace Application.Core.Channel.Services
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
+
+            player.PendantOfSpiritEquippedTime = o.Character.PendantOfSpiritEquippedTime;
             // 重新登录时，只计算当日的在线时长
             if (o.LoginInfo.IsNewCommer)
             {
-                var date = DateTimeOffset.FromUnixTimeMilliseconds(o.Character.PendantOfSpiritEquippedTime);
-                var now = _server.GetCurrentTimeDateTimeOffset();
-                if (date.Date != now.Date)
+                if (o.Character.PendantOfSpiritEquippedTime > 0)
                 {
-                    player.PendantOfSpiritEquippedTime = new DateTimeOffset(now.Date, now.Offset).ToUnixTimeMilliseconds();
+                    var date = DateTimeOffset.FromUnixTimeMilliseconds(o.Character.PendantOfSpiritEquippedTime);
+                    var now = _server.GetCurrentTimeDateTimeOffset();
+                    if (date.Date != now.Date)
+                    {
+                        player.PendantOfSpiritEquippedTime = new DateTimeOffset(now.Date).ToUnixTimeMilliseconds();
+                    }
                 }
-                else
-                {
-                    player.PendantOfSpiritEquippedTime = o.Character.PendantOfSpiritEquippedTime;
-                }
-            }
-            else
-            {
-                player.PendantOfSpiritEquippedTime = o.Character.PendantOfSpiritEquippedTime;
             }
 
             int sandboxCheck = 0x0;
