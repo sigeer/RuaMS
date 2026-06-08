@@ -49,7 +49,7 @@ public class InventoryProof : Inventory
         Array.Fill(inventory, null);
     }
 
-    protected override void OnItemEnter(short position, Item item)
+    protected override void OnItemEnter(short position, Item item, bool isLogin)
     {
         
     }

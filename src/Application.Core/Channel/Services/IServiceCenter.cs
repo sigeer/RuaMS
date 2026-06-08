@@ -61,7 +61,5 @@ namespace Application.Core.Channel.Services
         bool CheckCharacterName(string name);
         void SendReloadEvents(Player chr);
         IPEndPoint GetChannelEndPoint(int channel);
-        List<int> GetActiveCoupons();
-        Dictionary<int, int> GetCouponRates();
     }
 }

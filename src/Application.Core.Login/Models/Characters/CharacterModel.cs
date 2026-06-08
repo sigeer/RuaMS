@@ -152,5 +152,6 @@ namespace Application.Core.Login.Models
         public long Jailexpire { get; set; }
         public int HpAlert { get; set; } = DefaultConfigs.HPAlert;
         public int MpAlert { get; set; } = DefaultConfigs.MPAlert;
+        public long PendantOfSpiritEquippedTime { get; set; }
     }
 }

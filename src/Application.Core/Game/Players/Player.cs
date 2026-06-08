@@ -1,4 +1,3 @@
-using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
@@ -14,7 +13,6 @@ using server;
 using server.events;
 using server.life;
 using server.maps;
-using System.Security.Cryptography;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -37,24 +35,25 @@ namespace Application.Core.Game.Players
         public List<FameLogObject> FameLogs { get; set; }
 
 
-        public Player(IChannelClient client, IMap map, Portal portal, SyncProto.PlayerGetterDto o) :base(map, portal.getPosition(), 0)
+        public Player(IChannelClient client, IMap map, Portal portal, SyncProto.PlayerGetterDto o) : base(map, portal.getPosition(), 0)
         {
             Client = client;
 
-            Equipslots = o.Character.Equipslots;
-            Useslots = o.Character.Useslots;
-            Setupslots = o.Character.Setupslots;
-            Etcslots = o.Character.Etcslots;
+            HP = o.Character.Hp;
+            MaxHP = o.Character.Maxhp;
+            MP = o.Character.Mp;
+            MaxMP = o.Character.Maxmp;
+            RemainingSp = o.Character.Sp.Split(",").Select(int.Parse).ToArray();
 
             AutobanManager = new AutobanManager(this);
             Skills = new(this);
             SkillMacros = new SkillMacro[5];
 
-            MesoValue = new AtomicInteger();
-            ExpValue = new AtomicInteger();
-            GachaExpValue = new AtomicInteger();
+            MesoValue = new AtomicInteger(o.Character.Meso);
+            ExpValue = new AtomicInteger(o.Character.Exp);
+            GachaExpValue = new AtomicInteger(o.Character.Gachaexp);
 
-            BuddyList = new BuddyList(this);
+            BuddyList = new BuddyList(this, o.Character.BuddyCapacity);
 
             KeyMap = new(this);
 
@@ -63,7 +62,7 @@ namespace Application.Core.Game.Players
             Events = new Dictionary<string, Events>();
             SavedLocations = new(this);
 
-            Bag = new PlayerBag(this);
+            Bag = new PlayerBag(this, o.Character.Equipslots, o.Character.Useslots, o.Character.Setupslots, o.Character.Etcslots);
             Monsterbook = new MonsterBook(this);
             CashShopModel = new CashShop(this);
 
@@ -76,11 +75,6 @@ namespace Application.Core.Game.Players
 
                 UpdateActualRate();
             }
-        }
-
-        public void Reload()
-        {
-            BuddyList.Capacity = BuddyCapacity;
         }
 
         public override int GetSourceId()

@@ -10,10 +10,10 @@ public class BuddyList
     private Dictionary<int, BuddyCharacter> buddies = new();
     public int Count => buddies.Count;
 
-    public BuddyList(Player owner)
+    public BuddyList(Player owner, int capactity)
     {
         Owner = owner;
-        Capacity = Owner.BuddyCapacity;
+        Capacity = capactity;
     }
 
     public bool Contains(int characterId)

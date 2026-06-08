@@ -267,11 +267,6 @@ namespace Application.Core.ServerTransports
             return _gameClient.LoadCharacterRank(new LoadCharacterRankRequest { Count = topCount });
         }
 
-        public async Task SendToggleCoupon(int itemId)
-        {
-            await InternalSession.SendAsync(ChannelSendCode.ToggleCoupon, new ToggelCouponRequest { Id = itemId });
-        }
-
         public int[][] GetMostSellerCashItems()
         {
             return _cashClient.LoadMosterSellItems(new Empty()).Tabs.Select(x => x.ItemIdList.ToArray()).ToArray();

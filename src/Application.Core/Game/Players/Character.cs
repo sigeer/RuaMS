@@ -39,6 +39,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Server;
 using Application.Shared.Events;
 using Application.Shared.Login;
+using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using client;
 using client.autoban;
@@ -47,7 +48,6 @@ using client.inventory.manipulator;
 using client.keybind;
 using constants.game;
 using net.server.guild;
-using OpenTelemetry.Resources;
 using scripting;
 using server;
 using server.events;
@@ -57,9 +57,6 @@ using server.partyquest;
 using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Cryptography;
 using tools;
 using static client.inventory.Equip;
 
@@ -88,7 +85,7 @@ public partial class Player
     private int mesosTraded = 0;
     private int possibleReports = 10;
     private int dojoEnergy;
-    private float expCoupon = 1, mesoCoupon = 1, dropCoupon = 1;
+    private float expCoupon = 1, dropCoupon = 1;
     private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
@@ -167,7 +164,8 @@ public partial class Player
 
     private ScheduledFuture? extraRecoveryTask = null;
 
-    private ScheduledFuture? pendantOfSpirit = null; //1122017
+    public long PendantOfSpiritEquippedTime { get; set; } = -1;
+    public byte PendantExp { get; private set; } = 0;
 
     /// <summary>
     /// PetId -> ItemId
@@ -184,7 +182,7 @@ public partial class Player
     private bool isbanned = false;
     private bool blockCashShop = false;
     private bool allowExpGain = true;
-    private byte pendantExp = 0, lastmobcount = 0;
+    private byte lastmobcount = 0;
 
     public Dictionary<string, Events> Events { get; set; }
 
@@ -607,7 +605,7 @@ public partial class Player
                 if (InventoryManipulator.isSandboxItem(item))
                 {
                     InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                    dropMessage(5, "[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
+                    Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                 }
             }
         }
@@ -1284,7 +1282,7 @@ public partial class Player
 
     public void Debug(int type, string message)
     {
-        if (YamlConfig.config.server.USE_DEBUG)
+        if (isGM())
         {
             TypedMessage(type, message);
             Log.Debug(message);
@@ -1717,7 +1715,7 @@ public partial class Player
 
     public float getCouponMesoRate()
     {
-        return mesoCoupon;
+        return dropCoupon;
     }
 
     public float getRawMesoRate()
@@ -2465,12 +2463,12 @@ public partial class Player
                         gainSlots(i, 4, true);
                     }
 
-                    this.yellowMessage("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
+                    Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
                 }
             }
             if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
             {
-                this.yellowMessage("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
+                Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
             }
         }
 
@@ -2506,7 +2504,7 @@ public partial class Player
 
     void UpdateActualMesoRate()
     {
-        ActualMesoRate = mesoRateByLevel * getChannelServer().WorldMesoRate * mesoCoupon;
+        ActualMesoRate = mesoRateByLevel * getChannelServer().WorldMesoRate * dropCoupon;
     }
 
     void UpdateActualDropRate()
@@ -2529,177 +2527,14 @@ public partial class Player
         ActualQuestMesoRate = getChannelServer().WorldQuestRate;
     }
 
-    private void setCouponRates()
+    public List<int> getActiveCoupons()
     {
-        List<int> couponEffects;
-
-        var cashItems = this.getInventory(InventoryType.CASH).list();
-
-        setActiveCoupons(cashItems);
-        couponEffects = activateCouponsEffects();
-
-        foreach (int couponId in couponEffects)
-        {
-            commitBuffCoupon(couponId);
-        }
-    }
-
-
-    public void updateCouponRates()
-    {
-        var cashInv = this.getInventory(InventoryType.CASH);
-        if (cashInv == null)
-        {
-            return;
-        }
-
-        revertCouponsEffects();
-        setCouponRates();
-    }
-
-    /// <summary>
-    /// 移除倍率buff并重算
-    /// </summary>
-    private void revertCouponsEffects()
-    {
-        dispelBuffCoupons();
-
-        this.expCoupon = 1;
-        this.dropCoupon = 1;
-        this.mesoCoupon = 1;
-        UpdateActualExpRate();
-        UpdateActualMesoRate();
-        UpdateActualDropRate();
-    }
-
-    private List<int> activateCouponsEffects()
-    {
-        List<int> toCommitEffect = new();
-
-        if (YamlConfig.config.server.USE_STACK_COUPON_RATES)
-        {
-            var stackExpCoupon = 0;
-            var stackDropCoupon = 0;
-
-            foreach (var coupon in activeCoupons)
-            {
-                int couponId = coupon.Key;
-                int couponQty = coupon.Value.Count;
-
-                toCommitEffect.Add(couponId);
-
-                if (ItemConstants.isExpCoupon(couponId))
-                {
-                    stackExpCoupon += coupon.Value.Count * coupon.Value.Rate;
-                }
-                else
-                {
-                    stackDropCoupon += coupon.Value.Count * coupon.Value.Rate;
-                }
-            }
-            expCoupon = stackExpCoupon == 0 ? 1 : stackExpCoupon;
-            mesoCoupon = stackDropCoupon == 0 ? 1 : stackDropCoupon;
-            dropCoupon = mesoCoupon;
-        }
-        else
-        {
-            int maxExpRate = 1, maxDropRate = 1, maxExpCouponId = -1, maxDropCouponId = -1;
-
-            foreach (var coupon in activeCoupons)
-            {
-                int couponId = coupon.Key;
-
-                if (ItemConstants.isExpCoupon(couponId))
-                {
-                    if (maxExpRate < coupon.Value.Rate)
-                    {
-                        maxExpCouponId = couponId;
-                        maxExpRate = coupon.Value.Rate;
-                    }
-                }
-                else
-                {
-                    if (maxDropRate < coupon.Value.Rate)
-                    {
-                        maxDropCouponId = couponId;
-                        maxDropRate = coupon.Value.Rate;
-                    }
-                }
-            }
-
-            if (maxExpCouponId > -1)
-            {
-                toCommitEffect.Add(maxExpCouponId);
-            }
-            if (maxDropCouponId > -1)
-            {
-                toCommitEffect.Add(maxDropCouponId);
-            }
-
-            this.expCoupon = maxExpRate;
-            this.dropCoupon = maxDropRate;
-            this.mesoCoupon = maxDropRate;
-        }
-        UpdateActualExpRate();
-        UpdateActualMesoRate();
-        UpdateActualDropRate();
-        return toCommitEffect;
-    }
-
-    private void setActiveCoupons(ICollection<Item> cashItems)
-    {
-        activeCoupons.Clear();
-
-        Dictionary<int, int> coupons = Client.CurrentServer.NodeService.GetCouponRates();
-        List<int> active = Client.CurrentServer.NodeService.GetActiveCoupons();
-
-        foreach (Item it in cashItems)
-        {
-            if (ItemConstants.isRateCoupon(it.getItemId()) && active.Contains(it.getItemId()))
-            {
-                if (activeCoupons.TryGetValue(it.getItemId(), out var d))
-                {
-                    d.Count++;
-                }
-                else
-                {
-                    activeCoupons.AddOrUpdate(it.getItemId(), new CouponBuffEntry(1, coupons.GetValueOrDefault(it.getItemId())));
-                }
-            }
-        }
-    }
-
-    private void commitBuffCoupon(int couponid)
-    {
-        if (!isLoggedin() || getCashShop().isOpened())
-        {
-            return;
-        }
-
-        ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        var mse = ii.getItemEffect(couponid);
-        mse?.applyTo(this);
-    }
-
-    /// <summary>
-    /// 移除倍率道具buff
-    /// </summary>
-    private void dispelBuffCoupons()
-    {
-        List<BuffStatValueHolder> allBuffs = getAllStatups();
-
-        foreach (BuffStatValueHolder mbsvh in allBuffs)
-        {
-            if (ItemConstants.isRateCoupon(mbsvh.Effect.getSourceId()))
-            {
-                cancelEffect(mbsvh.Effect, false);
-            }
-        }
-    }
-
-    public IReadOnlyCollection<int> getActiveCoupons()
-    {
-        return new ReadOnlyCollection<int>(activeCoupons.Keys.ToList());
+        var now = Client.CurrentServer.Node.getCurrentTime();
+        var nowDt = DateTimeOffset.FromUnixTimeMilliseconds(now).ToLocalTime().DateTime;
+        return GetInventory(InventoryType.CASH).ListExsitedEnumerable().Where(item =>
+                        item.SourceTemplate is CouponItemTemplate couponItemTemplate
+                        && (item.getExpiration() == -1 ? couponItemTemplate.TimeRangeF.Any(x => x.Contains(nowDt)) : item.getExpiration() > now))
+                    .Select(x => x.getItemId()).ToList();
     }
 
     public void addPlayerRing(Ring? ring)
@@ -3502,7 +3337,7 @@ public partial class Player
             }
         }
 
-        dropMessage(6, "EQUIPMENT MERGE operation results:");
+        LightBlue("EQUIPMENT MERGE operation results:");
         foreach (var eqpUpg in equipUpgrades)
         {
             List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
@@ -3517,7 +3352,7 @@ public partial class Player
                 this.forceUpdateItem(eqp);
 
                 showStr += upgdStr;
-                dropMessage(6, showStr);
+                LightBlue(showStr);
             }
         }
 
@@ -3796,49 +3631,6 @@ public partial class Player
         return AutobanManager;
     }
 
-    public void equippedItem(Equip equip, bool notLogin = false)
-    {
-        int itemid = equip.getItemId();
-
-        if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
-        {
-            this.equipPendantOfSpirit();
-        }
-
-        getRingById(equip.getRingId())?.equip();
-        //if (equip.getPosition() == EquipSlot.Medal)
-        //{
-        //    saveCharToDB(SyncCharacterTrigger.Unknown);
-        //}
-
-        if (notLogin)
-        {
-            // 登录后进入地图时会广播
-            var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
-            if (petIndex != -1)
-            {
-                getPet(petIndex)?.BroadcastNameChanged();
-            }
-        }
-    }
-
-    public void unequippedItem(Equip equip)
-    {
-        int itemid = equip.getItemId();
-
-        if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
-        {
-            this.unequipPendantOfSpirit();
-        }
-
-        getRingById(equip.getRingId())?.unequip();
-
-        var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
-        if (petIndex != -1)
-        {
-            getPet(petIndex)?.BroadcastNameChanged();
-        }
-    }
 
     public bool isEquippedMesoMagnet(int petIndex)
     {
@@ -3859,41 +3651,55 @@ public partial class Player
         return GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[petIndex].ItemIgnore);
     }
 
-    private void equipPendantOfSpirit()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="now"></param>
+    public void CalculateSpiritPendant(long now, bool active)
     {
-        if (pendantOfSpirit == null)
+        if (!active)
         {
-            pendantOfSpirit = Client.CurrentServer.TimerManager.register(() =>
-            {
-                MapModel.Send(m =>
-                {
-                    IncreasePendantExpRate();
-                });
-            }, TimeSpan.FromHours(1)); //1 hour
-        }
-    }
-
-    public void IncreasePendantExpRate()
-    {
-        if (pendantExp < 3)
-        {
-            pendantExp++;
-            message("Pendant of the Spirit has been equipped for " + pendantExp + " hour(s), you will now receive " + pendantExp + "0% bonus exp.");
+            PendantOfSpiritEquippedTime = -1;
+            PendantExp = 0;
         }
         else
         {
-            pendantOfSpirit?.cancel(false);
+            if (PendantOfSpiritEquippedTime <= 0 || PendantOfSpiritEquippedTime > now)
+                PendantOfSpiritEquippedTime = now;
+
+            if (PendantOfSpiritEquippedTime > 0)
+            {
+                var hasEquippedLength = TimeSpan.FromMilliseconds(now - PendantOfSpiritEquippedTime);
+                var bonusExp = (byte)Math.Min(hasEquippedLength.Hours + 1, 3); // 10% ~ 30%
+                if (PendantExp != bonusExp)
+                {
+                    PendantExp = bonusExp;
+                    sendPacket(PacketCreator.BonusExpRateChanged(-EquipSlot.Pendant, hasEquippedLength.Hours, PendantExp * 10));
+                }
+            }
         }
     }
 
-    private void unequipPendantOfSpirit()
+    public void CalculateCoupon(long now)
     {
-        if (pendantOfSpirit != null)
+        var nowDt = DateTimeOffset.FromUnixTimeMilliseconds(now).ToLocalTime().DateTime;
+        var allActiveCoupons = GetInventory(InventoryType.CASH).ListExsitedEnumerable().Where(item =>
+                item.SourceTemplate is CouponItemTemplate couponItemTemplate
+                && couponItemTemplate.TimeRangeF.Any(x => x.Contains(nowDt)))
+            .Select(x => (x.SourceTemplate as CouponItemTemplate)!).ToList();
+
+        if (allActiveCoupons.Count > 0)
         {
-            pendantOfSpirit.cancel(false);
-            pendantOfSpirit = null;
+            expCoupon = Math.Max(allActiveCoupons.Where(x => x.IsExp).Max(x => x.Rate), 1);
+            dropCoupon = Math.Max(allActiveCoupons.Where(x => x.IsDrop).Max(x => x.Rate), 1);
+
+            // YamlConfig.config.server.USE_STACK_COUPON_RATES
+            // TODO: 叠加逻辑
+
+            UpdateActualExpRate();
+            UpdateActualMesoRate();
+            UpdateActualDropRate();
         }
-        pendantExp = 0;
     }
 
     private ICollection<Item> getUpgradeableEquipList()
@@ -3956,12 +3762,6 @@ public partial class Player
         // already done on unregisterChairBuff
         /* if (chairRecoveryTask != null) { chairRecoveryTask.cancel(true); }
         chairRecoveryTask = null; */
-
-        if (pendantOfSpirit != null)
-        {
-            pendantOfSpirit.cancel(true);
-        }
-        pendantOfSpirit = null;
 
         _pickerProcessor.Clear();
 

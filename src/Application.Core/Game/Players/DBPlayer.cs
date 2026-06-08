@@ -39,16 +39,9 @@ namespace Application.Core.Game.Players
 
         public int Ap { get; set; }
 
-        public string Sp { get; set; } = null!;
-
         public int Map { get; set; }
 
-        public int Spawnpoint { get; set; }
-
-
         public int Party { get; set; }
-
-        public int BuddyCapacity { get; set; } = DefaultConfigs.BuddyCapacity;
 
         public DateTimeOffset CreateDate { get; set; }
 
@@ -82,13 +75,7 @@ namespace Application.Core.Game.Players
 
         public int Matchcardties { get; set; }
 
-        public int Equipslots { get; set; }
 
-        public int Useslots { get; set; }
-
-        public int Setupslots { get; set; }
-
-        public int Etcslots { get; set; }
         [Obsolete("与FamilyCharacter功能重复")]
 
         public int FamilyId { get; set; } = -1;

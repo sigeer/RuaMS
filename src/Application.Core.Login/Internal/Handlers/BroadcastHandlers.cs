@@ -9,21 +9,6 @@ namespace Application.Core.Login.Internal.Handlers
 {
     internal class BroadcastHandlers
     {
-        internal class BroadcastCouponConfigUpdateHandler : InternalSessionMasterHandler<Config.ToggelCouponRequest>
-        {
-            public BroadcastCouponConfigUpdateHandler(MasterServer server) : base(server)
-            {
-            }
-
-            public override int MessageId => (int)ChannelSendCode.ToggleCoupon;
-
-            protected override void HandleMessage(ToggelCouponRequest message)
-            {
-                _ = _server.CouponManager.ToggleCoupon(message.Id);
-            }
-
-            protected override ToggelCouponRequest Parse(ByteString content) => ToggelCouponRequest.Parser.ParseFrom(content);
-        }
         internal class BroadcastWorldConfigUpdateHandler : InternalSessionMasterHandler<Config.WorldConfig>
         {
             public BroadcastWorldConfigUpdateHandler(MasterServer server) : base(server)

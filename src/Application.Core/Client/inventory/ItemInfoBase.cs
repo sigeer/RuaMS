@@ -1,7 +1,21 @@
 namespace client.inventory;
 
-public record ItemInfoBase(int Id, string Name);
+public readonly record struct InventoryItem(short Slot, Item Item);
 
-public record InventoryItem(short Slot, Item Item);
+public class TimedItemWrapper : IComparable<TimedItemWrapper>
+{
+    public Item Item { get; }
+    public long TickTime { get; }
 
-public record InventorySlot(short Slot, Item? Item);
+    public TimedItemWrapper(Item item, long tickTime)
+    {
+        Item = item;
+        TickTime = tickTime;
+    }
+
+    public int CompareTo(TimedItemWrapper? other)
+    {
+        if (other == null) return 1;
+        return TickTime.CompareTo(other.TickTime);
+    }
+}

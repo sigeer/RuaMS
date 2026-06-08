@@ -84,8 +84,6 @@ namespace Application.Core.Login
         #endregion
 
         #region Managers
-        readonly Lazy<CouponManager> _couponManager;
-        public CouponManager CouponManager => _couponManager.Value;
         readonly Lazy<AccountManager> _accountManager;
         public AccountManager AccountManager => _accountManager.Value;
 
@@ -193,7 +191,6 @@ namespace Application.Core.Login
 
             _buddyManager = new(() => ServiceProvider.GetRequiredService<BuddyManager>());
             _serverManager = new(() => ServiceProvider.GetRequiredService<ServerManager>());
-            _couponManager = new(() => ServiceProvider.GetRequiredService<CouponManager>());
             _characterManager = new(() => ServiceProvider.GetRequiredService<CharacterManager>());
             _accountManager = new(() => ServiceProvider.GetRequiredService<AccountManager>());
             _buffManager = new(() => ServiceProvider.GetRequiredService<BuffManager>());
@@ -545,7 +542,7 @@ namespace Application.Core.Login
             TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
             TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            await TimerManager.RegisterAsync(ServiceProvider.GetRequiredService<CouponTask>(), YamlConfig.config.server.COUPON_INTERVAL, (long)timeLeft.TotalMilliseconds);
+
             InvitationManager.Register(TimerManager);
             ServerManager.Register(TimerManager);
 

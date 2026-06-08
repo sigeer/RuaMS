@@ -41,15 +41,7 @@ namespace Application.Core.Mappers
             CreateMap<RankProto.RankCharacter, RankedCharacterInfo>().ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
 
             CreateMap<Dto.CharacterDto, Player>()
-                            .ForMember(x => x.MesoValue, opt => opt.MapFrom(x => new AtomicInteger(x.Meso)))
-                            .ForMember(x => x.ExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Exp)))
-                            .ForMember(x => x.GachaExpValue, opt => opt.MapFrom(x => new AtomicInteger(x.Gachaexp)))
                             .ForMember(x => x.RemainingSp, opt => opt.MapFrom(x => TranslateArray(x.Sp)))
-                            .ForMember(x => x.HP, opt => opt.MapFrom(x => x.Hp))
-                            .ForMember(x => x.MP, opt => opt.MapFrom(x => x.Mp))
-                            .ForMember(x => x.MaxHP, opt => opt.MapFrom(x => x.Maxhp))
-                            .ForMember(x => x.MaxMP, opt => opt.MapFrom(x => x.Maxmp))
-                            .AfterMap((before, after) => after.Reload())
                             .ReverseMap()
                             .ForMember(x => x.Sp, opt => opt.MapFrom(x => string.Join(",", x.RemainingSp)))
                             .ForMember(x => x.Meso, opt => opt.MapFrom(x => x.MesoValue.get()))

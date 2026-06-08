@@ -2212,39 +2212,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("namechanges", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Nxcoupon", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Activeday")
-                        .HasColumnType("int")
-                        .HasColumnName("activeday");
-
-                    b.Property<int>("CouponId")
-                        .HasColumnType("int")
-                        .HasColumnName("couponid");
-
-                    b.Property<int>("Endhour")
-                        .HasColumnType("int")
-                        .HasColumnName("endhour");
-
-                    b.Property<int>("Rate")
-                        .HasColumnType("int")
-                        .HasColumnName("rate");
-
-                    b.Property<int>("Starthour")
-                        .HasColumnType("int")
-                        .HasColumnName("starthour");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("nxcoupons", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.PetEntity", b =>
                 {
                     b.Property<long>("Petid")

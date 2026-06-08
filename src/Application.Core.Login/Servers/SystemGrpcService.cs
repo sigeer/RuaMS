@@ -63,7 +63,6 @@ namespace Application.Core.Login.Servers
                             await serverNode.SendMessage(msg.EventId, new RegisterServerResult
                             {
                                 StartChannel = channelId,
-                                Coupon = _server.CouponManager.GetConfig(),
                                 Config = _server.GetWorldConfig()
                             });
                         }

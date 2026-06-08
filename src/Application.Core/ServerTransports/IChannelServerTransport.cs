@@ -99,7 +99,6 @@ namespace Application.Core.ServerTransports
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
         RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
-        Task SendToggleCoupon(int v);
         int[][] GetMostSellerCashItems();
         ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
         ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
