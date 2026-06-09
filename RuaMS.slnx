@@ -90,7 +90,6 @@
     <File Path=".github/workflows/build-docker-master-standalone.yml" />
     <File Path=".github/workflows/build-docker-master.yml" />
     <File Path=".github/workflows/build.yml" />
-    <File Path=".github/workflows/chatgpt-codereviewer.yml" />
     <File Path=".github/workflows/release.yml" />
   </Folder>
 </Solution>
