@@ -21,9 +21,7 @@
 */
 
 
-using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
-using Application.Templates.Npc;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -72,12 +70,6 @@ public class NPCTalkHandler : ChannelHandlerBase
                 c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
             }
 
-            if (npc.SourceTemplate.Script != null)
-            {
-                _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
-                return;
-            }
-
             if (npc.SourceTemplate.Parcel)
             {
                 c.CurrentServer.NodeService.DueyManager.SendTalk(c);
@@ -90,18 +82,20 @@ public class NPCTalkHandler : ChannelHandlerBase
                 return;
             }
 
-            if (!npc.hasShop(c))
+            if (npc.hasShop(c))
             {
-                _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
-                return;
-            }
-            else if (c.OnlinedCharacter.getShop() != null)
-            {
-                c.sendPacket(PacketCreator.enableActions());
+                if (c.OnlinedCharacter.getShop() != null)
+                {
+                    c.sendPacket(PacketCreator.enableActions());
+                    return;
+                }
+
+                npc.sendShop(c);
                 return;
             }
 
-            npc.sendShop(c);
+            _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+            return;
 
             //if (npc.getId() == NpcId.DUEY)
             //{

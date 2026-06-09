@@ -15,6 +15,8 @@ using scripting.quest;
 using Serilog;
 using server.maps;
 using System.Reflection;
+using tools;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Plugin.Script
 {
@@ -101,11 +103,17 @@ namespace Application.Plugin.Script
             return (bool)methodInfo.Invoke(script, null)!;
         }
 
-        public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
+        public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
             if (c.NPCConversationManager != null)
             {
                 c.OnlinedCharacter.Pink("卡对话了");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(scriptName))
+            {
+                c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
                 return false;
             }
 
