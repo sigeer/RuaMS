@@ -1734,7 +1734,7 @@ public class MapleMap : IMap, INamedInstance
      * @param monster
      * @param mobTime
      */
-    public void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed)
+    public void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team)
     {
         Point newpos = calcPointBelow(pos)!.Value;
         newpos.Y -= 1;
@@ -1748,7 +1748,7 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed)
+    public void addMonsterSpawn(int mobId, Point pos, int mobTime, int team)
     {
         addMonsterSpawn(mobId, pos, 0, 0, 0, 0, 0, mobTime, false, team);
     }

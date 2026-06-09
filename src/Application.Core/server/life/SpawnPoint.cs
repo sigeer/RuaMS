@@ -47,7 +47,6 @@ public class SpawnPoint
     readonly MobTemplate _monsterMeta;
     protected readonly IMap _map;
 
-    SpawnPointTrigger act;
     public bool CanInitialSpawn => mobTime == -1;
 
     public SpawnPoint(
@@ -55,8 +54,7 @@ public class SpawnPoint
         int mobId,
         Point pos, int cy, int f, int fh, int rx0, int rx1, bool hide,
         int team,
-        int mobTime, int mobInterval,
-        SpawnPointTrigger act = SpawnPointTrigger.Killed)
+        int mobTime, int mobInterval)
     {
         _map = map;
         _monsterMeta = LifeFactory.Instance.GetMonsterTrust(mobId)!;
@@ -73,7 +71,6 @@ public class SpawnPoint
         this.hide = hide;
         this.mobInterval = mobInterval;
         this.nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
-        this.act = act;
     }
 
     public int getSpawned()
@@ -123,7 +120,7 @@ public class SpawnPoint
     public Monster GenrateMonster()
     {
         // Check. 原代码中，只在初始化(loadLife)的Monster中传入了fh, f, rx...等属性，这里额外加上不知道有没有问题
-        var mob = _map.CreateMonster( LifeFactory.Instance.GetMonsterTrust(monster), GetPosition());
+        var mob = _map.CreateMonster(LifeFactory.Instance.GetMonsterTrust(monster), GetPosition());
 
         mob.setTeam(team);
         mob.setFh(fh);
@@ -135,39 +132,23 @@ public class SpawnPoint
         SubscribeMonster(mob);
         spawnedMonsters.incrementAndGet();
 
-        if (this.act == SpawnPointTrigger.Killed)
+        mob.OnKilled += (sender, args) =>
         {
-            mob.OnKilled += (sender, args) =>
-            {
-                nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
-                if (mobTime > 0)
-                {
-                    nextPossibleSpawn += mobTime * 1000;
-                }
-                else
-                {
-                    nextPossibleSpawn += args.DieAni;
-                }
-                spawnedMonsters.decrementAndGet();
-            };
-        }
+            spawnedMonsters.decrementAndGet();
+        };
 
-        else if (this.act == SpawnPointTrigger.Cleared)
+        mob.OnLifeCleared += (self, revivedMob) =>
         {
-            mob.OnLifeCleared += (self, revivedMob) =>
+            nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
+            if (mobTime > 0)
             {
-                nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime();
-                if (mobTime > 0)
-                {
-                    nextPossibleSpawn += mobTime * 1000;
-                }
-                else
-                {
-                    nextPossibleSpawn += mobInterval;
-                }
-                spawnedMonsters.decrementAndGet();
-            };
-        }
+                nextPossibleSpawn += mobTime * 1000;
+            }
+            else
+            {
+                nextPossibleSpawn += mobInterval;
+            }
+        };
 
         if (mobTime == 0)
         {
