@@ -5982,7 +5982,7 @@ public class PacketCreator
     }
 
     /// <summary>
-    /// 
+    /// CField::OnTransferFieldReqIgnored
     /// </summary>
     /// <param name="type">
     /// <para>1: The portal is closed for now.</para>
@@ -6176,30 +6176,11 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet bunnyPacket()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(9);
-        p.writeFixedString("Protect the Moon Bunny!!!");
-        return p;
-    }
-
-    public static Packet hpqMessage(string text)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.BLOW_WEATHER); // not 100% sure
-        p.writeByte(0);
-        p.writeInt(ItemId.NPC_WEATHER_GROWLIE);
-        p.writeFixedString(text);
-        return p;
-    }
-
-    public static Packet showHPQMoon()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.BLOCKED_MAP);
-        p.writeInt(-1);
-        return p;
-    }
-
+    /// <summary>
+    /// CField::OnDesc
+    /// 显示 info/help ?
+    /// </summary>
+    /// <returns></returns>
     public static Packet showEventInstructions()
     {
         OutPacket p = OutPacket.create(SendOpcode.GMEVENT_INSTRUCTIONS);

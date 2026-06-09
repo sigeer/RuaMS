@@ -249,7 +249,17 @@ public class ItemId
     public const int ADVANCED_MONSTER_CRYSTAL_3 = 4260008;
 
     // NPC weather (PQ)
-    public const int NPC_WEATHER_GROWLIE = 5120016; // Henesys PQ
+    public const int Weather_HenesysPQ = 5120016; // Henesys PQ
+    public const int Weather_KerningPQ = 5120017; // Kerning PQ
+    public const int Weather_LudiPQ = 5120018; // Ludi PQ
+    public const int Weather_OrbisPQ = 5120019; // Orbis PQ
+    public const int Weather_PiratePQ = 5120020; // Pirate PQ
+    public const int Weather_MagatiaPQA = 5120021; // Magatia PQ
+    public const int Weather_MagatiaPQZ = 5120022; // Magatia PQ
+    public const int Weather_EllinPQ = 5120023; // Ellin PQ
+    public const int Weather_Dojo = 5120024;
+    public const int Weather_Admin = 5120025; // Admin
+    // public const int Weather_ = 5120026;
 
     // Safety charm
     public const int SAFETY_CHARM = 5130000;
