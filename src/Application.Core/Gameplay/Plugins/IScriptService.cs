@@ -14,7 +14,7 @@ namespace Application.Core.Gameplay.Plugins
 
 
         #region NPC
-        Task<bool> Start(IChannelClient c, int npcId, NPC? npcObjectId, string scriptName);
+        Task<bool> Start(IChannelClient c, int npcId, NPC? npcObjectId, string? scriptName);
         Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null);
         #endregion
 

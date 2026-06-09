@@ -15,8 +15,7 @@ public class AreaBossSpawnPoint : SpawnPoint
         List<RandomPoint> pos,
         int mobTime, int mobInterval, string spawnMessage) : base(map, mobId,
             Point.Empty, 0, 0, 0, 0, 0, false, -1,
-            mobTime, mobInterval,
-            SpawnPointTrigger.Cleared)
+            mobTime, mobInterval)
     {
         Name = name;
         _points = pos;

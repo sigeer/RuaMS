@@ -64,7 +64,7 @@ namespace Application.Core.Plugins
         }
 
         #region Services
-        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string scriptName)
+        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(PluginManager));

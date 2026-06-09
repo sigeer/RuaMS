@@ -75,8 +75,8 @@ namespace Application.Core.Game.Maps
         void setMuted(bool mute);
         void setOxQuiz(bool b);
         void setReactorState();
-        void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
-        void addMonsterSpawn(int mobId, Point pos, int mobTime, int team, SpawnPointTrigger act = SpawnPointTrigger.Killed);
+        void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team);
+        void addMonsterSpawn(int mobId, Point pos, int mobTime, int team);
         #endregion
 
         #region MapObjects
