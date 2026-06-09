@@ -167,6 +167,7 @@ namespace Application.Core.Channel.Net.Packets
         /// <summary>
         /// 
         /// CWvsContext::OnSystemMessage
+        /// 效果同 serverNotice(5, str);
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>

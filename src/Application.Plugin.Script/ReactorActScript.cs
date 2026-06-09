@@ -1,4 +1,6 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Client;
+using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Mob;
 using scripting.reactor;
 using server.life;
@@ -3297,9 +3299,8 @@ namespace Application.Plugin.Script
             {
                 eim.ClearedMaps[getMapId()] = Core.scripting.Events.Abstraction.StageStatus.Started;
                 spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
-                getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", 5120016, 7000);
-                getMap().broadcastMessage(PacketCreator.bunnyPacket()); // Protect the Moon Bunny!
-                getMap().broadcastMessage(PacketCreator.showHPQMoon());
+                getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", ItemId.Weather_HenesysPQ, 7000);
+                getMap().broadcastMessage(MessagePacket.SystemMessage("保护月妙！")); // Protect the Moon Bunny!
                 getMap().allowSummonState(true);
             }
 
