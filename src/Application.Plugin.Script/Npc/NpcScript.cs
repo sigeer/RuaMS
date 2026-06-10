@@ -14,9 +14,11 @@ using Application.Shared.GameProps;
 using Application.Shared.MapObjects;
 using Application.Shared.Quest;
 using Application.Utility;
+using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Humanizer;
 using scripting.npc;
+using server.events;
 using server.life;
 using System.Drawing;
 using tools;
@@ -312,7 +314,7 @@ namespace Application.Plugin.Script.Npc
             var cost = 1500;
             var ticket = 4031134;
             var option = await AskMenu(
-                $"你听说过位于立石港附近，能够欣赏到壮观海景的海滩#b黄金海滩#k吗？我可以带你去那里，只需#b{cost}金币#k，或者如果你有#b#t{ticket}##k的话，那就可以免费。",
+                $"你听说过位于明珠港附近，能够欣赏到壮观海景的海滩#b黄金海滩#k吗？我可以带你去那里，只需#b{cost}金币#k，或者如果你有#b#t{ticket}##k的话，那就可以免费。",
                 [$"我支付{cost}金币。", $"我有#t{ticket}#。", $"什么是#t{ticket}#？"]);
             switch (option)
             {
@@ -446,10 +448,84 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 1012008, 2040014 
-        public Task minigame00()
+        public async Task minigame00()
         {
-            // TODO
-            return Task.CompletedTask;
+            var option = await AskMenu("嘿，看起来你需要休息一下，远离那些狩猎。你应该像我一样享受生活。嗯，如果你有一些物品，我可以和你交换一个可以玩迷你游戏的物品。现在...我能为你做些什么？", [
+                "制作一个迷你游戏物品",
+                "向我解释一下迷你游戏是什么"
+            ]);
+
+            if (option == 0)
+            {
+                var gameType = await AskMenu("你想制作迷你游戏道具吗？迷你游戏并不是你随便就能玩的。每个迷你游戏都需要一组特定的道具。你想制作哪个迷你游戏的道具？", [
+                    "五子棋套装",
+                    "配对卡套装"
+                ]);
+
+                if (gameType == 0)
+                {
+                    int[] omok = [4080000, 4080001, 4080002, 4080003, 4080004, 4080005];
+                    int[] omok1piece = [4030000, 4030000, 4030000, 4030010, 4030011, 4030011];
+                    int[] omok2piece = [4030001, 4030010, 4030011, 4030001, 4030010, 4030001];
+                    int omokamount = 99;
+
+                    await SayNext("你想玩#b五子棋#k，是吧？要玩这个游戏，你需要五子棋套装。只有拥有这个物品的人才能开设五子棋游戏房间，而且你几乎可以在市场以外的任何地方玩这个游戏。");
+
+                    var omokType = await AskMenu("棋具的选择也取决于你想要使用哪种棋子。你想制作哪种棋具呢？",
+                        omok.Select(x => $"#t{x}#"));
+
+                    if (haveItem(omok1piece[omokType], omokamount) && haveItem(omok2piece[omokType], omokamount) && haveItem(4030009, 1))
+                    {
+                        gainItem(omok1piece[omokType], -omokamount);
+                        gainItem(omok2piece[omokType], -omokamount);
+                        gainItem(4030009, -1);
+                        gainItem(omok[omokType], 1);
+                        await SayOK("制作成功！");
+                    }
+                    else
+                    {
+                        await SayOK($"#b你准备好 #t{omok[omokType]}##k了嘛？嗯...给我材料，我就可以那么做。仔细听，你需要的材料将会是：#r{omokamount} #t{omok1piece[omokType]}#, {omokamount} #t{omok2piece[omokType]}#, 1 #t{4030009}##k。怪物们可能会时不时地掉落那些东西……");
+                    }
+                }
+                else
+                {
+                    if (haveItem(4030012, 15))
+                    {
+                        gainItem(4030012, -15);
+                        gainItem(4080100, 1);
+                        await SayOK("制作成功！");
+                    }
+                    else
+                    {
+                        await SayOK("你想要 #b一套配对卡#k 吗？嗯...要制作一套配对卡，你需要一些 #b怪物卡#k。怪物卡可以通过在整个岛上打倒怪物来获得。收集15张怪物卡，你就可以制作一套配对卡。");
+                    }
+                }
+            }
+            else
+            {
+                var explainType = await AskMenu("你想了解更多关于小游戏吗？太棒了！问我任何事情。你想了解哪个小游戏？", [
+                    "五子棋",
+                    "配对卡片"
+                ]);
+
+                if (explainType == 0)
+                {
+                    await SaySpeech([
+                        "这里是Omok的规则，请仔细听。Omok是一种游戏，你和对手轮流在桌子上放置棋子，直到有人找到一种方法在一条线上放置5个连续的棋子，无论是水平、对角线还是垂直线。首先，只有拥有#bOmok Set#k的人才能开设游戏房间。",
+                        "每局五子棋游戏将花费你#r100金币#k。即使你没有#b五子棋套装#k，你也可以进入房间并进行游戏。然而，如果你没有100金币，那么你将根本无法进入房间。开设游戏房间的人也需要100金币来开房间（否则就没有游戏）。如果在游戏过程中你的金币用完了，那么你将被自动踢出房间！",
+                        "进入房间，当你准备好玩的时候，点击#b准备#k。一旦访客点击#b准备#k，房间所有者可以按#b开始#k开始游戏。如果一个不受欢迎的访客走进来，而你不想和那个人玩，房间所有者有权将访客踢出房间。",
+                        "当第一局开始时，#b房主先走#k。请注意，你会被给予一个时间限制，如果你没有在规定时间内行动，你可能会失去你的回合。通常情况下，3 x 3 是不允许的，但如果有一个必须把你的棋子放在那里或者面临游戏结束的时刻，那么你可以把它放在那里。3 x 3 是允许作为最后的防线！哦，如果是#r6或7连#k，那就不算。只有5连！"
+                    ]);
+                }
+                else
+                {
+                    await SaySpeech([
+                        "这里是Match Cards的规则，请仔细听。顾名思义，Match Cards就是在桌子上找到一对匹配的牌。当所有匹配的对都被找到时，拥有更多匹配对的人将赢得游戏。就像五子棋一样，你需要一副Match Cards牌来开启游戏房间。",
+                        "每一局配对卡游戏都需要花费你 #r100金币#k。即使你没有 #b一套配对卡#k，你也可以进入房间并进行游戏。然而，如果你没有100金币，那么你将根本无法进入房间。开设游戏房间的人也需要100金币来开房间（否则就没有游戏）。如果你在游戏过程中金币用完了，那么你将被自动踢出房间！",
+                        "进入房间，当你准备好玩的时候，点击#b准备#k。一旦访客点击#b准备#k，房间所有者可以按#b开始#k开始游戏。如果一个不受欢迎的访客走进来，而你不想和那个人玩，房间所有者有权将访客踢出房间。"
+                    ]);
+                }
+            }
         }
 
 
@@ -882,10 +958,10 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var selStr = "Which ticket would you like?#b";
+            var selStr = "您想要哪张票?#b";
             for (var i = 0; i < zones; i++)
             {
-                selStr += "\r\n#L" + i + "#Construction site B" + (i + 1) + " (" + cost + " mesos)#l";
+                selStr += "\r\n#L" + i + "#建筑工地 B" + (i + 1) + " (" + cost + " 金币)#l";
             }
             var option = await AskMenu(selStr);
             if (getMeso() < cost)
@@ -1023,18 +1099,131 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 1052013 
-        public Task go_pcmap()
+        public async Task go_pcmap()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() != 193000000)
+            {
+                var eim = getEventInstance();
+
+                if (eim != null)
+                {
+                    if (!eim.isEventCleared())
+                    {
+                        var couponsNeeded = eim.getIntProperty("couponsNeeded");
+
+                        if (isEventLeader())
+                        {
+                            if (haveItem(4001007, couponsNeeded))
+                            {
+                                await SayNext("你的团队收集了所有需要的优惠券，干得好！");
+                                gainItem(4001007, couponsNeeded);
+                                eim.clearPQ();
+                            }
+                            else
+                            {
+                                if (await AskYesNo($"你的团队必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。当你手头有足够的数量时，和我交谈...或者你想#b现在退出#k？请注意，如果你现在退出，#r你的团队也将被迫退出#k。"))
+                                {
+                                    warp(193000000);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (await AskYesNo($"你的队伍必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。让你的队长带着正确数量的优惠券来找我谈谈……或者你想要#b现在退出#k吗？请注意，如果你现在退出，你的队伍#r可能会人手不足#k以继续进行这个副本。"))
+                            {
+                                warp(193000000);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
+                        {
+                            await SayOK("请在您的ETC库存中腾出一个空间来接收奖品。");
+                        }
+                        else
+                        {
+                            warp(193000000);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                string[] levels = ["#m190000000#", "#m191000000#", "#m192000000#", "#m195000000#", "#m196000000#", "#m197000000#"];
+                var area = await AskMenu("高级道路是一个聚集了各种类型怪物，刷经验、刷装备的理想场所。#p1052014# 选择您想要面对的区域：", levels.Select(x => x));
+
+                var pqArea = area + 1;
+                var em = GetEventManager<PartyQuestEventManager>($"CafePQ_{pqArea}");
+
+                if (em == null)
+                {
+                    await SayOK($"CafePQ_{pqArea}遇到了一个错误。");
+                    return;
+                }
+
+                var pqOption = await AskMenu($"#e#b<组队任务：高级之路 - {levels[area]}>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n#p1052014# 的操作方式与普通的不同。它们不使用金币或扭蛋券，而是使用 #r橡皮擦#k，可以通过完成高级之路上的任务获得。要前往那里，你必须找到队友并参加一个组队任务。当组队并准备好后，让你的 #b队长#k 与我交谈。", [
+                    "我想参加组队任务。",
+                    "我想了解更多详情。"
+                ]);
+
+                if (pqOption == 0)
+                {
+                    var r = em.StartInstance(getPlayer());
+                    await SayOK(em.HandleCreateInstanceResult(r, c));
+                }
+                else
+                {
+                    await SayOK("#e#b<组队任务：高级之路>#k#n\r\n在前方的地图上，你将面对许多普通等级的怪物。击败它们，收集所有需要的优惠券交给我。然后所有成员将获得一个橡皮擦，与所面对的等级相对应。在机器上插入#b多个相同的橡皮擦或多种不同的橡皮擦#k，以获得更大奖品的机会。");
+                }
+            }
         }
 
 
         // Npc: 1052015 
-        public Task mouse()
+        public async Task mouse()
         {
-            // TODO
-            return Task.CompletedTask;
+            int[] itemSet_lv6 = [1442046, 1432018, 1102146, 1102145, 2022094, 2022544, 2022123, 2022310, 2040727, 2041058, 2040817, 4000030, 4003005, 4003000, 4011007, 4021009, 4011008, 3010098];
+            int[] itemQty_lv6 = [1, 1, 1, 1, 35, 15, 20, 20, 1, 1, 1, 30, 30, 30, 1, 1, 3, 1];
+            int[] itemSet_lv5 = [1382015, 1382016, 1442044, 1382035, 2022310, 2022068, 2022069, 2022190, 2022047, 2040727, 2040924, 2040501, 4000030, 4003005, 4003000, 4011003, 4011006, 4021004, 3010099];
+            int[] itemQty_lv5 = [1, 1, 1, 1, 20, 40, 40, 30, 30, 1, 1, 1, 20, 20, 25, 3, 2, 3, 1];
+            int[] itemSet_lv4 = [1332029, 1472027, 1462032, 1492019, 2022045, 2022048, 2022094, 2022123, 2022058, 2041304, 2041019, 2040826, 2040758, 4000030, 4003005, 4003000, 4010007, 4011003, 4021003, 3010016, 3010017];
+            int[] itemQty_lv4 = [1, 1, 1, 1, 45, 40, 25, 20, 60, 1, 1, 1, 1, 10, 10, 20, 5, 1, 1, 1, 1];
+            int[] itemSet_lv3 = [1302058, 1372008, 1422030, 1422031, 1022082, 2022279, 2022120, 2001001, 2001002, 2022071, 2022189, 2040914, 2041001, 2041041, 2041308, 4031203, 4000030, 4003005, 4003000, 4010004, 4010006, 4020000, 4020006, 3010002, 3010003];
+            int[] itemQty_lv3 = [1, 1, 1, 1, 1, 65, 40, 40, 40, 25, 25, 1, 1, 1, 1, 10, 7, 10, 8, 5, 5, 5, 5, 1, 1];
+            int[] itemSet_lv2 = [1022073, 1012098, 1012101, 1012102, 1012103, 2022055, 2022056, 2022103, 2020029, 2020032, 2020031, 2022191, 2022016, 2043300, 2043110, 2043800, 2041001, 2040903, 4031203, 4000021, 4003005, 4003000, 4003001, 4010000, 4010001, 4010003, 4010004, 4020004, 3010004, 3010005];
+            int[] itemQty_lv2 = [1, 1, 1, 1, 1, 40, 40, 40, 40, 60, 60, 60, 60, 1, 1, 1, 1, 1, 4, 6, 7, 5, 2, 4, 4, 3, 3, 4, 1, 1];
+            int[] itemSet_lv1 = [1302021, 1302024, 1302033, 1082150, 1002419, 2022053, 2022054, 2020032, 2022057, 2022096, 2022097, 2022192, 2020030, 2010005, 2022041, 2030000, 2040100, 2040004, 2040207, 2048004, 4031203, 4000021, 4003005, 4003000, 4003001, 4010000, 4010001, 4010002, 4010005, 4020004];
+            int[] itemQty_lv1 = [1, 1, 1, 1, 1, 20, 20, 20, 20, 20, 25, 25, 25, 50, 50, 12, 1, 1, 1, 1, 3, 4, 2, 2, 1, 2, 2, 2, 2, 2];
+
+            string[] levels = ["第1层", "第2层", "第3层", "第4层", "第5层", "第6层"];
+
+            var selection = await AskMenu("这里是#b网咖派对任务#k，奖励玩家与票类似的#b怪物橡皮#k，可以用在自动售货机上兑换奖品。通过选择不同的#r层级#k，进一步获得更好的奖品。\r\n\r\n这里描述了每个级别可能的奖励:\r\n",
+                levels.Select(x => x));
+
+            int[] lvTarget, lvQty;
+            switch (selection)
+            {
+                case 0: lvTarget = itemSet_lv1; lvQty = itemQty_lv1; break;
+                case 1: lvTarget = itemSet_lv2; lvQty = itemQty_lv2; break;
+                case 2: lvTarget = itemSet_lv3; lvQty = itemQty_lv3; break;
+                case 3: lvTarget = itemSet_lv4; lvQty = itemQty_lv4; break;
+                case 4: lvTarget = itemSet_lv5; lvQty = itemQty_lv5; break;
+                default: lvTarget = itemSet_lv6; lvQty = itemQty_lv6; break;
+            }
+
+            var sendStr = $"下列物品将在#b{levels[selection]}#k层获得:\r\n\r\n";
+            for (var i = 0; i < lvTarget.Length; i++)
+            {
+                sendStr += $"#i{lvTarget[i]}# #t{lvTarget[i]}#";
+                if (lvQty[i] > 1)
+                {
+                    sendStr += $" ({lvQty[i]})";
+                }
+                sendStr += "\r\n";
+            }
+
+            await SayNext(sendStr);
         }
 
 
@@ -2214,10 +2403,48 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 1300013 
-        public Task TD_MC_violetaEnter()
+        public async Task TD_MC_violetaEnter()
         {
-            // TODO
-            return Task.CompletedTask;
+            var mapId = getMapId();
+            if (mapId == 106021402)
+            {
+                if (!isQuestCompleted(2331))
+                {
+                    return;
+                }
+
+                var choice = await AskMenu("#L0#进入战斗 #b企鹅王#k 和 #b雪人#k。#l\r\n#L1#进入战斗 #b蘑菇大臣#k。#l");
+                if (choice == 0)
+                {
+                    var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
+                    pepe.setProperty("player", getPlayer().getName());
+                    var r = pepe.StartInstance(getPlayer());
+                    await SayOK(pepe.HandleCreateInstanceResult(r, c));
+                }
+                else if (choice == 1)
+                {
+                    var em = GetEventManager<PartyQuestEventManager>("MK_PrimeMinister2");
+                    var r = em.StartInstance(getPlayer());
+                    await SayOK(em.HandleCreateInstanceResult(r, c));
+                }
+            }
+            else
+            {
+                var qp = getQuestProgressInt(2330, 3300005) + getQuestProgressInt(2330, 3300006) + getQuestProgressInt(2330, 3300007);
+                if (!(isQuestStarted(2330) && qp < 3))
+                {
+                    return;
+                }
+
+                var sel = await AskMenu("#L1#进入挑战 #b企鹅王#k 和 #b雪人#k。#l");
+                if (sel == 1)
+                {
+                    var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
+                    pepe.setProperty("player", getPlayer().getName());
+                    var r = pepe.StartInstance(getPlayer());
+                    await SayOK(pepe.HandleCreateInstanceResult(r, c));
+                }
+            }
         }
 
 
@@ -3175,10 +3402,35 @@ namespace Application.Plugin.Script.Npc
         }
 
         // Npc: 2041023 
-        public Task s4efreet()
+        public async Task s4efreet()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (!(isQuestCompleted(6316) && (isQuestStarted(6225) || isQuestStarted(6315))))
+            {
+                await SayOK("你似乎没有理由去遇见基于元素的萨那托斯。");
+                return;
+            }
+
+            var em = GetEventManager<PartyQuestEventManager>("ElementalBattle");
+            if (em == null)
+            {
+                await SayOK("元素战斗遇到了一个错误。");
+                return;
+            }
+
+            var option = await AskMenu($"#e#b<组队任务：元素塔纳托斯>\r\n#k#n{em.getProperty("party")}\r\n\r\n你正在寻找元素塔纳托斯，对吗？如果你和另一个法师组队，而且他的元素属性与你相反，你们就能够克服它们。作为队长，当你准备好出发时，和我交谈。", [
+                "我想参加组队任务。",
+                "我想了解更多细节。"
+            ]);
+
+            if (option == 0)
+            {
+                var r = em.StartInstance(getPlayer());
+                await SayOK(em.HandleCreateInstanceResult(r, c));
+            }
+            else
+            {
+                await SayOK("#e#b<组队任务：元素死神>#k#n\r\n在进入舞台之前，与另一位具有#rdifferent elemental affinity#k的法师组队。这个团队合作对于克服内部的元素非常关键。");
+            }
         }
 
 
@@ -3526,10 +3778,51 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2083006 
-        public Task TD_neoCity_enter()
+        public async Task TD_neoCity_enter()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (!isQuestCompleted(3718))
+            {
+                await SayOK("时间机器尚未启动。");
+                return;
+            }
+
+            int[] quests = [3719, 3724, 3730, 3736, 3742, 3748];
+            string[] areas = [
+                "Year 2021 - Average Town Entrance",
+                "Year 2099 - Midnight Harbor Entrance",
+                "Year 2215 - Bombed City Center Retail District",
+                "Year 2216 - Ruined City Intersection",
+                "Year 2230 - Dangerous Tower Lobby",
+                "Year 2503 - Air Battleship Bow"
+            ];
+
+            int limit;
+            for (limit = 0; limit < quests.Length; limit++)
+            {
+                if (!isQuestCompleted(quests[limit]))
+                {
+                    break;
+                }
+            }
+
+            if (limit == 0)
+            {
+                await SayOK("在解锁下一个新奥城地图之前，向#b守护者尼克斯#k证明你的勇气。");
+                return;
+            }
+
+            var menuItems = areas.Take(limit).Select((x, i) => x).ToList();
+            var selection = await AskMenu("", menuItems);
+
+            int[] mapids = [240070100, 240070200, 240070300, 240070400, 240070500, 240070600];
+            if (selection >= 0 && selection < mapids.Length)
+            {
+                warp(mapids[selection], 1);
+            }
+            else
+            {
+                await SayOK("先完成你的任务。");
+            }
         }
 
 
@@ -3671,10 +3964,39 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2095000 
-        public Task s4mind()
+        public async Task s4mind()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() != 925010400)
+            {
+                var em = GetEventManager<PartyQuestEventManager>("DelliBattle");
+                if (em == null)
+                {
+                    await SayOK("德利战斗遇到了一个错误。");
+                    return;
+                }
+
+                var option = await AskMenu($"#e#b<组队任务：拯救 Delli>\r\n#k#n{em.getProperty("party")}\r\n\r\n啊，#r#p1095000##k 让你来的？她担心我吗？... 很抱歉听到这个消息，但我现在真的不能回去，一些怪物受到黑魔法师的影响，我需要解救它们！... 你似乎也不会接受这个事实，对吗？你愿意和队友一起帮助我吗？如果愿意，请让你的 #b队长#k 和我交谈。", [
+                    "我想参加组队任务。",
+                    "我想了解更多细节。"
+                ]);
+
+                if (option == 0)
+                {
+                    var r = em.StartInstance(getPlayer());
+                    await SayOK(em.HandleCreateInstanceResult(r, c));
+                }
+                else
+                {
+                    await SayOK("#e#b<组队任务：拯救戴利>#k#n\r\n一场伏击正在进行中！我必须在战场上站立大约6分钟才能完成解放，请在此期间保护我，以便完成我的任务。");
+                }
+            }
+            else
+            {
+                if (await AskYesNo("任务成功了，感谢你的护送！我可以带你去#b#m120000104##k，你准备好了吗？"))
+                {
+                    warp(120000104);
+                }
+            }
         }
 
 
@@ -3822,10 +4144,9 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2111012 
-        public Task absence_box()
+        public async Task absence_box()
         {
-            // TODO
-            return Task.CompletedTask;
+            // 2111012 空箱子，无对话内容
         }
 
 
@@ -4227,26 +4548,208 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9000037 
-        public Task Raid_solo()
+        public async Task Raid_solo()
         {
-            // TODO
-            return Task.CompletedTask;
+            bool onRestingSpot() => getMapId() >= 970030001 && getMapId() <= 970030010;
+            bool isFinalBossDone() => getMapId() >= 970032700 && getMapId() < 970032800 && getMap().countMonsters() == 0;
+
+            int state;
+            if (getMapId() >= 970030001 && getMapId() <= 970042711)
+            {
+                if (!onRestingSpot())
+                {
+                    state = isFinalBossDone() ? 3 : 1;
+                }
+                else
+                {
+                    state = 2;
+                }
+            }
+            else
+            {
+                state = 0;
+            }
+
+            if (state == 3)
+            {
+                var eim = getEventInstance();
+                if (eim.getProperty("clear") == null)
+                {
+                    eim.clearPQ();
+                    eim.setProperty("clear", "true");
+                }
+
+                if (isEventLeader())
+                {
+                    await SayOK("你的队伍完成了如此惊人的壮举，走到了这一步，#b你已经打败了所有的boss#k，恭喜！现在我将给你们奖励，因为你们即将被传送出去…");
+                }
+                else
+                {
+                    await SayOK("在这个副本中#b打败所有的boss#k，恭喜你！现在你将获得与你在这里表现相匹配的奖品，我会将你传送出去。");
+                }
+
+                if (eim.GiveClearReward(getPlayer(), 6) ==  ClaimRewardResult.BagFull)
+                {
+                    await SayOK("请提前在你的背包所有标签中安排一个空位。");
+                    return;
+                }
+
+                warp(970030000);
+            }
+            else if (state == 2)
+            {
+                if (isEventLeader())
+                {
+                    if (getPlayer().getEventInstance().isEventTeamTogether())
+                    {
+                        if (await AskYesNo("你的队伍准备好继续前进到下一阶段了吗？如果你认为已经完成了，就走过传送门，现在是时候了。现在，你们真的想要继续吗？"))
+                        {
+                            var restSpot = ((getMapId() - 1) % 5) + 1;
+                            getPlayer().getEventInstance().restartEventTimer(restSpot * 4 * 60000);
+                            getPlayer().getEventInstance().warpEventTeam(970030100 + getEventInstance().getIntProperty("lobby") + (500 * restSpot));
+                        }
+                    }
+                    else
+                    {
+                        await SayOK("请等待您的队伍重新集合后再继续。");
+                    }
+                }
+                else
+                {
+                    await SayOK("等待你的队长发出信号让我继续。如果你感觉不太好，想要退出，走过传送门，你将被传送出去，并且你会因为走到这一步而获得奖品。");
+                }
+            }
+            else if (state == 1)
+            {
+                if (await AskYesNo("你希望放弃这个副本吗？"))
+                {
+                    warp(970030000);
+                }
+            }
+            else
+            {
+                var em = GetEventManager<PartyQuestEventManager>("BossRushPQ");
+                if (em == null)
+                {
+                    await SayOK("Boss Rush PQ遇到了一个错误。");
+                    return;
+                }
+
+                var option = await AskMenu(
+                    "#e#b<组队任务：首领突袭>\r\n#k#n" + em.getProperty("party") +
+                    "\r\n\r\n你想要和队友合作完成远征任务，还是勇敢到足以独自完成？让你的#b队伍领袖#k与我交谈或者自己创建一个队伍。",
+                    [
+                        "我想参加组队任务。",
+                        "我想了解更多详情。"
+                    ]);
+
+                if (option == 0)
+                {
+                    if (getParty() == null)
+                    {
+                        await SayOK("只有当你加入一个队伍时，你才能参加派对任务。");
+                    }
+                    else if (!isLeader())
+                    {
+                        await SayOK("你的队长必须与我交谈才能开始这个组队任务。");
+                    }
+                    else
+                    {
+                        var r = em.StartInstance(getPlayer());
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
+                    }
+                }
+                else
+                {
+                    await SayOK("#e#b<组队任务：Boss Rush>#k#n\r\n来自世界各地的勇敢冒险者来到这里，测试他们在战斗中的技能和能力，面对来自冒险岛的更强大的boss。与其他冒险者联手或者独自承担所有的压力并获得所有的荣耀，这取决于你。奖励根据冒险者们的进展程度给予，而额外奖品可能会随机给予队伍中的一名成员，所有这些都在远征结束时进行分配。\r\n\r\n这个任务还支持#b多个大厅，以匹配不同团队等级的玩家#k：如果你想更快地为你的团队设置boss rush，可以与等级较低的玩家组队。");
+                }
+            }
         }
 
 
         // Npc: 9000038 
-        public Task Raid_party()
+        public async Task Raid_party()
         {
-            // TODO
-            return Task.CompletedTask;
+            int[] itemSet_lv6 = [3010061, 1122018, 1122005, 1022088, 1402013, 1032030, 1032070, 1102046, 2330004, 2041013, 2041016, 2041019, 2041022, 2049100, 2049003, 2020012, 2020013, 2020014, 2020015, 2022029, 2022045, 2022068, 2022069, 2022179, 2022180, 4004000, 4004001, 4004002, 4004003, 4004004, 4003000];
+            int[] itemQty_lv6 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 25, 25, 25, 25, 25, 25, 25, 25, 4, 4, 12, 12, 12, 12, 12, 25];
+            int[] itemSet_lv5 = [3010063, 1122018, 1122005, 1022088, 1402013, 1032030, 1032070, 1102046, 2330004, 2041013, 2041016, 2041019, 2041022, 2049100, 2049003, 2020012, 2020013, 2020014, 2020015, 2022029, 2022045, 2022068, 2022069, 2022179, 2022180, 4004000, 4004001, 4004002, 4004003, 4004004, 4003000];
+            int[] itemQty_lv5 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 15, 15, 15, 15, 15, 15, 15, 15, 2, 2, 8, 8, 8, 8, 8, 12];
+            int[] itemSet_lv4 = [1122001, 1122006, 1022103, 1442065, 1032042, 1032021, 1102168, 2070005, 2040025, 2040029, 2040301, 2040413, 2040701, 2040817, 2002028, 2020009, 2020010, 2020011, 2022004, 2022005, 2022025, 2022027, 2022048, 2022049, 4020000, 4020001, 4020002, 4020003, 4020004, 4020005, 4020006, 4020007, 4020008, 4003000];
+            int[] itemQty_lv4 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 45, 45, 45, 45, 45, 45, 45, 45, 45, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+            int[] itemSet_lv3 = [1122002, 1022088, 1012076, 1402029, 1032041, 1032044, 1102167, 2070011, 2040026, 2040030, 2040302, 2040412, 2040702, 2040818, 2002028, 2020009, 2020010, 2020011, 2022004, 2022005, 2022025, 2022027, 2022048, 2022049, 4010000, 4010001, 4010002, 4010003, 4010004, 4010005, 4010006, 4010007, 4003000];
+            int[] itemQty_lv3 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 20, 20, 20, 20, 20, 20, 20, 20, 20, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+            int[] itemSet_lv2 = [1122003, 1012077, 1012079, 1432014, 1032059, 1032002, 1102191, 2330002, 2040001, 2040311, 2040401, 2040601, 2040824, 2040901, 2010000, 2010001, 2010002, 2010003, 2010004, 2020001, 2020002, 2020003, 2022020, 2022022, 4020000, 4020001, 4020002, 4020003, 4020004, 4020005, 4020006, 4020007, 4020008, 4003000];
+            int[] itemQty_lv2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+            int[] itemSet_lv1 = [1122004, 1012078, 1432008, 1432009, 1032040, 1032009, 1102166, 2070001, 2040002, 2040310, 2040400, 2040600, 2040825, 2040902, 2010000, 2010001, 2010002, 2010003, 2010004, 2020001, 2020002, 2020003, 2022020, 2022022, 4010000, 4010001, 4010002, 4010003, 4010004, 4010005, 4010006, 4010007, 4003000];
+            int[] itemQty_lv1 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2];
+
+            string[] levels = ["#m970030001#", "#m970030002#", "#m970030003#", "#m970030004#", "#m970030005#", "Final stage"];
+
+            var sendStr = "The #bBoss Rush Party Quest#k rewards players accordingly to how far the team went on the boss huntings. Take note that each player #bcan only claim a reward if they leave through a portal inside a Resting Spot#k. Challenging stronger bosses will require the team to commit to more fightings until the next Resting Spot is reached, or until the final boss is defeated.\r\n\r\nThe possible rewards for those leaving in the selected Resting Spot are depicted here:\r\n\r\n";
+            var selection = await AskMenu(sendStr, levels.Select((x, i) => x));
+
+            int[] lvTarget, lvQty;
+            switch (selection)
+            {
+                case 0: lvTarget = itemSet_lv1; lvQty = itemQty_lv1; break;
+                case 1: lvTarget = itemSet_lv2; lvQty = itemQty_lv2; break;
+                case 2: lvTarget = itemSet_lv3; lvQty = itemQty_lv3; break;
+                case 3: lvTarget = itemSet_lv4; lvQty = itemQty_lv4; break;
+                case 4: lvTarget = itemSet_lv5; lvQty = itemQty_lv5; break;
+                default: lvTarget = itemSet_lv6; lvQty = itemQty_lv6; break;
+            }
+
+            var resultStr = $"The following items are being awarded at #b{levels[selection]}#k:\r\n\r\n";
+            for (var i = 0; i < lvTarget.Length; i++)
+            {
+                resultStr += $"#i{lvTarget[i]}# #t{lvTarget[i]}#";
+                if (lvQty[i] > 1)
+                {
+                    resultStr += $" ({lvQty[i]})";
+                }
+                resultStr += "\r\n";
+            }
+
+            await SayOK(resultStr);
         }
 
-
         // Npc: 9000040 
-        public Task medal_rank()
+        public async Task medal_rank()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT)
+            {
+                await SayOK("勋章排名系统目前不可用。");
+                return;
+            }
+
+            var levelLimit = !getPlayer().isCygnus() ? 160 : 110;
+            var selStr = "The medal ranking system is currently unavailable... Therefore, I am providing the #bEquipment Merge#k service! ";
+            if (!YamlConfig.config.server.USE_STARTER_MERGE && (getPlayer().getLevel() < levelLimit || getPlayer().GetMakerSkillLevel() < 3))
+            {
+                selStr += "However, you must have #rMaker level 3#k and at least #rlevel 110#k (Cygnus Knight), #rlevel 160#k (other classes) and a fund of #r" + numberWithCommas(50000) + " mesos#k to use the service.";
+                await SayOK(selStr);
+                return;
+            }
+            if (getMeso() < 50000)
+            {
+                selStr += "I'm sorry, but this service tax is of #r" + numberWithCommas(50000) + " mesos#k, which it seems you unfortunately don't have right now... Please, stop by again later.";
+                await SayOK(selStr);
+                return;
+            }
+
+            await SayNext(selStr + "For the fee of #r" + numberWithCommas(50000) + "#k mesos, merge unnecessary equipments in your inventory into your currently equipped gears to get stat boosts into them, statups based on the attributes of the items used on the merge!");
+
+            var name = await AskText("#rWARNING#b: Make sure you have your items ready to merge at the slots #rAFTER#b the item you have selected to merge.#k Any items #bunder#k the item selected will be merged thoroughly.\r\n\r\nNote that equipments receiving bonuses from merge are going to become #rUntradeable#k thereon, and equipments that already received the merge bonus #rcannot be used for merge#k.\r\n\r\nPlease enter the name of the equipment you want to merge:");
+
+            if (getPlayer().mergeAllItemsFromName(name))
+            {
+                gainMeso(-50000);
+                await SayOK("合并完成！感谢您使用本服务，祝您享受新的装备属性。");
+            }
+            else
+            {
+                await SayOK($"你的#b装备#k库中没有#b'{name}'#k！");
+            }
         }
 
 
@@ -4259,25 +4762,126 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9000049 
-        public Task treasureHunter()
+        public async Task treasureHunter()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getPlayer().isGM())
+            {
+                var stage = c.CurrentServer.getStoredVar(9000049);
+                var eventStatus = stage switch
+                {
+                    1 => "EASY",
+                    2 => "MEDIUM",
+                    3 => "HARD",
+                    _ => "CLOSED"
+                };
+
+                int selection = await AskMenu($"你好GM。\r\n当前活动是：#r{eventStatus}#k\r\n你想做什么？\r\n#b#L0#参加活动#l\r\n#L1#关闭活动#l\r\n#L2#将活动设置为简单#l\r\n#L3#将活动设置为中等#l\r\n#L4#将活动设置为困难#l");
+
+                if (selection == 0)
+                {
+                    stage = c.CurrentServer.getStoredVar(9000049);
+                    if (stage == 0)
+                    {
+                        await SayOK("看起来塔还没有解锁。请等待GM解锁！");
+                    }
+                    else
+                    {
+                        warp(980040000 + stage * 1000, 0);
+                    }
+                }
+                else
+                {
+                    c.CurrentServer.setStoredVar(9000049, selection - 1);
+                }
+            }
+            else
+            {
+                var stage = c.CurrentServer.getStoredVar(9000049);
+                if (stage == 0)
+                {
+                    await SayOK("看起来塔还没有解锁。请等待GM解锁！");
+                }
+                else
+                {
+                    warp(980040000 + stage * 1000, 0);
+                }
+            }
         }
 
+
         // Npc: 9001102 
-        public Task giveupMoonPicture()
+        public async Task giveupMoonPicture()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getPlayer().getMapId() != 100000000)
+            {
+                return;
+            }
+
+            await SayNext("看那儿！你看到了吗？没有？一个飞碟刚刚飞过去了……那边！！看，有人被拖进了飞碟……啊啊啊啊，是嘎嘎！#r嘎嘎刚刚被飞碟绑架了！#k");
+
+            if (getPlayer().getLevel() >= 12)
+            {
+                if (await AskYesNo("我们现在该怎么办？这只是一个谣言，但是……我听说如果你被外星人绑架，会发生可怕的事情……或许这就是现在发生在Gaga身上的事情！请，请救救Gaga！#bGaga可能有点不确定和迷茫，但#k他的心真的很好。我不能让可怕的事情发生在他身上。对了！月球上的爷爷可能知道如何救他！我会送你去月球，所以请去见爷爷，救出Gaga！！！"))
+                {
+                    await SayNext("非常感谢。请救救嘎嘎！月球上的爷爷会帮助你。");
+                    warp(922240200, 0);
+                }
+            }
+            else
+            {
+                await SayOK("哦！看来你还没有达到救出嘎嘎的等级要求。请在达到12级或更高级时再回来。");
+            }
         }
 
 
         // Npc: 9001105 
-        public Task spaceGaGa_papa()
+        public async Task spaceGaGa_papa()
         {
-            // TODO
-            return Task.CompletedTask;
+            var mapId = getPlayer().getMapId();
+            if (mapId == 922240200)
+            {
+                int selection = await AskMenu("你有什么要说的吗...? #b\r\n#L0#我想要救出嘎嘎。#l\r\n");
+                if (selection == 0)
+                {
+                    await SayNext("欢迎！我从小月兔那里听说了发生的事情，很高兴你来了，因为我正打算请求一些帮助。Gaga是我的朋友，以前帮过我，经常过来打个招呼。不幸的是，他被外星人绑架了。");
+
+                    if (await AskYesNo("如果我们把嘎嘎留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出嘎嘎。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？"))
+                    {
+                        var em = GetEventManager<SoloEventManager>("RescueGaga");
+                        if (em == null)
+                        {
+                            await SayOK("此活动目前不可用。");
+                            return;
+                        }
+
+                        var r = em.StartInstance(getPlayer());
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
+                    }
+                }
+            }
+            else if (mapId >= 922240000 && mapId <= 922240019)
+            {
+                if (await AskYesNo("如果你失败了也不要担心。你还有3次机会。你还想放弃吗？"))
+                {
+                    warp(922240200, 0);
+                }
+            }
+            else if (mapId >= 922240100 && mapId <= 922240119)
+            {
+                var rgaga = getPlayer().getEvents().GetValueOrDefault("rescueGaga") as RescueGaga;
+                string text = "You went through so much trouble to rescue Gaga, but it looks like we're back to square one. ";
+                if (rgaga.getCompleted() > 10)
+                {
+                    text += "Please don't give up until Gaga is rescued. To show you my appreciation for what you've accomplished thus far, I've given you a Spaceship. It's rather worn out, but it should still be operational. Check your #bSkill Window#k.";
+                    rgaga.giveSkill(getPlayer());
+                }
+                else
+                {
+                    text += "Let's go back now.";
+                }
+                await SayNext(text);
+                warp(922240200, 0);
+            }
         }
 
 
@@ -4293,10 +4897,56 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9010022 
-        public Task unityPortal()
+        public async Task unityPortal()
         {
-            // TODO
-            return Task.CompletedTask;
+            var level = getLevel();
+            if (level < 20)
+            {
+                await SayOK("There is no place for you to transport to from here.");
+                return;
+            }
+
+            var menu = "#b";
+            if (level >= 20 && level <= 30)
+            {
+                menu += "#L0#Ariant Coliseum#l";
+            }
+
+            if (level >= 25)
+            {
+                menu += "#L1#Mu Lung Dojo#l";
+            }
+
+            if (level >= 30 && level <= 50)
+            {
+                menu += "#L2#Monster Carnival 1#l";
+            }
+
+            if (level >= 51 && level <= 70)
+            {
+                menu += "#L3#Monster Carnival 2#l";
+            }
+
+            int selection = await AskDimensionalMirror(menu);
+
+            getPlayer().saveLocation("MIRROR");
+            switch (selection)
+            {
+                case 0:
+                    warp(980010000, 3);
+                    break;
+                case 1:
+                    warp(925020000, 0);
+                    break;
+                case 2:
+                    getPlayer().saveLocation("MONSTER_CARNIVAL");
+                    warp(980000000, 3);
+                    break;
+                case 3:
+                    getPlayer().saveLocation("MONSTER_CARNIVAL");
+                    warp(980030000, 3);
+                    break;
+            }
         }
 
 
@@ -4335,29 +4985,43 @@ namespace Application.Plugin.Script.Npc
 
         // Npc: 9105004 
         [ScriptName("08_xmas")]
-        public Task s_08_xmas()
+        public async Task s_08_xmas()
         {
-            // TODO
-            return Task.CompletedTask;
+            // TODO: HolidayPQ - complex PQ coordination
+            await SayOK("假期组队任务暂时不可用。");
         }
 
 
         // Npc: 9105005 
-        public Task out_08Xmas()
+        public async Task out_08Xmas()
         {
-            // TODO
-            return Task.CompletedTask;
+            var area = getMapId() % 10;
+            if (await AskYesNo(area > 0 ? "你希望离开这个地方吗？" : "你想要回到 #b快乐村#k 吗？"))
+            {
+                if (area > 0)
+                {
+                    warp(getMapId() + 1, 0);
+                }
+                else
+                {
+                    warp(209000000);
+                }
+            }
         }
-
-
 
 
         // Npc: 9110002 
         [ScriptName("Life in Mushroom Shrine...")]
-        public Task s_Life_in_Mushroom_Shrine()
+        public async Task s_Life_in_Mushroom_Shrine()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (isQuestCompleted(8074))
+            {
+                await SayOK("欢迎来到蘑菇神社！");
+            }
+            else
+            {
+                await SayOK("蘑菇神殿~~~");
+            }
         }
 
 
@@ -4382,18 +5046,143 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9120010 
-        public Task whitto()
+        public async Task whitto()
         {
-            // TODO
-            return Task.CompletedTask;
+            var eQuestChoices = new[] { 4000064, 4000065, 4000066, 4000075, 4000077, 4000089, 4000090, 4000091, 4000092, 4000093, 4000094 };
+            var eQuestPrizes = new Dictionary<int, int[][]>
+            {
+                { 0, new[] { new[] { 2000000, 1 }, new[] { 2000006, 1 }, new[] { 2000003, 5 }, new[] { 2000002, 5 }, new[] { 4020006, 2 }, new[] { 4020000, 2 }, new[] { 4020004, 2 }, new[] { 2000003, 10 }, new[] { 2000003, 20 }, new[] { 2000002, 10 }, new[] { 2000002, 20 }, new[] { 2022026, 15 }, new[] { 2022024, 15 }, new[] { 1002393, 1 } } },
+                { 1, new[] { new[] { 2000006, 1 }, new[] { 2000002, 5 }, new[] { 4020006, 2 }, new[] { 2000002, 10 }, new[] { 2000003, 10 }, new[] { 2000002, 20 }, new[] { 2000003, 20 }, new[] { 2022024, 15 }, new[] { 2022026, 15 } } },
+                { 2, new[] { new[] { 2000006, 1 }, new[] { 2000002, 5 }, new[] { 2000003, 5 }, new[] { 4020000, 2 }, new[] { 2000003, 10 }, new[] { 2000002, 10 }, new[] { 2000003, 20 }, new[] { 2000002, 20 }, new[] { 2022024, 15 }, new[] { 1002393, 1 } } },
+                { 3, new[] { new[] { 2060003, 1000 }, new[] { 4010004, 2 }, new[] { 4010006, 2 }, new[] { 2022022, 5 }, new[] { 2022022, 10 }, new[] { 2022022, 15 }, new[] { 2022019, 5 }, new[] { 2022019, 10 }, new[] { 2022019, 15 }, new[] { 2001002, 15 }, new[] { 2001001, 15 }, new[] { 1102040, 1 }, new[] { 1102043, 1 } } },
+                { 4, new[] { new[] { 2000003, 1 }, new[] { 2022019, 5 }, new[] { 2000006, 5 }, new[] { 4010002, 2 }, new[] { 4010003, 2 }, new[] { 2000006, 10 }, new[] { 2000006, 15 }, new[] { 2022019, 10 }, new[] { 2022019, 15 }, new[] { 2060003, 1000 }, new[] { 2061003, 1000 }, new[] { 1082150, 1 }, new[] { 1082149, 1 } } },
+                { 5, new[] { new[] { 2000006, 1 }, new[] { 2000003, 5 }, new[] { 2000002, 5 }, new[] { 2000003, 10 }, new[] { 2000003, 20 }, new[] { 2000002, 10 }, new[] { 2000002, 15 }, new[] { 2060003, 1000 }, new[] { 2061003, 1000 }, new[] { 2022026, 15 }, new[] { 1002395, 1 } } },
+                { 6, new[] { new[] { 2022019, 5 }, new[] { 2000006, 5 }, new[] { 4010003, 2 }, new[] { 2022019, 10 }, new[] { 2022019, 15 }, new[] { 2000006, 10 }, new[] { 2000006, 15 }, new[] { 2060003, 1000 }, new[] { 2061003, 1000 } } },
+                { 7, new[] { new[] { 2000003, 1 }, new[] { 2000006, 1 }, new[] { 2022019, 1 }, new[] { 2000006, 5 }, new[] { 4010002, 2 }, new[] { 4020001, 2 }, new[] { 2022019, 10 }, new[] { 2022019, 15 }, new[] { 2000006, 10 }, new[] { 2000006, 15 }, new[] { 2060003, 1000 }, new[] { 2061003, 1000 } } },
+                { 8, new[] { new[] { 2022019, 5 }, new[] { 2022022, 5 }, new[] { 4010006, 2 }, new[] { 2022019, 10 }, new[] { 2022019, 15 }, new[] { 2022022, 10 }, new[] { 2022022, 15 }, new[] { 2001002, 15 }, new[] { 2001001, 15 }, new[] { 1102043, 1 } } },
+                { 9, new[] { new[] { 4010004, 5 }, new[] { 2022019, 5 }, new[] { 2022022, 15 }, new[] { 2022019, 15 }, new[] { 2001002, 15 }, new[] { 2001001, 15 }, new[] { 1102043, 1 } } },
+                { 10, new[] { new[] { 1102207, 1 }, new[] { 1442026, 1 }, new[] { 1302037, 1 }, new[] { 2070007, 1 }, new[] { 2340000, 1 }, new[] { 2330005, 1 }, new[] { 2022060, 25 }, new[] { 2022061, 20 }, new[] { 2022062, 15 } } }
+            };
+
+            if (!await AskYesNo("如果你正在寻找一个能够准确描述各种物品特征的人，那么你现在就找到了。我目前正在寻找一样东西。你想听听我的故事吗？"))
+            {
+                await SayOK("真的吗？如果你改变主意了，记得告诉我。");
+                return;
+            }
+
+            var choiceStr = "The items I'm looking for are 1,2,3 ... phew, too many to\r\nmention. Anyhow, if you gather up 100 of the same items,\r\nthen i may trade it with something similiar. What? You may\r\nnot know this, but i keep my end of the promise, so you\r\nneed not worry. Now, shall we trade?\r\n";
+            for (int i = 0; i < eQuestChoices.Length; i++)
+            {
+                choiceStr += " #L" + i + "##v" + eQuestChoices[i] + "##t" + eQuestChoices[i] + "##l\r\n";
+            }
+
+            int selection = await AskMenu(choiceStr);
+
+            int requiredItem = eQuestChoices[selection];
+            var reward = eQuestPrizes[selection];
+            var rnd = new Random();
+            var itemSet = rnd.Next(reward.Length);
+            int prizeItem = reward[itemSet][0];
+            int prizeQuantity = reward[itemSet][1];
+
+            if (!canHold(prizeItem))
+            {
+                await SayNext("如果你的装备、使用或其他物品栏已满，我无法给你奖励。请立即去看一下。");
+            }
+            else if (haveItem(requiredItem, 100))
+            {
+                gainItem(requiredItem, -100);
+                gainItem(prizeItem, prizeQuantity);
+                await SayOK("嗯...如果不是这个小小的划痕...唉。恐怕我只能认定这是一个标准品质的物品。好吧，这是给你的#t" + prizeItem + "#。");
+            }
+            else
+            {
+                await SayOK("嘿，你以为你在干什么？去欺骗那些不懂得在说什么的人。不要来骗我！");
+            }
         }
 
 
         // Npc: 9120013 
-        public Task boss_cat()
+        public async Task boss_cat()
         {
-            // TODO
-            return Task.CompletedTask;
+            // 检查任务8012是否进行中且没有橙色大理石
+            if (!isQuestStarted(8012) || haveItem(4031064))
+            {
+                return;
+            }
+
+            if (!await AskYesNo("你都找到了吗？你打算尝试回答我所有的问题吗？"))
+            {
+                return;
+            }
+
+            if (!haveItem(2020001, 300))
+            {
+                await SayOK("什么？不行！300！三百。不少。如果你想要更多，就给我，但我至少需要300。我们不是所有人都像你一样又大又饱满…");
+                return;
+            }
+
+            gainItem(2020001, -300);
+            await SayNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！");
+
+            // 问题和答案数据
+            var questions = new List<string>
+            {
+                "Which of these items does the Flaming Raccoon NOT drop?",
+                "Which NPC is responsible for transporting travellers from Kerning City to Zipangu, and back?",
+                "Which of the items sold at the Mushroom Shrine increases your attack power?",
+                "Which of these items do the Extras NOT drop?",
+                "Which of these items DO NOT exist??",
+                "What's the name of the vegetable store owner in Showa Town?",
+                "Which of these items DO exist?",
+                "What is the name of the strongest boss in the Mushroom Shrine?",
+                "Which one of these items has a mis-matched class or level description?",
+                "Which of these noodles are NOT being sold by Robo at the Mushroom Shrine?",
+                "Which of these NPCs do NOT stand in front of Showa Movie Theater?"
+            };
+
+            var answers = new List<string[]>
+            {
+                new[] { "Raccoon Firewood", "Solid Horn", "Red Brick" },
+                new[] { "Peli", "Spinel", "Poli" },
+                new[] { "Takoyaki", "Yakisoba", "Tempura" },
+                new[] { "Extra A's Badge", "Extra B's Corset", "Extra C's Necklace" },
+                new[] { "Frozen Tuna", "Fan", "Fly Swatter" },
+                new[] { "Sami", "Kami", "Umi" },
+                new[] { "Cloud Fox's Tooth", "Ghost's Bouquet", "Dark Cloud Fox's Tail" },
+                new[] { "Black Crow", "Blue Mushmom", "Himegami" },
+                new[] { "Bamboo Spear - Warrior-only Weapon", "Pico-Pico Hammer - One-handed Sword", "Mystic Cane - Level 51 equip" },
+                new[] { "Kinoko Ramen (Pig Skull)", "Kinoko Ramen (Salt)", "Mushroom Miso Ramen" },
+                new[] { "Skye", "Furano", "Shinta" }
+            };
+
+            var correctAnswer = new List<int> { 1, 1, 0, 1, 2, 2, 2, 0, 0, 2, 2 };
+
+            // 随机选择5个问题
+            var rng = new Random();
+            var indices = Enumerable.Range(0, questions.Count).OrderBy(_ => rng.Next()).Take(5).ToList();
+
+            for (int i = 0; i < 5; i++)
+            {
+                int idx = indices[i];
+                var prompt = $"Question no.{i + 1}: {questions[idx]}";
+                for (int j = 0; j < answers[idx].Length; j++)
+                {
+                    prompt += $"\r\n#b#L{j}#{answers[idx][j]}#l#k";
+                }
+
+                int selection = await AskMenu(prompt);
+
+                if (selection != correctAnswer[idx])
+                {
+                    await SayNext("Hmmm...all humans make mistakes anyway! If you want to take another crack at it, then bring me 300 Fried Chicken.");
+                    return;
+                }
+            }
+
+            await SayNext("Dang, you answered all the questions right. I may not like humans in general, but I HATE breaking a promise, so, as promised, here's the Orange Marble.");
+            gainItem(4031064, 1);
+            await SayOK("我们的交易已经结束，非常感谢！你可以离开了！");
         }
 
 
@@ -4442,10 +5231,30 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9120202 
-        public Task con3()
+        public async Task con3()
         {
-            // TODO
-            return Task.CompletedTask;
+            var eim = getEventInstance();
+            if (eim == null || !eim.isEventCleared())
+            {
+                if (await AskYesNo("如果你现在离开，就无法返回了。你确定要离开吗？"))
+                {
+                    warp(801040004, 1);
+                }
+            }
+            else
+            {
+                await SayNext("你们做到了，干得漂亮！现在我们的城市摆脱了那些暴徒的暴政！作为城市的代表，请接受这份奖励，作为对你们努力的认可，我会把你们带回城里。");
+
+                var result = eim!.GiveClearReward(getPlayer());
+                if (result != ClaimRewardResult.Success)
+                {
+                    await SayNext("请先在您的物品栏腾出空间…");
+                }
+                else
+                {
+                    warp(801040101);
+                }
+            }
         }
 
 
@@ -4458,18 +5267,131 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9201033 
-        public Task go_xmas06()
+        public async Task go_xmas06()
         {
-            // TODO
-            return Task.CompletedTask;
+            const int happyville = 209000000;
+            const int shalomTemple = 681000000;
+
+            var mapId = getMapId();
+            if (mapId == happyville)
+            {
+                if (await AskYesNo("沙龙神殿与快乐村的其他地方都不一样，你想前往 #b沙龙神殿#k 吗？"))
+                {
+                    warp(shalomTemple, 0);
+                }
+                else
+                {
+                    await SayNext("如果你改变主意了，告诉我！");
+                }
+            }
+            else if (mapId == shalomTemple)
+            {
+                if (await AskYesNo("你想回到快乐村吗？"))
+                {
+                    warp(happyville, 0);
+                }
+                else
+                {
+                    await SayNext("如果你改变主意了，告诉我！");
+                }
+            }
         }
 
 
         // Npc: 9201050 
-        public Task About_NLC()
+        public async Task About_NLC()
         {
-            // TODO
-            return Task.CompletedTask;
+            const int minlevel = 10;
+
+            if (isQuestCompleted(4911))
+            {
+                await SayNext("干得好！你解决了我关于NLC的所有问题。祝你旅途愉快！");
+                return;
+            }
+
+            if (isQuestCompleted(4900) || isQuestStarted(4900))
+            {
+                await SayNext("嘿，注意一下，我要考你另一个问题，伙计！");
+                return;
+            }
+
+            var info = new[]
+            {
+                "What is this place?",
+                "Who is Professor Foxwit?",
+                "What's a Foxwit Door?",
+                "Where are the MesoGears?",
+                "What is the Krakian Jungle?",
+                "What's a Gear Portal?",
+                "What do the street signs mean?",
+                "What's the deal with Jack Masque?",
+                "Lita Lawless looks like a tough cookie, what's her story?",
+                "When will new boroughs open up in the city?",
+                "I want to take the quiz!"
+            };
+
+            var selStr = "What up! Name's Icebyrd Slimm, mayor of New Leaf City! Happy to see you accepted my invite. So, what can I do for you?#b";
+            for (int i = 0; i < info.Length; i++)
+            {
+                selStr += "\r\n#L" + i + "# " + info[i] + "#l";
+            }
+
+            int selection = await AskMenu(selStr);
+
+            switch (selection)
+            {
+                case 0:
+                    await SayNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于埃尔帕姆……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
+                    await About_NLC();
+                    break;
+                case 1:
+                    await SayNext("一个97岁的老家伙，动作还挺敏捷。有一天我在城外遇到了他，他是个时空旅行者。这个老家伙在丛林里遇到了一些麻烦，好像有些丛林生物想要吃掉他。作为我救了他的回报，他答应建造一个时空博物馆。我感觉他来这里有其他目的，因为他多次提到新叶城在未来将扮演一个有趣的角色。也许你可以多了解一些……");
+                    await About_NLC();
+                    break;
+                case 2:
+                    await SayNext("嘿，当我看到教授在建造它们时，我也问了同样的问题。它们是传送点。按上键会将你传送到另一个位置。我建议你熟悉它们，它们是我们的交通系统。");
+                    await About_NLC();
+                    break;
+                case 3:
+                    await SayNext("MesoGears位于比格本塔下方。这是巴里卡德发现的一个充满怪物的区域。看起来它似乎位于塔的一个独立部分，如果你问我，这相当奇怪。我听说他需要一点帮助来探索它，你应该去看看他。不过要小心，那里的狼蜘蛛可不是闹着玩的。");
+                    await About_NLC();
+                    break;
+                case 4:
+                    await SayNext("啊...嗯。克拉基亚丛林位于新叶城的郊外。许多新的、强大的生物在那些地区漫游，所以如果你要去那里，最好做好战斗的准备。它位于城镇的右端。有传言说丛林通向一个失落的城市，但我们还没有找到任何东西。");
+                    await About_NLC();
+                    break;
+                case 5:
+                    await SayNext("嗯，当约翰发现自己在大本钟的迷思齿轮部分时，他站在一个上，然后去了另一个地方。然而，他只能来回走动，它们不像狐狡之门那样循环。这就是古老的科技。");
+                    await About_NLC();
+                    break;
+                case 6:
+                    await SayNext("嗯，你几乎可以在任何地方看到它们。它们是正在施工的区域。红灯表示还没完工，但绿灯表示已经开放。经常回来看看，我们一直在建设中！");
+                    await About_NLC();
+                    break;
+                case 7:
+                    await SayNext("啊，杰克。你知道那些自以为很酷、总是能逃脱一切惩罚的家伙吗？还能追到女孩？嗯，那就是杰克，只是没有女孩。他觉得自己错失了机会，于是开始戴上面具隐藏真实身份。我对他的真实身份守口如瓶，但他来自阿莫利亚。如果你问他，他可能会告诉你更多。");
+                    await About_NLC();
+                    break;
+                case 8:
+                    await SayNext("我认识莉塔有一段时间了，虽然我们最近才重新燃起友谊。我有一段时间没见到她，但我理解为什么。她作为一个盗贼进行了非常非常长时间的训练。事实上，那就是我们第一次见面的方式！我被一群迷失的蘑菇围攻，她跳了出来帮忙。当选举警长的时候，毫无疑问是她。她承诺要帮助其他人进行训练并保护城市，所以如果你对公民义务感兴趣，可以和她交谈一下。");
+                    await About_NLC();
+                    break;
+                case 9:
+                    await SayNext("很快，我的朋友。虽然你看不到他们，但城市开发者们正在努力工作。当他们准备好了，我们就会打开它们。我知道你期待着这一刻，我也是！");
+                    await About_NLC();
+                    break;
+                case 10:
+                    if (getLevel() >= minlevel)
+                    {
+                        await SayNext("没问题。如果你回答正确，我会给你一些好东西！");
+                        startQuest(4900);
+                    }
+                    else
+                    {
+                        await SayNext("急切了吗？在我让你参加测验之前，你想再多探索一下吗？");
+                    }
+                    break;
+            }
         }
 
 
