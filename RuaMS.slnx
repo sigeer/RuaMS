@@ -86,6 +86,7 @@
     <Project Path="tools/XmlWzReader.SouceGenerator/XmlWzReader.SouceGenerator.csproj" />
   </Folder>
   <Folder Name="/workflow/">
+    <File Path=".github/workflows/ai-review.yml" />
     <File Path=".github/workflows/build-docker-channel.yml" />
     <File Path=".github/workflows/build-docker-master-standalone.yml" />
     <File Path=".github/workflows/build-docker-master.yml" />
