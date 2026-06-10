@@ -22,7 +22,7 @@ using System.Drawing;
 using tools;
 
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     // 未包含的NPC: 1002005, 1012009, 1012118, 1013001, 1013002, 1013104, 1013200, 1022005, 1022101_old,
     // 1022104, 1032001_nextLevel, 1032006, 1032113, 1052014, 1052017, 1052113, 1061008, 1091004, 1092015,
@@ -1066,6 +1066,22 @@ namespace Application.Plugin.Script
         // Npc: 1052111 
         public async Task givebubbleDoll3()
         {
+            if (isQuestStarted(20710))
+            {
+                if (!hasItem(4032136))
+                {
+                    if (canHold(4032136))
+                    {
+                        gainItem(4032136, 1);
+                        await SayNext("你在垃圾桶里找到了一个#b#t4032136##k！ #i4032136#");
+                    }
+                    else
+                    {
+                        await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                    }
+                    return;
+                }
+            }
             await SayOK(GetDefault0());
         }
 

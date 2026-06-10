@@ -3,7 +3,7 @@ using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

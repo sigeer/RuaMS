@@ -4,7 +4,7 @@ using Application.Plugin.Script.Events;
 using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Skill;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

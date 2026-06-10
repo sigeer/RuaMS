@@ -2,7 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Shared.Constants.Item;
 using Application.Shared.Models;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

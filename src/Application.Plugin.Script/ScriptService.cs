@@ -6,6 +6,7 @@ using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
+using Application.Plugin.Script.Npc;
 using Application.Plugin.Script.Quest;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
@@ -16,7 +17,6 @@ using Serilog;
 using server.maps;
 using System.Reflection;
 using tools;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Plugin.Script
 {
@@ -113,8 +113,7 @@ namespace Application.Plugin.Script
 
             if (string.IsNullOrEmpty(scriptName))
             {
-                c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
-                return false;
+                scriptName = $"n{npcId}";
             }
 
             if (!c.canClickNPC())
@@ -127,6 +126,7 @@ namespace Application.Plugin.Script
             {
                 // 
                 c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
                 return false;
             }
 
