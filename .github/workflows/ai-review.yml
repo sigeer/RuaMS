@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
-        env:
+        with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
           chat-token: ${{ secrets.OPENAI_API_KEY }}
