@@ -1,14 +1,56 @@
 using Application.Shared.Constants.Map;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
         // Npc: 9201021 
-        public Task weddingParty()
+        public async Task weddingParty()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() != 680000401)
+            {
+                var isMap400 = getMapId() == 680000400;
+                var options = new List<string>();
+                if (!isMap400)
+                    options.Add("前往未开发的心脏狩猎场");
+                if (isMap400)
+                    options.Add("我有7把钥匙，带我去打破箱子");
+                options.Add("请将我传送出去");
+
+                var selection = await AskMenu("你好，你想去哪里？", options);
+
+                if (!isMap400 && selection == 0)
+                {
+                    if (!haveItem(4000313, 1))
+                    {
+                        await SayOK("看起来你丢失了你的 #b#t4000313##k。很抱歉，但是没有那个物品我不能让你前往狩猎场地。");
+                        return;
+                    }
+                    warp(680000400, 0);
+                }
+                else if (isMap400 && selection == 0)
+                {
+                    if (haveItem(4031217, 7))
+                    {
+                        gainItem(4031217, -7);
+                        warp(680000401, 0);
+                    }
+                    else
+                    {
+                        await SayOK("看起来你没有7把钥匙。在未驯化之心狩猎地杀死蛋糕和蜡烛以获取钥匙。");
+                    }
+                }
+                else
+                {
+                    warp(680000500, 0);
+                    await SayOK("再见。希望你喜欢这场婚礼！");
+                }
+            }
+            else
+            {
+                await AskMenu("你好，你现在想回去吗？再次返回这里将花费你 #r另外7把钥匙#k。", ["请将我传送回训练场"]);
+                warp(680000400, 0);
+            }
         }
 
         // Npc: 9201022 

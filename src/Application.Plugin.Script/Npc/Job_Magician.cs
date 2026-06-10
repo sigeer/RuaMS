@@ -1,7 +1,7 @@
 using Application.Shared.Constants.Job;
 using Application.Shared.Quest;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
