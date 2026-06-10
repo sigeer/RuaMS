@@ -1,11 +1,11 @@
 name: AI Review
 
 on:
-  workflow_run:
-    # 需要被监听的工作流的名称
-    workflows: ["Build Check"]
-    # 监听的触发类型：工作流完成时
-    types: [completed]
+  pull_request_target:
+    types:
+      - opened # Triggers when a PR is opened
+      - reopened # Triggers when a PR is reopened
+      - synchronize # Triggers when a commit is pushed to the PR
 
   issue_comment:
     types:
