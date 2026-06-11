@@ -18,8 +18,8 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: DeepSeek Code Review
-        uses: hustcer/deepseek-review@v1
+      - name: DeepSeek CR
+        uses: hustcer/deepseek-review@v1.20
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
