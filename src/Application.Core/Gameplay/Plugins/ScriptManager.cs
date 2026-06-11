@@ -11,13 +11,13 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public sealed class ScriptManager : AbstractPluginManager<IScriptService>
     {
-        public override async Task<bool> LoadPlugin(string pluginDllName)
+        protected override string GetPluginKey(string pluginDllName)
         {
-            return await LoadPluginInternal(pluginDllName, multiple: false, overwrite: true).ConfigureAwait(false);
+            return "Plugin:Script";
         }
 
         #region Services
-        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
+        private List<PluginContainer<IScriptService>> EnsureNotDisposedAndGetContainers()
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ScriptManager));
@@ -25,8 +25,11 @@ namespace Application.Core.Gameplay.Plugins
             var containers = _pluginContainers.Values.ToList();
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in containers)
+            return containers;
+        }
+        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
+        {
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -51,14 +54,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -91,14 +87,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -128,7 +117,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
 
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -160,7 +149,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
 
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -190,7 +179,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
 
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -220,7 +209,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
 
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -250,7 +239,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No plugin loaded");
 
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -273,14 +262,7 @@ namespace Application.Core.Gameplay.Plugins
 
         internal void ReactorAct(IChannelClient c, Reactor reactor)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try
@@ -303,15 +285,8 @@ namespace Application.Core.Gameplay.Plugins
 
         internal int RegisterEvents(WorldChannel channel)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
             int totalRegistered = 0;
-            foreach (var container in containers)
+            foreach (var container in EnsureNotDisposedAndGetContainers())
             {
                 using var _ = container.Tracker.EnterRequest();
                 try

@@ -30,50 +30,34 @@ namespace Application.Core.Plugins
 
         public virtual async Task<bool> LoadPlugin(string pluginDllName)
         {
-            return await LoadPluginInternal(pluginDllName, multiple: true).ConfigureAwait(false);
+            return await LoadPluginInternal(pluginDllName).ConfigureAwait(false);
         }
 
-        public async Task<bool> ReloadPlugin(string pluginDllName)
+        protected virtual string GetPluginKey(string pluginDllName)
         {
-            return await LoadPluginInternal(pluginDllName, multiple: false, overwrite: true).ConfigureAwait(false);
+            return Path.GetFileNameWithoutExtension(pluginDllName);
         }
 
-        protected async Task<bool> LoadPluginInternal(string pluginDllName, bool multiple = true, bool overwrite = false)
+
+        async Task<bool> LoadPluginInternal(string pluginDllName)
         {
-            var newContainer = LoadPluginFromSourceAsync(pluginDllName);
+            var newContainer = LoadPluginFromSource(pluginDllName);
             if (newContainer == null)
                 return false;
 
-            var pluginBaseKey = Path.GetFileNameWithoutExtension(pluginDllName);
+            var pluginBaseKey = GetPluginKey(pluginDllName);
             
             string pluginKey = pluginBaseKey;
 
-            if (overwrite)
+            if (_pluginContainers.TryRemove(pluginKey, out var oldContainer))
             {
-                if (_pluginContainers.TryRemove(pluginKey, out var oldContainer))
+                try
                 {
-                    try
-                    {
-                        await oldContainer.DisposeAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
-                    }
+                    await oldContainer.DisposeAsync().ConfigureAwait(false);
                 }
-            }
-            else if (!multiple)
-            {
-                if (_pluginContainers.TryGetValue(pluginKey, out var oldContainer))
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        await oldContainer.DisposeAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
-                    }
+                    Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
                 }
             }
 
@@ -119,7 +103,7 @@ namespace Application.Core.Plugins
         /// <summary>
         /// 从源目录复制 DLL 到卷影副本，并加载
         /// </summary>
-        private PluginContainer<TService> LoadPluginFromSourceAsync(string pluginDllName)
+        private PluginContainer<TService> LoadPluginFromSource(string pluginDllName)
         {
             string sourcePath = Path.Combine(_sourcePluginDir, pluginDllName);
             if (!File.Exists(sourcePath))
