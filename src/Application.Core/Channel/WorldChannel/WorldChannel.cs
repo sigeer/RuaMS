@@ -253,7 +253,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             return;
         }
 
-        NodeService.PluginManager.RegisterEvents(this);
+        NodeService.ScriptManager.RegisterEvents(this);
     }
     public async Task Initialize(Config.RegisterServerResult config)
     {
@@ -262,11 +262,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         UpdateWorldConfig(config.Config);
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
-
-        log.Information("[{ServerName}] 初始化事件...", InstanceName);
-        var loadedEventsCount = NodeService.PluginManager.RegisterEvents(this);
-        // var loadedEventsCount = EventScriptManager.ReloadEventScript();
-        log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 

@@ -41,6 +41,14 @@ public class CommandExecutor
         }
     }
 
+    public void TryRemoveCommand(CommandBase command)
+    {
+        foreach (var sytax in command.AllSupportedCommand)
+        {
+            registeredCommands.Remove(sytax);
+        }
+    }
+
     public void handle(IChannelClient client, string message)
     {
         if (!loaded)

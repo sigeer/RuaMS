@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace Application.Utility.Extensions
 {
@@ -120,6 +121,34 @@ namespace Application.Utility.Extensions
                 }
             }
             return (T)result;
+        }
+
+        /// <summary>
+        /// 计算文件的哈希值
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="algorithmName">算法名称: MD5, SHA1, SHA256, SHA384, SHA512</param>
+        /// <returns>十六进制字符串（小写）</returns>
+        public static string ComputeFileHash(this string filePath, string algorithmName = "SHA256")
+        {
+            using (var fileStream = File.OpenRead(filePath))
+            {
+                HashAlgorithm algorithm = algorithmName.ToUpperInvariant() switch
+                {
+                    "MD5" => MD5.Create(),
+                    "SHA1" => SHA1.Create(),
+                    "SHA256" => SHA256.Create(),
+                    "SHA384" => SHA384.Create(),
+                    "SHA512" => SHA512.Create(),
+                    _ => throw new NotSupportedException($"算法 {algorithmName} 不支持")
+                };
+
+                using (algorithm)
+                {
+                    byte[] hashBytes = algorithm.ComputeHash(fileStream);
+                    return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                }
+            }
         }
     }
 }

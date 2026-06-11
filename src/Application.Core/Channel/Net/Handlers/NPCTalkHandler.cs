@@ -94,7 +94,7 @@ public class NPCTalkHandler : ChannelHandlerBase
                 return;
             }
 
-            _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+            _ = c.CurrentServer.NodeService.ScriptManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
             return;
 
             //if (npc.getId() == NpcId.DUEY)

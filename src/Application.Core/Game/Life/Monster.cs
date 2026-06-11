@@ -142,6 +142,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         base.OnMounted(map);
 
         DispatchMonsterSpawned();
+        map.ChannelServer.NodeService.PluginManager.OnMobSpawned(this);
         _recoverMPNext = map.ChannelServer.Node.getCurrentTime() + _recoverMPPeriod;
     }
 
@@ -485,6 +486,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         if (!fake)
         {
             OnDamaged?.Invoke(this, new MonsterDamagedEventArgs(from, trueDamage.Value));
+            MapModel.ChannelServer.NodeService.PluginManager.OnMobDamaged(this, trueDamage.Value, from);
         }
 
         if (getStats().isFriendly())
@@ -540,6 +542,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         maxHpPlusHeal.addAndGet(hpHealed.Value);
 
         OnHealed?.Invoke(this, hpHealed.Value);
+        MapModel.ChannelServer.NodeService.PluginManager.OnMobHealed(this, hpHealed.Value);
     }
 
     public bool isAttackedBy(Player chr)
@@ -1016,6 +1019,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         var dieAni = getAnimationTime("die1");
         OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, dieAni));
+        MapModel.ChannelServer.NodeService.PluginManager.OnMobKilled(this, killer);
 
         if (getStats().isFriendly())
         {

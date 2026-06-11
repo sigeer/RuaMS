@@ -16,7 +16,6 @@ using Serilog;
 using server.maps;
 using System.Reflection;
 using tools;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Plugin.Script
 {
