@@ -32,7 +32,7 @@ namespace Application.Core.Gameplay.Plugins
         }
 
         #region Services
-        private PluginContainer<IScriptService> EnsureNotDisposedAndGetContainer()
+        private PluginContainer<IScriptService> GetActiveContainer()
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ScriptManager));
@@ -41,7 +41,7 @@ namespace Application.Core.Gameplay.Plugins
             if (containers.Count == 0)
                 throw new InvalidOperationException("No script plugin loaded.");
             if (containers.Count > 1)
-                Log.Logger.Warning("Multiple script plugins loaded, using the first one.");
+                throw new InvalidOperationException("Multiple script plugins loaded.");
 
             return containers[0];
         }
@@ -51,13 +51,13 @@ namespace Application.Core.Gameplay.Plugins
             if (container.PluginServices.Count == 0)
                 throw new InvalidOperationException("No script service loaded.");
             if (container.PluginServices.Count > 1)
-                Log.Logger.Warning("Multiple script service loaded, using the first one.");
+                throw new InvalidOperationException("Multiple script service loaded.");
 
             return container.PluginServices[0];
         }
         public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -76,7 +76,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -102,7 +102,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -120,7 +120,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public bool EnterPortal(IChannelClient c, Portal p)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -139,7 +139,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task ItemScript(IChannelClient c, int npcId, string scriptName)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -157,7 +157,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public void MapEnterScript(IChannelClient c, IMap map)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -175,7 +175,7 @@ namespace Application.Core.Gameplay.Plugins
 
         public void MapFirstEnterScript(IChannelClient c, IMap map)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -193,7 +193,7 @@ namespace Application.Core.Gameplay.Plugins
 
         internal void ReactorHit(IChannelClient c, Reactor reactor)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -212,7 +212,7 @@ namespace Application.Core.Gameplay.Plugins
 
         internal void ReactorAct(IChannelClient c, Reactor reactor)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {
@@ -231,7 +231,7 @@ namespace Application.Core.Gameplay.Plugins
 
         internal int RegisterEvents(WorldChannel channel)
         {
-            var container = EnsureNotDisposedAndGetContainer();
+            var container = GetActiveContainer();
             using var _ = container.Tracker.EnterRequest();
             try
             {

@@ -1162,7 +1162,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                var pqOption = await AskMenu($"#e#b<组队任务：高级之路 - {levels[area]}>\r\n#k#n" + em.getProperty("party") + "\r\n\r\n#p1052014# 的操作方式与普通的不同。它们不使用金币或扭蛋券，而是使用 #r橡皮擦#k，可以通过完成高级之路上的任务获得。要前往那里，你必须找到队友并参加一个组队任务。当组队并准备好后，让你的 #b队长#k 与我交谈。", [
+                var pqOption = await AskMenu($"#e#b<组队任务：高级之路 - {levels[area]}>\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n#p1052014# 的操作方式与普通的不同。它们不使用金币或扭蛋券，而是使用 #r橡皮擦#k，可以通过完成高级之路上的任务获得。要前往那里，你必须找到队友并参加一个组队任务。当组队并准备好后，让你的 #b队长#k 与我交谈。", [
                     "我想参加组队任务。",
                     "我想了解更多详情。"
                 ]);
@@ -2417,7 +2417,6 @@ namespace Application.Plugin.Script.Npc
                 if (choice == 0)
                 {
                     var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
-                    pepe.setProperty("player", getPlayer().getName());
                     var r = pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
                 }
@@ -2440,7 +2439,6 @@ namespace Application.Plugin.Script.Npc
                 if (sel == 1)
                 {
                     var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
-                    pepe.setProperty("player", getPlayer().getName());
                     var r = pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
                 }
@@ -3417,7 +3415,7 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var option = await AskMenu($"#e#b<组队任务：元素塔纳托斯>\r\n#k#n{em.getProperty("party")}\r\n\r\n你正在寻找元素塔纳托斯，对吗？如果你和另一个法师组队，而且他的元素属性与你相反，你们就能够克服它们。作为队长，当你准备好出发时，和我交谈。", [
+            var option = await AskMenu($"#e#b<组队任务：元素塔纳托斯>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n你正在寻找元素塔纳托斯，对吗？如果你和另一个法师组队，而且他的元素属性与你相反，你们就能够克服它们。作为队长，当你准备好出发时，和我交谈。", [
                 "我想参加组队任务。",
                 "我想了解更多细节。"
             ]);
@@ -3975,7 +3973,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                var option = await AskMenu($"#e#b<组队任务：拯救 Delli>\r\n#k#n{em.getProperty("party")}\r\n\r\n啊，#r#p1095000##k 让你来的？她担心我吗？... 很抱歉听到这个消息，但我现在真的不能回去，一些怪物受到黑魔法师的影响，我需要解救它们！... 你似乎也不会接受这个事实，对吗？你愿意和队友一起帮助我吗？如果愿意，请让你的 #b队长#k 和我交谈。", [
+                var option = await AskMenu($"#e#b<组队任务：拯救 Delli>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n啊，#r#p1095000##k 让你来的？她担心我吗？... 很抱歉听到这个消息，但我现在真的不能回去，一些怪物受到黑魔法师的影响，我需要解救它们！... 你似乎也不会接受这个事实，对吗？你愿意和队友一起帮助我吗？如果愿意，请让你的 #b队长#k 和我交谈。", [
                     "我想参加组队任务。",
                     "我想了解更多细节。"
                 ]);
@@ -4636,7 +4634,7 @@ namespace Application.Plugin.Script.Npc
                 }
 
                 var option = await AskMenu(
-                    "#e#b<组队任务：首领突袭>\r\n#k#n" + em.getProperty("party") +
+                    "#e#b<组队任务：首领突袭>\r\n#k#n" + em.GetRequirementDescription(c) +
                     "\r\n\r\n你想要和队友合作完成远征任务，还是勇敢到足以独自完成？让你的#b队伍领袖#k与我交谈或者自己创建一个队伍。",
                     [
                         "我想参加组队任务。",

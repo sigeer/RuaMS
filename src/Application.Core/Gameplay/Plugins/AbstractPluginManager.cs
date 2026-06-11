@@ -55,6 +55,12 @@ namespace Application.Core.Plugins
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pluginDllName"></param>
+        /// <param name="allowMulti">是否允许注册多个dll</param>
+        /// <returns></returns>
         protected async Task<bool> LoadPluginInternal(string pluginDllName, bool allowMulti)
         {
             var newContainer = LoadPluginFromSource(pluginDllName);
@@ -84,11 +90,12 @@ namespace Application.Core.Plugins
 
         async Task<bool> RemovePluginInternal(string pluginName)
         {
-            if (_pluginContainers.TryRemove(pluginName, out var container))
+            if (_pluginContainers.TryGetValue(pluginName, out var container))
             {
                 try
                 {
                     await container.DisposeAsync().ConfigureAwait(false);
+                    _pluginContainers.TryRemove(pluginName, out _);
                     return true;
                 }
                 catch (Exception ex)
