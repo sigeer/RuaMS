@@ -1,19 +1,21 @@
 ---
 name: refactor-from-js
-description: "实现`/src/Application.Plugin.Script/` 下的 尚未实现的方法（含有`// TODO` 注释）"
+description: "将js对话脚本用C#重写"
 ---
 
 ## npc
 
-`/srcApplication.Plugin.Script/Npc`下的文件
+### 范围
 
+js: `/src/Application.Resources/scripts/npc/*.js`
+C#: `/src/Application.Plugin.Script/Npc/*.cs`
+  
 ### 映射关系
 
-该目录下虽然有多个文件，但都是一个类拆分成了多个文件。
-类中有多个方法，每个方法对应一个npc。方法上有注释，包含了NpcId: `Npc: {npc_id}`。
-那他对应的js脚本就是 `/src/Application.Resources/scripts/npc/{npc_id}.js`。
+`/src/Application.Plugin.Script/Npc`下虽然有多个文件，但都是一个类，通过部分类拆分成了多个文件。
+类中有多个方法，方法上有注释，包含了NpcId: `Npc: {npc_id}`。
 
-比如：`/src/Application.Plugin.Script/Npc/Salo.cs`下的`hair_mureung1`方法，对应的js脚本就是 `/src/Application.Resources/scripts/npc/2090100.js`。
+`npc_id.js` == C# 中拥有`// Npc: {npc_id}`注释的方法
 
 ### 对话逻辑
 
@@ -38,18 +40,23 @@ js脚本中，会有2个方法: `start`和`action(mode, type, selection)`
 
 ## quest
 
-任务，也是对话形式，所以对话逻辑与npc一样
+任务，也是对话形式，所以对话逻辑与npc一样，
+
+### 范围
+
+js: `/src/Application.Resources/scripts/quest/*.js`
+C#: `/src/Application.Plugin.Script/Quest/*.cs`
 
 ### 映射关系
 
-`/src/Application.Plugin.Script/Quest`下虽然有多个文件，但都是一个类拆分成了多个文件。
+`/src/Application.Plugin.Script/Quest`下虽然有多个文件，但是一个类拆分成了多个文件。
 类中有多个方法，方法上有注释，包含了QuestId: `Quest: {quest_id}`。
-那么他对应的js脚本就是 `/src/Application.Resources/scripts/quest/{quest_id}.js`。
+
 但是js中可能会有2个方法: `start` 和 `end`。
 start 方法对应 quest 开始时的逻辑，end 方法对应 quest 结束时的逻辑。
-这里C#中也会用2个方法对应：`q{quest_id}s`和`q{quest_id}e`。
+这里C#中用2个方法对应：`q{quest_id}s`和`q{quest_id}e`。
 
-比如：`/src/Application.Plugin.Script/Quest/A6.cs`下的`q21000s`方法，对应的就是 `/src/Application.Resources/scripts/quest/21000.js`的`start`方法。
+既将`quest_id.js`中的`start`方法重写成C#的`q{quest_id}s`方法，`end`方法重写成`q{quest_id}e`方法。
 
 ### 对话逻辑
 
@@ -85,14 +92,8 @@ public async Task hair_mureung1()
 
 ## 执行流程
 
-1. 定位目标 C# 文件（通常是 `/src/Application.Plugin.Script/Npc/*.cs` 或 `/src/Application.Plugin.Script/Quest/*.cs`）。
-2. 找到其中标记了 `// TODO` 的方法（例如 `hair_mureung1` 或 `q21000s`）。
-3. 根据方法上的注释（`Npc: {npc_id}` 或 `Quest: {quest_id}`）找到对应的 JS 文件路径，**这一步很重要，绝对不能搞错**。
-4. 如果 JS 文件不存在，则跳过并输出提示。
-5. 存在对应的 JS 脚本，则输出这个JS脚本文件名。
-6. 读取 JS 文件内容，解析其中的 `start` 和 `action`（或 `start`/`end`）逻辑。
-7. 按照对话映射表，将 JS 中的顺序调用（sendOk / sendNext / …）转换为 C# 中连续的 `await SayXXX` 语句。
-8. 对字符串中的英文进行汉化（保留特殊替换域，如 `#b`、`#k`、`#n` 等）。
-9. 用转换后的代码替换原 C# 方法体中 `// TODO` 所在的位置（或整个方法体）。
-10. 有多个方法时，逐个替换，避免一次性替换整个文件。
-11. 按以上流程做完后，回顾代码，如果有大量重复的代码，尽量提取、优化，避免重复编写，但是这个修改不能影响原有功能。
+你需要根据`/src/Application.Resources/scripts/npc/*.js`,`/src/Application.Resources/scripts/quest/*.js`处理重写所有js文件。
+但是遇到以下情况需要特殊处理
+1. 找到的对应C#方法体中没有`// TODO`，则跳过，这是一个已经处理过的方法。
+2. 没有找到对应的C#方法，对于npc脚本，在`NpcScript.cs`中 用`n{npc_id}`作为方法名创建方法；对于quest脚本，则在`QuestScript.cs`中创建相应的`q{quest_id}s`,`q{quest_id}e`方法。
+3. 对字符串中的英文进行汉化（保留特殊替换域，如 `#b`、`#k`、`#n` 等）。

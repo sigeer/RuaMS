@@ -1,7 +1,7 @@
 using Application.Core.Models;
 using Application.Resources.Messages;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

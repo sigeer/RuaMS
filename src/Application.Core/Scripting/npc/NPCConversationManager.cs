@@ -870,6 +870,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return await WaitingForOption();
     }
 
+    public async Task<int> AskDimensionalMirror(string text)
+    {
+        getClient().sendPacket(PacketCreator.getDimensionalMirror(text));
+        return await WaitingForOption();
+    }
+
     public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
     {
         if (options.Count() == 0)

@@ -2,7 +2,7 @@ using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Skill;
 using Application.Shared.Quest;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     /// <summary>
     /// 职业-战士相关

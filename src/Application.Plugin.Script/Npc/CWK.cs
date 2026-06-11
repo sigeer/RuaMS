@@ -1,7 +1,7 @@
 using server.life;
 using System.Drawing;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

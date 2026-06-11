@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Net.ServerSentEvents;
 using System.Text;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

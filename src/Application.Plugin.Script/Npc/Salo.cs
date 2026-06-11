@@ -1,6 +1,6 @@
 using Application.Utility;
 
-namespace Application.Plugin.Script
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
