@@ -11,297 +11,208 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public sealed class ScriptManager : AbstractPluginManager<IScriptService>
     {
-        protected override string GetPluginKey(string pluginDllName)
+        public override Task<bool> LoadPlugin(string pluginDllName)
         {
-            return "Plugin:Script";
+            return LoadPluginInternal(pluginDllName, false);
         }
 
         #region Services
-        private List<PluginContainer<IScriptService>> EnsureNotDisposedAndGetContainers()
+        private PluginContainer<IScriptService> EnsureNotDisposedAndGetContainer()
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ScriptManager));
 
             var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
+            if (containers.Count != 1)
                 throw new InvalidOperationException("No plugin loaded");
-            return containers;
+
+            return containers[0];
         }
         public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                return await container.PluginService.Start(c, npcId, npcObject, scriptName);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        if (await service.Start(c, npcId, npcObject, scriptName))
-                            return true;
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Npc script error in: {ScriptName}", scriptName);
-                }
+                Log.Logger.Error(e, "Npc script error in: {ScriptName}", scriptName);
             }
             return false;
         }
 
         public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
         {
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                if (isStart)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        if (isStart)
-                        {
-                            if (await service.StartQuest(c, questObj, npcId))
-                                return true;
-                        }
-                        else
-                        {
-                            if (await service.CompleteQuest(c, questObj, npcId))
-                                return true;
-                        }
-                    }
+                    return await container.PluginService.StartQuest(c, questObj, npcId);
                 }
-                catch (Exception e)
+                else
                 {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Quest script error in: QuestId={QuestId}", questObj.getId());
+                    return await container.PluginService.CompleteQuest(c, questObj, npcId);
                 }
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
+                {
+                    c.OnlinedCharacter.Pink(e.Message);
+                }
+                Log.Logger.Error(e, "Quest script error in: QuestId={QuestId}", questObj.getId());
             }
             return false;
         }
 
         public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                await container.PluginService.Action(c, mode, type, selection, inputText);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        await service.Action(c, mode, type, selection, inputText);
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Npc script error in: {ScriptName}");
-                }
+                Log.Logger.Error(e, "Npc script error in: {ScriptName}");
             }
         }
 
         public bool EnterPortal(IChannelClient c, Portal p)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                return container.PluginService.Enter(c, p);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        if (service.Enter(c, p))
-                            return true;
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Portal script error in: {ScriptName}", p.getScriptName());
-                }
+                Log.Logger.Error(e, "Portal script error in: {ScriptName}", p.getScriptName());
             }
             return false;
         }
 
         public async Task ItemScript(IChannelClient c, int npcId, string scriptName)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                await container.PluginService.ItemScript(c, npcId, scriptName);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        await service.ItemScript(c, npcId, scriptName);
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Item script error in: {ScriptName}", scriptName);
-                }
+                Log.Logger.Error(e, "Item script error in: {ScriptName}", scriptName);
             }
         }
 
         public void MapEnterScript(IChannelClient c, IMap map)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                container.PluginService.MapEnter(c, map);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        service.MapEnter(c, map);
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Map script error in: {Map}(Enter)", map.Id);
-                }
+                Log.Logger.Error(e, "Map script error in: {Map}(Enter)", map.Id);
             }
         }
 
         public void MapFirstEnterScript(IChannelClient c, IMap map)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                container.PluginService.MapFirstEnter(c, map);
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        service.MapFirstEnter(c, map);
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id);
-                }
+                Log.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id);
             }
         }
 
         internal void ReactorHit(IChannelClient c, Reactor reactor)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ScriptManager));
-
-            var containers = _pluginContainers.Values.ToList();
-            if (containers.Count == 0)
-                throw new InvalidOperationException("No plugin loaded");
-
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                container.PluginService.ReactorHit(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        service.ReactorHit(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
-                }
+                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
             }
         }
 
         internal void ReactorAct(IChannelClient c, Reactor reactor)
         {
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
+                container.PluginService.ReactorAct(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                if (e is BusinessException)
                 {
-                    foreach (var service in container.PluginServices)
-                    {
-                        service.ReactorAct(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
-                    }
+                    c.OnlinedCharacter.Pink(e.Message);
                 }
-                catch (Exception e)
-                {
-                    if (e is BusinessException)
-                    {
-                        c.OnlinedCharacter.Pink(e.Message);
-                    }
-                    Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
-                }
+                Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
             }
         }
 
         internal int RegisterEvents(WorldChannel channel)
         {
-            int totalRegistered = 0;
-            foreach (var container in EnsureNotDisposedAndGetContainers())
+            var container = EnsureNotDisposedAndGetContainer();
+            using var _ = container.Tracker.EnterRequest();
+            try
             {
-                using var _ = container.Tracker.EnterRequest();
-                try
-                {
-                    foreach (var service in container.PluginServices)
-                    {
-                        totalRegistered += service.RegisterEvents(channel);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Logger.Error(e.ToString());
-                }
+                return container.PluginService.RegisterEvents(channel);
             }
-            return totalRegistered;
+            catch (Exception e)
+            {
+                Log.Logger.Error(e.ToString());
+                return 0;
+            }
         }
         #endregion
     }

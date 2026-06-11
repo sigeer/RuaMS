@@ -28,36 +28,51 @@ namespace Application.Core.Plugins
         }
 
 
-        public virtual async Task<bool> LoadPlugin(string pluginDllName)
+        public virtual Task<bool> LoadPlugin(string pluginDllName)
         {
-            return await LoadPluginInternal(pluginDllName).ConfigureAwait(false);
+            return LoadPluginInternal(pluginDllName);
         }
 
-        protected virtual string GetPluginKey(string pluginDllName)
-        {
-            return Path.GetFileNameWithoutExtension(pluginDllName);
-        }
-
-
-        async Task<bool> LoadPluginInternal(string pluginDllName)
+        protected async Task<bool> LoadPluginInternal(string pluginDllName, bool allowMulti = true)
         {
             var newContainer = LoadPluginFromSource(pluginDllName);
             if (newContainer == null)
                 return false;
 
-            var pluginBaseKey = GetPluginKey(pluginDllName);
+            var pluginBaseKey = Path.GetFileNameWithoutExtension(pluginDllName);
             
             string pluginKey = pluginBaseKey;
 
-            if (_pluginContainers.TryRemove(pluginKey, out var oldContainer))
+            if (!allowMulti)
             {
-                try
+                var exsitedKeys = _pluginContainers.Keys.ToArray();
+                foreach (var item in exsitedKeys)
                 {
-                    await oldContainer.DisposeAsync().ConfigureAwait(false);
+                    if (_pluginContainers.TryRemove(item, out var oldContainer))
+                    {
+                        try
+                        {
+                            await oldContainer.DisposeAsync().ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
+                        }
+                    }
                 }
-                catch (Exception ex)
+            }
+            else
+            {
+                if (_pluginContainers.TryRemove(pluginKey, out var oldContainer))
                 {
-                    Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
+                    try
+                    {
+                        await oldContainer.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error($"Failed to unload old plugin: {ex.Message}");
+                    }
                 }
             }
 
@@ -84,7 +99,7 @@ namespace Application.Core.Plugins
 
         public List<TService> GetAllPlugins()
         {
-            return _pluginContainers.Values.SelectMany(c => c.PluginServices).ToList();
+            return _pluginContainers.Values.Select(c => c.PluginService).ToList();
         }
 
         public PluginContainer<TService>? GetPluginContainer(string pluginName)
@@ -137,15 +152,22 @@ namespace Application.Core.Plugins
             var pluginServiceTypes = pluginAssembly.GetTypes()
                 .Where(t => serviceType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract).ToList();
 
-            if (pluginServiceTypes.Count == 0)
+            if (pluginServiceTypes.Count != 1)
+            {
+                loadContext.Unload();
+                Directory.Delete(shadowDir, recursive: true);
+                throw new InvalidOperationException($"Only one implementation is allowed, but {pluginServiceTypes.Count} implementations were found in the {pluginDllName}");
+            }
+            var type = pluginServiceTypes[0];
+
+            var service = (TService?)Activator.CreateInstance(type);
+            if (service == null)
             {
                 loadContext.Unload();
                 Directory.Delete(shadowDir, recursive: true);
                 throw new InvalidOperationException($"No type implementing {serviceType.Name} found in {pluginDllName}");
             }
-
-            var services = pluginServiceTypes.Select(x => (TService?)Activator.CreateInstance(x)).OfType<TService>().ToList();
-            return new PluginContainer<TService>(services, loadContext, shadowDir);
+            return new PluginContainer<TService>(service, loadContext, shadowDir);
         }
 
         /// <summary>
