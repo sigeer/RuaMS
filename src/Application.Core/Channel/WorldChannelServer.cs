@@ -9,6 +9,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
+using Application.Core.Gameplay.Plugins;
 using Application.Core.Plugins;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
@@ -138,6 +139,7 @@ namespace Application.Core.Channel
         public CommandLoop<WorldChannelServer> CommandLoop { get; }
 
         public TickableStatus Status => throw new NotImplementedException();
+        public ScriptManager ScriptManager { get; }
         public PluginManager PluginManager { get; }
 
         public WorldChannelServer(IServiceProvider sp,
@@ -190,6 +192,7 @@ namespace Application.Core.Channel
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
 
+            ScriptManager = new();
             PluginManager = new();
 
             _messageDispatcher = new(() => new(this));
@@ -270,6 +273,8 @@ namespace Application.Core.Channel
                 {
                     await server.Shutdown(delaySeconds);
                 }
+                await ScriptManager.DisposeAsync();
+                await PluginManager.DisposeAsync();
 
                 await TimerManager.Stop();
                 await CommandLoop.DisposeAsync();
@@ -336,10 +341,11 @@ namespace Application.Core.Channel
 
             try
             {
-                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
+                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
                 watcher.Changed += OnFileChanged;
                 watcher.EnableRaisingEvents = true;
-                await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
+                
+                await LoadAllPlugins();
             }
             catch (Exception ex)
             {
@@ -407,20 +413,58 @@ namespace Application.Core.Channel
 
         private DateTime _lastLoadTime = DateTime.MinValue;
 
+        private async Task LoadAllPlugins()
+        {
+            var pluginFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll");
+            foreach (var pluginFile in pluginFiles)
+            {
+                var pluginName = Path.GetFileName(pluginFile);
+                try
+                {
+                    if (IsScriptPlugin(pluginName))
+                    {
+                        _logger.LogInformation("加载脚本插件: {PluginName}", pluginName);
+                        await ScriptManager.LoadPlugin(pluginName);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("加载普通插件: {PluginName}", pluginName);
+                        await PluginManager.LoadPlugin(pluginName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "加载插件失败: {PluginName}", pluginName);
+                }
+            }
+        }
+
+        private bool IsScriptPlugin(string pluginName)
+        {
+            return pluginName.StartsWith("Application.Plugin.Script", StringComparison.OrdinalIgnoreCase);
+        }
+
         private async void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (e.Name != "Application.Plugin.Script.dll") return;
+            if (!e.Name.StartsWith("Application.Plugin.")) return;
 
-            // 简单的节流：1秒内只处理一次
             var now = DateTime.Now;
             if ((now - _lastLoadTime) < TimeSpan.FromSeconds(1))
                 return;
 
             _lastLoadTime = now;
 
-            await Task.Delay(200); // 等待文件释放
-            _logger.LogInformation("插件更新...");
-            await PluginManager.LoadPlugin("Application.Plugin.Script.dll");
+            await Task.Delay(200);
+            _logger.LogInformation("插件更新: {PluginName}", e.Name);
+
+            if (IsScriptPlugin(e.Name))
+            {
+                await ScriptManager.LoadPlugin(e.Name);
+            }
+            else
+            {
+                await PluginManager.LoadPlugin(e.Name);
+            }
         }
 
 

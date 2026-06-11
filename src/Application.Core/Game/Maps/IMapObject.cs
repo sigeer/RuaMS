@@ -21,7 +21,7 @@ namespace Application.Core.Game.Maps
         /// <param name="map"></param>
         void OnMounted(IMap map);
         /// <summary>
-        /// 从地图移除时
+        /// 从地图移除后
         /// </summary>
         void OnUnmounted();
         /// <summary>

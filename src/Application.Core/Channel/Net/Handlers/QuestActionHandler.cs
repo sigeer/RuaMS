@@ -130,7 +130,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     }
                     if (quest.canStart(player, npc))
                     {
-                        _ = c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, true);
+                        _ = c.CurrentServer.NodeService.ScriptManager.ProcessQuestConversation(c, quest, npc, true);
                         // c.CurrentServer.QuestScriptManager.start(c, questid, npc);
                     }
                     break;
@@ -144,7 +144,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     }
                     if (quest.canComplete(player, npc))
                     {
-                        _ = c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, false);
+                        _ = c.CurrentServer.NodeService.ScriptManager.ProcessQuestConversation(c, quest, npc, false);
                         // c.CurrentServer.QuestScriptManager.end(c, questid, npc);
                     }
                     break;

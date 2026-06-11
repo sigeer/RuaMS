@@ -253,7 +253,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             return;
         }
 
-        NodeService.PluginManager.RegisterEvents(this);
+        NodeService.ScriptManager.RegisterEvents(this);
     }
     public async Task Initialize(Config.RegisterServerResult config)
     {
@@ -264,7 +264,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         log.Information("[{ServerName}] 初始化事件...", InstanceName);
-        var loadedEventsCount = NodeService.PluginManager.RegisterEvents(this);
+        var loadedEventsCount = NodeService.ScriptManager.RegisterEvents(this);
         // var loadedEventsCount = EventScriptManager.ReloadEventScript();
         log.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", InstanceName, loadedEventsCount);
 
