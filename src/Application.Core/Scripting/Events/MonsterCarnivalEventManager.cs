@@ -106,7 +106,7 @@ namespace Application.Core.Scripting.Events
 
             eim.RequestTeam = new TeamRegistry(members);
             // send challenge
-            if (await ChannelServer.NodeService.PluginManager.StartNpcConversation(
+            if (await ChannelServer.NodeService.ScriptManager.StartNpcConversation(
                 eim.getLeader()!.Client,
                 2042001,
                 null,

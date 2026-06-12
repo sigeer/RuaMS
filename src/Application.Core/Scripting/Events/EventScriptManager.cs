@@ -36,6 +36,7 @@ public class EventScriptManager : ITickableTree, IDisposable
 {
     private ConcurrentDictionary<string, EventManager> events = new();
     public bool IsActive => events.Count > 0;
+    public int EventCount => events.Count;
     public WorldChannel ChannelServer { get; }
 
     public EventScriptManager(WorldChannel channel)
@@ -43,10 +44,19 @@ public class EventScriptManager : ITickableTree, IDisposable
         ChannelServer = channel;
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="emList"></param>
+    /// <returns></returns>
+    /// <exception cref="BusinessFatalException"></exception>
     public int ReloadEventScript(List<EventManager> emList)
     {
-        DisposeEvents();
+        var duplicatedItem = emList.GroupBy(x => x.getName()).FirstOrDefault(x => x.Count() > 1);
+        if (duplicatedItem != null)
+        {
+            throw new BusinessFatalException($"事件名重复，名称：{duplicatedItem.Key}");
+        }
 
         foreach (var em in emList)
         {
@@ -54,11 +64,11 @@ public class EventScriptManager : ITickableTree, IDisposable
             {
                 em.Initialize();
 
-                if (!events.TryAdd(em.getName(), em))
+                if (events.TryGetValue(em.getName(), out var old))
                 {
-                    throw new BusinessFatalException($"事件名重复，名称：{em.getName()}");
+                    em.Inherit(old);
                 }
-
+                events[em.getName()] = em;
             }
             catch (Exception ex)
             {
@@ -88,15 +98,6 @@ public class EventScriptManager : ITickableTree, IDisposable
         return IsActive;
     }
 
-    public void DisposeEvents()
-    {
-        var cleanEvents = events.Values.ToList();
-        foreach (var old in cleanEvents)
-        {
-            old.Dispose();
-        }
-        events.Clear();
-    }
 
     public void Dispose()
     {
@@ -105,7 +106,12 @@ public class EventScriptManager : ITickableTree, IDisposable
             return;
         }
 
-        DisposeEvents();
+        var cleanEvents = events.Values.ToList();
+        events.Clear();
+        foreach (var old in cleanEvents)
+        {
+            old.Dispose();
+        }
     }
 
     public TickableStatus Status { get; protected set; }

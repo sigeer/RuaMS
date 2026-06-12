@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
+using Application.Core.Gameplay.Plugins;
 using Application.Core.Plugins;
 using Application.Shared.Servers;
 using System;
@@ -17,6 +18,7 @@ namespace Application.Core.Channel.Services
     public interface IServiceCenter
     {
         ChannelServerConfig ServerConfig { get; }
+        ScriptManager ScriptManager { get; }
         PluginManager PluginManager { get; }
         ITimerManager TimerManager { get; }
         IServiceProvider ServiceProvider { get; }

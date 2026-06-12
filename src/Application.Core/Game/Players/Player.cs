@@ -206,7 +206,7 @@ namespace Application.Core.Game.Players
             if (script != null)
             {
                 var npcObj = MapModel.getNPCById(npcId);
-                _ = Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
+                _ = Client.CurrentServer.NodeService.ScriptManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
             }
 
         }

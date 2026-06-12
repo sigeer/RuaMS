@@ -85,11 +85,13 @@ public abstract class AbstractMapObject : IMapObject
     public virtual void OnMounted(IMap map)
     {
         MapModel = map;
+
+        map.ChannelServer.NodeService.PluginManager.OnMapObjectEnterField(map, this);
     }
 
     public virtual void OnUnmounted()
     {
-
+        MapModel.ChannelServer.NodeService.PluginManager.OnMapObjectLeaveField(MapModel, this);
     }
 
     /// <summary>

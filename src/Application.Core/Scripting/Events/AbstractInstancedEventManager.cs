@@ -86,6 +86,19 @@ namespace Application.Core.Scripting.Events
             MinCount = YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : MinCount;
         }
 
+        public override void Inherit(EventManager em)
+        {
+            base.Inherit(em);
+
+            if (em is AbstractInstancedEventManager iEm)
+            {
+                instances = new ConcurrentDictionary<string, AbstractEventInstanceManager>(iEm.instances);
+                openedLobbys = new Dictionary<int, bool>(iEm.openedLobbys);
+                readyInstances = new Queue<AbstractEventInstanceManager>(iEm.readyInstances);
+                onLoadInstances = iEm.onLoadInstances;
+                readyId = iEm.readyId;
+            }
+        }
         #region Instances
         protected virtual AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {

@@ -15,15 +15,13 @@ public class EventManager : IDisposable, ITickableTree
     public string Name => _name;
 
 
-    private Dictionary<string, string> props = new Dictionary<string, string>();
-
     /// <summary>
     /// 事件名
     /// </summary>
     protected string _name;
 
     public TickableStatus Status { get; private set; }
-    public List<ITickable> SubTickables { get; }
+    public List<ITickable> SubTickables { get; private set; }
 
     public EventManager(WorldChannel cserv, string name)
     {
@@ -37,7 +35,17 @@ public class EventManager : IDisposable, ITickableTree
     {
 
     }
-
+    /// <summary>
+    /// 会被dispose的属性都继承
+    /// </summary>
+    /// <param name="em"></param>
+    public virtual void Inherit(EventManager em)
+    {
+        _name = em._name;
+        disposed = em.disposed;
+        Status = em.Status;
+        SubTickables = new List<ITickable>(em.SubTickables);
+    }
 
     bool disposed = false;
     protected bool isDisposed()
@@ -52,7 +60,6 @@ public class EventManager : IDisposable, ITickableTree
 
         disposed = true;
         Status = TickableStatus.Remove;
-        props.Clear();
     }
 
     public long getLobbyDelay()
@@ -71,30 +78,6 @@ public class EventManager : IDisposable, ITickableTree
         return map;
     }
 
-    public void setProperty(string key, string value)
-    {
-        props[key] = value;
-    }
-
-    public void setIntProperty(string key, int value)
-    {
-        setProperty(key, value);
-    }
-
-    public void setProperty(string key, long value)
-    {
-        setProperty(key, value.ToString());
-    }
-
-    public string? getProperty(string key)
-    {
-        return props.GetValueOrDefault(key);
-    }
-
-    public int getIntProperty(string key)
-    {
-        return int.Parse(props.GetValueOrDefault(key) ?? "0");
-    }
 
 
     public string getName()
@@ -124,11 +107,6 @@ public class EventManager : IDisposable, ITickableTree
         {
             log.Error(ex.ToString());
         }
-    }
-
-    public int getTransportationTime(double travelTime)
-    {
-        return cserv.getTransportationTime(travelTime);
     }
 
     public virtual void OnTick(long now)
