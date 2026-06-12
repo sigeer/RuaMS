@@ -1,7 +1,7 @@
 using Application.Core.scripting.Events.Abstraction;
 using Application.Plugin.Script.Events;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
@@ -11,7 +11,7 @@ namespace Application.Plugin.Script.Events
         {
             var em = GetEventManager(nameof(PQ_Pirate));
 
-            var option = await AskMenu($"#e#b<组队任务：海盗船>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n救命啊！我的儿子被绑在可怕的#r老海盗#k手中。我需要你的帮助... 你能组建或加入一个队伍来救他吗？请让你的#b队长#k与我交谈或者组建一个队伍。",
+            var option = await AskMenu($"#e#b<组队任务：海盗船>\r\n#k#n{em.Template.GetRequirementDescription(c)}\r\n\r\n救命啊！我的儿子被绑在可怕的#r老海盗#k手中。我需要你的帮助... 你能组建或加入一个队伍来救他吗？请让你的#b队长#k与我交谈或者组建一个队伍。",
                 ["我想参加组队任务。", "我想了解更多详情。"]
             );
             switch (option)

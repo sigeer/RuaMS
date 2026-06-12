@@ -45,13 +45,15 @@ namespace Application.Plugin.Script.Events
             eim.setIntProperty("bunnyCake", 0);
             eim.setIntProperty("bunnyDamaged", 0);
 
-            eim.getInstanceMap(EntryMap)?.allowSummonState(false);
-            eim.getInstanceMap(EntryMap)?.RespawnInterval = 15_000;
+            var eventMap = eim.getInstanceMap(EntryMap);
+            eventMap?.clearMapObjects();
+            eventMap?.allowSummonState(false);
+            eventMap?.RespawnInterval = 15_000;
 
             eim.getInstanceMap(910010200)?.RespawnInterval = 15_000;
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             var status = eim.ClearedMaps.GetValueOrDefault(EntryMap, StageStatus.NotStarted);
             if (status == StageStatus.NotStarted)

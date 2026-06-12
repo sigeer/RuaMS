@@ -3453,13 +3453,12 @@ namespace Application.Plugin.Script
 
         public bool kpq0()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000801);
 
-            if (eim.getProperty("1stageclear") != null)
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000801);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3473,12 +3472,12 @@ namespace Application.Plugin.Script
 
         public bool kpq1()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000802);
-            if (eim.getProperty("2stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000802);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3494,10 +3493,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000803);
-            if (eim.getProperty("3stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000803);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3513,10 +3513,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000804);
-            if (eim.getProperty("4stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000804);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3532,10 +3533,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000805);
-            if (eim.getProperty("5stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000805);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3558,13 +3560,8 @@ namespace Application.Plugin.Script
 
         public bool lpq0()
         {
-
-            var nextMap = 922010200;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
-            var avail = eim.getProperty("1stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
                 return false;
@@ -3572,6 +3569,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010200;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3580,13 +3580,9 @@ namespace Application.Plugin.Script
 
         public bool lpq1()
         {
-
-            var nextMap = 922010300;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
-            var avail = eim.getProperty("2stageclear");
-            if (avail == null)
+
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
                 return false;
@@ -3594,6 +3590,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010300;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3602,14 +3601,10 @@ namespace Application.Plugin.Script
 
         public bool lpq2()
         {
-
-            var nextMap = 922010400;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("3stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3618,6 +3613,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010400;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3626,14 +3624,10 @@ namespace Application.Plugin.Script
 
         public bool lpq3()
         {
-
-            var nextMap = 922010500;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("4stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3642,6 +3636,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010500;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3650,14 +3647,10 @@ namespace Application.Plugin.Script
 
         public bool lpq4()
         {
-
-            var nextMap = 922010600;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("5stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3665,7 +3658,10 @@ namespace Application.Plugin.Script
             }
             else
             {
-                playPortalSound();
+                playPortalSound(); 
+                var nextMap = 922010600;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3674,14 +3670,9 @@ namespace Application.Plugin.Script
 
         public bool lpq5()
         {
-
-            var nextMap = 922010700;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
             // only let people through if the eim is ready
-            var avail = eim.getProperty("5stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3689,11 +3680,10 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (eim.getProperty("6stageclear") == null)
-                {
-                    eim.setProperty("6stageclear", "true");
-                }
                 playPortalSound();
+                var nextMap = 922010700;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3702,12 +3692,12 @@ namespace Application.Plugin.Script
 
         public bool lpq6()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(922010800);
-            if (eim.getProperty("7stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(922010800);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3720,14 +3710,10 @@ namespace Application.Plugin.Script
 
         public bool lpq7()
         {
-
-            var nextMap = 922010900;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("8stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3736,6 +3722,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010900;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }

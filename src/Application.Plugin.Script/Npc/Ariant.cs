@@ -3,7 +3,7 @@ using Application.Core.Game.Life;
 using Application.Shared.GameProps;
 using scripting.npc;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript: NPCConversationManager
     {

@@ -1,11 +1,7 @@
 using Application.Core.Channel;
-using Application.Core.Game.Life;
-using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Resources.Messages;
-using tools;
 
 namespace Application.Core.Scripting.Events
 {
@@ -37,30 +33,9 @@ namespace Application.Core.Scripting.Events
         //        return false;
         //    }
         //}
-        public override bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
-        {
-            return true;
-        }
 
-        public override List<Player> GetEligibleParty(Player leader)
-        {
-            var party = leader.getParty();
-            if (party == null)
-            {
-                return [];
-            }
 
-            var members = party.GetChannelMembers(ChannelServer)
-                .Where(x => x.MapModel == leader.MapModel && x.MapModel.Id == RecruitMap).ToList();
 
-            if (members.Count >= MinCount
-                && members.Count <= MaxCount
-                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
-            {
-                return members;
-            }
-            return [];
-        }
 
         public override void SetupInstance(AbstractEventInstanceManager eim, Player leader, List<Player> members)
         {
@@ -81,7 +56,7 @@ namespace Application.Core.Scripting.Events
             if (!chr.isLeader())
                 return MCJoinInstanceResult.RequiredLeader;
 
-            var members = GetEligibleParty(chr);
+            var members = Template.GetEligibleParty(chr);
             if (members.Count == 0)
                 return MCJoinInstanceResult.Requirement;
 
@@ -104,182 +79,5 @@ namespace Application.Core.Scripting.Events
             return MCJoinInstanceResult.AnthorRequest;
         }
 
-
-        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
-        {
-            base.OnPlayerUnregister(eim, chr);
-
-            chr.setTeam(-1);
-
-            switch (eim.InstanceStatus)
-            {
-                case InstanceStatus.Recruitment:
-                case InstanceStatus.Prepare:
-                case InstanceStatus.InProgress:
-                    var pEim = eim as MonsterCarnivalEventInstanceManager;
-                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
-                    if (eim.InstanceStatus != InstanceStatus.InProgress)
-                    {
-                        eim.Dispose();
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public override void OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
-        {
-            base.OnPlayerDied(eim, chr);
-
-            var pEim = eim as MonsterCarnivalEventInstanceManager;
-            var playerData = pEim.GetPlayerData(chr.Id)!;
-            var losing = Math.Min(playerData.AvailableCP, GetTemplate.MapMonsterCarnivalTemplate.DeathCP);
-            pEim.GainCP(chr, -losing);
-            foreach (var item in eim.getPlayers())
-            {
-                item.sendPacket(PacketCreator.CPQ_PlayerDied(chr.Name, losing, playerData.TeamFlag));
-            }
-        }
-
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
-        {
-            base.OnMobKilled(eim, mob, killer);
-
-            if (mob.getCP() > 0 && killer is Player chr)
-            {
-                var pEim = eim as MonsterCarnivalEventInstanceManager;
-                pEim.GainCP(chr, mob.getCP());
-            }
-        }
-
-        public override void ClearPQ(AbstractEventInstanceManager eim)
-        {
-            base.ClearPQ(eim);
-
-            var pEim = eim as MonsterCarnivalEventInstanceManager;
-
-            foreach (var chr in eim.getPlayers())
-            {
-                var rewardMap = eim.getInstanceMap(pEim.IsWinner(chr) ? GetTemplate.MapMonsterCarnivalTemplate.RewardMapWin : GetTemplate.MapMonsterCarnivalTemplate.RewardMapLose);
-                if (rewardMap != null)
-                {
-                    chr.changeMap(rewardMap);
-                    chr.setTeam(-1);
-                    chr.dispelDebuffs();
-                }
-            }
-        }
-
-
-
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
-        {
-            var e = (eim as MonsterCarnivalEventInstanceManager)!;
-            switch (eim.InstanceStatus)
-            {
-                case InstanceStatus.Recruitment:
-                    eim.Dispose();
-                    break;
-                case InstanceStatus.Prepare:
-                    e.StartBattle();
-                    break;
-                case InstanceStatus.InProgress:
-                    var team0 = e.Teams[0];
-                    var team1 = e.Teams[1];
-
-                    if (team0 == null || team1 == null)
-                    {
-                        // 数据不正常
-                        eim.Dispose();
-                        return;
-                    }
-
-                    if (team0.TotalCP != team1.TotalCP)
-                    {
-                        var map = eim.getInstanceMap(EntryMap);
-                        map?.killAllMonsters();
-                        map?.allowSummonState(false);
-
-                        bool redWin = team0.TotalCP > team1.TotalCP;
-                        e.WinnerTeamIndex = (sbyte)(team0.TotalCP > team1.TotalCP ? 0 : 1);
-
-
-                        foreach (var chr in eim.getPlayers())
-                        {
-                            var effect = e.IsWinner(chr) ? GetTemplate.MapMonsterCarnivalTemplate.EffectWin : GetTemplate.MapMonsterCarnivalTemplate.EffectLose;
-                            if (!string.IsNullOrEmpty(effect))
-                            {
-                                chr.sendPacket(PacketCreator.showEffect(effect));
-                            }
-
-                            var sound = e.IsWinner(chr) ? GetTemplate.MapMonsterCarnivalTemplate.SoundWin : GetTemplate.MapMonsterCarnivalTemplate.SoundLose;
-                            if (!string.IsNullOrEmpty(sound))
-                            {
-                                chr.sendPacket(PacketCreator.playSound(sound));
-                            }
-
-                            chr.dispelDebuffs();
-                        }
-
-                        eim.Schedule(ClearPQ, GetTemplate.MapMonsterCarnivalTemplate.TimeFinish * 1000);
-                    }
-                    else
-                    {
-                        eim.Pink(nameof(ClientMessage.CPQ_ExtendTime));
-                        eim.restartEventTimer(GetTemplate.MapMonsterCarnivalTemplate.TimeExpand * 1000);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
-        {
-            switch (r)
-            {
-                case CreateInstanceResult.Success:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_EntryLobby));
-                case CreateInstanceResult.RequiredParty:
-                    return "在你加入战斗之前，你需要先创建一个队伍！";
-                case CreateInstanceResult.RequiredLeader:
-                    return "如果你想开始战斗，让#b队长#k和我对话。";
-                case CreateInstanceResult.Requirement:
-                    return "队伍不满足条件。";
-                case CreateInstanceResult.LobbyLimited:
-                case CreateInstanceResult.Disposed:
-                case CreateInstanceResult.Unknown:
-                default:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
-            }
-        }
-        public string? HandleJoinRequestResult(MCJoinInstanceResult r, IChannelClient c)
-        {
-            switch (r)
-            {
-                case MCJoinInstanceResult.Success:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomSent));
-
-                case MCJoinInstanceResult.RequiredParty:
-                    return "在你加入战斗之前，你需要先创建一个队伍！";
-
-                case MCJoinInstanceResult.RequiredLeader:
-                    return "如果你想开始战斗，让#b队长#k和我对话。";
-
-                case MCJoinInstanceResult.Requirement:
-                    return "队伍不满足条件。需要与被挑战的队伍人数一致！";
-
-                case MCJoinInstanceResult.NotInWaiting:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_FindError));
-
-                case MCJoinInstanceResult.AnthorRequest:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomAnswer));
-                case MCJoinInstanceResult.Unknown:
-
-                default:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
-            }
-        }
     }
 }

@@ -3,7 +3,7 @@ using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Shared.Items;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
@@ -36,7 +36,7 @@ namespace Application.Plugin.Script.Events
                 return;
             }
 
-            var selection = await AskMenu("#e#b<组队任务：扎昆组队任务>\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n小心，古老的力量并未被遗忘... #b\r\n#L0#进入未知的死亡矿井（第1阶段）#l\r\n#L1#面对熔岩之息（第2阶段）#l\r\n#L2#锻造#t4001017#（第3阶段）#l");
+            var selection = await AskMenu("#e#b<组队任务：扎昆组队任务>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n小心，古老的力量并未被遗忘... #b\r\n#L0#进入未知的死亡矿井（第1阶段）#l\r\n#L1#面对熔岩之息（第2阶段）#l\r\n#L2#锻造#t4001017#（第3阶段）#l");
 
             if (selection == 0)
             {
@@ -148,7 +148,7 @@ namespace Application.Plugin.Script.Events
             var expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
             if (expedition == null)
             {
-                var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
 
                 if (selection == 1)
                 {
@@ -236,7 +236,7 @@ namespace Application.Plugin.Script.Events
                 }
                 else
                 {
-                    await SayOK(em.HandleJoinInstanceResult(em.JoinMember(expedition, getPlayer()), c));
+                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(em.GetTemplate.JoinMember(expedition, getPlayer()), c));
                 }
             }
             else if (expedition.isInProgress())

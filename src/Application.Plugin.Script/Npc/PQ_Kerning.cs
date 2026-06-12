@@ -1,10 +1,11 @@
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
+using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
@@ -12,7 +13,7 @@ namespace Application.Plugin.Script.Events
         public async Task party1_enter()
         {
             var em = GetEventManager(nameof(PQ_Kerning));
-            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.GetRequirementDescription(getClient())),
+            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.Template.GetRequirementDescription(getClient())),
                 [GetTalkMessage(nameof(ScriptTalk.PartyQuest_Participate)), GetTalkMessage(nameof(ScriptTalk.PartyQuest_Intro))
             ]);
 

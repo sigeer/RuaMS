@@ -1,4 +1,4 @@
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {

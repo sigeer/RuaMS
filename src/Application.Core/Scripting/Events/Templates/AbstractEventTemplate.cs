@@ -90,18 +90,6 @@ namespace Application.Core.scripting.Events.Templates
                     return "未知错误";
             }
         }
-        #region Events
-        public virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
-        {
-
-        }
-
-        public virtual void AfterSeup(AbstractEventInstanceManager eim)
-        {
-
-        }
-        protected virtual void respawnStages(AbstractEventInstanceManager eim) { }
-        protected virtual void setEventRewards(AbstractEventInstanceManager eim) { }
         public virtual List<Player> GetEligibleParty(Player leader)
         {
             var members = leader.getPartyMembersOnSameMap();
@@ -114,6 +102,18 @@ namespace Application.Core.scripting.Events.Templates
             }
             return [];
         }
+        #region Events
+        public virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+
+        }
+
+        public virtual void AfterSeup(AbstractEventInstanceManager eim)
+        {
+
+        }
+        public virtual void respawnStages(AbstractEventInstanceManager eim) { }
+        public virtual void setEventRewards(AbstractEventInstanceManager eim) { }
 
         public virtual string GetRequirementDescription(IChannelClient client)
         {

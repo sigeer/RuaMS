@@ -1,6 +1,7 @@
 using Application.Core.scripting.Events.Abstraction;
+using Application.Plugin.Script.Events;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
@@ -8,7 +9,7 @@ namespace Application.Plugin.Script.Events
         public async Task party6_entry()
         {
             var em = GetEventManager(nameof(PQ_Ellin));
-            var option = await AskMenu("#e#b<组队任务：毒雾森林>\r\n#k#n" + em.GetRequirementDescription(c) + "\r\n\r\n你想要组建或加入一个队伍来解决#b毒雾森林#k的谜题吗？让你的#b队长#k和我交谈或者自己组建一个队伍。",
+            var option = await AskMenu("#e#b<组队任务：毒雾森林>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n你想要组建或加入一个队伍来解决#b毒雾森林#k的谜题吗？让你的#b队长#k和我交谈或者自己组建一个队伍。",
                 ["我想参加组队任务。", "我想了解更多细节。", "我想要领取奖励。"]);
 
             switch (option)

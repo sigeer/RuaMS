@@ -6,6 +6,7 @@ using server.maps;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
+using tools;
 
 namespace Application.Core.Gameplay.Plugins
 {
@@ -449,12 +450,40 @@ namespace Application.Core.Gameplay.Plugins
         #endregion
 
         #region Script Service Methods
-        public Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
+        public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
-            return InvokeServicesAsync<IScriptNpcService>(
-                s => s.Start(c, npcId, npcObject, scriptName),
-                c,
-                e => Log.Logger.Error(e, "Npc script error in: {ScriptName}", scriptName));
+            var containers = _pluginContainers.Values.ToArray();
+            foreach (var container in containers)
+            {
+                foreach (var service in container.PluginServices)
+                {
+                    if (service is not IScriptNpcService typed)
+                        continue;
+
+                    try
+                    {
+                        using (container.Tracker.EnterRequest())
+                        {
+                            if (await typed.Start(c, npcId, npcObject, scriptName))
+                                return true;
+                        }
+                    }
+                    catch (InvalidOperationException) { } // Plugin is being disposed
+                    catch (BusinessException be)
+                    {
+                        c.OnlinedCharacter.Debug(5, be.Message);
+                        Log.Logger.Error(be, "Npc script error in: {ScriptName}", scriptName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Npc script error in: {ScriptName}", scriptName);
+                    }
+                }
+            }
+
+            c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
+            return false;
+
         }
 
         public Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)

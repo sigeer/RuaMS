@@ -50,7 +50,7 @@ namespace Application.Plugin.Script.Events
             respawnStages(eim);
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             if (eim.InstanceStatus == Core.scripting.Events.Abstraction.InstanceStatus.InProgress)
             {

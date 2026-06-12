@@ -94,22 +94,8 @@ namespace Application.Core.Scripting.Events
         #endregion
 
 
-        public override List<Player> GetEligibleParty(Player leader)
-        {
-            List<Player> members = [leader];
 
-            if (members.Count >= MinCount
-                && members.Count <= MaxCount
-                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
-            {
-                return members;
-            }
-            return [];
-        }
 
-        public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
-        {
-            return leavingEventMap && eim.getLeaderId() == quitter.getId();
-        }
+
     }
 }

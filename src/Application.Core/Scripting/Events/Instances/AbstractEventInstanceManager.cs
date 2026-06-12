@@ -196,7 +196,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// <param name="chr"></param>
     public void exitPlayer(Player chr)
     {
-        EventManager.OnPlayerExit(this, chr);
+        EventManager.Template.OnPlayerExit(this, chr);
     }
 
 
@@ -207,7 +207,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         if (chr.isLoggedin())
         {
-            EventManager.OnPlayerUnregister(this, chr);
+            EventManager.Template.OnPlayerUnregister(this, chr);
 
             chr.setEventInstance(null);
             dropExclusiveItems(chr);
@@ -222,17 +222,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void changedMap(Player chr, int mapId)
     {
-        EventManager.OnPlayerMapChanging(this, chr, mapId);
+        EventManager.Template.OnPlayerMapChanging(this, chr, mapId);
     }
 
     public void afterChangedMap(Player chr, int mapId)
     {
-        EventManager.OnPlayerMapChanged(this, chr, mapId);
+        EventManager.Template.OnPlayerMapChanged(this, chr, mapId);
     }
 
     public void changedLeader(Player ldr)
     {
-        EventManager.OnLeaderChanged(this, ldr);
+        EventManager.Template.OnLeaderChanged(this, ldr);
 
         leaderId = ldr.getId();
     }
@@ -255,48 +255,48 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         if (scriptResult > 0)
         {
-            EventManager.OnMobKilled(this, mob, killer);
+            EventManager.Template.OnMobKilled(this, mob, killer);
 
             if (scriptResult > 1)
             {
-                EventManager.OnMobClear(this, mob.getMap());
+                EventManager.Template.OnMobClear(this, mob.getMap());
             }
         }
     }
 
     public void friendlyKilled(Monster mob, ICombatantObject? killer)
     {
-        EventManager.OnFriendlyMobKilled(this, mob, killer);
+        EventManager.Template.OnFriendlyMobKilled(this, mob, killer);
     }
 
     public void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
     {
-        EventManager.OnFriendlyMobDamaged(this, mob, attacker, damage);
+        EventManager.Template.OnFriendlyMobDamaged(this, mob, attacker, damage);
     }
 
     public void friendlyItemDrop(Monster mob)
     {
-        EventManager.OnFriendlyMobDrop(this, mob);
+        EventManager.Template.OnFriendlyMobDrop(this, mob);
     }
 
     public void playerKilled(Player chr)
     {
-        EventManager.OnPlayerDied(this, chr);
+        EventManager.Template.OnPlayerDied(this, chr);
     }
 
     public void reviveMonster(Monster mob)
     {
-        EventManager.OnMobRevive(this, mob);
+        EventManager.Template.OnMobRevive(this, mob);
     }
 
     public bool revivePlayer(Player player)
     {
-        return EventManager.OnPlayerRevive(this, player);
+        return EventManager.Template.OnPlayerRevive(this, player);
     }
 
     public void playerDisconnected(Player chr)
     {
-        EventManager.OnPlayerDisconnected(this, chr);
+        EventManager.Template.OnPlayerDisconnected(this, chr);
 
         if (EventManager.AllowReconnect)
         {
@@ -325,24 +325,24 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public void leftParty(Player chr)
     {
-        EventManager.OnPlayerLeftParty(this, chr);
+        EventManager.Template.OnPlayerLeftParty(this, chr);
     }
 
     public void disbandParty()
     {
-        EventManager.OnPartyDisband(this);
+        EventManager.Template.OnPartyDisband(this);
     }
 
     public void clearPQ()
     {
-        EventManager.ClearPQ(this);
+        EventManager.Template.ClearPQ(this);
     }
 
     public virtual void startEvent()
     {
         InstanceStatus = InstanceStatus.InProgress;
 
-        EventManager.AfterSeup(this);
+        EventManager.Template.AfterSeup(this);
     }
 
     public void setEventCleared()
@@ -371,7 +371,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             chr.setEventInstance(this);
 
-            EventManager.OnPlayerRegister(this, chr);
+            EventManager.Template.OnPlayerRegister(this, chr);
             return true;
         }
 
@@ -415,7 +415,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     {
         dismissEventTimer();
 
-        EventManager.OnTimeOut(this);
+        EventManager.Template.OnTimeOut(this);
     }
 
     private void dismissEventTimer()
@@ -946,17 +946,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public ClaimRewardResult GiveClearReward(Player player, int point = 1)
     {
-        return EventManager.GiveClearReward(this, player, point);
+        return EventManager.Template.GiveClearReward(this, player, point);
     }
 
     public ClaimRewardResult GiveStageClearReward(Player player, int stageMap)
     {
-        return EventManager.GiveStageClearReward(this, player, stageMap);
+        return EventManager.Template.GiveStageClearReward(this, player, stageMap);
     }
 
     public void GiveStageClearRewardAll(int stageMap)
     {
-        EventManager.GiveStageClearRewardAll(this, stageMap);
+        EventManager.Template.GiveStageClearRewardAll(this, stageMap);
     }
 
     //public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)

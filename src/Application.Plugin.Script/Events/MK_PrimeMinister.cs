@@ -53,7 +53,7 @@ namespace Application.Plugin.Script.Events
             return false;
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             if (primeMinisterCheck(eim))
             {

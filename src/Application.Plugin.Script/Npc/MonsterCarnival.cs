@@ -79,7 +79,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (eim.InstanceStatus == InstanceStatus.Recruitment)
                 {
-                    await SayOK(em.HandleJoinRequestResult(await em.SendJoinRequest(getPlayer()), c));
+                    await SayOK(em.GetTemplate.HandleJoinRequestResult(await em.SendJoinRequest(getPlayer()), c));
                 }
                 else
                 {

@@ -26,7 +26,7 @@ namespace Application.Core.scripting.Events.Instances
                 InstanceStatus = InstanceStatus.Prepare;
 
                 restartEventTimer(EventManager.PrepareTime * 1000);
-                EventManager.OnBattlePrepare(this);
+                EventManager.GetTemplate.OnBattlePrepare(this);
                 return;
             }
 
@@ -36,10 +36,10 @@ namespace Application.Core.scripting.Events.Instances
 
                 foreach (var chr in getPlayers())
                 {
-                    EventManager.OnPlayerEntry(this, chr);
+                    EventManager.Template.OnPlayerEntry(this, chr);
                 }
                 restartEventTimer(EventManager.EventTime * 1000);
-                EventManager.OnBattleStarted(this);
+                EventManager.GetTemplate.OnBattleStarted(this);
                 return;
             }
         }
@@ -52,7 +52,7 @@ namespace Application.Core.scripting.Events.Instances
 
                 exitPlayer(chr);
 
-                EventManager.OnPlayerBanned(this, chr);
+                EventManager.GetTemplate.OnPlayerBanned(this, chr);
             }
             else
             {

@@ -3,7 +3,7 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.Constants.Map;
 
-namespace Application.Plugin.Script.Events
+namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
     {
@@ -86,8 +86,8 @@ namespace Application.Plugin.Script.Events
                         return;
                     }
 
-                    var playerAdd = em.JoinMember(selectedExped, getPlayer());
-                    await SayOK(em.HandleJoinInstanceResult(playerAdd, c));
+                    var playerAdd = em.GetTemplate.JoinMember(selectedExped, getPlayer());
+                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(playerAdd, c));
                 }
             }
         }

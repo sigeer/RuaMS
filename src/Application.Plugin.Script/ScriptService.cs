@@ -79,9 +79,7 @@ namespace Application.Plugin.Script
 
             if (!_npcSource.TryGetValue(scriptName, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
-                c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
+                c.OnlinedCharacter.Debug(5, $"不支持的脚本 {scriptName}");
                 return false;
             }
 

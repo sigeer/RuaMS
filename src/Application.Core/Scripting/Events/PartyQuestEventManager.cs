@@ -15,25 +15,6 @@ namespace Application.Core.Scripting.Events
         {
         }
 
-        public override List<Player> GetEligibleParty(Player leader)
-        {
-            var party = leader.getParty();
-            if (party == null)
-            {
-                return [];
-            }
-
-            var members = party.GetChannelMembers(ChannelServer)
-                .Where(x => x.MapModel == leader.MapModel && x.MapModel.Id == RecruitMap).ToList();
-
-            if (members.Count >= MinCount
-                && members.Count <= MaxCount
-                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
-            {
-                return members;
-            }
-            return [];
-        }
 
 
         #region StartInstance
@@ -58,7 +39,7 @@ namespace Application.Core.Scripting.Events
                 }
             }
 
-            var members = GetEligibleParty(leader);
+            var members = Template.GetEligibleParty(leader);
             if (members.Count == 0)
             {
                 return CreateInstanceResult.Requirement;
