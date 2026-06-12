@@ -1,12 +1,13 @@
 using Application.Core.Channel;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events
 {
 
-    internal class PQ_Zakum : PartyQuestEventManager
+    internal class PQ_Zakum : AbstractPartyQuestEventTemplate
     {
-        public PQ_Zakum(WorldChannel cserv) : base(cserv, nameof(PQ_Zakum))
+        public PQ_Zakum() : base(nameof(PQ_Zakum))
         {
             MinCount = 3;
             MaxCount = 6;

@@ -1,20 +1,18 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Resources.Messages;
-using scripting.npc;
+using Application.Core.scripting.Events.Templates;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public abstract class PartyQuestEventManager : AbstractInstancedEventManager
+    public class PartyQuestEventManager : AbstractEventManager
     {
-        public bool PartyLeaderRequired { get; init; }
-        public int RecruitMap { get; init; }
-
-        public PartyQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public bool PartyLeaderRequired => GetTemplate.PartyLeaderRequired;
+        public int RecruitMap => GetTemplate.RecruitMap;
+        public override AbstractPartyQuestEventTemplate GetTemplate => (Template as AbstractPartyQuestEventTemplate)!;
+        public PartyQuestEventManager(WorldChannel cserv, AbstractPartyQuestEventTemplate template) : base(cserv, template)
         {
-            PartyLeaderRequired = true;
         }
 
         public override List<Player> GetEligibleParty(Player leader)

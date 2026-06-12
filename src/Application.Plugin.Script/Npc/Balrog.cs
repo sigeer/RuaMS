@@ -1,7 +1,7 @@
 using Application.Core.scripting.Events.Instances;
-using Application.Plugin.Script.Events;
+using Application.Core.Scripting.Events;
 
-namespace Application.Plugin.Script.Npc
+namespace Application.Plugin.Script.Events
 {
     internal partial class NpcScript
     {
@@ -9,8 +9,8 @@ namespace Application.Plugin.Script.Npc
         public async Task balog_accept()
         {
             var player = getPlayer();
-            var em = GetEventManager<Battle_Balrog>(nameof(Battle_Balrog));
-            var expedBoss = c.CurrentCulture.GetMobName(em.BossId);
+            var em = GetEventManager<ExpeditionEventManager>("Battle_Balrog");
+            var expedBoss = c.CurrentCulture.GetMobName(em.GetTemplate.BossId);
 
 
             if (player.getLevel() < em.MinLevel || player.getLevel() > em.MaxLevel)

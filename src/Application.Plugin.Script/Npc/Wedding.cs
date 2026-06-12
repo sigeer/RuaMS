@@ -1,6 +1,6 @@
 using Application.Shared.Constants.Map;
 
-namespace Application.Plugin.Script.Npc
+namespace Application.Plugin.Script.Events
 {
     internal partial class NpcScript
     {

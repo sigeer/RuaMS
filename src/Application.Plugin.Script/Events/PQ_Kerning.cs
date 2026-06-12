@@ -1,16 +1,17 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using Application.Core.Scripting.Events;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
+using Application.Core.Scripting.Events;
 using Application.Utility;
 using Application.Utility.Extensions;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Kerning : PartyQuestEventManager
+    internal class PQ_Kerning : AbstractPartyQuestEventTemplate
     {
-        public PQ_Kerning(WorldChannel cserv)
-            : base(cserv, nameof(PQ_Kerning))
+        public PQ_Kerning()
+            : base(nameof(PQ_Kerning))
         {
             MinCount = 3;
             MaxCount = 6;

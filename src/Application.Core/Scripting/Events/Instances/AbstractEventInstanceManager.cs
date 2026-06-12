@@ -4,6 +4,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using Application.Utility.Tickables;
@@ -26,7 +27,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     private int leaderId = -1;
     private List<Monster> mobs = new();
     private Dictionary<Player, int> killCount = new();
-    public virtual AbstractInstancedEventManager EventManager => ChannelServer.getEventSM().getEventManager(EventName) as AbstractInstancedEventManager;
+
 
     protected MapManager mapManager;
     private string name;
@@ -58,12 +59,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// </summary>
     public Dictionary<int, StageStatus> ClearedMaps { get; set; } = [];
     public int Level { get; set; } = 1;
-    public string EventName { get; }
-    public WorldChannel ChannelServer { get; }
-    public AbstractEventInstanceManager(WorldChannel worldChannel, string emName, string instanceName)
+    public virtual AbstractEventManager EventManager { get; }
+    public string EventName => EventManager.Name;
+    public WorldChannel ChannelServer => EventManager.ChannelServer;
+    public AbstractEventInstanceManager(AbstractEventManager em, string instanceName)
     {
-        ChannelServer = worldChannel;
-        EventName = emName;
+        EventManager = em;
         this.name = instanceName;
 
         this.mapManager = new MapManager(this, ChannelServer);
@@ -76,7 +77,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         this.name = name;
     }
 
-    public AbstractInstancedEventManager getEm() => EventManager;
+    public AbstractEventManager getEm() => EventManager;
 
     public int getEventPlayersJobs()
     {

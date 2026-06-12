@@ -1,13 +1,12 @@
-using Application.Core.Channel;
 using Application.Core.Game.Players;
 using Application.Core.model;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    internal sealed class PQ_CPQ1 : MonsterCarnivalEventManager
+    internal sealed class PQ_CPQ1 : AbstractMonsterCarnivalEventTemplate
     {
-        public PQ_CPQ1(WorldChannel cserv, string name, int recruitMap) : base(cserv, name, recruitMap + 1)
+        public PQ_CPQ1(string name, int recruitMap) : base(name, recruitMap + 1)
         {
             RecruitMap = recruitMap;
             EntryMap = recruitMap + 1;

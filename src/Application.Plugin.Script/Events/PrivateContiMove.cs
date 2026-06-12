@@ -1,43 +1,30 @@
-using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    public class PrivateContiMove : SoloEventManager
+    public class PrivateContiMove : AbstractSoloEventTemplate
     {
-        public PrivateContiMove(WorldChannel cserv, string name,
-            int[] stations, int[] transportings, int rideTime) : base(cserv, name)
+        public int[] Stations { get; }
+        public int[] Transportings { get; }
+        public int[] ArrivePortals { get; init; }
+        public int RideTime { get; }
+
+        public PrivateContiMove(string name, int[] stations, int[] transportings, int rideTime) : base(name)
         {
             Stations = stations;
             Transportings = transportings;
             RideTime = rideTime;
-
             ArrivePortals = [0, 0];
-
             MaxLobbys = 16;
         }
 
-        public int[] Stations { get; }
-
-        public int[] Transportings { get; }
-
-        public int[] ArrivePortals { get; init; }
-
-        public int RideTime { get; }
-
-        protected int GetTransportingTime()
+        public override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
-            return ChannelServer.getTransportationTime(RideTime);
-        }
-
-
-        protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
-        {
-            EventTime = GetTransportingTime();
+            EventTime = eim.ChannelServer.getTransportationTime(RideTime);
         }
 
         public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)

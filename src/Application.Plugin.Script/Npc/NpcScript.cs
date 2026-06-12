@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Life;
+using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
@@ -983,7 +984,7 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    var em0 = GetEventManager<PrivateContiMove>("KerningTrain");
+                    var em0 = GetEventManager("KerningTrain");
                     var r = em0.StartInstance(getPlayer());
                     await SayOK(em0.HandleCreateInstanceResult(r, c));
                     break;
@@ -1350,7 +1351,7 @@ namespace Application.Plugin.Script.Npc
                 case 0:
                     if (isQuestStarted(2286) || isQuestStarted(2287) || isQuestStarted(2288))
                     {
-                        var em = GetEventManager<RockSpirit>(nameof(RockSpirit));
+                        var em = GetEventManager("RockSpirit");
                         var r = em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         return;
@@ -1824,7 +1825,7 @@ namespace Application.Plugin.Script.Npc
                         "我要把你送到尼奥之舟的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
                         "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
                         ]);
-                    var em = GetEventManager<SoloEventManager>("4jaerial");
+                    var em = GetEventManager("4jaerial");
                     await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
                 }
                 else
@@ -1949,7 +1950,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100003 
         public async Task contimoveEreEli()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("ShipEllin");
+            var contiMove = GetEventManager("ShipEllin");
             if (await AskYesNo("嗯，你好...又来了。你想离开圣地去别的地方吗？如果是的话，你来对地方了。我经营着一艘从#b圣地#k到#b金银岛#k的渡船，如果你愿意的话，我可以带你去#b金银岛#k...你需要支付#b1000#k金币的费用。\r\n"))
             {
                 if (getMeso() < 1000)
@@ -1980,7 +1981,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100004 
         public async Task contimoveEreOrb()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("ShipOribs");
+            var contiMove = GetEventManager("ShipOribs");
             if (await AskYesNo("嗯...风势正好。你是不是想离开圣地去别的地方？这艘渡船开往神秘岛的天空之城。你在圣地需要办的事情都处理好了吗？如果你正好要去#b天空之城#k，我可以带你去那里。你怎么样？要去天空之城吗？\r\n"))
             {
                 if (getMeso() < 1000)
@@ -2025,7 +2026,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100007 
         public async Task contimoveEliEre()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("ShipEllin");
+            var contiMove = GetEventManager("ShipEllin");
             if (await AskYesNo("嗯...那么...嗯...你是想离开金银岛去其他地区吗？你可以乘这艘船去#b圣地#k。在那里，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤。那里是神兽和女皇所在的地方。你想去圣地吗？大约需要#b2分钟#k，费用是#b1000#k金币。\r\n"))
             {
                 if (getMeso() < 1000)
@@ -2055,7 +2056,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100008 
         public async Task contimoveOrbEre()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("ShipOribs");
+            var contiMove = GetEventManager("ShipOribs");
             if (await AskYesNo("这艘船将驶向#b圣地#k，那里是一个浮空的岛屿，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤，还有女皇——希纳斯。如果你有兴趣加入皇家骑士团，那么你一定要来这里看看。你有兴趣去圣地吗？这次旅行将花费你#b1000#k金币\r\n"))
             {
                 if (getMeso() < 1000)
@@ -2194,7 +2195,7 @@ namespace Application.Plugin.Script.Npc
             {
                 // 910510001, 1104000
                 await SayNext("什么……你不属于这里！");
-                var puppet = GetEventManager<Puppeteer>("Puppeteer");
+                var puppet = GetEventManager("Puppeteer");
                 var r = puppet.StartInstance(getPlayer());
                 await SayOK(puppet.HandleCreateInstanceResult(r, c));
 
@@ -2260,7 +2261,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1200003 
         public async Task contimoveRieRit()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("Whale");
+            var contiMove = GetEventManager("Whale");
             if (await AskYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
             {
                 if (haveItem(4032338))
@@ -2314,7 +2315,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1200004 
         public async Task contimoveRitRie()
         {
-            var contiMove = GetEventManager<PrivateContiMove>("Whale");
+            var contiMove = GetEventManager("Whale");
 
             await SayNext("你考虑离开金银岛前往我们的城镇吗？如果你登上这艘船，我可以带你从#b明珠港#k到#b里恩#k，然后再返回。但你必须支付#b800#k金币的费用。你想去#b里恩#k吗？");
             if (getMeso() < 800)
@@ -3829,7 +3830,7 @@ namespace Application.Plugin.Script.Npc
         public async Task crane()
         {
             var curMap = getMapId();
-            PrivateContiMove? contiMove = null;
+            AbstractEventManager? contiMove = null;
             if (curMap == MapId.HERB_TOWN)
             {
                 if (await AskYesNo($"你好。旅行进行得怎么样？我一直在像你这样的旅行者运送到#b{c.CurrentCulture.GetMapStreetName(250000100)}#k，而且……你有兴趣吗？这种方式没有船稳定，所以你得紧紧抓住，但我可以比船快得多地到达那里。只要你支付#b金币#k，我就会带你去那里。"))
@@ -3862,7 +3863,7 @@ namespace Application.Plugin.Script.Npc
                     await SayNext("改变想法随时跟我搭话吧。");
                     return;
                 }
-                contiMove = GetEventManager<PrivateContiMove>("Crane");
+                contiMove = GetEventManager("Crane");
             }
             else if (curMap == 250000100)
             {
@@ -3891,7 +3892,7 @@ namespace Application.Plugin.Script.Npc
                         await SayNext("改变想法随时跟我搭话吧。");
                         return;
                     }
-                    contiMove = GetEventManager<PrivateContiMove>("Crane");
+                    contiMove = GetEventManager("Crane");
                 }
 
 
@@ -4586,7 +4587,7 @@ namespace Application.Plugin.Script.Npc
                     await SayOK("在这个副本中#b打败所有的boss#k，恭喜你！现在你将获得与你在这里表现相匹配的奖品，我会将你传送出去。");
                 }
 
-                if (eim.GiveClearReward(getPlayer(), 6) ==  ClaimRewardResult.BagFull)
+                if (eim.GiveClearReward(getPlayer(), 6) == ClaimRewardResult.BagFull)
                 {
                     await SayOK("请提前在你的背包所有标签中安排一个空位。");
                     return;
@@ -4845,7 +4846,7 @@ namespace Application.Plugin.Script.Npc
 
                     if (await AskYesNo("如果我们把嘎嘎留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出嘎嘎。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？"))
                     {
-                        var em = GetEventManager<SoloEventManager>("RescueGaga");
+                        var em = GetEventManager("RescueGaga");
                         if (em == null)
                         {
                             await SayOK("此活动目前不可用。");

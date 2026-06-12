@@ -1,7 +1,5 @@
 using Application.Core.Client;
 using Application.Core.Game.ContiMove;
-using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
@@ -17,7 +15,6 @@ using Application.Utility.Exceptions;
 using scripting.portal;
 using server.life;
 using server.maps;
-using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 
 namespace Application.Plugin.Script
@@ -670,7 +667,7 @@ namespace Application.Plugin.Script
         public bool davy2_hd1()
         {
 
-            var eim = GetEventInstanceTrust() ;
+            var eim = GetEventInstanceTrust();
             var level = eim.getIntProperty("level");
             if (eim.getProperty("stage2b") == "0")
             {
@@ -942,8 +939,7 @@ namespace Application.Plugin.Script
 
         public bool Depart_ToKerning()
         {
-
-            var em = GetEventManager<PrivateContiMove>("KerningTrain");
+            var em = GetEventManager("KerningTrain");
             if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
             {
                 message("The passenger wagon is already full. Try again a bit later.");
@@ -1441,7 +1437,7 @@ namespace Application.Plugin.Script
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  
+            {
                 // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105040201, 2);
@@ -1457,7 +1453,7 @@ namespace Application.Plugin.Script
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  
+            {
                 // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105070300, 3);
@@ -1622,7 +1618,7 @@ namespace Application.Plugin.Script
         public bool enterMCave()
         {
             if (isQuestStarted(21201))
-            { 
+            {
                 // Second Job
                 for (var i = 108000700; i < 108000709; i++)
                 {
@@ -1640,7 +1636,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             else if (isQuestStarted(21302) && !isQuestCompleted(21303))
-            { 
+            {
                 // Third Job
                 if (getPlayerCount(108010701) > 0 || getPlayerCount(108010702) > 0)
                 {
@@ -7772,7 +7768,7 @@ namespace Application.Plugin.Script
                 getPlayer().message("找到了公主！");
                 giveCharacterExp(4400, getPlayer());
 
-                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
+                var em = GetEventManager(nameof(MK_PrimeMinister));
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {
@@ -7787,7 +7783,7 @@ namespace Application.Plugin.Script
             }
             else if (isQuestStarted(2333) || (isQuestCompleted(2332) && !isQuestStarted(2333)))
             {
-                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
+                var em = GetEventManager(nameof(MK_PrimeMinister));
 
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
@@ -8190,7 +8186,7 @@ namespace Application.Plugin.Script
             }
 
             if (!haveItem(4001017))
-            {    
+            {
                 // thanks Conrad for pointing out missing checks for token item and unused reactor
                 getPlayer().dropMessage(5, "扎昆祭台需要 火焰之眼 ，否则无法召唤扎昆BOSS，请准备好所需物品再来挑战。");
                 return false;

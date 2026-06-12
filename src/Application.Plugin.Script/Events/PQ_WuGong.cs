@@ -1,18 +1,12 @@
-using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
-using Application.Core.Scripting.Events;
-using Application.Resources.Messages;
-using scripting.npc;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_WuGong : PartyQuestEventManager
+    internal class PQ_WuGong : AbstractPartyQuestEventTemplate
     {
-        public PQ_WuGong(WorldChannel cserv) : base(cserv, nameof(PQ_WuGong))
+        public PQ_WuGong() : base(nameof(PQ_WuGong))
         {
             MinCount = 1;
             MaxCount = 6;

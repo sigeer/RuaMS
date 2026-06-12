@@ -22,19 +22,16 @@
 
 
 using Application.Core.Channel;
-using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 
 namespace scripting.Event;
 
-/**
- * @author Matze
- */
 public class EventScriptManager : ITickableTree, IDisposable
 {
-    private ConcurrentDictionary<string, EventManager> events = new();
+    private ConcurrentDictionary<string, AbstractEventManager> events = new();
     public bool IsActive => events.Count > 0;
     public int EventCount => events.Count;
     public WorldChannel ChannelServer { get; }
@@ -44,31 +41,29 @@ public class EventScriptManager : ITickableTree, IDisposable
         ChannelServer = channel;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="emList"></param>
-    /// <returns></returns>
-    /// <exception cref="BusinessFatalException"></exception>
-    public int ReloadEventScript(List<EventManager> emList)
+    public int ReloadEventScript(List<AbstractEventTemplate> templateList)
     {
-        var duplicatedItem = emList.GroupBy(x => x.getName()).FirstOrDefault(x => x.Count() > 1);
+        var duplicatedItem = templateList.GroupBy(x => x.Name).FirstOrDefault(x => x.Count() > 1);
         if (duplicatedItem != null)
         {
             throw new BusinessFatalException($"事件名重复，名称：{duplicatedItem.Key}");
         }
 
-        foreach (var em in emList)
+        foreach (var template in templateList)
         {
             try
             {
-                em.Initialize();
+                template.OnMounted(ChannelServer);
 
-                if (events.TryGetValue(em.getName(), out var old))
+                if (events.TryGetValue(template.Name, out var em))
                 {
-                    em.Inherit(old);
+                    em.Template = template;
                 }
-                events[em.getName()] = em;
+                else
+                {
+                    em = template.GenerateEventManager(ChannelServer);
+                }
+                events[template.Name] = em;
             }
             catch (Exception ex)
             {
@@ -78,19 +73,19 @@ public class EventScriptManager : ITickableTree, IDisposable
         return events.Count;
     }
 
-    public EventManager? getEventManager(string evt)
+    public AbstractEventManager? getEventManager(string evt)
     {
         return events.GetValueOrDefault(evt);
     }
 
     public int GetEventMaps()
     {
-        return events.Values.OfType<AbstractInstancedEventManager>().Sum(x => x.getInstances().Sum(x => x.getMapFactory().getMaps().Count));
+        return events.Values.Sum(x => x.getInstances().Sum(x => x.getMapFactory().getMaps().Count));
     }
 
     public int GetEventInstanceCount()
     {
-        return events.Values.OfType<AbstractInstancedEventManager>().Sum(x => x.getInstances().Count);
+        return events.Values.Sum(x => x.getInstances().Count);
     }
 
     public bool isActive()

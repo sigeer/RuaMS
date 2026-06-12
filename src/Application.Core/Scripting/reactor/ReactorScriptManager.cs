@@ -44,12 +44,12 @@ public class ReactorScriptManager : AbstractScriptManager
 
     public void onHit(IChannelClient c, Reactor reactor)
     {
-        c.CurrentServer.NodeService.ScriptManager.ReactorHit(c, reactor);
+        c.CurrentServer.NodeService.PluginManager.ReactorHit(c, reactor);
     }
 
     public void act(IChannelClient c, Reactor reactor)
     {
-        c.CurrentServer.NodeService.ScriptManager.ReactorAct(c, reactor);
+        c.CurrentServer.NodeService.PluginManager.ReactorAct(c, reactor);
     }
 
     public List<DropEntry> getDrops(int reactorId)

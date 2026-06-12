@@ -2,16 +2,16 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class q21401 : SoloEventManager
+    internal class q21401 : AbstractSoloEventTemplate
     {
-        public q21401(WorldChannel cserv) : base(cserv, nameof(q21401))
+        public q21401() : base(nameof(q21401))
         {
             MaxLobbys = 7;
-
             EventTime = 10 * 60;
             EntryMap = 914020000;
             ExitMap = 140000000;

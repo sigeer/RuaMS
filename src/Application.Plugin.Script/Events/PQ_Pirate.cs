@@ -1,11 +1,12 @@
 using Application.Core.Channel;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Pirate : PartyQuestEventManager
+    internal class PQ_Pirate : AbstractPartyQuestEventTemplate
     {
-        public PQ_Pirate(WorldChannel cserv) : base(cserv, nameof(PQ_Pirate))
+        public PQ_Pirate() : base(nameof(PQ_Pirate))
         {
             MinCount = 3;
             MaxCount = 6;

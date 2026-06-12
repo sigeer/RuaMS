@@ -1,7 +1,9 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Resources.Messages;
+using Application.Templates;
 using tools;
 
 namespace Application.Core.Scripting.Events
@@ -9,15 +11,13 @@ namespace Application.Core.Scripting.Events
     /// <summary>
     /// 在启动之后才组建团队
     /// </summary>
-    public abstract class BehindPartyQuestEventManager : PartyQuestEventManager
+    public class BehindPartyQuestEventManager : PartyQuestEventManager
     {
-        public int RegistrationTime { get; init; }
-        public int PrepareTime { get; init; }
-        public BehindPartyQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public int RegistrationTime => GetTemplate.RegistrationTime;
+        public int PrepareTime => GetTemplate.PrepareTime;
+        public override AbstractBehindPartyQuestEventTemplate GetTemplate => (Template as AbstractBehindPartyQuestEventTemplate)!;
+        public BehindPartyQuestEventManager(WorldChannel cserv, AbstractBehindPartyQuestEventTemplate template) : base(cserv, template)
         {
-            MaxLobbys = 1;
-
-            PartyLeaderRequired = false;
         }
 
         public TEim? GetOnlyEventInstanceManager<TEim>() where TEim : BehindPartyQuestEventInstanceManager => getInstance(Name) as TEim;
@@ -58,7 +58,7 @@ namespace Application.Core.Scripting.Events
 
         public override AbstractEventInstanceManager Setup(int level, int lobbyId)
         {
-            var eim = newInstance(_name + lobbyId);
+            var eim = newInstance(Name + lobbyId);
             eim.setProperty("level", level);
 
             OnSetup(eim, level, lobbyId);
@@ -138,17 +138,13 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public virtual void OnPlayerBanned(AbstractEventInstanceManager eim, Player chr)
+        public virtual void OnPlayerBanned(AbstractEventInstanceManager eim, Player chr) => GetTemplate.OnPlayerBanned(eim, chr);
+        public virtual void OnPlayerJoined(AbstractEventInstanceManager eim, Player chr) => GetTemplate.OnPlayerJoined(eim, chr);
+        public virtual void OnBattlePrepare(AbstractEventInstanceManager eim) => GetTemplate.OnBattlePrepare(eim);
+        public virtual void OnBattleStarted(AbstractEventInstanceManager eim) 
         {
-
+            GetTemplate.OnBattleStarted(eim);
         }
-
-        public virtual void OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
-        {
-
-        }
-        public virtual void OnBattlePrepare(AbstractEventInstanceManager eim) { }
-        public virtual void OnBattleStarted(AbstractEventInstanceManager eim) { }
 
         public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
         {

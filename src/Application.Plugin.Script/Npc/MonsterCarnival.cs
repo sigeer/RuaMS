@@ -1,6 +1,7 @@
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
+using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.MapObjects;
@@ -24,7 +25,7 @@ namespace Application.Plugin.Script.Npc
                 var roomName = GetClientMessage(nameof(ClientMessage.CPQ_Room));
                 var levelName = GetClientMessage(nameof(ClientMessage.Level));
 
-                var allCPQ1 = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<PQ_CPQ1>(nameof(PQ_CPQ1) + (x + 1).ToString()));
+                var allCPQ1 = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<MonsterCarnivalEventManager>(nameof(PQ_CPQ1) + (x + 1).ToString()));
                 var allCPQ1Keys = allCPQ1.Keys.ToArray();
                 foreach (var k in allCPQ1Keys)
                 {
@@ -162,7 +163,7 @@ namespace Application.Plugin.Script.Npc
                 switch (option)
                 {
                     case 0:
-                        var targetEm = GetEventManager<PQ_CPQ1>("PQ_CPQ1");
+                        var targetEm = GetEventManager<MonsterCarnivalEventManager>("PQ_CPQ1");
                         if (getLevel() < targetEm.MinLevel)
                         {
                             await SayOK($"你必须至少达到{targetEm.MinLevel}级才能参加怪物嘉年华。当你足够强大时，和我交谈。");

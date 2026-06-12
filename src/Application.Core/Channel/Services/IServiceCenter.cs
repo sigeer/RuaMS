@@ -18,7 +18,6 @@ namespace Application.Core.Channel.Services
     public interface IServiceCenter
     {
         ChannelServerConfig ServerConfig { get; }
-        ScriptManager ScriptManager { get; }
         PluginManager PluginManager { get; }
         ITimerManager TimerManager { get; }
         IServiceProvider ServiceProvider { get; }

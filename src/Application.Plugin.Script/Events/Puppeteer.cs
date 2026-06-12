@@ -1,15 +1,14 @@
-using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class Puppeteer : SoloEventManager
+    internal class Puppeteer : AbstractSoloEventTemplate
     {
-        public Puppeteer(WorldChannel cserv) : base(cserv, nameof(Puppeteer))
+        public Puppeteer() : base(nameof(Puppeteer))
         {
             EventTime = 10 * 60;
             EntryMap = 910510000;

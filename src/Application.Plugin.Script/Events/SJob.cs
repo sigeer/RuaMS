@@ -1,14 +1,12 @@
-using Application.Core.Channel;
-using Application.Core.Scripting.Events;
-using Application.Shared.Quest;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
 
-    internal class SoloQuestEventManager : SoloEventManager
+    internal sealed class SoloQuestEventTemplate : AbstractSoloEventTemplate
     {
         int _questId;
-        public SoloQuestEventManager(WorldChannel cserv, int quest, int eventTime, int entryMap, int exitMap, int minMap, int maxMap) : base(cserv, $"q{quest}")
+        public SoloQuestEventTemplate(int quest, int eventTime, int entryMap, int exitMap, int minMap, int maxMap) : base($"q{quest}")
         {
             _questId = quest;
 

@@ -1,9 +1,18 @@
+using Application.Core.Client;
+using Application.Core.Game.Life;
 using Application.Shared.GameProps;
+using scripting.npc;
 
-namespace Application.Plugin.Script.Npc
+namespace Application.Plugin.Script.Events
 {
-    internal partial class NpcScript
+    internal partial class NpcScript: NPCConversationManager
     {
+        NPC? _npcObj;
+        public NpcScript(IChannelClient c, int npc, NPC? npcObj) : base(c, npc, npcObj?.getObjectId() ?? -1, null)
+        {
+            _npcObj = npcObj;
+        }
+
         // Npc: 2103000
         public async Task ariant_oasis()
         {

@@ -127,7 +127,7 @@ public class GenericPortal : Portal
         {
             try
             {
-                changed = c.CurrentServer.NodeService.ScriptManager.EnterPortal(c, this);
+                changed = c.CurrentServer.NodeService.PluginManager.EnterPortal(c, this);
             }
             catch (NullReferenceException npe)
             {

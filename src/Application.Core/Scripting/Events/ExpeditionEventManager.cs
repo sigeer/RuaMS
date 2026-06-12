@@ -1,21 +1,21 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Resources.Messages;
 
 namespace Application.Core.Scripting.Events
 {
     public class ExpeditionEventManager : BehindPartyQuestEventManager
     {
-        public int BossId { get; }
-        public ExpeditionEventManager(WorldChannel cserv, string name, int bossId) : base(cserv, name)
+        public override AbstractExpeditionEventTemplate GetTemplate => (Template as AbstractExpeditionEventTemplate)!;
+        public ExpeditionEventManager(WorldChannel cserv, AbstractExpeditionEventTemplate template) : base(cserv, template)
         {
-            BossId = bossId;
         }
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
         {
-            return new ExpeditionEventInstanceManager(cserv, Name, Name);
+            return new ExpeditionEventInstanceManager(this, instanceName);
         }
 
         public override JoinInstanceResult JoinMember(BehindPartyQuestEventInstanceManager eim, Player player)
@@ -118,7 +118,7 @@ namespace Application.Core.Scripting.Events
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    return "#r" + c.CurrentCulture.GetMobName(BossId) + " 远征#k 已经创建。\r\n\r\n再次与我交谈，查看当前队伍，或开始战斗！";
+                    return "#r" + c.CurrentCulture.GetMobName(GetTemplate.BossId) + " 远征#k 已经创建。\r\n\r\n再次与我交谈，查看当前队伍，或开始战斗！";
                 case CreateInstanceResult.LobbyLimited:
                     return "抱歉，您已经达到了此次远征的尝试配额！请另选他日再试……";
                 default:

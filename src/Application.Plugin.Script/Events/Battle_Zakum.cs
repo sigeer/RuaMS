@@ -1,18 +1,16 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 using Application.Shared.Constants.Mob;
 using Application.Shared.Quest;
-using System.Numerics;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class Battle_Zakum : ExpeditionEventManager
+    internal class Battle_Zakum : AbstractExpeditionEventTemplate
     {
-        public Battle_Zakum(WorldChannel cserv) : base(cserv, nameof(Battle_Zakum), MobId.ZAKUM_3)
+        public Battle_Zakum() : base(nameof(Battle_Zakum), MobId.ZAKUM_3)
         {
             MinCount = 6;
             MaxCount = 30;
@@ -40,7 +38,7 @@ namespace Application.Plugin.Script.Events
                 eim.showClearEffect(mob.getMap().getId());
                 eim.clearPQ();
 
-                ChannelServer.NodeActor.Send(s =>
+                eim.EventManager.ChannelServer.NodeActor.Send(s =>
                 {
                     s.SendDropMessage(6,
                         "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
@@ -54,7 +52,7 @@ namespace Application.Plugin.Script.Events
 
             if (eim.isEventCleared())
             {
-                completeQuest(chr, QuestId.ZakumBattle, 2030010);
+                eim.EventManager.completeQuest(chr, QuestId.ZakumBattle, 2030010);
             }
         }
     }

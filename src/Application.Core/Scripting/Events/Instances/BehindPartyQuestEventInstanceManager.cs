@@ -1,15 +1,14 @@
-using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
-using tools;
 
 namespace Application.Core.scripting.Events.Instances
 {
     public abstract class BehindPartyQuestEventInstanceManager : AbstractEventInstanceManager
     {
-        public override BehindPartyQuestEventManager EventManager => (ChannelServer.getEventSM().getEventManager(EventName) as BehindPartyQuestEventManager)!;
-        public BehindPartyQuestEventInstanceManager(WorldChannel worldChannel, string emName, string name) : base(worldChannel, emName, name)
+        public override BehindPartyQuestEventManager EventManager { get; }
+        public BehindPartyQuestEventInstanceManager(BehindPartyQuestEventManager em, string name) : base(em, name)
         {
+            EventManager = em;
         }
 
 
@@ -22,14 +21,12 @@ namespace Application.Core.scripting.Events.Instances
         /// </summary>
         public void StartBattle()
         {
-            var em = (ChannelServer.getEventSM().getEventManager(EventName) as BehindPartyQuestEventManager)!;
-
-            if (InstanceStatus == InstanceStatus.Recruitment && em.PrepareTime > 0)
+            if (InstanceStatus == InstanceStatus.Recruitment && EventManager.PrepareTime > 0)
             {
                 InstanceStatus = InstanceStatus.Prepare;
 
-                restartEventTimer(em.PrepareTime * 1000);
-                em.OnBattlePrepare(this);
+                restartEventTimer(EventManager.PrepareTime * 1000);
+                EventManager.OnBattlePrepare(this);
                 return;
             }
 
@@ -39,10 +36,10 @@ namespace Application.Core.scripting.Events.Instances
 
                 foreach (var chr in getPlayers())
                 {
-                    em.OnPlayerEntry(this, chr);
+                    EventManager.OnPlayerEntry(this, chr);
                 }
-                restartEventTimer(em.EventTime * 1000);
-                em.OnBattleStarted(this);
+                restartEventTimer(EventManager.EventTime * 1000);
+                EventManager.OnBattleStarted(this);
                 return;
             }
         }

@@ -1,11 +1,10 @@
-using Application.Core.Channel;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class RockSpirit : SoloEventManager
+    internal class RockSpirit : AbstractSoloEventTemplate
     {
-        public RockSpirit(WorldChannel cserv) : base(cserv, nameof(RockSpirit))
+        public RockSpirit() : base(nameof(RockSpirit))
         {
             EventTime = 60 * 60;
             EntryMap = 103040410;

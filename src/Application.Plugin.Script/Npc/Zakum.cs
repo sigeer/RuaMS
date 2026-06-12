@@ -1,8 +1,9 @@
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Shared.Items;
 
-namespace Application.Plugin.Script.Npc
+namespace Application.Plugin.Script.Events
 {
     internal partial class NpcScript
     {
@@ -15,7 +16,7 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var em = GetEventManager<PQ_Zakum>(nameof(PQ_Zakum));
+            var em = GetEventManager(nameof(PQ_Zakum));
             if (em == null)
             {
                 await SayOK("扎昆组队任务遇到了一个错误。");
@@ -134,8 +135,8 @@ namespace Application.Plugin.Script.Npc
         {
             var expedItem = 4001017;
             var player = getPlayer();
-            var em = GetEventManager<Battle_Zakum>(nameof(Battle_Zakum));
-            var expedBoss = c.CurrentCulture.GetMobName(em.BossId);
+            var em = GetEventManager<ExpeditionEventManager>(nameof(Battle_Zakum));
+            var expedBoss = c.CurrentCulture.GetMobName(em.GetTemplate.BossId);
 
 
             if (player.getLevel() < em.MinLevel || player.getLevel() > em.MaxLevel)

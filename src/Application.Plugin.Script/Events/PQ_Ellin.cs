@@ -1,18 +1,13 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
-using Application.Shared.Constants.Mob;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Ellin : PartyQuestEventManager
+    internal class PQ_Ellin : AbstractPartyQuestEventTemplate
     {
-        public PQ_Ellin(WorldChannel cserv) : base(cserv, nameof(PQ_Ellin))
+        public PQ_Ellin() : base(nameof(PQ_Ellin))
         {
             MinCount = 4;
             MaxCount = 6;

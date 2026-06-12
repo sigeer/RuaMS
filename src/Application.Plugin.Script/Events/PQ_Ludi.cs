@@ -1,17 +1,18 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using Application.Core.Scripting.Events;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
+using Application.Core.Scripting.Events;
 using Application.Utility;
 using Application.Utility.Extensions;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Ludi : PartyQuestEventManager
+    internal class PQ_Ludi : AbstractPartyQuestEventTemplate
     {
-        public PQ_Ludi(WorldChannel cserv)
-            : base(cserv, nameof(PQ_Ludi))
+        public PQ_Ludi()
+            : base(nameof(PQ_Ludi))
         {
             MinCount = 5;
             MaxCount = 6;

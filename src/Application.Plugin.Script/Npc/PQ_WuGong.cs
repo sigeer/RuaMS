@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Net.ServerSentEvents;
 using System.Text;
 
-namespace Application.Plugin.Script.Npc
+namespace Application.Plugin.Script.Events
 {
     internal partial class NpcScript
     {
@@ -115,7 +115,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9310006 
         public async Task shanghai003()
         {
-            var em = GetEventManager<PQ_WuGong>(nameof(PQ_WuGong));
+            var em = GetEventManager(nameof(PQ_WuGong));
             var option = await AskMenu($"敬礼！\r\n你好，#e#b#h ##k#n，我是#b#e#p{getNpc()}##k#n\r\n\r\n#L0##b秘密任务#l\r\b\r\n#L1#离开#l#k");
             switch (option)
             {
