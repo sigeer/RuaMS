@@ -1,16 +1,15 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class Battle_Balrog : ExpeditionEventManager
+    internal class Battle_Balrog : AbstractExpeditionEventTemplate
     {
-        public Battle_Balrog(WorldChannel cserv) : base(cserv, nameof(Battle_Balrog), 8830003)
+        public Battle_Balrog() : base(nameof(Battle_Balrog), 8830003)
         {
             MinCount = 6;
             MaxCount = 30;
@@ -78,7 +77,7 @@ namespace Application.Plugin.Script.Events
                 eim.dispatchRaiseQuestMobCount(BossId, EntryMap);
                 eim.dispatchRaiseQuestMobCount(9101003, EntryMap); // thanks Atoot for noticing quest not getting updated after boss kill
 
-                ChannelServer.NodeActor.Send(s =>
+                eim.EventManager.ChannelServer.NodeActor.Send(s =>
                 {
                     s.SendDropMessage(6, "[Victory] " + eim.getLeader().getName() + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + mapObj.countAlivePlayers() + " players alive.", false);
                 });

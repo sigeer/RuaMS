@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Core.Scripting.Events
 {
@@ -7,7 +8,7 @@ namespace Application.Core.Scripting.Events
         private Queue<int> queuedGuilds = new();
         private Dictionary<int, int> queuedGuildLeaders = new();
 
-        public GuildQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public GuildQuestEventManager(WorldChannel cserv, AbstractSoloEventTemplate template) : base(cserv, template)
         {
         }
 

@@ -174,7 +174,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public EventManager? getEventManager(string @event)
+        public AbstractEventManager? getEventManager(string @event)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -328,7 +328,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        EventManager? IChannelClient.getEventManager(string @event)
+        AbstractEventManager? IChannelClient.getEventManager(string @event)
         {
             throw new NotImplementedException();
         }

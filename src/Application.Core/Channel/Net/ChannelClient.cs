@@ -424,7 +424,7 @@ namespace Application.Core.Channel.Net
         public WorldChannel getChannelServer() => CurrentServer;
         public int getChannel() => Channel;
 
-        public EventManager? getEventManager(string @event)
+        public AbstractEventManager? getEventManager(string @event)
         {
             return CurrentServer.getEventSM().getEventManager(@event);
         }

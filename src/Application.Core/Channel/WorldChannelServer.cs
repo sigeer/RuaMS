@@ -139,7 +139,6 @@ namespace Application.Core.Channel
         public CommandLoop<WorldChannelServer> CommandLoop { get; }
 
         public TickableStatus Status => throw new NotImplementedException();
-        public ScriptManager ScriptManager { get; }
         public PluginManager PluginManager { get; }
 
         public WorldChannelServer(IServiceProvider sp,
@@ -192,7 +191,6 @@ namespace Application.Core.Channel
             BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
             BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
 
-            ScriptManager = new(this);
             PluginManager = new(this);
 
             _messageDispatcher = new(() => new(this));
@@ -273,7 +271,6 @@ namespace Application.Core.Channel
                 {
                     await server.Shutdown(delaySeconds);
                 }
-                await ScriptManager.DisposeAsync();
                 await PluginManager.DisposeAsync();
 
                 await TimerManager.Stop();
@@ -421,27 +418,14 @@ namespace Application.Core.Channel
                 var pluginName = Path.GetFileName(pluginFile);
                 try
                 {
-                    if (IsScriptPlugin(pluginName))
-                    {
-                        _logger.LogInformation("加载脚本插件: {PluginName}", pluginName);
-                        await ScriptManager.LoadPlugin(pluginName);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("加载普通插件: {PluginName}", pluginName);
-                        await PluginManager.LoadPlugin(pluginName);
-                    }
+                    _logger.LogInformation("加载插件: {PluginName}", pluginName);
+                    await PluginManager.LoadPlugin(pluginName);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "加载插件失败: {PluginName}", pluginName);
                 }
             }
-        }
-
-        private bool IsScriptPlugin(string pluginName)
-        {
-            return pluginName.StartsWith("Application.Plugin.Script", StringComparison.OrdinalIgnoreCase);
         }
 
         private async void OnFileChanged(object sender, FileSystemEventArgs e)
@@ -457,14 +441,7 @@ namespace Application.Core.Channel
             await Task.Delay(200);
             _logger.LogInformation("插件更新: {PluginName}", e.Name);
 
-            if (IsScriptPlugin(e.Name))
-            {
-                await ScriptManager.LoadPlugin(e.Name);
-            }
-            else
-            {
-                await PluginManager.LoadPlugin(e.Name);
-            }
+            await PluginManager.LoadPlugin(e.Name);
         }
 
 

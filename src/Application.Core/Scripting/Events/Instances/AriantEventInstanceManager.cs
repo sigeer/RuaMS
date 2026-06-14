@@ -1,6 +1,4 @@
-using Application.Core.Channel;
-using Application.Core.model;
-using Application.Core.scripting.Events.Abstraction;
+using Application.Core.Scripting.Events;
 using tools;
 
 namespace Application.Core.scripting.Events.Instances
@@ -14,7 +12,7 @@ namespace Application.Core.scripting.Events.Instances
         private bool scoreDirty = false;
 
         public int MaxCount { get; set; }
-        public AriantEventInstanceManager(WorldChannel worldChannel, string emName, string instanceName) : base(worldChannel, emName, instanceName)
+        public AriantEventInstanceManager(BehindPartyQuestEventManager em, string instanceName) : base(em, instanceName)
         {
             score = new();
             rewardTier = new();

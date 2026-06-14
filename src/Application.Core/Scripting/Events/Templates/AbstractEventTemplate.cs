@@ -1,43 +1,23 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.model;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Events;
-using Application.Shared.Login;
-using Application.Utility.Performance;
-using Application.Utility.Tickables;
-using scripting.Event;
-using scripting.npc;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
-using tools.exceptions;
 
-namespace Application.Core.Scripting.Events
+namespace Application.Core.scripting.Events.Templates
 {
     /// <summary>
-    /// 会生成副本的事件
+    /// 副本配置
     /// </summary>
-    public abstract class AbstractInstancedEventManager : EventManager
+    public abstract class AbstractEventTemplate
     {
-        protected ConcurrentDictionary<string, AbstractEventInstanceManager> instances = new();
-        protected Dictionary<int, bool> openedLobbys = new();
+        public string Name { get; }
+
         public int MaxLobbys { get; set; } = 1;
-
-        /// <summary>
-        /// 预生成的 EventInstanceManager
-        /// </summary>
-        private Queue<AbstractEventInstanceManager> readyInstances = new();
-        private int readyId = 0;
-        protected int onLoadInstances = 0;
-
-        protected HashSet<int> playerPermit = new();
-        protected SemaphoreSlim startSemaphore = new SemaphoreSlim(7);
 
 
         public int MinCount { get; protected set; } = 1;
@@ -60,7 +40,7 @@ namespace Application.Core.Scripting.Events
         /// <summary>
         /// 单位：秒
         /// </summary>
-        public int EventTime { get; protected set; }
+        public int EventTime { get; set; }
         public bool AllowReconnect { get; init; } = true;
         #region Rewards
         /// <summary>
@@ -73,152 +53,22 @@ namespace Application.Core.Scripting.Events
         public Dictionary<int, (int Exp, int Meso)> StageClearRewards { get; init; }
         #endregion
 
-        public AbstractInstancedEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public AbstractEventTemplate(string name)
         {
+            Name = name;
             AllClearRewards = new();
             StageClearRewards = new();
         }
 
-        public override void Initialize()
+        public virtual void OnMounted(WorldChannel worldChannel)
         {
             MinLevel = YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : MinLevel;
             MaxLevel = YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 255 : MaxLevel;
             MinCount = YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS ? 1 : MinCount;
         }
 
-        public override void Inherit(EventManager em)
-        {
-            base.Inherit(em);
+        public abstract AbstractEventManager GenerateEventManager(WorldChannel worldChannel);
 
-            if (em is AbstractInstancedEventManager iEm)
-            {
-                instances = new ConcurrentDictionary<string, AbstractEventInstanceManager>(iEm.instances);
-                openedLobbys = new Dictionary<int, bool>(iEm.openedLobbys);
-                readyInstances = new Queue<AbstractEventInstanceManager>(iEm.readyInstances);
-                onLoadInstances = iEm.onLoadInstances;
-                readyId = iEm.readyId;
-            }
-        }
-        #region Instances
-        protected virtual AbstractEventInstanceManager CreateNewInstance(string instanceName)
-        {
-            return new EventInstanceManager(ChannelServer, Name, instanceName);
-        }
-        public AbstractEventInstanceManager? getInstance(string name)
-        {
-            return instances.GetValueOrDefault(name);
-        }
-
-        public List<AbstractEventInstanceManager> getInstances()
-        {
-            return instances.Values.ToList();
-        }
-
-        protected AbstractEventInstanceManager newInstance(string instanceName)
-        {
-            var ret = getReadyInstance() ?? CreateNewInstance(instanceName);
-
-            ret.setName(instanceName);
-            return ret;
-        }
-
-
-        bool RegisterInstanceInternal(string instanceName, AbstractEventInstanceManager eim)
-        {
-            if (instances.TryAdd(instanceName, eim))
-            {
-                SubTickables.Add(eim);
-
-                GameMetrics.ChannelEventInstanceCount.Add(1,
-                    new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
-                    new KeyValuePair<string, object?>("Event", getName()));
-
-                return true;
-            }
-            return false;
-        }
-
-        protected virtual void DisposeInstanceInternal(string name)
-        {
-            if (instances.TryRemove(name, out var eim))
-            {
-                eim.Status = TickableStatus.Remove;
-
-                GameMetrics.ChannelEventInstanceCount.Add(-1,
-                    new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
-                    new KeyValuePair<string, object?>("Event", getName()));
-
-                if (eim != null)
-                    UnregisterLobby(eim.LobbyId);
-            }
-        }
-
-        public void ProcessDisposeInstanceInternal(string name) => DisposeInstanceInternal(name);
-
-        public void DisposeInstance(string instanceName)
-        {
-            SubTickables.Add(new DelayedDisposeRequest(this, instanceName, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));
-        }
-
-        protected AbstractEventInstanceManager CreateInstance(int level, int lobbyId) 
-        {
-            return Setup(level, lobbyId);
-        }
-
-
-        protected void registerEventInstance(AbstractEventInstanceManager eim, int lobbyId)
-        {
-            if (!RegisterInstanceInternal(eim.getName(), eim))
-                throw new EventInstanceInProgressException(eim.getName(), this.getName());
-            eim.LobbyId = lobbyId;
-        }
-
-        private AbstractEventInstanceManager? getReadyInstance()
-        {
-            try
-            {
-                if (readyInstances.TryDequeue(out var eim))
-                    return eim;
-
-                return null;
-            }
-            finally
-            {
-                fillEimQueue();
-            }
-        }
-
-        private void fillEimQueue()
-        {
-            Task.Run(instantiateQueuedInstance);
-        }
-
-        public void instantiateQueuedInstance()
-        {
-            int nextEventId;
-
-            if (this.isDisposed() || readyInstances.Count + onLoadInstances >= Math.Ceiling(MaxLobbys / 3.0))
-            {
-                return;
-            }
-
-            onLoadInstances++;
-            nextEventId = readyId;
-            readyId++;
-
-
-            var eim = CreateNewInstance("sampleName" + nextEventId);
-
-            if (this.isDisposed())
-            {  // EM already disposed
-                return;
-            }
-
-            readyInstances.Enqueue(eim);
-            onLoadInstances--;
-
-            instantiateQueuedInstance();    // keep filling the queue until reach threshold.
-        }
         public virtual string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
         {
             switch (r)
@@ -240,79 +90,6 @@ namespace Application.Core.Scripting.Events
                     return "未知错误";
             }
         }
-        #endregion
-
-        #region Lobby
-
-        protected void UnregisterLobby(int lobbyId)
-        {
-            openedLobbys[lobbyId] = false;
-        }
-
-        protected bool TryRegisterLobby(int lobbyId)
-        {
-            if (lobbyId < 0)
-            {
-                lobbyId = 0;
-            }
-
-            if (!openedLobbys.TryGetValue(lobbyId, out var value) || !value)
-            {
-                openedLobbys[lobbyId] = true;
-                return true;
-            }
-
-            return false;
-        }
-
-        protected int GetAvailableLobbyInstance()
-        {
-            int maxLobbies = MaxLobbys;
-
-            if (maxLobbies > 0)
-            {
-                for (int i = 0; i < maxLobbies; i++)
-                {
-                    if (TryRegisterLobby(i))
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            return -1;
-        }
-
-        #endregion
-
-        public abstract CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1);
-
-        #region Events
-        public virtual AbstractEventInstanceManager Setup(int level, int lobbyId)
-        {
-            var eim = newInstance(_name + lobbyId);
-            eim.setProperty("level", level);
-
-            OnSetup(eim, level, lobbyId);
-
-            respawnStages(eim);
-
-            eim.startEventTimer(EventTime * 1000);
-            setEventRewards(eim);
-
-            return eim;
-        }
-        protected virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
-        {
-
-        }
-
-        public virtual void AfterSeup(AbstractEventInstanceManager eim)
-        {
-
-        }
-        protected virtual void respawnStages(AbstractEventInstanceManager eim) { }
-        protected virtual void setEventRewards(AbstractEventInstanceManager eim) { }
         public virtual List<Player> GetEligibleParty(Player leader)
         {
             var members = leader.getPartyMembersOnSameMap();
@@ -325,8 +102,20 @@ namespace Application.Core.Scripting.Events
             }
             return [];
         }
+        #region Events
+        public virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
 
-        public string GetRequirementDescription(IChannelClient client)
+        }
+
+        public virtual void AfterSeup(AbstractEventInstanceManager eim)
+        {
+
+        }
+        public virtual void respawnStages(AbstractEventInstanceManager eim) { }
+        public virtual void setEventRewards(AbstractEventInstanceManager eim) { }
+
+        public virtual string GetRequirementDescription(IChannelClient client)
         {
             var countRange = MinCount == MaxCount ? MinCount.ToString() : MinCount + " ~ " + MaxCount;
             var levelRange = MinLevel == MaxLevel ? MinLevel.ToString() : MinLevel + " ~ " + MaxLevel;
@@ -643,49 +432,5 @@ namespace Application.Core.Scripting.Events
             }
         }
         #endregion
-
-        public override void Dispose()
-        {
-            base.Dispose();
-
-            var eimList = instances.Values.ToList();
-            instances.Clear();
-
-            foreach (var eim in eimList)
-            {
-                eim.Dispose();
-            }
-
-            openedLobbys.Clear();
-
-            Queue<AbstractEventInstanceManager> readyEims;
-
-            readyEims = new(readyInstances);
-            readyInstances.Clear();
-
-
-            foreach (var eim in readyEims)
-            {
-                eim.Dispose();
-            }
-            onLoadInstances = 0;
-        }
-
-        class DelayedDisposeRequest : DelayedTickable
-        {
-            AbstractInstancedEventManager _src;
-            string _instanceName;
-
-            public DelayedDisposeRequest(AbstractInstancedEventManager src, string instanceName, long next): base(next)
-            {
-                _src = src;
-                _instanceName = instanceName;
-            }
-
-            protected override void Handle(long now)
-            {
-                _src.ProcessDisposeInstanceInternal(_instanceName);
-            }
-        }
     }
 }

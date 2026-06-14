@@ -1,8 +1,7 @@
+using Application.Core.scripting.Events;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Plugin.Script.Events;
 using Application.Shared.Constants.Map;
-using Application.Shared.Constants.Skill;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -13,7 +12,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getPlayer().getMapId() == MapId.ARPQ_LOBBY)
             {
-                var allAriant = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<PQ_Ariant>(nameof(PQ_Ariant) + (x + 1).ToString()));
+                var allAriant = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<AriantEventManager>("PQ_Ariant" + (x + 1).ToString()));
                 var em = allAriant[0];
 
                 if (getPlayer().getLevel() < em.MinLevel || getPlayer().getLevel() > em.MaxLevel)
@@ -87,8 +86,8 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    var playerAdd = em.JoinMember(selectedExped, getPlayer());
-                    await SayOK(em.HandleJoinInstanceResult(playerAdd, c));
+                    var playerAdd = em.GetTemplate.JoinMember(selectedExped, getPlayer());
+                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(playerAdd, c));
                 }
             }
         }

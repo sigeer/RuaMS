@@ -30,9 +30,9 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Scripting.Events;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using client;
 using client.inventory;
@@ -234,12 +234,14 @@ public class AbstractPlayerInteraction : IClientMessenger
         getWarpMap(mapid).resetMapObjects();
     }
 
-    public EventManager? getEventManager(string @event)
+    public AbstractEventManager? getEventManager(string @event)
     {
         return getClient().getEventManager(@event);
     }
 
-    public TEventManager GetEventManager<TEventManager>(string @event) where TEventManager : EventManager
+    public AbstractEventManager GetEventManager(string @event) => getEventManager(@event) ?? throw new BusinessException($"Error: 事件 {@event} 未注册");
+
+    public TEventManager GetEventManager<TEventManager>(string @event) where TEventManager : AbstractEventManager
     {
         var em = getClient().getEventManager(@event);
         if (em == null)

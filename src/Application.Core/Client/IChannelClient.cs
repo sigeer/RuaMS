@@ -39,7 +39,7 @@ namespace Application.Core.Client
         int getChannel();
         void announceBossHpBar(Monster mm, int mobHash, Packet packet);
 
-        EventManager? getEventManager(string @event);
+        AbstractEventManager? getEventManager(string @event);
         void removeClickedNPC();
 
         bool CheckBirthday(DateTime date);

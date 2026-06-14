@@ -1,7 +1,5 @@
 using Application.Core.Client;
 using Application.Core.Game.ContiMove;
-using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
@@ -17,7 +15,6 @@ using Application.Utility.Exceptions;
 using scripting.portal;
 using server.life;
 using server.maps;
-using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 
 namespace Application.Plugin.Script
@@ -670,7 +667,7 @@ namespace Application.Plugin.Script
         public bool davy2_hd1()
         {
 
-            var eim = GetEventInstanceTrust() ;
+            var eim = GetEventInstanceTrust();
             var level = eim.getIntProperty("level");
             if (eim.getProperty("stage2b") == "0")
             {
@@ -942,8 +939,7 @@ namespace Application.Plugin.Script
 
         public bool Depart_ToKerning()
         {
-
-            var em = GetEventManager<PrivateContiMove>("KerningTrain");
+            var em = GetEventManager("KerningTrain");
             if (em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
             {
                 message("The passenger wagon is already full. Try again a bit later.");
@@ -1441,7 +1437,7 @@ namespace Application.Plugin.Script
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  
+            {
                 // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105040201, 2);
@@ -1457,7 +1453,7 @@ namespace Application.Plugin.Script
         {
 
             if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {  
+            {
                 // puppeteer defeated, newfound secret path
                 playPortalSound();
                 warp(105070300, 3);
@@ -1622,7 +1618,7 @@ namespace Application.Plugin.Script
         public bool enterMCave()
         {
             if (isQuestStarted(21201))
-            { 
+            {
                 // Second Job
                 for (var i = 108000700; i < 108000709; i++)
                 {
@@ -1640,7 +1636,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             else if (isQuestStarted(21302) && !isQuestCompleted(21303))
-            { 
+            {
                 // Third Job
                 if (getPlayerCount(108010701) > 0 || getPlayerCount(108010702) > 0)
                 {
@@ -3457,13 +3453,12 @@ namespace Application.Plugin.Script
 
         public bool kpq0()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000801);
 
-            if (eim.getProperty("1stageclear") != null)
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000801);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3477,12 +3472,12 @@ namespace Application.Plugin.Script
 
         public bool kpq1()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000802);
-            if (eim.getProperty("2stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000802);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3498,10 +3493,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000803);
-            if (eim.getProperty("3stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000803);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3517,10 +3513,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000804);
-            if (eim.getProperty("4stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000804);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3536,10 +3533,11 @@ namespace Application.Plugin.Script
         {
 
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(103000805);
-            if (eim.getProperty("5stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(103000805);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3562,13 +3560,8 @@ namespace Application.Plugin.Script
 
         public bool lpq0()
         {
-
-            var nextMap = 922010200;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
-            var avail = eim.getProperty("1stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
                 return false;
@@ -3576,6 +3569,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010200;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3584,13 +3580,9 @@ namespace Application.Plugin.Script
 
         public bool lpq1()
         {
-
-            var nextMap = 922010300;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
-            var avail = eim.getProperty("2stageclear");
-            if (avail == null)
+
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
                 return false;
@@ -3598,6 +3590,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010300;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3606,14 +3601,10 @@ namespace Application.Plugin.Script
 
         public bool lpq2()
         {
-
-            var nextMap = 922010400;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("3stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3622,6 +3613,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010400;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3630,14 +3624,10 @@ namespace Application.Plugin.Script
 
         public bool lpq3()
         {
-
-            var nextMap = 922010500;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("4stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3646,6 +3636,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010500;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3654,14 +3647,10 @@ namespace Application.Plugin.Script
 
         public bool lpq4()
         {
-
-            var nextMap = 922010600;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("5stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3669,7 +3658,10 @@ namespace Application.Plugin.Script
             }
             else
             {
-                playPortalSound();
+                playPortalSound(); 
+                var nextMap = 922010600;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3678,14 +3670,9 @@ namespace Application.Plugin.Script
 
         public bool lpq5()
         {
-
-            var nextMap = 922010700;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
             // only let people through if the eim is ready
-            var avail = eim.getProperty("5stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3693,11 +3680,10 @@ namespace Application.Plugin.Script
             }
             else
             {
-                if (eim.getProperty("6stageclear") == null)
-                {
-                    eim.setProperty("6stageclear", "true");
-                }
                 playPortalSound();
+                var nextMap = 922010700;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -3706,12 +3692,12 @@ namespace Application.Plugin.Script
 
         public bool lpq6()
         {
-
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(922010800);
-            if (eim.getProperty("7stageclear") != null)
+
+            if (eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 playPortalSound();
+                var target = eim.getMapInstance(922010800);
                 getPlayer().changeMap(target, target.getPortal("st00"));
                 return true;
             }
@@ -3724,14 +3710,10 @@ namespace Application.Plugin.Script
 
         public bool lpq7()
         {
-
-            var nextMap = 922010900;
             var eim = GetEventInstanceTrust();
-            var target = eim.getMapInstance(nextMap);
-            var targetPortal = target.getPortal("st00");
+
             // only let people through if the eim is ready
-            var avail = eim.getProperty("8stageclear");
-            if (avail == null)
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
                 // can't go thru eh?
                 getPlayer().dropMessage(5, "Some seal is blocking this door.");
@@ -3740,6 +3722,9 @@ namespace Application.Plugin.Script
             else
             {
                 playPortalSound();
+                var nextMap = 922010900;
+                var target = eim.getMapInstance(nextMap);
+                var targetPortal = target.getPortal("st00");
                 getPlayer().changeMap(target, targetPortal);
                 return true;
             }
@@ -7772,7 +7757,7 @@ namespace Application.Plugin.Script
                 getPlayer().message("找到了公主！");
                 giveCharacterExp(4400, getPlayer());
 
-                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
+                var em = GetEventManager(nameof(MK_PrimeMinister));
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {
@@ -7787,7 +7772,7 @@ namespace Application.Plugin.Script
             }
             else if (isQuestStarted(2333) || (isQuestCompleted(2332) && !isQuestStarted(2333)))
             {
-                var em = GetEventManager<MK_PrimeMinister>(nameof(MK_PrimeMinister));
+                var em = GetEventManager(nameof(MK_PrimeMinister));
 
                 var r = em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
@@ -8190,7 +8175,7 @@ namespace Application.Plugin.Script
             }
 
             if (!haveItem(4001017))
-            {    
+            {
                 // thanks Conrad for pointing out missing checks for token item and unused reactor
                 getPlayer().dropMessage(5, "扎昆祭台需要 火焰之眼 ，否则无法召唤扎昆BOSS，请准备好所需物品再来挑战。");
                 return false;

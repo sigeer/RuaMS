@@ -12,8 +12,8 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9020000 
         public async Task party1_enter()
         {
-            var em = GetEventManager<PQ_Kerning>(nameof(PQ_Kerning));
-            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.GetRequirementDescription(getClient())),
+            var em = GetEventManager(nameof(PQ_Kerning));
+            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.Template.GetRequirementDescription(getClient())),
                 [GetTalkMessage(nameof(ScriptTalk.PartyQuest_Participate)), GetTalkMessage(nameof(ScriptTalk.PartyQuest_Intro))
             ]);
 
@@ -35,7 +35,7 @@ namespace Application.Plugin.Script.Npc
         public async Task party1_play()
         {
             var eim = GetEventInstanceTrust();
-            var em = eim.EventManager as PQ_Kerning;
+            var em = eim.EventManager.Template as PQ_Kerning;
 
             var curMap = getMapId();
 
@@ -163,7 +163,7 @@ namespace Application.Plugin.Script.Npc
         {
             var stgAreas = getMap().getAreas().ToArray();
 
-            var em = eim.EventManager as PQ_Kerning;
+            var em = eim.EventManager.Template as PQ_Kerning;
 
             if (!eim.isEventLeader(getPlayer()))
             {

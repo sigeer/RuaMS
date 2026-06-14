@@ -13,15 +13,15 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() == 100000200)
             {
-                var em = GetEventManager<PQ_Henesys>(nameof(PQ_Henesys));
+                var em = GetEventManager(nameof(PQ_Henesys));
 
-                var option = await AskMenu($"#e#b<组队任务: 迎月花山丘>\r\n#k#n{em.GetRequirementDescription(c)}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n" +
-                    "#L0#我想参加组队任务。#L1#我想了解更多详情。\r\n#L2#我想兑换一件年糕的帽子。");
+                var option = await AskMenu($"#e#b<组队任务: 迎月花山丘>\r\n#k#n{em.Template.GetRequirementDescription(c)}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n" +
+                    "#L0#我想参加组队任务。\r\n#L1#我想了解更多详情。\r\n#L2#我想兑换一件年糕的帽子。");
                 switch (option)
                 {
                     case 0:
                         var r = em.StartInstance(getPlayer());
-                        await em.HandleCreateInstanceResult(r, this);
+                        await SayOK(em.HandleCreateInstanceResult(r, c));
                         break;
                     case 1:
                         await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Intro)));
@@ -128,7 +128,7 @@ namespace Application.Plugin.Script.Npc
                             eim.clearPQ();
                             return;
                         }
-   
+
 
                     }
                     await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_CommitTask_Fail)));

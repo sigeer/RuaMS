@@ -1,8 +1,10 @@
 using Application.Core.Channel;
 using Application.Core.Game.Players;
 using Application.Core.model;
+using Application.Core.scripting.Events;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Map;
@@ -10,9 +12,9 @@ using tools;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Ariant : BehindPartyQuestEventManager
+    internal class PQ_Ariant : AbstractBehindPartyQuestEventTemplate
     {
-        public PQ_Ariant(WorldChannel cserv, string name, int recruitMap) : base(cserv, name)
+        public PQ_Ariant(string name, int recruitMap) : base(name)
         {
             MinCount = 2;
             MaxCount = 7;
@@ -33,9 +35,9 @@ namespace Application.Plugin.Script.Events
             IncludedMap = [MapId.ARPQ_KINGS_ROOM];
         }
 
-        protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)
+        public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
         {
-            return new AriantEventInstanceManager(ChannelServer, Name, instanceName);
+            return new AriantEventManager(worldChannel, this);
         }
 
         public override void OnBattleStarted(AbstractEventInstanceManager eim)
@@ -48,7 +50,7 @@ namespace Application.Plugin.Script.Events
             respawnStages(eim);
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             if (eim.InstanceStatus == Core.scripting.Events.Abstraction.InstanceStatus.InProgress)
             {

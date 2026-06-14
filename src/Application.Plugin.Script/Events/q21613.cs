@@ -1,14 +1,13 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class q21613 : SoloEventManager
+    internal class q21613 : AbstractSoloEventTemplate
     {
-        public q21613(WorldChannel cserv) : base(cserv, nameof(q21613))
+        public q21613() : base(nameof(q21613))
         {
             EventTime = 3 * 60;
             EntryMap = 914030000;

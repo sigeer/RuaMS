@@ -1,14 +1,15 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Shared.Constants.Npc;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class q21747 : SoloEventManager
+    internal class q21747 : AbstractSoloEventTemplate
     {
-        public q21747(WorldChannel cserv) : base(cserv, nameof(q21747))
+        public q21747() : base(nameof(q21747))
         {
             EventTime = 10 * 60;
             EntryMap = 925040100;
@@ -17,7 +18,7 @@ namespace Application.Plugin.Script.Events
             MaxMap = 925040100;
         }
 
-        protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
             base.OnSetup(eim, level, lobbyId);
             eim.getMapInstance(925040100).SpawnNpc(1204020, new Point(850, 0));

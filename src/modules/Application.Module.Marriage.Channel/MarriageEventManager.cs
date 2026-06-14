@@ -5,11 +5,14 @@ using Application.Scripting;
 
 namespace Application.Module.Marriage.Channel
 {
-    public class MarriageEventManager : AbstractInstancedEventManager
+    public class MarriageEventManager : AbstractEventManager<MarriageEventTemplate>
     {
         readonly IModuleChannelServerTransport _transport;
-        public MarriageEventManager(WorldChannel cserv, IEngine iv, ScriptFile file, IModuleChannelServerTransport transport) : base(cserv, iv, file)
+        public override MarriageEventTemplate Template { get; }
+
+        public MarriageEventManager(WorldChannel cserv, MarriageEventTemplate template, IModuleChannelServerTransport transport) : base(cserv, template)
         {
+            Template = template;
             _transport = transport;
         }
 

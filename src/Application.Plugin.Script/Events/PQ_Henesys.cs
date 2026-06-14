@@ -3,6 +3,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Mob;
@@ -11,9 +12,9 @@ using server.maps;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class PQ_Henesys : PartyQuestEventManager
+    internal class PQ_Henesys : AbstractPartyQuestEventTemplate
     {
-        public PQ_Henesys(WorldChannel cserv) : base(cserv, nameof(PQ_Henesys))
+        public PQ_Henesys() : base(nameof(PQ_Henesys))
         {
             MinCount = 3;
             MaxCount = 6;
@@ -36,7 +37,7 @@ namespace Application.Plugin.Script.Events
             };
         }
 
-        protected override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
             eim.Level = level;
             eim.setProperty("level", level);
@@ -44,13 +45,15 @@ namespace Application.Plugin.Script.Events
             eim.setIntProperty("bunnyCake", 0);
             eim.setIntProperty("bunnyDamaged", 0);
 
-            eim.getInstanceMap(EntryMap)?.allowSummonState(false);
-            eim.getInstanceMap(EntryMap)?.RespawnInterval = 15_000;
+            var eventMap = eim.getInstanceMap(EntryMap);
+            eventMap?.clearMapObjects();
+            eventMap?.allowSummonState(false);
+            eventMap?.RespawnInterval = 15_000;
 
             eim.getInstanceMap(910010200)?.RespawnInterval = 15_000;
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             var status = eim.ClearedMaps.GetValueOrDefault(EntryMap, StageStatus.NotStarted);
             if (status == StageStatus.NotStarted)

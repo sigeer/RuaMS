@@ -1,15 +1,17 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Shared.Events;
+using Application.Core.scripting.Events.Templates;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public abstract class SoloEventManager : AbstractInstancedEventManager
+    public class SoloEventManager : AbstractEventManager
     {
-        public SoloEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public override AbstractSoloEventTemplate GetTemplate { get; }
+        public SoloEventManager(WorldChannel cserv, AbstractSoloEventTemplate template) : base(cserv, template)
         {
+            GetTemplate = template;
         }
 
         #region Start Instance
@@ -92,22 +94,8 @@ namespace Application.Core.Scripting.Events
         #endregion
 
 
-        public override List<Player> GetEligibleParty(Player leader)
-        {
-            List<Player> members = [leader];
 
-            if (members.Count >= MinCount
-                && members.Count <= MaxCount
-                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
-            {
-                return members;
-            }
-            return [];
-        }
 
-        public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
-        {
-            return leavingEventMap && eim.getLeaderId() == quitter.getId();
-        }
+
     }
 }

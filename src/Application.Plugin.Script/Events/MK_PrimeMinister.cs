@@ -1,16 +1,15 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
+using Application.Core.scripting.Events.Templates;
 using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
-    internal class MK_PrimeMinister : PartyQuestEventManager
+    internal class MK_PrimeMinister : AbstractPartyQuestEventTemplate
     {
-        public MK_PrimeMinister(WorldChannel cserv) : base(cserv, nameof(MK_PrimeMinister))
+        public MK_PrimeMinister() : base(nameof(MK_PrimeMinister))
         {
             EventTime = 10 * 60;
             MinCount = 1;
@@ -54,7 +53,7 @@ namespace Application.Plugin.Script.Events
             return false;
         }
 
-        protected override void respawnStages(AbstractEventInstanceManager eim)
+        public override void respawnStages(AbstractEventInstanceManager eim)
         {
             if (primeMinisterCheck(eim))
             {

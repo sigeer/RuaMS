@@ -19,8 +19,11 @@ namespace Application.Core.scripting.Events.Instances
         public sbyte WinnerTeamIndex = -1;
         public Dictionary<int, MonsterCarnivalData> PlayerData { get; } = new();
         public TeamRegistry? RequestTeam { get; set; }
-        public MonsterCarnivalEventInstanceManager(WorldChannel worldChannel, string emName, string name) : base(worldChannel, emName, name)
+
+        public override MonsterCarnivalEventManager EventManager { get; }
+        public MonsterCarnivalEventInstanceManager(MonsterCarnivalEventManager em, string name) : base(em, name)
         {
+            EventManager = em;
             Teams = new MonsterCarnivalTeamData[2] { new MonsterCarnivalTeamData(0, []), new MonsterCarnivalTeamData(1, []) };
             EventMap = (getInstanceMap(EventManager.EntryMap) as ICPQMap)!;
             EventMap.allowSummonState(false);
@@ -31,14 +34,13 @@ namespace Application.Core.scripting.Events.Instances
         /// </summary>
         public void StartBattle()
         {
-            var em = (ChannelServer.getEventSM().getEventManager(EventName) as MonsterCarnivalEventManager)!;
 
-            if (InstanceStatus == InstanceStatus.Recruitment && em.PrepareTime > 0)
+            if (InstanceStatus == InstanceStatus.Recruitment && EventManager.GetTemplate.PrepareTime > 0)
             {
                 InstanceStatus = InstanceStatus.Prepare;
 
-                restartEventTimer(em.PrepareTime * 1000);
-                em.OnBattlePrepare(this);
+                restartEventTimer(EventManager.GetTemplate.PrepareTime * 1000);
+                EventManager.GetTemplate.OnBattlePrepare(this);
                 return;
             }
 
@@ -48,10 +50,10 @@ namespace Application.Core.scripting.Events.Instances
 
                 foreach (var chr in getPlayers())
                 {
-                    em.OnPlayerEntry(this, chr);
+                    EventManager.GetTemplate.OnPlayerEntry(this, chr);
                 }
-                restartEventTimer(em.EventTime * 1000);
-                em.OnBattleStarted(this);
+                restartEventTimer(EventManager.EventTime * 1000);
+                EventManager.GetTemplate.OnBattleStarted(this);
                 return;
             }
         }

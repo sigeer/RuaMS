@@ -1,41 +1,20 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Resources.Messages;
-using scripting.npc;
+using Application.Core.scripting.Events.Templates;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public abstract class PartyQuestEventManager : AbstractInstancedEventManager
+    public class PartyQuestEventManager : AbstractEventManager
     {
-        public bool PartyLeaderRequired { get; init; }
-        public int RecruitMap { get; init; }
-
-        public PartyQuestEventManager(WorldChannel cserv, string name) : base(cserv, name)
+        public bool PartyLeaderRequired => GetTemplate.PartyLeaderRequired;
+        public int RecruitMap => GetTemplate.RecruitMap;
+        public override AbstractPartyQuestEventTemplate GetTemplate => (Template as AbstractPartyQuestEventTemplate)!;
+        public PartyQuestEventManager(WorldChannel cserv, AbstractPartyQuestEventTemplate template) : base(cserv, template)
         {
-            PartyLeaderRequired = true;
         }
 
-        public override List<Player> GetEligibleParty(Player leader)
-        {
-            var party = leader.getParty();
-            if (party == null)
-            {
-                return [];
-            }
-
-            var members = party.GetChannelMembers(ChannelServer)
-                .Where(x => x.MapModel == leader.MapModel && x.MapModel.Id == RecruitMap).ToList();
-
-            if (members.Count >= MinCount
-                && members.Count <= MaxCount
-                && members.All(x => x.Level >= MinLevel && x.Level <= MaxLevel))
-            {
-                return members;
-            }
-            return [];
-        }
 
 
         #region StartInstance
@@ -60,7 +39,7 @@ namespace Application.Core.Scripting.Events
                 }
             }
 
-            var members = GetEligibleParty(leader);
+            var members = Template.GetEligibleParty(leader);
             if (members.Count == 0)
             {
                 return CreateInstanceResult.Requirement;
