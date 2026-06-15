@@ -279,9 +279,114 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9201135 
-        public Task Malay_Warp2()
+        public async Task Malay_Warp2()
         {
-            throw new NotImplementedException();
+            int[] inMap = { 540000000, 550000000, 551000000 };
+            int[] toMap = { 550000000, 551000000, 550000000 };
+            int[] toMap2 = { 0, 541000000, 0 };
+            int[] cost = { 42000, 10000, 10000 };
+            int[] toMapSp = { 0, 2, 4 };
+            int location = -1;
+            int travelCost = 0;
+            int travelMap = 0;
+            int travelSp = 0;
+            bool startedTravel = false;
+
+            for (int i = 0; i < inMap.Length; i++)
+            {
+                if (inMap[i] == getPlayer().getMap().getId())
+                {
+                    location = i;
+                    break;
+                }
+            }
+
+            if (location == -1)
+            {
+                await SayOK("我是马来西亚旅游向导奥黛丽。这里暂时没有可用的旅行路线。");
+                return;
+            }
+
+            if (getPlayer().getMap().getId() == 540000000)
+            {
+                startedTravel = true;
+            }
+
+            if (inMap[location] == 550000000)
+            {
+                toMap2[1] = getPlayer().PeekSavedLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
+                if (toMap2[1] == -1)
+                {
+                    toMap2[1] = 541000000;
+                }
+            }
+
+            string text = startedTravel
+                ? "你好，我是#b#p9201135##k，负责前往#r马来西亚#k的旅行服务。由于你没有通过#b冒险岛旅游中心#k登记特别旅行套餐，本次搭乘费用会比较高。请选择目的地：\r\n"
+                : "你好，我是#b#p9201135##k，#r马来西亚#k旅游向导。你想去哪里？\r\n";
+
+            if (location == 1)
+            {
+                text += "\r\n#b#L0##m" + toMap[location] + "# (" + cost[location] + " 金币)#l";
+                text += "\r\n#b#L1##m" + toMap2[location] + "# (返回原来的地方)#l";
+            }
+            else
+            {
+                text += "\r\n#b#L0##m" + toMap[location] + "# (" + cost[location] + " 金币)#l";
+            }
+
+            int selection = await AskMenu(text + "#k");
+
+            if (location == 1)
+            {
+                travelCost = selection == 0 ? cost[location] : 0;
+                travelMap = selection == 0 ? toMap[location] : toMap2[location];
+                travelSp = selection == 0 ? toMapSp[location] : 4;
+            }
+            else
+            {
+                travelCost = cost[location];
+                travelMap = toMap[location];
+                travelSp = toMapSp[location];
+            }
+
+            if (travelCost > 0)
+            {
+                if (!await AskYesNo("前往#b#m" + travelMap + "##k需要#r" + travelCost + " 金币#k。现在要出发吗？"))
+                {
+                    await SayNext("如果你需要搭乘旅行路线，随时来找我。祝你旅途愉快！");
+                    return;
+                }
+            }
+            else
+            {
+                await SayNext("准备结束马来西亚之旅了吗？希望你玩得愉快，一路平安！");
+            }
+
+            if (getMeso() < travelCost)
+            {
+                await SayNext("你的金币不够，无法搭乘这条旅行路线。");
+                return;
+            }
+
+            if (travelCost > 0)
+            {
+                gainMeso(-travelCost);
+                if (startedTravel)
+                {
+                    getPlayer().saveLocation("WORLDTOUR");
+                }
+            }
+            else
+            {
+                int savedMap = getPlayer().getSavedLocation("WORLDTOUR");
+                if (savedMap != -1)
+                {
+                    travelMap = savedMap;
+                }
+            }
+
+            warp(travelMap, travelSp);
         }
 
     }

@@ -47,18 +47,18 @@ namespace Application.Plugin.Script.Npc
                 "我怎么打倒怪物？",
                 "我怎么捡起物品？",
                 "我死后会发生什么？",
-                "我死后会发生什么？",
+                "我什么时候可以选择一个职业？",
                 "告诉我更多关于这个岛！",
                 "我应该怎么做才能成为一个战士？",
                 "我应该怎么做才能成为一个弓箭手？",
                 "我应该怎么做才能成为一个魔法师？",
-                "我应该怎么做才能成为一个盗贼？",
+                "我应该怎么做才能成为一个飞侠？",
                 "我怎么提升角色属性？(S)",
                 "我怎么查看刚刚捡起的物品？",
                 "我怎么穿上物品？",
                 "我怎么查看我穿着的物品？",
-                "我怎么查看我穿着的物品？",
-                "我怎么去维多利亚岛？",
+                "什么是技能？(K)",
+                "我怎么去金银岛？",
                 "什么是金币？"
                 ]))
             {
@@ -100,8 +100,7 @@ namespace Application.Plugin.Script.Npc
                     break;
                 case 6:
                     await SaySpeech([
-                        "你想当#b战士#k吗？嗯。。。那么你必须要去金银岛。金银岛北部有战士之村，叫#r勇士部落#k。去那里找#b武术教练#k后收下他的培训，你就会当战士。但要当战士你的等级必需达到10级.",
-                        "为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。"
+                        "你想当#b战士#k吗？嗯...那么你必须要去金银岛。金银岛北部有战士之村，叫#r勇士部落#k。去那里找#b武术教练#k后收下他的培训，你就会当战士。但要当战士你的等级必需达到10级。"
                         ]);
                     break;
                 case 7:
@@ -117,7 +116,7 @@ namespace Application.Plugin.Script.Npc
                     break;
                 case 9:
                     await SaySpeech([
-                        "你你想当飞侠吗？那你要去金银岛西部的废弃都市。废都的达克鲁就会告诉你当飞侠的办法。关键的是为了当飞侠，你的等级应该是10级。",
+                        "你想当飞侠吗？那你要去金银岛西部的废弃都市。废都的达克鲁就会告诉你当飞侠的办法。关键的是为了当飞侠，你的等级应该是10级。",
                         ]);
                     break;
                 case 10:
@@ -154,14 +153,13 @@ namespace Application.Plugin.Script.Npc
                     break;
                 case 16:
                     await SaySpeech([
-                        "是冒险岛中使用的货币。你可以通过金币购买物品。要赚取金币，你可以击败怪物，将物品出售给商店，或者完成任务...",
+                        "这是冒险岛中使用的货币。你可以通过冒险币购买物品。要赚取冒险币，你可以击败怪物，将物品出售给商店，或者完成任务...",
                         ]);
                     break;
                 default:
                     await begin5();
                     break;
             }
-            await begin5();
         }
 
 
@@ -551,7 +549,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1022101 
         public async Task go_xmas()
         {
-            if (await AskYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
+            if (await AskYesNo("圣诞老人让我来到这里，只是没有告诉我具体是什么时候……希望我来得正是时候！哦！顺便说一下，我是露妮，我可以带你去#b幸福村#k。你准备好了吗？"))
             {
                 getPlayer().SaveLocation(SavedLocationType.HAPPYVILLE);
                 warp(209000000, 0);
@@ -2473,10 +2471,10 @@ namespace Application.Plugin.Script.Npc
         public async Task desc_tree()
         {
             await SaySpeech([
-                "你看到那边站着一群雪人吗？去和他们中的一个交谈，它会带你去这里著名的巨大圣诞树。这棵树可以用各种装饰品来装饰。你觉得怎么样？听起来很有趣，对吧？",
-                "只有6个人可以同时在树所在的地方，你不能在那里进行交易或者开设商店。你丢下的饰品只能由你自己捡起来，所以不用担心在这里丢失你的饰品。",
-                "当然，掉落在那里的物品永远不会消失。一旦你通过里面的雪人离开那里，你在那张地图上掉落的所有物品都会回到你身边，所以你离开那个地方之前不必捡起所有这些物品。是不是很方便呢？",
-                "Well then, go see #p2002001#, buy some Christmas ornaments there, and then decorate the tree with those~ Oh yeah! The biggest, the most beautiful ornament cannot be bought from him. It's probably ... taken by a monster ... huh huh .."
+                "看到那边的雪人了吗？和他们对话，就能前往幸福村著名的巨大圣诞树房间。你可以把各种装饰品挂在树上，亲手布置属于自己的圣诞树。",
+                "每个圣诞树房间最多容纳6个人，而且不能交易或开设商店。你丢下的装饰品只有你自己能捡回，所以不用担心被别人拿走。",
+                "掉在圣诞树房间里的装饰品不会消失。离开房间时，系统会把你放下的物品归还给你，不需要临走前一件件捡起来。",
+                "想装饰圣诞树的话，先去找#p2002001#购买装饰品吧。对了，最大也最漂亮的装饰品可买不到，听说它被怪物拿走了……"
                 ], finalNext: false);
         }
 
@@ -2484,7 +2482,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001001 
         public async Task go_tree1()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("这里有一间圣诞树房间，可以自由装饰。要进去看看吗？"))
             {
                 warp(209000001);
             }
@@ -2494,7 +2492,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001002 
         public async Task go_tree2()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("这里有一间圣诞树房间，可以自由装饰。要进去看看吗？"))
             {
                 warp(209000002);
             }
@@ -2504,7 +2502,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001003 
         public async Task go_tree3()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo("这里有一间圣诞树房间，可以自由装饰。要进去看看吗？"))
             {
                 warp(209000003);
             }
@@ -2532,7 +2530,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2002000 
         public async Task go_victoria()
         {
-            if (await AskYesNo("你想离开快乐村吗？"))
+            if (await AskYesNo("你想离开幸福村，回到之前所在的地方吗？"))
             {
                 var map = getPlayer().GetSavedLocation(SavedLocationType.HAPPYVILLE);
                 if (map == -1)
@@ -2543,10 +2541,6 @@ namespace Application.Plugin.Script.Npc
                 warp(map, 0);
             }
         }
-
-
-
-
 
         // Npc: 2012006 
         public async Task getAboard()
@@ -5290,96 +5284,73 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9201050 
         public async Task About_NLC()
         {
-            const int minlevel = 10;
+            const int minLevel = 10;
 
             if (isQuestCompleted(4911))
             {
-                await SayNext("干得好！你解决了我关于NLC的所有问题。祝你旅途愉快！");
+                await SayOK("干得好！你已经解答了我关于新叶城的所有问题。祝你旅途愉快！");
                 return;
             }
 
             if (isQuestCompleted(4900) || isQuestStarted(4900))
             {
-                await SayNext("嘿，注意一下，我要考你另一个问题，伙计！");
+                await SayOK("嘿，注意一下，我还要考你另一个问题。准备好了就继续完成问答吧！");
                 return;
             }
 
             var info = new[]
             {
-                "What is this place?",
-                "Who is Professor Foxwit?",
-                "What's a Foxwit Door?",
-                "Where are the MesoGears?",
-                "What is the Krakian Jungle?",
-                "What's a Gear Portal?",
-                "What do the street signs mean?",
-                "What's the deal with Jack Masque?",
-                "Lita Lawless looks like a tough cookie, what's her story?",
-                "When will new boroughs open up in the city?",
-                "I want to take the quiz!"
+                "这里是什么地方？",
+                "福斯魏德教授是谁？",
+                "福斯魏德之门是什么？",
+                "机械齿轮区在哪里？",
+                "克拉奇亚丛林是什么地方？",
+                "齿轮传送门是什么？",
+                "街上的指示牌是什么意思？",
+                "蒙面杰克是什么来头？",
+                "莉塔·罗莉丝看起来很强，她有什么故事？",
+                "城市的新区域什么时候开放？",
+                "我要参加新叶城问答！"
             };
 
-            var selStr = "What up! Name's Icebyrd Slimm, mayor of New Leaf City! Happy to see you accepted my invite. So, what can I do for you?#b";
+            var answers = new[]
+            {
+                "新叶城是一座欢迎所有冒险家的城市。这里还在成长，也有很多朋友正在帮忙建设。你可以把这里当作新的据点，慢慢熟悉每一条街道。",
+                "福斯魏德教授是一位天才发明家，也是一名奇妙的时空旅行者。他帮助我们研究传送技术，并在城市里留下了不少让人惊讶的装置。",
+                "福斯魏德之门是一种特殊传送门。站到门前按上方向键，就能被送到对应地点。熟悉这些传送门，会让你在新叶城行动得更方便。",
+                "机械齿轮区位于大本钟塔的下方，那里充满了古怪的机械和危险的怪物。如果你准备去调查，请务必带好补给。",
+                "克拉奇亚丛林位于新叶城郊外。那里生态奇特，怪物也更凶猛，想深入探索的话，最好先做好战斗准备。",
+                "齿轮传送门是古老机械技术的一部分，能把人送到齿轮结构中的其他位置。它不像普通传送门那样总是成对出现，所以要多留意出口。",
+                "街上的施工指示牌代表城市开发进度。红色通常表示暂未开放，绿色表示可以通行。新叶城一直在扩建，记得常回来看看。",
+                "蒙面杰克是个神秘人物，总喜欢把真实身份藏起来。他来自阿莫利亚，嘴上不饶人，但并不是坏人。想知道更多，也许你可以亲自去问他。",
+                "莉塔·罗莉丝是值得信赖的伙伴。她接受过盗贼训练，身手非常敏捷，也愿意保护这座城市。如果你想为市民出一份力，可以去找她聊聊。",
+                "新的城区会在准备完成后开放。开发者们正在努力建设，等安全检查通过，我们就会让冒险家进入。"
+            };
+
+            var selStr = "你好！我是#b#p9201050##k，新叶城市长。欢迎来到新叶城！你想了解什么？#b";
             for (int i = 0; i < info.Length; i++)
             {
-                selStr += "\r\n#L" + i + "# " + info[i] + "#l";
+                selStr += "\r\n#L" + i + "#" + info[i] + "#l";
             }
 
             int selection = await AskMenu(selStr);
 
-            switch (selection)
+            if (selection == 10)
             {
-                case 0:
-                    await SayNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于埃尔帕姆……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
-                    await About_NLC();
-                    break;
-                case 1:
-                    await SayNext("一个97岁的老家伙，动作还挺敏捷。有一天我在城外遇到了他，他是个时空旅行者。这个老家伙在丛林里遇到了一些麻烦，好像有些丛林生物想要吃掉他。作为我救了他的回报，他答应建造一个时空博物馆。我感觉他来这里有其他目的，因为他多次提到新叶城在未来将扮演一个有趣的角色。也许你可以多了解一些……");
-                    await About_NLC();
-                    break;
-                case 2:
-                    await SayNext("嘿，当我看到教授在建造它们时，我也问了同样的问题。它们是传送点。按上键会将你传送到另一个位置。我建议你熟悉它们，它们是我们的交通系统。");
-                    await About_NLC();
-                    break;
-                case 3:
-                    await SayNext("MesoGears位于比格本塔下方。这是巴里卡德发现的一个充满怪物的区域。看起来它似乎位于塔的一个独立部分，如果你问我，这相当奇怪。我听说他需要一点帮助来探索它，你应该去看看他。不过要小心，那里的狼蜘蛛可不是闹着玩的。");
-                    await About_NLC();
-                    break;
-                case 4:
-                    await SayNext("啊...嗯。克拉基亚丛林位于新叶城的郊外。许多新的、强大的生物在那些地区漫游，所以如果你要去那里，最好做好战斗的准备。它位于城镇的右端。有传言说丛林通向一个失落的城市，但我们还没有找到任何东西。");
-                    await About_NLC();
-                    break;
-                case 5:
-                    await SayNext("嗯，当约翰发现自己在大本钟的迷思齿轮部分时，他站在一个上，然后去了另一个地方。然而，他只能来回走动，它们不像狐狡之门那样循环。这就是古老的科技。");
-                    await About_NLC();
-                    break;
-                case 6:
-                    await SayNext("嗯，你几乎可以在任何地方看到它们。它们是正在施工的区域。红灯表示还没完工，但绿灯表示已经开放。经常回来看看，我们一直在建设中！");
-                    await About_NLC();
-                    break;
-                case 7:
-                    await SayNext("啊，杰克。你知道那些自以为很酷、总是能逃脱一切惩罚的家伙吗？还能追到女孩？嗯，那就是杰克，只是没有女孩。他觉得自己错失了机会，于是开始戴上面具隐藏真实身份。我对他的真实身份守口如瓶，但他来自阿莫利亚。如果你问他，他可能会告诉你更多。");
-                    await About_NLC();
-                    break;
-                case 8:
-                    await SayNext("我认识莉塔有一段时间了，虽然我们最近才重新燃起友谊。我有一段时间没见到她，但我理解为什么。她作为一个盗贼进行了非常非常长时间的训练。事实上，那就是我们第一次见面的方式！我被一群迷失的蘑菇围攻，她跳了出来帮忙。当选举警长的时候，毫无疑问是她。她承诺要帮助其他人进行训练并保护城市，所以如果你对公民义务感兴趣，可以和她交谈一下。");
-                    await About_NLC();
-                    break;
-                case 9:
-                    await SayNext("很快，我的朋友。虽然你看不到他们，但城市开发者们正在努力工作。当他们准备好了，我们就会打开它们。我知道你期待着这一刻，我也是！");
-                    await About_NLC();
-                    break;
-                case 10:
-                    if (getLevel() >= minlevel)
-                    {
-                        await SayNext("没问题。如果你回答正确，我会给你一些好东西！");
-                        startQuest(4900);
-                    }
-                    else
-                    {
-                        await SayNext("急切了吗？在我让你参加测验之前，你想再多探索一下吗？");
-                    }
-                    break;
+                if (getLevel() >= minLevel)
+                {
+                    await SayNext("没问题。如果你回答正确，我会给你一些好东西。准备开始吧！");
+                    startQuest(4900);
+                }
+                else
+                {
+                    await SayNext("别急。等你达到#b" + minLevel + "级#k以后，再来参加新叶城问答吧。先在城市里多探索一下。");
+                }
+            }
+            else if (selection >= 0 && selection < answers.Length)
+            {
+                await SayNext(answers[selection]);
+                await About_NLC();
             }
         }
 
@@ -6271,6 +6242,77 @@ namespace Application.Plugin.Script.Npc
             else
             {
                 sendOk("#r错误的密码！");
+            }
+        }
+
+
+        // Npc: 9310040 国清 - 寻找师兄任务
+        public async Task n9310040()
+        {
+            if (isQuestStarted(8538) && haveItem(4031786, 1))
+            {
+                if (await AskYesNo("阿弥陀佛，贫僧有礼了。不知施主找贫僧，所为何事。"))
+                {
+                    completeQuest(8538);
+                    await SayNext("太谢谢你了，出来这么久让师弟担心了啊~等会再来找我。");
+                    startQuest(8539);
+                    await SaySpeech([
+                        "原来是#b#p9310052##k师弟所托，贫僧入世修行未满，还不能回寺。这里有书信一封，请施主带给我的小师弟。",
+                        "如此多谢施主了。"
+                    ]);
+                }
+            }
+            else if (isQuestStarted(8539))
+            {
+                await SayNext("请施主早日将书信送与我那小师弟，免得他挂念，于修行不利。");
+            }
+            else
+            {
+                await SayNext("修行啊修行");
+            }
+        }
+
+        // Npc: 9310052 虚竹 - 寻找师兄任务
+        public async Task n9310052()
+        {
+            if (isQuestCompleted(8538) && isQuestStarted(8539) && haveItem(4031787, 1))
+            {
+                await SayNext("啊，师兄的信！原来师兄正在精修禅宗，多谢施主带来师兄的音信。小僧无以为报，些许物件，还请施主笑纳。");
+                completeQuest(8539);
+                await SayNext("小僧无以为报，些许物件，还请施主笑纳。");
+            }
+            else if (isQuestCompleted(8539))
+            {
+                await SayNext("多谢施主带来师兄的音信。");
+            }
+            else if (isQuestStarted(8538))
+            {
+                await SayNext("施主找到我师兄了吗？他在山腰苦修，就在#b#m702030000##k。");
+            }
+            else if (!isQuestStarted(8538) && !isQuestCompleted(8538))
+            {
+                if (await AskYesNo("这位施主，小僧有事相求，万望施主不吝相助。"))
+                {
+                    startQuest(8538);
+                    await SaySpeech([
+                        "小僧有个师兄早年外出苦修，时日已久却不见音信，小僧好不挂念，还请施主代为寻找。小僧的师兄法号#b#p9310040##k。",
+                       "请施主去#b#m702030000##k寻找我的师兄。"
+                    ]);
+                }
+            }
+            else
+            {
+                await SayNext("今天也要好好修炼啊");
+            }
+        }
+
+        // Npc: 9310055 热气球操纵员小胖
+        public async Task shanghai_balloon()
+        {
+            if (await AskYesNo("嘿！我是热气球操纵员小胖。想从上海外滩搭乘热气球，前往#b#m701010320##k看看吗？"))
+            {
+                await SayNext("抓稳了，热气球马上起飞！");
+                warp(701010320, "h-top");
             }
         }
     }
