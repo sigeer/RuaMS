@@ -3489,7 +3489,7 @@ public partial class Player
     /// thread-safe
     /// </summary>
     /// <param name="packet"></param>
-    public void sendPacket(Packet packet)
+    public virtual void sendPacket(Packet packet)
     {
         Client.sendPacket(packet);
     }

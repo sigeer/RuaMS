@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Relation;
@@ -21,7 +22,7 @@ namespace Application.Core.Game.Players
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
-        public IChannelClient Client { get; private set; }
+        public virtual IChannelClient Client { get; private set; }
         /// <summary>
         /// offlineclient or channelclient.player disposed
         /// </summary>
@@ -35,7 +36,7 @@ namespace Application.Core.Game.Players
         public List<FameLogObject> FameLogs { get; set; }
 
 
-        public Player(IChannelClient client, IMap map, Portal portal, SyncProto.PlayerGetterDto o) : base(map, portal.getPosition(), 0)
+        public Player(IChannelClient client, IMap map, Point pos, SyncProto.PlayerGetterDto o) : base(map, pos, 0)
         {
             Client = client;
 
@@ -69,7 +70,7 @@ namespace Application.Core.Game.Players
             FameLogs = new();
 
 
-            if (Client is not OfflineClient)
+            if (Client is ChannelClient)
             {
                 AddWorldWatcher();
 
@@ -147,7 +148,7 @@ namespace Application.Core.Game.Players
 
         public TickableStatus Status { get; private set; }
 
-        public void OnTick(long now)
+        public virtual void OnTick(long now)
         {
             foreach (var item in getAllStatups().OfType<ITickable>())
             {

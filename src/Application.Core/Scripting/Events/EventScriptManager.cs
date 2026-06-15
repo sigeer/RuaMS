@@ -26,6 +26,7 @@ using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace scripting.Event;
 
@@ -43,12 +44,16 @@ public class EventScriptManager : ITickableTree, IDisposable
 
     public int ReloadEventScript(List<AbstractEventTemplate> templateList)
     {
+        Stopwatch sw = new();
+        sw.Start();
         var duplicatedItem = templateList.GroupBy(x => x.Name).FirstOrDefault(x => x.Count() > 1);
         if (duplicatedItem != null)
         {
             throw new BusinessFatalException($"事件名重复，名称：{duplicatedItem.Key}");
         }
+        sw.Stop();
 
+        Console.WriteLine($"duplicatedItem,{sw.Elapsed.TotalMilliseconds} ");
         foreach (var template in templateList)
         {
             try

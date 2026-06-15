@@ -74,6 +74,7 @@
     <Project Path="src/modules/Application.Module.PlayerNPC.Master/Application.Module.PlayerNPC.Master.csproj" />
   </Folder>
   <Folder Name="/src/Plugins/">
+    <Project Path="src/Application.Plugin.FakeCharacter/Application.Plugin.FakeCharacter.csproj" Id="8b49a120-0375-414e-ab81-5e427a3414ba" />
     <Project Path="src/Application.Plugin.Script/Application.Plugin.Script.csproj" />
   </Folder>
   <Folder Name="/src/srcItems/">

@@ -74,7 +74,7 @@ namespace Application.Core.Channel.Services
             var portal = mapModel.getPortal(o.Character.Spawnpoint);
             if (portal == null)
                 portal = mapModel.getPortal(0)!;
-            var player = new Player(c, mapModel, portal, o);
+            var player = new Player(c, mapModel, portal.getPosition(), o);
 
             _mapper.Map(o.Character, player);
 
