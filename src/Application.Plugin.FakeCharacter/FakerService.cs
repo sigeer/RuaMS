@@ -24,16 +24,21 @@ namespace Application.Plugin.FakeCharacter
             return ValueTask.CompletedTask;
         }
 
-        public FakePlayer GetOrCreateFakePlayer(Player chr, int idx)
+        public void Summon(Player chr, int idx)
         {
             var fakeId = FakePlayer.GetFakePlayerId(chr, idx);
             if (_dataSource.TryGetValue(fakeId, out var fakeChr))
             {
-                return fakeChr;
+                fakeChr.Follow(chr);
             }
-            fakeChr = new FakePlayer(chr, chr.MapModel, chr.getPosition(), idx);
-            _dataSource[fakeId] = fakeChr;
-            return fakeChr;
+            else
+            {
+                fakeChr = new FakePlayer(chr, chr.MapModel, chr.getPosition(), idx);
+                chr.MapModel.addPlayer(fakeChr);
+
+                fakeChr.BroadcastIdle();
+                _dataSource[fakeId] = fakeChr;
+            }
         }
 
         public void Remove(Player chr, int idx)
@@ -62,6 +67,11 @@ namespace Application.Plugin.FakeCharacter
                 {
                     fakeChr.setPosition(chr.getPosition());
                     map.addPlayer(fakeChr);
+
+                    // addPlayer 使用 enteringField=true，spawn 包会硬编码 stance=6
+                    // 这里再广播一次 idle 包，让其他玩家看到正确的姿态
+                    // （尤其当主人在绳子上 stance=6/7，或静止状态 stance=0/1 时）
+                    fakeChr.BroadcastIdle();
                 }
             }
         }

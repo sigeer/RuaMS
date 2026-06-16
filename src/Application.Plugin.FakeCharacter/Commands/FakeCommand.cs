@@ -8,7 +8,7 @@ namespace Application.Plugin.FakeCharacter.Commands
         FakerService _manager;
         public FakeCommand(FakerService manager) : base(["[summon|remove]", "<idx>"], 0, "fake")
         {
-            Description = "召唤一名假人，只能由队长召唤。切换频道后消失";
+            Description = "召唤一名假人。只能由队长在副本地图召唤。";
             _manager = manager;
         }
 
@@ -16,11 +16,11 @@ namespace Application.Plugin.FakeCharacter.Commands
         {
             var chr = client.OnlinedCharacter;
 
-            if (!chr.isLeader())
-            {
-                // 只有队长才能使用
-                return;
-            }
+            //if (!chr.isLeader() || chr.getEventInstance() != null)
+            //{
+            //    // 只有队长在副本中才能使用
+            //    return;
+            //}
 
             var operation = GetParamByIndex(0);
             var idxStr = GetParam("idx");
@@ -33,8 +33,7 @@ namespace Application.Plugin.FakeCharacter.Commands
                 }
                 else if (int.TryParse(idxStr, out var idx))
                 {
-                    var fakeChr = _manager.GetOrCreateFakePlayer(chr, idx);
-                    chr.MapModel.addPlayer(fakeChr);
+                    _manager.Summon(chr, idx);
                 }
 
             }

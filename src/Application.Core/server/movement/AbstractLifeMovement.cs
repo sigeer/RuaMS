@@ -27,8 +27,8 @@ public abstract class AbstractLifeMovement : LifeMovement
 {
     private Point position;
     private int duration;
-    private int newstate;
-    private int type;
+    public int newstate;
+    public int type;
 
     public AbstractLifeMovement(int type, Point position, int duration, int newstate) : base()
     {

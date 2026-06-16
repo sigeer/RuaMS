@@ -89,7 +89,8 @@ namespace Application.Templates.Map
         public MapBackTemplate[] Backs { get; set; }
         [WZPath("area/-")]
         public MapAreaTemplate[] Areas { get; set; }
-
+        [WZPath("ladderRope/-")]
+        public MapLadderRopeTemplate[] LadderRopes { get; set; }
 
         [WZPath("miniMap")]
         public MapMiniMapTemplate? MiniMap { get; set; }

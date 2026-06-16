@@ -42,6 +42,9 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
             var serverStartPos = c.OnlinedCharacter.getPosition();
             // thanks Sa for noticing empty movement sequences crashing players
             int movementDataStart = p.getPosition();
+            var d = parseMovement(p);
+            p.seek(movementDataStart);
+
             updatePosition(p, c.OnlinedCharacter, 0);
             int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);

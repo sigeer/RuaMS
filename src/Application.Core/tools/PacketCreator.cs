@@ -2070,6 +2070,15 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet MovePlayer(int chrId, Point startPos, List<LifeMovementFragment> movements)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
+        p.writeInt(chrId);
+        p.writePos(startPos);
+        serializeMovementList(p, movements);
+        return p;
+    }
+
     public static Packet MovePlayerIdle(int chrId, byte[] idleMovmentBytes)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);

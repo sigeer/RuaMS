@@ -1,0 +1,22 @@
+using System.Drawing;
+
+namespace Application.Templates.Map
+{
+    public class MapLadderRopeTemplate
+    {
+        public MapLadderRopeTemplate(int index)
+        {
+            Index = index;
+        }
+
+        public int Index { get; set;  }
+        public int X { get; set; }
+        public int Y1 { get; set; }
+        public int Y2 { get; set; }
+
+        public bool Contains(Point p)
+        {
+            return p.X == X && p.Y >= Math.Min(Y1, Y2) && p.Y <= Math.Max(Y2, Y1);
+        }
+    }
+}

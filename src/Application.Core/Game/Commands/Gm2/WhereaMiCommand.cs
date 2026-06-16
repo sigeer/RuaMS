@@ -26,6 +26,8 @@ public class WhereaMiCommand : CommandBase
         sb.Append("地图事件：").Append(player.getMap().getEventInstance()?.getName()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
         sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
+        sb.Append("Stance：").Append(player.getStance()).Append("\r\n");
+        sb.Append("LadderRope：").Append(player.MapModel.SourceTemplate.LadderRopes.FirstOrDefault(x => x.Contains(player.getPosition()))?.Index ?? 0).Append("\r\n");
         var closetPortal = player.getMap().findClosestPortal(player.getPosition());
         if (closetPortal != null)
         {
