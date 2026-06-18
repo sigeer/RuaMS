@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Relation;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Buddy;
@@ -38,13 +37,13 @@ namespace Application.Core.Channel.Internal.Handlers
 
                         if (res.Code == 0)
                         {
-                            actor.Send(map =>
+                            actor.Send(async map =>
                             {
                                 var masterChr = map.getCharacterById(res.MasterId);
                                 if (masterChr != null)
                                 {
                                     masterChr.BuddyList.Set(worldChannel.Mapper.Map<BuddyCharacter>(res.Buddy));
-                                    masterChr.sendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
+                                    await masterChr.SendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
                                 }
                             });
                         }
@@ -55,7 +54,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         if (res.Code == 0)
                         {
-                            toActor.Send(map =>
+                            toActor.Send(async map =>
                             {
                                 var chr = map.getCharacterById(res.Buddy.Id);
                                 if (chr != null)
@@ -63,11 +62,11 @@ namespace Application.Core.Channel.Internal.Handlers
                                     if (chr.BuddyList.Contains(res.Buddy.Id))
                                     {
                                         chr.BuddyList.Set(worldChannel.Mapper.Map<BuddyCharacter>(res.Buddy));
-                                        chr.sendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+                                        await chr.SendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
                                     }
                                     else
                                     {
-                                        chr.sendPacket(PacketCreator.requestBuddylistAdd(res.Buddy.Id, res.MasterId, res.Buddy.Name));
+                                        await chr.SendPacket(PacketCreator.requestBuddylistAdd(res.Buddy.Id, res.MasterId, res.Buddy.Name));
                                     }
                                 }
                             });
@@ -92,25 +91,25 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     var masterChrActor = w.getPlayerStorage().GetCharacterActor(res.MasterId);
-                    masterChrActor?.Send(m =>
+                    masterChrActor?.Send(async m =>
                     {
                         var masterChr = m.getCharacterById(res.MasterId);
                         if (masterChr != null)
                         {
                             masterChr.BuddyList.Remove(res.Buddyid);
-                            masterChr.sendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
+                            await masterChr.SendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
                         }
                     });
 
                     var chrActor = w.getPlayerStorage().GetCharacterActor(res.Buddyid);
-                    chrActor?.Send(m =>
+                    chrActor?.Send(async m =>
                     {
                         var chr = m.getCharacterById(res.Buddyid);
                         if (chr != null)
                         {
                             if (chr.BuddyList.Contains(res.MasterId))
                             {
-                                chr.sendPacket(PacketCreator.updateBuddyChannel(res.Buddyid, -1));
+                                await chr.SendPacket(PacketCreator.updateBuddyChannel(res.Buddyid, -1));
                             }
                         }
                     });
@@ -133,7 +132,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 _server.Broadcast(w =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.MasterId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(res.MasterId)?.Send(async m =>
                     {
                         var chr = m.getCharacterById(res.MasterId);
                         if (chr != null)
@@ -144,13 +143,13 @@ namespace Application.Core.Channel.Internal.Handlers
                                 case WhisperLocationResponseCode.NotFound:
                                 case WhisperLocationResponseCode.NotOnlined:
                                 case WhisperLocationResponseCode.NoAccess:
-                                    chr.sendPacket(PacketCreator.getWhisperResult(res.TargetName, false));
+                                    await chr.SendPacket(PacketCreator.getWhisperResult(res.TargetName, false));
                                     break;
                                 case WhisperLocationResponseCode.AwayWorld:
-                                    chr.sendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_CASH_SHOP, -1, WhisperFlag.LOCATION));
+                                    await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_CASH_SHOP, -1, WhisperFlag.LOCATION));
                                     break;
                                 case WhisperLocationResponseCode.DiffChannel:
-                                    chr.sendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_DIFFERENT_CHANNEL, res.Field, WhisperFlag.LOCATION));
+                                    await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_DIFFERENT_CHANNEL, res.Field, WhisperFlag.LOCATION));
                                     break;
                                 default:
                                     break;
@@ -177,20 +176,22 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     if (res.Code != 0)
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.Request.FromId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(res.Request.FromId)?.Send(async m =>
                         {
-                            m.getCharacterById(res.Request.FromId)?.sendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, false));
+                            var chr = m.getCharacterById(res.Request.FromId);
+                            if (chr != null)
+                                await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, false));
                         });
                     }
                     else
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.ReceiverId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(res.ReceiverId)?.Send(async m =>
                         {
                             var chr = m.getCharacterById(res.ReceiverId);
                             if (chr != null)
                             {
-                                chr.sendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, true));
-                                chr.sendPacket(PacketCreator.getWhisperReceive(res.FromName, res.FromChannel - 1, res.IsFromGM, res.Request.Text));
+                                await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, true));
+                                await chr.SendPacket(PacketCreator.getWhisperReceive(res.FromName, res.FromChannel - 1, res.IsFromGM, res.Request.Text));
                             }
                         });
                     }

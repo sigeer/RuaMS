@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists;
@@ -9,7 +8,7 @@ public abstract class Mist : AbstractMapObject
     protected bool _isMobMist, _isPoisonMist, _isRecoveryMist;
     protected int skillDelay;
 
-    public Mist(IMap map, Point pos, Rectangle mistPosition, int skillDelay): base(map, pos)
+    public Mist(IMap map, Point pos, Rectangle mistPosition, int skillDelay) : base(map, pos)
     {
         this.mistPosition = mistPosition;
         this.skillDelay = skillDelay;
@@ -57,14 +56,14 @@ public abstract class Mist : AbstractMapObject
     public abstract Packet makeSpawnData();
     public abstract Packet makeFakeSpawnData(int level);
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(makeSpawnData());
+        await client.SendPacket(makeSpawnData());
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(makeDestroyData());
+        await client.SendPacket(makeDestroyData());
     }
 
     public int getSkillDelay()

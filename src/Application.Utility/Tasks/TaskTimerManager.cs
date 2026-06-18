@@ -38,13 +38,13 @@ public class TaskTimerManager : ITimerManager
     /// <param name="repeatTime"></param>
     /// <param name="delay"></param>
     /// <returns>job id</returns>
-    public ScheduledFuture register(AbstractRunnable r, long repeatTime, long? delay = null) =>
-        register(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
+    public async Task<ScheduledFuture> register(AbstractRunnable r, long repeatTime, long? delay = null) =>
+        await register(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
 
-    public ScheduledFuture register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
+    public async Task<ScheduledFuture> register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
     {
         var ctx = new TimerTaskStatus();
-        _ = Task.Run(async () =>
+        await Task.Run(async () =>
         {
             if (delay != null)
                 await Task.Delay(delay.Value, ctx.LinkedCts.Token);
@@ -63,16 +63,16 @@ public class TaskTimerManager : ITimerManager
         return TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
     }
 
-    public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
-    public ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
+    public async Task<ScheduledFuture> register(Action r, long repeatTime, long? delay = null) => await register(TempRunnable.Parse(r), repeatTime, delay);
+    public async Task<ScheduledFuture> register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => await register(TempRunnable.Parse(r), repeatTime, delay);
 
     public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, long repeatTime, long? delay = null) =>
         await RegisterAsync(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
 
-    public Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
+    public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
     {
         var ctx = new TimerTaskStatus();
-        _ = Task.Run(async () =>
+        await Task.Run(async () =>
         {
             if (delay != null)
                 await Task.Delay(delay.Value, ctx.LinkedCts.Token);
@@ -88,13 +88,13 @@ public class TaskTimerManager : ITimerManager
                             if (TaskScheduler.TryRemove(r.Name, out var p))
                                 Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
                         });
-        return Task.FromResult(TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx));
+        return TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
     }
 
-    public ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay)
+    public async Task<ScheduledFuture> schedule(AbstractRunnable r, TimeSpan delay)
     {
         var ctx = new TimerTaskStatus();
-        _ = Task.Run(async () =>
+        await Task.Run(async () =>
         {
             await Task.Delay(delay, ctx.LinkedCts.Token);
             r.run();
@@ -107,31 +107,31 @@ public class TaskTimerManager : ITimerManager
         return TaskScheduler[r.Name] = new TaskScheduledFuture(r!.Name, ctx);
     }
 
-    public ScheduledFuture schedule(Action r, TimeSpan delay)
+    public async Task<ScheduledFuture> schedule(Action r, TimeSpan delay)
     {
-        return schedule(TempRunnable.Parse(r), delay);
+        return await schedule(TempRunnable.Parse(r), delay);
     }
 
-    public ScheduledFuture schedule(Action r, long delay)
+    public async Task<ScheduledFuture> schedule(Action r, long delay)
     {
-        return schedule(TempRunnable.Parse(r), TimeSpan.FromMilliseconds(delay));
+        return await schedule(TempRunnable.Parse(r), TimeSpan.FromMilliseconds(delay));
     }
 
-    public ScheduledFuture scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
+    public async Task<ScheduledFuture> scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
     {
-        return schedule(r, (time - DateTimeOffset.UtcNow));
+        return await schedule(r, (time - DateTimeOffset.UtcNow));
     }
 
-    public ScheduledFuture scheduleAtTimestamp(Action r, DateTimeOffset time)
+    public async Task<ScheduledFuture> scheduleAtTimestamp(Action r, DateTimeOffset time)
     {
-        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
+        return await schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
     }
 
-    public Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
+    public async Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
     {
         taskName = $"{taskName}_{r.GetHashCode()}";
         var ctx = new TimerTaskStatus();
-        _ = Task.Run(async () =>
+        await Task.Run(async () =>
         {
             await Task.Delay(delay, ctx.LinkedCts.Token);
             await r();
@@ -142,7 +142,6 @@ public class TaskTimerManager : ITimerManager
                     Log.Logger.Debug("结束了一个任务【{TaskStatus}】，JobId = {JobId}", t.Status, p.JobId);
             });
         var m = new TaskScheduledFuture(taskName, ctx); ;
-        TaskScheduler[taskName] = m;
-        return Task.FromResult(m as ScheduledFuture);
+        return TaskScheduler[taskName] = m;
     }
 }

@@ -1,9 +1,9 @@
-using Application.Core.Channel;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.scripting.Events.Instances
@@ -14,7 +14,6 @@ namespace Application.Core.scripting.Events.Instances
         /// 0. 红队, 1. 蓝队
         /// </summary>
         public MonsterCarnivalTeamData[] Teams = new MonsterCarnivalTeamData[2];
-        public ICPQMap EventMap { get; init; }
 
         public sbyte WinnerTeamIndex = -1;
         public Dictionary<int, MonsterCarnivalData> PlayerData { get; } = new();
@@ -25,21 +24,23 @@ namespace Application.Core.scripting.Events.Instances
         {
             EventManager = em;
             Teams = new MonsterCarnivalTeamData[2] { new MonsterCarnivalTeamData(0, []), new MonsterCarnivalTeamData(1, []) };
-            EventMap = (getInstanceMap(EventManager.EntryMap) as ICPQMap)!;
-            EventMap.allowSummonState(false);
         }
 
+        public async Task<ICPQMap> GetEventMap()
+        {
+            return (await getMapInstance(EventManager.GetTemplate.EntryMap)) as ICPQMap;
+        }
         /// <summary>
         /// 开始战斗
         /// </summary>
-        public void StartBattle()
+        public async Task StartBattle()
         {
 
             if (InstanceStatus == InstanceStatus.Recruitment && EventManager.GetTemplate.PrepareTime > 0)
             {
                 InstanceStatus = InstanceStatus.Prepare;
 
-                restartEventTimer(EventManager.GetTemplate.PrepareTime * 1000);
+                await restartEventTimer(EventManager.GetTemplate.PrepareTime * 1000);
                 EventManager.GetTemplate.OnBattlePrepare(this);
                 return;
             }
@@ -50,10 +51,10 @@ namespace Application.Core.scripting.Events.Instances
 
                 foreach (var chr in getPlayers())
                 {
-                    EventManager.GetTemplate.OnPlayerEntry(this, chr);
+                    await EventManager.GetTemplate.OnPlayerEntry(this, chr);
                 }
-                restartEventTimer(EventManager.EventTime * 1000);
-                EventManager.GetTemplate.OnBattleStarted(this);
+                await restartEventTimer(EventManager.EventTime * 1000);
+                await EventManager.GetTemplate.OnBattleStarted(this);
                 return;
             }
         }
@@ -69,7 +70,7 @@ namespace Application.Core.scripting.Events.Instances
         }
 
 
-        public void AcceptChallenge(bool accept)
+        public async Task AcceptChallenge(bool accept)
         {
             if (accept)
             {
@@ -80,11 +81,11 @@ namespace Application.Core.scripting.Events.Instances
 
                     foreach (var chr in RequestTeam.EligibleMembers)
                     {
-                        registerPlayer(chr);
+                        await registerPlayer(chr);
                         PlayerData[chr.Id] = new MonsterCarnivalData(1);
                     }
 
-                    StartBattle();
+                    await StartBattle();
                 }
 
             }
@@ -94,7 +95,7 @@ namespace Application.Core.scripting.Events.Instances
                 {
                     foreach (var item in RequestTeam.EligibleMembers)
                     {
-                        item.Pink(nameof(ClientMessage.CPQ_ChallengeRoomDenied));
+                        await item.Pink(nameof(ClientMessage.CPQ_ChallengeRoomDenied));
                     }
                 }
                 RequestTeam = null;
@@ -156,7 +157,7 @@ namespace Application.Core.scripting.Events.Instances
         }
 
         public MonsterCarnivalData? GetPlayerData(int playerId) => PlayerData.GetValueOrDefault(playerId);
-        public void GainCP(Player player, int gain)
+        public async Task GainCP(Player player, int gain)
         {
             var data = GetPlayerData(player.Id);
             if (data == null)
@@ -181,8 +182,8 @@ namespace Application.Core.scripting.Events.Instances
                     data.AvailableCP += gain;
                 }
 
-                player.sendPacket(PacketCreator.CPUpdate(false, data.AvailableCP, data.TotalCP, data.TeamFlag));
-                player.MapModel.broadcastMessage(PacketCreator.CPUpdate(true, teamData.AvailableCP, teamData.TotalCP, teamData.TeamFlag));
+                await player.SendPacket(PacketCreator.CPUpdate(false, data.AvailableCP, data.TotalCP, data.TeamFlag));
+                await player.MapModel.broadcastMessage(PacketCreator.CPUpdate(true, teamData.AvailableCP, teamData.TotalCP, teamData.TeamFlag));
             }
         }
 
@@ -200,18 +201,18 @@ namespace Application.Core.scripting.Events.Instances
             var teamIdx = GetPlayerTeam(chr.Id);
             if (teamIdx != -1)
             {
-                return Teams[teamIdx].SummonedMonster < EventMap.MaxMobs;
+                return Teams[teamIdx].SummonedMonster < EventManager.GetTemplate.MapMonsterCarnivalTemplate.MaxMobs;
             }
             return false;
         }
 
-        public bool CanGuardian(Player chr)
+        public bool CanGuardian(Player chr, ICPQMap map)
         {
             var teamIdx = GetPlayerTeam(chr.Id);
             if (teamIdx != -1)
             {
                 var strFlag = teamIdx.ToString();
-                return EventMap.getAllReactors().Count(x => x.getName().Substring(0, 1) == strFlag) < EventMap.MaxReactors;
+                return map.getAllReactors().Count(x => x.getName().Substring(0, 1) == strFlag) < EventManager.GetTemplate.MapMonsterCarnivalTemplate.MaxReactors;
             }
             return false;
         }

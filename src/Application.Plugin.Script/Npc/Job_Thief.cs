@@ -12,8 +12,8 @@ namespace Application.Plugin.Script.Npc
             await SayNext("飞侠是幸运、灵巧和力量的完美结合，擅长对无助的敌人进行突袭攻击。高水平的闪避能力和速度使得飞侠能够从各个角度攻击敌人。");
             if (await AskYesNo("想体验一下飞侠是什么感觉嘛？"))
             {
-                lockUI();
-                warp(1020400, 0);
+                await lockUI();
+                await warp(1020400, 0);
             }
             else
             {
@@ -35,11 +35,11 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (getJob() == Job.BEGINNER)
                             {
-                                changeJobById(JobId.THIEF);
-                                gainItem(2070015, 500);
-                                gainItem(1472061, 1);
-                                gainItem(1332063, 1);
-                                resetStats();
+                                await changeJobById(JobId.THIEF);
+                                await gainItem(2070015, 500);
+                                await gainItem(1472061, 1);
+                                await gainItem(1332063, 1);
+                                await resetStats();
 
                                 await SaySpeech([
                                 "好的，从现在开始，你就是我们的一员了！你将在...过着流浪者的生活，但要耐心等待，很快你就会过上好日子。好了，虽然不多，但我会传授给你一些我的能力... 哈啊啊啊！！",
@@ -87,9 +87,9 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (getJob() == Job.THIEF)
                                 {
-                                    gainItem(4031012, -1);
-                                    completeQuest(questId);
-                                    changeJobById(job.Id);
+                                    await gainItem(4031012, -1);
+                                    await completeQuest(questId);
+                                    await changeJobById(job.Id);
 
                                     await SaySpeech([
                                     $"好了，从现在开始你就是{jobStr}了。{jobStr}是聪明的一群人，拥有令人难以置信的魔法能力，能够轻松地穿透怪物的心灵和心理结构……请每天都训练自己，我会帮助你变得比你现在更强大。",
@@ -109,7 +109,7 @@ namespace Application.Plugin.Script.Npc
                     await SayNext("做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。拿着我的信先……确保你不要丢了它！");
                     if (!isQuestStarted(questId))
                     {
-                        startQuest(questId);
+                        await startQuest(questId);
                     }
 
                     if (await AskYesNo("请把这封信送到废弃都市附近的#b#p1072003##k。他正在代替我担任教练的工作。把信交给他，他会代替我来测试你。祝你好运。"))
@@ -117,7 +117,7 @@ namespace Application.Plugin.Script.Npc
                         if (!haveItem(4031011))
                         {
                             if (canHold(4031011))
-                                gainItem(4031011, 1);
+                                await gainItem(4031011, 1);
                             else
                             {
                                 await SayNext("请在你的背包中腾出一些空间。");
@@ -139,8 +139,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else if (haveItem(4031059))
                     {
-                        gainItem(4031059, -1);
-                        gainItem(4031057, 1);
+                        await gainItem(4031059, -1);
+                        await gainItem(4031057, 1);
 
                         await SayNext("你成功击败了我的分身并带回了#b#t4031059##k！看来你已经准备好第三次转职了，把#b#t4031057##k带给#b#p2020011##k，他会帮助你进行第三次转职的，祝你好运！");
                     }
@@ -193,20 +193,20 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (canHold(2280003, 1))
                     {
-                        changeJobById(getJobId() + 1);
+                        await changeJobById(getJobId() + 1);
                         if (getJob() == Job.NIGHTLORD)
                         {
-                            teachSkill(4120002, 0, 10, -1);
-                            teachSkill(4120005, 0, 10, -1);
-                            teachSkill(4121006, 0, 10, -1);
+                            await teachSkill(4120002, 0, 10, -1);
+                            await teachSkill(4120005, 0, 10, -1);
+                            await teachSkill(4121006, 0, 10, -1);
                         }
                         else if (getJob() == Job.SHADOWER)
                         {
-                            teachSkill(4220002, 0, 10, -1);
-                            teachSkill(4220005, 0, 10, -1);
-                            teachSkill(4221007, 0, 10, -1);
+                            await teachSkill(4220002, 0, 10, -1);
+                            await teachSkill(4220005, 0, 10, -1);
+                            await teachSkill(4221007, 0, 10, -1);
                         }
-                        gainItem(2280003, 1);
+                        await gainItem(2280003, 1);
                     }
                     else
                     {
@@ -221,22 +221,22 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getPlayer().getSkillLevel(4121008) == 0)
                     {
-                        teachSkill(4121008, 0, 10, -1);
+                        await teachSkill(4121008, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(4121004) == 0)
                     {
-                        teachSkill(4121004, 0, 10, -1);
+                        await teachSkill(4121004, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.SHADOWER)
                 {
                     if (getPlayer().getSkillLevel(4221004) == 0)
                     {
-                        teachSkill(4221004, 0, 10, -1);
+                        await teachSkill(4221004, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(4221001) == 0)
                     {
-                        teachSkill(4221001, 0, 10, -1);
+                        await teachSkill(4221001, 0, 10, -1);
                     }
                 }
                 await SayOK("好了");

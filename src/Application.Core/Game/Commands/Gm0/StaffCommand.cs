@@ -7,8 +7,8 @@ public class StaffCommand : CommandBase
         Description = "Show credits. These people made the server possible.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        c.OpenNpc(NpcId.HERACLE, "credits");
+        await c.OnlinedCharacter.OpenNpc(NpcId.HERACLE, "credits");
     }
 }

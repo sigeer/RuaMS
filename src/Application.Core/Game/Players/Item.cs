@@ -14,13 +14,13 @@ namespace Application.Core.Game.Players
     {
         private int itemEffect;
 
-        public void ClearExpiredSkills(long now)
+        public async Task ClearExpiredSkills(long now)
         {
             foreach (var skill in getSkills())
             {
                 if (skill.Value.expiration != -1 && skill.Value.expiration < now)
                 {
-                    changeSkillLevel(skill.Key, -1, 0, -1);
+                    await changeSkillLevel(skill.Key, -1, 0, -1);
                 }
             }
         }
@@ -49,15 +49,15 @@ namespace Application.Core.Game.Players
         {
             return Bag[type].CanGainSlot((short)slots);
         }
-        public bool gainSlots(int type, int slots, bool update)
+        public async Task<bool> gainSlots(int type, int slots, bool update)
         {
             int newLimit = gainSlotsInternal(type, slots);
             if (newLimit != -1)
             {
-                this.saveCharToDB();
+                await SyncCharAsync();
                 if (update)
                 {
-                    sendPacket(PacketCreator.updateInventorySlotLimit(type, newLimit));
+                    await SendPacket(PacketCreator.updateInventorySlotLimit(type, newLimit));
                 }
                 return true;
             }
@@ -201,7 +201,7 @@ namespace Application.Core.Game.Players
         /// <param name="d"></param>
         /// <param name="enableActions"></param>
         /// <returns>是否成功</returns>
-        public bool TryGainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
+        public async Task<bool> TryGainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
             using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
@@ -214,8 +214,8 @@ namespace Application.Core.Game.Players
                 return false;
             }
 
-            updateSingleStat(Stat.MESO, MesoValue, enableActions);
-            GainMesoShowMessage(actualGain, d);
+            await updateSingleStat(Stat.MESO, MesoValue, enableActions);
+            await GainMesoShowMessage(actualGain, d);
             return true;
         }
 
@@ -226,7 +226,7 @@ namespace Application.Core.Game.Players
         /// <param name="d"></param>
         /// <param name="enableActions"></param>
         /// <returns>超出上限后无法拾取的数量</returns>
-        public int GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
+        public async Task<int> GainMeso(int gain, GainItemShow d = GainItemShow.NotShown, bool enableActions = false)
         {
             using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainMeso");
             activity?.SetTag("PlayerId", Id);
@@ -237,45 +237,45 @@ namespace Application.Core.Game.Players
 
             if (actualGain != 0)
             {
-                updateSingleStat(Stat.MESO, MesoValue, enableActions);
-                GainMesoShowMessage(actualGain, d);
+                await updateSingleStat(Stat.MESO, MesoValue, enableActions);
+                await GainMesoShowMessage(actualGain, d);
             }
             else
             {
-                sendPacket(PacketCreator.enableActions());
+                await SendPacket(PacketCreator.enableActions());
             }
             return gain - actualGain;
         }
         #endregion
 
-        public void GainItemShowMessage(int itemId, short quantity, GainItemShow d = GainItemShow.NotShown)
+        public async Task GainItemShowMessage(int itemId, short quantity, GainItemShow d = GainItemShow.NotShown)
         {
             switch (d)
             {
                 case Shared.Constants.Item.GainItemShow.NotShown:
                     break;
                 case Shared.Constants.Item.GainItemShow.ShowInChat:
-                    sendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));
+                    await SendPacket(PacketCreator.getShowItemGain(itemId, quantity, true));
                     break;
                 case Shared.Constants.Item.GainItemShow.ShowInMessage:
-                    sendPacket(PacketCreator.getShowItemGain(itemId, quantity, false));
+                    await SendPacket(PacketCreator.getShowItemGain(itemId, quantity, false));
                     break;
                 default:
                     break;
             }
         }
 
-        void GainMesoShowMessage(int meso, GainItemShow d = GainItemShow.NotShown)
+        async Task GainMesoShowMessage(int meso, GainItemShow d = GainItemShow.NotShown)
         {
             switch (d)
             {
                 case Shared.Constants.Item.GainItemShow.NotShown:
                     break;
                 case Shared.Constants.Item.GainItemShow.ShowInChat:
-                    sendPacket(PacketCreator.getShowMesoGain(meso, true));
+                    await SendPacket(PacketCreator.getShowMesoGain(meso, true));
                     break;
                 case Shared.Constants.Item.GainItemShow.ShowInMessage:
-                    sendPacket(PacketCreator.getShowMesoGain(meso, false));
+                    await SendPacket(PacketCreator.getShowMesoGain(meso, false));
                     break;
                 default:
                     break;
@@ -292,7 +292,7 @@ namespace Application.Core.Game.Players
         /// <param name="expires">道具有效时长。单位ms， -1不会过期</param>
         /// <param name="nextSetter">设置其他道具属性，不能对返回值修改属性（要在传客户端前修改）</param>
         /// <returns>获得的道具，尽量不使用：如果是可叠放物品，不会与背包物品对应，</returns>
-        public Item? GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
+        public async Task<Item?> GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
         {
             if (quantity == 0)
             {
@@ -312,7 +312,7 @@ namespace Application.Core.Game.Players
             {
                 if (!InventoryManipulator.checkSpace(Client, itemId, quantity, ""))
                 {
-                    dropMessage(1, "Your inventory is full. Please remove an item from your " + invType.ToString() + " inventory.");
+                    await dropMessage(1, "Your inventory is full. Please remove an item from your " + invType.ToString() + " inventory.");
                     return null;
                 }
 
@@ -359,16 +359,16 @@ namespace Application.Core.Game.Players
                     nextSetter(item);
                 }
 
-                var addItemResult = InventoryManipulator.addFromDrop(Client, item!, false);
+                var addItemResult = await InventoryManipulator.addFromDrop(Client, item!, false);
                 if (!addItemResult)
                     return null;
             }
             else
             {
-                Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
+                await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
             }
 
-            GainItemShowMessage(itemId, quantity, show);
+            await GainItemShowMessage(itemId, quantity, show);
 
             return item;
         }
@@ -387,16 +387,16 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public void BuyCashItem(int cashType, CashItem cItem, Func<bool> condition)
+        public async Task BuyCashItem(int cashType, CashItem cItem, Func<Task<bool>> condition)
         {
             if (cItem.getPrice() > CashShopModel.getCash(cashType))
                 return;
 
-            if (!condition.Invoke())
+            if (!await condition.Invoke())
                 return;
 
             CashShopModel.BuyCashItem(cashType, cItem);
-            sendPacket(PacketCreator.showCash(this));
+            await SendPacket(PacketCreator.showCash(this));
         }
     }
 }

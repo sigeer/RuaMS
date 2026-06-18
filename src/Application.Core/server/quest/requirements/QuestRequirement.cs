@@ -18,7 +18,6 @@
 */
 
 
-using Application.Templates.Quest;
 using client;
 using static Application.Templates.Quest.QuestDemand;
 
@@ -39,7 +38,7 @@ public class QuestRequirement : AbstractQuestRequirement
         quests = data.ToDictionary(x => x.QuestID, x => x.State);
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         foreach (int questID in quests.Keys)
         {

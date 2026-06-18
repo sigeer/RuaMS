@@ -2,15 +2,12 @@ using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Relation;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.ServerTransports;
-using Application.Resources.Messages;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
 using AutoMapper;
-using Google.Protobuf;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using TeamProto;
 
 namespace Application.Core.Channel.ServerData
@@ -32,17 +29,17 @@ namespace Application.Core.Channel.ServerData
             _cache = cache;
         }
 
-        public void CreateTeam(Player leader, bool silentCheck = false)
+        public async Task CreateTeam(Player leader, bool silentCheck = false)
         {
             if (leader.Level < 10 && !YamlConfig.config.server.USE_PARTY_FOR_STARTERS)
             {
-                leader.sendPacket(TeamPacketCreator.BeginnerCannotCreateTeam());
+                await leader.SendPacket(TeamPacketCreator.BeginnerCannotCreateTeam());
                 return;
             }
 
             if (leader.getEventInstance() is AriantEventInstanceManager)
             {
-                leader.dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
+                await leader.dropMessage(5, "You cannot request a party creation while participating the Ariant Battle Arena.");
                 return;
             }
 
@@ -50,19 +47,19 @@ namespace Application.Core.Channel.ServerData
             {
                 if (!silentCheck)
                 {
-                    leader.sendPacket(TeamPacketCreator.AlreadInTeam());
+                    await leader.SendPacket(TeamPacketCreator.AlreadInTeam());
                 }
                 return;
             }
 
-            _ = _transport.CreateTeam(new CreateTeamRequest { LeaderId = leader.Id, Method = 0 });
+            await _transport.CreateTeam(new CreateTeamRequest { LeaderId = leader.Id, Method = 0 });
         }
 
 
 
-        public void LeaveParty(Player player)
+        public async Task LeaveParty(Player player)
         {
-            _ = UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
+            await UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id);
             //MatchCheckerCoordinator mmce = world.getMatchCheckerCoordinator();
             //if (mmce.getMatchConfirmationLeaderid(player.getId()) == player.getId() && mmce.getMatchConfirmationType(player.getId()) == MatchCheckerType.GUILD_CREATION)
             //{
@@ -70,9 +67,9 @@ namespace Application.Core.Channel.ServerData
             //}
         }
 
-        public void LeaveStarterParty(Player player)
+        public async Task LeaveStarterParty(Player player)
         {
-            _ = UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id, 1);
+            await UpdateTeam(player.Party, PartyOperation.LEAVE, player, player.Id, 1);
         }
 
         public void JoinParty(Player player, int partyid, bool silentCheck)
@@ -109,17 +106,17 @@ namespace Application.Core.Channel.ServerData
                 foreach (var item in team.Members)
                 {
                     var chrActor = csrv.getPlayerStorage().GetCharacterActor(item.Id);
-                    chrActor?.Send(m =>
+                    chrActor?.Send(async m =>
                     {
                         var chr = m.getCharacterById(item.Id);
                         if (chr != null)
                         {
-                            chr.sendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
+                            await chr.SendPacket(TeamPacketCreator.UpdateParty(updatePlayer.getChannelServer(), team, PartyOperation.SILENT_UPDATE, updatePlayer.Id, updatePlayer.Name));
 
                             if (chr.MapModel == updatePlayer.MapModel)
                             {
-                                chr.sendPacket(TeamPacketCreator.updatePartyMemberHP(updatePlayer.Id, updatePlayer.HP, updatePlayer.ActualMaxHP));
-                                updatePlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(chr.Id, chr.HP, chr.ActualMaxHP));
+                                await chr.SendPacket(TeamPacketCreator.updatePartyMemberHP(updatePlayer.Id, updatePlayer.HP, updatePlayer.ActualMaxHP));
+                                await updatePlayer.SendPacket(TeamPacketCreator.updatePartyMemberHP(chr.Id, chr.HP, chr.ActualMaxHP));
                             }
                         }
                     });

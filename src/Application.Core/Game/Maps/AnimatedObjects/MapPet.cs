@@ -1,7 +1,6 @@
 using Application.Core.Game.Items;
 using Application.Templates.Item.Pet;
 using Application.Utility.Tickables;
-using constants.game;
 using server.movement;
 using tools;
 
@@ -47,22 +46,22 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             return base.GetReadableName(c) + $" Owner {Owner.GetReadableName(c)}";
         }
 
-        public override void sendSpawnData(IChannelClient client)
+        public override async Task sendSpawnData(IChannelClient client)
         {
-            client.sendPacket(EncodeShowPet());
+            await client.SendPacket(EncodeShowPet());
         }
 
-        public override void sendDestroyData(IChannelClient client)
+        public override async Task sendDestroyData(IChannelClient client)
         {
-            client.sendPacket(EncodeHidePet(0));
+            await client.SendPacket(EncodeHidePet(0));
         }
 
         public bool HasChatBalloon => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].ChatBalloon);
         public bool HasNameTag => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].NameTag);
 
-        public override void OnMounted(IMap map)
+        public override async Task OnMounted(IMap map)
         {
-            base.OnMounted(map);
+            await base.OnMounted(map);
             setPosition(Owner.getPosition());
         }
 
@@ -132,7 +131,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             return p;
         }
 
-        public void ActionRemote(sbyte act, string text)
+        public async Task ActionRemote(sbyte act, string text)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_ACTION);
             p.writeInt(Owner.Id);
@@ -142,10 +141,10 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             p.writeString(text);
             p.writeBool(HasChatBalloon); // bChatBalloon
 
-            BroadcastMap(p, Owner.Id);
+            await BroadcastMap(p, Owner.Id);
         }
 
-        public void BroadcastNameChanged(bool exceptOwer = true)
+        public async Task BroadcastNameChanged(bool exceptOwer = true)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
             p.writeInt(Owner.Id);
@@ -156,29 +155,29 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             //     nNameTag = this->m_pTemplate->nNameTag;
             p.writeBool(HasNameTag);
 
-            BroadcastMap(p, exceptOwer ? Owner.Id : -1);
+            await BroadcastMap(p, exceptOwer ? Owner.Id : -1);
         }
 
-        public void UpdateName(string name)
+        public async Task UpdateName(string name)
         {
             PetItem.Name = name;
 
-            Owner.forceUpdateItem(PetItem);
-            BroadcastNameChanged(false);
+            await Owner.forceUpdateItem(PetItem);
+            await BroadcastNameChanged(false);
         }
         /// <summary>
         /// 召回
         /// </summary>
         /// <param name="recallReason">0. 无，1. 饱食度过低 2. 过期</param>
-        public void Recall(byte recallReason = 0)
+        public async Task Recall(byte recallReason = 0)
         {
-            MapModel.RemoveMapObject(this, mapChr => mapChr.sendPacket(EncodeHidePet(recallReason)));
+            await MapModel.RemoveMapObject(this, mapChr => mapChr.SendPacket(EncodeHidePet(recallReason)));
 
             Owner.removePet(PetId, true);
-            Owner.commitExcludedItems();
+            await Owner.commitExcludedItems();
 
-            Owner.sendPacket(PacketCreator.petStatUpdate(Owner));
-            Owner.sendPacket(PacketCreator.enableActions());
+            await Owner.SendPacket(PacketCreator.petStatUpdate(Owner));
+            await Owner.SendPacket(PacketCreator.enableActions());
         }
 
         public int getItemId()
@@ -199,7 +198,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         }
 
 
-        public void gainTamenessFullness(int incTameness, int incFullness, int type, bool forceEnjoy = false)
+        public async Task gainTamenessFullness(int incTameness, int incFullness, int type, bool forceEnjoy = false)
         {
             bool enjoyed;
 
@@ -219,8 +218,8 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         Level += 1;
 
-                        Owner.sendPacket(PacketCreator.showOwnPetLevelUp(Index));
-                        BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
+                        await Owner.SendPacket(PacketCreator.showOwnPetLevelUp(Index));
+                        await BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
                     }
                 }
 
@@ -245,20 +244,20 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
             if (forceEnjoy)
             {
-                Owner.sendPacket(EncodeFoodResponse(true));
+                await Owner.SendPacket(EncodeFoodResponse(true));
                 // 没观察到任何效果
-                Owner.sendPacket(PacketCreator.PetEatCashFoodSuccess(Index));
+                await Owner.SendPacket(PacketCreator.PetEatCashFoodSuccess(Index));
             }
             else
             {
-                Owner.sendPacket(EncodeFoodResponse(enjoyed));
+                await Owner.SendPacket(EncodeFoodResponse(enjoyed));
             }
 
 
-            Owner.forceUpdateItem(PetItem);
+            await Owner.forceUpdateItem(PetItem);
         }
 
-        public void HandleCommand(byte command)
+        public async Task HandleCommand(byte command)
         {
             var petCommand = SourceTemplate.InterActsDict.GetValueOrDefault(command);
             if (petCommand == null)
@@ -269,12 +268,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             // 客户端再根据成功/失败触发petchat
             if (Randomizer.nextInt(100) < petCommand.Prob)
             {
-                gainTamenessFullness(petCommand.Inc, 0, command);
-                Owner.sendPacket(EncodeCommandResponse(command, true));
+                await gainTamenessFullness(petCommand.Inc, 0, command);
+                await Owner.SendPacket(EncodeCommandResponse(command, true));
             }
             else
             {
-                Owner.sendPacket(EncodeCommandResponse(command, false));
+                await Owner.SendPacket(EncodeCommandResponse(command, false));
             }
         }
 
@@ -300,7 +299,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public long Next { get; private set; }
 
         public TickableStatus Status { get; private set; }
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             if (!this.IsAvailable() || PetItem.PlayerInventory == null)
             {
@@ -321,13 +320,13 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         PetItem.Fullness = 15;
 
-                        Recall(1);
-                        PetItem.PlayerInventory.Owner.dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
+                        await Recall(1);
+                        await PetItem.PlayerInventory.Owner.dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
                     }
                     else
                     {
                         PetItem.Fullness = newFullness;
-                        PetItem.PlayerInventory.Owner.forceUpdateItem(PetItem);
+                        await PetItem.PlayerInventory.Owner.forceUpdateItem(PetItem);
                     }
                 }
                 else

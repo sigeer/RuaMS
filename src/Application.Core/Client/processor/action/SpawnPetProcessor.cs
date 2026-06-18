@@ -18,12 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Core.Game.Items;
-using Application.Core.Game.Skills;
-using client.inventory.manipulator;
-using tools;
-
 namespace client.processor.action;
 
 

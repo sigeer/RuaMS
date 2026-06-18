@@ -19,7 +19,7 @@ namespace Application.Core.Channel.Services
 
         public void LoadPlayerNpc(IMap map)
         {
-            
+
         }
 
         public void SpawnPlayerNPCByHonor(Player chr)

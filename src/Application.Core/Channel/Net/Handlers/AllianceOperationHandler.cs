@@ -39,14 +39,14 @@ public class AllianceOperationHandler : ChannelHandlerBase
         _guildManager = guildManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
 
         var chr = c.OnlinedCharacter;
 
         if (chr.GuildId <= 0)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -55,18 +55,18 @@ public class AllianceOperationHandler : ChannelHandlerBase
         switch (b)
         {
             case 0x01:
-                _guildManager!.AllianceBroadcastPlayerInfo(chr);
+                await _guildManager!.AllianceBroadcastPlayerInfo(chr);
                 break;
             case 0x02:
                 {
                     // Leave Alliance
-                    _guildManager.GuildLeaveAlliance(chr, chr.GuildId);
+                    await _guildManager.GuildLeaveAlliance(chr, chr.GuildId);
                     break;
                 }
             case 0x03: // Send Invite
                 string guildName = p.readString();
 
-                _guildManager.SendAllianceInvitation(c, guildName);
+                await _guildManager.SendAllianceInvitation(c, guildName);
 
                 break;
             case 0x04:
@@ -75,7 +75,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int allianceId = p.readInt();
                     //slea.readMapleAsciiString();  //recruiter's guild name
 
-                    _guildManager.AnswerAllianceInvitation(chr, allianceId, true);
+                    await _guildManager.AnswerAllianceInvitation(chr, allianceId, true);
                     break;
                 }
             case 0x06:
@@ -84,7 +84,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int guildid = p.readInt();
                     int allianceid = p.readInt();
 
-                    _guildManager.AllianceExpelGuild(c.OnlinedCharacter, allianceid, guildid);
+                    await _guildManager.AllianceExpelGuild(c.OnlinedCharacter, allianceid, guildid);
                     break;
                 }
             case 0x07:
@@ -93,7 +93,7 @@ public class AllianceOperationHandler : ChannelHandlerBase
                     int victimid = p.readInt();
 
                     //NewServer.getInstance().allianceMessage(alliance.getId(), sendChangeLeader(chr.getGuild().getAllianceId(), chr.getId(), slea.readInt()), -1, -1);
-                    _guildManager.ChageLeaderAllianceRank(c.OnlinedCharacter, victimid);
+                    await _guildManager.ChageLeaderAllianceRank(c.OnlinedCharacter, victimid);
                     break;
                 }
             case 0x08:
@@ -102,22 +102,22 @@ public class AllianceOperationHandler : ChannelHandlerBase
                 {
                     ranks[i] = p.readString();
                 }
-                _guildManager.UpdateAllianceRank(chr, ranks);
+                await _guildManager.UpdateAllianceRank(chr, ranks);
                 break;
             case 0x09:
                 {
                     int int1 = p.readInt();
                     sbyte byte1 = p.ReadSByte();
 
-                    _guildManager.ChangePlayerAllianceRank(c.OnlinedCharacter, int1, byte1 > 0);
+                    await _guildManager.ChangePlayerAllianceRank(c.OnlinedCharacter, int1, byte1 > 0);
                     break;
                 }
             case 0x0A:
                 string notice = p.readString();
-                _guildManager.UpdateAllianceNotice(chr, notice);
+                await _guildManager.UpdateAllianceNotice(chr, notice);
                 break;
             default:
-                chr.dropMessage("Feature not available");
+                await chr.Notice("Feature not available");
                 break;
         }
     }

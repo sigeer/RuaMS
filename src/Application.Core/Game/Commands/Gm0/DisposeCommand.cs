@@ -9,11 +9,11 @@ public class DisposeCommand : CommandBase
     {
 
     }
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override async Task Execute(IChannelClient c, string[] paramValues)
     {
-        c.NPCConversationManager?.dispose();
-        c.sendPacket(PacketCreator.enableActions());
+        c.NPCConversationManager?.DisposeAsync();
+        await c.SendPacket(PacketCreator.enableActions());
         c.removeClickedNPC();
-        c.OnlinedCharacter.MessageI18N(nameof(ClientMessage.DisposeCommand_Message1));
+        await c.OnlinedCharacter.Pink(nameof(ClientMessage.DisposeCommand_Message1));
     }
 }

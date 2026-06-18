@@ -38,7 +38,7 @@ public class OwlWarpHandler : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mapObjectId = p.readInt();
         int mapid = p.readInt();
@@ -46,37 +46,37 @@ public class OwlWarpHandler : ChannelHandlerBase
         // TODO: 如果一个玩家同时有雇佣商店+个人商店 应该找哪个？找找有没有其他参数
         var unknown = p.available();
 
-        var map = c.CurrentServer.getMapFactory().getMap(mapid);
+        var map =await c.CurrentServer.getMapFactory().getMap(mapid);
         var shop = map.getMapObject(mapObjectId) as IPlayerShop;
         if (shop == null)
         {
-            c.sendPacket(PacketCreator.getOwlMessage(1));
+            await c.SendPacket(PacketCreator.getOwlMessage(1));
             return;
         }
 
         if (c.OnlinedCharacter.Id == shop.OwnerId)
         {
-            c.OnlinedCharacter.Popup(nameof(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself));
+            await c.OnlinedCharacter.Popup(nameof(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself));
             return;
         }
 
-        c.OnlinedCharacter.changeMap(mapid);
+        await c.OnlinedCharacter.changeMap(mapid);
 
         if (shop.Status.Is(PlayerShopStatus.Maintenance))
         {
-            c.sendPacket(PacketCreator.getOwlMessage(18));
+            await c.SendPacket(PacketCreator.getOwlMessage(18));
             return;
         }
 
         if (shop.BlackList.Contains(c.OnlinedCharacter.Name))
         {
-            c.sendPacket(PacketCreator.getOwlMessage(17));
+            await c.SendPacket(PacketCreator.getOwlMessage(17));
             return;
         }
 
-        if (!shop.VisitShop(c.OnlinedCharacter))
+        if (!await shop.VisitShop(c.OnlinedCharacter))
         {
-            c.sendPacket(PacketCreator.getOwlMessage(2));
+            await c.SendPacket(PacketCreator.getOwlMessage(2));
             return;
         }
     }

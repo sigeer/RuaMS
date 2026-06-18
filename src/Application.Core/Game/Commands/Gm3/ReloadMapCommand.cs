@@ -8,10 +8,10 @@ public class ReloadMapCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        var newMap = c.getChannelServer().getMapFactory().resetMap(player.getMapId());
+        var newMap = await c.getChannelServer().getMapFactory().resetMap(player.getMapId());
         int callerid = c.OnlinedCharacter.getId();
 
         var characters = player.getMap().getAllPlayers();
@@ -19,12 +19,12 @@ public class ReloadMapCommand : CommandBase
         foreach (var chr in characters)
         {
             chr.saveLocationOnWarp();
-            chr.changeMap(newMap);
+            await chr.changeMap(newMap);
             if (chr.getId() != callerid)
             {
-                chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
+                await chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
             }
         }
-        newMap.respawn();
+        await newMap.respawn();
     }
 }

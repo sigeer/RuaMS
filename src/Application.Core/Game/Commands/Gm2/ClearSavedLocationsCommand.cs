@@ -7,7 +7,7 @@ public class ClearSavedLocationsCommand : CommandBase
         Description = "Clear saved locations for a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         Player? victim;
@@ -17,7 +17,7 @@ public class ClearSavedLocationsCommand : CommandBase
             victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
             if (victim == null || !victim.IsOnlined)
             {
-                player.message("Player '" + paramsValue[0] + "' could not be found.");
+                await player.Pink("Player '" + paramsValue[0] + "' could not be found.");
                 return;
             }
         }
@@ -31,6 +31,6 @@ public class ClearSavedLocationsCommand : CommandBase
             victim.clearSavedLocation(type);
         }
 
-        player.message("Cleared " + paramsValue[0] + "'s saved locations.");
+        await player.Pink("Cleared " + paramsValue[0] + "'s saved locations.");
     }
 }

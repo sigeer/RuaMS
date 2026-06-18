@@ -20,7 +20,7 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                     break;
                 case 1:
                     await SayOK(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Intro)));
@@ -51,9 +51,9 @@ namespace Application.Plugin.Script.Npc
                 {
                     await SayNext("太棒了！你通过了所有的关卡来到了这一点。这是为了你出色的表现而给予的小奖品。在接受之前，请确保你的使用和其他物品栏有空位可用。");
 
-                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        warp(103000805, "st00");
+                        await warp(103000805, "st00");
                     }
                     else
                     {
@@ -73,9 +73,9 @@ namespace Application.Plugin.Script.Npc
 
                     if (hasItem(4001008, numpasses))
                     {
-                        ClearKPQStage(eim, curMap);
+                        await ClearKPQStage(eim, curMap);
                         eim.gridClear();
-                        gainItem(4001008, -numpasses);
+                        await gainItem(4001008, -numpasses);
 
                         await SayNext("你收集了" + numpasses + "张通行证！恭喜你通过了这个关卡！我会制作一个传送你到下一个关卡的传送门。到那里有时间限制，所以请赶快。祝你们好运！");
                     }
@@ -107,8 +107,8 @@ namespace Application.Plugin.Script.Npc
 
                         if (itemQuantity(4001007) == answer)
                         {
-                            gainItem(4001007, -answer);
-                            gainItem(4001008, 1);
+                            await gainItem(4001007, -answer);
+                            await gainItem(4001008, 1);
                             eim.gridInsert(getPlayer(), 0);
 
                             await SayNext("这是正确的答案！为此，你刚刚获得了一个#b通行证#k。请将它交给队伍的队长。");
@@ -140,10 +140,10 @@ namespace Application.Plugin.Script.Npc
                     if (haveItem(4001008, 10))
                     {
                         await SayNext("这是通往最后的奖励阶段的传送门。这个阶段让你更容易地击败普通怪物。你将有一定的时间来尽可能多地狩猎，但你可以随时通过NPC中途离开这个阶段。再次恭喜你通过了所有的阶段。让你的队伍跟我对话，他们可以通过到达奖励阶段来领取奖品。保重……");
-                        gainItem(4001008, -10);
+                        await gainItem(4001008, -10);
 
-                        ClearKPQStage(eim, curMap);
-                        eim.clearPQ();
+                        await ClearKPQStage(eim, curMap);
+                        await eim.clearPQ();
                     }
                     else
                     {
@@ -205,21 +205,21 @@ namespace Application.Plugin.Script.Npc
             var stgCombos = em.GetStage(eim, getMap());
             if (passedIndex.SequenceEqual(stgCombos))
             {
-                ClearKPQStage(eim, getMapId());
+                await ClearKPQStage(eim, getMapId());
                 await SayNext("请赶紧前往下一个阶段，传送门已经打开了！");
             }
             else
             {
-                eim.showWrongEffect();
+                await eim.showWrongEffect();
             }
         }
 
-        static void ClearKPQStage(AbstractEventInstanceManager eim, int curMap)
+        static async Task ClearKPQStage(AbstractEventInstanceManager eim, int curMap)
         {
             eim.ClearedMaps[curMap] = StageStatus.Completed;
-            eim.showClearEffect(true);
+            await eim.showClearEffect(true);
 
-            eim.GiveStageClearRewardAll(curMap);
+            await eim.GiveStageClearRewardAll(curMap);
         }
 
 
@@ -229,7 +229,7 @@ namespace Application.Plugin.Script.Npc
             if (getMapId() == 103000890)
             {
                 await SayNext("要返回城市，请沿着这条路走。");
-                warp(MapId.KERNING_CITY);
+                await warp(MapId.KERNING_CITY);
             }
             else
             {
@@ -239,7 +239,7 @@ namespace Application.Plugin.Script.Npc
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";
                 if (await AskYesNo(outText))
                 {
-                    WarpOut();
+                    await WarpOut();
                 }
             }
         }

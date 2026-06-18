@@ -40,7 +40,7 @@ public class RemoteStoreHandler : ChannelHandlerBase
         _autoBan = autoBan;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var unknown = p.available();
 
@@ -58,18 +58,18 @@ public class RemoteStoreHandler : ChannelHandlerBase
             if (res.Channel == chr.getClient().getChannel())
             {
                 var hm = c.CurrentServer.PlayerShopManager.GetPlayerShop(PlayerShopType.HiredMerchant, chr.Id);
-                hm!.VisitShop(chr);
+                await hm!.VisitShop(chr);
             }
             else
             {
-                c.sendPacket(PacketCreator.remoteChannelChange((byte)(res.Channel - 1)));
+                await c.SendPacket(PacketCreator.remoteChannelChange((byte)(res.Channel - 1)));
             }
             return;
         }
         else
         {
-            chr.dropMessage(1, "你没有一个正在运营的雇佣商店.");
+            await chr.dropMessage(1, "你没有一个正在运营的雇佣商店.");
         }
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

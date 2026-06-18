@@ -2,7 +2,6 @@ using Application.Shared.Message;
 using BaseProto;
 using Google.Protobuf;
 using Grpc.Core;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Core.Channel.Internal
 {

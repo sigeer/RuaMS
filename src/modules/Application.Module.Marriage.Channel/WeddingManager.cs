@@ -62,7 +62,7 @@ namespace Application.Module.Marriage.Channel
 
             if (!InventoryManipulator.checkSpace(receiver.Client, newItemId, 1, "") || !InventoryManipulator.checkSpace(sender.Client, newItemId, 1, ""))
             {
-                receiver.sendPacket(PacketCreator.enableActions());
+                receiver.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
@@ -77,11 +77,11 @@ namespace Application.Module.Marriage.Channel
                 sender.GainItem(newItemId, 1);
                 receiver.GainItem(newItemId + 1, 1);
 
-                sender.sendPacket(WeddingPackets.OnMarriageResult(marriageData));
-                receiver.sendPacket(WeddingPackets.OnMarriageResult(marriageData));
+                sender.SendPacket(WeddingPackets.OnMarriageResult(marriageData));
+                receiver.SendPacket(WeddingPackets.OnMarriageResult(marriageData));
 
-                sender.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(receiver.Id, receiver.getMapId()));
-                receiver.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(sender.Id, sender.getMapId()));
+                sender.SendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(receiver.Id, receiver.getMapId()));
+                receiver.SendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(sender.Id, sender.getMapId()));
 
                 return true;
             }
@@ -125,7 +125,7 @@ namespace Application.Module.Marriage.Channel
             var res = _transport.TryGetInvitationInfo(new MarriageProto.LoadInvitationRequest { WeddingId = weddingId });
             if (res.MarriageId > 0)
             {
-                chr.sendPacket(WeddingPackets.sendWeddingInvitation(res.GroomName, res.BrideName));
+                chr.SendPacket(WeddingPackets.sendWeddingInvitation(res.GroomName, res.BrideName));
             }
         }
 
@@ -151,31 +151,31 @@ namespace Application.Module.Marriage.Channel
                 Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
         }
 
-        public void TakeItemFromGifts(Player chr, int itemPos)
+        public async Task TakeItemFromGifts(Player chr, int itemPos)
         {
-            if (chr.Client.tryacquireClient())
             {
+                await chr.Client.tryacquireClient();
                 var allItems = _mapper.Map<List<Item>>(_transport.LoadMarriageGifts(new LoadMarriageGiftsRequest { MasterId = chr.Id }));
                 try
                 {
                     var item = allItems.ElementAtOrDefault(itemPos);
-                    if (item != null && InventoryManipulator.addFromDrop(chr.Client, item, true))
+                    if (item != null && await InventoryManipulator.addFromDrop(chr.Client, item, true))
                     {
                         allItems.RemoveAt(itemPos);
                         StoreGifts(chr.Id, allItems);
-                        chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), allItems));
+                        await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), allItems));
                     }
                     else
                     {
-                        chr.dropMessage(1, "Free a slot on your inventory before collecting this item.");
-                        chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+                        await chr.dropMessage(1, "Free a slot on your inventory before collecting this item.");
+                        await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
                     }
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.ToString());
-                    chr.dropMessage(1, "You have already collected this item.");
-                    chr.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+                    await chr.dropMessage(1, "You have already collected this item.");
+                    await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
                 }
                 finally
                 {
@@ -323,12 +323,12 @@ namespace Application.Module.Marriage.Channel
                 {
                     if (chr.getId() == player.getId())
                     {
-                        player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
+                        player.SendPacket(WeddingPackets.onWeddingGiftResult(0xA, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
                     }
                     else
                     {
                         marriage.setIntProperty("wishlistSelection", groom ? 0 : 1);
-                        player.sendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
+                        player.SendPacket(WeddingPackets.onWeddingGiftResult(0x09, marriage.getWishlistItems(groom), marriage.getGiftItems(player.Client, groom)));
                     }
                 }
             }
@@ -336,7 +336,7 @@ namespace Application.Module.Marriage.Channel
 
         public void sendMarriageGifts(Player player, List<Item> gifts)
         {
-            player.sendPacket(WeddingPackets.onWeddingGiftResult(0xA, Collections.singletonList(""), gifts));
+            player.SendPacket(WeddingPackets.onWeddingGiftResult(0xA, Collections.singletonList(""), gifts));
         }
 
         public bool createMarriageWishlist(Player player)
@@ -359,7 +359,7 @@ namespace Application.Module.Marriage.Channel
 
                     if (string.IsNullOrEmpty(marriage.getProperty(wlKey)))
                     {
-                        player.sendPacket(WeddingPackets.sendWishList());
+                        player.SendPacket(WeddingPackets.sendWishList());
                         return true;
                     }
                 }

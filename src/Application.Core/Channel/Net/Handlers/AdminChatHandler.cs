@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 /**
@@ -8,7 +6,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AdminChatHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isGM())
         {//if ( (signed int)CWvsContext::GetAdminLevel((void *)v294) > 2 )
@@ -30,14 +28,14 @@ public class AdminChatHandler : ChannelHandlerBase
             case 1:
                 {
                     // /alertch, /noticech, /slidech
-                    c.CurrentServer.dropMessage(type, message);
+                    await c.CurrentServer.dropMessage(type, message);
                     // ChatLogger.log(c, "Alert Ch", message);
                     break;
                 }
             case 2:
                 {
                     // /alertm /alertmap, /noticem /noticemap, /slidem /slidemap
-                    c.OnlinedCharacter.getMap().TypedMessage(type, message);
+                    await c.OnlinedCharacter.getMap().TypedMessage(type, message);
                     // ChatLogger.log(c, "Alert Map", message);
                     break;
                 }

@@ -6,7 +6,7 @@ using tools;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class MonsterApplyDamageCommand : IWorldChannelCommand
+    internal class MonsterApplyDamageCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(MonsterApplyDamageCommand);
         readonly Monster _monster;
@@ -26,7 +26,7 @@ namespace Application.Core.Channel.Commands
             this.map = chr.getMap();
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             int curHp = _monster.getHp();
             if (curHp <= 1)
@@ -48,17 +48,17 @@ namespace Application.Core.Channel.Commands
             }
             if (damage > 0)
             {
-                _monster.DamageBy(chr, damage, 0, true);
+                await _monster.DamageBy(chr, damage, 0, true);
 
                 if (type == 1)
                 {
-                    _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
+                    await _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
                 }
                 else if (type == 2)
                 {
                     if (damage < dealDamage)
                     {    // ninja ambush (type 2) is already displaying DOT to the caster
-                        _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
+                        await _monster.BroadcastMap(PacketCreator.damageMonster(_monster.getObjectId(), damage));
                     }
                 }
             }

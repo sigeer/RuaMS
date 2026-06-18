@@ -16,14 +16,14 @@ namespace Application.Plugin.Script.Events
             MaxMap = 914030000;
         }
 
-        public override void OnMobClear(AbstractEventInstanceManager eim, IMap map)
+        public override async Task OnMobClear(AbstractEventInstanceManager eim, IMap map)
         {
-            eim.showClearEffect();
+            await eim.showClearEffect();
         }
 
-        public override void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            End(eim);
+            await End(eim);
         }
     }
 }

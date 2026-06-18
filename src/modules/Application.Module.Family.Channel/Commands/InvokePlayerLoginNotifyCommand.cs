@@ -44,8 +44,8 @@ namespace Application.Module.Family.Channel.Commands
                 }
             }
 
-            chr.sendPacket(FamilyPacketCreator.loadFamily());
-            chr.sendPacket(FamilyPacketCreator.getFamilyInfo(familyEntry));
+            chr.SendPacket(FamilyPacketCreator.loadFamily());
+            chr.SendPacket(FamilyPacketCreator.getFamilyInfo(familyEntry));
             service.AnnounceToSenior(familyEntry, FamilyPacketCreator.sendFamilyLoginNotice(chr.Name, true), true);
         }
     }

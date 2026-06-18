@@ -1,7 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Instances;
 using Application.Templates.Map;
-using scripting.Event;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials
@@ -62,13 +61,13 @@ namespace Application.Core.Game.Maps.Specials
             }
         }
 
-        public override void startEvent(Player chr)
+        public override async Task startEvent(Player chr)
         {
             if (this.Id == MapId.EVENT_SNOWBALL && getSnowball(chr.getTeam()) == null)
             {
                 setSnowball(0, new Snowball(0, this));
                 setSnowball(1, new Snowball(1, this));
-                getSnowball(chr.getTeam())?.startEvent();
+                await getSnowball(chr.getTeam())!.startEvent();
             }
         }
     }

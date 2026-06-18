@@ -13,12 +13,12 @@ public class WarpMapCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.WarpMapCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.WarpMapCommand_Syntax));
             return;
         }
 
@@ -40,41 +40,40 @@ public class WarpMapCommand : CommandBase
                         messages.Append($"\r\n#L{i}# {item.Id} - {item.StreetName} - {item.Name} #l");
                     }
 
-                    TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
-                        .RegisterSelect(messages.ToString(), (idx, ctx) =>
+                    await TempConversation.CreateScope(c, async ctx =>
+                    {
+                        var idx = await ctx.AskMenu(messages.ToString());
+                        var mapItem = findResult.MatchedItems[idx];
+                        if (await ctx.AskYesNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？"))
                         {
-                            var mapItem = findResult.MatchedItems[idx];
-                            ctx.RegisterYesOrNo($"你确定要前往地图 {mapItem.Id} - {mapItem.StreetName} - {mapItem.Name}？", ctx =>
-                            {
-                                WarpMapById(c, mapItem.Id);
-                                ctx.dispose();
-                            });
-                        });
+                            await WarpMapById(c, mapItem.Id);
+                        }
+                    });
                     return;
                 }
                 else
                 {
-                    player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+                    await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
                     return;
                 }
             }
 
-            WarpMapById(c, mapId);
+            await WarpMapById(c, mapId);
         }
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
-            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+            await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
         }
     }
 
-    private void WarpMapById(IChannelClient c, int mapId)
+    private async Task WarpMapById(IChannelClient c, int mapId)
     {
         var player = c.OnlinedCharacter;
-        var target = c.getChannelServer().getMapFactory().getMap(mapId);
+        var target = await c.getChannelServer().getMapFactory().getMap(mapId);
         if (target == null)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound), mapId.ToString());
+            await player.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
             return;
         }
         var characters = player.getMap().getAllPlayers();
@@ -82,7 +81,7 @@ public class WarpMapCommand : CommandBase
         foreach (var victim in characters)
         {
             victim.saveLocationOnWarp();
-            victim.changeMap(target, target.getRandomPlayerSpawnpoint());
+            await victim.changeMap(target, target.getRandomPlayerSpawnpoint());
         }
     }
 }

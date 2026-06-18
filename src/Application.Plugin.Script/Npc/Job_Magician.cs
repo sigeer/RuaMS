@@ -12,8 +12,8 @@ namespace Application.Plugin.Script.Npc
             await SayNext("法师装备着华丽的基于元素的法术和辅助整个队伍的次要魔法。在二转职业之后，基于元素的魔法将对相克元素的敌人造成大量伤害。");
             if (await AskYesNo("你想体验一下成为一个魔法师是什么感觉吗？"))
             {
-                lockUI();
-                warp(1020300, 0);
+                await lockUI();
+                await warp(1020300, 0);
             }
             else
             {
@@ -36,9 +36,9 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (getJob() == Job.BEGINNER)
                             {
-                                changeJobById(JobId.MAGICIAN);
-                                gainItem(1372043, 1);
-                                resetStats();
+                                await changeJobById(JobId.MAGICIAN);
+                                await gainItem(1372043, 1);
+                                await resetStats();
 
                                 await SaySpeech([
                                 "好的，从现在开始，你就是我们的一员了！你将在...过着流浪者的生活，但要耐心等待，很快你就会过上好日子。好了，虽然不多，但我会传授给你一些我的能力... 哈啊啊啊！！",
@@ -90,9 +90,9 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (getJob() == Job.MAGICIAN)
                                 {
-                                    gainItem(4031012, -1);
-                                    completeQuest(questId);
-                                    changeJobById(job.Id);
+                                    await gainItem(4031012, -1);
+                                    await completeQuest(questId);
+                                    await changeJobById(job.Id);
 
                                     await SaySpeech([
                                     $"好了，从现在开始你就是{jobStr}了。{jobStr}是聪明的一群人，拥有令人难以置信的魔法能力，能够轻松地穿透怪物的心灵和心理结构……请每天都训练自己，我会帮助你变得比你现在更强大。",
@@ -113,7 +113,7 @@ namespace Application.Plugin.Script.Npc
                     await SayNext("做得好。你看起来很强壮，但我需要看看你是否真的足够强大来通过测试，这不是一个困难的测试，所以你会做得很好。拿着我的信先……确保你不要丢了它！");
                     if (!isQuestStarted(questId))
                     {
-                        startQuest(questId);
+                        await startQuest(questId);
                     }
 
                     if (await AskYesNo("请将这封信交给#b#p1072001##k，他在魔法密林附近的#b#m101020000##k。他正在代替我担任教练的工作。把信交给他，他会代替我测试你。祝你好运。"))
@@ -121,7 +121,7 @@ namespace Application.Plugin.Script.Npc
                         if (!haveItem(4031009))
                         {
                             if (canHold(4031009))
-                                gainItem(4031009, 1);
+                                await gainItem(4031009, 1);
                             else
                             {
                                 await SayNext("请在你的背包中腾出一些空间。");
@@ -143,8 +143,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else if (haveItem(4031059))
                     {
-                        gainItem(4031059, -1);
-                        gainItem(4031057, 1);
+                        await gainItem(4031059, -1);
+                        await gainItem(4031057, 1);
 
                         await SayNext("你成功击败了我的分身并带回了#b#t4031059##k！看来你已经准备好第三次转职了，把#b#t4031057##k带给#b#p2020009##k，他会帮助你进行第三次转职的，祝你好运！");
                     }
@@ -198,26 +198,26 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (canHold(2280003, 1))
                     {
-                        changeJobById(getJobId() + 1);
+                        await changeJobById(getJobId() + 1);
                         if (getJob() == Job.FP_ARCHMAGE)
                         {
-                            teachSkill(2121001, 0, 10, -1);
-                            teachSkill(2121002, 0, 10, -1);
-                            teachSkill(2121006, 0, 10, -1);
+                            await teachSkill(2121001, 0, 10, -1);
+                            await teachSkill(2121002, 0, 10, -1);
+                            await teachSkill(2121006, 0, 10, -1);
                         }
                         else if (getJob() == Job.IL_ARCHMAGE)
                         {
-                            teachSkill(2221001, 0, 10, -1);
-                            teachSkill(2221002, 0, 10, -1);
-                            teachSkill(2221006, 0, 10, -1);
+                            await teachSkill(2221001, 0, 10, -1);
+                            await teachSkill(2221002, 0, 10, -1);
+                            await teachSkill(2221006, 0, 10, -1);
                         }
                         else if (getJob() == Job.BISHOP)
                         {
-                            teachSkill(2321001, 0, 10, -1);
-                            teachSkill(2321002, 0, 10, -1);
-                            teachSkill(2321006, 0, 10, -1);
+                            await teachSkill(2321001, 0, 10, -1);
+                            await teachSkill(2321002, 0, 10, -1);
+                            await teachSkill(2321006, 0, 10, -1);
                         }
-                        gainItem(2280003, 1);
+                        await gainItem(2280003, 1);
                     }
                     else
                     {
@@ -232,41 +232,41 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getPlayer().getSkillLevel(2121007) == 0)
                     {
-                        teachSkill(2121007, 0, 10, -1);
+                        await teachSkill(2121007, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(2121005) == 0)
                     {
-                        teachSkill(2121005, 0, 10, -1);
+                        await teachSkill(2121005, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(2121003) == 0)
                     {
-                        teachSkill(2121003, 0, 10, -1);
+                        await teachSkill(2121003, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.IL_ARCHMAGE)
                 {
                     if (getPlayer().getSkillLevel(2221007) == 0)
                     {
-                        teachSkill(2221007, 0, 10, -1);
+                        await teachSkill(2221007, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(2221005) == 0)
                     {
-                        teachSkill(2221005, 0, 10, -1);
+                        await teachSkill(2221005, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(2221003) == 0)
                     {
-                        teachSkill(2221003, 0, 10, -1);
+                        await teachSkill(2221003, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.BISHOP)
                 {
                     if (getPlayer().getSkillLevel(2321008) == 0)
                     {
-                        teachSkill(2321008, 0, 10, -1);
+                        await teachSkill(2321008, 0, 10, -1);
                     }
                     if (getPlayer().getSkillLevel(2321006) == 0)
                     {
-                        teachSkill(2321006, 0, 10, -1);
+                        await teachSkill(2321006, 0, 10, -1);
                     }
                 }
                 await SayOK("好了");

@@ -59,71 +59,71 @@ public class Storage : AbstractStorage
         return false;
     }
 
-    protected override bool BaseCheck()
+    protected override async Task<bool> BaseCheck()
     {
         if (Owner.isGM() && Owner.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE)
         {
             log.Information("GM {GM} blocked from using storage", Owner);
-            Owner.Popup(nameof(ClientMessage.Storage_Restriction_GMLevel));
-            UpdateMeso();
+            await Owner.Popup(nameof(ClientMessage.Storage_Restriction_GMLevel));
+            await UpdateMeso();
             return false;
         }
 
         if (Owner.getLevel() < 15)
         {
-            Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
-            UpdateMeso();
+            await Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            await UpdateMeso();
             return false;
         }
         return true;
     }
 
-    public override bool TakeOutItemCheck(Item item)
+    public override async Task<bool> TakeOutItemCheck(Item item)
     {
         var fee = NpcTemplate?.TrunkGet ?? 0;
         if (Owner.getMeso() < fee)
         {
-            Owner.sendPacket(StoragePacketCreator.getStorageError(0x0B));
+            await Owner.SendPacket(StoragePacketCreator.getStorageError(0x0B));
             return false;
         }
 
-        return base.TakeOutItemCheck(item);
+        return await base.TakeOutItemCheck(item);
     }
 
-    public override bool StoreItemCheck(short slot, int itemId, short quantity)
+    public override async Task<bool> StoreItemCheck(short slot, int itemId, short quantity)
     {
         var fee = NpcTemplate?.TrunkPut ?? 0;
         if (Owner.getMeso() < fee)
         {
-            Owner.sendPacket(StoragePacketCreator.getStorageError(0x0B));
+            await Owner.SendPacket(StoragePacketCreator.getStorageError(0x0B));
             return false;
         }
 
-        return base.StoreItemCheck(slot, itemId, quantity);
+        return await base.StoreItemCheck(slot, itemId, quantity);
     }
 
-    public override void OnTakeOutSuccess(Item item)
+    public override async Task OnTakeOutSuccess(Item item)
     {
         if (NpcTemplate != null && NpcTemplate.TrunkGet > 0)
-            Owner.GainMeso(-NpcTemplate.TrunkGet.Value, enableActions: true);
+            await Owner.GainMeso(-NpcTemplate.TrunkGet.Value, enableActions: true);
     }
 
-    public override void OnStoreSuccess(short slot, int itemId, short quantity)
+    public override async Task OnStoreSuccess(short slot, int itemId, short quantity)
     {
         if (NpcTemplate != null && NpcTemplate.TrunkPut > 0)
-            Owner.GainMeso(-NpcTemplate.TrunkPut.Value, enableActions: true);
+            await Owner.GainMeso(-NpcTemplate.TrunkPut.Value, enableActions: true);
     }
 
-    public override void OpenStorage(int npcId)
+    public override async Task OpenStorage(int npcId)
     {
         if (Owner.getLevel() < 15)
         {
-            Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
-            Owner.sendPacket(PacketCreator.enableActions());
+            await Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            await Owner.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         NpcTemplate = ProviderSource.Instance.GetProvider<NpcProvider>().GetItem(npcId);
-        base.OpenStorage(npcId);
+        await base.OpenStorage(npcId);
     }
 }

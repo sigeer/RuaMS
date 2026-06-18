@@ -1,5 +1,4 @@
 using Application.Core.scripting.Events.Instances;
-using server.partyquest;
 
 namespace Application.Core.Game.Players
 {

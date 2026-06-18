@@ -58,14 +58,13 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     if (res.Code != 0)
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.Request.Members[0])?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(res.Request.Members[0])?.Send(async m =>
                             {
                                 var masterChr = m.getCharacterById(res.Request.Members[0]);
                                 if (masterChr != null)
                                 {
-                                    masterChr.GainMeso(res.Request.Cost);
-                                    masterChr.Client.NPCConversationManager?.sendOk("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
-                                    masterChr.Client.NPCConversationManager?.dispose();
+                                    await masterChr.GainMeso(res.Request.Cost);
+                                    await masterChr.Dialog("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
                                 }
                             });
                         return;
@@ -73,18 +72,17 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     foreach (var member in res.Model.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
                                 {
                                     chr.AllianceRank = member.AllianceRank;
-                                    chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.Model));
-                                    chr.sendPacket(GuildPackets.allianceNotice(res.Model.AllianceId, res.Model.Notice));
+                                    await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.Model));
+                                    await chr.SendPacket(GuildPackets.allianceNotice(res.Model.AllianceId, res.Model.Notice));
                                     if (chr.Id == res.Request.Members[0])
                                     {
-                                        chr.Client.NPCConversationManager?.sendOk("已成功组建了家族联盟。");
-                                        chr.Client.NPCConversationManager?.dispose();
+                                        await chr.Dialog("已成功组建了家族联盟。");
                                     }
                                 }
                             });
@@ -115,12 +113,12 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var item in res.AllMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(item)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(item)?.Send(async m =>
                             {
                                 var p = m.getCharacterById(item);
                                 if (p != null)
                                 {
-                                    p.sendPacket(GuildPackets.sendShowInfo(res.AllianceId, res.Request.MasterId));
+                                    await p.SendPacket(GuildPackets.sendShowInfo(res.AllianceId, res.Request.MasterId));
                                 }
                             });
                     }
@@ -148,13 +146,13 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var memberId in res.AllMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                             {
                                 var p = m.getCharacterById(memberId);
                                 if (p != null)
                                 {
-                                    p.sendPacket(GuildPackets.allianceNotice(res.AllianceId, res.Request.Notice));
-                                    p.dropMessage(5, "* Alliance Notice : " + res.Request.Notice);
+                                    await p.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.Request.Notice));
+                                    await p.dropMessage(5, "* Alliance Notice : " + res.Request.Notice);
                                 }
                             });
                     }
@@ -184,17 +182,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                    chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                    await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
 
                                     if (chr.GuildId == res.GuildId)
                                     {
-                                        chr.dropMessage("Your guild has joined the [" + res.AllianceDto.Name + "] union.");
+                                        await chr.Notice("Your guild has joined the [" + res.AllianceDto.Name + "] union.");
                                     }
 
                                     chr.AllianceRank = 5;
@@ -231,28 +229,28 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    chr.sendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
-                                    chr.dropMessage("[" + res.GuildDto.Name + "] guild has left the union.");
+                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
+                                    await chr.Notice("[" + res.GuildDto.Name + "] guild has left the union.");
                                 }
                             });
                     }
 
                     foreach (var guildMember in res.GuildDto.Members)
                     {
-                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(guildMember.Id);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    chr.sendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                                    await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
                                 }
                             });
                     }
@@ -287,28 +285,28 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    chr.sendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
-                                    chr.dropMessage("[" + res.GuildDto.Name + "] guild has been expelled from the union.");
+                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
+                                    await chr.Notice("[" + res.GuildDto.Name + "] guild has been expelled from the union.");
                                 }
                             });
                     }
 
                     foreach (var guildMember in res.GuildDto.Members)
                     {
-                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(guildMember.Id);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    chr.sendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                                    await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
                                 }
                             });
                     }
@@ -340,14 +338,14 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
                                 {
                                     if (chr.Id == res.Request.MasterId)
                                     {
-                                        chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                        await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
                                     }
                                 }
                             });
@@ -378,12 +376,12 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var memberId in res.AllMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                             {
                                 var p = m.getCharacterById(memberId);
                                 if (p != null)
                                 {
-                                    p.sendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                                    await p.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
                                     p.AllianceRank = 5;
                                 }
                             });
@@ -415,12 +413,12 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
                             {
                                 var p = m.getCharacterById(member.Id);
                                 if (p != null)
                                 {
-                                    p.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                    await p.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
                                     p.AllianceRank = res.NewRank;
                                 }
                             });
@@ -451,12 +449,12 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var memberId in res.AllMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                             {
                                 var p = m.getCharacterById(memberId);
                                 if (p != null)
                                 {
-                                    p.sendPacket(GuildPackets.changeAllianceRankTitle(res.AllianceId, res.Request.RankTitles.ToArray()));
+                                    await p.SendPacket(GuildPackets.changeAllianceRankTitle(res.AllianceId, res.Request.RankTitles.ToArray()));
                                 }
                             });
                     }
@@ -490,7 +488,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         var mapActor = w.getPlayerStorage().GetCharacterActor(member.Id);
                         if (mapActor != null)
                         {
-                            mapActor.Send(m =>
+                            mapActor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(member.Id);
                                 if (chr != null)
@@ -503,8 +501,8 @@ namespace Application.Core.Channel.Internal.Handlers
                                     {
                                         chr.AllianceRank = 1;
                                     }
-                                    chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    chr.dropMessage("'" + res.NewLeaderName + "' has been appointed as the new head of this Alliance.");
+                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                    await chr.Notice("'" + res.NewLeaderName + "' has been appointed as the new head of this Alliance.");
                                 }
                             });
                         }

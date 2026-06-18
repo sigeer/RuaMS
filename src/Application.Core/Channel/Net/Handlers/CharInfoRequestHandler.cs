@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CharInfoRequestHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
         int cid = p.readInt();
@@ -39,9 +39,9 @@ public class CharInfoRequestHandler : ChannelHandlerBase
             {
                 if (c.OnlinedCharacter.getId() != player.getId())
                 {
-                    player.exportExcludedItems(c);
+                    await player.exportExcludedItems(c);
                 }
-                c.sendPacket(PacketCreator.charInfo(player));
+                await c.SendPacket(PacketCreator.charInfo(player));
             }
         }
         return;

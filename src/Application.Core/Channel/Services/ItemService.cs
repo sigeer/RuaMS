@@ -3,14 +3,9 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
-using Application.Templates.Character;
 using Application.Templates.Exceptions;
-using Application.Templates.Item.Pet;
-using Application.Templates.XmlWzReader.Provider;
 using AutoMapper;
 using client.inventory;
-using client.inventory.manipulator;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using server;
 using tools;
@@ -49,7 +44,7 @@ namespace Application.Core.Channel.Services
             var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.getItemId(), cashItem.getCount());
             if (item == null)
             {
-                throw new TemplateNotFoundException("Item", cashItem.getItemId()); 
+                throw new TemplateNotFoundException("Item", cashItem.getItemId());
             }
 
             if (cashItem.Period == 1)
@@ -216,9 +211,9 @@ namespace Application.Core.Channel.Services
             return r.Code == 0;
         }
 
-        public void BuyCashItem(Player chr, int cashType, CashItem cItem)
+        public async Task BuyCashItem(Player chr, int cashType, CashItem cItem)
         {
-            chr.BuyCashItem(cashType, cItem, () =>
+            await chr.BuyCashItem(cashType, cItem, async () =>
             {
                 var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
@@ -228,16 +223,16 @@ namespace Application.Core.Channel.Services
                 });
                 if (data.Code != 0)
                 {
-                    chr.sendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
+                    await chr.SendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
                     return false;
                 }
 
-                BuyCashItemCallback(chr, cItem, data);
+                await BuyCashItemCallback(chr, cItem, data);
                 return true;
             });
         }
 
-        void BuyCashItemCallback(Player chr, CashItem cItem, CashProto.BuyCashItemResponse data)
+        async Task BuyCashItemCallback(Player chr, CashItem cItem, CashProto.BuyCashItemResponse data)
         {
             if (data.GiftInfo != null)
             {
@@ -248,12 +243,12 @@ namespace Application.Core.Channel.Services
                     equip.SetRing(ring.RingId1, ring);
                     chr.addPlayerRing(ring.GetRing(ring.RingId1));
                     // 原代码中 crush ring 用的是showBoughtCashItem
-                    chr.sendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
+                    await chr.SendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
                     chr.getCashShop().addToInventory(item);
                 }
 
 
-                chr.sendPacket(PacketCreator.showGiftSucceed(data.GiftInfo.Recipient, cItem));
+                await chr.SendPacket(PacketCreator.showGiftSucceed(data.GiftInfo.Recipient, cItem));
             }
             else
             {
@@ -264,15 +259,15 @@ namespace Application.Core.Channel.Services
                     {
                         chr.getCashShop().addToInventory(item);
 
-                        chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                        await chr.SendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
                     }
-                    chr.sendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
+                    await chr.SendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
                 }
                 else
                 {
                     Item item = CashItem2Item(cItem);
 
-                    chr.sendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
+                    await chr.SendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
                     chr.getCashShop().addToInventory(item);
 
                 }
@@ -280,9 +275,9 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public void BuyCashItemForGift(Player chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
+        public async Task BuyCashItemForGift(Player chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
         {
-            chr.BuyCashItem(cashType, cItem, () =>
+            await chr.BuyCashItem(cashType, cItem, async () =>
             {
                 var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
@@ -298,11 +293,11 @@ namespace Application.Core.Channel.Services
                 });
                 if (data.Code != 0)
                 {
-                    chr.sendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
+                    await chr.SendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
                     return false;
                 }
 
-                BuyCashItemCallback(chr, cItem, data);
+                await BuyCashItemCallback(chr, cItem, data);
                 return true;
             });
         }
@@ -319,7 +314,7 @@ namespace Application.Core.Channel.Services
             return false;
         }
 
-        internal void UseCdk(Player chr, string cdk)
+        internal async Task UseCdk(Player chr, string cdk)
         {
             UseCdkResponseCode code = UseCdkResponseCode.Success;
             if (!chr.Client.attemptCsCoupon())
@@ -336,7 +331,7 @@ namespace Application.Core.Channel.Services
 
             if (code != UseCdkResponseCode.Success)
             {
-                chr.sendPacket(PacketCreator.showCashShopMessage((byte)code));
+                await chr.SendPacket(PacketCreator.showCashShopMessage((byte)code));
             }
             else
             {
@@ -357,7 +352,7 @@ namespace Application.Core.Channel.Services
                     switch (itemType)
                     {
                         case CdkItemType.Meso:
-                            chr.GainMeso(quantity); //mesos
+                            await chr.GainMeso(quantity); //mesos
                             mesos += quantity;
                             break;
                         case CdkItemType.NxCredit:
@@ -405,7 +400,7 @@ namespace Application.Core.Channel.Services
                             }
                             else
                             {
-                                chr.GainItem(item, qty); ;
+                                await chr.GainItem(item, qty); ;
                                 items.Add(new(item, qty));
                             }
                             break;
@@ -417,13 +412,13 @@ namespace Application.Core.Channel.Services
                 }
                 if (nxCredit != 0 || nxPrepaid != 0)
                 { //coupon packet can only show maple points (afaik)
-                    chr.sendPacket(PacketCreator.showBoughtQuestItem(0));
+                    await chr.SendPacket(PacketCreator.showBoughtQuestItem(0));
                 }
                 else
                 {
-                    chr.sendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
+                    await chr.SendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
                 }
-                chr.Client.enableCSActions();
+                await chr.Client.enableCSActions();
             }
         }
     }

@@ -28,7 +28,7 @@ namespace Application.Module.PlayerNPC.Channel.Commands
             var chr = ctx.Players.getCharacterById(newData.PlayerId);
             if (chr != null)
             {
-                chr.dropMessage($"PlayerNpc创建成功");
+                chr.Notice($"PlayerNpc创建成功");
             }
 
             var mapFactory = ctx.getMapFactory();
@@ -40,25 +40,25 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 
                 foreach (var pn in playerNpcs)
                 {
-                    map.RemoveMapObject(pn, mapChr =>
+                    map.RemoveMapObject(pn, async mapChr =>
                     {
-                        mapChr.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                        mapChr.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                        await mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                        await mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                     });
                 }
 
                 foreach (var pn in updatedList)
                 {
-                    map.AddMapObject(pn, c =>
+                    map.AddMapObject(pn, async c =>
                     {
-                        c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-                        c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+                        await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+                        await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
                     }, false);
                 }
-                map.AddMapObject(newData, c =>
+                map.AddMapObject(newData, async c =>
                 {
-                    c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
-                    c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));
+                    await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
+                    await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));
                 }, false);
             }
         }

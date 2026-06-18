@@ -33,7 +33,7 @@ public class FamilyPreceptsHandler : ChannelHandlerBase
         }
         family.setMessage(newPrecepts, true);
         //family.broadcastFamilyInfoUpdate(); //probably don't need to broadcast for this?
-        c.sendPacket(FamilyPacketCreator.getFamilyInfo(family.getEntryByID(c.OnlinedCharacter.Id)));
+        await c.SendPacket(FamilyPacketCreator.getFamilyInfo(family.getEntryByID(c.OnlinedCharacter.Id)));
         return Task.CompletedTask;
     }
 

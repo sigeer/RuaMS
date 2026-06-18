@@ -24,26 +24,24 @@ namespace Application.Core.Game.Gameplay
             Position = Controller.getPosition();
         }
 
-        public void Start()
+        public async Task Start()
         {
-            MapModel.ProcessMonster(monster =>
+            await MapModel.ProcessMonster(async monster =>
             {
-                ApplyMonster(monster);
+                await ApplyMonster(monster);
             });
-            Controller.message("开启吸怪");
+            await Controller.Pink("开启吸怪");
         }
 
-        public void ApplyMonster(Monster monster)
+        public async Task ApplyMonster(Monster monster)
         {
             if (monster.isBoss() || monster.getStats().isFriendly())
             {
                 return;
             }
 
-            Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith((t) =>
-            {
-                monster.resetMobPosition(Position);
-            });
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            await monster.resetMobPosition(Position);
         }
     }
 }

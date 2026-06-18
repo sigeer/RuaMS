@@ -23,7 +23,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     if (await AskYesNo("创建一个新的家族需要 #b 1500000 金币#k，你确定继续创建一个新的家族吗？"))
                     {
-                        getPlayer().genericGuildMessage(1);
+                        await getPlayer().genericGuildMessage(1);
                     }
                     break;
                 case 1:
@@ -45,7 +45,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     if (await AskYesNo($"家族成员人数每增加 #b5#k 位需要支付#b {GuildManager.getIncreaseGuildCost(getPlayer().GetGuild()!.Capacity)}金币#k，你确定要继续吗？"))
                     {
-                        increaseGuildCapacity();
+                        await increaseGuildCapacity();
                     }
                     break;
             }
@@ -63,7 +63,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("创建或更改家族徽标需要 #b 5000000 金币#k，您确定要继续吗？"))
                     {
-                        getPlayer().genericGuildMessage(17);
+                        await getPlayer().genericGuildMessage(17);
                     }
                 }
                 else
@@ -150,7 +150,7 @@ namespace Application.Plugin.Script.Npc
                                 return;
                             }
                             upgradeAlliance();
-                            gainMeso(-1000000);
+                            await gainMeso(-1000000);
                             await SayOK("你的联盟现在可以接受一个额外的公会。");
                         }
                     }

@@ -94,7 +94,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void ChangeChannel(int channel)
+        public Task ChangeChannel(int channel)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -109,7 +109,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void closePlayerScriptInteractions()
+        public Task closePlayerScriptInteractions()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -119,7 +119,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        public void CloseSocket()
+        public Task CloseSocket()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -144,7 +144,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void ForceDisconnect()
+        public Task ForceDisconnect()
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -184,7 +184,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void LeaveCashShop()
+        public Task LeaveCashShop()
         {
             throw new NotImplementedException();
         }
@@ -259,17 +259,17 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        void IChannelClient.announceBossHpBar(Monster mm, int mobHash, Packet packet)
+        Task IChannelClient.announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new NotImplementedException();
         }
 
-        void IChannelClient.announceHint(string msg, int length)
+        Task IChannelClient.announceHint(string msg, int length)
         {
             throw new NotImplementedException();
         }
 
-        void IChannelClient.announceServerMessage()
+        Task IChannelClient.announceServerMessage()
         {
             throw new NotImplementedException();
         }
@@ -294,16 +294,16 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.closePlayerScriptInteractions()
+        Task IChannelClient.closePlayerScriptInteractions()
         {
             throw new NotImplementedException();
         }
-        void IDisposable.Dispose()
+        public ValueTask DisposeAsync()
         {
             throw new NotImplementedException();
         }
 
-        void IChannelClient.enableCSActions()
+        Task IChannelClient.enableCSActions()
         {
             throw new NotImplementedException();
         }
@@ -338,16 +338,6 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.lockClient()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IChannelClient.OpenNpc(int npcid, string? script)
-        {
-            throw new NotImplementedException();
-        }
-
         void ISocketClient.PongReceived()
         {
             throw new NotImplementedException();
@@ -368,10 +358,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void ISocketClient.sendPacket(Packet packet)
-        {
-            throw new NotImplementedException();
-        }
+        public Task SendPacket(Packet p) => throw new NotImplementedException();
 
         void IChannelClient.SetAccount(AccountCtrl accountEntity)
         {
@@ -393,17 +380,13 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        bool ISocketClient.tryacquireClient()
+        Task ISocketClient.tryacquireClient()
         {
             throw new NotImplementedException();
         }
 
-        void IChannelClient.unlockClient()
-        {
-            throw new NotImplementedException();
-        }
 
-        public void ProcessPacket(InPacket packet)
+        public Task ProcessPacket(InPacket packet)
         {
             throw new NotImplementedException();
         }

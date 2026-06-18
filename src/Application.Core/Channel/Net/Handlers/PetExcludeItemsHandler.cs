@@ -39,7 +39,7 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var petId = p.readLong();
 
@@ -65,6 +65,6 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
                 return;
             }
         }
-        chr.commitExcludedItems();
+        await chr.commitExcludedItems();
     }
 }

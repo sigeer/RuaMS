@@ -2,7 +2,7 @@ namespace Application.Utility.Tickables
 {
     public static class TickableManager
     {
-        public static void ProcessSubTickables(this ITickableTree root, long now)
+        public static async Task ProcessSubTickables(this ITickableTree root, long now)
         {
             if (root.Status != TickableStatus.Active)
                 return;
@@ -10,7 +10,7 @@ namespace Application.Utility.Tickables
             var copyedTickables = root.SubTickables.ToArray();
             foreach (var item in copyedTickables)
             {
-                item.OnTick(now);
+                await item.OnTick(now);
 
                 if (item.Status == TickableStatus.Remove)
                     root.SubTickables.Remove(item);

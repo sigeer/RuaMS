@@ -73,14 +73,9 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         return 0;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!c.tryacquireClient())
-        {    // thanks GabrielSin for pointing dupes within player interactions
-            c.sendPacket(PacketCreator.enableActions());
-            return;
-        }
-
+        await c.tryacquireClient();
         try
         {
             byte mode = p.readByte();
@@ -91,7 +86,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 if (!chr.isAlive())
                 {
                     // thanks GabrielSin for pointing this
-                    chr.sendPacket(PacketCreator.getMiniRoomError(4));
+                    await chr.SendPacket(PacketCreator.getMiniRoomError(4));
                     return;
                 }
 
@@ -108,7 +103,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     int status = establishMiniroomStatus(chr, true);
                     if (status > 0)
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(status));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(status));
                         return;
                     }
 
@@ -127,39 +122,39 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     int type = p.ReadSByte();
                     if (createType == 1 && !chr.haveItem(ItemId.MINI_GAME_BASE + type))
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(6));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
                     if (createType == 2 && !chr.haveItem(ItemId.MATCH_CARDS))
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(6));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
 
                     MiniGame game = new MiniGame(chr, desc, pw, createType, type);
                     chr.setMiniGame(game);
-                    chr.MapModel.AddMapObject(game, c => c.sendPacket(PacketCreator.AddMiniGameBox(chr, 1, 0)));
-                    game.SendGameInfo(c);
+                    await chr.MapModel.AddMapObject(game, c => c.SendPacket(PacketCreator.AddMiniGameBox(chr, 1, 0)));
+                    await game.SendGameInfo(c);
                 }
                 else if (createType == 4 || createType == 5)
                 {
                     // shop
                     if (!GameConstants.isFreeMarketRoom(chr.getMapId()))
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(15));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(15));
                         return;
                     }
 
                     int status = establishMiniroomStatus(chr, false);
                     if (status > 0)
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(status));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(status));
                         return;
                     }
 
-                    if (!canPlaceStore(chr))
+                    if (!await canPlaceStore(chr))
                     {
                         return;
                     }
@@ -173,7 +168,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     var item = chr.getInventory(InventoryType.CASH).findById(itemId);
                     if (item == null)
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(6));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(6));
                         return;
                     }
 
@@ -182,22 +177,22 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     {
                         var shop = new PlayerShop(chr, desc, item);
 
-                        chr.sendPacket(PacketCreator.getPlayerShop(shop, true));
+                        await chr.SendPacket(PacketCreator.getPlayerShop(shop, true));
 
                         iShop = shop;
-                        //c.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(1));
+                        //await c.SendPacket(PacketCreator.getPlayerShopRemoveVisitor(1));
                     }
                     else if (ItemConstants.isHiredMerchant(itemId))
                     {
-                        if (!_service.CanHiredMerchant(chr))
+                        if (!await _service.CanHiredMerchant(chr))
                         {
-                            _autoBanManager.Autoban(AutobanFactory.ITEM_VAC, chr, "尝试绕过重复开店的检测");
+                            await _autoBanManager.Autoban(AutobanFactory.ITEM_VAC, chr, "尝试绕过重复开店的检测");
                             return;
                         }
 
                         var merchant = new HiredMerchant(chr, desc, item);
 
-                        chr.sendPacket(PacketCreator.getHiredMerchant(chr, merchant, true));
+                        await chr.SendPacket(PacketCreator.getHiredMerchant(chr, merchant, true));
 
                         iShop = merchant;
                     }
@@ -214,11 +209,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                TradeManager.InviteTrade(chr, other);
+                await TradeManager.InviteTrade(chr, other);
             }
             else if (mode == PlayerInterAction.DECLINE.getCode())
             {
-                TradeManager.DeclineTrade(chr);
+                await TradeManager.DeclineTrade(chr);
             }
             else if (mode == PlayerInterAction.VISIT.getCode())
             {
@@ -227,17 +222,17 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (!tradeObj.isFullTrade() && !tradeObj.PartnerTrade.isFullTrade())
                     {
-                        TradeManager.VisitTrade(chr, tradeObj.PartnerTrade.getChr());
+                        await TradeManager.VisitTrade(chr, tradeObj.PartnerTrade.getChr());
                     }
                     else
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(2));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(2));
                         return;
                     }
                 }
                 else
                 {
-                    if (isTradeOpen(chr))
+                    if (await isTradeOpen(chr))
                     {
                         return;
                     }
@@ -246,7 +241,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     var ob = chr.getMap().getMapObject(oid);
                     if (ob is IPlayerShop shop)
                     {
-                        shop.VisitShop(chr);
+                        await shop.VisitShop(chr);
                     }
                     else if (ob is MiniGame game)
                     {
@@ -257,26 +252,26 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                         {
                             if (game.hasFreeSlot() && !game.isVisitor(chr))
                             {
-                                game.addVisitor(chr);
+                                await game.addVisitor(chr);
                                 chr.setMiniGame(game);
                                 switch (game.getGameType())
                                 {
                                     case MiniGameType.OMOK:
-                                        game.sendOmok(c, game.getPieceType());
+                                        await game.sendOmok(c, game.getPieceType());
                                         break;
                                     case MiniGameType.MATCH_CARD:
-                                        game.sendMatchCard(c, game.getPieceType());
+                                        await game.sendMatchCard(c, game.getPieceType());
                                         break;
                                 }
                             }
                             else
                             {
-                                chr.sendPacket(PacketCreator.getMiniRoomError(2));
+                                await chr.SendPacket(PacketCreator.getMiniRoomError(2));
                             }
                         }
                         else
                         {
-                            chr.sendPacket(PacketCreator.getMiniRoomError(22));
+                            await chr.SendPacket(PacketCreator.getMiniRoomError(22));
                         }
                     }
                 }
@@ -286,7 +281,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 // chat lol          
                 if (chr.getTrade() != null)
                 {
-                    chr.getTrade()!.chat(p.readString());
+                    await chr.getTrade()!.chat(p.readString());
                 }
 
                 else if (chr.getMiniGame() != null)
@@ -294,30 +289,30 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     var game = chr.getMiniGame();
                     if (game != null)
                     {
-                        game.chat(c, p.readString());
+                        await game.chat(c, p.readString());
                     }
                 }
                 else if (chr.VisitingShop != null)
                 {
-                    chr.VisitingShop.sendMessage(chr, p.readString());
+                    await chr.VisitingShop.sendMessage(chr, p.readString());
                 }
             }
             else if (mode == PlayerInterAction.EXIT.getCode())
             {
                 if (chr.getTrade() != null)
                 {
-                    TradeManager.CancelTrade(chr, TradeResult.PARTNER_CANCEL);
+                    await TradeManager.CancelTrade(chr, TradeResult.PARTNER_CANCEL);
                 }
                 else
                 {
-                    chr.LeaveVisitingShop();
-                    chr.closeMiniGame(false);
+                    await chr.LeaveVisitingShop();
+                    await chr.closeMiniGame(false);
                 }
             }
             else if (mode == PlayerInterAction.OPEN_STORE.getCode() || mode == PlayerInterAction.OPEN_CASH.getCode())
             {
                 // 开店？
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
@@ -333,14 +328,14 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if (!c.CheckBirthday(birthday))
                     {
                         // birthday check here found thanks to lucasziron
-                        chr.Popup(nameof(ClientMessage.BirthDay_Invalid));
+                        await chr.Popup(nameof(ClientMessage.BirthDay_Invalid));
                         return;
                     }
 
-                    c.sendPacket(PacketCreator.hiredMerchantOwnerMaintenanceLeave());
+                    await c.SendPacket(PacketCreator.hiredMerchantOwnerMaintenanceLeave());
                 }
 
-                if (!canPlaceStore(chr))
+                if (!await canPlaceStore(chr))
                 {    // thanks Ari for noticing player shops overlapping on opening time
                     return;
                 }
@@ -353,11 +348,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
-                        chr.Bag.TryRemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
+                        await chr.Bag.TryRemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
                     }
                 }
                 chr.VisitingShop.SetOpen();
-                chr.MapModel.AddMapObject(chr.VisitingShop, c => c.sendPacket(chr.VisitingShop.MakeSpawnPacket()));
+                await chr.MapModel.AddMapObject(chr.VisitingShop, c => chr.VisitingShop.sendSpawnData(c));
                 c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())
@@ -376,15 +371,15 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 if (game.getGameType().Equals(MiniGameType.OMOK))
                 {
                     game.minigameMatchStarted();
-                    game.broadcast(PacketCreator.getMiniGameStart(game, game.getLoser()));
-                    chr.getMap().broadcastMessage(PacketCreator.addOmokBox(game.getOwner(), 2, 1));
+                    await game.broadcast(PacketCreator.getMiniGameStart(game, game.getLoser()));
+                    await chr.getMap().broadcastMessage(PacketCreator.addOmokBox(game.getOwner(), 2, 1));
                 }
                 else if (game.getGameType().Equals(MiniGameType.MATCH_CARD))
                 {
                     game.minigameMatchStarted();
                     game.shuffleList();
-                    game.broadcast(PacketCreator.getMatchCardStart(game, game.getLoser()));
-                    chr.getMap().broadcastMessage(PacketCreator.addMatchCardBox(game.getOwner(), 2, 1));
+                    await game.broadcast(PacketCreator.getMatchCardStart(game, game.getLoser()));
+                    await chr.getMap().broadcastMessage(PacketCreator.addMatchCardBox(game.getOwner(), 2, 1));
                 }
             }
             else if (mode == PlayerInterAction.GIVE_UP.getCode())
@@ -394,22 +389,22 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (game.isOwner(chr))
                     {
-                        game.minigameMatchVisitorWins(true);
+                        await game.minigameMatchVisitorWins(true);
                     }
                     else
                     {
-                        game.minigameMatchOwnerWins(true);
+                        await game.minigameMatchOwnerWins(true);
                     }
                 }
                 else if (game.getGameType().Equals(MiniGameType.MATCH_CARD))
                 {
                     if (game.isOwner(chr))
                     {
-                        game.minigameMatchVisitorWins(true);
+                        await game.minigameMatchVisitorWins(true);
                     }
                     else
                     {
-                        game.minigameMatchOwnerWins(true);
+                        await game.minigameMatchOwnerWins(true);
                     }
                 }
             }
@@ -420,11 +415,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (game.isOwner(chr))
                     {
-                        game.broadcastToVisitor(PacketCreator.getMiniGameRequestTie(game));
+                        await game.broadcastToVisitor(PacketCreator.getMiniGameRequestTie(game));
                     }
                     else
                     {
-                        game.broadcastToOwner(PacketCreator.getMiniGameRequestTie(game));
+                        await game.broadcastToOwner(PacketCreator.getMiniGameRequestTie(game));
                     }
                 }
             }
@@ -433,7 +428,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 var game = chr.getMiniGame()!;
                 if (p.readByte() != 0)
                 {
-                    game.minigameMatchDraw();
+                    await game.minigameMatchDraw();
                 }
                 else
                 {
@@ -441,11 +436,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                     if (game.isOwner(chr))
                     {
-                        game.broadcastToVisitor(PacketCreator.getMiniGameDenyTie(game));
+                        await game.broadcastToVisitor(PacketCreator.getMiniGameDenyTie(game));
                     }
                     else
                     {
-                        game.broadcastToOwner(PacketCreator.getMiniGameDenyTie(game));
+                        await game.broadcastToOwner(PacketCreator.getMiniGameDenyTie(game));
                     }
                 }
             }
@@ -454,11 +449,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 var game = chr.getMiniGame()!;
                 if (game.isOwner(chr))
                 {
-                    game.broadcast(PacketCreator.getMiniGameSkipOwner(game));
+                    await game.broadcast(PacketCreator.getMiniGameSkipOwner(game));
                 }
                 else
                 {
-                    game.broadcast(PacketCreator.getMiniGameSkipVisitor(game));
+                    await game.broadcast(PacketCreator.getMiniGameSkipVisitor(game));
                 }
             }
             else if (mode == PlayerInterAction.MOVE_OMOK.getCode())
@@ -466,7 +461,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 int x = p.readInt(); // x point
                 int y = p.readInt(); // y point
                 int type = p.ReadSByte(); // piece ( 1 or 2; Owner has one piece, visitor has another, it switches every game.)
-                chr.getMiniGame()!.setPiece(x, y, type, chr);
+                await chr.getMiniGame()!.setPiece(x, y, type, chr);
             }
             else if (mode == PlayerInterAction.SELECT_CARD.getCode())
             {
@@ -479,38 +474,38 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     game.setFirstSlot(slot);
                     if (game.isOwner(chr))
                     {
-                        game.broadcastToVisitor(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, turn));
+                        await game.broadcastToVisitor(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, turn));
                     }
                     else
                     {
-                        game.getOwner().sendPacket(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, turn));
+                        await game.getOwner().SendPacket(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, turn));
                     }
                 }
                 else if ((game.getCardId(firstslot)) == (game.getCardId(slot)))
                 {
                     if (game.isOwner(chr))
                     {
-                        game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 2));
-                        game.setOwnerPoints();
+                        await game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 2));
+                        await game.setOwnerPoints();
                     }
                     else
                     {
-                        game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 3));
-                        game.setVisitorPoints();
+                        await game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 3));
+                        await game.setVisitorPoints();
                     }
                 }
                 else if (game.isOwner(chr))
                 {
-                    game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 0));
+                    await game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 0));
                 }
                 else
                 {
-                    game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 1));
+                    await game.broadcast(PacketCreator.getMatchCardSelect(game, turn, slot, firstslot, 1));
                 }
             }
             else if (mode == PlayerInterAction.SET_MESO.getCode())
             {
-                chr.getTrade()!.setMeso(p.readInt());
+                await chr.getTrade()!.setMeso(p.readInt());
             }
             else if (mode == PlayerInterAction.SET_ITEMS.getCode())
             {
@@ -524,14 +519,14 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 if (targetSlot < 1 || targetSlot > 9)
                 {
                     _logger.LogWarning("[Hack] Chr {CharacterName} Trying to dupe on trade slot.", chr.getName());
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
                 if (item == null)
                 {
-                    chr.Popup(nameof(ClientMessage.ItemInvalid));
-                    c.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.ItemInvalid));
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -539,21 +534,21 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (ItemConstants.isPet(item.getItemId()))
                     {
-                        chr.Popup(nameof(ClientMessage.Trade_PetCheck));
+                        await chr.Popup(nameof(ClientMessage.Trade_PetCheck));
                     }
                     else
                     {
-                        chr.Popup(nameof(ClientMessage.Trade_CashItemCheck));
+                        await chr.Popup(nameof(ClientMessage.Trade_CashItemCheck));
                     }
 
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
                 if (quantity < 1 || quantity > item.getQuantity())
                 {
-                    chr.Popup(nameof(ClientMessage.ItemQuantityNotEnough));
-                    c.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.ItemQuantityNotEnough));
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -567,8 +562,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             // ensure that undroppable items do not make it to the trade window
                             if (!KarmaManipulator.hasKarmaFlag(item))
                             {
-                                chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
-                                c.sendPacket(PacketCreator.enableActions());
+                                await chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
+                                await c.SendPacket(PacketCreator.enableActions());
                                 return;
                             }
                         }
@@ -579,8 +574,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             var checkItem = chr.getInventory(ivType).getItem(pos);
                             if (checkItem != item || checkItem.getPosition() != item.getPosition())
                             {
-                                chr.Popup(nameof(ClientMessage.ItemInvalid));
-                                c.sendPacket(PacketCreator.enableActions());
+                                await chr.Popup(nameof(ClientMessage.ItemInvalid));
+                                await c.SendPacket(PacketCreator.enableActions());
                                 return;
                             }
 
@@ -595,12 +590,12 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                             if (trade.addItem(tradeItem))
                             {
-                                InventoryManipulator.removeFromSlot(c, ivType, item.getPosition(), quantity, true);
+                                await InventoryManipulator.removeFromSlot(c, ivType, item.getPosition(), quantity, true);
 
-                                trade.getChr().sendPacket(PacketCreator.getTradeItemAdd(0, tradeItem));
+                                await trade.getChr().SendPacket(PacketCreator.getTradeItemAdd(0, tradeItem));
                                 if (trade.PartnerTrade != null)
                                 {
-                                    trade.PartnerTrade.getChr().sendPacket(PacketCreator.getTradeItemAdd(1, tradeItem));
+                                    await trade.PartnerTrade.getChr().SendPacket(PacketCreator.getTradeItemAdd(1, tradeItem));
                                 }
                             }
                         }
@@ -618,11 +613,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             }
             else if (mode == PlayerInterAction.CONFIRM.getCode())
             {
-                TradeManager.CompleteTrade(chr);
+                await TradeManager.CompleteTrade(chr);
             }
             else if (mode == PlayerInterAction.ADD_ITEM.getCode() || mode == PlayerInterAction.PUT_ITEM.getCode())
             {
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
@@ -635,22 +630,22 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (ivItem == null || ivItem.isUntradeable())
                 {
-                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
-                    c.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
                 else if (ItemInformationProvider.getInstance().isUnmerchable(ivItem.getItemId()))
                 {
                     if (ItemConstants.isPet(ivItem.getItemId()))
                     {
-                        chr.Popup(nameof(ClientMessage.PlayerShop_PetCheck));
+                        await chr.Popup(nameof(ClientMessage.PlayerShop_PetCheck));
                     }
                     else
                     {
-                        chr.Popup(nameof(ClientMessage.PlayerShop_CashItemCheck));
+                        await chr.Popup(nameof(ClientMessage.PlayerShop_CashItemCheck));
                     }
 
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -665,8 +660,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 else if (ivItem.getQuantity() < (bundles * perBundle))
                 {
                     // thanks GabrielSin for finding a dupe here
-                    chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
-                    c.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -679,11 +674,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                c.getChannelServer().PlayerShopManager.AddCommodity(chr, ivType, ivItem, perBundle, bundles, price);
+                await c.getChannelServer().PlayerShopManager.AddCommodity(chr, ivType, ivItem, perBundle, bundles, price);
             }
             else if (mode == PlayerInterAction.REMOVE_ITEM.getCode() || mode == PlayerInterAction.TAKE_ITEM_BACK.getCode())
             {
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
@@ -699,7 +694,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                merchant.withdrawMesos(chr);
+                await merchant.withdrawMesos(chr);
 
             }
             else if (mode == PlayerInterAction.VIEW_VISITORS.getCode())
@@ -709,7 +704,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                c.sendPacket(PacketCreator.viewMerchantVisitorHistory(merchant.getVisitorHistory()));
+                await c.SendPacket(PacketCreator.viewMerchantVisitorHistory(merchant.getVisitorHistory()));
             }
             else if (mode == PlayerInterAction.VIEW_BLACKLIST.getCode())
             {
@@ -719,7 +714,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                c.sendPacket(PacketCreator.viewMerchantBlacklist(merchant.BlackList));
+                await c.SendPacket(PacketCreator.viewMerchantBlacklist(merchant.BlackList));
             }
             else if (mode == PlayerInterAction.ADD_TO_BLACKLIST.getCode())
             {
@@ -750,20 +745,20 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
 
-                merchant.withdrawMesos(chr);
+                await merchant.withdrawMesos(chr);
                 merchant.clearInexistentItems();
 
                 if (merchant.getItems().Count == 0)
                 {
-                    merchant.Close();
+                    await merchant.Close();
                     return;
                 }
-                c.sendPacket(PacketCreator.updateHiredMerchant(merchant, chr));
+                await c.SendPacket(PacketCreator.updateHiredMerchant(merchant, chr));
 
             }
             else if (mode == PlayerInterAction.BUY.getCode() || mode == PlayerInterAction.MERCHANT_BUY.getCode())
             {
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
@@ -775,25 +770,25 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, chr.getName() + " tried to packet edit with a hired merchant and or player shop.");
                     _logger.LogWarning("Chr {CharacterName} tried to buy item {ItemId} with quantity {ItemQuantity}", chr.getName(), itemIndex, quantity);
-                    c.Disconnect(true, false);
+                    await c.Disconnect(true, false);
                     return;
                 }
 
-                c.getChannelServer().PlayerShopManager.BuyItem(chr, itemIndex, quantity);
+                await c.getChannelServer().PlayerShopManager.BuyItem(chr, itemIndex, quantity);
             }
             else if (mode == PlayerInterAction.CLOSE_MERCHANT.getCode())
             {
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
 
-                c.getChannelServer().PlayerShopManager.CloseByPlayer(chr);
+                await c.getChannelServer().PlayerShopManager.CloseByPlayer(chr);
 
             }
             else if (mode == PlayerInterAction.MAINTENANCE_OFF.getCode())
             {
-                if (isTradeOpen(chr))
+                if (await isTradeOpen(chr))
                 {
                     return;
                 }
@@ -804,13 +799,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if (merchant.IsOwner(chr))
                     {
                         merchant.SetOpen();
-                        merchant.getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(merchant));
+                        await merchant.getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(merchant));
 
                         c.getChannelServer().PlayerShopManager.SyncPlayerShop(merchant);
                     }
                 }
 
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
             else if (mode == PlayerInterAction.BAN_PLAYER.getCode())
             {
@@ -819,7 +814,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 var shop = chr.VisitingShop as PlayerShop;
                 if (shop != null && shop.IsOwner(chr))
                 {
-                    shop.banPlayer(p.readString());
+                    await shop.banPlayer(p.readString());
                 }
             }
             else if (mode == PlayerInterAction.EXPEL.getCode())
@@ -831,8 +826,8 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                     if (visitor != null)
                     {
-                        visitor.closeMiniGame(false);
-                        visitor.sendPacket(PacketCreator.getMiniGameClose(true, 5));
+                        await visitor.closeMiniGame(false);
+                        await visitor.SendPacket(PacketCreator.getMiniGameClose(true, 5));
                     }
                 }
             }
@@ -859,20 +854,20 @@ public class PlayerInteractionHandler : ChannelHandlerBase
         }
     }
 
-    private bool isTradeOpen(Player chr)
+    private async Task<bool> isTradeOpen(Player chr)
     {
         if (chr.getTrade() != null)
         {
             // thanks to Rien dev team
             //Apparently there is a dupe exploit that causes racing conditions when saving/retrieving from the db with stuff like trade open.
-            chr.sendPacket(PacketCreator.enableActions());
+            await chr.SendPacket(PacketCreator.enableActions());
             return true;
         }
 
         return false;
     }
 
-    private bool canPlaceStore(Player chr)
+    private async Task<bool> canPlaceStore(Player chr)
     {
         try
         {
@@ -888,13 +883,13 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     var shop = mc.VisitingShop;
                     if (shop != null && shop.IsOwner(mc))
                     {
-                        chr.sendPacket(PacketCreator.getMiniRoomError(13));
+                        await chr.SendPacket(PacketCreator.getMiniRoomError(13));
                         return false;
                     }
                 }
                 else
                 {
-                    chr.sendPacket(PacketCreator.getMiniRoomError(13));
+                    await chr.SendPacket(PacketCreator.getMiniRoomError(13));
                     return false;
                 }
             }
@@ -903,7 +898,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
             var portal = chr.getMap().findClosestTeleportPortal(cpos);
             if (portal != null && portal.getPosition().distance(cpos) < 120.0)
             {
-                chr.sendPacket(PacketCreator.getMiniRoomError(10));
+                await chr.SendPacket(PacketCreator.getMiniRoomError(10));
                 return false;
             }
         }

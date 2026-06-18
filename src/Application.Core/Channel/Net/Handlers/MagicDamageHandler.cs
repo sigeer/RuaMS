@@ -34,7 +34,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -44,19 +44,19 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 		}
 		chr.getAutobanManager().spam(8);*/
 
-        var attack = parseDamage(p, chr, false, true);
+        var attack = await parseDamage(p, chr, false, true);
 
         if (chr.IsMorphWithoutAttack())
         {
             // How are they attacking when the client won't let them?
-            chr.getClient().Disconnect(false, false);
+            await chr.getClient().Disconnect(false, false);
             return;
         }
 
         if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + +YamlConfig.config.server.DOJO_ENERGY_ATK);
-            c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
         int charge = (attack.skill == Evan.FIRE_BREATH
@@ -67,8 +67,8 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 
         var packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
 
-        chr.BroadcastMap(packet, chr.Id);
-        var effect = attack.getAttackEffect(chr, null);
+        await chr.BroadcastMap(packet, chr.Id);
+        var effect = await attack.getAttackEffect(chr, null);
         var skill = SkillFactory.GetSkillTrust(attack.skill);
         var effect_ = skill.getEffect(chr.getSkillLevel(skill));
         if (effect_.getCooldown() > 0)
@@ -79,18 +79,18 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             }
             else
             {
-                c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
+                await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
                 chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect_.getCooldown()));
             }
         }
-        applyAttack(attack, chr, effect.getAttackCount());
+        await applyAttack(attack, chr, effect.getAttackCount());
         var eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
         int eaterLevel = chr.getSkillLevel(eaterSkill);
         if (eaterLevel > 0)
         {
             foreach (int singleDamage in attack.targets.Keys)
             {
-                eaterSkill!.getEffect(eaterLevel).applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
+                await eaterSkill!.getEffect(eaterLevel).applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
             }
         }
     }

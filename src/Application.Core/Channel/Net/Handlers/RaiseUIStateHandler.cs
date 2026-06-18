@@ -1,8 +1,3 @@
-using Application.Core.Channel.DataProviders;
-using client;
-using server.quest;
-using static Application.Core.Game.Players.Player;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 /**
@@ -10,7 +5,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class RaiseUIStateHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         Log.Logger.Information("RaiseUIStateHandler");
         //int infoNumber = p.readShort();

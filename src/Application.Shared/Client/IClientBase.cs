@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Application.Shared.Client
 {
-    public interface IClientBase : ISocketClient, IDisposable
+    public interface IClientBase : ISocketClient, IAsyncDisposable
     {
 
         /// <summary>

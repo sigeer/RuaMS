@@ -58,8 +58,8 @@ public abstract class AbstractMapObject : IMapObject
         this.objectId = id;
     }
 
-    public virtual void sendSpawnData(IChannelClient client) { }
-    public virtual void sendDestroyData(IChannelClient client) { }
+    public virtual Task sendSpawnData(IChannelClient client) { return Task.CompletedTask; }
+    public virtual Task sendDestroyData(IChannelClient client) { return Task.CompletedTask; }
 
 
     public virtual IMap getMap()
@@ -82,16 +82,16 @@ public abstract class AbstractMapObject : IMapObject
     }
 
 
-    public virtual void OnMounted(IMap map)
+    public virtual async Task OnMounted(IMap map)
     {
         MapModel = map;
 
-        map.ChannelServer.NodeService.PluginManager.OnMapObjectEnterField(map, this);
+        await map.ChannelServer.NodeService.PluginManager.OnMapObjectEnterField(map, this);
     }
 
-    public virtual void OnUnmounted()
+    public virtual async Task OnUnmounted()
     {
-        MapModel.ChannelServer.NodeService.PluginManager.OnMapObjectLeaveField(MapModel, this);
+        await MapModel.ChannelServer.NodeService.PluginManager.OnMapObjectLeaveField(MapModel, this);
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public abstract class AbstractMapObject : IMapObject
     }
 
 
-    public void BroadcastMap(Packet packet, int exceptCId = -1)
+    public async Task BroadcastMap(Packet packet, int exceptCId = -1)
     {
         foreach (var mapChr in MapModel.getAllPlayers())
         {
@@ -119,7 +119,7 @@ public abstract class AbstractMapObject : IMapObject
 
             if (MapModel.IsMapObjectVisibleForPlayerCached(mapChr, this))
             {
-                mapChr.sendPacket(packet);
+                await mapChr.SendPacket(packet);
             }
         }
     }

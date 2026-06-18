@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-using Application.Core.Channel.Invitation;
 using Application.Shared.Message;
 using Google.Protobuf;
 using InvitationProto;

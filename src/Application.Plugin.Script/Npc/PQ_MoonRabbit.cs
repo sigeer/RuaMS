@@ -20,7 +20,7 @@ namespace Application.Plugin.Script.Npc
                 switch (option)
                 {
                     case 0:
-                        var r = em.StartInstance(getPlayer());
+                        var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         break;
                     case 1:
@@ -29,8 +29,8 @@ namespace Application.Plugin.Script.Npc
                     case 2:
                         if (hasItem(4001101, 20) && canHold(1002798))
                         {
-                            gainItem(4001101, -20);
-                            gainItem(1002798, 1);
+                            await gainItem(4001101, -20);
+                            await gainItem(1002798, 1);
 
                             await SayNext(GetTalkMessage(nameof(ScriptTalk.Redeem_Success)));
                         }
@@ -48,9 +48,9 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
                 {
                     var eim = GetEventInstanceTrust();
-                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        warp(100000200);
+                        await warp(100000200);
                     }
                     else
                     {
@@ -64,9 +64,9 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
                 {
                     var eim = GetEventInstanceTrust();
-                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        warp(100000200);
+                        await warp(100000200);
                     }
                     else
                     {
@@ -116,16 +116,16 @@ namespace Application.Plugin.Script.Npc
 
                         if (haveItem(4001101, 10))
                         {
-                            gainItem(4001101, int.MinValue);
+                            await gainItem(4001101, int.MinValue);
 
                             var eim = GetEventInstanceTrust();
                             eim.setProperty(1 + "stageclear", "true");
-                            ClearLudiPQStage(eim, getMapId());
+                            await ClearLudiPQStage(eim, getMapId());
 
-                            var map = eim.getMapInstance(getPlayer().getMapId());
-                            map.killAllMonstersNotFriendly();
+                            var map = await eim.getMapInstance(getPlayer().getMapId());
+                            await map.killAllMonstersNotFriendly();
 
-                            eim.clearPQ();
+                            await eim.clearPQ();
                             return;
                         }
 
@@ -136,7 +136,7 @@ namespace Application.Plugin.Script.Npc
                 case 2:
                     if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturning))))
                     {
-                        warp(910010300);
+                        await warp(910010300);
                     }
                     else
                     {

@@ -1,6 +1,7 @@
 using Application.Core.Game.Skills;
 
 namespace Application.Core.Game.Commands.Gm2;
+
 public class UnHideCommand : CommandBase
 {
     public UnHideCommand() : base(2, "unhide")
@@ -8,10 +9,10 @@ public class UnHideCommand : CommandBase
         Description = "Toggle Hide.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var hideSkill = SkillFactory.GetSkillTrust(SuperGM.HIDE);
-        hideSkill.getEffect(hideSkill.getMaxLevel()).applyTo(player);
+        await hideSkill.getEffect(hideSkill.getMaxLevel()).applyTo(player);
     }
 }

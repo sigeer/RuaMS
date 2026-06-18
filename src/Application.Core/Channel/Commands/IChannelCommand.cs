@@ -6,7 +6,15 @@ namespace Application.Core.Channel.Commands
     {
     }
 
+    public interface IChannelAsyncCommand : IAsyncCommand<WorldChannelServer>
+    {
+    }
+
     public interface IWorldChannelCommand : ICommand<WorldChannel>
+    {
+    }
+
+    public interface IWorldChannelAsyncCommand : IAsyncCommand<WorldChannel>
     {
     }
 }

@@ -32,7 +32,7 @@ namespace Application.Core.Login.ServerData
             _inviteMasterHandlerRegistry = inviteMasterHandlerRegistry;
         }
 
-        protected override void HandleRun()
+        protected override async Task HandleRun()
         {
             var now = _server.getCurrentTime();
 
@@ -51,8 +51,8 @@ namespace Application.Core.Login.ServerData
                 var handler = _inviteMasterHandlerRegistry.GetHandler(typeKey);
                 foreach (var key in expiredKeys)
                 {
-                    if (inviteDict.TryRemove(key, out var request))
-                        handler?.OnInvitationExpired(request);
+                    if (inviteDict.TryRemove(key, out var request) && handler != null)
+                        await handler.OnInvitationExpired(request);
                 }
             }
         }

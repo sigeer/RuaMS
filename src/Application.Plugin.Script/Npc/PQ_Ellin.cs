@@ -15,7 +15,7 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                     break;
                 default:
@@ -45,12 +45,12 @@ namespace Application.Plugin.Script.Npc
             {
                 if (curStage == StageStatus.NotStarted)
                 {
-                    eim.showClearEffect(getMapId());
+                    await eim.showClearEffect(getMapId());
                     eim.ClearedMaps[getMapId()] = StageStatus.Completed;
                 }
 
                 await SayNext("哦，太好了，你找到我了。我们现在可以在森林里继续前进了。");
-                eim.warpEventTeam(930000400);
+                await eim.warpEventTeam(930000400);
             }
             else if (getMapId() == 930000400)
             {
@@ -62,8 +62,8 @@ namespace Application.Plugin.Script.Npc
 
                         if (haveItem(4001169, 20) && isEventLeader())
                         {
-                            gainItem(4001169, -20);
-                            eim.warpEventTeam(930000500);
+                            await gainItem(4001169, -20);
+                            await eim.warpEventTeam(930000500);
                         }
                     }
                     else
@@ -76,7 +76,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (canHold(2270004, 10))
                     {
-                        gainItem(2270004, 10);
+                        await gainItem(2270004, 10);
                         await SayOK("拿10个#t2270004#。首先，#r削弱#o9300174#的力量，一旦它的生命值降低，使用我给你的物品来捕捉它们。");
                         return;
 
@@ -100,7 +100,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想要退出这个副本吗？你的队友可能也需要放弃，所以要考虑一下。"))
             {
-                WarpOut();
+                await WarpOut();
             }
         }
         // Npc: 2133004 
@@ -110,13 +110,13 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("让你的队长在这里给我看#t4001163#。\r\n\r\n或者你想要#r离开这片森林#k吗？现在离开意味着抛弃你的伙伴，记住这一点。"))
                 {
-                    WarpOut();
+                    await WarpOut();
                 }
             }
             else
             {
                 await SayNext("太好了，你有了#t4001163#。我会带你们去通往石头祭坛的路。跟我来吧。");
-                GetEventInstanceTrust().warpEventTeam(930000600);
+                await GetEventInstanceTrust().warpEventTeam(930000600);
             }
         }
     }

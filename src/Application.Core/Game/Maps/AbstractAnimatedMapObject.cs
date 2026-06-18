@@ -73,7 +73,7 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
     /// </summary>
     /// <param name="packet"></param>
     /// <param name="exceptCId"></param>
-    public virtual void BroadcastMovement(Packet packet, Point pos)
+    public virtual async Task BroadcastMovement(Packet packet, Point pos)
     {
         foreach (var mapChr in MapModel.getAllPlayers())
         {
@@ -83,10 +83,10 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
                 continue;
             }
 
-            if ((!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance())) 
+            if ((!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance()))
                 && IsVisibleForPlayerWithoutRange(mapChr))
             {
-                mapChr.sendPacket(packet);
+                await mapChr.SendPacket(packet);
             }
         }
     }

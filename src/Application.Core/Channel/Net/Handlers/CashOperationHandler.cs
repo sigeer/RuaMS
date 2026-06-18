@@ -27,7 +27,6 @@ using Application.Core.Game.Items;
 using Application.Core.Managers;
 using Application.Resources.Messages;
 using client.inventory;
-using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using server;
 using tools;
@@ -47,19 +46,20 @@ public class CashOperationHandler : ChannelHandlerBase
         _cashItemProvider = cashItemProvider;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         CashShop cs = chr.getCashShop();
 
         if (!cs.isOpened())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
-        if (c.tryacquireClient())
-        {     // thanks Thora for finding out an exploit within cash operations
+        {
+            await c.tryacquireClient();
+            // thanks Thora for finding out an exploit within cash operations
             try
             {
                 int action = p.readByte();
@@ -72,7 +72,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(useNX)))
                     {
                         _logger.LogError("Denied to sell cash item with SN {ItemSN}", snCS); // preventing NPE here thanks to MedicOP
-                        c.enableCSActions();
+                        await c.enableCSActions();
                         return;
                     }
 
@@ -81,22 +81,22 @@ public class CashOperationHandler : ChannelHandlerBase
                         // Item
                         if (ItemConstants.isCashStore(cItem!.getItemId()) && chr.getLevel() < 16)
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                         else if (ItemConstants.isRateCoupon(cItem.getItemId()) && !YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS)
                         {
-                            chr.dropMessage(1, "Rate coupons are currently unavailable to purchase.");
-                            c.enableCSActions();
+                            await chr.dropMessage(1, "Rate coupons are currently unavailable to purchase.");
+                            await c.enableCSActions();
                             return;
                         }
                         else if (ItemConstants.isMapleLife(cItem.getItemId()) && chr.getLevel() < 30)
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                     }
-                    _itemService.BuyCashItem(c.OnlinedCharacter, useNX, cItem);
+                    await _itemService.BuyCashItem(c.OnlinedCharacter, useNX, cItem);
                 }
                 else if (action == 0x04)
                 {
@@ -108,15 +108,15 @@ public class CashOperationHandler : ChannelHandlerBase
                     var message = p.readString();
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)) || string.IsNullOrEmpty(message) || message.Length > 73)
                     {
-                        c.enableCSActions();
+                        await c.enableCSActions();
                         return;
                     }
                     if (!c.CheckBirthday(birthday))
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC4));
                         return;
                     }
-                    _itemService.BuyCashItemForGift(c.OnlinedCharacter, CashType.NX_PREPAID, cItem, recipientName, message);
+                    await _itemService.BuyCashItemForGift(c.OnlinedCharacter, CashType.NX_PREPAID, cItem, recipientName, message);
                 }
                 else if (action == 0x05)
                 {
@@ -131,7 +131,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             cs.addToWishList(sn);
                         }
                     }
-                    c.sendPacket(PacketCreator.showWishList(chr, true));
+                    await c.SendPacket(PacketCreator.showWishList(chr, true));
                 }
                 else if (action == 0x06)
                 {
@@ -144,20 +144,20 @@ public class CashOperationHandler : ChannelHandlerBase
                         sbyte type = p.ReadSByte();
                         if (cs.getCash(cash) < 4000)
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                         int qty = 4;
                         if (!chr.canGainSlots(type, qty))
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                         cs.gainCash(cash, -4000);
-                        if (chr.gainSlots(type, qty, false))
+                        if (await chr.gainSlots(type, qty, false))
                         {
-                            c.sendPacket(PacketCreator.showBoughtInventorySlots(type, chr.getSlots(type)));
-                            c.sendPacket(PacketCreator.showCash(chr));
+                            await c.SendPacket(PacketCreator.showBoughtInventorySlots(type, chr.getSlots(type)));
+                            await c.SendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
@@ -169,22 +169,22 @@ public class CashOperationHandler : ChannelHandlerBase
                         var cItem = _cashItemProvider.getItem(p.readInt());
                         if (!canBuy(chr, cItem, cs.getCash(cash)))
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                         int type = (cItem!.getItemId() - 9110000) / 1000;
                         int qty = 8;
                         if (!chr.canGainSlots(type, qty))
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
 
                         cs.Buy(cash, cItem);
-                        if (chr.gainSlots(type, qty, false))
+                        if (await chr.gainSlots(type, qty, false))
                         {
-                            c.sendPacket(PacketCreator.showBoughtInventorySlots(type, chr.getSlots(type)));
-                            c.sendPacket(PacketCreator.showCash(chr));
+                            await c.SendPacket(PacketCreator.showBoughtInventorySlots(type, chr.getSlots(type)));
+                            await c.SendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
@@ -202,7 +202,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         if (cs.getCash(cash) < 4000)
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
 
@@ -212,13 +212,13 @@ public class CashOperationHandler : ChannelHandlerBase
                             cs.gainCash(cash, -4000);
                             _logger.LogDebug("Chr {CharacterName} bought {Slots} slots to their account storage.", c.OnlinedCharacter.getName(), qty);
 
-                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
-                            c.sendPacket(PacketCreator.showCash(chr));
+                            await c.SendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
+                            await c.SendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account.", qty, CharacterManager.makeMapleReadable(chr.getName()));
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                     }
@@ -228,7 +228,7 @@ public class CashOperationHandler : ChannelHandlerBase
 
                         if (!canBuy(chr, cItem, cs.getCash(cash)))
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                         int qty = 8;
@@ -238,13 +238,13 @@ public class CashOperationHandler : ChannelHandlerBase
                             // thanks ABaldParrot & Thora for detecting storage issues here
                             _logger.LogDebug("Chr {CharacterName} bought {Slot} slots to their account storage", c.OnlinedCharacter.getName(), qty);
 
-                            c.sendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
-                            c.sendPacket(PacketCreator.showCash(chr));
+                            await c.SendPacket(PacketCreator.showBoughtStorageSlots(chr.Storage.Slots));
+                            await c.SendPacket(PacketCreator.showCash(chr));
                         }
                         else
                         {
                             _logger.LogWarning("Could not add {Slot} slots to {CharacterName}'s account", qty, CharacterManager.makeMapleReadable(chr.getName()));
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                     }
@@ -258,20 +258,20 @@ public class CashOperationHandler : ChannelHandlerBase
 
                     if (!canBuy(chr, cItem, cs.getCash(cash)))
                     {
-                        c.enableCSActions();
+                        await c.enableCSActions();
                         return;
                     }
 
                     if (c.GainCharacterSlot())
                     {
                         cs.Buy(cash, cItem);
-                        c.sendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
-                        c.sendPacket(PacketCreator.showCash(chr));
+                        await c.SendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
+                        await c.SendPacket(PacketCreator.showCash(chr));
                     }
                     else
                     {
-                        chr.dropMessage(1, "You have already used up all 12 extra character slots.");
-                        c.enableCSActions();
+                        await chr.Popup("You have already used up all 12 extra character slots.");
+                        await c.enableCSActions();
                         return;
                     }
                 }
@@ -281,15 +281,15 @@ public class CashOperationHandler : ChannelHandlerBase
                     var item = cs.findByCashId(p.readLong());
                     if (item == null)
                     {
-                        c.enableCSActions();
+                        await c.enableCSActions();
                         return;
                     }
 
-                    var addR = chr.GetInventory(item.getInventoryType()).AddItem(item);
+                    var addR = await chr.GetInventory(item.getInventoryType()).AddItem(item);
                     if (addR != null)
                     {
                         cs.removeFromInventory(item);
-                        c.sendPacket(PacketCreator.takeFromCashInventory(item, addR.CurrentPosition));
+                        await c.SendPacket(PacketCreator.takeFromCashInventory(item, addR.CurrentPosition));
 
                         if (item is Equip equip)
                         {
@@ -308,7 +308,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     sbyte invType = p.ReadSByte();
                     if (invType < 1 || invType > 5)
                     {
-                        c.Disconnect(false, false);
+                        await c.Disconnect(false, false);
                         return;
                     }
 
@@ -316,24 +316,24 @@ public class CashOperationHandler : ChannelHandlerBase
                     var item = mi.findByCashId(cashId);
                     if (item == null)
                     {
-                        c.enableCSActions();
+                        await c.enableCSActions();
                         return;
                     }
                     else if (item is Pet pet && pet.Summoned)
                     {
-                        chr.Popup(nameof(ClientMessage.Cash_PutPetIntoCashInventory));
-                        c.enableCSActions();
+                        await chr.Popup(nameof(ClientMessage.Cash_PutPetIntoCashInventory));
+                        await c.enableCSActions();
                         return;
                     }
                     else if (ItemId.isWeddingRing(item.getItemId()) || ItemId.isWeddingToken(item.getItemId()))
                     {
-                        chr.Popup(nameof(ClientMessage.Cash_PutRelationshipItemIntoCashInventory));
-                        c.enableCSActions();
+                        await chr.Popup(nameof(ClientMessage.Cash_PutRelationshipItemIntoCashInventory));
+                        await c.enableCSActions();
                         return;
                     }
                     cs.addToInventory(item);
-                    mi.removeSlot(item.getPosition());
-                    c.sendPacket(PacketCreator.putIntoCashInventory(item, c.AccountEntity!.Id));
+                    await mi.removeSlot(item.getPosition());
+                    await c.SendPacket(PacketCreator.putIntoCashInventory(item, c.AccountEntity!.Id));
                 }
                 else if (action == 0x1D)
                 {
@@ -347,11 +347,11 @@ public class CashOperationHandler : ChannelHandlerBase
                         string text = p.readString();
                         var itemRing = _cashItemProvider.GetItemTrust(SN);
                         var partner = c.CurrentServer.getPlayerStorage().getCharacterByName(recipientName);
-                        _itemService.BuyCashItemForGift(c.OnlinedCharacter, toCharge, itemRing, recipientName, text, true);
+                        await _itemService.BuyCashItemForGift(c.OnlinedCharacter, toCharge, itemRing, recipientName, text, true);
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
                 }
                 else if (action == 0x20)
@@ -360,14 +360,14 @@ public class CashOperationHandler : ChannelHandlerBase
                     int serialNumber = p.readInt();  // thanks GabrielSin for detecting a potential exploit with 1 meso cash items.
                     if (serialNumber / 10000000 != 8)
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC0));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC0));
                         return;
                     }
 
                     var item = _cashItemProvider.getItem(serialNumber);
                     if (item == null || !item.isOnSale())
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC0));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC0));
                         return;
                     }
 
@@ -375,7 +375,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     int itemPrice = item.getPrice();
                     if (itemPrice <= 0)
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC0));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC0));
                         return;
                     }
 
@@ -383,12 +383,12 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         if (chr.canHold(itemId))
                         {
-                            chr.GainMeso(-itemPrice);
-                            chr.GainItem(itemId, 1);
-                            c.sendPacket(PacketCreator.showBoughtQuestItem(itemId));
+                            await chr.GainMeso(-itemPrice);
+                            await chr.GainItem(itemId, 1);
+                            await c.SendPacket(PacketCreator.showBoughtQuestItem(itemId));
                         }
                     }
-                    c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
+                    await c.SendPacket(PacketCreator.showCash(c.OnlinedCharacter));
                 }
                 else if (action == 0x23)
                 {
@@ -401,11 +401,11 @@ public class CashOperationHandler : ChannelHandlerBase
                         var itemRing = _cashItemProvider.GetItemTrust(snID);
                         string sentTo = p.readString();
                         string text = p.readString();
-                        _itemService.BuyCashItemForGift(c.OnlinedCharacter, payment, itemRing, sentTo, text, true);
+                        await _itemService.BuyCashItemForGift(c.OnlinedCharacter, payment, itemRing, sentTo, text, true);
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0xC4));
                     }
                 }
                 else if (action == 0x2E)
@@ -415,8 +415,8 @@ public class CashOperationHandler : ChannelHandlerBase
                     var cItem = _cashItemProvider.getItem(p.readInt());
                     if (cItem == null || !canBuy(chr, cItem, cs.getCash(CashShop.NX_PREPAID)))
                     {
-                        c.sendPacket(PacketCreator.showCashShopMessage(0));
-                        c.enableCSActions();
+                        await c.SendPacket(PacketCreator.showCashShopMessage(0));
+                        await c.enableCSActions();
                         return;
                     }
                     if (cItem.getSN() == 50600000 && YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE)
@@ -425,7 +425,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         string newName = p.readString();
                         //else if (c.AccountEntity?.Tempban != null && (c.AccountEntity.Tempban!.Value.AddDays(30)) > DateTimeOffset.UtcNow)
                         //{
-                        //    c.sendPacket(PacketCreator.showCashShopMessage(0));
+                        //    await c.SendPacket(PacketCreator.showCashShopMessage(0));
                         //    c.enableCSActions();
                         //    return;
                         //}
@@ -436,17 +436,17 @@ public class CashOperationHandler : ChannelHandlerBase
                             cs.Buy(CashType.NX_PREPAID, cItem);
 
                             Item item = _itemService.CashItem2Item(cItem);
-                            c.sendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
+                            await c.SendPacket(PacketCreator.showNameChangeSuccess(item, c.AccountEntity!.Id));
                             // cs.addToInventory(item);
 
                         }
                         else
                         {
-                            c.enableCSActions();
+                            await c.enableCSActions();
                             return;
                         }
                     }
-                    c.enableCSActions();
+                    await c.enableCSActions();
                 }
                 else if (action == 0x31)
                 {
@@ -463,10 +463,6 @@ public class CashOperationHandler : ChannelHandlerBase
             {
                 c.releaseClient();
             }
-        }
-        else
-        {
-            c.sendPacket(PacketCreator.enableActions());
         }
     }
 

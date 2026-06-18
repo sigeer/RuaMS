@@ -14,8 +14,8 @@ namespace Application.Plugin.Script.Npc
             await SayNext("海盗拥有出色的灵巧和力量，他们利用枪支进行远程攻击，同时在近战战斗中利用自己的力量。枪手使用基于元素的子弹来增加伤害，而搏击者则可以变身为不同的形态以达到最大效果。");
             if (await AskYesNo("你想体验一下成为一个海盗是什么感觉吗？"))
             {
-                lockUI();
-                warp(1020500, 0);
+                await lockUI();
+                await warp(1020500, 0);
             }
             else
             {
@@ -39,13 +39,13 @@ namespace Application.Plugin.Script.Npc
                 if (!haveItem(item, 15))
                 {
                     var option = await AskMenu($"你还没有给我带来15个#b#t{item}##k。我期待你的进展，伙计！\r\n#b#L1#我想离开#l");
-                    removeAll(item);
-                    warp(120000101, 0);
+                    await removeAll(item);
+                    await warp(120000101, 0);
                 }
                 else
                 {
                     await SayNext($"哇，你给我带来了15个#b#t{item}##k！恭喜你。让我现在把你传送出去。");
-                    warp(120000101, 0);
+                    await warp(120000101, 0);
                 }
             }
             else
@@ -68,10 +68,10 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (getJob() == Job.BEGINNER)
                             {
-                                changeJobById(JobId.PIRATE);
-                                gainItem(1482000, 1);
-                                gainItem(1492000, 1);
-                                resetStats();
+                                await changeJobById(JobId.PIRATE);
+                                await gainItem(1482000, 1);
+                                await gainItem(1492000, 1);
+                                await resetStats();
 
                                 await SaySpeech([
                                 "好的，从现在开始，你就是我们的一员了！你将在...过着流浪者的生活，但要耐心等待，很快你就会过上好日子。好了，虽然不多，但我会传授给你一些我的能力... 哈啊啊啊！！",
@@ -125,7 +125,7 @@ namespace Application.Plugin.Script.Npc
 
                                 if (getJob() == Job.PIRATE)
                                 {
-                                    changeJobById(job.Id);
+                                    await changeJobById(job.Id);
 
                                     await SaySpeech([
                                         job == Job.BRAWLER
@@ -164,7 +164,7 @@ namespace Application.Plugin.Script.Npc
                         }
 
                         var em = GetSoloQuestEventManager(jobQuest);
-                        var r = em.StartInstance(getPlayer());
+                        var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                 }
@@ -182,8 +182,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else if (haveItem(4031059))
                     {
-                        gainItem(4031059, -1);
-                        gainItem(4031057, 1);
+                        await gainItem(4031059, -1);
+                        await gainItem(4031057, 1);
 
                         await SayNext("你成功击败了我的分身并带回了#b#t4031059##k！看来你已经准备好第三次转职了，把#b#t4031057##k带给#b#p2020013##k，他会帮助你进行第三次转职的，祝你好运！");
                     }
@@ -203,13 +203,13 @@ namespace Application.Plugin.Script.Npc
                 {
                     await SayNext("你准备好了吗？现在试着忍受我的攻击2分钟。我不会手下留情的。祝你好运，因为你会需要的。");
                     var em = GetSoloQuestEventManager(questId);
-                    var r =  em.StartInstance(getPlayer());
+                    var r =  await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else if (getEventInstance() != null)
                 {
                     await SayNext("做的不错。我们到外面讨论一下吧！");
-                    WarpOut();
+                    await WarpOut();
                 }
                 return;
             }
@@ -247,25 +247,25 @@ namespace Application.Plugin.Script.Npc
                     if (canHold(2280003, 1))
                     {
                         int jobId = getJob().Id;
-                        changeJobById(jobId + 1);
+                        await changeJobById(jobId + 1);
                         
                         jobId = getJob().Id;
                         if (jobId == 512)
                         {
-                            teachSkill(5121001, 0, 10, -1);
-                            teachSkill(5121002, 0, 10, -1);
-                            teachSkill(5121007, 0, 10, -1);
-                            teachSkill(5121009, 0, 10, -1);
+                            await teachSkill(5121001, 0, 10, -1);
+                            await teachSkill(5121002, 0, 10, -1);
+                            await teachSkill(5121007, 0, 10, -1);
+                            await teachSkill(5121009, 0, 10, -1);
                         }
                         else if (jobId == 522)
                         {
-                            teachSkill(5220001, 0, 10, -1);
-                            teachSkill(5220002, 0, 10, -1);
-                            teachSkill(5221004, 0, 10, -1);
-                            teachSkill(5220011, 0, 10, -1);
+                            await teachSkill(5220001, 0, 10, -1);
+                            await teachSkill(5220002, 0, 10, -1);
+                            await teachSkill(5221004, 0, 10, -1);
+                            await teachSkill(5220011, 0, 10, -1);
                         }
                         
-                        gainItem(2280003, 1);
+                        await gainItem(2280003, 1);
                     }
                     else
                     {
@@ -283,42 +283,42 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (getPlayer().getSkillLevel(5121003) == 0)
                         {
-                            teachSkill(5121003, 0, 10, -1);
+                            await teachSkill(5121003, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5121004) == 0)
                         {
-                            teachSkill(5121004, 0, 10, -1);
+                            await teachSkill(5121004, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5121005) == 0)
                         {
-                            teachSkill(5121005, 0, 10, -1);
+                            await teachSkill(5121005, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5121010) == 0)
                         {
-                            teachSkill(5121010, 0, 10, -1);
+                            await teachSkill(5121010, 0, 10, -1);
                         }
                     }
                     else if (jobId == 522)
                     {
                         if (getPlayer().getSkillLevel(5221006) == 0)
                         {
-                            teachSkill(5221006, 0, 10, -1);
+                            await teachSkill(5221006, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5221007) == 0)
                         {
-                            teachSkill(5221007, 0, 10, -1);
+                            await teachSkill(5221007, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5221008) == 0)
                         {
-                            teachSkill(5221008, 0, 10, -1);
+                            await teachSkill(5221008, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5221009) == 0)
                         {
-                            teachSkill(5221009, 0, 10, -1);
+                            await teachSkill(5221009, 0, 10, -1);
                         }
                         if (getPlayer().getSkillLevel(5221003) == 0)
                         {
-                            teachSkill(5221003, 0, 10, -1);
+                            await teachSkill(5221003, 0, 10, -1);
                         }
                     }
                     

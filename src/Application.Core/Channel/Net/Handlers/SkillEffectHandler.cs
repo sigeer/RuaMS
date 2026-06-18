@@ -34,7 +34,7 @@ public class SkillEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int skillId = p.readInt();
         int level = p.ReadSByte();
@@ -61,7 +61,7 @@ public class SkillEffectHandler : ChannelHandlerBase
             case Hero.MONSTER_MAGNET:
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
-                c.OnlinedCharacter.BroadcastMap(PacketCreator.skillEffect(c.OnlinedCharacter, skillId, level, flags, speed, aids), c.OnlinedCharacter.Id);
+                await c.OnlinedCharacter.BroadcastMap(PacketCreator.skillEffect(c.OnlinedCharacter, skillId, level, flags, speed, aids), c.OnlinedCharacter.Id);
                 return;
             default:
                 _logger.LogWarning("Chr {CharacterName} entered SkillEffectHandler without being handled using {SkillId}", c.OnlinedCharacter, skillId);

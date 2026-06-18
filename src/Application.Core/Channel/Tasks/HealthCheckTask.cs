@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Tasks
         public override async Task RunAsync()
         {
             var networkData = await networkMonitor.GetTrafficRateAsync();
-            var model =  new ServerProto.MonitorData
+            var model = new ServerProto.MonitorData
             {
                 ProcessMemoryUsed = SystemMonitor.GetCurrentProcessMemoryUsage(),
 

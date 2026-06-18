@@ -1,8 +1,6 @@
 using Application.Shared.Invitations;
-using Dto;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
-using static Application.Core.Channel.Internal.Handlers.NoteHandlers;
 
 namespace Application.Core.Channel.Invitation
 {
@@ -41,10 +39,11 @@ namespace Application.Core.Channel.Invitation
                 var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
                 if (receiverActor != null)
                 {
-                    receiverActor.Send(m =>
+                    receiverActor.Send(async m =>
                     {
                         var receiver = m.getCharacterById(data.ReceivePlayerId);
-                        receiver?.sendPacket(GuildPackets.allianceInvite(data.Key, receiver));
+                        if (receiver != null)
+                            await receiver.SendPacket(GuildPackets.allianceInvite(data.Key, receiver));
                     });
                 }
 
@@ -54,7 +53,7 @@ namespace Application.Core.Channel.Invitation
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
                 if (senderActor != null)
                 {
-                    senderActor.Send(m =>
+                    senderActor.Send(async m =>
                     {
                         var sender = m.getCharacterById(data.SenderPlayerId);
                         if (sender != null)
@@ -62,16 +61,16 @@ namespace Application.Core.Channel.Invitation
                             switch (code)
                             {
                                 case InviteResponseCode.Alliance_AlreadyInAlliance:
-                                    sender.dropMessage(5, "The entered guild is already registered on a guild alliance.");
+                                    await sender.dropMessage(5, "The entered guild is already registered on a guild alliance.");
                                     break;
                                 case InviteResponseCode.Alliance_GuildNotFound:
-                                    sender.dropMessage(5, "The entered guild does not exist.");
+                                    await sender.dropMessage(5, "The entered guild does not exist.");
                                     break;
                                 case InviteResponseCode.Alliance_GuildLeaderNotFound:
-                                    sender.dropMessage(5, "The master of the guild that you offered an invitation is currently not online.");
+                                    await sender.dropMessage(5, "The master of the guild that you offered an invitation is currently not online.");
                                     break;
                                 case InviteResponseCode.Alliance_CapacityFull:
-                                    sender.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
+                                    await sender.dropMessage(5, "Your alliance cannot comport any more guilds at the moment.");
                                     break;
                                 default:
                                     _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);

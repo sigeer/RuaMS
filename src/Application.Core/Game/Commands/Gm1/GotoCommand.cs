@@ -103,7 +103,7 @@ public class GotoCommand : CommandBase
     public string GOTO_TOWNS_INFO = "";
     public string GOTO_AREAS_INFO = "";
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
@@ -114,13 +114,13 @@ public class GotoCommand : CommandBase
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
 
-            player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
+            await player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
             return;
         }
 
         if (!player.isAlive())
         {
-            player.dropMessage(1, "This command cannot be used when you're dead.");
+            await player.Popup("This command cannot be used when you're dead.");
             return;
         }
 
@@ -128,7 +128,7 @@ public class GotoCommand : CommandBase
         {
             if (player.getEventInstance() != null || MiniDungeonInfo.isDungeonMap(player.getMapId()) || FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
             {
-                player.dropMessage(1, "This command can not be used in this map.");
+                await player.Popup("This command can not be used in this map.");
                 return;
             }
         }
@@ -146,12 +146,12 @@ public class GotoCommand : CommandBase
 
         if (gotomaps.TryGetValue(paramsValue[0], out var map))
         {
-            var target = c.getChannelServer().getMapFactory().getMap(map);
+            var target = await c.getChannelServer().getMapFactory().getMap(map);
 
             // expedition issue with this command detected thanks to Masterrulax
             Portal targetPortal = target.getRandomPlayerSpawnpoint();
             player.saveLocationOnWarp();
-            player.changeMap(target, targetPortal);
+            await player.changeMap(target, targetPortal);
         }
         else
         {
@@ -162,7 +162,7 @@ public class GotoCommand : CommandBase
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
 
-            player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
+            await player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
         }
     }
 }

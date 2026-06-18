@@ -9,7 +9,7 @@ namespace Application.Core.Game.Players
     {
         private AtomicInteger chair = new AtomicInteger(-1);
 
-        private void unsitChairInternal()
+        private async Task unsitChairInternal()
         {
             int chairid = chair.get();
             if (chairid >= 0)
@@ -20,18 +20,18 @@ namespace Application.Core.Game.Players
                 }
 
                 setChair(-1);
-                if (unregisterChairBuff())
+                if (await unregisterChairBuff())
                 {
-                    BroadcastMap(PacketCreator.cancelForeignChairSkillEffect(this.getId()), Id);
+                    await BroadcastMap(PacketCreator.cancelForeignChairSkillEffect(this.getId()), Id);
                 }
 
-                BroadcastMap(PacketCreator.showChair(this.getId(), 0), Id);
+                await BroadcastMap(PacketCreator.showChair(this.getId(), 0), Id);
             }
 
-            sendPacket(PacketCreator.cancelChair(-1));
+            await SendPacket(PacketCreator.cancelChair(-1));
         }
 
-        public void sitChair(int itemId)
+        public async Task sitChair(int itemId)
         {
             if (this.isLoggedinWorld())
             {
@@ -40,25 +40,25 @@ namespace Application.Core.Game.Players
                     if (chair.get() < 0)
                     {
                         setChair(itemId);
-                        BroadcastMap(PacketCreator.showChair(this.getId(), itemId), Id);
+                        await BroadcastMap(PacketCreator.showChair(this.getId(), itemId), Id);
                     }
-                    sendPacket(PacketCreator.enableActions());
+                    await SendPacket(PacketCreator.enableActions());
                 }
                 else if (itemId >= 0)
                 {    // sit on map chair
                     if (chair.get() < 0)
                     {
                         setChair(itemId);
-                        if (registerChairBuff())
+                        if (await registerChairBuff())
                         {
-                            BroadcastMap(PacketCreator.giveForeignChairSkillEffect(this.getId()), Id);
+                            await BroadcastMap(PacketCreator.giveForeignChairSkillEffect(this.getId()), Id);
                         }
-                        sendPacket(PacketCreator.cancelChair(itemId));
+                        await SendPacket(PacketCreator.cancelChair(itemId));
                     }
                 }
                 else
                 {    // stand up
-                    unsitChairInternal();
+                    await unsitChairInternal();
                 }
             }
         }
@@ -129,7 +129,7 @@ namespace Application.Core.Game.Players
             localchairmp = p.Mp;
         }
 
-        public bool unregisterChairBuff()
+        public async Task<bool> unregisterChairBuff()
         {
             if (!YamlConfig.config.server.USE_CHAIR_EXTRAHEAL)
             {
@@ -141,13 +141,13 @@ namespace Application.Core.Game.Players
             if (skillLv > 0)
             {
                 StatEffect mapChairSkill = SkillFactory.getSkill(skillId)!.getEffect(skillLv);
-                return cancelEffect(mapChairSkill, false);
+                return await cancelEffect(mapChairSkill, false);
             }
 
             return false;
         }
 
-        public bool registerChairBuff()
+        public async Task<bool> registerChairBuff()
         {
             if (!YamlConfig.config.server.USE_CHAIR_EXTRAHEAL)
             {
@@ -159,14 +159,14 @@ namespace Application.Core.Game.Players
             if (skillLv > 0)
             {
                 StatEffect mapChairSkill = SkillFactory.getSkill(skillId)!.getEffect(skillLv);
-                mapChairSkill.applyTo(this);
+                await mapChairSkill.applyTo(this);
                 return true;
             }
 
             return false;
         }
 
-        public void ApplayChairBuff()
+        public async Task ApplayChairBuff()
         {
             updateChairHealStats();
             int healHP = localchairhp;
@@ -174,16 +174,16 @@ namespace Application.Core.Game.Players
 
             if (HP < ActualMaxHP || MP < ActualMaxMP)
             {
-                UpdateStatsChunk(() =>
+                await UpdateStatsChunk(async () =>
                 {
-                    ChangeHP(healHP);
+                    await ChangeHP(healHP);
                     ChangeMP(healMP);
                 });
 
                 var recHP = (sbyte)(healHP / YamlConfig.config.server.CHAIR_EXTRA_HEAL_MULTIPLIER);
 
-                sendPacket(PacketCreator.showOwnRecovery(recHP));
-                BroadcastMap(PacketCreator.showRecovery(Id, recHP), Id);
+                await SendPacket(PacketCreator.showOwnRecovery(recHP));
+                await BroadcastMap(PacketCreator.showRecovery(Id, recHP), Id);
             }
 
 

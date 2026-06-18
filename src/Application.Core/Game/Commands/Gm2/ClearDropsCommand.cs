@@ -7,10 +7,10 @@ public class ClearDropsCommand : CommandBase
         Description = "Clear drops by player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        player.getMap().clearDrops();
-        player.dropMessage(5, "Cleared dropped items");
+        await player.getMap().clearDrops();
+        await player.Pink("Cleared dropped items");
     }
 }

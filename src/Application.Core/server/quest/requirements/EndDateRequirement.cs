@@ -21,7 +21,6 @@
  */
 
 using System.Globalization;
-using System.Net.WebSockets;
 
 namespace server.quest.requirements;
 
@@ -46,7 +45,7 @@ public class EndDateRequirement : AbstractQuestRequirement
 
         timeStr = new DateTimeOffset(dateTime, TimeSpan.Zero);
     }
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         return timeStr >= chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
     }

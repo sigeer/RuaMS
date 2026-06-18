@@ -34,9 +34,9 @@ public class CheckCharNameHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string name = p.readString();
-        c.sendPacket(LoginPacketCreator.charNameResponse(name, !_server.CharacterManager.CheckCharacterName(name)));
+        await c.SendPacket(LoginPacketCreator.charNameResponse(name, !_server.CharacterManager.CheckCharacterName(name)));
     }
 }

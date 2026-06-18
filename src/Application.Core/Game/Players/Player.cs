@@ -17,7 +17,7 @@ using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, IPlayerStats, IMapPlayer, ILife, IClientPlayer, ICombatantObject, ILoopTickable
+    public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, ILife, IClientPlayer, ICombatantObject, ILoopTickable
     {
         public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
@@ -87,7 +87,7 @@ namespace Application.Core.Game.Players
             return Name;
         }
 
-        public void TypedMessage(int type, string messageKey, params string[] param)
+        public async Task TypedMessage(int type, string messageKey, params string[] param)
         {
             if (string.IsNullOrEmpty(messageKey))
             {
@@ -96,42 +96,45 @@ namespace Application.Core.Game.Players
 
             if (type == -1)
             {
-                sendPacket(PacketCommon.SendYellowTip(GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCommon.SendYellowTip(GetMessageByKey(messageKey, param)));
             }
             else if (type == -2)
             {
-                sendPacket(PacketCreator.earnTitleMessage(GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCreator.earnTitleMessage(GetMessageByKey(messageKey, param)));
             }
             else if (type == -3)
             {
-                TempConversation.Create(Client)?.RegisterTalk(GetMessageByKey(messageKey, param));
+                await TempConversation.CreateScope(Client, async ctx =>
+                {
+                    await ctx.SayOK(GetMessageByKey(messageKey, param));
+                });
             }
             else if (type == 4)
             {
-                sendPacket(PacketCommon.serverMessage(GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCommon.serverMessage(GetMessageByKey(messageKey, param)));
             }
             else
             {
-                sendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
             }
         }
-        public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
+        public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-        public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
+        public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-        public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
+        public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-        public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
+        public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-        public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+        public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-        public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-        public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-        public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+        public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+        public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+        public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
-        public void LightBlue(Func<ClientCulture, string> action)
+        public Task LightBlue(Func<ClientCulture, string> action)
         {
-            sendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
+            return SendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
         }
 
 
@@ -147,66 +150,72 @@ namespace Application.Core.Game.Players
 
         public TickableStatus Status { get; private set; }
 
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             foreach (var item in getAllStatups().OfType<ITickable>())
             {
-                item.OnTick(now);
+                await item.OnTick(now);
             }
 
-            Bag.OnTick(now);
+            await Bag.OnTick(now);
 
-            MountModel?.OnTick(now);
+            if (MountModel != null)
+            {
+                await MountModel.OnTick(now);
+            }
 
             foreach (var item in pets)
             {
-                item?.OnTick(now);
+                if (item != null)
+                {
+                    await item.OnTick(now);
+                }
             }
 
             if (_mapEffect != null)
             {
-                _mapEffect.OnTick(now);
+                await _mapEffect.OnTick(now);
 
                 if (_mapEffect.Status == TickableStatus.Remove)
                 {
-                    sendPacket(_mapEffect.makeDestroyData());
+                    await SendPacket(_mapEffect.makeDestroyData());
                     _mapEffect = null;
                 }
             }
 
             if (MapModel.getHPDec() > 0 && MapDamageNext <= now)
             {
-                doHurtHp();
+                await doHurtHp();
                 MapDamageNext = now + MapDamagePeriod;
             }
 
             if (_diseaseAnnounceNext <= now)
             {
-                announceDiseases();
-                collectDiseases();
+                await announceDiseases();
+                await collectDiseases();
 
                 _diseaseAnnounceNext = now + _diseaseAnnouncePeriod;
             }
 
             if (Next <= now)
             {
-                ClearExpiredBuffs();
-                ClearExpiredDisease(now);
-                ClearExpiredSkills(now);
-                ClearExpiredQuests(now);
-                ClearExpiredSkillCooldown(now);
+                await ClearExpiredBuffs();
+                await ClearExpiredDisease(now);
+                await ClearExpiredSkills(now);
+                await ClearExpiredQuests(now);
+                await ClearExpiredSkillCooldown(now);
 
                 Next = now + Period;
             }
         }
 
-        public void OpenNpc(int npcId, string? customeScript = null)
+        public async Task OpenNpc(int npcId, string? customeScript = null)
         {
             var script = customeScript ?? LifeFactory.Instance.GetNPCTemplateTrust(npcId)?.Script;
             if (script != null)
             {
                 var npcObj = MapModel.getNPCById(npcId);
-                _ = Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
+                await Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
             }
 
         }

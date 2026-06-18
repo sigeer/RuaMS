@@ -42,14 +42,14 @@ public class ReactorScriptManager : AbstractScriptManager
 
     }
 
-    public void onHit(IChannelClient c, Reactor reactor)
+    public async Task onHit(IChannelClient c, Reactor reactor)
     {
-        c.CurrentServer.NodeService.PluginManager.ReactorHit(c, reactor);
+        await c.CurrentServer.NodeService.PluginManager.ReactorHit(c, reactor);
     }
 
-    public void act(IChannelClient c, Reactor reactor)
+    public async Task act(IChannelClient c, Reactor reactor)
     {
-        c.CurrentServer.NodeService.PluginManager.ReactorAct(c, reactor);
+        await c.CurrentServer.NodeService.PluginManager.ReactorAct(c, reactor);
     }
 
     public List<DropEntry> getDrops(int reactorId)
@@ -62,46 +62,14 @@ public class ReactorScriptManager : AbstractScriptManager
         _channelServer.NodeService.DataService.ClearReactorDrops();
     }
 
-    public void touch(IChannelClient c, Reactor reactor)
+    public async Task touch(IChannelClient c, Reactor reactor)
     {
-        touching(c, reactor, true);
+        await c.CurrentServer.NodeService.PluginManager.ReactorTouch(c, reactor);
     }
 
-    public void untouch(IChannelClient c, Reactor reactor)
+    public async Task untouch(IChannelClient c, Reactor reactor)
     {
-        touching(c, reactor, false);
+        await c.CurrentServer.NodeService.PluginManager.ReactorUntouch(c, reactor);
     }
 
-    private void touching(IChannelClient c, Reactor reactor, bool touching)
-    {
-        string functionName = touching ? "touch" : "untouch";
-        try
-        {
-            var iv = initializeInvocable(c, reactor);
-            if (iv == null)
-            {
-                return;
-            }
-
-            iv.CallFunction(functionName);
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, "Error during {ScriptFunction} script for reactor: {ReactorId}", functionName, reactor.getId());
-        }
-    }
-
-    private IEngine? initializeInvocable(IChannelClient c, Reactor reactor)
-    {
-        var engine = getInvocableScriptEngine(GetReactorScriptPath(reactor.getId().ToString()));
-        if (engine == null)
-        {
-            return null;
-        }
-
-        ReactorActionManager rm = new ReactorActionManager(c, reactor, engine);
-        engine.AddHostedObject("rm", rm);
-
-        return engine;
-    }
 }

@@ -16,9 +16,9 @@ namespace Application.Plugin.Script.Events
             MaxMap = 921110000;
         }
 
-        public override void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            End(eim);
+            await End(eim);
         }
     }
 }

@@ -9,12 +9,12 @@ public class ClearSlotCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ClearSlotCommand_Syntax));
             return;
         }
 
@@ -22,40 +22,40 @@ public class ClearSlotCommand : CommandBase
         switch (type)
         {
             case "all":
-                RemovePlayerSlot(c, InventoryType.EQUIP);
-                RemovePlayerSlot(c, InventoryType.USE);
-                RemovePlayerSlot(c, InventoryType.ETC);
-                RemovePlayerSlot(c, InventoryType.SETUP);
-                RemovePlayerSlot(c, InventoryType.CASH);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_AllCleared));
+                await RemovePlayerSlot(c, InventoryType.EQUIP);
+                await RemovePlayerSlot(c, InventoryType.USE);
+                await RemovePlayerSlot(c, InventoryType.ETC);
+                await RemovePlayerSlot(c, InventoryType.SETUP);
+                await RemovePlayerSlot(c, InventoryType.CASH);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_AllCleared));
                 break;
             case "equip":
-                RemovePlayerSlot(c, InventoryType.EQUIP);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_EquipCleared));
+                await RemovePlayerSlot(c, InventoryType.EQUIP);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_EquipCleared));
                 break;
             case "use":
-                RemovePlayerSlot(c, InventoryType.USE);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_ConsumeCleared));
+                await RemovePlayerSlot(c, InventoryType.USE);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_ConsumeCleared));
                 break;
             case "setup":
-                RemovePlayerSlot(c, InventoryType.SETUP);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_InstallCleared));
+                await RemovePlayerSlot(c, InventoryType.SETUP);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_InstallCleared));
                 break;
             case "etc":
-                RemovePlayerSlot(c, InventoryType.ETC);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_EtcCleared));
+                await RemovePlayerSlot(c, InventoryType.ETC);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_EtcCleared));
                 break;
             case "cash":
-                RemovePlayerSlot(c, InventoryType.CASH);
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_CashCleared));
+                await RemovePlayerSlot(c, InventoryType.CASH);
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_CashCleared));
                 break;
             default:
-                player.YellowMessageI18N(nameof(ClientMessage.ClearSlotCommand_Syntax));
+                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_Syntax));
                 break;
         }
     }
 
-    private void RemovePlayerSlot(IChannelClient c, InventoryType type)
+    private async Task RemovePlayerSlot(IChannelClient c, InventoryType type)
     {
         bool isFromDrop = false;
         for (short i = 0; i < 101; i++)
@@ -65,7 +65,7 @@ public class ClearSlotCommand : CommandBase
             {
                 continue;
             }
-            InventoryManipulator.removeFromSlot(c, type, i, tempItem.getQuantity(), isFromDrop, false);
+            await InventoryManipulator.removeFromSlot(c, type, i, tempItem.getQuantity(), isFromDrop, false);
         }
     }
 }

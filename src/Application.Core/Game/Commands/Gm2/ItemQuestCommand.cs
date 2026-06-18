@@ -2,7 +2,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using Application.Templates.String;
-using client.inventory.manipulator;
 using server.life;
 using System.Text;
 
@@ -14,7 +13,7 @@ namespace Application.Core.Game.Commands.Gm2
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var questInput = GetParamByIndex(0) ?? string.Empty;
 
@@ -24,7 +23,7 @@ namespace Application.Core.Game.Commands.Gm2
                     .Search(questInput).OfType<StringQuestTemplate>().ToList();
                 if (matchedQuestList.Count == 0)
                 {
-                    client.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.QuestNotFound), questInput);
+                    await client.OnlinedCharacter.Yellow(nameof(ClientMessage.QuestNotFound), questInput);
                 }
                 else if (matchedQuestList.Count == 1)
                 {
@@ -38,19 +37,19 @@ namespace Application.Core.Game.Commands.Gm2
                         var item = matchedQuestList[i];
                         sb.Append($"\r\n#L{i}# {item.TemplateId} #t{item.TemplateId}# - {item.Name} #l");
                     }
-                    TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
+                    await TempConversation.CreateScope(client, async ctx =>
                     {
-                        ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
-                        ctx.dispose();
+                        var i = await ctx.AskMenu(sb.ToString());
+                        await ApplyQuestData(client, questInput, matchedQuestList[i].TemplateId);
                     });
                 }
                 return;
             }
 
-            ApplyQuestData(client, questInput, questId);
+            await ApplyQuestData(client, questInput, questId);
         }
 
-        void ApplyQuestData(IChannelClient client, string input, int questId)
+        async Task ApplyQuestData(IChannelClient client, string input, int questId)
         {
             var questInfo = QuestFactory.Instance.GetInstance(questId);
             var itemRequirement = questInfo.GetItemRequirement();
@@ -58,7 +57,7 @@ namespace Application.Core.Game.Commands.Gm2
             {
                 foreach (var item in itemRequirement.RequiredItems)
                 {
-                    client.OnlinedCharacter.GainItem(item.Key, (short)item.Value);
+                    await client.OnlinedCharacter.GainItem(item.Key, (short)item.Value);
                 }
             }
 
@@ -69,7 +68,7 @@ namespace Application.Core.Game.Commands.Gm2
                 {
                     for (int i = 0; i < item.Value; i++)
                     {
-                        client.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Key), client.OnlinedCharacter.getPosition());
+                        await client.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Key), client.OnlinedCharacter.getPosition());
                     }
                 }
             }

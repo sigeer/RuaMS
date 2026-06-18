@@ -7,7 +7,7 @@ public class ReloadEventsCommand : CommandBase
         Description = "Reload all event data.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         c.CurrentServer.NodeService.SendReloadEvents(c.OnlinedCharacter);
     }

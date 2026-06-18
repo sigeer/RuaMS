@@ -179,7 +179,7 @@ namespace Application.Core.Login.ServerData
                 {
                     var onlinedGuildMembers = guild.Members.Where(x => x != sender.Character.Id).Select(_server.CharacterManager.FindPlayerById)
                         .Where(x => x != null && x.Channel > 0);
-                    await _server.Transport.SendMultiChatAsync(2, nameFrom, onlinedGuildMembers, chatText);
+                    await _server.Transport.SendMultiChatAsync(2, nameFrom, onlinedGuildMembers!, chatText);
                 }
 
             }

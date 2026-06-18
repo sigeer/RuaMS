@@ -22,7 +22,6 @@
 
 
 using Application.Core.Client.inventory;
-using client.inventory;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -30,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class InventoryMergeHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
@@ -38,14 +37,14 @@ public class InventoryMergeHandler : ChannelHandlerBase
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         sbyte invType = p.ReadSByte();
         if (invType < 1 || invType > 5)
         {
-            c.Disconnect(false);
+            await c.Disconnect(false);
             return;
         }
 
@@ -53,14 +52,14 @@ public class InventoryMergeHandler : ChannelHandlerBase
         var inventory = c.OnlinedCharacter.GetInventory(inventoryType);
         if (inventory == null)
         {
-            c.Disconnect(false);
+            await c.Disconnect(false);
             return;
         }
 
         var ops = new BagInventorySorter(inventory).Merge();
-        chr.SyncClientInventory(ops, true);
+        await chr.SyncClientInventory(ops, true);
 
-        c.sendPacket(PacketCreator.finishedSort(invType));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.finishedSort(invType));
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

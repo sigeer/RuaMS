@@ -9,9 +9,9 @@ public class PianusCommand : CommandBase
         Description = "Spawn Pianus (R) on your location.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PIANUS_R), player.getPosition());
+        await player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PIANUS_R), player.getPosition());
     }
 }

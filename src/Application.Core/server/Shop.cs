@@ -53,13 +53,13 @@ public class Shop
         log = LogFactory.GetLogger($"Shop/Shop_{id}_Npc_{npcId}");
     }
 
-    public void sendShop(IChannelClient c)
+    public async Task sendShop(IChannelClient c)
     {
         c.OnlinedCharacter.setShop(this);
-        c.sendPacket(PacketCreator.getNPCShop(c, getNpcId(), items));
+        await c.SendPacket(PacketCreator.getNPCShop(c, getNpcId(), items));
     }
 
-    public void buy(IChannelClient c, short slot, int itemId, short quantity)
+    public async Task buy(IChannelClient c, short slot, int itemId, short quantity)
     {
         ShopItem item = findBySlot(slot);
         if (item != null)
@@ -85,28 +85,28 @@ public class Shop
                     if (!ItemConstants.isRechargeable(itemId))
                     {
                         //Pets can't be bought from shops
-                        c.OnlinedCharacter.GainItem(itemId, quantity);
-                        c.OnlinedCharacter.GainMeso(-amount);
+                        await c.OnlinedCharacter.GainItem(itemId, quantity);
+                        await c.OnlinedCharacter.GainMeso(-amount);
                     }
                     else
                     {
                         short slotMax = ii.getSlotMax(c, item.getItemId());
                         quantity = slotMax;
 
-                        c.OnlinedCharacter.GainItem(itemId, quantity);
-                        c.OnlinedCharacter.GainMeso(-item.getPrice());
+                        await c.OnlinedCharacter.GainItem(itemId, quantity);
+                        await c.OnlinedCharacter.GainMeso(-item.getPrice());
                     }
-                    c.sendPacket(PacketCreator.shopTransaction(0));
+                    await c.SendPacket(PacketCreator.shopTransaction(0));
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.shopTransaction(3));
+                    await c.SendPacket(PacketCreator.shopTransaction(3));
                 }
 
             }
             else
             {
-                c.sendPacket(PacketCreator.shopTransaction(2));
+                await c.SendPacket(PacketCreator.shopTransaction(2));
             }
 
         }
@@ -120,21 +120,21 @@ public class Shop
                 {
                     if (!ItemConstants.isRechargeable(itemId))
                     {
-                        c.OnlinedCharacter.GainItem(itemId, quantity);
-                        InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
+                        await c.OnlinedCharacter.GainItem(itemId, quantity);
+                        await InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
                     }
                     else
                     {
                         short slotMax = ii.getSlotMax(c, item.getItemId());
                         quantity = slotMax;
-                        c.OnlinedCharacter.GainItem(itemId, quantity);
-                        InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
+                        await c.OnlinedCharacter.GainItem(itemId, quantity);
+                        await InventoryManipulator.removeById(c, InventoryType.ETC, ItemId.PERFECT_PITCH, amount, false, false);
                     }
-                    c.sendPacket(PacketCreator.shopTransaction(0));
+                    await c.SendPacket(PacketCreator.shopTransaction(0));
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.shopTransaction(3));
+                    await c.SendPacket(PacketCreator.shopTransaction(3));
                 }
             }
 
@@ -150,18 +150,18 @@ public class Shop
                 int diff = cardreduce + c.OnlinedCharacter.getMeso();
                 if (InventoryManipulator.checkSpace(c, itemId, quantity, ""))
                 {
-                    c.OnlinedCharacter.GainItem(itemId, quantity);
-                    c.OnlinedCharacter.GainMeso(diff);
+                    await c.OnlinedCharacter.GainItem(itemId, quantity);
+                    await c.OnlinedCharacter.GainMeso(diff);
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.shopTransaction(3));
+                    await c.SendPacket(PacketCreator.shopTransaction(3));
                 }
-                c.sendPacket(PacketCreator.shopTransaction(0));
+                await c.SendPacket(PacketCreator.shopTransaction(0));
             }
             else
             {
-                c.sendPacket(PacketCreator.shopTransaction(2));
+                await c.SendPacket(PacketCreator.shopTransaction(2));
             }
         }
     }
@@ -198,7 +198,7 @@ public class Shop
         return quantity;
     }
 
-    public void sell(IChannelClient c, InventoryType type, short slot, short quantity)
+    public async Task sell(IChannelClient c, InventoryType type, short slot, short quantity)
     {
         if (quantity <= 0)
         {
@@ -212,23 +212,23 @@ public class Shop
         if (canSell(item, quantity))
         {
             quantity = getSellingQuantity(item, quantity);
-            InventoryManipulator.removeFromSlot(c, type, (byte)slot, quantity, false);
+            await InventoryManipulator.removeFromSlot(c, type, (byte)slot, quantity, false);
 
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             int recvMesos = ii.getPrice(item.getItemId(), quantity);
             if (recvMesos > 0)
             {
-                c.OnlinedCharacter.GainMeso(recvMesos);
+                await c.OnlinedCharacter.GainMeso(recvMesos);
             }
-            c.sendPacket(PacketCreator.shopTransaction(0x8));
+            await c.SendPacket(PacketCreator.shopTransaction(0x8));
         }
         else
         {
-            c.sendPacket(PacketCreator.shopTransaction(0x5));
+            await c.SendPacket(PacketCreator.shopTransaction(0x5));
         }
     }
 
-    public void recharge(IChannelClient c, short slot)
+    public async Task recharge(IChannelClient c, short slot)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         var item = c.OnlinedCharacter.getInventory(InventoryType.USE).getItem(slot);
@@ -247,14 +247,14 @@ public class Shop
             if (c.OnlinedCharacter.getMeso() >= price)
             {
                 item.setQuantity(slotMax);
-                c.OnlinedCharacter.SyncClientInventory(new InventoryUpdateQuantity(InventoryType.USE, slot, slotMax));
+                await c.OnlinedCharacter.SyncClientInventory(new InventoryUpdateQuantity(InventoryType.USE, slot, slotMax));
 
-                c.OnlinedCharacter.GainMeso(-price, enableActions: true);
-                c.sendPacket(PacketCreator.shopTransaction(0x8));
+                await c.OnlinedCharacter.GainMeso(-price, enableActions: true);
+                await c.SendPacket(PacketCreator.shopTransaction(0x8));
             }
             else
             {
-                c.sendPacket(PacketCreator.shopTransaction(0x2));
+                await c.SendPacket(PacketCreator.shopTransaction(0x2));
             }
         }
     }

@@ -11,7 +11,7 @@ public class SaveAllCommand : CommandBase
         Description = "Save all characters.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         _adminService.SavelAll();
     }

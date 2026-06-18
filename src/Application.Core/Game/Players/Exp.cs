@@ -1,4 +1,3 @@
-using constants.game;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -6,22 +5,22 @@ namespace Application.Core.Game.Players
     public partial class Player
     {
         public AtomicInteger ExpValue { get; set; }
-        public void gainExp(int gain)
+        public async Task gainExp(int gain)
         {
-            gainExp(gain, true, true);
+            await gainExp(gain, true, true);
         }
 
-        public void gainExp(int gain, bool show, bool inChat)
+        public async Task gainExp(int gain, bool show, bool inChat)
         {
-            gainExp(gain, show, inChat, true);
+            await gainExp(gain, show, inChat, true);
         }
 
-        public void gainExp(int gain, bool show, bool inChat, bool white)
+        public async Task gainExp(int gain, bool show, bool inChat, bool white)
         {
-            gainExp(gain, 0, show, inChat, white);
+            await gainExp(gain, 0, show, inChat, white);
         }
 
-        public void gainExp(int gain, int party, bool show, bool inChat, bool white)
+        public async Task gainExp(int gain, int party, bool show, bool inChat, bool white)
         {
             if (gain < 0)
             {
@@ -35,20 +34,20 @@ namespace Application.Core.Game.Players
 
             int equip = (int)Math.Min((long)(gain / 10) * PendantExp, int.MaxValue);
 
-            gainExpInternal(gain, equip, party, show, inChat, white);
+            await gainExpInternal(gain, equip, party, show, inChat, white);
         }
 
-        public void loseExp(int loss, bool show, bool inChat)
+        public async Task loseExp(int loss, bool show, bool inChat)
         {
-            loseExp(loss, show, inChat, true);
+            await loseExp(loss, show, inChat, true);
         }
 
-        public void loseExp(int loss, bool show, bool inChat, bool white)
+        public async Task loseExp(int loss, bool show, bool inChat, bool white)
         {
-            gainExpInternal(-loss, 0, 0, show, inChat, white);
+            await gainExpInternal(-loss, 0, 0, show, inChat, white);
         }
 
-        private void announceExpGain(long gain, int equip, int party, bool inChat, bool white)
+        private async Task announceExpGain(long gain, int equip, int party, bool inChat, bool white)
         {
             gain = Math.Min(gain, int.MaxValue);
             if (gain == 0)
@@ -63,11 +62,11 @@ namespace Application.Core.Game.Players
                 white = false;
             }
 
-            sendPacket(PacketCreator.getShowExpGain((int)gain, equip, party, inChat, white));
+            await SendPacket(PacketCreator.getShowExpGain((int)gain, equip, party, inChat, white));
         }
 
 
-        private void gainExpInternal(long gain, int equip, int party, bool show, bool inChat, bool white)
+        private async Task gainExpInternal(long gain, int equip, int party, bool show, bool inChat, bool white)
         {
             // need of method synchonization here detected thanks to MedicOP
             long total = Math.Max(gain + equip + party, -ExpValue.get());
@@ -82,26 +81,26 @@ namespace Application.Core.Game.Players
                     total = int.MaxValue - ExpValue.get();
                     leftover = nextExp - int.MaxValue;
                 }
-                updateSingleStat(Stat.EXP, ExpValue.addAndGet((int)total));
+                await updateSingleStat(Stat.EXP, ExpValue.addAndGet((int)total));
                 totalExpGained += total;
                 if (show)
                 {
-                    announceExpGain(gain, equip, party, inChat, white);
+                    await announceExpGain(gain, equip, party, inChat, white);
                 }
                 while (ExpValue.get() >= ExpTable.getExpNeededForLevel(Level))
                 {
-                    levelUp(true);
+                    await levelUp(true);
                     if (Level == getMaxLevel())
                     {
                         setExp(0);
-                        updateSingleStat(Stat.EXP, 0);
+                        await updateSingleStat(Stat.EXP, 0);
                         break;
                     }
                 }
 
                 if (leftover > 0)
                 {
-                    gainExpInternal(leftover, equip, party, false, inChat, white);
+                    await gainExpInternal(leftover, equip, party, false, inChat, white);
                 }
                 else
                 {

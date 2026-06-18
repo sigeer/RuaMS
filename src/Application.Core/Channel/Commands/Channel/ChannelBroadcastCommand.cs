@@ -1,7 +1,7 @@
 namespace Application.Core.Channel.Commands
 {
 
-    internal class InvokeChannelBroadcastCommand : IWorldChannelCommand
+    internal class InvokeChannelBroadcastCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeChannelBroadcastCommand);
         IEnumerable<int> _receivers;
@@ -13,13 +13,13 @@ namespace Application.Core.Channel.Commands
             _packet = packet;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (_receivers.Contains(-1))
             {
                 foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
-                    player.sendPacket(_packet);
+                    await player.SendPacket(_packet);
                 }
             }
             else
@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Commands
                     var chr = ctx.getPlayerStorage().getCharacterById(item);
                     if (chr != null)
                     {
-                        chr.sendPacket(_packet);
+                        await chr.SendPacket(_packet);
                     }
                 }
             }

@@ -8,7 +8,7 @@ namespace Application.Core.Game.ContiMove
     public class AirPlane : ContiMoveBase
     {
         public AirPlane(WorldChannel channelServer)
-            : base(channelServer, 
+            : base(channelServer,
                   103000000, 7, 540010000, 0,
                   540010100, 540010001,
                   540010101, 540010002,

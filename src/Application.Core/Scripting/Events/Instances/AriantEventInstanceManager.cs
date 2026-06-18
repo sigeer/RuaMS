@@ -1,4 +1,5 @@
 using Application.Core.Scripting.Events;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.scripting.Events.Instances
@@ -40,13 +41,13 @@ namespace Application.Core.scripting.Events.Instances
             }
         }
 
-        public void broadcastAriantScoreUpdate()
+        public async Task broadcastAriantScoreUpdate()
         {
             if (scoreDirty)
             {
                 foreach (Player chr in getPlayers())
                 {
-                    chr.sendPacket(PacketCreator.updateAriantPQRanking(score));
+                    await chr.SendPacket(PacketCreator.updateAriantPQRanking(score));
                 }
                 scoreDirty = false;
             }
@@ -79,7 +80,7 @@ namespace Application.Core.scripting.Events.Instances
             return matchRes < 0.81770726891980117713114871015349 && (runnerupsScoreSum < 7 || runnerupRes < 0.5929);
         }
 
-        public void distributeAriantPoints()
+        public async Task distributeAriantPoints()
         {
             int firstTop = -1, secondTop = -1;
             Player? winner = null;
@@ -104,7 +105,7 @@ namespace Application.Core.scripting.Events.Instances
             }
 
             runnerups.Remove(firstTop);
-            if (isUnfairMatch(firstTop, secondTop, (getInstanceMap(EventManager.EntryMap)?.getDroppedItemsCountById(ItemId.ARPQ_SPIRIT_JEWEL) ?? 0) + lostShards, runnerups))
+            if (isUnfairMatch(firstTop, secondTop, ((await getInstanceMap(EventManager.EntryMap))?.getDroppedItemsCountById(ItemId.ARPQ_SPIRIT_JEWEL) ?? 0) + lostShards, runnerups))
             {
                 rewardTier.AddOrUpdate(winner!, 1);
             }

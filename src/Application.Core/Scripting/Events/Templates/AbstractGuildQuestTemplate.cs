@@ -1,8 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Scripting.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.scripting.Events.Templates
 {

@@ -11,7 +11,7 @@ public class PmobRemoveCommand : CommandBase
         _dataService = dataService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 

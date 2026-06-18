@@ -17,7 +17,7 @@ public class Kite : AbstractMapObject, ILifedTickable
     private int ft;
     private int itemid;
 
-    public Kite(Player owner, string text, int itemId): base(owner.MapModel, owner.getPosition())
+    public Kite(Player owner, string text, int itemId) : base(owner.MapModel, owner.getPosition())
     {
         OwnerId = owner.Id;
         OwnerName = owner.Name;
@@ -40,14 +40,14 @@ public class Kite : AbstractMapObject, ILifedTickable
     }
 
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(makeDestroyData());
+        await client.SendPacket(makeDestroyData());
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(makeSpawnData());
+        await client.SendPacket(makeSpawnData());
     }
 
     public Packet makeSpawnData()
@@ -60,18 +60,20 @@ public class Kite : AbstractMapObject, ILifedTickable
         return PacketCreator.removeKite(getObjectId(), 0);
     }
 
-    public void OnTick(long now)
+    public Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (ExpiredAt <= now)
         {
             Status = TickableStatus.Remove;
-            return;
+            return Task.CompletedTask;
         }
+
+        return Task.CompletedTask;
     }
 
     public override bool IsVisibleForPlayer(Player chr)

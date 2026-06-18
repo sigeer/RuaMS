@@ -1,9 +1,7 @@
-using Application.Core.Channel;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Core.Scripting.Events;
 using Application.Utility;
 using Application.Utility.Extensions;
 
@@ -131,13 +129,13 @@ namespace Application.Plugin.Script.Events
             };
         }
 
-        public override void ClearPQ(AbstractEventInstanceManager eim)
+        public override async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-            base.ClearPQ(eim);
+            await base.ClearPQ(eim);
 
             // 奖励关
-            eim.startEventTimer(1 * 60_000);
-            eim.warpEventTeam(922011000);
+            await eim.startEventTimer(1 * 60_000);
+            await eim.warpEventTeam(922011000);
         }
 
         public List<int> GetStage(AbstractEventInstanceManager eim, IMap map)
@@ -153,15 +151,15 @@ namespace Application.Plugin.Script.Events
                 .ToList();
         }
 
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             if (eim.ClearedMaps.GetValueOrDefault(922011000) == StageStatus.Completed)
             {
-                eim.warpEventTeam(922011000, 922011100);
+                await eim.warpEventTeam(922011000, 922011100);
             }
             else
             {
-                base.OnTimeOut(eim);
+                await base.OnTimeOut(eim);
             }
         }
     }

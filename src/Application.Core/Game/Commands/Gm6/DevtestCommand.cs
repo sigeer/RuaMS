@@ -10,15 +10,15 @@ public class DevtestCommand : ParamsCommandBase
         Description = "直接执行代码";
     }
 
-    public override void Execute(IChannelClient client, string[] paramsValue)
+    public override async Task Execute(IChannelClient client, string[] paramsValue)
     {
         try
         {
-            _ = CSharpScript.EvaluateAsync<int>(GetParam("script"), globals: client.OnlinedCharacter);
+            await CSharpScript.EvaluateAsync<int>(GetParam("script"), globals: client.OnlinedCharacter);
         }
         catch (CompilationErrorException)
         {
-            client.OnlinedCharacter.Pink("代码错误");
+            await client.OnlinedCharacter.Pink("代码错误");
         }
         return;
     }

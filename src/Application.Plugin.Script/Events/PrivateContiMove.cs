@@ -22,12 +22,13 @@ namespace Application.Plugin.Script.Events
             MaxLobbys = 16;
         }
 
-        public override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public override Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
             EventTime = eim.ChannelServer.getTransportationTime(RideTime);
+            return Task.CompletedTask;
         }
 
-        public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
             int curIdx = Stations.IndexOf(chr.getMapId());
             if (curIdx == -1)
@@ -36,24 +37,24 @@ namespace Application.Plugin.Script.Events
             }
 
             eim.Properties["Current"] = curIdx.ToString();
-            chr.changeMap(Transportings[curIdx], 0);
+            await chr.changeMap(Transportings[curIdx], 0);
             // chr.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
         }
 
-        public override void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
+        public override async Task OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
         {
             if (!Transportings.Contains(mapid))
             {
-                End(eim);
+                await End(eim);
             }
         }
 
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             if (int.TryParse(eim.Properties.GetValueOrDefault("Current"), out var curIdx))
             {
-                var map = eim.getMapInstance(Transportings[curIdx]);
-                map.warpEveryone(Stations[1 - curIdx], 0);
+                var map =  await eim.getMapInstance(Transportings[curIdx]);
+                await map.warpEveryone(Stations[1 - curIdx], 0);
             }
         }
 

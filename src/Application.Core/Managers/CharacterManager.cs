@@ -519,7 +519,7 @@ namespace Application.Core.Managers
         //    player.GuildRank = 5;
         //}
 
-        public static void ShowAllEquipFeatures(Player player)
+        public static async Task ShowAllEquipFeatures(Player player)
         {
             string showMsg = "";
 
@@ -537,7 +537,7 @@ namespace Application.Core.Managers
 
             if (showMsg.Count() > 0)
             {
-                player.showHint("#ePLAYER EQUIPMENTS:#n\r\n\r\n" + showMsg, 400);
+                await player.showHint("#ePLAYER EQUIPMENTS:#n\r\n\r\n" + showMsg, 400);
             }
         }
 

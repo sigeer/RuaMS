@@ -24,7 +24,6 @@
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
 using client.inventory.manipulator;
-using client.processor.action;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -32,15 +31,15 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SpawnPetHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         byte slot = p.readByte();
         p.readByte();
         bool lead = p.readByte() == 1;
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var chr = c.OnlinedCharacter;
@@ -54,22 +53,22 @@ public class SpawnPetHandler : ChannelHandlerBase
                     var evolveid = pet.SourceTemplate.Evol1;
                     if (chr.haveItem(evolveid))
                     {
-                        chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
-                        c.sendPacket(PacketCreator.enableActions());
+                        await chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
                     else
                     {
                         long expiration = item.getExpiration();
-                        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
-                        chr.GainItem(evolveid, 1, nextSetter: i => i.setExpiration(expiration));
-                        c.sendPacket(PacketCreator.enableActions());
+                        await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
+                        await chr.GainItem(evolveid, 1, nextSetter: i => i.setExpiration(expiration));
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
                 }
                 else
                 {
-                    TogglePet(chr, pet, lead);
+                    await TogglePet(chr, pet, lead);
                 }
 
 
@@ -80,19 +79,19 @@ public class SpawnPetHandler : ChannelHandlerBase
             }
         }
 
-        static void TogglePet(Player chr, Pet pet, bool lead)
+        static async Task TogglePet(Player chr, Pet pet, bool lead)
         {
             var mapPet = chr.GetPetById(pet.PetId);
             if (mapPet != null)
             {
-                mapPet.Recall();
+                await mapPet.Recall();
             }
             else
             {
                 var defaultPet = chr.getPet(0);
                 if (chr.getSkillLevel(SkillFactory.GetSkillTrust(8)) == 0 && defaultPet != null)
                 {
-                    defaultPet.Recall();
+                    await defaultPet.Recall();
                 }
 
                 if (lead)
@@ -100,7 +99,7 @@ public class SpawnPetHandler : ChannelHandlerBase
                     chr.shiftPetsRight();
                 }
 
-                chr.SummonPet(pet);
+                await chr.SummonPet(pet);
             }
         }
     }

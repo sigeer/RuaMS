@@ -11,15 +11,15 @@ public class SummonCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SummonCommand_Syntax), CurrentCommand);
+            await player.Yellow(nameof(ClientMessage.SummonCommand_Syntax), CurrentCommand);
             return;
         }
 
-        _adminService.SummonPlayerByName(c.OnlinedCharacter, paramsValue[0]);
+        await _adminService.SummonPlayerByName(c.OnlinedCharacter, paramsValue[0]);
     }
 }

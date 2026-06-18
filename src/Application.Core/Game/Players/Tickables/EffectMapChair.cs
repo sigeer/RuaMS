@@ -1,10 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Utility.Tickables;
-using OpenTelemetry.Metrics;
 using server;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Game.Players.Tickables
 {
@@ -18,7 +14,7 @@ namespace Application.Core.Game.Players.Tickables
             Next = now + p.Rate;
         }
 
-        public override void OnTick(long now)
+        public override async Task OnTick(long now)
         {
             if (this.IsAvailable() && YamlConfig.config.server.USE_CHAIR_EXTRAHEAL)
             {
@@ -30,7 +26,7 @@ namespace Application.Core.Game.Players.Tickables
 
                 if (Next <= now)
                 {
-                    _chr.ApplayChairBuff();
+                    await _chr.ApplayChairBuff();
                     Next = now + Period;
                 }
 

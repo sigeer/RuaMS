@@ -1,13 +1,10 @@
 using Application.Core.Channel.Commands;
-using Application.Core.Game.Players;
 using Application.Resources.Messages;
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using Config;
 using Dto;
 using Google.Protobuf;
 using JailProto;
-using System.Numerics;
 using SystemProto;
 using tools;
 
@@ -57,14 +54,14 @@ namespace Application.Core.Channel.Internal.Handlers
                         return;
                     }
 
-                    w.getPlayerStorage().GetCharacterActor(res.VictimId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(res.VictimId)?.Send(async m =>
                     {
                         var summoned = m.getCharacterById(res.VictimId);
                         if (summoned != null)
                         {
                             if (summoned.getEventInstance() == null)
                             {
-                                w.NodeService.AdminService.WarpPlayerByName(summoned, res.WarpToName);
+                                await w.NodeService.AdminService.WarpPlayerByName(summoned, res.WarpToName);
                             }
                         }
                     });
@@ -140,32 +137,33 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(data.Request.OperatorId)?
-                    .Send(m =>
+                    .Send(async m =>
                     {
                         var masterChr = m.getCharacterById(data.Request.OperatorId);
                         if (masterChr != null)
                         {
                             if (data.Code != 0)
                             {
-                                masterChr.sendPacket(PacketCreator.getGMEffect(6, 1));
+                                await masterChr.SendPacket(PacketCreator.getGMEffect(6, 1));
                                 return;
                             }
                             else
                             {
-                                masterChr.sendPacket(PacketCreator.getGMEffect(4, 0));
+                                await masterChr.SendPacket(PacketCreator.getGMEffect(4, 0));
                             }
                         }
                     });
 
                     w.getPlayerStorage().GetCharacterActor(data.VictimId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var chr = m.getCharacterById(data.VictimId);
 
                             if (chr != null)
                             {
-                                chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
-                                chr.yellowMessage(chr.GetMessageByKey(ClientMessage.BanReason) + data.Request.ReasonDesc);
+                                await chr.SendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "RuaMS", data.Request.ReasonDesc)));
+                                await chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
+                                await chr.Yellow(chr.GetMessageByKey(ClientMessage.BanReason) + data.Request.ReasonDesc);
 
                                 Timer? timer = null;
                                 timer = new System.Threading.Timer(_ =>
@@ -216,19 +214,19 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var masterChr = m.getCharacterById(res.Request.MasterId);
                             if (masterChr != null)
                             {
                                 if (res.Code != 0)
-                                    masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
+                                    await masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
                                 else
                                 {
                                     if (res.IsExtend)
-                                        masterChr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
+                                        await masterChr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
                                     else
-                                        masterChr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
+                                        await masterChr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
                                 }
                             }
                         });

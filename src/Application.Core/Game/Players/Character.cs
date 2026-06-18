@@ -22,7 +22,6 @@
  */
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Life;
@@ -46,7 +45,6 @@ using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
 using client.keybind;
-using constants.game;
 using net.server.guild;
 using scripting;
 using server;
@@ -390,16 +388,16 @@ public partial class Player
         return (maxbasedamage * 107) / 100;
     }
 
-    public void setCombo(short count)
+    public async Task setCombo(short count)
     {
         if (count < combocounter)
         {
-            cancelEffectFromBuffStat(BuffStat.ARAN_COMBO);
+            await cancelEffectFromBuffStat(BuffStat.ARAN_COMBO);
         }
         combocounter = Math.Min((short)30000, count);
         if (count > 0)
         {
-            sendPacket(PacketCreator.showCombo(combocounter));
+            await SendPacket(PacketCreator.showCombo(combocounter));
         }
     }
 
@@ -483,14 +481,14 @@ public partial class Player
         return "<" + medalItemName + "> ";
     }
 
-    public void Hide(bool hide, bool fromLogin = false)
+    public async Task Hide(bool hide, bool fromLogin = false)
     {
         if (isGM() && hide != this.hidden)
         {
             if (!hide)
             {
                 this.hidden = false;
-                sendPacket(PacketCreator.getGMEffect(0x10, 0));
+                await SendPacket(PacketCreator.getGMEffect(0x10, 0));
                 List<BuffStat> dsstat = Collections.singletonList(BuffStat.DARKSIGHT);
                 foreach (var mapChr in MapModel.getAllPlayers())
                 {
@@ -501,19 +499,19 @@ public partial class Player
 
                     if (mapChr.isGM())
                     {
-                        mapChr.sendPacket(PacketCreator.cancelForeignBuff(Id, dsstat));
+                        await mapChr.SendPacket(PacketCreator.cancelForeignBuff(Id, dsstat));
                     }
                     else
                     {
-                        MapModel.SetPlayerVisibleObject(mapChr, this);
+                        await MapModel.SetPlayerVisibleObject(mapChr, this);
                     }
 
 
                 }
 
-                this.MapModel.ProcessMonster(m =>
+                await this.MapModel.ProcessMonster(async m =>
                 {
-                    m.aggroUpdateController();
+                    await m.aggroUpdateController();
                 });
             }
             else
@@ -522,7 +520,7 @@ public partial class Player
 
                 if (!fromLogin)
                 {
-                    sendPacket(PacketCreator.getGMEffect(0x10, 1));
+                    await SendPacket(PacketCreator.getGMEffect(0x10, 1));
                     foreach (var mapChr in MapModel.getAllPlayers())
                     {
                         if (mapChr == this)
@@ -532,48 +530,48 @@ public partial class Player
 
                         if (mapChr.isGM())
                         {
-                            mapChr.sendPacket(PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                            await mapChr.SendPacket(PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
                         }
                         else
                         {
-                            MapModel.SetPlayerInvisibleObject(mapChr, this);
+                            await MapModel.SetPlayerInvisibleObject(mapChr, this);
                         }
                     }
-                    this.releaseControlledMonsters();
+                    await this.releaseControlledMonsters();
                 }
 
             }
-            sendPacket(PacketCreator.enableActions());
+            await SendPacket(PacketCreator.enableActions());
         }
     }
 
-    public void toggleHide(bool login)
+    public async Task toggleHide(bool login)
     {
-        Hide(!hidden, login);
+        await Hide(!hidden, login);
     }
 
-    public void cancelMagicDoor()
+    public async Task cancelMagicDoor()
     {
         List<BuffStatValueHolder> mbsvhList = getAllStatups();
         foreach (BuffStatValueHolder mbsvh in mbsvhList)
         {
             if (mbsvh.Effect.isMagicDoor())
             {
-                cancelEffect(mbsvh.Effect, false);
+                await cancelEffect(mbsvh.Effect, false);
                 break;
             }
         }
     }
 
-    private void cancelPlayerBuffs(List<BuffStat> buffstats)
+    private async Task cancelPlayerBuffs(List<BuffStat> buffstats)
     {
         if (isLoggedinWorld())
         {
-            UpdateLocalStats();
-            sendPacket(PacketCreator.cancelBuff(buffstats));
+            await UpdateLocalStats();
+            await SendPacket(PacketCreator.cancelBuff(buffstats));
             if (buffstats.Count > 0)
             {
-                BroadcastMap(PacketCreator.cancelForeignBuff(getId(), buffstats), Id);
+                await BroadcastMap(PacketCreator.cancelForeignBuff(getId(), buffstats), Id);
             }
         }
     }
@@ -589,7 +587,7 @@ public partial class Player
         hasSandboxItem = true;
     }
 
-    public void removeSandboxItems()
+    public async Task removeSandboxItems()
     {  // sandbox idea thanks to Morty
         if (!hasSandboxItem)
         {
@@ -604,8 +602,8 @@ public partial class Player
             {
                 if (InventoryManipulator.isSandboxItem(item))
                 {
-                    InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                    Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
+                    await InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
+                    await Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                 }
             }
         }
@@ -634,7 +632,7 @@ public partial class Player
 
 
 
-    public void setMasteries(int jobId)
+    public async Task setMasteries(int jobId)
     {
         int[] skills = new int[4];
         for (int i = 0; i > skills.Length; i++)
@@ -742,12 +740,12 @@ public partial class Player
                     continue;
                 }
 
-                changeSkillLevel(skill, 0, 10, -1);
+                await changeSkillLevel(skill, 0, 10, -1);
             }
         }
     }
 
-    private void broadcastChangeJob()
+    private async Task broadcastChangeJob()
     {
         foreach (Player chr in MapModel.getAllPlayers())
         {
@@ -756,21 +754,21 @@ public partial class Player
             // 转职需要在地图上重新生成角色？ 没有单独的更新职业的数据包，部分职业转职时造型/特效发生变化
             if (chrC != null)
             {     // propagate new job 3rd-person effects (FJ, Aran 1st strike, etc)
-                this.sendDestroyData(chrC);
-                this.sendSpawnData(chrC);
+                await this.sendDestroyData(chrC);
+                await this.sendSpawnData(chrC);
             }
         }
 
-        Client.CurrentServer.TimerManager.schedule(() =>
+        await Client.CurrentServer.TimerManager.schedule(() =>
         {
             MapModel.Send(m =>
             {
-                m.BroadcastAll(chr => chr.sendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
+                return m.BroadcastAll(chr => chr.SendPacket(PacketCreator.showForeignEffect(Id, 8)), Id);
             });
         }, 777);
     }
 
-    public void changeJob(Job? newJob)
+    public async Task changeJob(Job? newJob)
     {
         if (newJob == null)
         {
@@ -799,7 +797,7 @@ public partial class Player
 
         if (spGain > 0)
         {
-            gainSp(spGain, GameConstants.getSkillBook(newJob.getId()), true);
+            await gainSp(spGain, GameConstants.getSkillBook(newJob.getId()), true);
         }
 
         // thanks xinyifly for finding out missing AP awards (AP Reset can be used as a compass)
@@ -807,13 +805,13 @@ public partial class Player
         {
             if (this.isCygnus())
             {
-                gainAp(7, true);
+                await gainAp(7, true);
             }
             else
             {
                 if (YamlConfig.config.server.USE_STARTING_AP_4 || newJob.getId() % 10 >= 1)
                 {
-                    gainAp(5, true);
+                    await gainAp(5, true);
                 }
             }
         }
@@ -821,7 +819,7 @@ public partial class Player
         {    // thanks Periwinks for noticing an AP shortage from lower levels
             if (YamlConfig.config.server.USE_STARTING_AP_4 && newJob.getId() % 1000 >= 1)
             {
-                gainAp(4, true);
+                await gainAp(4, true);
             }
         }
 
@@ -829,7 +827,7 @@ public partial class Player
         {
             for (byte i = 1; i < 5; i++)
             {
-                gainSlots(i, 4, true);
+                await gainSlots(i, 4, true);
             }
         }
 
@@ -876,12 +874,12 @@ public partial class Player
         }
         */
 
-        ChangeMaxHP(addhp);
+        await ChangeMaxHP(addhp);
         ChangeMaxMP(addmp);
-        SetHP(ActualMaxHP);
+        await SetHP(ActualMaxHP);
         SetMP(ActualMaxMP);
 
-        UpdateLocalStats();
+        await UpdateLocalStats();
 
         List<KeyValuePair<Stat, int>> statup = new(7);
         statup.Add(new(Stat.HP, HP));
@@ -891,28 +889,28 @@ public partial class Player
         statup.Add(new(Stat.AVAILABLEAP, Ap));
         statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
         statup.Add(new(Stat.JOB, JobId));
-        sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+        await SendPacket(PacketCreator.updatePlayerStats(statup, true, this));
 
 
-        saveCharToDB(trigger: SyncCharacterTrigger.JobChanged);
+        await SyncCharAsync(trigger: SyncCharacterTrigger.JobChanged);
 
         // setMPC(new PartyCharacter(this));
 
         if (dragon != null)
         {
-            BroadcastMap(PacketCreator.removeDragon(dragon.getObjectId()));
+            await BroadcastMap(PacketCreator.removeDragon(dragon.getObjectId()));
             dragon = null;
         }
 
-        setMasteries(this.JobId);
+        await setMasteries(this.JobId);
 
-        broadcastChangeJob();
+        await broadcastChangeJob();
 
         if (newJob.HasDragon())
         {
             if (getBuffedValue(BuffStat.MONSTER_RIDING) != null)
             {
-                cancelBuffStats(BuffStat.MONSTER_RIDING);
+                await cancelBuffStats(BuffStat.MONSTER_RIDING);
             }
             createDragon();
 
@@ -920,7 +918,7 @@ public partial class Player
 
     }
 
-    void broadcastAcquaintances(Packet packet)
+    async Task broadcastAcquaintances(Packet packet)
     {
         // guild已经有转职提示
         //var guild = getGuild();
@@ -934,7 +932,7 @@ public partial class Player
             partner.sendPacket(packet); not yet implemented
         }
         */
-        sendPacket(packet);
+        await SendPacket(packet);
     }
 
     public void changeKeybinding(int key, KeyBinding keybinding)
@@ -954,21 +952,21 @@ public partial class Player
         this.QuickSlotKeyMapped = new QuickslotBinding(aQuickslotKeyMapped);
     }
 
-    public void broadcastStance(int newStance)
+    public async Task broadcastStance(int newStance)
     {
         setStance(newStance);
-        broadcastStance();
+        await broadcastStance();
     }
 
-    public void broadcastStance()
+    public async Task broadcastStance()
     {
-        BroadcastMap(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), Id);
+        await BroadcastMap(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), Id);
     }
 
     private bool buffMapProtection()
     {
         int thisMapid = getMapId();
-        int returnMapid = Client.CurrentServer.getMapFactory().getMap(thisMapid).getReturnMapId();
+        int returnMapid = MapModel.getReturnMapId();
 
 
         foreach (var mbs in ActiveEffects)
@@ -1034,24 +1032,24 @@ public partial class Player
         return controlled.Keys.ToList();
     }
 
-    public void releaseControlledMonsters()
+    public async Task releaseControlledMonsters()
     {
         var controlledMonsters = new List<Monster>(controlled.Keys);
         controlled.Clear();
 
         foreach (Monster monster in controlledMonsters)
         {
-            monster.aggroRedirectController();
+            await monster.aggroRedirectController();
         }
     }
 
-    public bool applyConsumeOnPickup(Item item)
+    public async Task<bool> applyConsumeOnPickup(Item item)
     {
         if (item.SourceTemplate is ConsumeItemTemplate template)
         {
             if (template.ConsumeOnPickup || template.ConsumeOnPickupEx)
             {
-                var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId());
+                var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId())!;
                 if (template.Party)
                 {
                     List<Player> partyMembers = getPartyMembersOnSameMap();
@@ -1059,14 +1057,14 @@ public partial class Player
                     {
                         if (mc.isAlive())
                         {
-                            mse?.applyTo(mc);
+                            await mse.applyTo(mc);
                         }
                     }
                 }
                 else
                 {
                     if (isAlive())
-                        mse?.applyTo(this);
+                        await mse.applyTo(this);
                 }
 
                 return true;
@@ -1075,7 +1073,7 @@ public partial class Player
         return false;
     }
     Dictionary<int, PlayerPickupProcessor> _pickerProcessor = new();
-    public void pickupItem(IMapObject? ob, int petIndex = -1)
+    public async Task pickupItem(IMapObject? ob, int petIndex = -1)
     {
         // yes, one picks the IMapObject, not the MapItem
         if (ob == null)
@@ -1092,7 +1090,7 @@ public partial class Player
 
         if (ob is MapItem mapitem)
         {
-            pickerProcessor.Handle(mapitem);
+            await pickerProcessor.Handle(mapitem);
         }
     }
 
@@ -1101,12 +1099,12 @@ public partial class Player
         return getBuffedValue(BuffStat.MONSTER_RIDING) == Corsair.BATTLE_SHIP;
     }
 
-    public void announceBattleshipHp()
+    public async Task announceBattleshipHp()
     {
-        sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP_HP, battleshipHp));
+        await SendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP_HP, battleshipHp));
     }
 
-    public void decreaseBattleshipHp(int decrease)
+    public async Task decreaseBattleshipHp(int decrease)
     {
         this.battleshipHp -= decrease;
         if (battleshipHp <= 0)
@@ -1114,15 +1112,15 @@ public partial class Player
             Skill battleship = SkillFactory.GetSkillTrust(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
 
-            sendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
+            await SendPacket(PacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
             addCooldown(Corsair.BATTLE_SHIP, Client.CurrentServer.Node.getCurrentTime(), cooldown * 1000);
 
             removeCooldown(Corsair.BATTLE_SHIP_HP);
-            cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
+            await cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
         }
         else
         {
-            announceBattleshipHp();
+            await announceBattleshipHp();
             addCooldown(Corsair.BATTLE_SHIP_HP, 0, battleshipHp);
         }
     }
@@ -1141,25 +1139,25 @@ public partial class Player
         }
     }
 
-    private void startExtraTask(sbyte healHP, sbyte healMP, short healInterval)
+    private async Task startExtraTask(sbyte healHP, sbyte healMP, short healInterval)
     {
-        startExtraTaskInternal(healHP, healMP, healInterval);
+        await startExtraTaskInternal(healHP, healMP, healInterval);
     }
 
-    private void startExtraTaskInternal(sbyte healHP, sbyte healMP, short healInterval)
+    private async Task startExtraTaskInternal(sbyte healHP, sbyte healMP, short healInterval)
     {
         extraRecInterval = healInterval;
 
-        extraRecoveryTask = Client.CurrentServer.TimerManager.register(() =>
+        extraRecoveryTask = await Client.CurrentServer.TimerManager.register(() =>
         {
-            MapModel.Send(m =>
+            MapModel.Send(async m =>
             {
-                ApplyExtralRecovery(healHP, healMP);
+                await ApplyExtralRecovery(healHP, healMP);
             });
         }, healInterval, healInterval);
     }
 
-    public void ApplyExtralRecovery(sbyte healHP, sbyte healMP)
+    public async Task ApplyExtralRecovery(sbyte healHP, sbyte healMP)
     {
         if (getBuffSource(BuffStat.HPREC) == -1 && getBuffSource(BuffStat.MPREC) == -1)
         {
@@ -1171,21 +1169,21 @@ public partial class Player
         {
             if (healHP > 0)
             {
-                sendPacket(PacketCreator.showOwnRecovery(healHP));
-                BroadcastMap(PacketCreator.showRecovery(Id, healHP), Id);
+                await SendPacket(PacketCreator.showOwnRecovery(healHP));
+                await BroadcastMap(PacketCreator.showRecovery(Id, healHP), Id);
             }
         }
 
-        UpdateStatsChunk(() =>
+        await UpdateStatsChunk(async () =>
         {
-            ChangeHP(healHP);
+            await ChangeHP(healHP);
             ChangeMP(healMP);
         });
 
     }
 
 
-    public void dispel()
+    public async Task dispel()
     {
         if (!(YamlConfig.config.server.USE_UNDISPEL_HOLY_SHIELD && this.hasActiveBuff(Bishop.HOLY_SHIELD)))
         {
@@ -1197,14 +1195,14 @@ public partial class Player
                     if (mbsvh.Effect.getBuffSourceId() != Aran.COMBO_ABILITY)
                     {
                         // check discovered thanks to Croosade dev team
-                        cancelEffect(mbsvh.Effect, false);
+                        await cancelEffect(mbsvh.Effect, false);
                     }
                 }
             }
         }
     }
 
-    public void dispelSkill(int skillid)
+    public async Task dispelSkill(int skillid)
     {
         List<BuffStatValueHolder> allBuffs = getAllStatups();
         foreach (BuffStatValueHolder mbsvh in allBuffs)
@@ -1213,12 +1211,12 @@ public partial class Player
             {
                 if (mbsvh.Effect.isSkill() && (mbsvh.Effect.getSourceId() % 10000000 == 1004 || dispelSkills(mbsvh.Effect.getSourceId())))
                 {
-                    cancelEffect(mbsvh.Effect, false);
+                    await cancelEffect(mbsvh.Effect, false);
                 }
             }
             else if (mbsvh.Effect.isSkill() && mbsvh.Effect.getSourceId() == skillid)
             {
-                cancelEffect(mbsvh.Effect, false);
+                await cancelEffect(mbsvh.Effect, false);
             }
         }
     }
@@ -1247,53 +1245,49 @@ public partial class Player
     /// F1 - F8的表情？
     /// </summary>
     /// <param name="emote"></param>
-    public void changeFaceExpression(int emote)
+    public async Task changeFaceExpression(int emote)
     {
         long timeNow = Client.CurrentServer.Node.getCurrentTime();
         // IClient allows changing every 2 seconds. Give it a little bit of overhead for packet delays.
         if (timeNow - lastExpression > 1500)
         {
             lastExpression = timeNow;
-            BroadcastMap(PacketCreator.facialExpression(this, emote), Id);
+            await BroadcastMap(PacketCreator.facialExpression(this, emote), Id);
         }
     }
 
-    public void doHurtHp()
+    public async Task doHurtHp()
     {
         if (!(this.getInventory(InventoryType.EQUIPPED).findById(MapModel.getHPDecProtect()) != null || buffMapProtection()))
         {
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(-MapModel.getHPDec(), false);
-            });
-            sendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
+            await UpdateStatsChunk(async () =>
+             {
+                 await ChangeHP(-MapModel.getHPDec(), false);
+             });
+            await SendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
         }
     }
 
-    public void dropMessage(string message)
+
+    public async Task dropMessage(int type, string message)
     {
-        dropMessage(0, message);
+        await SendPacket(PacketCommon.serverNotice(type, message));
     }
 
-    public void dropMessage(int type, string message)
-    {
-        sendPacket(PacketCommon.serverNotice(type, message));
-    }
-
-    public void Debug(int type, string message)
+    public async Task Debug(int type, string message)
     {
         if (isGM())
         {
-            TypedMessage(type, message);
+            await TypedMessage(type, message);
             Log.Debug(message);
         }
     }
 
-    public void equipChanged()
+    public async Task equipChanged()
     {
-        BroadcastMap(PacketCreator.updateCharLook(Client, this), Id);
         equipchanged = true;
-        UpdateLocalStats();
+        await BroadcastMap(PacketCreator.updateCharLook(Client, this), Id);
+        await UpdateLocalStats();
     }
 
     public enum FameStatus
@@ -1302,29 +1296,29 @@ public partial class Player
         OK, NOT_TODAY, NOT_THIS_MONTH
     }
 
-    public void forceUpdateItem(Item item)
+    public async Task forceUpdateItem(Item item)
     {
-        SyncClientInventory([new InventoryAdd(item.getInventoryType(), item, item.getPosition())]);
+        await SyncClientInventory([new InventoryAdd(item.getInventoryType(), item, item.getPosition())]);
     }
 
-    public void SyncClientInventory(IInventoryOperationCommand? op, bool updateTick = true)
+    public async Task SyncClientInventory(IInventoryOperationCommand? op, bool updateTick = true)
     {
         if (op == null)
             return;
 
-        SyncClientInventory([op], true);
+        await SyncClientInventory([op], true);
     }
 
-    public void SyncClientInventory(IEnumerable<IInventoryOperationCommand> ops, bool updateTick = true)
+    public async Task SyncClientInventory(IEnumerable<IInventoryOperationCommand> ops, bool updateTick = true)
     {
         if (ops.Count() == 0)
             return;
 
-        sendPacket(PacketCreator.InventoryOperation(updateTick, ops));
+        await SendPacket(PacketCreator.InventoryOperation(updateTick, ops));
 
         if (ops.Any(x => x.InventoryType == InventoryType.EQUIP && (x.CurrentPosition < 0 || (x is InventoryMove move && move.NewPosition < 0))))
         {
-            equipChanged();
+            await equipChanged();
         }
     }
 
@@ -1344,28 +1338,28 @@ public partial class Player
         return new(Fame, delta);
     }
 
-    public void gainFame(int delta)
+    public async Task gainFame(int delta)
     {
-        gainFame(delta, null, 0);
+        await gainFame(delta, null, 0);
     }
 
-    public bool gainFame(int delta, Player? fromPlayer, int mode)
+    public async Task<bool> gainFame(int delta, Player? fromPlayer, int mode)
     {
         KeyValuePair<int, int> fameRes = applyFame(delta);
         delta = fameRes.Value;
         if (delta != 0)
         {
             int thisFame = fameRes.Key;
-            updateSingleStat(Stat.FAME, thisFame);
+            await updateSingleStat(Stat.FAME, thisFame);
 
             if (fromPlayer != null)
             {
-                fromPlayer.sendPacket(PacketCreator.giveFameResponse(mode, getName(), thisFame));
-                sendPacket(PacketCreator.receiveFame(mode, fromPlayer.getName()));
+                await fromPlayer.SendPacket(PacketCreator.giveFameResponse(mode, getName(), thisFame));
+                await SendPacket(PacketCreator.receiveFame(mode, fromPlayer.getName()));
             }
             else
             {
-                sendPacket(PacketCreator.getShowFameGain(delta));
+                await SendPacket(PacketCreator.getShowFameGain(delta));
             }
 
             return true;
@@ -1378,9 +1372,9 @@ public partial class Player
 
 
 
-    public void genericGuildMessage(int code)
+    public async Task genericGuildMessage(int code)
     {
-        this.sendPacket(GuildPackets.genericGuildMessage((byte)code));
+        await this.SendPacket(GuildPackets.genericGuildMessage((byte)code));
     }
 
     public int getAccountID()
@@ -1600,7 +1594,7 @@ public partial class Player
         excluded.GetValueOrDefault(petId)?.Add(x);
     }
 
-    public void commitExcludedItems()
+    public async Task commitExcludedItems()
     {
         var petExcluded = this.getExcluded();
 
@@ -1617,7 +1611,7 @@ public partial class Player
             HashSet<int> exclItems = pe.Value;
             if (exclItems.Count > 0)
             {
-                sendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
+                await SendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
 
                 foreach (int itemid in exclItems)
                 {
@@ -1627,7 +1621,7 @@ public partial class Player
         }
     }
 
-    public void exportExcludedItems(IChannelClient c)
+    public async Task exportExcludedItems(IChannelClient c)
     {
         var petExcluded = this.getExcluded();
         foreach (var pe in petExcluded)
@@ -1641,7 +1635,7 @@ public partial class Player
             HashSet<int> exclItems = pe.Value;
             if (exclItems.Count > 0)
             {
-                c.sendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
+                await c.SendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
             }
         }
     }
@@ -1932,11 +1926,11 @@ public partial class Player
         setTargetHpBarTime(Client.CurrentServer.Node.getCurrentTime());
     }
 
-    public void resetPlayerAggro()
+    public async Task resetPlayerAggro()
     {
         if (getChannelServer().ServerMessageManager.unregisterDisabledServerMessage(Id))
         {
-            Client.announceServerMessage();
+            await Client.announceServerMessage();
         }
 
         setTargetHpBarHash(0);
@@ -1960,17 +1954,17 @@ public partial class Player
 
     }
 
-    public void closePlayerInteractions()
+    public async Task closePlayerInteractions()
     {
         closeNpcShop();
-        closeTrade();
-        closeMiniGame(true);
-        closeRPS();
+        await closeTrade();
+        await closeMiniGame(true);
+        await closeRPS();
 
-        LeaveVisitingShop();
+        await LeaveVisitingShop();
 
-        Client.closePlayerScriptInteractions();
-        resetPlayerAggro();
+        await Client.closePlayerScriptInteractions();
+        await resetPlayerAggro();
     }
 
     public void closeNpcShop()
@@ -1978,9 +1972,13 @@ public partial class Player
         setShop(null);
     }
 
-    public void closeTrade()
+    public async Task closeTrade(TradeResult reseaon = TradeResult.PARTNER_CANCEL)
     {
-        getTrade()?.CancelTrade(TradeResult.PARTNER_CANCEL);
+        var localTrade = getTrade();
+        if (localTrade != null)
+        {
+            await localTrade.CancelTrade(TradeResult.PARTNER_CANCEL);
+        }
     }
 
     public int getPossibleReports()
@@ -2104,7 +2102,7 @@ public partial class Player
         return Client.AccountEntity!.GMLevel;
     }
 
-    public void handleEnergyChargeGain()
+    public async Task handleEnergyChargeGain()
     {
         // to get here energychargelevel has to be > 0
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
@@ -2120,46 +2118,46 @@ public partial class Player
             }
             var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-            sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-            sendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
-            BroadcastMap(PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
-            BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
+            await SendPacket(PacketCreator.giveBuff(energybar, 0, stat));
+            await SendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
+            await BroadcastMap(PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
+            await BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
                     ceffect.getDuration(), stat), Id);
         }
         if (energybar >= 10000 && energybar < 11000)
         {
             energybar = 15000;
             Player chr = this;
-            Client.CurrentServer.NodeService.TimerManager.schedule(() =>
+            await Client.CurrentServer.NodeService.TimerManager.schedule(() =>
             {
-                MapModel.Send(m =>
+                MapModel.Send(async m =>
                 {
-                    ApplyEnergeCharge();
+                    await ApplyEnergeCharge();
                 });
             }, ceffect.getDuration());
         }
     }
 
-    public void ApplyEnergeCharge()
+    public async Task ApplyEnergeCharge()
     {
         energybar = 0;
         var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
         setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-        sendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-        MapModel.BroadcastAll(chr => chr.sendPacket(PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50)), Id);
+        await SendPacket(PacketCreator.giveBuff(energybar, 0, stat));
+        await MapModel.BroadcastAll(chr => chr.SendPacket(PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50)), Id);
     }
 
-    public void handleOrbconsume()
+    public async Task handleOrbconsume()
     {
         int skillid = isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
         var combo = SkillFactory.GetSkillTrust(skillid);
         var stat = new BuffStatValue(BuffStat.COMBO, 1);
         setBuffedValue(BuffStat.COMBO, 1);
-        sendPacket(PacketCreator.giveBuff(
+        await SendPacket(PacketCreator.giveBuff(
             skillid,
             combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServer.Node.getCurrentTime()),
             stat));
-        BroadcastMap(PacketCreator.giveForeignBuff(getId(), stat), Id);
+        await BroadcastMap(PacketCreator.giveForeignBuff(getId(), stat), Id);
     }
 
 
@@ -2264,7 +2262,7 @@ public partial class Player
         return spGain;
     }
 
-    private void levelUpGainSp()
+    private async Task levelUpGainSp()
     {
         if (JobModel.Rank == 0)
         {
@@ -2279,11 +2277,11 @@ public partial class Player
 
         if (spGain > 0)
         {
-            gainSp(spGain, GameConstants.getSkillBook(JobId), true);
+            await gainSp(spGain, GameConstants.getSkillBook(JobId), true);
         }
     }
 
-    public void levelUp(bool takeexp)
+    public async Task levelUp(bool takeexp)
     {
 
         Skill? improvingMaxHP = null;
@@ -2294,7 +2292,7 @@ public partial class Player
         bool isBeginner = isBeginnerJob();
         if (YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP && isBeginner && Level < 11)
         {
-            gainAp(5, true);
+            await gainAp(5, true);
 
             int str = 0, dex = 0;
             if (Level < 6)
@@ -2307,7 +2305,7 @@ public partial class Player
                 dex += 1;
             }
 
-            assignStrDexIntLuk(str, dex, 0, 0);
+            await assignStrDexIntLuk(str, dex, 0, 0);
         }
         else
         {
@@ -2328,7 +2326,7 @@ public partial class Player
                 }
             }
 
-            gainAp(remainingAp, true);
+            await gainAp(remainingAp, true);
         }
 
         int addhp = 0, addmp = 0;
@@ -2403,9 +2401,9 @@ public partial class Player
             }
         }
 
-        ChangeMaxHP(addhp);
+        await ChangeMaxHP(addhp);
         ChangeMaxMP(addmp);
-        SetHP(ActualMaxHP);
+        await SetHP(ActualMaxHP);
         SetMP(ActualMaxMP);
 
         if (takeexp)
@@ -2427,10 +2425,10 @@ public partial class Player
             setLevel(maxClassLevel);
         }
 
-        levelUpGainSp();
+        await levelUpGainSp();
 
 
-        UpdateLocalStats();
+        await UpdateLocalStats();
 
         List<KeyValuePair<Stat, int>> statup = new(10);
         statup.Add(new(Stat.AVAILABLEAP, Ap));
@@ -2444,12 +2442,12 @@ public partial class Player
         statup.Add(new(Stat.STR, Str));
         statup.Add(new(Stat.DEX, Dex));
 
-        sendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+        await SendPacket(PacketCreator.updatePlayerStats(statup, true, this));
 
 
-        saveCharToDB(trigger: SyncCharacterTrigger.LevelChanged);
+        await SyncCharAsync(trigger: SyncCharacterTrigger.LevelChanged);
 
-        BroadcastMap(PacketCreator.showForeignEffect(getId(), 0), Id);
+        await BroadcastMap(PacketCreator.showForeignEffect(getId(), 0), Id);
         // setMPC(new PartyCharacter(this));
 
         if (Level % 20 == 0)
@@ -2460,28 +2458,28 @@ public partial class Player
                 {
                     for (byte i = 1; i < 5; i++)
                     {
-                        gainSlots(i, 4, true);
+                        await gainSlots(i, 4, true);
                     }
 
-                    Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
+                    await Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
                 }
             }
             if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
             {
-                Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
+                await Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
             }
         }
 
         if (YamlConfig.config.server.USE_PERFECT_PITCH && Level >= 30)
         {
             //milestones?
-            GainItem(ItemId.PERFECT_PITCH, 1);
+            await GainItem(ItemId.PERFECT_PITCH, 1);
         }
         else if (Level == 10)
         {
             if (Party > 0)
             {
-                Client.CurrentServer.NodeService.TeamManager.LeaveStarterParty(this);
+                await Client.CurrentServer.NodeService.TeamManager.LeaveStarterParty(this);
             }
         }
 
@@ -2571,9 +2569,9 @@ public partial class Player
         return getRemainingSp(JobId); //default
     }
 
-    public void updateRemainingSp(int remainingSp)
+    public async Task updateRemainingSp(int remainingSp)
     {
-        updateRemainingSp(remainingSp, GameConstants.getSkillBook(JobId));
+        await updateRemainingSp(remainingSp, GameConstants.getSkillBook(JobId));
     }
 
     public string GetMessageByKey(string key, params string[] paramsValue)
@@ -2581,37 +2579,16 @@ public partial class Player
         return Client.CurrentCulture.GetMessageByKey(key, paramsValue);
     }
 
-    public void message(string m)
-    {
-        dropMessage(5, m);
-    }
-
-    public void MessageI18N(string key, params string[] paramsValue)
+    public async Task MessageI18N(string key, params string[] paramsValue)
     {
         var message = GetMessageByKey(key, paramsValue);
         if (!string.IsNullOrEmpty(message))
         {
-            this.message(message);
+            await this.Pink(message);
         }
     }
 
-    public void yellowMessage(string m)
-    {
-        sendPacket(PacketCreator.sendYellowTip(m));
-    }
-
-    public void YellowMessageI18N(string key, params string[] paramsValue)
-    {
-        var message = GetMessageByKey(key, paramsValue);
-        if (!string.IsNullOrEmpty(message))
-        {
-            yellowMessage(message);
-        }
-    }
-
-
-
-    public void respawn(int returnMap)
+    public async Task respawn(int returnMap)
     {
         if (returnMap == MapId.NONE)
         {
@@ -2619,21 +2596,21 @@ public partial class Player
         }
 
 
-        cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
+        await cancelAllBuffs(false);  // thanks Oblivium91 for finding out players still could revive in area and take damage before returning to town
 
-        UpdateStatsChunk(() =>
+        await UpdateStatsChunk(async () =>
         {
             if (usedSafetyCharm)
             {
                 // thanks kvmba for noticing safety charm not providing 30% HP/MP
-                SetHP((int)Math.Ceiling(this.ActualMaxHP * 0.3));
+                await SetHP((int)Math.Ceiling(this.ActualMaxHP * 0.3));
                 SetMP((int)Math.Ceiling(this.ActualMaxMP * 0.3));
             }
             else
             {
-                SetHP(NumericConfig.MinHp);
+                await SetHP(NumericConfig.MinHp);
             }
-            changeMap(returnMap);
+            await changeMap(returnMap);
         });
         setStance(0);
     }
@@ -2685,7 +2662,7 @@ public partial class Player
     /// <summary>
     /// 重算所有人物属性
     /// </summary>
-    private void reapplyLocalStats()
+    private async Task reapplyLocalStats()
     {
 
         localdex = getDex();
@@ -2698,7 +2675,7 @@ public partial class Player
 
         RefreshByEquipChange();
         RefreshByBuff();
-        RecalculateMaxHP();
+        await RecalculateMaxHP();
         RecalculateMaxMP();
 
         localmagic = Math.Min(localmagic, 2000);
@@ -2815,21 +2792,21 @@ public partial class Player
 
     }
 
-    public void UpdateLocalStats(bool isInitial = false)
+    public async Task UpdateLocalStats(bool isInitial = false)
     {
 
         int oldmaxhp = ActualMaxHP;
         int oldmaxmp = ActualMaxMP;
-        reapplyLocalStats();
+        await reapplyLocalStats();
 
         //登录时不能发送 不然客户端会崩溃
         if (!isInitial)
-            SendStats();
+            await SendStats();
 
         if (oldmaxhp != ActualMaxHP)
         {
             // thanks Wh1SK3Y (Suwaidy) for pointing out a deadlock occuring related to party members HP
-            updatePartyMemberHP();
+            await updatePartyMemberHP();
         }
     }
 
@@ -2837,7 +2814,7 @@ public partial class Player
 
 
 
-    public void resetStats()
+    public async Task resetStats()
     {
         if (!YamlConfig.config.server.USE_AUTOASSIGN_STARTERS_AP)
         {
@@ -2882,7 +2859,7 @@ public partial class Player
 
         if (tap >= 0)
         {
-            updateStrDexIntLukSp(tstr, tdex, tint, tluk, tap, tsp, GameConstants.getSkillBook(JobId));
+            await updateStrDexIntLukSp(tstr, tdex, tint, tluk, tap, tsp, GameConstants.getSkillBook(JobId));
         }
         else
         {
@@ -2944,12 +2921,12 @@ public partial class Player
         return m;
     }
 
-    public bool TryWarpBackSavedLocation(SavedLocationType type)
+    public async Task<bool> TryWarpBackSavedLocation(SavedLocationType type)
     {
         var sl = SavedLocations.GetData(type);
         if (sl != null)
         {
-            changeMap(sl.getMapId(), sl.getPortal());
+            await changeMap(sl.getMapId(), sl.getPortal());
             clearSavedLocation(type);
             return true;
         }
@@ -2976,58 +2953,22 @@ public partial class Player
         SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
     }
 
-    public void sendPolice(int greason, string reason, int duration)
+    public async Task sendKeymap()
     {
-        sendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "Cosmic", reason)));
-        this.isbanned = true;
-        Client.CurrentServer.TimerManager.schedule(() =>
-        {
-            Client.CurrentServer.Send(new InvokePlayerDisconnectCommand(Id));
-        }, duration);
+        await SendPacket(PacketCreator.getKeymap(KeyMap.GetDataSource()));
     }
 
-    public async Task sendPolice(string text)
-    {
-        string message = getName() + " received this - " + text;
-        //if (Server.getInstance().isGmOnline(this.getWorld()))
-        //{
-        //    //Alert and log if a GM is online
-        //    Client.CurrentServerContainer.SendBroadcastWorldGMPacket(PacketCreator.sendYellowTip(message));
-        //}
-        //else
-        //{
-        //    //Auto DC and log if no GM is online
-        //    Client.Disconnect(false, false);
-        //}
-        Client.CurrentServer.NodeService.SendDropMessage(-1, message, true);
-        Client.Disconnect(false);
-        Log.Information(message);
-        //NewServer.getInstance().broadcastGMMessage(0, PacketCreator.serverNotice(1, getName() + " received this - " + text));
-        //sendPacket(PacketCreator.sendPolice(text));
-        //this.isbanned = true;
-        //Client.CurrentServer.TimerManager.schedule(new Runnable() {
-        //    public override    public void run() {
-        //        Client.disconnect(false, false);
-        //    }
-        //}, 6000);
-    }
-
-    public void sendKeymap()
-    {
-        sendPacket(PacketCreator.getKeymap(KeyMap.GetDataSource()));
-    }
-
-    public void sendQuickmap()
+    public async Task sendQuickmap()
     {
         // send quickslots to user
         var pQuickslotKeyMapped = this.QuickSlotKeyMapped ?? new QuickslotBinding(QuickslotBinding.DEFAULT_QUICKSLOTS);
-        this.sendPacket(PacketCreator.QuickslotMappedInit(pQuickslotKeyMapped));
+        await this.SendPacket(PacketCreator.QuickslotMappedInit(pQuickslotKeyMapped));
     }
 
-    public void setBuddyCapacity(int capacity)
+    public async Task setBuddyCapacity(int capacity)
     {
         BuddyList.Capacity = capacity;
-        sendPacket(PacketCreator.updateBuddyCapacity(capacity));
+        await SendPacket(PacketCreator.updateBuddyCapacity(capacity));
     }
 
     public void setChalkboard(string? text)
@@ -3101,7 +3042,7 @@ public partial class Player
     /// <param name="hpchange"></param>
     /// <param name="mpchange"></param>
     /// <returns>ture: 使用成功，false: 使用失败</returns>
-    public bool applyHpMpChange(int hpCon, int hpchange, int mpchange)
+    public async Task<bool> applyHpMpChange(int hpCon, int hpchange, int mpchange)
     {
         bool zombify = hasDisease(Disease.ZOMBIFY);
 
@@ -3123,16 +3064,16 @@ public partial class Player
             }
         }
 
-        UpdateStatsChunk(() =>
+        await UpdateStatsChunk(async () =>
         {
-            SetHP(nextHp);
+            await SetHP(nextHp);
             SetMP(nextMp);
         });
 
         //// autopot on HPMP deplete... thanks shavit for finding out D. Roar doesn't trigger autopot request
         if (hpchange < 0)
         {
-            sendPacket(PacketCreator.onNotifyHPDecByField(-hpchange));
+            await SendPacket(PacketCreator.onNotifyHPDecByField(-hpchange));
         }
         return true;
     }
@@ -3188,7 +3129,7 @@ public partial class Player
         this.SkinColorModel = skinColor;
     }
 
-    public int sellAllItemsFromName(sbyte invTypeId, string name)
+    public async Task<int> sellAllItemsFromName(sbyte invTypeId, string name)
     {
         //player decides from which inventory items should be sold.
         InventoryType type = InventoryTypeUtils.getByType(invTypeId);
@@ -3201,10 +3142,10 @@ public partial class Player
         }
 
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
-        return (sellAllItemsFromPosition(ii, type, it.getPosition()));
+        return (await sellAllItemsFromPosition(ii, type, it.getPosition()));
     }
 
-    public int sellAllItemsFromPosition(ItemInformationProvider ii, InventoryType type, short pos)
+    public async Task<int> sellAllItemsFromPosition(ItemInformationProvider ii, InventoryType type, short pos)
     {
         int mesoGain = 0;
 
@@ -3216,13 +3157,13 @@ public partial class Player
             {
                 continue;
             }
-            mesoGain += standaloneSell(ii, type, i, inv.getItem(i)!.getQuantity());
+            mesoGain += await standaloneSell(ii, type, i, inv.getItem(i)!.getQuantity());
         }
 
         return (mesoGain);
     }
 
-    private int standaloneSell(ItemInformationProvider ii, InventoryType type, short slot, short quantity)
+    private async Task<int> standaloneSell(ItemInformationProvider ii, InventoryType type, short slot, short quantity)
     {
         // quantity == 0xFFFF || 这里quantity永远小于0xFFFF，有什么意义？
         if (quantity == 0)
@@ -3255,11 +3196,11 @@ public partial class Player
 
         if (quantity <= iQuant && iQuant > 0)
         {
-            InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
+            await InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
             int recvMesos = ii.getPrice(itemid, quantity);
             if (recvMesos > 0)
             {
-                GainMeso(recvMesos);
+                await GainMeso(recvMesos);
                 return (recvMesos);
             }
         }
@@ -3276,7 +3217,7 @@ public partial class Player
         return Bag[InventoryType.EQUIPPED].OfType<Equip>().Where(x => x.SourceTemplate.IsUpgradeable()).ToList();
     }
 
-    public bool mergeAllItemsFromName(string name)
+    public async Task<bool> mergeAllItemsFromName(string name)
     {
         InventoryType type = InventoryType.EQUIP;
 
@@ -3288,7 +3229,7 @@ public partial class Player
         }
 
         Dictionary<StatUpgrade, float> statups = new();
-        mergeAllItemsFromPosition(statups, it.getPosition());
+        await mergeAllItemsFromPosition(statups, it.getPosition());
 
         List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> upgradeableEquipped = new();
         Dictionary<Equip, List<KeyValuePair<StatUpgrade, int>>> equipUpgrades = new();
@@ -3337,7 +3278,7 @@ public partial class Player
             }
         }
 
-        LightBlue("EQUIPMENT MERGE operation results:");
+        await LightBlue("EQUIPMENT MERGE operation results:");
         foreach (var eqpUpg in equipUpgrades)
         {
             List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
@@ -3349,26 +3290,26 @@ public partial class Player
                 string showStr = " '" + Client.CurrentCulture.GetItemName(eqp.getItemId()) + "': ";
                 string upgdStr = eqp.gainStats(eqpStatups).Key;
 
-                this.forceUpdateItem(eqp);
+                await this.forceUpdateItem(eqp);
 
                 showStr += upgdStr;
-                LightBlue(showStr);
+                await LightBlue(showStr);
             }
         }
 
         return true;
     }
 
-    public void mergeAllItemsFromPosition(Dictionary<StatUpgrade, float> statups, short pos)
+    public async Task mergeAllItemsFromPosition(Dictionary<StatUpgrade, float> statups, short pos)
     {
         var inv = getInventory(InventoryType.EQUIP);
         for (short i = pos; i <= inv.getSlotLimit(); i++)
         {
-            standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
+            await standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
         }
     }
 
-    private void standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
+    private async Task standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
     {
         short quantity;
         if (e == null || (quantity = e.getQuantity()) < 1 || e.SourceTemplate.Cash || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
@@ -3401,7 +3342,7 @@ public partial class Player
             statups.AddOrUpdate(s.Key, newVal);
         }
 
-        InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
+        await InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
     }
 
     public void setShop(Shop? shop)
@@ -3430,28 +3371,28 @@ public partial class Player
         return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Client.CurrentServer.Node.getCurrentTime();
     }
 
-    public void showDojoClock()
+    public async Task showDojoClock()
     {
         if (GameConstants.isDojoBossArea(MapModel.getId()))
         {
-            sendPacket(PacketCreator.getClock((int)(getDojoTimeLeft() / 1000)));
+            await SendPacket(PacketCreator.getClock((int)(getDojoTimeLeft() / 1000)));
         }
     }
 
-    public void showUnderleveledInfo(Monster mob)
+    public async Task showUnderleveledInfo(Monster mob)
     {
         long curTime = Client.CurrentServer.Node.getCurrentTime();
         if (nextWarningTime < curTime)
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
 
-            showHint("You have gained #rno experience#k from defeating #e#b" + mob.getName() + "#k#n (lv. #b" + mob.getLevel() + "#k)! Take note you must have around the same level as the mob to start earning EXP from it.");
+            await showHint("You have gained #rno experience#k from defeating #e#b" + mob.getName() + "#k#n (lv. #b" + mob.getLevel() + "#k)! Take note you must have around the same level as the mob to start earning EXP from it.");
         }
     }
 
-    public void showHint(string msg, int length = 500)
+    public async Task showHint(string msg, int length = 500)
     {
-        Client.announceHint(msg, length);
+        await Client.announceHint(msg, length);
     }
 
 
@@ -3475,24 +3416,18 @@ public partial class Player
     }
 
 
-    public void updateSingleStat(Stat stat, int newval)
+    public async Task updateSingleStat(Stat stat, int newval)
     {
-        updateSingleStat(stat, newval, false);
+        await updateSingleStat(stat, newval, false);
     }
 
-    private void updateSingleStat(Stat stat, int newval, bool itemReaction)
+    private async Task updateSingleStat(Stat stat, int newval, bool itemReaction)
     {
-        sendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new KeyValuePair<Stat, int>(stat, newval)), itemReaction, this));
+        await SendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new KeyValuePair<Stat, int>(stat, newval)), itemReaction, this));
     }
 
-    /// <summary>
-    /// thread-safe
-    /// </summary>
-    /// <param name="packet"></param>
-    public void sendPacket(Packet packet)
-    {
-        Client.sendPacket(packet);
-    }
+
+    public Task SendPacket(Packet packet) => Client.SendPacket(packet);
 
     public override int getObjectId()
     {
@@ -3504,31 +3439,31 @@ public partial class Player
         return MapObjectType.PLAYER;
     }
 
-    public override void sendDestroyData(IChannelClient Client)
+    public override async Task sendDestroyData(IChannelClient mapChrClient)
     {
-        Client.sendPacket(PacketCreator.removePlayerFromMap(this.getObjectId()));
+        await mapChrClient.SendPacket(PacketCreator.removePlayerFromMap(this.getObjectId()));
     }
 
-    public override void sendSpawnData(IChannelClient mapChrClient)
+    public override async Task sendSpawnData(IChannelClient mapChrClient)
     {
         if (!this.isHidden() || mapChrClient.AccountEntity!.IsGmAccount())
         {
-            mapChrClient.sendPacket(PacketCreator.spawnPlayerMapObject(mapChrClient, this, false));
+            await mapChrClient.SendPacket(PacketCreator.spawnPlayerMapObject(mapChrClient, this, false));
 
             if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
             { // mustn't effLock, chrLock sendSpawnData
-                mapChrClient.sendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
+                await mapChrClient.SendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
             }
 
             foreach (Summon ms in this.getSummonsValues())
             {
-                mapChrClient.sendPacket(PacketCreator.spawnSummon(ms, false));
+                await mapChrClient.SendPacket(PacketCreator.spawnSummon(ms, false));
             }
         }
 
         if (this.isHidden() && mapChrClient.OnlinedCharacter.isGM())
         {
-            mapChrClient.sendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+            await mapChrClient.SendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
         }
     }
 
@@ -3562,12 +3497,12 @@ public partial class Player
         return portaldelay;
     }
 
-    public void blockPortal(string? scriptName)
+    public async Task blockPortal(string? scriptName)
     {
         if (scriptName != null && !blockedPortals.Contains(scriptName))
         {
             blockedPortals.Add(scriptName);
-            sendPacket(PacketCreator.enableActions());
+            await SendPacket(PacketCreator.enableActions());
         }
     }
 
@@ -3594,10 +3529,10 @@ public partial class Player
         return false;
     }
 
-    public void updateAreaInfo(int area, string info)
+    public async Task updateAreaInfo(int area, string info)
     {
         AreaInfo.AddOrUpdate((short)area, info);
-        sendPacket(PacketCreator.updateAreaInfo(area, info));
+        await SendPacket(PacketCreator.updateAreaInfo(area, info));
     }
 
     public string? getAreaInfo(int area)
@@ -3610,14 +3545,14 @@ public partial class Player
         return AreaInfo;
     }
 
-    public void autoban(string reason)
+    public async Task autoban(string reason)
     {
         if (this.isGM() || this.isBanned())
         {  // thanks RedHat for noticing GM's being able to get banned
             return;
         }
 
-        Client.CurrentServer.NodeService.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
+        await Client.CurrentServer.NodeService.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
     }
 
 
@@ -3655,7 +3590,7 @@ public partial class Player
     /// 
     /// </summary>
     /// <param name="now"></param>
-    public void CalculateSpiritPendant(long now, bool active)
+    public async Task CalculateSpiritPendant(long now, bool active)
     {
         if (!active)
         {
@@ -3674,7 +3609,7 @@ public partial class Player
                 if (PendantExp != bonusExp)
                 {
                     PendantExp = bonusExp;
-                    sendPacket(PacketCreator.BonusExpRateChanged(-EquipSlot.Pendant, hasEquippedLength.Hours, PendantExp * 10));
+                    await SendPacket(PacketCreator.BonusExpRateChanged(-EquipSlot.Pendant, hasEquippedLength.Hours, PendantExp * 10));
                 }
             }
         }
@@ -3713,7 +3648,7 @@ public partial class Player
         return fullList.Where(x => !x.SourceTemplate.Cash).ToList();
     }
 
-    public void increaseEquipExp(int expGain)
+    public async Task increaseEquipExp(int expGain)
     {
         if (allowExpGain)
         {     // thanks Vcoc for suggesting equip EXP gain conditionally
@@ -3731,7 +3666,7 @@ public partial class Player
                     continue;
                 }
 
-                nEquip.gainItemExp(Client, expGain);
+                await nEquip.gainItemExp(Client, expGain);
             }
         }
     }
@@ -3751,11 +3686,11 @@ public partial class Player
         this.partyQuest = pq;
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (extraRecoveryTask != null)
         {
-            extraRecoveryTask.cancel(true);
+            await extraRecoveryTask.CancelAsync(true);
         }
         extraRecoveryTask = null;
 
@@ -3913,7 +3848,7 @@ public partial class Player
 
     public override Player? Controller => this;
 
-    public override void BroadcastMovement(Packet packet, Point pos)
+    public override async Task BroadcastMovement(Packet packet, Point pos)
     {
         foreach (var mapChr in MapModel.getAllPlayers())
         {
@@ -3924,7 +3859,7 @@ public partial class Player
 
             if (IsVisibleForPlayerWithoutRange(mapChr))
             {
-                mapChr.sendPacket(packet);
+                await mapChr.SendPacket(packet);
             }
         }
     }

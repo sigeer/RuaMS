@@ -67,17 +67,17 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public void SummonPet(Pet pet)
+        public async Task SummonPet(Pet pet)
         {
             var mapPet = addPet(pet);
             if (mapPet != null)
             {
-                MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
+                await MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
 
-                sendPacket(PacketCreator.petStatUpdate(this));
-                sendPacket(PacketCreator.enableActions());
+                await SendPacket(PacketCreator.petStatUpdate(this));
+                await SendPacket(PacketCreator.enableActions());
 
-                commitExcludedItems();
+                await commitExcludedItems();
             }
         }
 

@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Commands
         }
     }
 
-    public class InvokeRemoveDoorCommand : IWorldChannelCommand
+    public class InvokeRemoveDoorCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeRemoveDoorCommand);
         int _ownerId;
@@ -24,11 +24,11 @@ namespace Application.Core.Channel.Commands
             _ownerId = ownerId;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (ctx.PlayerDoors.Remove(_ownerId, out var door) && door != null)
             {
-                door.Destroy();
+                await door.Destroy();
             }
         }
     }

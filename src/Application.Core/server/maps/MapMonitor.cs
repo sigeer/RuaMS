@@ -37,7 +37,12 @@ public class MapMonitor
     {
         this.map = map;
         this.portal = map.getPortal(portal);
-        this.monitorSchedule = map.ChannelServer.TimerManager.register(() =>
+
+    }
+
+    public async Task Initialize()
+    {
+        this.monitorSchedule = await map.ChannelServer.TimerManager.register(() =>
         {
             map.Send(m =>
             {

@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm3
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var mobOId = GetIntParam("oid");
             var mob = client.OnlinedCharacter.MapModel.getMonsterByOid(mobOId);
@@ -15,7 +15,7 @@ namespace Application.Core.Game.Commands.Gm3
                 return;
             }
 
-            mob.DamageBy(client.OnlinedCharacter, int.MaxValue, 0);
+            await mob.DamageBy(client.OnlinedCharacter, int.MaxValue, 0);
         }
     }
 }

@@ -67,14 +67,14 @@ namespace Application.Plugin.Script.Npc
                 var eim = em.GetOnlyEventInstanceManager<MonsterCarnivalEventInstanceManager>();
                 if (eim == null)
                 {
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     if (r != CreateInstanceResult.Success)
                     {
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                     else
                     {
-                        Pink(em.HandleCreateInstanceResult(r, c) ?? "");
+                        await Pink(em.HandleCreateInstanceResult(r, c) ?? "");
                     }
                 }
                 else if (eim.InstanceStatus == InstanceStatus.Recruitment)
@@ -100,7 +100,7 @@ namespace Application.Plugin.Script.Npc
             var eim = GetEventInstanceTrust<MonsterCarnivalEventInstanceManager>();
             if (eim.RequestTeam == null)
             {
-                Pink(GetClientMessage(nameof(ClientMessage.CPQ_EntryLobby)));
+                await Pink(GetClientMessage(nameof(ClientMessage.CPQ_EntryLobby)));
                 return;
             }
 
@@ -111,7 +111,7 @@ namespace Application.Plugin.Script.Npc
                 snd += $"#b{GetClientMessage(nameof(ClientMessage.Name))}: {teamMembers[i].Name} / ({GetClientMessage(nameof(ClientMessage.Level))}: {teamMembers[i].Level}) / {GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n";
             }
 
-            eim.AcceptChallenge(await SayAcceptDecline(snd + "你想在怪物嘉年华上和这个队伍战斗吗？"));
+            await eim.AcceptChallenge(await SayAcceptDecline(snd + "你想在怪物嘉年华上和这个队伍战斗吗？"));
         }
 
 
@@ -122,12 +122,12 @@ namespace Application.Plugin.Script.Npc
             if (talkMap == 980000010)
             {
                 await SayNext("希望你在怪物嘉年华玩得开心！");
-                warp(980000000, 0);
+                await warp(980000000, 0);
             }
             else if (talkMap == 980030010)
             {
                 await SayNext("希望你在怪物嘉年华玩得开心！");
-                warp(980030000, 0);
+                await warp(980030000, 0);
             }
             else if (GetEventInstanceTrust() != null)
             {
@@ -149,8 +149,8 @@ namespace Application.Plugin.Script.Npc
 
                 await SayNext(messageList[idx]);
 
-                eim.GiveClearReward(getPlayer(), idx);
-                warp(980000000);
+                await eim.GiveClearReward(getPlayer(), idx);
+                await warp(980000000);
             }
             else
             {
@@ -175,7 +175,7 @@ namespace Application.Plugin.Script.Npc
                         else
                         {
                             getPlayer().SaveLocation(SavedLocationType.MONSTER_CARNIVAL);
-                            warp(targetEm.RecruitMap, 0);
+                            await warp(targetEm.RecruitMap, 0);
                         }
                         break;
                     case 2:
@@ -189,18 +189,17 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2042003, 2042004 
-        public Task mc_roomout()
+        public async Task mc_roomout()
         {
             var eim = GetEventInstanceTrust();
             if (eim == null)
             {
-                WarpOut();
+                await WarpOut();
             }
             else
             {
-                eim.Dispose();
+                await eim.DisposeAsync();
             }
-            return Task.CompletedTask;
         }
 
 

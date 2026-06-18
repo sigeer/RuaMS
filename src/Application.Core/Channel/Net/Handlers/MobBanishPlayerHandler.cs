@@ -24,7 +24,7 @@ public class MobBanishPlayerHandler : ChannelHandlerBase
 {
 
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mobId = p.readInt();     // mob banish handling detected thanks to MedicOP
 
@@ -40,6 +40,6 @@ public class MobBanishPlayerHandler : ChannelHandlerBase
         {
             return;
         }
-        chr.changeMapBanish(banishInfo);
+        await chr.changeMapBanish(banishInfo);
     }
 }

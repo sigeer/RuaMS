@@ -33,7 +33,7 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else
@@ -71,7 +71,7 @@ namespace Application.Plugin.Script.Npc
                         if (kickSelection > 0)
                         {
                             var banned = expedMembers[kickSelection - 1];
-                            expedition.ban(banned.Id);
+                            await expedition.ban(banned.Id);
                             await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
                         }
                     }
@@ -86,12 +86,12 @@ namespace Application.Plugin.Script.Npc
 
                         await SayOK($"远征队将开始，现在我将护送你前往 #b#m{expedition.EventManager.EntryMap}##k。");
 
-                        expedition.StartBattle();
+                        await expedition.StartBattle();
                     }
                     else if (selection == 3)
                     {
-                        player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
-                        expedition.Dispose();
+                        await player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
+                        await expedition.DisposeAsync();
                         await SayOK("这次远征已经结束。有时候最好的策略就是逃跑。");
                     }
                 }
@@ -104,7 +104,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(em.GetTemplate.JoinMember(expedition, getPlayer()), c));
+                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(await em.GetTemplate.JoinMember(expedition, getPlayer()), c));
                 }
             }
             else if (expedition.isInProgress())
@@ -113,7 +113,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (expedition.getIntProperty("canJoin") == 1)
                     {
-                        expedition.registerPlayer(player);
+                        await expedition.registerPlayer(player);
                     }
                     else
                     {
@@ -144,8 +144,8 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                gainItem(4001261, -1);
-                gainItem(items[option], 1);
+                await gainItem(4001261, -1);
+                await gainItem(items[option], 1);
                 await SayOK("谢谢您的兑换。");
             }
         }
@@ -159,13 +159,13 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayOK("哇！你打败了蝙蝠怪。");
 
-                warp(eim.EventManager.ExitMap, 0);
+                await warp(eim.EventManager.ExitMap, 0);
             }
             else
             {
                 if (await AskYesNo(getMap().getAllPlayers().Count > 1 ? "你真的要离开这场战斗，让你的同伴们去死吗？" : "逃跑吧，懦夫。"))
                 {
-                    eim.exitPlayer(getPlayer());
+                    await eim.exitPlayer(getPlayer());
                 }
             }
         }

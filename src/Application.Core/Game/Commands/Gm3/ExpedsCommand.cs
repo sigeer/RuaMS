@@ -1,5 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Core.scripting.npc;
 
 namespace Application.Core.Game.Commands.Gm3;
 
@@ -12,12 +11,9 @@ public class ExpedsCommand : CommandBase
         Description = "Show all ongoing boss expeditions.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        if (TempConversation.TryCreate(c, out var p))
-        {
-            p.RegisterTalk(_adminService.QueryExpeditionInfo(c.OnlinedCharacter));
-        }
+        await player.Dialog(_adminService.QueryExpeditionInfo(c.OnlinedCharacter));
     }
 }

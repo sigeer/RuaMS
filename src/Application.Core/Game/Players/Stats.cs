@@ -80,7 +80,7 @@ namespace Application.Core.Game.Players
             return ret;
         }
 
-        private void changeStatPool(long? strDexIntLuk, long? newSp, int newAp, bool silent)
+        private async Task changeStatPool(long? strDexIntLuk, long? newSp, int newAp, bool silent)
         {
 
             statUpdates.Clear();
@@ -139,37 +139,37 @@ namespace Application.Core.Game.Players
             {
                 if (statUpdate)
                 {
-                    UpdateLocalStats();
+                    await UpdateLocalStats();
                 }
 
                 if (!silent)
                 {
-                    SendStats();
+                    await SendStats();
                 }
             }
 
         }
 
-        public void healHpMp()
+        public async Task healHpMp()
         {
-            UpdateStatsChunk(() =>
-            {
-                SetHP(NumericConfig.MaxHP);
-                SetMP(NumericConfig.MaxMP);
-            });
+            await UpdateStatsChunk(async () =>
+             {
+                 await SetHP(NumericConfig.MaxHP);
+                 SetMP(NumericConfig.MaxMP);
+             });
         }
 
-        public int safeAddHP(int delta)
+        public async Task<int> safeAddHP(int delta)
         {
             if (HP + delta <= 0)
             {
                 delta = -HP + 1;
             }
 
-            UpdateStatsChunk(() =>
-            {
-                ChangeHP(delta);
-            });
+            await UpdateStatsChunk(async () =>
+             {
+                 await ChangeHP(delta);
+             });
             return delta;
         }
 
@@ -194,27 +194,27 @@ namespace Application.Core.Game.Players
             this.Luk = luk;
         }
 
-        public bool assignStr(int x)
+        public async Task<bool> assignStr(int x)
         {
-            return assignStrDexIntLuk(x, null, null, null);
+            return await assignStrDexIntLuk(x, null, null, null);
         }
 
-        public bool assignDex(int x)
+        public async Task<bool> assignDex(int x)
         {
-            return assignStrDexIntLuk(null, x, null, null);
+            return await assignStrDexIntLuk(null, x, null, null);
         }
 
-        public bool assignInt(int x)
+        public async Task<bool> assignInt(int x)
         {
-            return assignStrDexIntLuk(null, null, x, null);
+            return await assignStrDexIntLuk(null, null, x, null);
         }
 
-        public bool assignLuk(int x)
+        public async Task<bool> assignLuk(int x)
         {
-            return assignStrDexIntLuk(null, null, null, x);
+            return await assignStrDexIntLuk(null, null, null, x);
         }
 
-        public bool assignHP(int deltaHP, int deltaAp)
+        public async Task<bool> assignHP(int deltaHP, int deltaAp)
         {
 
             if (Ap - deltaAp < 0 || HpMpUsed + deltaAp < 0 || MaxHP >= 30000)
@@ -222,7 +222,7 @@ namespace Application.Core.Game.Players
                 return false;
             }
 
-            ChangeMaxHP(deltaHP);
+            await ChangeMaxHP(deltaHP);
             setHpMpApUsed(HpMpUsed + deltaAp);
             return true;
         }
@@ -245,7 +245,7 @@ namespace Application.Core.Game.Players
             return x ?? 0;
         }
 
-        public bool assignStrDexIntLuk(int? deltaStr, int? deltaDex, int? deltaInt, int? deltaLuk)
+        public async Task<bool> assignStrDexIntLuk(int? deltaStr, int? deltaDex, int? deltaInt, int? deltaLuk)
         {
             int apUsed = apAssigned(deltaStr) + apAssigned(deltaDex) + apAssigned(deltaInt) + apAssigned(deltaLuk);
             if (apUsed > Ap)
@@ -292,72 +292,72 @@ namespace Application.Core.Game.Players
             }
 
             int newAp = Ap - apUsed;
-            updateStrDexIntLuk(newStr, newDex, newInt, newLuk, newAp);
+            await updateStrDexIntLuk(newStr, newDex, newInt, newLuk, newAp);
             return true;
         }
 
-        public void updateStrDexIntLuk(int x)
+        public async Task updateStrDexIntLuk(int x)
         {
-            updateStrDexIntLuk(x, x, x, x, -1);
+            await updateStrDexIntLuk(x, x, x, x, -1);
         }
 
-        public void changeRemainingAp(int x, bool silent)
+        public async Task changeRemainingAp(int x, bool silent)
         {
-            changeStrDexIntLuk(Str, Dex, Int, Luk, x, silent);
+            await changeStrDexIntLuk(Str, Dex, Int, Luk, x, silent);
         }
 
-        public void gainAp(int deltaAp, bool silent)
+        public async Task gainAp(int deltaAp, bool silent)
         {
 
-            changeRemainingAp(Math.Max(0, Ap + deltaAp), silent);
+            await changeRemainingAp(Math.Max(0, Ap + deltaAp), silent);
 
         }
 
-        protected void updateStrDexIntLuk(int str, int dex, int int_, int luk, int remainingAp)
+        protected async Task updateStrDexIntLuk(int str, int dex, int int_, int luk, int remainingAp)
         {
-            changeStrDexIntLuk(str, dex, int_, luk, remainingAp, false);
+            await changeStrDexIntLuk(str, dex, int_, luk, remainingAp, false);
         }
 
-        private void changeStrDexIntLuk(int str, int dex, int int_, int luk, int remainingAp, bool silent)
+        private async Task changeStrDexIntLuk(int str, int dex, int int_, int luk, int remainingAp, bool silent)
         {
             long strDexIntLuk = calcStatPoolLong(str, dex, int_, luk);
-            changeStatPool(strDexIntLuk, null, remainingAp, silent);
+            await changeStatPool(strDexIntLuk, null, remainingAp, silent);
         }
 
-        private void changeStrDexIntLukSp(int str, int dex, int int_, int luk, int remainingAp, int remainingSp, int skillbook, bool silent)
+        private async Task changeStrDexIntLukSp(int str, int dex, int int_, int luk, int remainingAp, int remainingSp, int skillbook, bool silent)
         {
             long strDexIntLuk = calcStatPoolLong(str, dex, int_, luk);
             long sp = calcStatPoolLong(0, 0, remainingSp, skillbook);
-            changeStatPool(strDexIntLuk, sp, remainingAp, silent);
+            await changeStatPool(strDexIntLuk, sp, remainingAp, silent);
         }
 
-        protected void updateStrDexIntLukSp(int str, int dex, int int_, int luk, int remainingAp, int remainingSp, int skillbook)
+        protected async Task updateStrDexIntLukSp(int str, int dex, int int_, int luk, int remainingAp, int remainingSp, int skillbook)
         {
-            changeStrDexIntLukSp(str, dex, int_, luk, remainingAp, remainingSp, skillbook, false);
+            await changeStrDexIntLukSp(str, dex, int_, luk, remainingAp, remainingSp, skillbook, false);
         }
 
-        protected void updateRemainingSp(int remainingSp, int skillbook)
+        protected async Task updateRemainingSp(int remainingSp, int skillbook)
         {
-            changeRemainingSp(remainingSp, skillbook, false);
+            await changeRemainingSp(remainingSp, skillbook, false);
         }
 
-        protected void changeRemainingSp(int remainingSp, int skillbook, bool silent)
+        protected async Task changeRemainingSp(int remainingSp, int skillbook, bool silent)
         {
             long sp = calcStatPoolLong(0, 0, remainingSp, skillbook);
-            changeStatPool(null, sp, short.MinValue, silent);
+            await changeStatPool(null, sp, short.MinValue, silent);
         }
 
-        public void gainSp(int deltaSp, int skillbook, bool silent)
+        public async Task gainSp(int deltaSp, int skillbook, bool silent)
         {
 
-            changeRemainingSp(Math.Max(0, RemainingSp[skillbook] + deltaSp), skillbook, silent);
+            await changeRemainingSp(Math.Max(0, RemainingSp[skillbook] + deltaSp), skillbook, silent);
         }
 
-        public void SendStats()
+        public async Task SendStats()
         {
             if (statUpdates.Count > 0)
             {
-                sendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+                await SendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
                 // PrintStatsUpdated();
             }
         }
@@ -373,16 +373,16 @@ namespace Application.Core.Game.Players
 
         }
 
-        public void UpdateStatsChunk(Action action)
+        public async Task UpdateStatsChunk(Action action)
         {
             statUpdates.Clear();
 
             action();
 
-            SendStats();
+            await SendStats();
         }
 
-        public TOut UpdateStatsChunk<TOut>(Func<TOut> action)
+        public async Task<TOut> UpdateStatsChunk<TOut>(Func<TOut> action)
         {
             try
             {
@@ -392,23 +392,37 @@ namespace Application.Core.Game.Players
             }
             finally
             {
-                SendStats();
+                await SendStats();
             }
         }
 
-        public void MaxStat()
+        public async Task<TOut> UpdateStatsChunk<TOut>(Func<Task<TOut>> action)
         {
-            loseExp(getExp(), false, false);
-            setLevel(NumericConfig.MaxLevel);
-            updateStrDexIntLuk(NumericConfig.MaxStat);
-            setFame(NumericConfig.MaxFame);
-            UpdateStatsChunk(() =>
+            try
             {
-                SetMaxHP(NumericConfig.MaxHP);
+                statUpdates.Clear();
+
+                return await action();
+            }
+            finally
+            {
+                await SendStats();
+            }
+        }
+
+        public async Task MaxStat()
+        {
+            await loseExp(getExp(), false, false);
+            setLevel(NumericConfig.MaxLevel);
+            await updateStrDexIntLuk(NumericConfig.MaxStat);
+            setFame(NumericConfig.MaxFame);
+            await UpdateStatsChunk(async () =>
+            {
+                await SetMaxHP(NumericConfig.MaxHP);
                 SetMaxMP(NumericConfig.MaxMP);
             });
-            updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
-            updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
+            await updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
+            await updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
         }
     }
 }

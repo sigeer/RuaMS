@@ -1,6 +1,3 @@
-using Application.Core.Game.Maps;
-using Application.Core.scripting.npc;
-using Microsoft.Extensions.Primitives;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -12,7 +9,7 @@ public class WhereaMiCommand : CommandBase
         Description = "Show info about objects on current map.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -53,6 +50,6 @@ public class WhereaMiCommand : CommandBase
             }
         }
 
-        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        await player.Dialog(sb.ToString());
     }
 }

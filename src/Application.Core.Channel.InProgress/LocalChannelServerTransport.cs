@@ -249,9 +249,9 @@ namespace Application.Core.Channel.InProgress
             _server.GiftManager.CommitRetrieveGift(giftIdArray);
         }
 
-        public bool SendNormalNoteMessage(int senderId, string toName, string noteMessage)
+        public async Task<bool> SendNormalNoteMessage(int senderId, string toName, string noteMessage)
         {
-            return _noteService.SendNormal(noteMessage, senderId, toName).ConfigureAwait(false).GetAwaiter().GetResult();
+            return await _noteService.SendNormal(noteMessage, senderId, toName);
         }
 
         public Dto.NoteDto? DeleteNoteMessage(int id)

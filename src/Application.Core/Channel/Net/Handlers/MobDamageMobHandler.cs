@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -49,7 +48,7 @@ public class MobDamageMobHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int from = p.readInt();
         p.readInt();
@@ -76,8 +75,8 @@ public class MobDamageMobHandler : ChannelHandlerBase
                 dmg = maxDmg;
             }
 
-            damaged.DamageBy(chr, dmg, 0);
-            damaged.BroadcastMap(PacketCreator.damageMonster(to, dmg), chr.Id);
+            await damaged.DamageBy(chr, dmg, 0);
+            await damaged.BroadcastMap(PacketCreator.damageMonster(to, dmg), chr.Id);
         }
     }
 

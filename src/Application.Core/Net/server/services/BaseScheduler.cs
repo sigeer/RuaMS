@@ -19,7 +19,7 @@
 */
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
+using Application.Utility.Pipeline;
 
 namespace net.server.services;
 
@@ -32,7 +32,7 @@ public abstract class BaseScheduler
     private int idleProcs = 0;
     private List<Action<List<object>, bool>> listeners = new();
 
-    private Dictionary<object, KeyValuePair<IWorldChannelCommand, long>> registeredEntries = new();
+    private Dictionary<object, KeyValuePair<ICommand, long>> registeredEntries = new();
 
     private Task? schedulerTask = null;
 
@@ -62,7 +62,7 @@ public abstract class BaseScheduler
     private void runBaseSchedule()
     {
         List<object> toRemove;
-        Dictionary<object, KeyValuePair<IWorldChannelCommand, long>> registeredEntriesCopy;
+        Dictionary<object, KeyValuePair<ICommand, long>> registeredEntriesCopy;
 
         if (registeredEntries.Count == 0)
         {
@@ -107,7 +107,7 @@ public abstract class BaseScheduler
         dispatchRemovedEntries(toRemove, true);
     }
 
-    protected void registerEntry(object key, IWorldChannelCommand command, long duration)
+    protected void registerEntry(object key, ICommand command, long duration)
     {
         idleProcs = 0;
         if (schedulerTask == null)
@@ -128,7 +128,7 @@ public abstract class BaseScheduler
 
     protected void interruptEntry(object key)
     {
-        IWorldChannelCommand? toRun = null;
+        ICommand? toRun = null;
 
         if (registeredEntries.Remove(key, out var rm))
         {

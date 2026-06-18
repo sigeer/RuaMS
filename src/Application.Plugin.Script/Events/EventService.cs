@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using Application.Core.Gameplay.Plugins;
 using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
@@ -11,14 +10,10 @@ namespace Application.Plugin.Events
 {
     internal record AreaBossOption(string Name, int MapId, int BossId, int Period, string Message, List<RandomPoint> Point);
 
-    internal class EventService : IPluginChannelLifeService
+    internal class EventService : IPluginChannelLifeService, IPluginMapService
     {
-        public ValueTask DisposeAsync()
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        public void OnChannelMounted(WorldChannel channel)
+        Dictionary<int, AreaBossOption> _mapBoss = [];
+        public EventService()
         {
             List<AreaBossOption> options = [
                 new ("Deo",260010201, 3220001, 10800, "Deo slowly appeared out of the sand dust.", [new(645,645,275)]),
@@ -42,12 +37,16 @@ namespace Application.Plugin.Events
                 new("Timer1", 220050100, 5220003, 10800, "Tick-Toc…Tick-Tock! Timer makes it's presence known.", [new(-770, 0,1030)]),
                 new("Timer2", 220050000, 5220003, 10800, "Tick-Toc…Tick-Tock! Timer makes it's presence known.", [new(-1000, 400,1030)]),
                 new("Timer3", 220050200, 5220003, 10800, "Tick-Toc…Tick-Tock! Timer makes it's presence known.", [new(-700, 700, 1030)])];
+            _mapBoss = options.ToDictionary(x => x.MapId);
 
-            foreach (var item in options)
-            {
-                GetMap(channel, item.MapId).SetupAreaBoss(item.Name, item.BossId, item.Period, item.Point, item.Message);
-            }
+        }
+        public ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
 
+        public void OnChannelMounted(WorldChannel channel)
+        {
             channel.EventScriptManager.ReloadEventScript([
                 new PQ_Henesys(),
                 new PQ_Kerning(),
@@ -119,9 +118,17 @@ namespace Application.Plugin.Events
 
         }
 
-        IMap GetMap(WorldChannel worldChannel, int mapId)
+        public async Task OnMapLoad(IMap map)
         {
-            return worldChannel.getMapFactory().getMap(mapId);
+            if (_mapBoss.TryGetValue(map.Id, out var item))
+            {
+                await map.SetupAreaBoss(item.Name, item.BossId, item.Period, item.Point, item.Message);
+            }
+        }
+
+        public Task OnMapUnload(IMap map)
+        {
+            return Task.CompletedTask;
         }
     }
 }

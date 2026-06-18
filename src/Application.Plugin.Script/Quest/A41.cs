@@ -27,10 +27,10 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            forceCompleteQuest();
-            gainItem(4001094, -1);
-            gainItem(2041200, 1);    // 任务奖励问题找到并修复感谢 MedicOP & Thora
-            gainExp(42000);
+            await forceCompleteQuest();
+            await gainItem(4001094, -1);
+            await gainItem(2041200, 1);    // 任务奖励问题找到并修复感谢 MedicOP & Thora
+            await gainExp(42000);
         }
 
     }

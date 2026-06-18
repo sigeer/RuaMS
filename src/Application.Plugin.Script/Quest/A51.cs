@@ -116,14 +116,14 @@ namespace Application.Plugin.Script.Quest
             {
                 var medalname = c.CurrentCulture.GetItemName(questObj.ViewMedalItem);
 
-                forceStartQuest();
+                await forceStartQuest();
                 await SayNext($"恭喜你获得了 #b<{medalname}>#k 勋章！继续加油吧勇士.\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n #v{questObj.ViewMedalItem}:# #t{questObj.ViewMedalItem}# 1");
                 if (canHold(questObj.ViewMedalItem))
                 {
-                    gainItem(questObj.ViewMedalItem);
-                    earnTitle("<" + medalname + "> 奖励已获取.");
+                    await gainItem(questObj.ViewMedalItem);
+                    await earnTitle("<" + medalname + "> 奖励已获取.");
 
-                    forceCompleteQuest();
+                    await forceCompleteQuest();
                 }
                 else
                 {

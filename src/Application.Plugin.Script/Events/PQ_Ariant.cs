@@ -40,47 +40,48 @@ namespace Application.Plugin.Script.Events
             return new AriantEventManager(worldChannel, this);
         }
 
-        public override void OnBattleStarted(AbstractEventInstanceManager eim)
+        public override async Task OnBattleStarted(AbstractEventInstanceManager eim)
         {
+            await base.OnBattleStarted(eim);
             var scoreData = eim.getPlayers().ToDictionary(x => x, x => 0);
             foreach (Player mc in eim.getPlayers())
             {
-                mc.sendPacket(PacketCreator.updateAriantPQRanking(scoreData));
+                await mc.SendPacket(PacketCreator.updateAriantPQRanking(scoreData));
             }
-            respawnStages(eim);
+            await respawnStages(eim);
         }
 
-        public override void respawnStages(AbstractEventInstanceManager eim)
+        public override async Task respawnStages(AbstractEventInstanceManager eim)
         {
             if (eim.InstanceStatus == Core.scripting.Events.Abstraction.InstanceStatus.InProgress)
             {
                 var pEim = (eim as AriantEventInstanceManager)!;
 
-                pEim.broadcastAriantScoreUpdate();
+                await pEim.broadcastAriantScoreUpdate();
 
                 eim.Schedule(respawnStages, 1000);
 
                 var leftTime = eim.getTimeLeft();
                 if (leftTime == 10)
                 {
-                    ClearPQ(eim);
+                    await eim.clearPQ();
                 }
             }
         }
 
-        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player player)
+        public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player player)
         {
             int shards = player.countItem(ItemId.ARPQ_SPIRIT_JEWEL);
-            player.GainItem(ItemId.ARPQ_SPIRIT_JEWEL, (short)-shards, show: GainItemShow.ShowInChat);
+            await player.GainItem(ItemId.ARPQ_SPIRIT_JEWEL, (short)-shards, show: GainItemShow.ShowInChat);
             player.updateAriantScore(shards);
 
-            base.OnPlayerUnregister(eim, player);
+            await base.OnPlayerUnregister(eim, player);
         }
 
 
-        public override bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
+        public override Task<bool> OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
         {
-            return true;
+            return Task.FromResult(true);
         }
 
         public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
@@ -93,38 +94,38 @@ namespace Application.Plugin.Script.Events
         }
 
 
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             if (eim.InstanceStatus == InstanceStatus.Recruitment)
             {
-                eim.Dispose();
+                await eim.DisposeAsync();
                 return;
             }
 
-            eim.warpEventTeam(MapId.ARPQ_KINGS_ROOM);
+            await eim.warpEventTeam(MapId.ARPQ_KINGS_ROOM);
         }
 
 
-        public override void ClearPQ(AbstractEventInstanceManager eim)
+        public override async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-            eim.setEventCleared();
+            await eim.setEventCleared();
 
             var pEim = (eim as AriantEventInstanceManager)!;
 
-            var map = eim.getMapInstance(EntryMap);
-            map.broadcastMessage(PacketCreator.showAriantScoreBoard());
-            map.killAllMonsters();
+            var map = await eim.getMapInstance(EntryMap);
+            await map.broadcastMessage(PacketCreator.showAriantScoreBoard());
+            await map.killAllMonsters();
             map.allowSummonState(false);
 
-            pEim.distributeAriantPoints();
+            await pEim.distributeAriantPoints();
         }
 
-        public override ClaimRewardResult GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
+        public override async Task<ClaimRewardResult> GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
         {
             player.AriantPoints += point;
-            player.Pink($"竞技点数(+{point})");
+            await player.Pink($"竞技点数(+{point})");
 
-            return base.GiveClearReward(eim, player, point);
+            return await base.GiveClearReward(eim, player, point);
         }
 
         public override RewardOptions GetAllClearRewardOptions(Player chr, int point = 1)

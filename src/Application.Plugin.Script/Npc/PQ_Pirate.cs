@@ -17,7 +17,7 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                     break;
                 case 1:
                     await SayOK("#e#b<组队任务：海盗船>#k#n\r\n在这个组队任务中，你的任务是逐步穿过船舱，与途中的所有海盗和坏蛋战斗。当你到达#r老海盗#k时，根据之前阶段打开的宝箱数量，boss会变得更加强大，所以要保持警惕。如果打开了这些宝箱，将会给你的船员带来许多额外的奖励，值得一试！祝你好运。");
@@ -38,7 +38,7 @@ namespace Application.Plugin.Script.Npc
                     if (isEventLeader())
                     {
                         await SayOK("多亏了你们的努力，我得救了！谢谢，伙计们！");
-                        eim.clearPQ();
+                        await eim.clearPQ();
                     }
                     else
                     {
@@ -54,8 +54,8 @@ namespace Application.Plugin.Script.Npc
                             await SayOK("请在杂项栏中腾出空间。");
                             return;
                         }
-                        gainItem(4001158, 1);
-                        warp(251010404, 0);
+                        await gainItem(4001158, 1);
+                        await warp(251010404, 0);
                     }
                     else
                     {
@@ -69,9 +69,9 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (canHold(1003267, 1))
                                 {
-                                    gainItem(1002573, -1);
-                                    gainItem(4001158, -20);
-                                    gainItem(1003267, 1);
+                                    await gainItem(1002573, -1);
+                                    await gainItem(4001158, -20);
+                                    await gainItem(1003267, 1);
                                     await SayOK("我已经给你帽子了。");
                                 }
                                 else
@@ -90,9 +90,9 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (canHold(1002573, 1))
                                 {
-                                    gainItem(1002572, -1);
-                                    gainItem(4001158, -20);
-                                    gainItem(1002573, 1);
+                                    await gainItem(1002572, -1);
+                                    await gainItem(4001158, -20);
+                                    await gainItem(1002573, 1);
                                     await SayOK("我已经给你帽子了。");
                                 }
                                 else
@@ -111,8 +111,8 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (canHold(1002572, 1))
                                 {
-                                    gainItem(4001158, -20);
-                                    gainItem(1002572, 1);
+                                    await gainItem(4001158, -20);
+                                    await gainItem(1002572, 1);
                                     await SayOK("我已经给你帽子了。");
                                 }
                                 else
@@ -147,7 +147,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (haveItem(4001120, 20))
                         {
-                            gainItem(4001120, -20);
+                            await gainItem(4001120, -20);
                             eim.setProperty("stage2", "1");
 
                             await SayNext("太棒了！现在去收集20个#i4001121# #t4001121#给我。");
@@ -161,7 +161,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (haveItem(4001121, 20))
                         {
-                            gainItem(4001121, -20);
+                            await gainItem(4001121, -20);
                             eim.setProperty("stage2", "2");
 
                             await SayNext("太棒了！现在去收集20个#i4001122# #t4001122#给我。");
@@ -175,11 +175,11 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (haveItem(4001122, 20))
                         {
-                            gainItem(4001122, -20);
+                            await gainItem(4001122, -20);
                             eim.setProperty("stage2", "3");
 
                             eim.ClearedMaps[getMapId()] = StageStatus.Completed;
-                            eim.showClearEffect(getMapId());
+                            await eim.showClearEffect(getMapId());
 
                             await SayNext("太棒了！现在让我们走吧。");
                         }
@@ -203,7 +203,7 @@ namespace Application.Plugin.Script.Npc
                         await SayNext("老海盗的宝箱出现了！如果你碰巧有一把钥匙，就把它放在宝箱旁边，揭示宝藏。这肯定会让他很生气。");
                         if (eim.getProperty("stage2a") == "0")
                         {
-                            getMap().setReactorState();
+                            await getMap().setReactorState();
                             eim.setProperty("stage2a", "1");
                         }
                     }
@@ -218,7 +218,7 @@ namespace Application.Plugin.Script.Npc
                         await SayNext("老海盗的宝箱出现了！如果你碰巧有一把钥匙，就把它放在宝箱旁边，揭示宝藏。这肯定会让他很生气。");
                         if (eim.getProperty("stage3a") == "0")
                         {
-                            getMap().setReactorState();
+                            await getMap().setReactorState();
                             eim.setProperty("stage3a", "1");
                         }
                     }

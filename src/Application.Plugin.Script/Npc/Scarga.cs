@@ -22,16 +22,16 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("如果你现在离开，就无法返回了。你确定要离开吗？"))
                 {
-                    warp(551030100, 2);
+                    await warp(551030100, 2);
                 }
             }
             else
             {
                 await SayNext("你们打败了斯卡利昂和塔加！太棒了！把这个纪念品当作你们勇敢的奖励。");
 
-                if (eim.GiveClearReward(getPlayer()) == Core.scripting.Events.Abstraction.ClaimRewardResult.Success)
+                if (await eim.GiveClearReward(getPlayer()) == Core.scripting.Events.Abstraction.ClaimRewardResult.Success)
                 {
-                    warp(551030100, 2);
+                    await warp(551030100, 2);
                 }
                 else
                 {

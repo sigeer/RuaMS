@@ -13,7 +13,7 @@ namespace Application.Core.Game.Commands.Gm2
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var input = GetParam("npc");
             if (!int.TryParse(input, out var npcId))
@@ -21,7 +21,7 @@ namespace Application.Core.Game.Commands.Gm2
                 var searched = client.CurrentCulture.StringProvider.Search(Templates.String.StringCategory.Npc, input).OfType<StringNpcTemplate>().ToArray();
                 if (searched.Length == 0)
                 {
-                    client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), input);
+                    await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), input);
                     return;
                 }
                 else if (searched.Length > 1)
@@ -33,35 +33,36 @@ namespace Application.Core.Game.Commands.Gm2
                         var npcItem = searched[i];
                         sb.Append($"\r\n#L{i}# {npcItem.TemplateId} - {npcItem.Name} #l");
                     }
-                    TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
+
+                    await TempConversation.CreateScope(client, async ctx =>
                     {
-                        HandleNpcId(client, searched[i].TemplateId, searched[i].Name, ctx);
-                        ctx.dispose();
+                        var i = await ctx.AskMenu(sb.ToString());
+                        await HandleNpcId(client, searched[i].TemplateId, searched[i].Name, ctx);
                     });
                 }
                 else
                 {
-                    HandleNpcId(client, searched[0].TemplateId, searched[0].Name);
+                    await HandleNpcId(client, searched[0].TemplateId, searched[0].Name);
                 }
             }
             else
             {
-                HandleNpcId(client, npcId, client.CurrentCulture.GetNpcName(npcId));
+                await HandleNpcId(client, npcId, client.CurrentCulture.GetNpcName(npcId));
             }
         }
 
-        void HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)
+        async Task HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)
         {
             var template = ProviderSource.Instance.GetProvider<EtcNpcLocationProvider>().GetItem(npcId);
             if (template == null)
             {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), npcName);
+                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), npcName);
                 return;
             }
 
             if (template.Maps.Length == 0)
             {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcOutOfMap), npcName);
+                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcOutOfMap), npcName);
                 return;
             }
             else if (template.Maps.Length > 1)
@@ -73,39 +74,48 @@ namespace Application.Core.Game.Commands.Gm2
                     var mapId = template.Maps[i];
                     sb.Append($"\r\n#L{i}# {mapId} - {client.CurrentCulture.GetMapStreetName(mapId)} - {client.CurrentCulture.GetMapName(mapId)} #l");
                 }
-                TempConversation.Create(client)?.RegisterSelect(sb.ToString(), (i, ctx) =>
+                if (conversation == null)
                 {
-                    HandleMapNpc(client, template.Maps[i], npcId);
-                    ctx.dispose();
-                });
+                    await TempConversation.CreateScope(client, async ctx =>
+                    {
+                        var i = await ctx.AskMenu(sb.ToString());
+                        await HandleMapNpc(client, template.Maps[i], npcId);
+                    });
+                }
+                else
+                {
+                    var i = await conversation.AskMenu(sb.ToString());
+                    await HandleMapNpc(client, template.Maps[i], npcId);
+
+                }
             }
             else
             {
-                HandleMapNpc(client, template.Maps[0], npcId);
+                await HandleMapNpc(client, template.Maps[0], npcId);
             }
         }
 
-        void HandleMapNpc(IChannelClient client, int mapId, int npcId)
+        async Task HandleMapNpc(IChannelClient client, int mapId, int npcId)
         {
             if (mapId == client.OnlinedCharacter.getMapId())
             {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.AlreadyInMap));
+                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.AlreadyInMap));
                 return;
             }
-            var map = client.CurrentServer.getMapFactory().getMap(mapId);
+            var map = await client.CurrentServer.getMapFactory().getMap(mapId);
             if (map == null)
             {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
+                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
                 return;
             }
 
             var npc = map.getNPCById(npcId);
             if (npc == null)
             {
-                client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFoundInMap), npcId.ToString(), map.Id.ToString());
+                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFoundInMap), npcId.ToString(), map.Id.ToString());
                 return;
             }
-            client.OnlinedCharacter.changeMap(map, npc.getPosition());
+            await client.OnlinedCharacter.changeMap(map, npc.getPosition());
         }
     }
 }

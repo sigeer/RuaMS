@@ -37,16 +37,16 @@ public class StorageProcessor
 {
     static ILogger _logger = LogFactory.GetLogger(LogType.Storage);
 
-    public static void TakeOut(AbstractStorage storage, Item item)
+    public static async Task TakeOut(AbstractStorage storage, Item item)
     {
-        if (!storage.TakeOutItemCheck(item))
+        if (!await storage.TakeOutItemCheck(item))
             return;
 
         if (storage.RemoveItem(item))
         {
             KarmaManipulator.toggleKarmaFlagToUntradeable(item);
-            InventoryManipulator.addFromDrop(storage.Owner.Client, item, false);
-            storage.OnTakeOutSuccess(item);
+            await InventoryManipulator.addFromDrop(storage.Owner.Client, item, false);
+            await storage.OnTakeOutSuccess(item);
 
             _logger.Debug("Chr {CharacterName} took out {ItemQuantity}x {ItemName} ({ItemId})",
                 storage.Owner.getName(),
@@ -54,7 +54,7 @@ public class StorageProcessor
                 ClientCulture.SystemCulture.GetItemName(item.getItemId()),
                 item.getItemId());
 
-            storage.Owner.sendPacket(StoragePacketCreator.takeOutStorage(
+            await storage.Owner.SendPacket(StoragePacketCreator.takeOutStorage(
                 storage.Slots,
                 item.getInventoryType(),
                 storage.GetTypedItems(item.getInventoryType())));
@@ -62,14 +62,14 @@ public class StorageProcessor
         }
         else
         {
-            storage.Owner.sendPacket(PacketCreator.enableActions());
+            await storage.Owner.SendPacket(PacketCreator.enableActions());
             return;
         }
     }
 
-    public static void Store(AbstractStorage storage, short slot, int itemId, short quantity)
+    public static async Task Store(AbstractStorage storage, short slot, int itemId, short quantity)
     {
-        if (!storage.StoreItemCheck(slot, itemId, quantity))
+        if (!await storage.StoreItemCheck(slot, itemId, quantity))
             return;
 
         InventoryType invType = ItemConstants.getInventoryType(itemId);
@@ -83,7 +83,7 @@ public class StorageProcessor
         {
             if (ItemId.isWeddingRing(itemId) || ItemId.isWeddingToken(itemId))
             {
-                storage.Owner.sendPacket(PacketCreator.enableActions());
+                await storage.Owner.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -94,15 +94,15 @@ public class StorageProcessor
 
             item = item.copy();
             item.setQuantity(quantity);
-            InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
+            await InventoryManipulator.removeFromSlot(storage.Owner.Client, invType, slot, quantity, false);
         }
         else
         {
-            storage.Owner.sendPacket(PacketCreator.enableActions());
+            await storage.Owner.SendPacket(PacketCreator.enableActions());
             return;
         }
 
-        storage.OnStoreSuccess(slot, itemId, quantity);
+        await storage.OnStoreSuccess(slot, itemId, quantity);
 
         KarmaManipulator.toggleKarmaFlagToUntradeable(item);
 
@@ -113,7 +113,7 @@ public class StorageProcessor
             quantity,
             ClientCulture.SystemCulture.GetItemName(item.getItemId()),
             item.getItemId());
-        storage.Owner.sendPacket(StoragePacketCreator.storeStorage(
+        await storage.Owner.SendPacket(StoragePacketCreator.storeStorage(
             storage.Slots,
             invType,
             storage.GetTypedItems(invType)));
@@ -125,16 +125,16 @@ public class StorageProcessor
     /// <param name="storage"></param>
     /// <param name="chr"></param>
     /// <param name="meso">大于0取出，小于0存入</param>
-    public static void SetMeso(AbstractStorage storage, int meso)
+    public static async Task SetMeso(AbstractStorage storage, int meso)
     {
-        if ((meso > 0 && storage.TakeOutMesoCheck(meso)) || (meso < 0 && storage.StoreMesoCheck(-meso)))
+        if ((meso > 0 && await storage.TakeOutMesoCheck(meso)) || (meso < 0 && await storage.StoreMesoCheck(-meso)))
         {
             if (meso < 0 && (storage.Meso - meso) < 0)
             {
                 meso = int.MinValue + storage.Meso;
                 if (meso < storage.Owner.getMeso())
                 {
-                    storage.Owner.sendPacket(PacketCreator.enableActions());
+                    await storage.Owner.SendPacket(PacketCreator.enableActions());
                     return;
                 }
             }
@@ -143,19 +143,19 @@ public class StorageProcessor
                 meso = int.MaxValue - storage.Owner.getMeso();
                 if (meso > storage.Meso)
                 {
-                    storage.Owner.sendPacket(PacketCreator.enableActions());
+                    await storage.Owner.SendPacket(PacketCreator.enableActions());
                     return;
                 }
             }
             storage.Meso -= meso;
 
-            storage.Owner.GainMeso(meso, enableActions: true);
+            await storage.Owner.GainMeso(meso, enableActions: true);
             _logger.Debug("Chr {CharacterName} {0} {meso} mesos", storage.Owner.Name, meso > 0 ? "took out" : "stored", Math.Abs(meso));
-            storage.UpdateMeso();
+            await storage.UpdateMeso();
         }
         else
         {
-            storage.Owner.sendPacket(PacketCreator.enableActions());
+            await storage.Owner.SendPacket(PacketCreator.enableActions());
             return;
         }
     }

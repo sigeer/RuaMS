@@ -1,17 +1,8 @@
 using Application.Core.Models;
-using Application.Core.scripting.npc;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
-using Application.Shared.Events;
-using Application.Shared.Languages;
 using Application.Shared.Login;
-using Application.Shared.Message;
 using AutoMapper;
-using Dto;
-using Google.Protobuf.WellKnownTypes;
-using System.Text;
-using System.Threading.Tasks;
-using tools;
 
 namespace Application.Core.Channel.Services
 {
@@ -28,9 +19,9 @@ namespace Application.Core.Channel.Services
             _mapper = mapper;
         }
 
-        public void AutoBan(Player chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
+        public async Task AutoBan(Player chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
         {
-            var res = _transport.Ban(new SystemProto.BanRequest
+            await _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = ServerConstants.SystemCId,
                 Victim = chr.Name,
@@ -41,11 +32,11 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        public void Ban(Player chr, string victim, int reason, string reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
+        public async Task Ban(int operatorId, string victim, int reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
-            _ = _transport.Ban(new SystemProto.BanRequest
+            await _transport.Ban(new SystemProto.BanRequest
             {
-                OperatorId = chr.Id,
+                OperatorId = operatorId,
                 Victim = victim,
                 Reason = reason,
                 ReasonDesc = reasonDesc,
@@ -92,7 +83,7 @@ namespace Application.Core.Channel.Services
                     }
                 }
 
-                chr.dropMessage(sendStr);
+                chr.Notice(sendStr);
             }
         }
 
@@ -106,21 +97,21 @@ namespace Application.Core.Channel.Services
         /// </summary>
         /// <param name="targetId"></param>
         [SupportRemoteCall(RemoteCallMethods.WarpPlayerByName)]
-        public void WarpPlayerByName(Player chr, string victim)
+        public async Task WarpPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
             {
                 var map = sameChannelSearch.getMap();
-                chr.changeMap(map, sameChannelSearch.getPosition());
+                await chr.changeMap(map, sameChannelSearch.getPosition());
             }
             else
             {
-                _ = _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
-        public void SummonPlayerByName(Player chr, string victim)
+        public async Task SummonPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
@@ -128,38 +119,38 @@ namespace Application.Core.Channel.Services
                 if (sameChannelSearch.getEventInstance() != null)
                 {
                     // 处于事件中不能被传送走，避免影响其无法完成任务
-                    chr.dropMessage($"玩家 {victim} 正处于事件中，无法离开");
+                    await chr.Notice($"玩家 {victim} 正处于事件中，无法离开");
                     return;
                 }
 
                 var map = chr.getMap();
-                sameChannelSearch.changeMap(map, chr.getPosition());
+                await sameChannelSearch.changeMap(map, chr.getPosition());
             }
             else
             {
-                _ = _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
-        public void DisconnectPlayerByName(Player chr, string victim)
+        public async Task DisconnectPlayerByName(Player chr, string victim)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(victim);
             if (sameChannelSearch != null)
             {
-                sameChannelSearch.Client.Disconnect(false);
+                await sameChannelSearch.Client.Disconnect(false);
             }
             else
             {
-                _ = _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
 
-        public void DisconnectAll(Player chr)
+        public async Task DisconnectAll(Player chr)
         {
-            _ = _server.Transport.DisconnectAllNotifyAsync();
+            await _server.Transport.DisconnectAllNotifyAsync();
             // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
-            chr.Pink(ClientMessage.Command_Done, "dcall");
+            await chr.Pink(ClientMessage.Command_Done, "dcall");
         }
 
         public List<Dto.ClientInfo> GetOnliendClientInfo()
@@ -174,7 +165,7 @@ namespace Application.Core.Channel.Services
         /// <param name="delay">单位：秒。-1：立即</param>
         public void ShutdownMaster(Player chr, int delay = -1)
         {
-            chr.dropMessage("服务器正在停止中...");
+            chr.Notice("服务器正在停止中...");
             _ = _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
         }
 
@@ -281,14 +272,14 @@ namespace Application.Core.Channel.Services
             return _server.TimerManager.TaskScheduler.Keys.OrderBy(x => x).ToList();
         }
 
-        public void JailPlayer(int operatorId, string targetName, int minutes)
+        public async Task JailPlayer(int operatorId, string targetName, int minutes)
         {
-            _ = _transport.JailPlayer(new JailProto.CreateJailRequest { MasterId = operatorId, TargetName = targetName, Minutes = minutes });
+            await _transport.JailPlayer(new JailProto.CreateJailRequest { MasterId = operatorId, TargetName = targetName, Minutes = minutes });
         }
 
-        public void UnjailPlayer(Player chr, string targetName)
+        public async Task UnjailPlayer(Player chr, string targetName)
         {
-            _ = _transport.UnjailPlayer(new JailProto.CreateUnjailRequest { MasterId = chr.Id, TargetName = targetName });
+            await _transport.UnjailPlayer(new JailProto.CreateUnjailRequest { MasterId = chr.Id, TargetName = targetName });
         }
     }
 }

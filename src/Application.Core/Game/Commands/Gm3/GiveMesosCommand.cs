@@ -9,12 +9,12 @@ public class GiveMesosCommand : CommandBase
         Description = "Give mesos to a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.GiveMesosCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.GiveMesosCommand_Syntax));
             return;
         }
 
@@ -59,12 +59,12 @@ public class GiveMesosCommand : CommandBase
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(recv_);
         if (victim != null && victim.IsOnlined)
         {
-            victim.GainMeso((int)mesos_, GainItemShow.ShowInMessage);
-            player.MessageI18N(nameof(ClientMessage.GiveMesosCommand_MesoGiven));
+            await victim.GainMeso((int)mesos_, GainItemShow.ShowInMessage);
+            await player.Pink(nameof(ClientMessage.GiveMesosCommand_MesoGiven));
         }
         else
         {
-            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
+            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
     }
 }

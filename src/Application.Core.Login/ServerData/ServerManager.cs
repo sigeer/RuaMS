@@ -15,7 +15,6 @@ namespace Application.Core.Login.Datas
         readonly ILogger<ServerManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _masterServer;
-        protected System.Threading.Channels.Channel<bool> packetChannel;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
@@ -27,16 +26,6 @@ namespace Application.Core.Login.Datas
             _masterServer = masterServer;
 
             _logger = logger;
-            packetChannel = System.Threading.Channels.Channel.CreateUnbounded<bool>();
-            // 定时触发、特殊事件触发、关闭服务器触发
-            Task.Run(async () =>
-            {
-                await foreach (var p in packetChannel.Reader.ReadAllAsync())
-                {
-                    await CommitAllImmediately();
-
-                }
-            });
         }
 
         public async Task Setup(CancellationToken cancellationToken)
@@ -122,13 +111,9 @@ namespace Application.Core.Login.Datas
 
         #region Write
 
-        protected override void HandleRun()
+        protected override async Task HandleRun()
         {
-            CommitAll();
-        }
-        public bool CommitAll()
-        {
-            return packetChannel.Writer.TryWrite(true);
+            await CommitAllImmediately();
         }
 
         public async Task CommitAllImmediately()

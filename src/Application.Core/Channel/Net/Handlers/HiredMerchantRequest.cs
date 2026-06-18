@@ -22,7 +22,6 @@
 
 
 using Application.Core.Channel.Services;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -42,7 +41,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -50,7 +49,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
         {
             if (chr.getMap().getMapObjectsInRange(chr.getPosition(), 23000, [MapObjectType.HIRED_MERCHANT, MapObjectType.PLAYER_SHOP]).Count > 0)
             {
-                chr.sendPacket(PacketCreator.getMiniRoomError(13));
+                await chr.SendPacket(PacketCreator.getMiniRoomError(13));
                 return;
             }
 
@@ -58,7 +57,7 @@ public class HiredMerchantRequest : ChannelHandlerBase
             var portal = chr.getMap().findClosestTeleportPortal(cpos);
             if (portal != null && portal.getPosition().distance(cpos) < 120.0)
             {
-                chr.sendPacket(PacketCreator.getMiniRoomError(10));
+                await chr.SendPacket(PacketCreator.getMiniRoomError(10));
                 return;
             }
         }
@@ -69,16 +68,16 @@ public class HiredMerchantRequest : ChannelHandlerBase
 
         if (GameConstants.isFreeMarketRoom(chr.getMapId()))
         {
-            if (!_service.CanHiredMerchant(chr))
+            if (!await _service.CanHiredMerchant(chr))
             {
                 return;
             }
 
-            chr.sendPacket(PacketCreator.hiredMerchantBox());
+            await chr.SendPacket(PacketCreator.hiredMerchantBox());
         }
         else
         {
-            chr.dropMessage(1, "You cannot open your hired merchant here.");
+            await chr.Popup("You cannot open your hired merchant here.");
         }
     }
 }

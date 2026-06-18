@@ -59,7 +59,7 @@ namespace Application.Plugin.Script.Npc
                                 return;
                             }
                         }
-                        avDojo = getClient().getChannelServer().ingressDojo(hasParty, getParty(), (getMapId() / 100) % 100);
+                        avDojo = await getClient().getChannelServer().ingressDojo(hasParty, getParty(), (getMapId() / 100) % 100);
                         firstEnter = true;
                     }
 
@@ -82,17 +82,17 @@ namespace Application.Plugin.Script.Npc
                         
                         if (firstEnter)
                         {
-                            getClient().getChannelServer().resetDojoMap(dojoWarpMap);
+                            await getClient().getChannelServer().resetDojoMap(dojoWarpMap);
                         }
                         
                         getPlayer().setDojoStage(0);
                         if (!hasParty || !isLeader())
                         {
-                            warp(dojoWarpMap, 0);
+                            await warp(dojoWarpMap, 0);
                         }
                         else
                         {
-                            warpParty(dojoWarpMap, 0);
+                            await warpParty(dojoWarpMap, 0);
                         }
                     }
                 }
@@ -100,7 +100,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("所以，你要放弃了吗？你真的要离开吗？"))
                     {
-                        warp(925020002, "st00");
+                        await warp(925020002, "st00");
                     }
                 }
                 else if (selectedMenu == 2)
@@ -136,7 +136,7 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (await AskYesNo("嘿！你！这是你第一次来吗？嗯，我的主人不会随便见任何人。他很忙。看你的样子，我觉得他不会理你。哈！但是，今天是你的幸运日……我告诉你吧，如果你能打败我，我就让你见我的主人。你觉得怎么样？"))
                             {
-                                var avDojo = getClient().getChannelServer().ingressDojo(true, 0);
+                                var avDojo = await getClient().getChannelServer().ingressDojo(true, 0);
                                 if (avDojo < 0)
                                 {
                                     if (avDojo == -1)
@@ -150,9 +150,9 @@ namespace Application.Plugin.Script.Npc
                                 }
                                 else
                                 {
-                                    getClient().getChannelServer().getMapFactory().getMap(925020010 + avDojo).resetMapObjects();
+                                    await (await getClient().getChannelServer().getMapFactory().getMap(925020010 + avDojo)).resetMapObjects();
                                     resetDojoEnergy();
-                                    warp(925020010 + avDojo, 0);
+                                    await warp(925020010 + avDojo, 0);
                                 }
                             }
                             else
@@ -168,7 +168,7 @@ namespace Application.Plugin.Script.Npc
                             
                             if (await AskYesNo($"上次你独自挑战时，你一直走到了第#b{stageWarp}#k关。我现在可以带你去那里。你想去那里吗？（选择#rNo#k来删除这个记录。）"))
                             {
-                                var avDojo = getClient().getChannelServer().ingressDojo(false, dojoWarp);
+                                var avDojo = await getClient().getChannelServer().ingressDojo(false, dojoWarp);
                                 if (avDojo < 0)
                                 {
                                     if (avDojo == -1)
@@ -184,15 +184,15 @@ namespace Application.Plugin.Script.Npc
                                 else
                                 {
                                     var warpDojoMap = 925020000 + (dojoWarp + 1) * 100 + avDojo;
-                                    getClient().getChannelServer().resetDojoMap(warpDojoMap);
+                                    await getClient().getChannelServer().resetDojoMap(warpDojoMap);
                                     resetDojoEnergy();
-                                    warp(warpDojoMap, 0);
+                                    await warp(warpDojoMap, 0);
                                 }
                             }
                         }
                         else
                         {
-                            var avDojo = getClient().getChannelServer().ingressDojo(false, dojoWarp);
+                            var avDojo = await getClient().getChannelServer().ingressDojo(false, dojoWarp);
                             if (avDojo < 0)
                             {
                                 if (avDojo == -1)
@@ -208,9 +208,9 @@ namespace Application.Plugin.Script.Npc
                             else
                             {
                                 var warpDojoMap = 925020000 + (dojoWarp + 1) * 100 + avDojo;
-                                getClient().getChannelServer().resetDojoMap(warpDojoMap);
+                                await getClient().getChannelServer().resetDojoMap(warpDojoMap);
                                 resetDojoEnergy();
-                                warp(warpDojoMap, 0);
+                                await warp(warpDojoMap, 0);
                             }
                         }
                     }
@@ -233,7 +233,7 @@ namespace Application.Plugin.Script.Npc
                             return;
                         }
 
-                        var avDojo = getClient().getChannelServer().ingressDojo(true, getParty(), 0);
+                        var avDojo = await getClient().getChannelServer().ingressDojo(true, getParty(), 0);
                         if (avDojo < 0)
                         {
                             if (avDojo == -1)
@@ -247,9 +247,9 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            getClient().getChannelServer().resetDojoMap(925030100 + avDojo);
+                            await getClient().getChannelServer().resetDojoMap(925030100 + avDojo);
                             resetPartyDojoEnergy();
-                            warpParty(925030100 + avDojo);
+                            await warpParty(925030100 + avDojo);
                         }
                     }
                     else if (selectedMenu == 2)
@@ -294,9 +294,9 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (beltSelection > 0)
                                 {
-                                    gainItem(oldbelt, -1);
+                                    await gainItem(oldbelt, -1);
                                 }
-                                gainItem(belt, 1);
+                                await gainItem(belt, 1);
                                 getPlayer().setDojoPoints(getPlayer().getDojoPoints() - points);
                                 await SayNext($"这里有一个 #i{belt}# #b#t{belt}##k。你已经证明了自己的勇气，可以在道馆排名中晋升。干得好！");
                             }
@@ -343,7 +343,7 @@ namespace Application.Plugin.Script.Npc
                                 else
                                 {
                                     await SayNext($"你已经获得了#b#t{1142032 + getPlayer().getVanquisherStage()}##k。");
-                                    gainItem(1142033 + getPlayer().getVanquisherStage(), 1);
+                                    await gainItem(1142033 + getPlayer().getVanquisherStage(), 1);
                                     getPlayer().setVanquisherStage(getPlayer().getVanquisherStage() + 1);
                                     getPlayer().setVanquisherKills(0);
                                 }
@@ -366,7 +366,7 @@ namespace Application.Plugin.Script.Npc
                             else
                             {
                                 await SayNext($"你已经获得了#b#t{1142032 + getPlayer().getVanquisherStage()}##k。");
-                                gainItem(1142033 + getPlayer().getVanquisherStage(), 1);
+                                await gainItem(1142033 + getPlayer().getVanquisherStage(), 1);
                                 getPlayer().setVanquisherStage(getPlayer().getVanquisherStage() + 1);
                                 getPlayer().setVanquisherKills(0);
                             }
@@ -382,9 +382,9 @@ namespace Application.Plugin.Script.Npc
                     if (await AskYesNo("什么，你要放弃了吗？你只需要达到下一个级别！你真的想要放弃并离开吗？"))
                     {
                         var dojoMapId = getMapId();
-                        warp(925020002, 0);
-                        Pink("Can you make up your mind please?");
-                        getClient().getChannelServer().freeDojoSectionIfEmpty(dojoMapId);
+                        await warp(925020002, 0);
+                        await Pink("Can you make up your mind please?");
+                        await getClient().getChannelServer().freeDojoSectionIfEmpty(dojoMapId);
                     }
                     else
                     {
@@ -424,7 +424,7 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo("（当我把手放在公告板上时，一股神秘的能量开始包围着我。）\r\n\r\n你想去勇士部落道场吗？"))
                 {
                     getPlayer().saveLocation("MIRROR");
-                    warp(925020000, 4);
+                    await warp(925020000, 4);
                 }
                 else
                 {

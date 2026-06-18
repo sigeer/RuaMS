@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Core.Channel.Commands
 {
     internal class InvokeBuddyPacketCommand : IWorldChannelCommand
@@ -21,12 +19,12 @@ namespace Application.Core.Channel.Commands
             foreach (var buddy in _ids)
             {
                 var buddyChrActor = ctx.getPlayerStorage().GetCharacterActor(buddy);
-                buddyChrActor?.Send(m =>
+                buddyChrActor?.Send(async m =>
                 {
                     var buddyChr = m.getCharacterById(buddy);
                     if (buddyChr != null && buddyChr.BuddyList.Contains(id))
                     {
-                        buddyChr.sendPacket(p);
+                        await buddyChr.SendPacket(p);
                     }
                 });
 

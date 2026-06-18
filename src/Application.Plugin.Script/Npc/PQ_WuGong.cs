@@ -35,8 +35,8 @@ namespace Application.Plugin.Script.Npc
 
                 if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                 {
-                    gainItem(itemId, -1);
-                    warp(enterMap);
+                    await gainItem(itemId, -1);
+                    await warp(enterMap);
                 }
                 else
                 {
@@ -66,7 +66,7 @@ namespace Application.Plugin.Script.Npc
                 await SayNext("敬礼！\r\n要做一些检查！\r\n这里是禁区，闲人免进。\r\n没有许可的人是不允许进入的！\r\n什么？已经获得许可了？");
                 if (await AskYesNo("哦...刚刚接到信息。您是特别行动小组的人啊。看来是位了不起的人啊，如果您帮我个小忙的话，我就让您通过。您可以帮我吗？"))
                 {
-                    startQuest(questId);
+                    await startQuest(questId);
                 }
                 else
                 {
@@ -88,8 +88,8 @@ namespace Application.Plugin.Script.Npc
                             if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                             {
                                 var quest = server.quest.Quest.getInstance(questId);
-                                quest.reset(getPlayer());
-                                warp(enterMap, "h000");
+                                await quest.reset(getPlayer());
+                                await warp(enterMap, "h000");
                                 return;
                             }
                         }
@@ -102,7 +102,7 @@ namespace Application.Plugin.Script.Npc
                     case 1:
                         if (await AskYesNo($"你已经决定要离开吗？\r\n当你准备好去#b#e#m{enterMap}##k#n的时候再来找我。"))
                         {
-                            warp(outMap);
+                            await warp(outMap);
                         }
                         break;
                     default:
@@ -139,7 +139,7 @@ namespace Application.Plugin.Script.Npc
                             var level = getLevel();
                             if (level >= em.MinLevel && level <= em.MaxLevel)
                             {
-                                warp(701010324);
+                                await warp(701010324);
                             }
                             else
                             {
@@ -148,7 +148,7 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            var r = em.StartInstance(getPlayer());
+                            var r = await em.StartInstance(getPlayer());
                             await SayOK(em.HandleCreateInstanceResult(r, c));
                             return;
                         }
@@ -158,7 +158,7 @@ namespace Application.Plugin.Script.Npc
                     var mapId = 701010320;
                     if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
                     {
-                        warp(mapId);
+                        await warp(mapId);
                     }
                     break;
                 default:
@@ -173,7 +173,7 @@ namespace Application.Plugin.Script.Npc
             var mapId = 701010320;
             if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
             {
-                warp(mapId);
+                await warp(mapId);
             }
         }
     }

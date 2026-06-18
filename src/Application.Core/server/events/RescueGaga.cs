@@ -37,7 +37,7 @@ public class RescueGaga : Events
         return getCompleted();
     }
 
-    public void giveSkill(Player chr)
+    public async Task giveSkill(Player chr)
     {
         int skillid = 0;
         switch (chr.getJobType())
@@ -54,13 +54,13 @@ public class RescueGaga : Events
         long expiration = chr.getChannelServer().Node.GetCurrentTimeDateTimeOffset().AddDays(20).ToUnixTimeMilliseconds(); //20 days
         if (completed < 20)
         {
-            chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 1, 1, expiration);
-            chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid + 1), 1, 1, expiration);
-            chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid + 2), 1, 1, expiration);
+            await chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 1, 1, expiration);
+            await chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid + 1), 1, 1, expiration);
+            await chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid + 2), 1, 1, expiration);
         }
         else
         {
-            chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 2, 2, chr.getSkillExpiration(skillid));
+            await chr.changeSkillLevel(SkillFactory.GetSkillTrust(skillid), 2, 2, chr.getSkillExpiration(skillid));
         }
     }
 

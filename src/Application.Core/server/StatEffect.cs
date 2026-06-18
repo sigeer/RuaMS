@@ -30,8 +30,6 @@ using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.tools.RandomUtils;
-using Application.Shared.Constants.Skill;
-using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
 using Application.Templates.StatEffectProps;
@@ -41,7 +39,6 @@ using client.status;
 using server.life;
 using server.maps;
 using server.partyquest;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace server;
@@ -763,7 +760,7 @@ public class StatEffect
      * @param obj
      * @param attack  damage done by the skill
      */
-    public void applyPassive(Player applyto, IMapObject obj, int attack)
+    public async Task applyPassive(Player applyto, IMapObject obj, int attack)
     {
         if (makeChanceResult())
         {
@@ -783,13 +780,13 @@ public class StatEffect
                         if (absorbMp > 0)
                         {
                             mob.setMp(mob.getMp() - absorbMp);
-                            applyto.UpdateStatsChunk(() =>
+                            await applyto.UpdateStatsChunk(() =>
                             {
                                 applyto.ChangeMP(absorbMp);
                             });
 
-                            applyto.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
-                            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), applyto.Id);
+                            await applyto.SendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
+                            await applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), applyto.Id);
                         }
                     }
                     break;
@@ -797,49 +794,49 @@ public class StatEffect
         }
     }
 
-    public bool applyEchoOfHero(Player applyfrom)
+    public async Task<bool> applyEchoOfHero(Player applyfrom)
     {
         var mapPlayers = applyfrom.getMap().getAllPlayers();
 
-        bool hwResult = applyTo(applyfrom);
+        bool hwResult = await applyTo(applyfrom);
         foreach (Player chr in mapPlayers)
         {
             if (chr == applyfrom)
                 continue;
             // Echo of Hero not buffing players in the map detected thanks to Masterrulax
-            applyTo(applyfrom, chr, false, null, false, 1);
+            await applyTo(applyfrom, chr, false, null, false, 1);
         }
 
         return hwResult;
     }
 
-    public bool applyTo(Player chr)
+    public async Task<bool> applyTo(Player chr)
     {
-        return applyTo(chr, chr, true, null, false, 1);
+        return await applyTo(chr, chr, true, null, false, 1);
     }
 
-    public bool applyTo(Player chr, bool useMaxRange)
+    public async Task<bool> applyTo(Player chr, bool useMaxRange)
     {
-        return applyTo(chr, chr, true, null, useMaxRange, 1);
+        return await applyTo(chr, chr, true, null, useMaxRange, 1);
     }
 
-    public bool applyTo(Player chr, Point? pos)
+    public async Task<bool> applyTo(Player chr, Point? pos)
     {
-        return applyTo(chr, chr, true, pos, false, 1);
+        return await applyTo(chr, chr, true, pos, false, 1);
     }
 
     // primary: the player caster of the buff
-    private bool applyTo(Player applyfrom, Player applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
+    private async Task<bool> applyTo(Player applyfrom, Player applyto, bool primary, Point? pos, bool useMaxRange, int affectedPlayers)
     {
         if (skill && (sourceid == GM.HIDE || sourceid == SuperGM.HIDE))
         {
-            applyto.toggleHide(false);
+            await applyto.toggleHide(false);
             return true;
         }
 
         if (primary && isHeal())
         {
-            affectedPlayers = applyBuff(applyfrom, useMaxRange);
+            affectedPlayers = await applyBuff(applyfrom, useMaxRange);
         }
 
         int hpchange = calcHPChange(applyfrom, primary, affectedPlayers);
@@ -850,10 +847,10 @@ public class StatEffect
             {
                 if (!applyto.getAbstractPlayerInteraction().hasItem(itemCon, itemConNo))
                 {
-                    applyto.sendPacket(PacketCreator.enableActions());
+                    await applyto.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
-                InventoryManipulator.removeById(applyto.Client, ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
+                await InventoryManipulator.removeById(applyto.Client, ItemConstants.getInventoryType(itemCon), itemCon, itemConNo, false, true);
             }
         }
         else
@@ -861,29 +858,29 @@ public class StatEffect
             if (isResurrection())
             {
                 hpchange = applyto.ActualMaxHP;
-                applyto.broadcastStance(applyto.isFacingLeft() ? 5 : 4);
+                await applyto.broadcastStance(applyto.isFacingLeft() ? 5 : 4);
             }
         }
 
         if (isDispel() && makeChanceResult())
         {
-            applyto.dispelDebuffs();
+            await applyto.dispelDebuffs();
         }
         else if (isCureAllAbnormalStatus())
         {
-            applyto.purgeDebuffs();
+            await applyto.purgeDebuffs();
         }
         else if (isComboReset())
         {
-            applyto.setCombo(0);
+            await applyto.setCombo(0);
         }
         /*if (applyfrom.getMp() < getMpCon()) {
          AutobanFactory.MPCON.addPoint(applyfrom.getAutobanManager(), "mpCon hack for skill:" + sourceid + "; Player MP: " + applyto.getMp() + " MP Needed: " + getMpCon());
          } */
 
-        if (!applyto.applyHpMpChange(hpCon, hpchange, mpchange))
+        if (!await applyto.applyHpMpChange(hpCon, hpchange, mpchange))
         {
-            applyto.sendPacket(PacketCreator.enableActions());
+            await applyto.SendPacket(PacketCreator.enableActions());
             return false;
         }
 
@@ -896,12 +893,12 @@ public class StatEffect
 
                 if (townScroll.MoveTo == MapId.NONE)
                 {
-                    target = applyto.getMap().getReturnMap();
+                    target = await applyto.getMap().getReturnMap();
                     pt = target.getRandomPlayerSpawnpoint();
                 }
                 else
                 {
-                    target = applyto.getChannelServer().getMapFactory().getMap(townScroll.MoveTo);
+                    target = await applyto.getChannelServer().getMapFactory().getMap(townScroll.MoveTo);
                     int targetid = target.getId() / 10000000;
                     if (targetid != 60
                         && applyto.getMapId() / 10000000 != 61
@@ -918,7 +915,7 @@ public class StatEffect
                     pt = target.getRandomPlayerSpawnpoint();
                 }
 
-                applyto.changeMap(target, pt);
+                await applyto.changeMap(target, pt);
             }
             else
             {
@@ -950,7 +947,7 @@ public class StatEffect
             }
             else
             {
-                InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
+                await InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
             }
         }
         var summonMovementType = getSummonMovementType();
@@ -958,29 +955,29 @@ public class StatEffect
         {
             if (summonMovementType != null && pos != null)
             {
-                applyto.cancelBuffStats(summonMovementType.Value == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
-                applyto.sendPacket(PacketCreator.enableActions());
+                await applyto.cancelBuffStats(summonMovementType.Value == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
+                await applyto.SendPacket(PacketCreator.enableActions());
             }
 
-            applyBuffEffect(applyfrom, applyto, primary);
+            await applyBuffEffect(applyfrom, applyto, primary);
         }
 
         if (primary)
         {
             if (overTime)
             {
-                applyBuff(applyfrom, useMaxRange);
+                await applyBuff(applyfrom, useMaxRange);
             }
 
             if (isMonsterBuff())
             {
-                applyMonsterBuff(applyfrom);
+                await applyMonsterBuff(applyfrom);
             }
         }
 
         if (EffectTemplate is MonsterCardItemTemplate monsterCardItem)
         {
-            applyto.Monsterbook.addCard(monsterCardItem.TemplateId);
+            await applyto.Monsterbook.addCard(monsterCardItem.TemplateId);
         }
 
         if (EffectTemplate is IItemStatEffectMC mc)
@@ -992,7 +989,7 @@ public class StatEffect
                     return false;
                 }
 
-                eim.GainCP(applyto, mc.CP);
+                await eim.GainCP(applyto, mc.CP);
             }
 
             if (mc.CPSkill != 0 && applyto.Party > 0 && applyto.getMap().isCPQMap())
@@ -1016,12 +1013,12 @@ public class StatEffect
                             {
                                 if (dis == null)
                                 {
-                                    chrApp.dispel();
+                                    await chrApp.dispel();
                                 }
                                 else
                                 {
                                     MobSkill mobSkill = skill.getSkill();
-                                    chrApp.giveDebuff(dis, mobSkill);
+                                    await chrApp.giveDebuff(dis, mobSkill);
                                 }
                             }
                         }
@@ -1033,12 +1030,12 @@ public class StatEffect
                         {
                             if (dis == null)
                             {
-                                chrApp.dispel();
+                                await chrApp.dispel();
                             }
                             else
                             {
                                 MobSkill mobSkill = skill.getSkill();
-                                chrApp.giveDebuff(dis, mobSkill);
+                                await chrApp.giveDebuff(dis, mobSkill);
                             }
                         }
                     }
@@ -1054,7 +1051,7 @@ public class StatEffect
         if (summonMovementType != null && pos != null)
         {
             Summon tosummon = new Summon(applyfrom, sourceid, pos.Value, summonMovementType.Value);
-            applyfrom.getMap().spawnSummon(tosummon);
+            await applyfrom.getMap().spawnSummon(tosummon);
             applyfrom.addSummon(sourceid, tosummon);
             tosummon.addHP(x);
             if (isBeholder())
@@ -1072,45 +1069,45 @@ public class StatEffect
             }
             Point doorPosition = new Point(applyto.getPosition().X, y);
 
-            var createDoorCode = Door.TryCreateDoor(applyto, doorPosition, out var door);
+            var (createDoorCode, door) = await Door.TryCreateDoor(applyto, doorPosition);
             if (createDoorCode == 0 && door != null)
             {
                 applyto.applyPartyDoor(door);
 
-                door.getTarget().spawnDoor(door.getAreaDoor());
-                door.getTown().spawnDoor(door.getTownDoor());
+                await door.getTarget().spawnDoor(door.getAreaDoor());
+                await door.getTown().spawnDoor(door.getTownDoor());
             }
             else
             {
-                applyto.GainItem(ItemId.MAGIC_ROCK, 1);
+                await applyto.GainItem(ItemId.MAGIC_ROCK, 1);
 
                 if (createDoorCode == -2)
                 {
-                    applyto.Pink("Mystic Door cannot be cast on a slope, try elsewhere.");
+                    await applyto.Pink("Mystic Door cannot be cast on a slope, try elsewhere.");
                 }
                 else if (createDoorCode == -1)
                 {
-                    applyto.Pink("There are no door portals available for the town at this moment. Try again later.");
+                    await applyto.Pink("There are no door portals available for the town at this moment. Try again later.");
                 }
 
-                applyto.cancelBuffStats(BuffStat.SOULARROW);  // cancel door buff
+                await applyto.cancelBuffStats(BuffStat.SOULARROW);  // cancel door buff
             }
         }
         else if (isMist())
         {
             Rectangle bounds = calculateBoundingBox(sourceid == NightWalker.POISON_BOMB ? pos.Value : applyfrom.getPosition(), applyfrom.isFacingLeft());
             var mist = new PlayerMist(bounds, applyfrom, this);
-            applyfrom.getMap().spawnMist(mist, getDuration(), mist.isPoisonMist(), false, mist.isRecoveryMist());
+            await applyfrom.getMap().spawnMist(mist, getDuration(), mist.isPoisonMist(), false, mist.isRecoveryMist());
         }
         else if (isTimeLeap())
         {
-            applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
+            await applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
         }
         else if (cureDebuffs.Count > 0)
         { // added by Drago (Dragohe4rt)
             foreach (Disease debuff in cureDebuffs)
             {
-                applyfrom.dispelDebuff(debuff);
+                await applyfrom.dispelDebuff(debuff);
             }
         }
         else if (EffectTemplate is IItemStatEffectMobSkill mobSkillEffect && mobSkillEffect.MobSkill != null)
@@ -1125,19 +1122,19 @@ public class StatEffect
                 {
                     if (chr.getId() != applyto.getId())
                     {
-                        chr.giveDebuff(dis, ms);
+                        await chr.giveDebuff(dis, ms);
                     }
                 }
             }
             else
             {
-                applyto.giveDebuff(dis, ms);
+                await applyto.giveDebuff(dis, ms);
             }
         }
         return true;
     }
 
-    private int applyBuff(Player applyfrom, bool useMaxRange)
+    private async Task<int> applyBuff(Player applyfrom, bool useMaxRange)
     {
         int affectedc = 1;
 
@@ -1164,16 +1161,16 @@ public class StatEffect
             affectedc += affectedp.Count;   // used for heal
             foreach (Player affected in affectedp)
             {
-                applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
-                affected.sendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
-                affected.BroadcastMap(PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), affected.Id);
+                await applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
+                await affected.SendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
+                await affected.BroadcastMap(PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), affected.Id);
             }
         }
 
         return affectedc;
     }
 
-    private void applyMonsterBuff(Player applyfrom)
+    private async Task applyMonsterBuff(Player applyfrom)
     {
         Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
         List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, [MapObjectType.MONSTER]);
@@ -1184,7 +1181,7 @@ public class StatEffect
             Monster monster = (Monster)mo;
             if (isDispel())
             {
-                monster.debuffMob(skill_.getId());
+                await monster.debuffMob(skill_.getId());
             }
             else if (isSeal() && monster.isBoss())
             {  // thanks IxianMace for noticing seal working on bosses
@@ -1194,10 +1191,10 @@ public class StatEffect
             {
                 if (makeChanceResult())
                 {
-                    monster.applyStatus(applyfrom, new MonsterStatusEffect(getMonsterStati(), skill_), isPoison(), getDuration());
+                    await monster.applyStatus(applyfrom, new MonsterStatusEffect(getMonsterStati(), skill_), isPoison(), getDuration());
                     if (isCrash())
                     {
-                        monster.debuffMob(skill_.getId());
+                        await monster.debuffMob(skill_.getId());
                     }
                 }
             }
@@ -1232,7 +1229,7 @@ public class StatEffect
         return !YamlConfig.config.server.USE_BUFF_EVERLASTING ? duration : int.MaxValue;
     }
 
-    public void silentApplyBuff(Player chr, long localStartTime, List<BuffStatValue> appliedBuffStats)
+    public async Task silentApplyBuff(Player chr, long localStartTime, List<BuffStatValue> appliedBuffStats)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(chr, localDuration, false);
@@ -1240,7 +1237,7 @@ public class StatEffect
         //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + localDuration) - Server.getInstance().getCurrentTime()));
         var expiredAt = localStartTime + localDuration;
 
-        chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
+        await chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
         var summonMovementType = getSummonMovementType();
         if (summonMovementType != null)
         {
@@ -1253,31 +1250,31 @@ public class StatEffect
         }
         if (sourceid == Corsair.BATTLE_SHIP)
         {
-            chr.announceBattleshipHp();
+            await chr.announceBattleshipHp();
         }
     }
 
-    public void applyComboBuff(Player applyto, int combo)
+    public async Task applyComboBuff(Player applyto, int combo)
     {
-        applyto.sendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
+        await applyto.SendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
 
         long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
-        applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
+        await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
     }
 
-    public void applyBeaconBuff(Player applyto, int objectid)
+    public async Task applyBeaconBuff(Player applyto, int objectid)
     {
         // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
         // 按照其他调用，第一个参数应该是souceid, 第二个参数应该是有效时间（毫秒）
-        applyto.sendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
+        await applyto.SendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
 
         long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
-        applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
+        await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
     }
 
-    public void updateBuffEffect(Player target, BuffStatValue[] activeStats, long starttime)
+    public async Task updateBuffEffect(Player target, BuffStatValue[] activeStats, long starttime)
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
@@ -1287,20 +1284,20 @@ public class StatEffect
         {
             if (isDash() || isInfusion())
             {
-                target.sendPacket(PacketCreator.givePirateBuff(activeStats, getBuffSourceId(), (int)leftDuration));
+                await target.SendPacket(PacketCreator.givePirateBuff(activeStats, getBuffSourceId(), (int)leftDuration));
             }
             else
             {
-                target.sendPacket(PacketCreator.GiveBuff(this, (int)leftDuration, activeStats));
+                await target.SendPacket(PacketCreator.GiveBuff(this, (int)leftDuration, activeStats));
             }
         }
     }
 
-    private void applyBuffEffect(Player applyfrom, Player applyto, bool primary)
+    private async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary)
     {
         if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
         {     // last mystic door already dispelled if it has been used before.
-            applyto.cancelEffect(this, true);
+            await applyto.cancelEffect(this, true);
         }
 
         var localStatupList = statups.ToList();
@@ -1359,7 +1356,7 @@ public class StatEffect
         if (primary)
         {
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
-            applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), applyto.Id);
+            await applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), applyto.Id);
         }
 
         if (localStatupList.Count > 0)
@@ -1427,7 +1424,7 @@ public class StatEffect
             }
             else if (isEnrage())
             {
-                applyto.handleOrbconsume();
+                await applyto.handleOrbconsume();
             }
             else if (activeMorphId > 0)
             {
@@ -1443,20 +1440,20 @@ public class StatEffect
                 //Thanks flav for such a simple release! :)
                 //Thanks Conrad, Atoot for noticing summons not using buff icon
 
-                applyto.sendPacket(buff);
+                await applyto.SendPacket(buff);
             }
 
             long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
-            applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
+            await applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
             if (mbuff != null)
             {
-                applyto.BroadcastMap(mbuff, applyto.Id);
+                await applyto.BroadcastMap(mbuff, applyto.Id);
             }
             if (sourceid == Corsair.BATTLE_SHIP)
             {
-                applyto.announceBattleshipHp();
+                await applyto.announceBattleshipHp();
             }
         }
     }
@@ -1482,7 +1479,7 @@ public class StatEffect
                 }
             }
             else
-            { 
+            {
                 // assumption: this is heal
                 float hpHeal = hp;
                 if (sourceid == Cleric.HEAL)
@@ -1998,7 +1995,7 @@ public class StatEffect
      this.startTime = startTime;
      }
 
-     public override void run() {
+     public override async Task run() {
      Player realTarget = target.get();
      if (realTarget != null) {
      realTarget.cancelEffect(effect, false, startTime);

@@ -9,7 +9,7 @@ public class ShowRatesCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         StringBuilder sb = new StringBuilder();
@@ -59,6 +59,6 @@ public class ShowRatesCommand : CommandBase
         sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldTravel))).Append(": #e#b").Append(c.CurrentServer.WorldTravelRate).Append("x#k#n");
         sb.Append("\r\n");
 
-        player.showHint(sb.ToString(), 300);
+        await player.showHint(sb.ToString(), 300);
     }
 }

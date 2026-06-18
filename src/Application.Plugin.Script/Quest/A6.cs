@@ -20,13 +20,13 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("糟糕！有个孩子被留在森林里了！我们不能丢下孩子就这么逃走！战神……请你救救孩子吧！你伤得这么重，还要你去战斗，我们心里也很过意不去……但只有你能够救那个孩子啊！"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SaySpeech([
                     "#b孩子可能在森林的深处#k！必须在黑魔法师找到我们之前，启动方舟，所以必须尽快救出孩子才行！",
                     "关键是不要慌张，战神。如果你要查看任务状态，按#bQ键#k就能在任务栏中查看。",
                     "拜托了，战神！救救孩子吧！我们不能再有人因为黑魔法师而牺牲了！"
                     ]);
-                showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             }
             else
             {
@@ -38,9 +38,9 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("呃呃……吓死我了……快，快带到赫丽娜那边去！"))
             {
-                gainItem(4001271, 1);
-                forceStartQuest();
-                warp(914000300, 0);
+                await gainItem(4001271, 1);
+                await forceStartQuest();
+                await warp(914000300, 0);
             }
             else
             {
@@ -62,11 +62,11 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("赫丽娜，你先出发去金银岛。一定要活着，我们一定会再见的。我要和同伴们一起同黑魔法师战斗！", 3),
                     ]);
 
-                gainItem(4001271, -1);
-                removeEquipFromSlot(-11);
-                forceCompleteQuest();
+                await gainItem(4001271, -1);
+                await removeEquipFromSlot(-11);
+                await forceCompleteQuest();
 
-                warp(914090010, 0); // Initialize Aran Tutorial Scenes
+                await warp(914090010, 0); // Initialize Aran Tutorial Scenes
             }
             else
             {
@@ -86,17 +86,17 @@ namespace Application.Plugin.Script.Quest
             {
                 if (getPlayer().HP >= 50)
                 {
-                    getPlayer().UpdateHP(25);
+                    await getPlayer().UpdateHP(25);
                 }
 
-                gainItem(2000022, 1);
-                forceStartQuest();
+                await gainItem(2000022, 1);
+                await forceStartQuest();
 
                 await SaySpeech([
                     new SpeechText("请先喝掉药水，然后再慢慢说！", 9),
                     new SpeechText("#b（这药水怎么喝？……不记得了……）", 3),
                 ]);
-                guideHint(14);
+                await guideHint(14);
             }
             else
             {
@@ -118,14 +118,14 @@ namespace Application.Plugin.Script.Quest
                 "这位原来就是#p1201000#一族数百年间苦苦守候的英雄啊！啊，乍一看倒是和普通人没什么两样……",
                 ]);
 
-            gainExp(16);
-            gainItem(2000022, 3);
-            gainItem(2000023, 3);
-            forceCompleteQuest();
+            await gainExp(16);
+            await gainItem(2000022, 3);
+            await gainItem(2000023, 3);
+            await forceCompleteQuest();
 
             await SayNext("你升级了吗？不知道你有没有得到技能点数？在冒险岛世界，每升1级就能获得技能点数3。按#bK键#k，打开技能栏就可确认。", 9);
             await SayNext("#b（对我这么亲切，我却什么都想不起来。我真的是英雄吗？还是先查看一下技能吧……怎么查看技能呀？）", 3);
-            guideHint(15);
+            await guideHint(15);
         }
         // Quest: 21011 
         public async Task q21011e()
@@ -140,16 +140,16 @@ namespace Application.Plugin.Script.Quest
             {
                 if (canHold(1302000))
                 {
-                    gainItem(1302000, 1);
-                    gainExp(35);
-                    forceCompleteQuest();
+                    await gainItem(1302000, 1);
+                    await gainExp(35);
+                    await forceCompleteQuest();
 
                     await SayNext("#b（看自己这技能水平没一点英雄的样子……这把剑感觉也很陌生。以前的我是用剑的吗？这把剑怎么用呢？）", 3);
-                    guideHint(16);
+                    await guideHint(16);
                 }
                 else
                 {
-                    Popup("你的背包已经满了");
+                    await Popup("你的背包已经满了");
                 }
             }
 
@@ -163,13 +163,13 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("嗯，既然你是英雄，挥挥剑也许就会想起什么来呢？试着去#b打猎怪兽#k，怎么样？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SaySpeech([
                     "对了，这附近有许多#r#o9300383##k，请击退 #r3只#k试试，说不定你就能想起什么了。",
                    "哦，你应该还没有忘记使用技能的方法吧？#b将技能拖到快捷栏上，以方便使用#k。除了技能以外，消耗道具也可以拖到这里来方便使用。",
                 ]);
-                guideHint(17);
+                await guideHint(17);
             }
             else
             {
@@ -183,16 +183,16 @@ namespace Application.Plugin.Script.Quest
             await SayOK("嗯...看您的表情，似乎什么都没有想起来...可是请不要担心。总有一天会好起来的。来，请您喝下这些药水打起精神来!\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v2000022# 10 #t2000022#\r\n#v2000023# 10 #t2000023#\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 57 exp");
             if (canHold(2000022) && canHold(2000023))
             {
-                forceCompleteQuest();
-                gainExp(57);
-                gainItem(2000022, 10);
-                gainItem(2000023, 10);
+                await forceCompleteQuest();
+                await gainExp(57);
+                await gainItem(2000022, 10);
+                await gainItem(2000023, 10);
 
                 await SayOK("#b（就算我真的是英雄……一个什么能力都没有的英雄又有什么用呢？）", 3);
             }
             else
             {
-                Popup("背包满了");
+                await Popup("背包满了");
                 
             }
         }
@@ -202,10 +202,10 @@ namespace Application.Plugin.Script.Quest
             await AskMenu("英、英雄大人………我一直都很想见你。\r\n#b#L2#（做腼腆状。）#l");
             if (await SayAcceptDecline("我从很久以前就想送英雄大人一件礼物……既然今天遇见了英雄，不知英雄能否赏脸收下我这份薄礼？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayNext("礼物的各个部分都装在附近的一个盒子里。对不起，麻烦你了，你能不能把盒子弄坏，给我拿个 #b#t4032309##k 和 #b#t4032310##k? 我马上给你组装好.", 9);
-                guideHint(18);
+                await guideHint(18);
             }
         }
         // Quest: 21013 
@@ -213,16 +213,16 @@ namespace Application.Plugin.Script.Quest
         {
             if (await AskYesNo("材料都拿来了吗？请稍等。这么混合一样……\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v3010062# #t3010062# 1个\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 95 exp"))
             {
-                forceCompleteQuest();
-                gainExp(95);
-                gainItem(4032309, -1);
-                gainItem(4032310, -1);
-                gainItem(3010062, 1);
+                await forceCompleteQuest();
+                await gainExp(95);
+                await gainItem(4032309, -1);
+                await gainItem(4032310, -1);
+                await gainItem(3010062, 1);
 
                 await SayNext("好了，椅子做好了！嘿嘿！就算是英雄肯定也会有需要歇歇的时候，所以我一直想送你一把椅子。", 9);
                 await SayNext("我想就算是英雄也不能永远活力充沛，肯定也有疲劳、困倦的时候。但真正的英雄是能够克服万难取得最后胜利的。", 9);
 
-                guideHint(19);
+                await guideHint(19);
             }
         }
         // Quest: 21015 
@@ -234,10 +234,10 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("体力是革命的本钱。英雄也要从基础体力开始训练！……那句话你也知道吧？当然要从#b基础体力锻炼#k开始练起……啊，你可能不记得了。不过也没关系。尝试一下你就明白了。现在就开始基础体力锻炼吧？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayNext("在这个几乎全是企鹅的岛上，也有几只怪兽。去村子右边的#b#m140020000##k，就能看到许多#o0100131#。请消灭#r10只#o0100131##k。我们这些笨拙的企鹅用喙都能抓到的#o0100131#，你总不能还抓不到吧？");
-                showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -249,9 +249,9 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("开始基础体力锻炼吧？准备好了？再确认一下剑是否装备好了？技能和药水是否已经拖到了快捷栏中？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SayNext("很好。先从比#o0100131#稍微厉害一点的怪兽#r#o0100132##k，开始狩猎吧。去#b#m140020100##k抓获#r15只#k左右就行，这将对你的体能提高大有帮助。体力就是冒险的根本！赶紧出发吧！");
-                showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -271,13 +271,13 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("哎呦哎呦，用不着这么谦虚。我充★分★理解英雄大人渴望赶紧变得厉害起来的心情。真不愧是英雄大人……"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SaySpeech([
                     new SpeechText("#b（再这么说下去，搞不好真得让我去消灭999只怪兽了，赶紧接受任务得了。）", 2),
                     new SpeechText("那就拜托你消灭20只#o0100133#。", 8),
                 ]);
 
-                showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -290,9 +290,9 @@ namespace Application.Plugin.Script.Quest
             await SayNext("来，让我测试一下你至今为止的基础体力训练成果。测试方法很简单。这座岛上有一种最强悍凶猛的怪兽，叫#o0100134#，你只要击退它就可以！要是能击退#r50只#k就最好了……");
             if (await SayAcceptDecline("不过#o0100134#的数量本来就不多，杀掉那么多恐怕不利生态平衡的保持，你消灭5只就差不多了。你看，这训练与自然环境之间是多么地和谐啊！真是完美啊..."))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SayNext("#o0100134#在岛的较深处。村子左边的路一直走，就能看到#b#m140010200##k，请去那里消灭#r5只#o0100134##k。");
-                showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             }
             else
             {
@@ -312,9 +312,9 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("没错，就是那个东西。据说英雄的武器是会挑选主人。如果你就是使用#p1201001#的英雄，那么在抓住#p1201001#的刹那，武器应该会有反应的。快去点击#b#p1201001#试试#k。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SayOK("如果#p1201001#有反应，就说明你是使用过#p1201001#的英雄，是#b战神#k。", 8);
-                showIntro("Effect/Direction1.img/aranTutorial/ClickPoleArm");
+                await showIntro("Effect/Direction1.img/aranTutorial/ClickPoleArm");
             }
             else
             {
@@ -332,7 +332,7 @@ namespace Application.Plugin.Script.Quest
 
             if (await SayAcceptDecline("#b(这是我自己的记忆吗？还是对同伴英雄的记忆呢？...还得再摸一次#p1201001#试试看。)#k"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayNext("#b(我就是这柄战斧曾经的主人？如果确信无疑，请再次抚摸#p1201001#。)#k");
             }
@@ -346,16 +346,16 @@ namespace Application.Plugin.Script.Quest
         {
             if (getPlayer().getJob() == Job.LEGEND)
             {
-                changeJobById(JobId.ARAN1);
-                resetStats();
+                await changeJobById(JobId.ARAN1);
+                await resetStats();
 
                 if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
                 {
-                    teachSkill(21000000, 0, 10, -1);   //combo ability
-                    teachSkill(21001003, 0, 20, -1);   //polearm booster
+                    await teachSkill(21000000, 0, 10, -1);   //combo ability
+                    await teachSkill(21001003, 0, 20, -1);   //polearm booster
                 }
 
-                completeQuest();
+                await completeQuest();
 
                 //getPlayer().changeSkillLevel(SkillFactory.getSkill(20009000), 0, -1);
                 //getPlayer().changeSkillLevel(SkillFactory.getSkill(20009000), 1, 0);
@@ -368,7 +368,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("修炼进展得如何？哟，等级升得这么高了？难怪人们都说济州岛是养马的天堂，金银岛是升级的天堂...对了，现在还不是说闲话的时候。能否麻烦你回岛上来一趟？"))
             {
-                startQuest();
+                await startQuest();
 
                 await SayOK("#b保管在#m140000000##k的你的#b#p1201001##k突然出现了奇怪的反应。据说长矛在呼唤自己主人的时候才会发出那样的反应。#b也许有什么事情要转达给你？#k请速回岛上一趟吧。");
             }
@@ -390,7 +390,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await AskYesNo("说声不好意思就能算了？！几百年来就我一个人孤苦伶仃地，有多寂寞你知道吗？不管怎样，你快点给我想起来！"))
             {
-                completeQuest();
+                await completeQuest();
 
                 await SayNext("#b（一口一个自己是#p1201001#、#p1201002#的，还越说越生气了。再这么说下去也不会有啥进展，还是先走到 #p1201000#跟前，好好商量商量。）", 3);
             }
@@ -412,17 +412,17 @@ namespace Application.Plugin.Script.Quest
             {
                 if (!isQuestCompleted(21201))
                 {
-                    changeJobById(JobId.ARAN2);
+                    await changeJobById(JobId.ARAN2);
 
                     if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
                     {
-                        teachSkill(Aran.POLEARM_MASTERY, 0, 20, -1);   //polearm mastery
-                        teachSkill(Aran.FINAL_CHARGE, 0, 30, -1);   //final charge
-                        teachSkill(Aran.COMBO_SMASH, 0, 20, -1);   //combo smash
-                        teachSkill(Aran.COMBO_DRAIN, 0, 20, -1);   //combo drain
+                        await teachSkill(Aran.POLEARM_MASTERY, 0, 20, -1);   //polearm mastery
+                        await teachSkill(Aran.FINAL_CHARGE, 0, 30, -1);   //final charge
+                        await teachSkill(Aran.COMBO_SMASH, 0, 20, -1);   //combo smash
+                        await teachSkill(Aran.COMBO_DRAIN, 0, 20, -1);   //combo drain
                     }
 
-                    completeQuest();
+                    await completeQuest();
 
                     await SayNext("你的等级还没有以前那么高，没法帮你唤醒所有的能力。不过，先帮你唤醒一部分的能力，这样将来升级也会更快一些。快点去训练吧，这样你才能恢复成以前的自己。");
                 }
@@ -439,7 +439,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("我这个老头子太老了，哪还能做什么优秀的武器啊。倒是有一支很久以前做的长矛……不过却不能给你。那个家伙太锋利，弄不好连主人都会被伤到。这种武器你还想要吗？"))
             {
-                startQuest();
+                await startQuest();
 
                 await SayOK("呵呵……既然你这么说，我这个老头子就试一试你。你去旁边的#b修炼场#k，打败那些#r#o9001012##k，取回#b#t4032311#30个#k给我。", 8);
             }
@@ -453,8 +453,8 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await AskYesNo("这就是专门为你而做的长矛，名叫#p1201002#……以后就拜托了。"))
             {
-                completeQuest();
-                removeAll(4032311);
+                await completeQuest();
+                await removeAll(4032311);
             }
 
         }
@@ -464,7 +464,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("修炼得如何？嗯...70级了...虽然还不够，不过比起当初把你刚从冰川里挖出来的那个状态要强百倍了。像这样下去，很快你就能恢复从前的实力了。");
             if (await SayAcceptDecline("在这之前，请回来#m140000000#一趟。#b你的战斧又出现了奇怪的反应。似乎有什么事情要跟你说的样子。#k说不定能进一步唤醒你的能力呢，赶紧回来看一眼吧。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayOK("不管怎样，拥有意识的武器还是很厉害的，某个方面来看，那家伙有种很神圣的感觉。如果不听它的，它就会呜呜哭...啊，这种话可一定要对战斧保密。我可不想让它吵得更凶。");
             }
@@ -487,7 +487,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("#b（#p1201002#正在气头上。先撤再说。说不定#p1201000#能给我什么帮助。）", 1 << 1),
                 ]);
 
-                completeQuest();
+                await completeQuest();
             }
         }
         // Quest: 21302 
@@ -500,16 +500,16 @@ namespace Application.Plugin.Script.Quest
                 {
                     if (haveItem(4032312, 1))
                     {
-                        gainItem(4032312, -1);
+                        await gainItem(4032312, -1);
                     }
 
-                    changeJobById(JobId.ARAN3);
+                    await changeJobById(JobId.ARAN3);
                     if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
                     {
-                        teachSkill(21110002, 0, 20, -1);   //full swing
+                        await teachSkill(21110002, 0, 20, -1);   //full swing
                     }
 
-                    completeQuest();
+                    await completeQuest();
                 }
 
                 await SayNext("赶紧恢复以前的能力吧，带上我一起去冒险……");
@@ -526,7 +526,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("对。必须找回#p1203001#宝石。你要是能帮我找回#p1203001#宝石，我会好好答谢你的。要是帮我抓到小偷，我也会答谢你的。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayOK("小偷往那个方向去了。那个方向是……吃饭的手是右手，不吃饭的手是左手……#b左边#k！往左边去就能抓到小偷。");
             }
@@ -536,7 +536,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("修炼进行得顺利吗？对不起，我知道你很忙，但是请你马上回#m140000000#一趟。#p1201002#又出现了异常的反应...对不起。这次的反应和过去的完全不同。感觉更深、更黑暗..."))
             {
-                startQuest();
+                await startQuest();
 
                 await SayOK("有种不祥的预感...请速速回去。虽然我从来没有见过#p1201002#，也没听过它的声音...不过我可以感觉到它的痛苦。只有#b#p1201002#的主人，你才能解决它的问题#k！");
             }
@@ -556,11 +556,11 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("拜托你了，战神...请阻止我。能阻止我的暴走的，只有主人你。我已经再也无法抑制了！请你一定要把暴走的我打倒！"))
             {
                 var em = GetSoloQuestEventManager(21401);
-                var r = em.StartInstance(getPlayer());
+                var r = await em.StartInstance(getPlayer());
 
                 if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
-                    startQuest();
+                    await startQuest();
                 }
                 else
                 {
@@ -582,10 +582,10 @@ namespace Application.Plugin.Script.Quest
                         return;
                     }
 
-                    gainItem(2280003, 1);
-                    changeJobById(JobId.ARAN4);
+                    await gainItem(2280003, 1);
+                    await changeJobById(JobId.ARAN4);
 
-                    completeQuest();
+                    await completeQuest();
                 }
                 await SayNext("沉睡的技能全都唤醒了……毕竟好久没用了，还需要熟悉熟悉。不过，应该进步会很快的。");
             }
@@ -595,7 +595,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("英雄，你好！我是看管雪橇哈士奇犬的#p1202007#。不好意思打扰你了，只是能够帮助我的只有英雄你一人了...如果你不是太忙的话，能否听听我的苦衷？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SaySpeech([
                     "就是不久前的事情。我像平时一样照看可爱的哈士奇犬们，却发现有个奇怪的家伙夹在他们中间。毛色光泽都很不一样，牙齿也锐利很多……怎么看都不像一只哈士奇犬。",
@@ -615,7 +615,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("你想学习骑狼吗？如果你想学的话，我#p2020007#可以帮助你。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SaySpeech(["要想骑乘，没有任何准备，直接骑在狼背上是很困难的。要先弄个#b#t1912011##k，这样才能让狼不觉得难受。我会做狼鞍，你去找材料就好。",
                 "制作#t1912011#的材料是#b#t4000048##k。大概#b50张#k就够了。等你把材料都找齐了，我就把骑乘的技巧和#t1912011#一起传授给你。赶紧去找材料吧。我也很期待啊。"]);
@@ -632,11 +632,11 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("我们明白，但我们不会丢下我们的小狗离开。这样吧，我们来考验你，看看你是否有资格养一只狼。#r狼的考试#k"))
             {
                 var em = GetSoloQuestEventManager(21613);
-                var r = em.StartInstance(getPlayer());
+                var r = await em.StartInstance(getPlayer());
 
                 if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
-                    startQuest();
+                    await startQuest();
                 }
                 else
                 {
@@ -653,7 +653,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("很惊讶吧？冰河中冰冻的时间是否也妨碍了你的感官？当然，为什么！准备好了告诉我!", 9))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 21618 
@@ -667,10 +667,10 @@ namespace Application.Plugin.Script.Quest
 
             await SayNext("让开，瞧瞧，玛哈的威力!!");
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
 
-            gainItem(1902017, -1);
-            gainItem(1902018, 1);
+            await gainItem(1902017, -1);
+            await gainItem(1902018, 1);
         }
         // Quest: 21700 
         public async Task q21700s()
@@ -685,8 +685,8 @@ namespace Application.Plugin.Script.Quest
             {
                 if (!isQuestStarted(21700) && !isQuestCompleted(21700))
                 {
-                    gainItem(1442000, 1);
-                    forceStartQuest();
+                    await gainItem(1442000, 1);
+                    await forceStartQuest();
                 }
 
                 await SayNext("武器要是能使得更熟练就好了。送你一支#b长矛#k，希望你在修炼的时候能够进步得更快。带着这支长矛……");
@@ -710,7 +710,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("来，快点#b再次进入修炼场#k，去和那些天生的战士们——#o9300343#战斗吧，打倒#r30只#k后，你的能力将会有一个质的飞跃。全力以赴地去战斗吧！超越我这个教练！"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SayOK("快走吧！去打倒那些#o9300343#!");
             }
         }
@@ -725,9 +725,9 @@ namespace Application.Plugin.Script.Quest
             {
                 if (isQuestStarted(21703))
                 {
-                    forceCompleteQuest();
-                    teachSkill(21000000, (sbyte)getPlayer().getSkillLevel(21000000), 10, -1);   // Combo Ability Skill
-                    gainExp(2800);
+                    await forceCompleteQuest();
+                    await teachSkill(21000000, (sbyte)getPlayer().getSkillLevel(21000000), 10, -1);   // Combo Ability Skill
+                    await gainExp(2800);
                 }
 
                 await SaySpeech([
@@ -745,8 +745,8 @@ namespace Application.Plugin.Script.Quest
                     new ("是吗！看来除了#p1202006#的训练方式之外，你自己仍然记的从前的那些技能也很关键啊……看来只是在这里冰冻的太久，需要时间恢复而已。#b继续加油训练吧，争取早日恢复所有的技能！#k\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 500 exp", 0)
             ]);
 
-            forceCompleteQuest();
-            gainExp(500);
+            await forceCompleteQuest();
+            await gainExp(500);
         }
         // Quest: 21712 
         public async Task q21712s()
@@ -754,7 +754,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("#t4032315#总是会#b发出奇怪的声音#k。当然，你是听不见的。因为那是只有#o1210102#才能听到的声音。在这种声音的影响下，#o1210102#的性格似乎发生了变化。");
             if (await SayAcceptDecline("性格变得怪异的#o1210102#开始和没有发生变化的#o1210102#战斗，这导致射手村附近的#o1210102#全部变得残暴起来了。#b使得最近怪物们发生了变化的根源就是这个人偶！#k你明白了吧？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SaySpeech([
                         new SpeechText("怎么会发生这种事情呢......这种人偶不可能是自然形成的，一定是有人故意而为......看来要对#o1210102#的状态观察一段时间了。", 9),
                         new SpeechText("#b（射手村周边的#o1210102#发生变化的原因找到了。现在把搜集到的信息告诉#p1002104#吧。）#k", 2),
@@ -774,7 +774,7 @@ namespace Application.Plugin.Script.Quest
                     ]);
             if (await SayAcceptDecline("吼...抱着人偶的小孩...不得不叫人怀疑。是有人故意把怪物变成为凶暴的证据啊..."))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 await SaySpeech([
                     new SpeechText("魔法森林的和平已经被打破......这种恶行绝对不能饶恕......看来我得提醒村民们最近一定要多加小心。", 2),
                     new SpeechText("#b（不过话说回来，村庄的人们真的有办法应对残暴的绿蘑菇吗？应该会很辛苦的说...既然找出引起绿蘑菇暴走的原因，现在把搜集到的情报告诉#p1002104#吧。）#k", 2),
@@ -790,8 +790,8 @@ namespace Application.Plugin.Script.Quest
                     ]);
             if (await SayAcceptDecline("我？你想知道的话就来我的洞窟吧。我想好好招待你一番。点击接受按钮就能立刻移动到我家。我在那里等你。"))
             {
-                forceCompleteQuest();
-                warp(910510200, 0);
+                await forceCompleteQuest();
+                await warp(910510200, 0);
             }
         }
         // Quest: 21720 
@@ -809,9 +809,9 @@ namespace Application.Plugin.Script.Quest
             {
                 if (getQuestStatus(21720) == 1)
                 {
-                    forceCompleteQuest();
-                    teachSkill(21001003, (sbyte)getPlayer().getSkillLevel(21001003), 20, -1);
-                    gainExp(3900);
+                    await forceCompleteQuest();
+                    await teachSkill(21001003, (sbyte)getPlayer().getSkillLevel(21001003), 20, -1);
+                    await gainExp(3900);
                 }
 
                 await SaySpeech([
@@ -827,7 +827,7 @@ namespace Application.Plugin.Script.Quest
         {
             await SayNext("好，你不应该回#b特鲁#k那儿获取下一步的信息。……哦，等等！我想起了一些事情。看到那边的#r#p1061006##k了吗？那座石像的来源不明，上面写着一些东西，可能是洞穴的暗号？#r在那里获取暗号#k，可能会对你这一趟有帮助。");
 
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 21733 
         public async Task q21733s()
@@ -835,7 +835,7 @@ namespace Application.Plugin.Script.Quest
             await AskMenu("喂，你在哪？有一件急事！\r\n#b#L0#(喂……？#p1002104#以前不是叫我英雄的吗……)#l\r\n#k");
             if (await SayAcceptDecline("我有很重要的情报！赶紧到#b#m104000004##k来！"))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
             else
             {
@@ -855,10 +855,10 @@ namespace Application.Plugin.Script.Quest
                     ]);
             if (await AskYesNo("别担心。这次我为了拿利琳寄过来的文件才出去的，没想到中了敌人的招。平时我不会这么不小心的。好歹也是个情报商人，总会为自己准备一条退路的。现在关键的是#b精准矛#k这个技能你知道吗？"))
             {
-                gainExp(8000);
-                teachSkill(21100000, 0, 20, -1); // polearm mastery
+                await gainExp(8000);
+                await teachSkill(21100000, 0, 20, -1); // polearm mastery
 
-                forceCompleteQuest();
+                await forceCompleteQuest();
 
                 await SayOK("黑色之翼再怎么兴风作浪也没法阻止你日益强大起来。继续努力，直到击败黑魔法师为止。我也会尽最大努力为你收集信息的。");
             }
@@ -872,7 +872,7 @@ namespace Application.Plugin.Script.Quest
                 "在#m105040300#的#b#m105040200##k，有人看见#o9300346#走进了一个#b小木屋#k。情报很可靠。快去那边击退#r#o9300346##k吧。"
                 ]);
 
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 21734 
         public async Task q21734e()
@@ -882,10 +882,10 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("没发现任何有关金银岛封印石的情报。", 1 << 1),
                     new SpeechText("啊哈！原来是为这事。呵呵呵……完全不用担心。", 1 << 3),
                     ]);
-            forceCompleteQuest();
+            await forceCompleteQuest();
 
-            gainExp(12500);
-            teachSkill(21100005, 0, 20, -1); // combo drain
+            await gainExp(12500);
+            await teachSkill(21100005, 0, 20, -1); // combo drain
         }
         // Quest: 21735 
         public async Task q21735s()
@@ -905,9 +905,9 @@ namespace Application.Plugin.Script.Quest
 
                 if (!haveItem(4032323, 1))
                 {
-                    gainItem(4032323, 1);
+                    await gainItem(4032323, 1);
                 }
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 21735 
@@ -918,9 +918,9 @@ namespace Application.Plugin.Script.Quest
                 await SayNext("黑色之翼的动向，我已经从真相叔叔那里听说了。听说前不久还被他们袭击了一次......你还好吧？咦？这个......这就是金银岛封印石吗？没想到真相叔叔果然比那些家伙们早一步找到金银岛封印石。不知道这颗宝石到底有什么用......只知道这个东西肯定和黑魔法师有关。");
                 if (await AskYesNo("不知道这颗宝石到底有什么用……只知道这个东西肯定和黑魔法师有关。既然那些家伙在找这个东西，我们一定要保护好这个东西。看来不论发生什么，你都要不断地变得更强，才行。"))
                 {
-                    gainItem(4032323, -1);
-                    gainExp(6037);
-                    forceCompleteQuest();
+                    await gainItem(4032323, -1);
+                    await gainExp(6037);
+                    await forceCompleteQuest();
                 }
             }
         }
@@ -934,7 +934,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("那么你准备好了吗？如果你接受的话，到#m200000000#，找到#b妖精#p2012012##k，向他询问发生在#b#m200000000#的奇怪事情……#k是怎么回事就行了。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 21738 
@@ -954,7 +954,7 @@ namespace Application.Plugin.Script.Quest
                     ]);
             if (!IsQuestNotStarted(21738))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
             await SayNext("......不管是谁都好。占卦已经让我把一切都告诉你了。关于封印的庭院的一切......", 1 | 1 << 3);
         }
@@ -962,14 +962,14 @@ namespace Application.Plugin.Script.Quest
         public async Task q21739e()
         {
             await SayNext("那么，你打败巨人了吗？哦，黑色之翼卧底？他抢走了天空之城的封印石？！哦，不。太可怕了！我们需要尽快想个对策！把情况告诉明珠港的特鲁。");
-            forceCompleteQuest();
-            gainExp(29500);
+            await forceCompleteQuest();
+            await gainExp(29500);
         }
         // Quest: 21740 
         public async Task q21740s()
         {
             await SayNext("你回来了，英雄。在天空之城的事情办得怎么样？确实是和黑色之翼有关吧？为什么表情这么凝重？说来听听。");
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 21740 
         public async Task q21740e()
@@ -978,8 +978,8 @@ namespace Application.Plugin.Script.Quest
                 new SpeechText("啊，很久不见了。战神。这段事件修炼得还好吧？正好我发现了新的技能想叫你回来呢......你回来的正是时候！", 0),
                         new SpeechText("#b（对利琳讲述有关天空之城封印石的事情。）#k", 2)
                 ]);
-            forceCompleteQuest();
-            teachSkill(21100004, 0, 20, -1); // combo smash
+            await forceCompleteQuest();
+            await teachSkill(21100004, 0, 20, -1); // combo smash
         }
         // Quest: 21741 
         public async Task q21741s()
@@ -988,7 +988,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("武陵的#b陈道人#k好像已经和黑色之翼相接触。虽然不知道事情是怎么变成这样的，但信息应该准确无误。"))
             {
                 await SayNext("你如果准备好的话，#b就请马上去武陵。#k你去查出黑色之翼为什么会和陈道人接触，以及它们之间到底有着怎样的交易。");
-                forceStartQuest();
+                await forceStartQuest();
             }
 
         }
@@ -1017,33 +1017,33 @@ namespace Application.Plugin.Script.Quest
                         return;
                     }
 
-                    gainItem(4220151, 1);
+                    await gainItem(4220151, 1);
                 }
 
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 21742 
         public async Task q21742e()
         {
             await SayNext("怎么样？画轴修复好了吗？要不看看这上面都写了些什么？");
-            gainItem(4032342, -8);
-            gainItem(4220151, -1);
-            gainExp(10000);
+            await gainItem(4032342, -8);
+            await gainItem(4220151, -1);
+            await gainExp(10000);
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 21746 
         public async Task q21746s()
         {
             await SayNext("封印石......那是很久很久以前，由武陵看管的东西......难道说觊觎它的人又出现了......");
-            var mapobj = getWarpMap(925040001);
+            var mapobj = await getWarpMap(925040001);
             if (mapobj.countPlayers() == 0)
             {
-                mapobj.resetPQ(1);
+                await mapobj.resetPQ(1);
 
-                warp(925040001, 0);
-                forceStartQuest();
+                await warp(925040001, 0);
+                await forceStartQuest();
             }
             else
             {
@@ -1056,7 +1056,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("没想到在数百年的岁月之后，英雄的后裔又重新出现了......也不知道对冒险岛世界师傅还是祸......怎样都无所谓了。好吧......我告诉你有关武陵封印石的事情。"))
             {
                 await SayNext("武陵的封印石所在的地方叫做封印的寺院。那里的入口被隐藏在武陵寺院内。你去仔细观察武陵寺院入口处熊猫提着的灯盏。如果能从中找出#b刻有入口字样的灯盏#k，就可以进入封印的寺院了。暗号是#b道可道非常道。#k");
-                forceStartQuest();
+                await forceStartQuest();
             }
 
         }
@@ -1065,39 +1065,39 @@ namespace Application.Plugin.Script.Quest
         {
             await SayNext("成功打败了影子武士吗？表情怎么这么凝重......难道说你失败了......");
             await SayNext("原来是这样，武陵的封印石最终还是被抢走了......很遗憾，不过也没办法。我现在也不明白英雄们为什么要把封印石交给武陵。");
-            gainExp(16000);
-            forceCompleteQuest();
+            await gainExp(16000);
+            await forceCompleteQuest();
         }
         // Quest: 21748 
         public async Task q21748e()
         {
             await SayNext("战神，你平安回来了！在武陵的任务完成的如何了？#r影子武士#k偷袭了武陵并再次偷走了封印石？那真不幸。至少你没有受伤，我很高兴。");
             await SayNext("我研究了一些新的技能，试图帮你找回记忆。好消息的是，我想起了其中一个：#r战神突进#k！有了它，你将能够击退前面的敌人。对你的能力来说是一个很好的提升，对吧？");
-            gainExp(20000);
-            teachSkill(21100002, 0, 30, -1); // final charge
+            await gainExp(20000);
+            await teachSkill(21100002, 0, 30, -1); // final charge
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 21749 
         public async Task q21749s()
         {
             await SayNext("到目前为止，在#r射手村#k和#r艾琳森林#k这两个地区发现了两个封印石。。。事情似乎开始失控了。");
             await SayNext("战神，你现在要做的就是再次通过#b通往艾琳森林的时光之门#k。这次你一定要找回#r艾琳森林的封印石#k。通过我的情报了解到，#b#p2131002##k有关于那个封印石的线索，#r找到她#k。请一定要做到，我们的世界比以前更需要你的帮助！");
-            forceCompleteQuest();
-            gainExp(500);
+            await forceCompleteQuest();
+            await gainExp(500);
         }
         // Quest: 21750 
         public async Task q21750e()
         {
             await SayNext("战神，你终于回来了！！！你最近怎么样？这么久你去哪了？我们有很多事情需要帮忙。。。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 21753 
         public async Task q21753s()
         {
             await SayNext("战神，我发现了一些令人不安的消息。。。你说你来自东部森林区，对吗？我们追踪并研究了用来支撑进入未来之门的魔法。结果发现那是一种#r时间之门#k。你用的衣服。。。以前从没有人见过。那一定意味着，你一定来自未来。");
             await SayNext("现在关于这个问题：在你的时间轴上似乎丢失了封印石。。。它是一个强大的神器，可以阻止黑魔法师的军队围攻我们的世界。。如果那个封印石消失了，再没有什么能阻止他了。因为这是一件非常重要的事情，所以要从未来找到我的自我。明白了，把我从未来带走吧！");
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 21754 
         public async Task q21754s()
@@ -1110,17 +1110,17 @@ namespace Application.Plugin.Script.Quest
 
             await SayNext("给，拿着这个。把它交给#r#p1002104##k，里面有一封维护世界和平的信。不要把这个秘密告诉别人。");
 
-            forceStartQuest();
+            await forceStartQuest();
 
-            gainItem(4032328, 1);
+            await gainItem(4032328, 1);
         }
         // Quest: 21757 
         public async Task q21757e()
         {
             await SayNext("哦，一封写给伦普雷斯的信？贝洛斯家？！");
-            forceCompleteQuest();
-            gainExp(1000);
-            gainItem(4032330, -1);
+            await forceCompleteQuest();
+            await gainExp(1000);
+            await gainItem(4032330, -1);
         }
         // Quest: 21766 
         public async Task q21766s()
@@ -1129,22 +1129,20 @@ namespace Application.Plugin.Script.Quest
             await SayNext("就在最近，他还常常愁眉苦脸地抱怨自己的关节炎，但他突然变得满面笑容!!");
             await SayNext("我觉得那个木箱后面有个秘密。你能偷偷地看一下旁边的木箱吗 #p20000#?");
             await SayNext("你知道 #p20000# 在哪, 是吗？他在右边。一直往前走，直到你看到维京在哪里，然后穿过那条悬挂的鲨鱼和章鱼，你就会看到约翰。盒子应该就在他旁边.");
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 21766 
-        public Task q21766e()
+        public async Task q21766e()
         {
-            forceCompleteQuest();
-            gainExp(200);
-            
-            return Task.CompletedTask;
+            await forceCompleteQuest();
+            await gainExp(200);
         }
         // Quest: 21767 
         public async Task q21767s()
         {
             if (haveItem(4032423, 1))
             {
-                forceStartQuest();
+                await forceStartQuest();
                 return;
             }
 
@@ -1155,8 +1153,8 @@ namespace Application.Plugin.Script.Quest
             }
 
             await SayNext("#b嗯，盒子里有一种药材。这可能是什么？你最好把这个带给约翰，问他是什么。#k");
-            gainItem(4032423, 1);
-            forceStartQuest();
+            await gainItem(4032423, 1);
+            await forceStartQuest();
         }
 
     }

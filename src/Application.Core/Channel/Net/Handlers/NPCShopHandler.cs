@@ -41,7 +41,7 @@ public class NPCShopHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var playerShop = c.OnlinedCharacter.getShop();
         if (playerShop == null)
@@ -60,10 +60,10 @@ public class NPCShopHandler : ChannelHandlerBase
                     {
                         _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit a npc shop.");
                         _logger.LogWarning("Chr {CharacterName} tried to buy quantity {ItemQuantity} of itemid {ItemId}", c.OnlinedCharacter.getName(), quantity, itemId);
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
-                    playerShop.buy(c, slot, itemId, quantity);
+                    await playerShop.buy(c, slot, itemId, quantity);
                     break;
                 }
             case 1:
@@ -71,14 +71,14 @@ public class NPCShopHandler : ChannelHandlerBase
                     short slot = p.readShort();
                     int itemId = p.readInt();
                     short quantity = p.readShort();
-                    playerShop.sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
+                    await playerShop.sell(c, ItemConstants.getInventoryType(itemId), slot, quantity);
                     break;
                 }
             case 2:
                 { // recharge ;)
 
                     var slot = p.readShort();
-                    playerShop.recharge(c, slot);
+                    await playerShop.recharge(c, slot);
                     break;
                 }
             case 3: // leaving :(

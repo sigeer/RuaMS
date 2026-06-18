@@ -7,7 +7,7 @@ namespace Application.Core.Game.Commands.Gm0
             Description = "屏蔽部分地图对象。";
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var type = GetParamByIndex(0) ?? throw new CommandArgumentException(); ;
             if (type.Equals("summon", StringComparison.OrdinalIgnoreCase))

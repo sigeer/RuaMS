@@ -1,5 +1,4 @@
 global using Application.Core.Client;
-global using Application.Core.Game;
 global using Application.Core.Game.Players;
 global using Application.Core.Game.TheWorld;
 global using Application.Core.tools;
@@ -25,9 +24,9 @@ global using Application.Utility.Compatible.Atomics;
 global using Application.Utility.Configs;
 global using Application.Utility.Exceptions;
 global using Application.Utility.Extensions;
+global using Application.Utility.Inject;
 global using Application.Utility.Loggers;
 global using Application.Utility.Tasks;
-global using Application.Utility.Inject;
 global using Serilog;
 global using System;
 global using System.Drawing;

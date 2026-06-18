@@ -35,9 +35,9 @@ public class InfoAction : AbstractQuestAction
         info = data;
     }
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        chr.getAbstractPlayerInteraction().setQuestProgress(questID, info);
+        await chr.getAbstractPlayerInteraction().setQuestProgress(questID, info);
     }
 
 }

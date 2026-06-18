@@ -65,7 +65,7 @@ namespace Application.Core.Scripting.Events
         /// <param name="guildId"></param>
         /// <param name="leaderId"></param>
         /// <returns></returns>
-        public sbyte addGuildToQueue(int guildId, int leaderId)
+        public async Task<sbyte> addGuildToQueue(int guildId, int leaderId)
         {
             if (cserv.Node.Transport.IsGuildQueued(guildId))
             {
@@ -87,7 +87,7 @@ namespace Application.Core.Scripting.Events
 
                 if (canStartAhead)
                 {
-                    if (!attemptStartGuildInstance())
+                    if (!await attemptStartGuildInstance())
                     {
                         queuedGuilds.Enqueue(guildId);
                         cserv.Node.Transport.PutGuildQueued(guildId);
@@ -107,7 +107,7 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public bool attemptStartGuildInstance()
+        public async Task<bool> attemptStartGuildInstance()
         {
             Player? chr = null;
             List<int>? guildInstance = null;
@@ -122,7 +122,7 @@ namespace Application.Core.Scripting.Events
                 chr = cserv.getPlayerStorage().getCharacterById(guildInstance.get(1));
             }
 
-            if (StartInstance(chr) != scripting.Events.Abstraction.CreateInstanceResult.Success)
+            if (await StartInstance(chr) != scripting.Events.Abstraction.CreateInstanceResult.Success)
             {
                 exportReadyGuild(guildInstance!.get(0));
                 return true;

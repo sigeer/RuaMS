@@ -33,14 +33,14 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PetLootHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
         var pet = chr.GetPetById(p.readLong());
         if (pet == null)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -49,11 +49,11 @@ public class PetLootHandler : ChannelHandlerBase
         var ob = chr.getMap().getMapObject(oid)!;
         try
         {
-            chr.pickupItem(ob, pet.Index);
+            await chr.pickupItem(ob, pet.Index);
         }
         catch (Exception)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
     }
 }

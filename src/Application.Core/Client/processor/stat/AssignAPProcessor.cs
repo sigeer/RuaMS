@@ -26,7 +26,6 @@
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.inventory;
-using System.Threading.Tasks;
 using tools;
 
 namespace client.processor.stat;
@@ -38,7 +37,7 @@ namespace client.processor.stat;
 public class AssignAPProcessor
 {
 
-    public static void APAutoAssignAction(InPacket inPacket, IChannelClient c)
+    public static async Task APAutoAssignAction(InPacket inPacket, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (chr.getRemainingAp() < 1)
@@ -48,7 +47,7 @@ public class AssignAPProcessor
 
         var equippedC = chr.getInventory(InventoryType.EQUIPPED).list();
 
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
             int[] statGain = new int[4];
@@ -413,12 +412,12 @@ public class AssignAPProcessor
                     gainStatByType(getQuaternaryStat(stance), statGain, extras, statUpdate);
                 }
 
-                chr.assignStrDexIntLuk(statGain[0], statGain[1], statGain[3], statGain[2]);
-                c.sendPacket(PacketCreator.enableActions());
+                await chr.assignStrDexIntLuk(statGain[0], statGain[1], statGain[3], statGain[2]);
+                await c.SendPacket(PacketCreator.enableActions());
 
                 //----------------------------------------------------------------------------------------
 
-                c.sendPacket(PacketCreator.serverNotice(1, "Better AP applications detected:\r\nSTR: +" + statGain[0] + "\r\nDEX: +" + statGain[1] + "\r\nINT: +" + statGain[3] + "\r\nLUK: +" + statGain[2]));
+                await c.SendPacket(PacketCreator.serverNotice(1, "Better AP applications detected:\r\nSTR: +" + statGain[0] + "\r\nDEX: +" + statGain[1] + "\r\nINT: +" + statGain[3] + "\r\nLUK: +" + statGain[2]));
             }
             else
             {
@@ -426,7 +425,7 @@ public class AssignAPProcessor
                 {
                     c.CurrentServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, "Didn't send full packet for Auto Assign.");
 
-                    c.Disconnect(true, false);
+                    await c.Disconnect(true, false);
                     return;
                 }
 
@@ -442,13 +441,13 @@ public class AssignAPProcessor
                     gainStatByType(StatUtils.getBy5ByteEncoding(type), statGain, tempVal, statUpdate);
                 }
 
-                chr.assignStrDexIntLuk(statGain[0], statGain[1], statGain[3], statGain[2]);
-                c.sendPacket(PacketCreator.enableActions());
+                await chr.assignStrDexIntLuk(statGain[0], statGain[1], statGain[3], statGain[2]);
+                await c.SendPacket(PacketCreator.enableActions());
             }
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
     }
 
@@ -514,9 +513,9 @@ public class AssignAPProcessor
         return Stat.STR;
     }
 
-    public static bool APResetAction(IChannelClient c, int APFrom, int APTo)
+    public static async Task<bool> APResetAction(IChannelClient c, int APFrom, int APTo)
     {
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
             var player = c.OnlinedCharacter;
@@ -526,56 +525,56 @@ public class AssignAPProcessor
                 case 64: // str
                     if (player.getStr() < 5)
                     {
-                        player.message("You don't have the minimum STR required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum STR required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
-                    if (!player.assignStr(-1))
+                    if (!await player.assignStr(-1))
                     {
-                        player.message("Couldn't execute AP reset operation.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("Couldn't execute AP reset operation.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
                     break;
                 case 128: // dex
                     if (player.getDex() < 5)
                     {
-                        player.message("You don't have the minimum DEX required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum DEX required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
-                    if (!player.assignDex(-1))
+                    if (!await player.assignDex(-1))
                     {
-                        player.message("Couldn't execute AP reset operation.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("Couldn't execute AP reset operation.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
                     break;
                 case 256: // int
                     if (player.getInt() < 5)
                     {
-                        player.message("You don't have the minimum INT required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum INT required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
-                    if (!player.assignInt(-1))
+                    if (!await player.assignInt(-1))
                     {
-                        player.message("Couldn't execute AP reset operation.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("Couldn't execute AP reset operation.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
                     break;
                 case 512: // luk
                     if (player.getLuk() < 5)
                     {
-                        player.message("You don't have the minimum LUK required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum LUK required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
-                    if (!player.assignLuk(-1))
+                    if (!await player.assignLuk(-1))
                     {
-                        player.message("Couldn't execute AP reset operation.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("Couldn't execute AP reset operation.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
                     break;
@@ -584,31 +583,31 @@ public class AssignAPProcessor
                     {
                         if (APTo != 8192)
                         {
-                            player.message("You can only swap HP ability points to MP.");
-                            c.sendPacket(PacketCreator.enableActions());
+                            await player.Pink("You can only swap HP ability points to MP.");
+                            await c.SendPacket(PacketCreator.enableActions());
                             return false;
                         }
                     }
 
                     if (player.getHpMpApUsed() < 1)
                     {
-                        player.message("You don't have enough HPMP stat points to spend on AP Reset.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have enough HPMP stat points to spend on AP Reset.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
                     int hplose = -takeHp(player.getJob());
                     if (player.MaxHP + hplose < getMinHp(player.getJob(), player.getLevel()))
                     {
-                        player.message("You don't have the minimum HP pool required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum HP pool required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    player.UpdateStatsChunk(() =>
+                    await player.UpdateStatsChunk(async () =>
                     {
-                        player.assignHP(hplose, -1);
-                        player.ChangeHP(hplose);
+                        await player.assignHP(hplose, -1);
+                        await player.ChangeHP(hplose);
                     });
 
                     break;
@@ -617,120 +616,117 @@ public class AssignAPProcessor
                     {
                         if (APTo != 2048)
                         {
-                            player.message("You can only swap MP ability points to HP.");
-                            c.sendPacket(PacketCreator.enableActions());
+                            await player.Pink("You can only swap MP ability points to HP.");
+                            await c.SendPacket(PacketCreator.enableActions());
                             return false;
                         }
                     }
 
                     if (player.getHpMpApUsed() < 1)
                     {
-                        player.message("You don't have enough HPMP stat points to spend on AP Reset.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have enough HPMP stat points to spend on AP Reset.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
                     int mplose = -takeMp(player.getJob());
                     if (player.MaxMP + mplose < getMinMp(player.getJob(), player.getLevel()))
                     {
-                        player.message("You don't have the minimum MP pool required to swap.");
-                        c.sendPacket(PacketCreator.enableActions());
+                        await player.Pink("You don't have the minimum MP pool required to swap.");
+                        await c.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
-                    player.UpdateStatsChunk(() =>
+                    await player.UpdateStatsChunk(() =>
                     {
                         player.assignMP(mplose, -1);
                         player.ChangeMP(mplose);
                     });
                     break;
                 default:
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return false;
             }
 
-            addStat(player, APTo, true);
+            await addStat(player, APTo, true);
             return true;
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
     }
 
-    public static void APAssignAction(IChannelClient c, int num)
+    public static async Task APAssignAction(IChannelClient c, int num)
     {
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
-            addStat(c.OnlinedCharacter, num, false);
+            await addStat(c.OnlinedCharacter, num, false);
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
     }
 
-    private static bool addStat(Player chr, int apTo, bool usedAPReset)
+    private static async Task<bool> addStat(Player chr, int apTo, bool usedAPReset)
     {
         switch (apTo)
         {
             case 64:
-                if (!chr.assignStr(1))
+                if (!await chr.assignStr(1))
                 {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             case 128: // Dex
-                if (!chr.assignDex(1))
+                if (!await chr.assignDex(1))
                 {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             case 256: // Int
-                if (!chr.assignInt(1))
+                if (!await chr.assignInt(1))
                 {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             case 512: // Luk
-                if (!chr.assignLuk(1))
+                if (!await chr.assignLuk(1))
                 {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             case 2048:
-                if (!chr.UpdateStatsChunk(() =>
+                if (!(await chr.UpdateStatsChunk(async () => await chr.assignHP(calcHpChange(chr, usedAPReset), 1))))
                 {
-                    return chr.assignHP(calcHpChange(chr, usedAPReset), 1);
-                }))
-                {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             case 8192:
-                if (!chr.UpdateStatsChunk(() =>
+                if (!await chr.UpdateStatsChunk(async () =>
                 {
                     return chr.assignMP(calcMpChange(chr, usedAPReset), 1);
                 }))
                 {
-                    chr.message("Couldn't execute AP assign operation.");
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Pink("Couldn't execute AP assign operation.");
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
                 break;
             default:
-                chr.sendPacket(PacketCreator.enableActions());
+                await chr.SendPacket(PacketCreator.enableActions());
                 return false;
         }
         return true;
@@ -922,7 +918,7 @@ public class AssignAPProcessor
 
                 if (sLvl > 0)
                 {
-                    MaxMP += increaseMP.getEffect(sLvl).getY();
+                    MaxMP += increaseMP!.getEffect(sLvl).getY();
                 }
             }
 

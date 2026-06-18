@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class ChangeMapSpecialHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readByte();
         string startwp = p.readString();
@@ -36,17 +36,17 @@ public class ChangeMapSpecialHandler : ChannelHandlerBase
         var portal = c.OnlinedCharacter.getMap().getPortal(startwp);
         if (portal == null || c.OnlinedCharacter.portalDelay() > c.CurrentServer.Node.getCurrentTime() || c.OnlinedCharacter.getBlockedPortals().Contains(portal.getScriptName()))
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         if (c.OnlinedCharacter.isChangingMaps() || c.OnlinedCharacter.isBanned())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
-        c.OnlinedCharacter.getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+        await c.OnlinedCharacter.closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
 
-        portal.enterPortal(c);
+        await portal.enterPortal(c);
     }
 }

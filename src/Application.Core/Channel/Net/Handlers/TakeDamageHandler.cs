@@ -30,7 +30,6 @@ using client.status;
 using Microsoft.Extensions.Logging;
 using server.life;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -43,7 +42,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         List<Player> banishPlayers = new();
 
@@ -52,7 +51,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         sbyte damagefrom = p.ReadSByte();
         var element = EnumClassCache<Element>.GetValues()[p.readByte()];
         int damage = p.readInt();
-        int oid = 0, monsteridfrom = 0, pgmr = 0,stance = 0, direction = 0;
+        int oid = 0, monsteridfrom = 0, pgmr = 0, stance = 0, direction = 0;
         int action = 0, pos_x = 0, pos_y = 0, fake = 0;
         bool is_pgmr = false, is_pg = true, is_deadly = false;
         int reflectOId = 0;
@@ -111,7 +110,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                                         var inv = chr.getInventory(type);
 
                                         qty = Math.Min(chr.countItem(loseItem.Id), dropCount);
-                                        InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);
+                                        await InventoryManipulator.removeById(c, type, loseItem.Id, qty, false, false);
 
                                         if (loseItem.Id == ItemId.ARPQ_SPIRIT_JEWEL)
                                         {
@@ -121,14 +120,14 @@ public class TakeDamageHandler : ChannelHandlerBase
                                         for (byte b = 0; b < qty; b++)
                                         {
                                             pos.X = playerpos + ((d % 2 == 0) ? (25 * (d + 1) / 2) : -(25 * (d / 2)));
-                                            map.spawnItemDrop(chr, chr, new Item(loseItem.Id, 0, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
+                                            await map.spawnItemDrop(chr, chr, new Item(loseItem.Id, 0, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
                                             d++;
                                         }
                                     }
                                 }
                             }
                             // 应该没有必要 有loseItem也有selfDestruction
-                            map.RemoveMapObject(attacker, null);
+                            await map.RemoveMapObject(attacker, null);
                         }
                     }
                 }
@@ -177,24 +176,24 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
 
             var manaReflection = chr.GetBuffStatValue(BuffStat.MANA_REFLECTION);
-            if (damagefrom == 0 && manaReflection != null && damage > 0 && !attacker.isBoss())
+            if (damagefrom == 0 && manaReflection != null && damage > 0 && attacker != null && !attacker.isBoss())
             {
                 if (reflect == 0)
                 {
                     if (chr.CheckBuff(manaReflection))
                     {
                         int bouncedamage = (int)Math.Min((damage * manaReflection.Effect.getX() / 100.0), attacker.getMaxHp() / 5);
-                        attacker.DamageBy(chr, bouncedamage, 0);
-                        attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
+                        await attacker.DamageBy(chr, bouncedamage, 0);
+                        await attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
 
-                        chr.sendPacket(PacketCreator.showOwnBuffEffect(manaReflection.Effect.getSourceId(), 5));
-                        chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), chr.Id);
+                        await chr.SendPacket(PacketCreator.showOwnBuffEffect(manaReflection.Effect.getSourceId(), 5));
+                        await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), chr.Id);
                     }
                 }
 
             }
             stance = p.readByte();
-            chr.dropMessage($"damageFrom: {damagefrom}, isReflect:{reflect}, knockback:{knockback}, stance: {stance}");
+            await chr.Notice($"damageFrom: {damagefrom}, isReflect:{reflect}, knockback:{knockback}, stance: {stance}");
         }
         if (damagefrom != -1 && damagefrom != -2 && attacker != null)
         {
@@ -211,7 +210,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 var possibleMobSkill = MobSkillFactory.GetMobSkill(attackInfo.Disease, attackInfo.Level);
                 if (possibleMobSkill != null && damage > 0)
                 {
-                    possibleMobSkill.applyEffect(chr, attacker, false, banishPlayers);
+                    await possibleMobSkill.applyEffect(chr, attacker, false, banishPlayers);
                 }
 
                 attacker.setMp(attacker.getMp() - attackInfo.ConMP);
@@ -227,7 +226,7 @@ public class TakeDamageHandler : ChannelHandlerBase
 
         if (damage > 0)
         {
-            chr.getAutobanManager().resetMisses();
+            await chr.getAutobanManager().resetMisses();
         }
         else
         {
@@ -249,12 +248,12 @@ public class TakeDamageHandler : ChannelHandlerBase
                 {
                     var powerGuardBuff = chr.getBuffedValue(BuffStat.POWERGUARD);
                     if (powerGuardBuff != null)
-                    { 
+                    {
                         var bouncedamage = (int)Math.Min(damage * (powerGuardBuff.Value / (attacker.isBoss() ? 200.0 : 100.0)), attacker.getMaxHp() / 10);
                         damage -= bouncedamage;
-                        attacker.DamageBy(chr, bouncedamage, 0);
-                        attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage), chr.Id);
-                        attacker.aggroMonsterDamage(chr, bouncedamage);
+                        await attacker.DamageBy(chr, bouncedamage, 0);
+                        await attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage), chr.Id);
+                        await attacker.aggroMonsterDamage(chr, bouncedamage);
                     }
                     var bPressure = chr.getBuffEffect(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
                     if (bPressure != null)
@@ -264,7 +263,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                         {
                             if (!attacker.isBoss() && bPressure.makeChanceResult())
                             {
-                                attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), skill), false, (bPressure.getDuration() / 10) * 2, false);
+                                await attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), skill), false, (bPressure.getDuration() / 10) * 2, false);
                             }
                         }
                     }
@@ -344,9 +343,9 @@ public class TakeDamageHandler : ChannelHandlerBase
                     mploss = curmp;
                 }
 
-                chr.UpdateStatsChunk(() =>
+                await chr.UpdateStatsChunk(async () =>
                 {
-                    chr.DamageBy(attacker, hploss, 0);
+                    await chr.DamageBy(attacker, hploss, 0);
                     chr.ChangeMP(-mploss);
                 });
             }
@@ -357,16 +356,16 @@ public class TakeDamageHandler : ChannelHandlerBase
                 int mesoloss = (int)(damage * (buffValue.Value / 100.0));
                 if (chr.getMeso() < mesoloss)
                 {
-                    chr.GainMeso(-chr.getMeso());
-                    chr.cancelBuffStats(BuffStat.MESOGUARD);
+                    await chr.GainMeso(-chr.getMeso());
+                    await chr.cancelBuffStats(BuffStat.MESOGUARD);
                 }
                 else
                 {
-                    chr.GainMeso(-mesoloss);
+                    await chr.GainMeso(-mesoloss);
                 }
-                chr.UpdateStatsChunk(() =>
+                await chr.UpdateStatsChunk(async () =>
                 {
-                    chr.DamageBy(attacker, damage, 0);
+                    await chr.DamageBy(attacker, damage, 0);
                     chr.ChangeMP(-mpattack);
                 });
             }
@@ -374,27 +373,27 @@ public class TakeDamageHandler : ChannelHandlerBase
             {
                 if (chr.isRidingBattleship())
                 {
-                    chr.decreaseBattleshipHp(damage);
+                    await chr.decreaseBattleshipHp(damage);
                 }
 
-                chr.UpdateStatsChunk(() =>
+                await chr.UpdateStatsChunk(async () =>
                 {
-                    chr.DamageBy(attacker, damage, 0);
+                    await chr.DamageBy(attacker, damage, 0);
                     chr.ChangeMP(-mpattack);
                 });
             }
         }
 
-        chr.BroadcastMap(PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
+        await chr.BroadcastMap(PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
         if (MapId.isDojo(map.getId()))
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_DMG);
-            c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
         foreach (var player in banishPlayers)
         {  // chill, if this list ever gets non-empty an attacker does exist, trust me :)
-            player.changeMapBanish(attacker.getBanish());
+            await player.changeMapBanish(attacker?.getBanish());
         }
     }
 }

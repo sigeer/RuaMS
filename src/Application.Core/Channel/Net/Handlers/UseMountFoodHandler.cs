@@ -21,10 +21,7 @@
 */
 
 
-using client.inventory;
 using client.inventory.manipulator;
-using constants.game;
-using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -34,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseMountFoodHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
         short pos = p.readShort();
@@ -43,8 +40,8 @@ public class UseMountFoodHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         var mount = chr.getMount();
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var useInv = chr.getInventory(InventoryType.USE);
@@ -58,9 +55,9 @@ public class UseMountFoodHandler : ChannelHandlerBase
                     float healedFactor = (float)healedTiredness / 30;
                     mount.setTiredness(curTiredness - healedTiredness);
 
-                    mount.AddExp(healedFactor);
+                    await mount.AddExp(healedFactor);
 
-                    InventoryManipulator.removeById(c, InventoryType.USE, itemid, 1, true, false);
+                    await InventoryManipulator.removeById(c, InventoryType.USE, itemid, 1, true, false);
                 }
             }
             finally

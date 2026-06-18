@@ -1377,7 +1377,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (getPlayer().getLevel() > 50)
             {
-                forceCompleteQuest();
+                await forceCompleteQuest();
                 return;
             }
 
@@ -1386,7 +1386,7 @@ namespace Application.Plugin.Script.Quest
             {
                 var level = getPlayer().getLevel();
 
-                warp(level <= 30 ? 889100000 : (level <= 40 ? 889100010 : 889100020));
+                await warp(level <= 30 ? 889100000 : (level <= 40 ? 889100010 : 889100020));
 
             }
         }
@@ -1702,7 +1702,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q4659e()
         {
             // TODO
-            if (!CanCompleteQuest())
+            if (!await CanCompleteQuest())
             {
                 await SayOK("需要的材料都拿来了吗？需要1个#t5380000#和50个#t4000111#。");
                 return;
@@ -1711,17 +1711,17 @@ namespace Application.Plugin.Script.Quest
             var petSlot = getPlayer().getPetIndexByItemId(5000048);
             if (petSlot == -1)
             {
-                getPlayer().message("Pet could not be evolved.");
+                await Pink("Pet could not be evolved.");
                 return;
             }
 
             var after = evolvePet(petSlot);
             if (after != null)
             {
-                gainItem(5380000, -1);
-                gainItem(4000111, -50);
+                await gainItem(5380000, -1);
+                await gainItem(4000111, -50);
 
-                completeQuest();
+                await completeQuest();
             }
         }
         // Quest: 4676 
@@ -1760,18 +1760,18 @@ namespace Application.Plugin.Script.Quest
                 var petSlot = getPlayer().getPetIndexByItemId(5000029);
                 if (petSlot == -1)
                 {
-                    getPlayer().message("宠物无法进化。");
+                    await getPlayer().Pink("宠物无法进化。");
     
                     return;
                 }
                 //unequipPet(getClient());
 
-                var after = evolvePet(petSlot);
+                var after = await evolvePet(petSlot);
                 if (after != null)
                 {
-                    gainItem(5380000, -1);
-                    gainMeso(-10000);
-                    completeQuest();
+                    await gainItem(5380000, -1);
+                    await gainMeso(-10000);
+                    await completeQuest();
 
                     await SayOK("#b太棒了！#k 你的龙变得更加美丽！ #r你可以在 '现金' 背包下找到你的新宠物。\r 它曾经是 #b #i5000029##t5000029##k，现在是 \r 一个 #b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
                 }
@@ -1824,12 +1824,12 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            var after = evolvePet(petidx);
+            var after = await evolvePet(petidx);
             if (after != null)
             {
-                gainMeso(-10000);
-                gainItem(5380000, -1);
-                completeQuest();
+                await gainMeso(-10000);
+                await gainItem(5380000, -1);
+                await completeQuest();
 
                 await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + id + "##t" + id + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
             }

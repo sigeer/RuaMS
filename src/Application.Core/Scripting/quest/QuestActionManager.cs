@@ -52,41 +52,41 @@ public class QuestActionManager : NPCConversationManager
         return start;
     }
 
-    public bool forceStartQuest()
+    public async Task<bool> forceStartQuest()
     {
-        return forceStartQuest(quest);
+        return await forceStartQuest(quest);
     }
 
-    public bool forceCompleteQuest()
+    public async Task<bool> forceCompleteQuest()
     {
-        return forceCompleteQuest(quest);
-    }
-
-    // For compatibility with some older scripts...
-    public void startQuest()
-    {
-        forceStartQuest();
+        return await forceCompleteQuest(quest);
     }
 
     // For compatibility with some older scripts...
-    public void completeQuest()
+    public async Task startQuest()
     {
-        forceCompleteQuest();
+        await forceStartQuest();
     }
 
-    public void CompleteQuestN(int? selection = null)
+    // For compatibility with some older scripts...
+    public async Task completeQuest()
     {
-        Quest.getInstance(quest).complete(c.OnlinedCharacter, npc, selection);
+        await forceCompleteQuest();
     }
 
-    public override void gainExp(int gain)
+    public async Task CompleteQuestN(int? selection = null)
     {
-        ExpAction.runAction(getPlayer(), gain);
+        await Quest.getInstance(quest).complete(c.OnlinedCharacter, npc, selection);
     }
 
-    public override void gainMeso(int gain)
+    public override async Task gainExp(int gain)
     {
-        MesoAction.runAction(getPlayer(), gain);
+        await ExpAction.runAction(getPlayer(), gain);
+    }
+
+    public override async Task gainMeso(int gain)
+    {
+        await MesoAction.runAction(getPlayer(), gain);
     }
 
     public string? getMedalName()
@@ -95,8 +95,8 @@ public class QuestActionManager : NPCConversationManager
         return c.CurrentCulture.GetItemName(QuestFactory.Instance.GetMedalRequirement((short)quest));
     }
 
-    public bool CanCompleteQuest()
+    public async Task<bool> CanCompleteQuest()
     {
-        return QuestFactory.Instance.GetInstance(quest).canComplete(getPlayer(), npc);
+        return await QuestFactory.Instance.GetInstance(quest).canComplete(getPlayer(), npc);
     }
 }

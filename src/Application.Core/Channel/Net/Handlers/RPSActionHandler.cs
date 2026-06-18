@@ -11,20 +11,20 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RPSActionHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var rps = chr.getRPS();
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 if (p.available() == 0 || !chr.getMap().containsNPC(NpcId.RPS_ADMIN))
                 {
                     if (rps != null)
                     {
-                        rps.dispose(c);
+                        await rps.dispose(c);
                     }
                     return;
                 }
@@ -35,43 +35,45 @@ public class RPSActionHandler : ChannelHandlerBase
                     case 5: // retry
                         if (rps != null)
                         {
-                            rps.reward(c);
+                            await rps.reward(c);
                         }
                         if (chr.getMeso() >= 1000)
                         {
-                            chr.setRPS(new RockPaperScissor(c, mode));
+                            var o = new RockPaperScissor(c, mode);
+                            await o.Initialize(c);
+                            chr.setRPS(o);
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.rpsMesoError(-1));
+                            await c.SendPacket(PacketCreator.rpsMesoError(-1));
                         }
                         break;
                     case 1: // answer
-                        if (rps == null || !rps.answer(c, p.readByte()))
+                        if (rps == null || !await rps.answer(c, p.readByte()))
                         {
-                            c.sendPacket(PacketCreator.rpsMode(0x0D));// 13
+                            await c.SendPacket(PacketCreator.rpsMode(0x0D));// 13
                         }
                         break;
                     case 2: // time over
-                        if (rps == null || !rps.timeOut(c))
+                        if (rps == null || !await rps.timeOut(c))
                         {
-                            c.sendPacket(PacketCreator.rpsMode(0x0D));
+                            await c.SendPacket(PacketCreator.rpsMode(0x0D));
                         }
                         break;
                     case 3: // continue
-                        if (rps == null || !rps.nextRound(c))
+                        if (rps == null || !await rps.nextRound(c))
                         {
-                            c.sendPacket(PacketCreator.rpsMode(0x0D));
+                            await c.SendPacket(PacketCreator.rpsMode(0x0D));
                         }
                         break;
                     case 4: // leave
                         if (rps != null)
                         {
-                            rps.dispose(c);
+                            await rps.dispose(c);
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.rpsMode(0x0D));
+                            await c.SendPacket(PacketCreator.rpsMode(0x0D));
                         }
                         break;
                 }

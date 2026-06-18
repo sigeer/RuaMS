@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.Game.Maps;
 
 namespace Application.Core.Gameplay.Plugins
@@ -8,7 +7,7 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptMapService : IPluginServiceBase
     {
-        void MapFirstEnter(IChannelClient c, IMap map);
-        void MapEnter(IChannelClient c, IMap map);
+        Task MapFirstEnter(IChannelClient c, IMap map);
+        Task MapEnter(IChannelClient c, IMap map);
     }
 }

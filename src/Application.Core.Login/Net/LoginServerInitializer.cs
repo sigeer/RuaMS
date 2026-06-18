@@ -23,7 +23,7 @@ public class LoginServerInitializer : ServerChannelInitializer
     {
         if (!masterServer.IsRunning || masterServer.IsShuttingdown)
         {
-            socketChannel.CloseAsync();
+            _ = socketChannel.CloseAsync();
             return;
         }
 
@@ -39,6 +39,6 @@ public class LoginServerInitializer : ServerChannelInitializer
             return;
         }
 
-        initPipeline(socketChannel, client);
+        _ = initPipeline(socketChannel, client);
     }
 }

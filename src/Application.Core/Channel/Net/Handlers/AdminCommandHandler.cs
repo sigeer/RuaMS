@@ -25,7 +25,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using server.life;
@@ -46,7 +45,7 @@ public class AdminCommandHandler : ChannelHandlerBase
         _adminService = adminService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isGM())
         {
@@ -63,10 +62,10 @@ public class AdminCommandHandler : ChannelHandlerBase
                 {
                     if (Randomizer.nextInt(100) < toSpawnChild.Prob)
                     {
-                        c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
+                        await c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(toSpawnChild.Mob), c.OnlinedCharacter.getPosition());
                     }
                 }
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 break;
             case 0x01:
                 { // /d (inv)
@@ -78,7 +77,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                         var item = inValue.getItem(i);
                         if (item != null)
                         {
-                            InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventoryType), i, item.getQuantity(), false);
+                            await InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventoryType), i, item.getQuantity(), false);
                         }
                         return;
                     }
@@ -88,17 +87,17 @@ public class AdminCommandHandler : ChannelHandlerBase
                 c.OnlinedCharacter.setExp(p.readInt());
                 break;
             case 0x03: // /ban <name>
-                c.OnlinedCharacter.yellowMessage("Please use !ban <IGN> <Reason>");
+                await c.OnlinedCharacter.Yellow("Please use !ban <IGN> <Reason>");
                 break;
             case 0x04: // /block <name> <duration (in days)> <HACK/BOT/AD/HARASS/CURSE/SCAM/MISCONDUCT/SELL/ICASH/TEMP/GM/IPROGRAM/MEGAPHONE>
                 victim = p.readString();
                 int type = p.readByte(); //reason
                 int duration = p.readInt();
                 string description = p.readString();
-                _adminService.Ban(c.OnlinedCharacter, victim, type, description, duration);
+                await _adminService.Ban(c.OnlinedCharacter.Id, victim, type, description, duration);
                 break;
             case 0x10: // /h, information added by vana -- <and tele mode f1> ... hide ofcourse
-                c.OnlinedCharacter.Hide(p.readByte() == 1);
+                await c.OnlinedCharacter.Hide(p.readByte() == 1);
                 break;
             case 0x11: // Entering a map
                 switch (p.readByte())
@@ -110,7 +109,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                             sb.Append(mc.getName());
                             sb.Append(" ");
                         }
-                        c.OnlinedCharacter.message(sb.ToString());
+                        await c.OnlinedCharacter.Pink(sb.ToString());
                         break;
                     case 12:// /uclip and entering a map
                         break;
@@ -119,7 +118,9 @@ public class AdminCommandHandler : ChannelHandlerBase
             case 0x12: // Send
                 victim = p.readString();
                 int mapId = p.readInt();
-                c.getChannelServer().getPlayerStorage().getCharacterByName(victim)?.changeMap(c.getChannelServer().getMapFactory().getMap(mapId));
+                var chr = c.getChannelServer().getPlayerStorage().getCharacterByName(victim);
+                if(chr != null)
+                    await chr.changeMap(await c.getChannelServer().getMapFactory().getMap(mapId));
                 break;
             case 0x15: // Kill
                 int mobToKill = p.readInt();
@@ -130,30 +131,30 @@ public class AdminCommandHandler : ChannelHandlerBase
                     var monster = (Monster)monsterx[x];
                     if (monster.getId() == mobToKill)
                     {
-                        c.OnlinedCharacter.getMap().RemoveMob(monster, c.OnlinedCharacter, true);
+                        await c.OnlinedCharacter.getMap().RemoveMob(monster, c.OnlinedCharacter, true);
                     }
                 }
                 break;
             case 0x16: // Questreset
-                Quest.getInstance(p.readShort()).reset(c.OnlinedCharacter);
+                await Quest.getInstance(p.readShort()).reset(c.OnlinedCharacter);
                 break;
             case 0x17: // Summon
                 int mobId = p.readInt();
                 int quantity = p.readInt();
                 for (int i = 0; i < quantity; i++)
                 {
-                    c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), c.OnlinedCharacter.getPosition());
+                    await c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), c.OnlinedCharacter.getPosition());
                 }
                 break;
             case 0x18: // Maple & Mobhp
                 int mobHp = p.readInt();
-                c.OnlinedCharacter.dropMessage("Monsters HP");
-                c.OnlinedCharacter.getMap().ProcessMonster(
-                    monster =>
+                await c.OnlinedCharacter.Notice("Monsters HP");
+                await c.OnlinedCharacter.getMap().ProcessMonster(
+                    async monster =>
                     {
                         if (monster.getId() == mobHp)
                         {
-                            c.OnlinedCharacter.dropMessage(monster.getName() + ": " + monster.getHp());
+                            await c.OnlinedCharacter.Notice(monster.getName() + ": " + monster.getHp());
                         }
                     });
                 break;
@@ -163,12 +164,12 @@ public class AdminCommandHandler : ChannelHandlerBase
                 target = c.getChannelServer().getPlayerStorage().getCharacterByName(victim);
                 if (target != null)
                 {
-                    target.dropMessage(1, message);
-                    c.sendPacket(PacketCreator.getGMEffect(0x1E, 1));
+                    await target.dropMessage(1, message);
+                    await c.SendPacket(PacketCreator.getGMEffect(0x1E, 1));
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.getGMEffect(0x1E, 0));
+                    await c.SendPacket(PacketCreator.getGMEffect(0x1E, 0));
                 }
                 break;
             case 0x24:// /Artifact Ranking

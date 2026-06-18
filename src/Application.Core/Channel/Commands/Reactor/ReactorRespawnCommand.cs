@@ -1,11 +1,8 @@
 using server.maps;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class ReactorRespawnCommand: IWorldChannelCommand
+    internal class ReactorRespawnCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(ReactorRespawnCommand);
         Reactor _reactor;
@@ -17,9 +14,9 @@ namespace Application.Core.Channel.Commands
             _fromDestroyed = fromDestroyed;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
-            _reactor.respawn(_fromDestroyed);
+            await _reactor.respawn(_fromDestroyed);
         }
     }
 }

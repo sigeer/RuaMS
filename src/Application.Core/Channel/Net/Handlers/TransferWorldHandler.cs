@@ -28,18 +28,18 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TransferWorldHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         throw new BusinessNotsupportException();
         //p.readInt(); //cid
         //int birthday = p.readInt();
         //if (!c.CheckBirthday(birthday))
         //{
-        //    c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
-        //    c.sendPacket(PacketCreator.enableActions());
+        //    await c.SendPacket(PacketCreator.showCashShopMessage(0xC4));
+        //    await c.SendPacket(PacketCreator.enableActions());
         //    return;
         //}
-        //c.sendPacket(PacketCreator.sendWorldTransferRules(9, c));
+        //await c.SendPacket(PacketCreator.sendWorldTransferRules(9, c));
         //return;
     }
 }

@@ -69,7 +69,7 @@ public class LootManager
                 }
 
                 // thanks kvmba for noticing quest items with no required amount failing to be detected as such
-                
+
                 int qItemStatus = chrInv.hasItem(dropEntry.ItemId, qItemAmount);
                 if (qItemStatus == 2)
                 {

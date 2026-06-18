@@ -1,5 +1,4 @@
 using Application.Shared.Invitations;
-using Dto;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
 
@@ -20,9 +19,11 @@ namespace Application.Core.Channel.Invitation
                 if (senderActor != null)
                 {
                     var code = result == InviteResultType.DENIED ? GuildResponse.DENIED_INVITE : GuildResponse.NOT_FOUND_INVITE;
-                    senderActor.Send(m =>
+                    senderActor.Send(async m =>
                     {
-                        m.getCharacterById(data.SenderPlayerId)?.sendPacket(code.getPacket(data.ReceivePlayerName));
+                        var chr = m.getCharacterById(data.SenderPlayerId);
+                        if (chr != null)
+                            await chr.SendPacket(code.getPacket(data.ReceivePlayerName));
                     });
                 }
             }
@@ -34,18 +35,22 @@ namespace Application.Core.Channel.Invitation
             if (code == GuildResponse.Success)
             {
                 var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
-                receiverActor?.Send(m =>
+                receiverActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
+                    var chr = m.getCharacterById(data.ReceivePlayerId);
+                    if (chr != null)
+                        await chr.SendPacket(GuildPackets.guildInvite(data.Key, data.SenderPlayerName));
                 });
 
             }
             else
             {
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                senderActor?.Send(m =>
+                senderActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(code.getPacket(data.ReceivePlayerName));
+                    var chr = m.getCharacterById(data.SenderPlayerId);
+                    if (chr != null)
+                        await chr.SendPacket(code.getPacket(data.ReceivePlayerName));
                 });
             }
         }

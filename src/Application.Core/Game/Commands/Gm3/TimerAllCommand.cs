@@ -8,12 +8,12 @@ public class TimerAllCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.TimerAllCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.TimerAllCommand_Syntax));
             return;
         }
 
@@ -31,7 +31,7 @@ public class TimerAllCommand : CommandBase
             catch (FormatException e)
             {
                 log.Error(e.ToString());
-                player.YellowMessageI18N(nameof(ClientMessage.TimerAllCommand_Syntax));
+                await player.Yellow(nameof(ClientMessage.TimerAllCommand_Syntax));
             }
         }
     }

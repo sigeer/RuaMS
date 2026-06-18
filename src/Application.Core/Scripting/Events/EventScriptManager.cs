@@ -29,7 +29,7 @@ using System.Collections.Concurrent;
 
 namespace scripting.Event;
 
-public class EventScriptManager : ITickableTree, IDisposable
+public class EventScriptManager : ITickableTree, IAsyncDisposable
 {
     private ConcurrentDictionary<string, AbstractEventManager> events = new();
     public bool IsActive => events.Count > 0;
@@ -94,7 +94,7 @@ public class EventScriptManager : ITickableTree, IDisposable
     }
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (events.Count == 0)
         {
@@ -105,7 +105,7 @@ public class EventScriptManager : ITickableTree, IDisposable
         events.Clear();
         foreach (var old in cleanEvents)
         {
-            old.Dispose();
+            await old.DisposeAsync();
         }
     }
 
@@ -113,8 +113,8 @@ public class EventScriptManager : ITickableTree, IDisposable
 
     public List<ITickable> SubTickables => events.Values.OfType<ITickable>().ToList();
 
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
-        this.ProcessSubTickables(now);
+        await this.ProcessSubTickables(now);
     }
 }

@@ -1,5 +1,3 @@
-using scripting.npc;
-
 namespace Application.Core.scripting.Infrastructure
 {
     public enum NextLevelType

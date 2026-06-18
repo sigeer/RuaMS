@@ -36,7 +36,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var petId = p.readLong();
         var pos = p.readPos();
@@ -61,7 +61,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
         }
 
 
-        mapPet.BroadcastMovement(PacketCreator.movePet(c.OnlinedCharacter.Id, mapPet.Index, pos, res), serverStartPos);
-        mapPet.MapModel.MoveMapObject(mapPet);
+        await mapPet.BroadcastMovement(PacketCreator.movePet(c.OnlinedCharacter.Id, mapPet.Index, pos, res), serverStartPos);
+        await mapPet.MapModel.MoveMapObject(mapPet);
     }
 }

@@ -18,10 +18,10 @@ namespace Application.Plugin.Script.Events
             MaxMap = 925040100;
         }
 
-        public override void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
-            base.OnSetup(eim, level, lobbyId);
-            eim.getMapInstance(925040100).SpawnNpc(1204020, new Point(850, 0));
+            await base.OnSetup(eim, level, lobbyId);
+            await (await eim.getMapInstance(925040100)).SpawnNpc(1204020, new Point(850, 0));
         }
     }
 }

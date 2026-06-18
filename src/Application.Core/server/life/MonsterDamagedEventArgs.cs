@@ -5,10 +5,10 @@ namespace server.life;
 
 public sealed class MonsterDamagedEventArgs : EventArgs
 {
-    public ICombatantObject Attacker { get; }
+    public ICombatantObject? Attacker { get; }
     public int Damage { get; }
 
-    public MonsterDamagedEventArgs(ICombatantObject attacker, int damage)
+    public MonsterDamagedEventArgs(ICombatantObject? attacker, int damage)
     {
         Attacker = attacker;
         Damage = damage;

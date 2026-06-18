@@ -12,12 +12,12 @@ public class UnBanCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !unban <playername>");
+            await player.Yellow("Syntax: !unban <playername>");
             return;
         }
 

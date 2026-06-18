@@ -34,7 +34,7 @@ public class ScriptRequirement : AbstractQuestRequirement
         reqScript = !string.IsNullOrEmpty(data);
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         return true;
     }

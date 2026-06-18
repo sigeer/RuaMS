@@ -34,7 +34,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var startPos = p.readPos();
@@ -51,8 +51,8 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
                 int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
-                player.getMap().MoveMapObject(summon);
-                summon.BroadcastMovement(PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), serverStartPos);
+                await player.getMap().MoveMapObject(summon);
+                await summon.BroadcastMovement(PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), serverStartPos);
             }
             catch (EmptyMovementException e)
             {

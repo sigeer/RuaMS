@@ -37,16 +37,16 @@ public class MesoAction : AbstractQuestAction
     }
 
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        runAction(chr, mesos);
+        await runAction(chr, mesos);
     }
 
-    public static void runAction(Player chr, int gain)
+    public static async Task runAction(Player chr, int gain)
     {
         if (gain < 0)
         {
-            chr.GainMeso(gain, GainItemShow.ShowInChat);
+            await chr.GainMeso(gain, GainItemShow.ShowInChat);
         }
         else
         {
@@ -56,7 +56,7 @@ public class MesoAction : AbstractQuestAction
                 mesoGain = gain * chr.getQuestMesoRate();
             }
 
-            chr.GainMeso((int)mesoGain, GainItemShow.ShowInChat);
+            await chr.GainMeso((int)mesoGain, GainItemShow.ShowInChat);
         }
     }
 }

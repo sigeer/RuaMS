@@ -1,6 +1,5 @@
 using Application.Core.ServerTransports;
 using Dto;
-using System.Threading.Tasks;
 
 namespace Application.Core.Channel.Services
 {

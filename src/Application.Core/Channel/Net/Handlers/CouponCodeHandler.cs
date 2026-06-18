@@ -44,16 +44,16 @@ public class CouponCodeHandler : ChannelHandlerBase
         _itemService = itemService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(2);
         string code = p.readString();
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
-                _itemService.UseCdk(c.OnlinedCharacter, code);
+                await _itemService.UseCdk(c.OnlinedCharacter, code);
             }
             finally
             {

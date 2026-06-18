@@ -41,17 +41,17 @@ public class NPCTalkHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isAlive())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         if (!c.OnlinedCharacter.CanTalkNpc())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -59,7 +59,7 @@ public class NPCTalkHandler : ChannelHandlerBase
         var obj = c.OnlinedCharacter.getMap().getMapObject(oid);
         if (obj == null)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -67,18 +67,18 @@ public class NPCTalkHandler : ChannelHandlerBase
         {
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
+                await c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
             }
 
             if (npc.SourceTemplate.Parcel)
             {
-                c.CurrentServer.NodeService.DueyManager.SendTalk(c);
+                await c.CurrentServer.NodeService.DueyManager.SendTalk(c);
                 return;
             }
 
             if (npc.SourceTemplate.TrunkGet != null || npc.SourceTemplate.TrunkPut != null)
             {
-                c.OnlinedCharacter.Storage.OpenStorage(npc.getId());
+                await c.OnlinedCharacter.Storage.OpenStorage(npc.getId());
                 return;
             }
 
@@ -86,15 +86,15 @@ public class NPCTalkHandler : ChannelHandlerBase
             {
                 if (c.OnlinedCharacter.getShop() != null)
                 {
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
-                npc.sendShop(c);
+                await npc.sendShop(c);
                 return;
             }
 
-            _ = c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+            await c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
             return;
 
             //if (npc.getId() == NpcId.DUEY)
@@ -105,7 +105,7 @@ public class NPCTalkHandler : ChannelHandlerBase
             //{
             //    if (c.NPCConversationManager != null)
             //    {
-            //        c.sendPacket(PacketCreator.enableActions());
+            //        await c.SendPacket(PacketCreator.enableActions());
             //        return;
             //    }
 
@@ -130,7 +130,7 @@ public class NPCTalkHandler : ChannelHandlerBase
             //            }
             //            else if (c.OnlinedCharacter.getShop() != null)
             //            {
-            //                c.sendPacket(PacketCreator.enableActions());
+            //                await c.SendPacket(PacketCreator.enableActions());
             //                return;
             //            }
 
@@ -143,11 +143,11 @@ public class NPCTalkHandler : ChannelHandlerBase
         {
             if (playerNpc.GetSourceId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + playerNpc.GetSourceId()))
             {
-                c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), "rank_user", null);
+                await c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), "rank_user", null);
             }
             else
             {
-                c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), null);
+                await c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), null);
             }
         }
     }

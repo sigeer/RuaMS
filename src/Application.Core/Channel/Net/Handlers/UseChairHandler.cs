@@ -24,7 +24,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class UseChairHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int itemId = p.readInt();
 
@@ -34,11 +34,11 @@ public class UseChairHandler : ChannelHandlerBase
             return;
         }
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
-                c.OnlinedCharacter.sitChair(itemId);
+                await c.OnlinedCharacter.sitChair(itemId);
             }
             finally
             {

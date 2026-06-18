@@ -11,19 +11,19 @@ public class ShutdownCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ShutdownCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ShutdownCommand_Syntax));
             return;
         }
 
 
         if (!int.TryParse(paramsValue[0], out var seconds))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ShutdownCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ShutdownCommand_Syntax));
             return;
         }
 

@@ -24,11 +24,8 @@
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Instances;
 using Microsoft.Extensions.Logging;
-using server.life;
 using server.partyquest;
-using System.Runtime.ConstrainedExecution;
 using tools;
-using static Quartz.Logging.OperationName;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -45,26 +42,26 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 try
                 {
-                    var eim =c.OnlinedCharacter.getEventInstance() as MonsterCarnivalEventInstanceManager;
+                    var eim = c.OnlinedCharacter.getEventInstance() as MonsterCarnivalEventInstanceManager;
                     if (eim == null)
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         throw new BusinessOutOfInstance();
                     }
 
                     var playerData = eim.GetPlayerData(c.OnlinedCharacter.Id);
                     if (playerData == null)
                     {
-                        eim.exitPlayer(c.OnlinedCharacter);
-                        c.sendPacket(PacketCreator.enableActions());
+                        await eim.exitPlayer(c.OnlinedCharacter);
+                        await c.SendPacket(PacketCreator.enableActions());
                         throw new BusinessOutOfInstance();
                     }
 
@@ -78,23 +75,23 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         var mobs = map.getMobsToSpawn();
                         if (num >= mobs.Count || playerData.AvailableCP < mobs[num].Value)
                         {
-                            c.sendPacket(PacketCreator.CPQMessage(1));
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.CPQMessage(1));
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
 
                         if (!eim.CanSummon(c.OnlinedCharacter))
                         {
-                            c.sendPacket(PacketCreator.CPQMessage(2));
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.CPQMessage(2));
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
 
                         eim.Summon(c.OnlinedCharacter);
 
                         var spawnPos = map.getRandomSP(playerData.TeamFlag);
-                        c.OnlinedCharacter.getMap().addMonsterSpawn(mobs[num].Key, spawnPos, 1, playerData.TeamFlag);
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.OnlinedCharacter.getMap().addMonsterSpawn(mobs[num].Key, spawnPos, 1, playerData.TeamFlag);
+                        await c.SendPacket(PacketCreator.enableActions());
 
                         neededCP = mobs[num].Value;
                     }
@@ -105,15 +102,15 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         List<int> skillid = map.GetSkillIds();
                         if (num >= skillid.Count)
                         {
-                            c.OnlinedCharacter.dropMessage(5, "An unexpected error has occurred.");
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.OnlinedCharacter.dropMessage(5, "An unexpected error has occurred.");
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var skill = CarnivalFactory.getInstance().getSkill(skillid[num]); //ugh wtf
                         if (skill == null || playerData.AvailableCP < skill.cpLoss)
                         {
-                            c.sendPacket(PacketCreator.CPQMessage(1));
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.CPQMessage(1));
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
                         var dis = skill.getDisease();
@@ -129,11 +126,11 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                                     {
                                         if (dis == null)
                                         {
-                                            mc.dispel();
+                                            await mc.dispel();
                                         }
                                         else
                                         {
-                                            mc.giveDebuff(dis, skill.getSkill());
+                                            await mc.giveDebuff(dis, skill.getSkill());
                                         }
                                     }
                                 }
@@ -146,16 +143,16 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             {
                                 if (dis == null)
                                 {
-                                    chrApp.dispel();
+                                    await chrApp.dispel();
                                 }
                                 else
                                 {
-                                    chrApp.giveDebuff(dis, skill.getSkill());
+                                    await chrApp.giveDebuff(dis, skill.getSkill());
                                 }
                             }
                         }
                         neededCP = skill.cpLoss;
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                     }
                     else if (tab == 2)
                     {
@@ -163,37 +160,37 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                         var skill = CarnivalFactory.getInstance().getGuardian(num);
                         if (skill == null || playerData.AvailableCP < skill.cpLoss)
                         {
-                            c.sendPacket(PacketCreator.CPQMessage(1));
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.CPQMessage(1));
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        if (!eim.CanGuardian(c.OnlinedCharacter))
+                        var map = await eim.GetEventMap();
+                        if (!eim.CanGuardian(c.OnlinedCharacter, map))
                         {
-                            c.sendPacket(PacketCreator.CPQMessage(2));
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.CPQMessage(2));
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
 
-                        var map = c.OnlinedCharacter.getMap() as ICPQMap;
-                        int success = map.spawnGuardian(playerData.TeamFlag, num);
+                        int success = await map.spawnGuardian(playerData.TeamFlag, num);
                         if (success != 1)
                         {
                             switch (success)
                             {
                                 case -1:
-                                    c.sendPacket(PacketCreator.CPQMessage(3));
+                                    await c.SendPacket(PacketCreator.CPQMessage(3));
                                     break;
 
                                 case 0:
-                                    c.sendPacket(PacketCreator.CPQMessage(4));
+                                    await c.SendPacket(PacketCreator.CPQMessage(4));
                                     break;
 
                                 default:
-                                    c.sendPacket(PacketCreator.CPQMessage(3));
+                                    await c.SendPacket(PacketCreator.CPQMessage(3));
                                     break;
                             }
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
                         else
@@ -201,8 +198,8 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                             neededCP = skill.cpLoss;
                         }
                     }
-                    eim.GainCP(c.OnlinedCharacter, -neededCP);
-                    c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.CPQ_PlayerSummoned(c.OnlinedCharacter.getName(), tab, num));
+                    await eim.GainCP(c.OnlinedCharacter, -neededCP);
+                    await c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.CPQ_PlayerSummoned(c.OnlinedCharacter.getName(), tab, num));
                 }
                 catch (Exception e)
                 {

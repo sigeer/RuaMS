@@ -34,7 +34,7 @@ public class CreateCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string name = p.readString();
         int job = p.readInt();
@@ -52,24 +52,24 @@ public class CreateCharHandler : LoginHandlerBase
 
         if (job < 0 || job > 2)
         {
-            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
+            await c.SendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
             return;
         }
 
         if (c.AccountEntity == null)
         {
             // 账号信息不存在
-            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
+            await c.SendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
             return;
         }
 
         var model = c.CurrentServer.CreatePlayerService.CreateCharacter(c.AccountEntity, job, name, gender, face, hair + haircolor, skincolor, top, bottom, shoes, weapon);
         if (model == null)
         {
-            c.sendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
+            await c.SendPacket(LoginPacketCreator.deleteCharResponse(0, 9));
             return;
         }
 
-        c.sendPacket(LoginPacketCreator.AddNewCharEntry(model));
+        await c.SendPacket(LoginPacketCreator.AddNewCharEntry(model));
     }
 }

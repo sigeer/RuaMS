@@ -1,6 +1,5 @@
 using Application.Core.Channel.Net;
 using Application.Core.Client;
-using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using Application.Shared.Net;
@@ -20,10 +19,10 @@ namespace Application.Module.Maker.Channel.Net.Handlers
             _logger = logger;
         }
 
-        public override void HandlePacket(InPacket p, IChannelClient c)
+        public override async Task HandlePacket(InPacket p, IChannelClient c)
         {
-            if (c.tryacquireClient())
             {
+                await c.tryacquireClient();
                 try
                 {
                     int type = p.readInt();
@@ -42,8 +41,8 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                         toCreate = _service.getMakerCrystalFromLeftover(toCreate);
                         if (toCreate == -1)
                         {
-                            c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(fromLeftover) + " is unavailable for Monster Crystal conversion."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(fromLeftover) + " is unavailable for Monster Crystal conversion."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             return;
                         }
 
@@ -66,15 +65,15 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             }
                             else
                             {
-                                c.sendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(toCreate) + " is unavailable for Monster Crystal disassembly."));
-                                c.sendPacket(MakerPacketCreator.makerEnableActions());
+                                await c.SendPacket(PacketCreator.serverNotice(1, c.CurrentCulture.GetItemName(toCreate) + " is unavailable for Monster Crystal disassembly."));
+                                await c.SendPacket(MakerPacketCreator.makerEnableActions());
                                 return;
                             }
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.serverNotice(1, "An unknown error occurred when trying to apply that item for disassembly."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "An unknown error occurred when trying to apply that item for disassembly."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             return;
                         }
                     }
@@ -135,8 +134,8 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 if (!_service.removeOddMakerReagents(toCreate, reagentids))
                                 {
-                                    c.sendPacket(PacketCreator.serverNotice(1, "You can only use WATK and MATK Strengthening Gems on weapon items."));
-                                    c.sendPacket(MakerPacketCreator.makerEnableActions());
+                                    await c.SendPacket(PacketCreator.serverNotice(1, "You can only use WATK and MATK Strengthening Gems on weapon items."));
+                                    await c.SendPacket(MakerPacketCreator.makerEnableActions());
                                     return;
                                 }
                             }
@@ -145,51 +144,51 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                         recipe = _service.getItemCreateEntry(toCreate, stimulantid, reagentids);
                     }
 
-                    short createStatus = _service.getCreateStatus(c, recipe);
+                    short createStatus = await _service.getCreateStatus(c, recipe);
 
                     switch (createStatus)
                     {
                         case -1:// non-available for Maker itemid has been tried to forge
                             _logger.LogWarning("Chr {CharacterName} tried to craft itemid {ItemId} using the Maker skill.", c.OnlinedCharacter.getName(), toCreate);
-                            c.sendPacket(PacketCreator.serverNotice(1, "The requested item could not be crafted on this operation."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "The requested item could not be crafted on this operation."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         case 1: // no items
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have all required items in your inventory to make " + c.CurrentCulture.GetItemName(toCreate) + "."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "You don't have all required items in your inventory to make " + c.CurrentCulture.GetItemName(toCreate) + "."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         case 2: // no meso
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + c.CurrentCulture.Number(recipe!.getCost()) + ") to complete this operation."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "You don't have enough mesos (" + c.CurrentCulture.Number(recipe!.getCost()) + ") to complete this operation."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         case 3: // no req level
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough level to complete this operation."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "You don't have enough level to complete this operation."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         case 4: // no req skill level
-                            c.sendPacket(PacketCreator.serverNotice(1, "You don't have enough Maker level to complete this operation."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "You don't have enough Maker level to complete this operation."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         case 5: // inventory full
-                            c.sendPacket(PacketCreator.serverNotice(1, "Your inventory is full."));
-                            c.sendPacket(MakerPacketCreator.makerEnableActions());
+                            await c.SendPacket(PacketCreator.serverNotice(1, "Your inventory is full."));
+                            await c.SendPacket(MakerPacketCreator.makerEnableActions());
                             break;
 
                         default:
                             if (toDisassemble != -1)
                             {
-                                InventoryManipulator.removeFromSlot(c, InventoryType.EQUIP, (short)pos, 1, false);
+                                await InventoryManipulator.removeFromSlot(c, InventoryType.EQUIP, (short)pos, 1, false);
                             }
                             else
                             {
                                 foreach (var pair in recipe!.getReqItems())
                                 {
-                                    c.OnlinedCharacter.GainItem(pair.ItemId, (short)-pair.Quantity);
+                                    await c.OnlinedCharacter.GainItem(pair.ItemId, (short)-pair.Quantity);
                                 }
                             }
 
@@ -198,13 +197,13 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 if (cost > 0)
                                 {
-                                    c.OnlinedCharacter.GainMeso(-cost);
+                                    await c.OnlinedCharacter.GainMeso(-cost);
                                 }
 
                                 foreach (var pair in recipe.getGainItems())
                                 {
                                     c.OnlinedCharacter.setCS(true);
-                                    c.OnlinedCharacter.GainItem(pair.ItemId, (short)pair.Quantity);
+                                    await c.OnlinedCharacter.GainItem(pair.ItemId, (short)pair.Quantity);
                                     c.OnlinedCharacter.setCS(false);
                                 }
                             }
@@ -214,35 +213,35 @@ namespace Application.Module.Maker.Channel.Net.Handlers
 
                                 if (stimulantid != -1)
                                 {
-                                    c.OnlinedCharacter.GainItem(stimulantid, -1);
+                                    await c.OnlinedCharacter.GainItem(stimulantid, -1);
                                 }
                                 if (reagentids.Count > 0)
                                 {
                                     foreach (var r in reagentids)
                                     {
-                                        c.OnlinedCharacter.GainItem(r.Key, (short)(-1 * r.Value));
+                                        await c.OnlinedCharacter.GainItem(r.Key, (short)(-1 * r.Value));
                                     }
                                 }
 
                                 if (cost > 0)
                                 {
-                                    c.OnlinedCharacter.GainMeso(-cost);
+                                    await c.OnlinedCharacter.GainMeso(-cost);
                                 }
-                                makerSucceeded = _service.addBoostedMakerItem(c, toCreate, stimulantid, reagentids);
+                                makerSucceeded = await _service.addBoostedMakerItem(c, toCreate, stimulantid, reagentids);
                             }
 
                             // thanks inhyuk for noticing missing MAKER_RESULT packets
                             if (type == 3)
                             {
-                                c.sendPacket(MakerPacketCreator.makerResultCrystal(recipe.getGainItems()[0].ItemId, recipe.getReqItems()[0].ItemId));
+                                await c.SendPacket(MakerPacketCreator.makerResultCrystal(recipe.getGainItems()[0].ItemId, recipe.getReqItems()[0].ItemId));
                             }
                             else if (type == 4)
                             {
-                                c.sendPacket(MakerPacketCreator.makerResultDesynth(recipe.getReqItems()[0].ItemId, recipe.getCost(), recipe.getGainItems()));
+                                await c.SendPacket(MakerPacketCreator.makerResultDesynth(recipe.getReqItems()[0].ItemId, recipe.getCost(), recipe.getGainItems()));
                             }
                             else
                             {
-                                c.sendPacket(
+                                await c.SendPacket(
                                     MakerPacketCreator.makerResult(
                                         makerSucceeded,
                                         recipe.getGainItems()[0].ItemId,
@@ -253,12 +252,12 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                                         reagentids.Keys.ToList()));
                             }
 
-                            c.sendPacket(PacketCreator.showMakerEffect(makerSucceeded));
-                            c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignMakerEffect(c.OnlinedCharacter.getId(), makerSucceeded), false);
+                            await c.SendPacket(PacketCreator.showMakerEffect(makerSucceeded));
+                            await c.OnlinedCharacter.getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showForeignMakerEffect(c.OnlinedCharacter.getId(), makerSucceeded), false);
 
                             if (toCreate == 4260003 && type == 3 && c.OnlinedCharacter.getQuestStatus(6033) == 1)
                             {
-                                c.getAbstractPlayerInteraction().setQuestProgress(6033, 1);
+                                await c.getAbstractPlayerInteraction().setQuestProgress(6033, 1);
                             }
                             break;
                     }

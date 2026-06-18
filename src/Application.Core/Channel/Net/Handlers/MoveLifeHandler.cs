@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Microsoft.Extensions.Logging;
 using server.life;
@@ -41,7 +40,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         var map = player.getMap();
@@ -100,7 +99,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                     else
                     {
                         banishPlayers = new();
-                        toUse.applyEffect(player, monster, true, banishPlayers);
+                        await toUse.applyEffect(player, monster, true, banishPlayers);
                     }
                 }
             }
@@ -153,11 +152,11 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
 
         if (nextUse != null)
         {
-            c.sendPacket(PacketCreator.moveMonsterResponse(objectid, moveid, mobMp, aggro.Value, nextSkillId, nextSkillLevel));
+            await c.SendPacket(PacketCreator.moveMonsterResponse(objectid, moveid, mobMp, aggro.Value, nextSkillId, nextSkillLevel));
         }
         else
         {
-            c.sendPacket(PacketCreator.moveMonsterResponse(objectid, moveid, mobMp, aggro.Value));
+            await c.SendPacket(PacketCreator.moveMonsterResponse(objectid, moveid, mobMp, aggro.Value));
         }
 
 
@@ -175,9 +174,9 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                         useSkillLevel, nextMovementCouldBeSkill, mobMp);
             }
 
-            monster.BroadcastMovement(PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
+            await monster.BroadcastMovement(PacketCreator.moveMonster(objectid, nextMovementCouldBeSkill, rawActivity, useSkillId, useSkillLevel, pOption, startPos, p, movementDataLength), serverStartPos);
             //updatePosition(res, monster, -2); //does this need to be done after the packet is broadcast?
-            map.MoveMapObject(monster);
+            await map.MoveMapObject(monster);
         }
         catch (EmptyMovementException e)
         {
@@ -188,7 +187,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         {
             foreach (var chr in banishPlayers)
             {
-                chr.changeMapBanish(monster.getBanish());
+                await chr.changeMapBanish(monster.getBanish());
             }
         }
     }

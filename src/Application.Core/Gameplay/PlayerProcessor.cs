@@ -9,23 +9,23 @@ namespace Application.Core.Gameplay
             _player = player;
         }
 
-        protected abstract void Process(TMessage message);
+        protected abstract Task Process(TMessage message);
 
-        protected virtual bool Before(TMessage message)
+        protected virtual Task<bool> Before(TMessage message)
         {
-            return true;
+            return Task.FromResult(true);
         }
-        protected virtual void After(TMessage message)
+        protected virtual Task After(TMessage message)
         {
-            return;
+            return Task.CompletedTask;
         }
-        public virtual void Handle(TMessage message)
+        public virtual async Task Handle(TMessage message)
         {
-            if (!Before(message))
+            if (!await Before(message))
                 return;
 
-            Process(message);
-            After(message);
+            await Process(message);
+            await After(message);
         }
 
     }

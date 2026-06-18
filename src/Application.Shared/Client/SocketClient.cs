@@ -19,7 +19,6 @@ namespace Application.Shared.Client
         public string RemoteAddress { get; }
         public Hwid? Hwid { get; set; }
 
-        protected System.Threading.Channels.Channel<Packet> packetChannel;
         protected ILogger<ISocketClient> log;
         public DateTimeOffset LastPacket { get; protected set; }
         public DateTimeOffset LastPong { get; protected set; }
@@ -37,21 +36,6 @@ namespace Application.Shared.Client
             _clientInfo = $"{SessionId}_{RemoteAddress}";
 
             this.log = log;
-            packetChannel = System.Threading.Channels.Channel.CreateUnbounded<Packet>();
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await foreach (var p in packetChannel.Reader.ReadAllAsync())
-                    {
-                        await NettyChannel.WriteAndFlushAsync(p);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex.ToString());
-                }
-            });
         }
 
         public override string ToString()
@@ -59,42 +43,22 @@ namespace Application.Shared.Client
             return _clientInfo;
         }
 
-        Lock lockObj = new();
-        private Semaphore actionsSemaphore = new Semaphore(7, 7);
-        public void lockClient()
-        {
-            lockObj.Enter();
-        }
-        public void unlockClient()
-        {
-            lockObj.Exit();
-        }
+        private SemaphoreSlim actionsSemaphore = new (7, 7);
 
-        public bool tryacquireClient()
+        public Task tryacquireClient()
         {
-            if (actionsSemaphore.WaitOne())
-            {
-                lockClient();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return actionsSemaphore.WaitAsync();
         }
 
         public void releaseClient()
         {
-            unlockClient();
             actionsSemaphore.Release();
         }
 
-        public void sendPacket(Packet packet)
+        public async Task SendPacket(Packet p)
         {
-            if (!packetChannel.Writer.TryWrite(packet))
-                log.LogError("数据包写入失败");
+            await NettyChannel.WriteAndFlushAsync(p);
         }
-
         public override void ChannelActive(IChannelHandlerContext ctx)
         {
             var channel = ctx.Channel;
@@ -114,7 +78,7 @@ namespace Application.Shared.Client
             IsActive = false;
         }
 
-        public abstract void ProcessPacket(InPacket packet);
+        public abstract Task ProcessPacket(InPacket packet);
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             LastPacket = DateTimeOffset.UtcNow;
@@ -125,34 +89,32 @@ namespace Application.Shared.Client
 #if !DEBUG
             if (evt is IdleStateEvent idleEvent)
             {
-                CheckIfIdle(idleEvent);
+                _ = CheckIfIdle(idleEvent);
             }
 #endif
         }
 
-        private void CheckIfIdle(IdleStateEvent evt)
+        private async Task CheckIfIdle(IdleStateEvent evt)
         {
             var pingedAt = DateTimeOffset.UtcNow;
-            sendPacket(PacketCommon.getPing());
-            Task.Delay(15000).ContinueWith(async _ =>
+            await SendPacket(PacketCommon.getPing());
+            await Task.Delay(15000);
+            try
             {
-                try
+                if (LastPong < pingedAt)
                 {
-                    if (LastPong < pingedAt)
+                    if (NettyChannel.Active)
                     {
-                        if (NettyChannel.Active)
-                        {
-                            log.LogInformation("Disconnected {IP} due to idling. Reason: {State}", RemoteAddress, evt.State);
+                        log.LogInformation("Disconnected {IP} due to idling. Reason: {State}", RemoteAddress, evt.State);
 
-                            CloseSession();
-                        }
+                        CloseSession();
                     }
                 }
-                catch (NullReferenceException e)
-                {
-                    log.LogError(e.ToString());
-                }
-            });
+            }
+            catch (NullReferenceException e)
+            {
+                log.LogError(e.ToString());
+            }
         }
 
         public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
@@ -173,17 +135,17 @@ namespace Application.Shared.Client
                 if (cause is BusinessFatalException)
                     CloseSession();
                 else
-                    sendPacket(PacketCommon.serverNotice(5, cause.Message));
+                    _ = SendPacket(PacketCommon.serverNotice(5, cause.Message));
             }
         }
 
-        protected abstract void CloseSessionInternal();
+        protected abstract Task CloseSessionInternal();
 
         public void CloseSession()
         {
             try
             {
-                CloseSessionInternal();
+                _ = CloseSessionInternal();
             }
             catch (Exception t)
             {
@@ -191,11 +153,11 @@ namespace Application.Shared.Client
             }
             finally
             {
-                CloseSocket();
+                _ = CloseSocket();
             }
         }
 
-        public abstract void ForceDisconnect();
+        public abstract Task ForceDisconnect();
 
         public string GetSessionRemoteHost()
         {
@@ -209,14 +171,14 @@ namespace Application.Shared.Client
             }
         }
 
-        public void CloseSocket()
+        public Task CloseSocket()
         {
-            _ = NettyChannel.CloseAsync();
+            return NettyChannel.CloseAsync();
         }
 
-        public virtual void Dispose()
+        public virtual async ValueTask DisposeAsync()
         {
-            this.packetChannel.Writer.TryComplete();
+            await CloseSocket();
         }
 
         public void PongReceived()

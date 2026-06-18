@@ -42,10 +42,10 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
         _itemService = itemService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 CashShop cs = c.OnlinedCharacter.getCashShop();
@@ -58,13 +58,13 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
                 var result = _itemService.OpenCashShopSurprise(cs, cashId);
                 if (result == null)
                 {
-                    c.sendPacket(PacketCreator.onCashItemGachaponOpenFailed());
+                    await c.SendPacket(PacketCreator.onCashItemGachaponOpenFailed());
                     return;
                 }
 
                 Item usedCashShopSurprise = result.usedCashShopSurprise;
                 Item reward = result.reward;
-                c.sendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
+                await c.SendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
                         usedCashShopSurprise.getQuantity(), reward, reward.getItemId(), reward.getQuantity(), true));
             }
             finally

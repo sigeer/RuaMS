@@ -21,7 +21,7 @@ namespace Application.Module.Marriage.Channel.Commands
             var chr = ctx.getPlayerStorage().GetCharacterClientById(res.ToPlayerId);
             if (chr != null)
             {
-                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(res.PlayerId, res.MapId));
+                chr.SendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(res.PlayerId, res.MapId));
             }
         }
     }

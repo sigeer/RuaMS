@@ -19,7 +19,7 @@ public class PlayerNpcCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !playernpc <playername> [honor]");
+            player.Yellow("Syntax: !playernpc <playername> [honor]");
             return;
         }
 

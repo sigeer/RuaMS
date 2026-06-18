@@ -22,16 +22,11 @@
 
 using Application.Core.Game.Life;
 using Application.Core.ServerTransports;
-using Application.Resources;
-using Application.Templates.Providers;
-using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server.life;
 using System.Collections.Concurrent;
-using System.Threading;
 
 namespace Application.Core.Channel.DataProviders;
 

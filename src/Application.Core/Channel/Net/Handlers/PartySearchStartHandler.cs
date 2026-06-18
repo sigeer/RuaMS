@@ -32,34 +32,34 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PartySearchStartHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int min = p.readInt();
         int max = p.readInt();
 
-        c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
-        c.sendPacket(PacketCreator.enableActions());
+        await c.OnlinedCharacter.dropMessage(1, "该功能已关闭");
+        await c.SendPacket(PacketCreator.enableActions());
         return;
 
         var chr = c.OnlinedCharacter;
         if (min > max)
         {
-            chr.dropMessage(1, "The min. value is higher than the max!");
-            c.sendPacket(PacketCreator.enableActions());
+            await chr.dropMessage(1, "The min. value is higher than the max!");
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         if (max - min > 30)
         {
-            chr.dropMessage(1, "You can only search for party members within a range of 30 levels.");
-            c.sendPacket(PacketCreator.enableActions());
+            await chr.dropMessage(1, "You can only search for party members within a range of 30 levels.");
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         if (chr.getLevel() < min || chr.getLevel() > max)
         {
-            chr.dropMessage(1, "The range of level for search has to include your own level.");
-            c.sendPacket(PacketCreator.enableActions());
+            await chr.dropMessage(1, "The range of level for search has to include your own level.");
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 

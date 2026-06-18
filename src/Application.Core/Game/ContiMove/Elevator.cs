@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using System.Threading.Tasks;
 
 namespace Application.Core.Game.ContiMove
 {
@@ -8,7 +9,7 @@ namespace Application.Core.Game.ContiMove
     /// </summary>
     public class Elevator : ContiMoveBase
     {
-        IMap _current;
+        IMap _current = null!;
 
         public Elevator(WorldChannel channelServer)
             : base(channelServer,
@@ -19,15 +20,20 @@ namespace Application.Core.Game.ContiMove
                   60 * 1000, 60 * 1000, 60 * 1000,
                   0, 0, 0, 0)
         {
-            _current = StationAMap;
+
 
         }
 
-        public override void Initialize()
+        public override async Task Initialize()
         {
-            base.Initialize();
+            await base.Initialize();
+            await StationBMap.setReactorState();
+        }
 
-            StationBMap.setReactorState();
+        protected override async Task OnMapLoad()
+        {
+            await base.OnMapLoad();
+            _current = StationAMap;
         }
 
         public override void NewTask()
@@ -37,34 +43,34 @@ namespace Application.Core.Game.ContiMove
             _current.resetReactors();
         }
 
-        public override void OnStart()
+        public override async Task OnStart()
         {
             if (_current == StationBMap)
             {
-                WaitingRoomBMap.warpEveryone(TransportBMap.Id);
+                await WaitingRoomBMap.warpEveryone(TransportBMap.Id);
             }
             else
             {
-                WaitingRoomAMap.warpEveryone(TransportAMap.Id);
+                await WaitingRoomAMap.warpEveryone(TransportAMap.Id);
             }
 
-            StationAMap.setReactorState();
-            StationBMap.setReactorState();
+            await StationAMap.setReactorState();
+            await StationBMap.setReactorState();
 
             ArriveAt = ChannelServer.Node.getCurrentTime() + _currentRideTime;
             _arriveFlag = true;
         }
 
-        public override void OnArrived()
+        public override async Task OnArrived()
         {
             if (_current == StationBMap)
             {
-                TransportBMap.warpEveryone(StationAMap.Id, 4);
+                await TransportBMap.warpEveryone(StationAMap.Id, 4);
                 _current = StationAMap;
             }
             else
             {
-                TransportAMap.warpEveryone(StationAMap.Id);
+                await TransportAMap.warpEveryone(StationAMap.Id);
                 _current = StationBMap;
             }
 

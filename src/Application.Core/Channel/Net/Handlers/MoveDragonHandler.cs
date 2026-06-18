@@ -26,13 +26,14 @@ using tools;
 using tools.exceptions;
 
 namespace Application.Core.Channel.Net.Handlers;
+
 public class MoveDragonHandler : AbstractMovementPacketHandler
 {
     public MoveDragonHandler(ILogger<AbstractMovementPacketHandler> logger) : base(logger)
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var startPos = p.readPos();
@@ -47,9 +48,9 @@ public class MoveDragonHandler : AbstractMovementPacketHandler
                 int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
                 p.seek(movementDataStart);
 
-                dragon.BroadcastMovement(PacketCreator.moveDragon(dragon, startPos, p, movementDataLength), startPost);
-                chr.getMap().MoveMapObject(dragon);
-                
+                await dragon.BroadcastMovement(PacketCreator.moveDragon(dragon, startPos, p, movementDataLength), startPost);
+                await chr.getMap().MoveMapObject(dragon);
+
             }
             catch (EmptyMovementException e)
             {

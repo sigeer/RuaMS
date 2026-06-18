@@ -58,16 +58,16 @@ namespace Application.Core.Game.Life
             return MapObjectType.PLAYER_NPC;
         }
 
-        public override void sendSpawnData(IChannelClient client)
+        public override async Task sendSpawnData(IChannelClient client)
         {
-            client.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(this));
-            client.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(this));
+            await client.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(this));
+            await client.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(this));
         }
 
-        public override void sendDestroyData(IChannelClient client)
+        public override async Task sendDestroyData(IChannelClient client)
         {
-            client.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(this.getObjectId()));
-            client.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(this.getObjectId()));
+            await client.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(this.getObjectId()));
+            await client.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(this.getObjectId()));
         }
 
         public override string GetName()

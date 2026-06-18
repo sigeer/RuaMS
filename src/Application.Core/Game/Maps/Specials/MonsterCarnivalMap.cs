@@ -3,7 +3,6 @@ using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.Events;
 using Application.Templates.Map;
-using scripting.Event;
 using server.maps;
 using server.partyquest;
 using static server.partyquest.CarnivalFactory;
@@ -28,7 +27,7 @@ namespace Application.Core.Game.Maps.Specials
 
         GuardianSpawnPoint? getRandomGuardianSpawn(int team);
         void AddGuardianSpawnPoint(GuardianSpawnPoint a);
-        int spawnGuardian(int team, int num);
+        Task<int> spawnGuardian(int team, int num);
         Point getRandomSP(int team);
 
         void AddMobSpawn(int mobId, int spendCP);
@@ -159,7 +158,7 @@ namespace Application.Core.Game.Maps.Specials
             this.guardianSpawns.Add(a);
         }
 
-        public int spawnGuardian(int team, int num)
+        public async Task<int> spawnGuardian(int team, int num)
         {
             try
             {
@@ -188,11 +187,11 @@ namespace Application.Core.Game.Maps.Specials
                 Reactor reactor = new Reactor(this, pt.getPosition(), ReactorFactory.getReactorS(reactorID), reactorID);
                 pt.setTaken(true);
                 reactor.setName(team + "" + num); //lol
-                reactor.resetReactorActions(0);
-                this.spawnReactor(reactor);
+                await reactor.resetReactorActions(0);
+                await this.spawnReactor(reactor);
                 reactor.setGuardian(pt);
-                this.buffMonsters(team, skill);
-                getReactorByOid(reactor.getObjectId())!.hitReactor(((Player)this.getAllPlayers().get(0)).getClient());
+                await this.buffMonsters(team, skill);
+                await getReactorByOid(reactor.getObjectId())!.hitReactor(((Player)this.getAllPlayers().get(0)).getClient());
             }
             catch (Exception e)
             {
@@ -201,7 +200,7 @@ namespace Application.Core.Game.Maps.Specials
             return 1;
         }
 
-        private void buffMonsters(int team, MCSkill skill)
+        private async Task buffMonsters(int team, MCSkill skill)
         {
             if (skill == null)
             {
@@ -223,7 +222,7 @@ namespace Application.Core.Game.Maps.Specials
                     Monster mob = (Monster)mmo;
                     if (mob.getTeam() == team)
                     {
-                        skill.getSkill().applyEffect(null, mob, false, null);
+                        await skill.getSkill().applyEffect(null, mob, false, null);
                     }
                 }
             }
@@ -272,7 +271,7 @@ namespace Application.Core.Game.Maps.Specials
             return mobsToSpawn;
         }
 
-        protected override void SetMonsterInfo(Monster monster)
+        protected override async Task SetMonsterInfo(Monster monster)
         {
             if ((monster.getTeam() == 1 || monster.getTeam() == 0) && (isCPQMap() || isCPQMap2()))
             {
@@ -291,7 +290,7 @@ namespace Application.Core.Game.Maps.Specials
                     {
                         if (skil != null)
                         {
-                            skil.getSkill()!.applyEffect(null, monster, false, null);
+                            await skil.getSkill()!.applyEffect(null, monster, false, null);
                         }
                     }
                 }

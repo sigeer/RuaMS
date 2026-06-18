@@ -3,7 +3,6 @@ using Application.Templates.Quest;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Quartz.Impl.AdoJobStore.Common;
 using server.quest;
 using static client.QuestStatus;
 

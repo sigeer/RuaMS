@@ -25,20 +25,20 @@ namespace Application.Plugin.Script.Events
 
         int bossId = 9300182;
 
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == bossId)
             {
-                eim.showClearEffect(mob.getMap().getId());
-                eim.clearPQ();
+                await eim.showClearEffect(mob.getMap().getId());
+                await eim.clearPQ();
             }
         }
 
-        public override void OnMobClear(AbstractEventInstanceManager eim, IMap map)
+        public override async Task OnMobClear(AbstractEventInstanceManager eim, IMap map)
         {
             if (map.Id == 930000100)
             {
-                eim.showClearEffect(map.getId());
+                await eim.showClearEffect(map.getId());
             }
         }
     }

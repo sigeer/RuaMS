@@ -43,7 +43,7 @@ namespace Application.Plugin.Script.Npc
                     await DoGachapon(ticketId, 10);
                     break;
                 case 4:
-                    OpenGachaponStorage();
+                    await OpenGachaponStorage();
                     break;
                 default:
                     break;
@@ -63,11 +63,11 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            gainItem(ticketId, -count);
+            await gainItem(ticketId, -count);
             List<GachaponPoolItemDataObject?> rewards = [];
             for (var i = 0; i < count; i++)
             {
-                rewards.Add(doGachapon());
+                rewards.Add(await doGachapon());
             }
 
             await SaySpeech(rewards.Select(itemObj => itemObj == null ? GetTalkMessage(nameof(ScriptTalk.Tip_ThankPatronage)) : GetTalkMessage(nameof(ScriptTalk.Tip_ObtainItem), itemObj.ItemId, itemObj.Quantity)).ToArray());

@@ -11,12 +11,12 @@ public class JailCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.JailCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.JailCommand_Syntax));
             return;
         }
 
@@ -25,11 +25,11 @@ public class JailCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[1], out minutesJailed))
             {
-                player.YellowMessageI18N(nameof(ClientMessage.JailCommand_Syntax));
+                await player.Yellow(nameof(ClientMessage.JailCommand_Syntax));
                 return;
             }
         }
 
-        _adminService.JailPlayer(player.Id, paramsValue[0], minutesJailed);
+        await _adminService.JailPlayer(player.Id, paramsValue[0], minutesJailed);
     }
 }

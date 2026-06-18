@@ -40,7 +40,7 @@ public class ItemPickupHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); //Timestamp
         p.readByte();
@@ -62,6 +62,6 @@ public class ItemPickupHandler : ChannelHandlerBase
             return;
         }
 
-        chr.pickupItem(ob);
+        await chr.pickupItem(ob);
     }
 }

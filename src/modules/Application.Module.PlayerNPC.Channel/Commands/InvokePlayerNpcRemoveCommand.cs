@@ -28,7 +28,7 @@ namespace Application.Module.PlayerNPC.Channel.Commands
             var chr = ctx.Players.getCharacterById(newData.PlayerId);
             if (chr != null)
             {
-                chr.dropMessage($"PlayerNpc创建成功");
+                chr.Notice($"PlayerNpc创建成功");
             }
 
             var mapFactory = ctx.getMapFactory();
@@ -42,8 +42,8 @@ namespace Application.Module.PlayerNPC.Channel.Commands
                 {
                     map.RemoveMapObject(pn, mapChr =>
                     {
-                        mapChr.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                        mapChr.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                        mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                        mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                     });
                 }
 
@@ -51,14 +51,14 @@ namespace Application.Module.PlayerNPC.Channel.Commands
                 {
                     map.AddMapObject(pn, c =>
                     {
-                        c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-                        c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+                        await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+                        await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
                     }, false);
                 }
                 map.AddMapObject(newData, c =>
                 {
-                    c.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
-                    c.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));
+                    await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
+                    await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));
                 }, false);
             }
         }

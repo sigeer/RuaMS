@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PartySearchUpdateHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         // c.getWorldServer().getPartySearchCoordinator().unregisterPartyLeader(c.OnlinedCharacter);
     }

@@ -27,16 +27,16 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ClickGuideHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var unknown = p.available();
         if (c.OnlinedCharacter.getJob().Equals(Job.NOBLESSE))
         {
-            c.OnlinedCharacter.OpenNpc(NpcId.MIMO);
+            await c.OnlinedCharacter.OpenNpc(NpcId.MIMO);
         }
         else
         {
-            c.OnlinedCharacter.OpenNpc(NpcId.LILIN);
+            await c.OnlinedCharacter.OpenNpc(NpcId.LILIN);
         }
     }
 

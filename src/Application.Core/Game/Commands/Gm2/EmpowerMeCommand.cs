@@ -9,7 +9,7 @@ public class EmpowerMeCommand : CommandBase
         Description = "Activate all useful buffs.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int[] array = {
@@ -33,7 +33,7 @@ public class EmpowerMeCommand : CommandBase
         foreach (int i in array)
         {
             var skill = SkillFactory.GetSkillTrust(i);
-            skill.getEffect(skill.getMaxLevel()).applyTo(player);
+            await skill.getEffect(skill.getMaxLevel()).applyTo(player);
         }
     }
 }

@@ -25,6 +25,6 @@ public class AcceptFamilyHandler : ChannelHandlerBase
         bool accept = p.readByte() != 0;
         // string inviterName = slea.readMapleAsciiString();
         await _familyManager.AnswerInvite(c.OnlinedCharacter, -1, accept);
-        c.sendPacket(FamilyPacketCreator.sendFamilyMessage(0, 0));
+        await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(0, 0));
     }
 }

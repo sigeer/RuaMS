@@ -28,16 +28,16 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseMapleLifeHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         long timeNow = c.CurrentServer.Node.getCurrentTime();
 
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
-            player.dropMessage(5, "Please wait a moment before trying again.");
-            c.sendPacket(PacketCreator.sendMapleLifeError(3));
-            c.sendPacket(PacketCreator.enableActions());
+            await player.Pink("Please wait a moment before trying again.");
+            await c.SendPacket(PacketCreator.sendMapleLifeError(3));
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         player.setLastUsedCashItem(timeNow);
@@ -45,12 +45,12 @@ public class UseMapleLifeHandler : ChannelHandlerBase
         string name = p.readString();
         if (c.CurrentServer.NodeService.CheckCharacterName(name))
         {
-            c.sendPacket(PacketCreator.sendMapleLifeCharacterInfo());
+            await c.SendPacket(PacketCreator.sendMapleLifeCharacterInfo());
         }
         else
         {
-            c.sendPacket(PacketCreator.sendMapleLifeNameError());
+            await c.SendPacket(PacketCreator.sendMapleLifeNameError());
         }
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

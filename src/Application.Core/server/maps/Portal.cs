@@ -36,7 +36,7 @@ public interface Portal
     void setPortalStatus(bool newStatus);
     bool getPortalStatus();
     int getTargetMapId();
-    void enterPortal(IChannelClient c);
+    Task enterPortal(IChannelClient c);
     void setPortalState(bool state);
     bool getPortalState();
 }

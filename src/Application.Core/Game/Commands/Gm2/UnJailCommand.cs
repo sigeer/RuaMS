@@ -11,15 +11,15 @@ public class UnJailCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.UnJailCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.UnJailCommand_Syntax));
             return;
         }
 
-        _adminService.UnjailPlayer(player, paramsValue[0]);
+        await _adminService.UnjailPlayer(player, paramsValue[0]);
     }
 }

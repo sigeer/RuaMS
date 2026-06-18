@@ -19,14 +19,14 @@ namespace Application.Core.scripting.Events.Instances
         /// <summary>
         /// 开始战斗
         /// </summary>
-        public void StartBattle()
+        public async Task StartBattle()
         {
             if (InstanceStatus == InstanceStatus.Recruitment && EventManager.PrepareTime > 0)
             {
                 InstanceStatus = InstanceStatus.Prepare;
 
-                restartEventTimer(EventManager.PrepareTime * 1000);
-                EventManager.GetTemplate.OnBattlePrepare(this);
+                await restartEventTimer(EventManager.PrepareTime * 1000);
+                await EventManager.GetTemplate.OnBattlePrepare(this);
                 return;
             }
 
@@ -36,23 +36,23 @@ namespace Application.Core.scripting.Events.Instances
 
                 foreach (var chr in getPlayers())
                 {
-                    EventManager.Template.OnPlayerEntry(this, chr);
+                    await EventManager.Template.OnPlayerEntry(this, chr);
                 }
-                restartEventTimer(EventManager.EventTime * 1000);
-                EventManager.GetTemplate.OnBattleStarted(this);
+                await restartEventTimer(EventManager.EventTime * 1000);
+                await EventManager.GetTemplate.OnBattleStarted(this);
                 return;
             }
         }
 
-        public virtual void ban(int cid)
+        public virtual async Task ban(int cid)
         {
             if (chars.TryGetValue(cid, out var chr))
             {
                 Banned[cid] = chr.Name;
 
-                exitPlayer(chr);
+                await exitPlayer(chr);
 
-                EventManager.GetTemplate.OnPlayerBanned(this, chr);
+                await EventManager.GetTemplate.OnPlayerBanned(this, chr);
             }
             else
             {

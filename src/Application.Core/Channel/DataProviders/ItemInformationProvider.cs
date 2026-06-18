@@ -1287,13 +1287,13 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return itemz;
     }
 
-    public bool canWearEquipment(Player chr, Equip equip, int dst)
+    public async Task<bool> canWearEquipment(Player chr, Equip equip, int dst)
     {
         int id = equip.getItemId();
 
         if (ItemId.isWeddingRing(id) && chr.hasJustMarried())
         {
-            chr.dropMessage(5, "The Wedding Ring cannot be equipped on this map.");  // will dc everyone due to doubled couple effect
+            await chr.dropMessage(5, "The Wedding Ring cannot be equipped on this map.");  // will dc everyone due to doubled couple effect
             return false;
         }
 
@@ -1302,7 +1302,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             equip.wear(false);
             var itemName = chr.Client.CurrentCulture.GetItemName(equip.getItemId());
 
-            chr.Client.CurrentServer.NodeActor
+            await chr.Client.CurrentServer.NodeActor
                 .Send(s =>
                 {
                     s.SendDropMessage(-1, "[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + ".", true);

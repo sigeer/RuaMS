@@ -13,14 +13,15 @@ public class CharSelectedHandler : OnCharacterSelectedHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         int charId = p.readInt();
 
-        /// hwid.fromHostString 中提到hostString分为2部分，第1部分是mac,第2部分是hwid, 那这里获取的macs又是什么
+        // GetLocalMacAddress：所有网卡的mac
         string macs = p.readString();
+        // GetLocalMacAddressWithHDDSerialNo 第一个有效网卡的mac + hwid
         string hostString = p.readString();
 
-        Process(c, charId, hostString, macs);
+        await Process(c, charId, hostString, macs);
     }
 }

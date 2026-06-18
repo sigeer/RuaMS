@@ -1,5 +1,3 @@
-using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Trades;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using AutoMapper;
@@ -66,11 +64,11 @@ namespace Application.Core.Channel.Services
             return _mapper.Map<RemoteHiredMerchantData>(res);
         }
 
-        public void FredrickRetrieveItems(IChannelClient c)
+        public async Task FredrickRetrieveItems(IChannelClient c)
         {
             // thanks Gustav for pointing out the dupe on Fredrick handling
-            if (c.tryacquireClient())
             {
+                await c.tryacquireClient();
                 try
                 {
                     var chr = c.OnlinedCharacter;
@@ -89,7 +87,7 @@ namespace Application.Core.Channel.Services
                         byte response = CanRetrieveFromFredrick(chr, res.Mesos, items);
                         if (response != 0)
                         {
-                            chr.sendPacket(PacketCreator.fredrickMessage(response));
+                            await chr.SendPacket(PacketCreator.fredrickMessage(response));
                             return;
                         }
 
@@ -102,19 +100,19 @@ namespace Application.Core.Channel.Services
                             return;
                         }
 
-                        chr.GainMeso(res.Mesos);
+                        await chr.GainMeso(res.Mesos);
 
                         foreach (var it in items)
                         {
-                            InventoryManipulator.addFromDrop(chr.Client, it, false);
+                            await InventoryManipulator.addFromDrop(chr.Client, it, false);
                             _logger.LogDebug("Chr {CharacterName} gained {ItemQuantity}x {ItemName} ({ItemId})",
-                                chr.getName(), 
-                                it.getQuantity(), 
-                                ClientCulture.SystemCulture.GetItemName(it.getItemId()), 
+                                chr.getName(),
+                                it.getQuantity(),
+                                ClientCulture.SystemCulture.GetItemName(it.getItemId()),
                                 it.getItemId());
                         }
 
-                        chr.sendPacket(PacketCreator.fredrickMessage(0x1E));
+                        await chr.SendPacket(PacketCreator.fredrickMessage(0x1E));
                     }
                     catch (Exception ex)
                     {
@@ -127,18 +125,18 @@ namespace Application.Core.Channel.Services
                 }
             }
         }
-        public bool CanHiredMerchant(Player chr)
+        public async Task<bool> CanHiredMerchant(Player chr)
         {
             var status = (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
             if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
             {
-                chr.dropMessage(1, "You already have a store open.");
+                await chr.dropMessage(1, "You already have a store open.");
                 return false;
             }
 
             if (status == PlayerHiredMerchantStatus.Unavailable_NeedRetrieve)
             {
-                chr.sendPacket(PacketCreator.retrieveFirstMessage());
+                await chr.SendPacket(PacketCreator.retrieveFirstMessage());
                 return false;
             }
 
@@ -158,7 +156,7 @@ namespace Application.Core.Channel.Services
 
         //}
 
-        internal void OwlSearch(Player chr, int useItemId, int searchItemId)
+        internal async Task OwlSearch(Player chr, int useItemId, int searchItemId)
         {
             ItemProto.OwlSearchResponse data = _server.Transport.SendOwlSearch(
                 new ItemProto.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });
@@ -166,11 +164,11 @@ namespace Application.Core.Channel.Services
             if (data.Items.Count > 0)
             {
                 // 消耗道具
-                chr.GainItem(useItemId, -1, show: GainItemShow.ShowInChat);
+                await chr.GainItem(useItemId, -1, show: GainItemShow.ShowInChat);
             }
 
-            chr.sendPacket(PacketCreator.owlOfMinerva(searchItemId, _mapper.Map<OwlSearchResult>(data)));
-            chr.sendPacket(PacketCreator.enableActions());
+            await chr.SendPacket(PacketCreator.OwlOfMinerva(searchItemId, data));
+            await chr.SendPacket(PacketCreator.enableActions());
         }
     }
 }

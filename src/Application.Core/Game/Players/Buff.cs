@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
@@ -116,14 +115,14 @@ namespace Application.Core.Game.Players
 
             Log.Debug("-------------------");
             Log.Debug("IN ACTION: {InAction}", string.Join(", ", ActiveEffects
-                    .Select(entry => entry.Key.name() + " -> " + 
-                    (entry.Value.Effect.isSkill() 
-                    ? Client.CurrentCulture.GetSkillName(entry.Value.Effect.getSourceId()) 
+                    .Select(entry => entry.Key.name() + " -> " +
+                    (entry.Value.Effect.isSkill()
+                    ? Client.CurrentCulture.GetSkillName(entry.Value.Effect.getSourceId())
                     : Client.CurrentCulture.GetItemName(entry.Value.Effect.getSourceId()))))
             );
         }
 
-        public void ClearExpiredBuffs()
+        public async Task ClearExpiredBuffs()
         {
             List<BuffStatValueHolder> toCancel = new();
 
@@ -137,18 +136,18 @@ namespace Application.Core.Game.Players
 
             foreach (var item in toCancel)
             {
-                cancelEffect(item.Effect, false);
+                await cancelEffect(item.Effect, false);
             }
         }
 
 
-        public void cancelAllBuffs(bool softcancel)
+        public async Task cancelAllBuffs(bool softcancel)
         {
             if (softcancel)
             {
-                cancelEffectFromBuffStat(BuffStat.SUMMON);
-                cancelEffectFromBuffStat(BuffStat.PUPPET);
-                cancelEffectFromBuffStat(BuffStat.COMBO);
+                await cancelEffectFromBuffStat(BuffStat.SUMMON);
+                await cancelEffectFromBuffStat(BuffStat.PUPPET);
+                await cancelEffectFromBuffStat(BuffStat.COMBO);
 
                 ActiveEffects.Clear();
 
@@ -171,7 +170,7 @@ namespace Application.Core.Game.Players
 
                 foreach (var mse in mseBuffs)
                 {
-                    cancelEffect(mse.Key, false);
+                    await cancelEffect(mse.Key, false);
                 }
             }
         }
@@ -200,7 +199,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private List<BuffStateValuePair> deregisterBuffStats(Dictionary<BuffStat, BuffStatValueHolder> stats)
+        private async Task<List<BuffStateValuePair>> deregisterBuffStats(Dictionary<BuffStat, BuffStatValueHolder> stats)
         {
 
             List<BuffStateValuePair> effectsToCancel = new(stats.Count);
@@ -224,11 +223,11 @@ namespace Application.Core.Game.Players
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
-                            MapModel.RemoveMapObject(summon, chr => chr.sendPacket(PacketCreator.removeSummon(summon, true)));
+                            await MapModel.RemoveMapObject(summon, chr => chr.SendPacket(PacketCreator.removeSummon(summon, true)));
 
                             if (summon.isPuppet())
                             {
-                                MapModel.removePlayerPuppet(this);
+                                await MapModel.removePlayerPuppet(this);
                             }
                         }
                     }
@@ -251,7 +250,7 @@ namespace Application.Core.Game.Players
 
                         if (extraHpRec != 0 || extraMpRec != 0)
                         {
-                            startExtraTaskInternal(extraHpRec, extraMpRec, extraRecInterval);
+                            await startExtraTaskInternal(extraHpRec, extraMpRec, extraRecInterval);
                         }
                     }
                 }
@@ -260,15 +259,15 @@ namespace Application.Core.Game.Players
             return effectsToCancel;
         }
 
-        public void cancelEffect(int itemId)
+        public async Task cancelEffect(int itemId)
         {
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            cancelEffect(ii.GetItemEffectTrust(itemId), false);
+            await cancelEffect(ii.GetItemEffectTrust(itemId), false);
         }
 
-        public bool cancelEffect(StatEffect effect, bool overwrite)
+        public async Task<bool> cancelEffect(StatEffect effect, bool overwrite)
         {
-            var ret = cancelEffect(effect, overwrite, true);
+            var ret = await cancelEffect(effect, overwrite, true);
 
             if (effect.isMagicDoor() && ret)
             {
@@ -312,7 +311,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void updateActiveEffects()
+        public async Task updateActiveEffects()
         {
             HashSet<BuffStat> updatedBuffs = new();
             HashSet<StatEffect> activeEffects = new();
@@ -339,10 +338,10 @@ namespace Application.Core.Game.Players
                 ActiveEffects.Remove(mbs);
             }
 
-            updateEffects(updatedBuffs);
+            await updateEffects(updatedBuffs);
         }
 
-        private void updateEffects(HashSet<BuffStat> removedStats)
+        private async Task updateEffects(HashSet<BuffStat> removedStats)
         {
             HashSet<BuffStat> retrievedStats = new();
 
@@ -360,20 +359,20 @@ namespace Application.Core.Game.Players
                 }
             }
 
-            propagateBuffEffectUpdates(new(), retrievedStats, removedStats);
+            await propagateBuffEffectUpdates(new(), retrievedStats, removedStats);
         }
 
-        private bool cancelEffect(StatEffect effect, bool overwrite, bool firstCancel)
+        private async Task<bool> cancelEffect(StatEffect effect, bool overwrite, bool firstCancel)
         {
             HashSet<BuffStat> removedStats = new();
-            dropBuffStats(cancelEffectInternal(effect, overwrite, removedStats));
-            UpdateLocalStats();
-            updateEffects(removedStats);
+            dropBuffStats(await cancelEffectInternal(effect, overwrite, removedStats));
+            await UpdateLocalStats();
+            await updateEffects(removedStats);
 
             return removedStats.Count > 0;
         }
 
-        private List<BuffStateValuePair> cancelEffectInternal(StatEffect effect, bool overwrite, HashSet<BuffStat> removedStats)
+        private async Task<List<BuffStateValuePair>> cancelEffectInternal(StatEffect effect, bool overwrite, HashSet<BuffStat> removedStats)
         {
             Dictionary<BuffStat, BuffStatValueHolder>? buffstats = null;
             BuffStat? ombs;
@@ -395,7 +394,7 @@ namespace Application.Core.Game.Players
                 buffstats = extractLeastRelevantStatEffectsIfFull(effect);
             }
 
-            List<BuffStateValuePair> toCancel = deregisterBuffStats(buffstats);
+            List<BuffStateValuePair> toCancel = await deregisterBuffStats(buffstats);
             if (effect.isMonsterRiding())
             {
                 this.getMount()?.setActive(false);
@@ -409,17 +408,17 @@ namespace Application.Core.Game.Players
             return toCancel;
         }
 
-        public void cancelEffectFromBuffStat(BuffStat stat)
+        public async Task cancelEffectFromBuffStat(BuffStat stat)
         {
             BuffStatValueHolder? effect = ActiveEffects.GetValueOrDefault(stat);
 
             if (effect != null)
             {
-                cancelEffect(effect.Effect, false);
+                await cancelEffect(effect.Effect, false);
             }
         }
 
-        public void cancelBuffStats(BuffStat stat)
+        public async Task cancelBuffStats(BuffStat stat)
         {
 
             List<KeyValuePair<int, BuffStatValueHolder>> cancelList = new();
@@ -440,10 +439,10 @@ namespace Application.Core.Game.Players
             {
                 buffStatList.AddOrUpdate(stat, p.Value);
                 extractBuffValue(p.Key, stat);
-                dropBuffStats(deregisterBuffStats(buffStatList));
+                dropBuffStats(await deregisterBuffStats(buffStatList));
             }
 
-            cancelPlayerBuffs(Arrays.asList(stat));
+            await cancelPlayerBuffs(Arrays.asList(stat));
         }
 
         private bool removeEffectFromItemEffectHolder(int sourceid, BuffStat buffStat)
@@ -551,7 +550,7 @@ namespace Application.Core.Game.Players
             return extractedStatBuffs;
         }
 
-        private void cancelInactiveBuffStats(HashSet<BuffStat> retrievedStats, HashSet<BuffStat> removedStats)
+        private async Task cancelInactiveBuffStats(HashSet<BuffStat> retrievedStats, HashSet<BuffStat> removedStats)
         {
             List<BuffStat> inactiveStats = new();
             foreach (BuffStat mbs in removedStats)
@@ -564,8 +563,8 @@ namespace Application.Core.Game.Players
 
             if (inactiveStats.Count > 0)
             {
-                sendPacket(PacketCreator.cancelBuff(inactiveStats));
-                BroadcastMap(PacketCreator.cancelForeignBuff(getId(), inactiveStats), Id);
+                await SendPacket(PacketCreator.cancelBuff(inactiveStats));
+                await BroadcastMap(PacketCreator.cancelForeignBuff(getId(), inactiveStats), Id);
             }
         }
 
@@ -759,9 +758,9 @@ namespace Application.Core.Game.Players
             return priorityUpdateEffects;
         }
 
-        private void propagateBuffEffectUpdates(Dictionary<int, KeyValuePair<StatEffect, long>> retrievedEffects, HashSet<BuffStat> retrievedStats, HashSet<BuffStat> removedStats)
+        private async Task propagateBuffEffectUpdates(Dictionary<int, KeyValuePair<StatEffect, long>> retrievedEffects, HashSet<BuffStat> retrievedStats, HashSet<BuffStat> removedStats)
         {
-            cancelInactiveBuffStats(retrievedStats, removedStats);
+            await cancelInactiveBuffStats(retrievedStats, removedStats);
             if (retrievedStats.Count == 0)
             {
                 return;
@@ -864,7 +863,7 @@ namespace Application.Core.Game.Players
                     activeStatups.Add(statup);
                 }
 
-                msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
+                await msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
                 activeStatups.Clear();
             }
 
@@ -878,14 +877,14 @@ namespace Application.Core.Game.Players
                     activeStatups.Add(statup);
                 }
 
-                msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
+                await msel.Key.updateBuffEffect(this, activeStatups.ToArray(), msel.Value);
                 activeStatups.Clear();
             }
 
             if (this.isRidingBattleship())
             {
-                this.sendPacket(PacketCreator.giveBuff(ItemId.BATTLESHIP, 5221006, new BuffStatValue(BuffStat.MONSTER_RIDING, 0)));
-                this.announceBattleshipHp();
+                await this.SendPacket(PacketCreator.giveBuff(ItemId.BATTLESHIP, 5221006, new BuffStatValue(BuffStat.MONSTER_RIDING, 0)));
+                await this.announceBattleshipHp();
             }
         }
 
@@ -992,7 +991,7 @@ namespace Application.Core.Game.Players
             buffEffectsCount.AddOrUpdate(stat, (sbyte)val);
         }
 
-        public void registerEffect(StatEffect effect, IEnumerable<BuffStatValue> purposeStats, long starttime, long expirationtime, bool isSilent)
+        public async Task registerEffect(StatEffect effect, IEnumerable<BuffStatValue> purposeStats, long starttime, long expirationtime, bool isSilent)
         {
             if (effect.getHpRRate() > 0 || effect.getMpRRate() > 0)
             {
@@ -1011,7 +1010,7 @@ namespace Application.Core.Game.Players
 
 
                 stopExtraTask();
-                startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
+                await startExtraTask(extraHpRec, extraMpRec, extraRecInterval);   // HP & MP sharing the same task holder
             }
 
             int sourceid = effect.getBuffSourceId();
@@ -1084,7 +1083,7 @@ namespace Application.Core.Game.Players
                         retrievedEffects.AddOrUpdate(sourceid, new(effect, starttime));
                     }
 
-                    propagateBuffEffectUpdates(retrievedEffects, retrievedStats, new());
+                    await propagateBuffEffectUpdates(retrievedEffects, retrievedStats, new());
                 }
             }
             else
@@ -1104,7 +1103,7 @@ namespace Application.Core.Game.Players
             }
 
 
-            UpdateLocalStats();
+            await UpdateLocalStats();
         }
 
 

@@ -37,11 +37,11 @@ namespace Application.Module.Family.Master
 
         }
 
-        public override void RegisterTask(ITimerManager timerManager)
+        public override async Task RegisterTask(ITimerManager timerManager)
         {
-            base.RegisterTask(timerManager);
+            await base.RegisterTask(timerManager);
             var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task = timerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
+            _task = await timerManager.register(new FamilyDailyResetTask(_familyManager), TimeSpan.FromDays(1), timeLeft);
         }
 
 

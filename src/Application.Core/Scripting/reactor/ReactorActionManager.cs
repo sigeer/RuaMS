@@ -40,12 +40,10 @@ namespace scripting.reactor;
 public class ReactorActionManager : AbstractPlayerInteraction
 {
     private Reactor reactor;
-    private IEngine iv;
 
-    public ReactorActionManager(IChannelClient c, Reactor reactor, IEngine iv) : base(c)
+    public ReactorActionManager(IChannelClient c, Reactor reactor) : base(c)
     {
         this.reactor = reactor;
-        this.iv = iv;
     }
 
     public override IMap getMap()
@@ -57,14 +55,14 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return reactor.getMap().getId();
     }
 
-    public void hitReactor()
+    public async Task hitReactor()
     {
-        reactor.hitReactor(c);
+        await reactor.hitReactor(c);
     }
 
-    public void destroyNpc(int npcId)
+    public async Task destroyNpc(int npcId)
     {
-        reactor.getMap().destroyNPC(npcId);
+        await reactor.getMap().destroyNPC(npcId);
     }
 
     private static List<DropEntry> assembleReactorDropEntries(Player chr, List<DropEntry> items)
@@ -101,37 +99,22 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return items1;
     }
 
-    public void sprayItems()
+    public async Task dropItems()
     {
-        sprayItems(false, 0, 0, 0, 0);
+        await dropItems(false, 0, 0, 0, 0);
     }
 
-    public void sprayItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems = 0)
+    public async Task dropItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems = 0)
     {
-        sprayItems(reactor.getPosition().X, reactor.getPosition().Y, meso, mesoChance, minMeso, maxMeso, minItems);
+        await dropItems(reactor.getPosition().X, reactor.getPosition().Y, meso, mesoChance, minMeso, maxMeso, minItems);
     }
 
-    public void sprayItems(int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
+    public async Task dropItems(int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
     {
-        dropItems(true, posX, posY, meso, mesoChance, minMeso, maxMeso, minItems);
+        await dropItems(true, posX, posY, meso, mesoChance, minMeso, maxMeso, minItems);  // all reactors actually drop items sequentially... thanks inhyuk for pointing this out!
     }
 
-    public void dropItems()
-    {
-        dropItems(false, 0, 0, 0, 0);
-    }
-
-    public void dropItems(bool meso, int mesoChance, int minMeso, int maxMeso, int minItems = 0)
-    {
-        dropItems(reactor.getPosition().X, reactor.getPosition().Y, meso, mesoChance, minMeso, maxMeso, minItems);
-    }
-
-    public void dropItems(int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
-    {
-        dropItems(true, posX, posY, meso, mesoChance, minMeso, maxMeso, minItems);  // all reactors actually drop items sequentially... thanks inhyuk for pointing this out!
-    }
-
-    public void dropItems(bool delayed, int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
+    public async Task dropItems(bool delayed, int posX, int posY, bool meso, int mesoChance, int minMeso, int maxMeso, int minItems)
     {
         var chr = c.OnlinedCharacter;
         if (chr == null)
@@ -155,7 +138,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
                 dropPos.X = posX + ((p % 2 == 0) ? (25 * ((p + 1) / 2)) : -(25 * (p / 2)));
                 p++;
 
-                DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, 0);
+                await DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, 0);
             }
         }
         else
@@ -165,7 +148,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
             foreach (var d in items)
             {
-                DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, delay);
+                await DropInternal(d, minMeso, maxMeso, worldMesoRate, dropPos, chr, delay);
                 dropPos.X += 25;
                 delay += 200;
             }
@@ -174,7 +157,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         }
     }
 
-    private void DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, Player chr, short delay)
+    private async Task DropInternal(DropEntry d, int minMeso, int maxMeso, float worldMesoRate, Point dropPos, Player chr, short delay)
     {
         if (d.ItemId == 0)
         {
@@ -182,13 +165,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
             int baseDrop = d.GetRandomCount(minMeso, maxMeso);
             int mesoDrop = (int)(baseDrop * worldMesoRate);
             if (mesoDrop > 0)
-                map.spawnMesoDrop(mesoDrop, dropPos, reactor, chr, false, DropType.FreeForAll, delay);
+                await map.spawnMesoDrop(mesoDrop, dropPos, reactor, chr, false, DropType.FreeForAll, delay);
         }
         else
         {
             var drop = ItemInformationProvider.getInstance().GenerateVirtualItemById(d.ItemId, 1, true);
             if (drop != null)
-                reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
+                await reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
         }
     }
 
@@ -221,27 +204,27 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return items;
     }
 
-    public void spawnMonster(int id)
+    public async Task spawnMonster(int id)
     {
-        spawnMonster(id, 1, getPosition());
+        await spawnMonster(id, 1, getPosition());
     }
 
-    public void createMapMonitor(int mapId, string portal)
+    public async Task createMapMonitor(int mapId, string portal)
     {
-        new MapMonitor(c.CurrentServer.getMapFactory().getMap(mapId), portal);
+        await new MapMonitor(await c.CurrentServer.getMapFactory().getMap(mapId), portal).Initialize();
     }
 
-    public void spawnMonster(int id, int qty)
+    public async Task spawnMonster(int id, int qty)
     {
-        spawnMonster(id, qty, getPosition());
+        await spawnMonster(id, qty, getPosition());
     }
 
-    public void spawnMonster(int id, int qty, int x, int y)
+    public async Task spawnMonster(int id, int qty, int x, int y)
     {
-        spawnMonster(id, qty, new Point(x, y));
+        await spawnMonster(id, qty, new Point(x, y));
     }
 
-    public void spawnMonster(int id, int qty, Point pos)
+    public async Task spawnMonster(int id, int qty, Point pos)
     {
         for (int i = 0; i < qty; i++)
         {
@@ -251,13 +234,13 @@ public class ReactorActionManager : AbstractPlayerInteraction
                 Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);
                 continue;
             }
-            reactor.getMap().spawnMonsterOnGroundBelow(monster, pos);
+            await reactor.getMap().spawnMonsterOnGroundBelow(monster, pos);
         }
     }
 
-    public void killMonster(int id, bool withDrops = false)
+    public async Task killMonster(int id, bool withDrops = false)
     {
-        getMap().killMonster(id, withDrops);
+        await getMap().killMonster(id, withDrops);
     }
 
     public Point getPosition()
@@ -267,14 +250,14 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return pos;
     }
 
-    public void spawnNpc(int npcId)
+    public async Task spawnNpc(int npcId)
     {
-        spawnNpc(npcId, getPosition());
+        await spawnNpc(npcId, getPosition());
     }
 
-    public void spawnNpc(int npcId, Point pos)
+    public async Task spawnNpc(int npcId, Point pos)
     {
-        spawnNpc(npcId, pos, reactor.getMap());
+        await spawnNpc(npcId, pos, reactor.getMap());
     }
 
     public Reactor getReactor()
@@ -282,7 +265,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         return reactor;
     }
 
-    public void spawnFakeMonster(int id)
+    public async Task spawnFakeMonster(int id)
     {
         var monster = LifeFactory.Instance.getMonster(id);
         if (monster == null)
@@ -290,43 +273,43 @@ public class ReactorActionManager : AbstractPlayerInteraction
             Log.Logger.Fatal("Monster (Id {MonsterId}) not found", id);
             return;
         }
-        reactor.getMap().spawnFakeMonsterOnGroundBelow(monster, getPosition());
+        await reactor.getMap().spawnFakeMonsterOnGroundBelow(monster, getPosition());
     }
 
-    public void SpawnZakum()
+    public async Task SpawnZakum()
     {
-        reactor.getMap().SpawnZakumOnGroundBelow(getPosition());
+        await reactor.getMap().SpawnZakumOnGroundBelow(getPosition());
     }
 
     /**
      * Used for Targa and Scarlion
      */
-    public void summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
+    public async Task summonBossDelayed(int mobId, int delayMs, int x, int y, string bgm,
                                   string summonMessage)
     {
 
-        c.CurrentServer.TimerManager.schedule(() =>
-        {
-            reactor.getMap().Send(map =>
-            {
-                map.spawnMonsterOnGroundBelow(mobId, x, y);
-                map.broadcastMessage(PacketCreator.musicChange(bgm));
-                map.LightBlue(summonMessage);
-            });
-        }, delayMs);
+        await c.CurrentServer.TimerManager.schedule(() =>
+         {
+             reactor.getMap().Send(async map =>
+             {
+                 await map.spawnMonsterOnGroundBelow(mobId, x, y);
+                 await map.broadcastMessage(PacketCreator.musicChange(bgm));
+                 await map.LightBlue(summonMessage);
+             });
+         }, delayMs);
     }
 
-    public void dispelAllMonsters(int num, int team)
+    public async Task dispelAllMonsters(int num, int team)
     {
         //dispels all mobs, cpq
         var skil = CarnivalFactory.getInstance().getGuardian(num);
         if (skil != null)
         {
-            getMap().ProcessMonster(mons =>
+            await getMap().ProcessMonster(async mons =>
             {
                 if (mons.getTeam() == team)
                 {
-                    mons.dispelSkill(skil.getSkill());
+                    await mons.dispelSkill(skil.getSkill());
                 }
             });
 

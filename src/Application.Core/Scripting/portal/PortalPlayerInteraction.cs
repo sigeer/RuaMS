@@ -45,9 +45,9 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
         return c.OnlinedCharacter.getLinkedLevel() >= 30;
     }
 
-    public void blockPortal()
+    public async Task blockPortal()
     {
-        c.OnlinedCharacter.blockPortal(getPortal().getScriptName());
+        await c.OnlinedCharacter.blockPortal(getPortal().getScriptName());
     }
 
     public void unblockPortal()
@@ -55,9 +55,9 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
         c.OnlinedCharacter.unblockPortal(getPortal().getScriptName());
     }
 
-    public void playPortalSound()
+    public async Task playPortalSound()
     {
-        c.sendPacket(PacketCreator.playPortalSound());
+        await c.SendPacket(PacketCreator.playPortalSound());
     }
 
     public bool CanEnterDeveloperRoom()

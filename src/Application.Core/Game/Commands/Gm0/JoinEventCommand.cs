@@ -7,7 +7,7 @@ public class JoinEventCommand : CommandBase
         Description = "Join active event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (!FieldLimit.CANNOTMIGRATE.check(player.getMap().getFieldLimit()))
@@ -29,26 +29,26 @@ public class JoinEventCommand : CommandBase
                         evt.minusLimit();
 
                         player.saveLocationOnWarp();
-                        player.changeMap(evt.getMapId());
+                        await player.changeMap(evt.getMapId());
                     }
                     else
                     {
-                        player.dropMessage(5, "The limit of players for the event has already been reached.");
+                        await player.dropMessage(5, "The limit of players for the event has already been reached.");
                     }
                 }
                 else
                 {
-                    player.dropMessage(5, "You are already in the event.");
+                    await player.dropMessage(5, "You are already in the event.");
                 }
             }
             else
             {
-                player.dropMessage(5, "There is currently no event in progress.");
+                await player.dropMessage(5, "There is currently no event in progress.");
             }
         }
         else
         {
-            player.dropMessage(5, "You are currently in a map where you can't join an event.");
+            await player.dropMessage(5, "You are currently in a map where you can't join an event.");
         }
     }
 }

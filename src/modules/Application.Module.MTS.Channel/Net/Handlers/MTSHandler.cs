@@ -45,7 +45,7 @@ public class MTSHandler : ChannelHandlerBase
         _manager = manager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         // TODO add karma-to-untradeable flag on sold items here
 

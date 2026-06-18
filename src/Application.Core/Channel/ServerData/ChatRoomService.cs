@@ -1,10 +1,7 @@
-using Application.Core.Channel.Net.Packets;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using tools;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -52,7 +49,7 @@ namespace Application.Core.Channel.ServerData
 
         internal void AnswerInvite(Player player, int roomId, bool v)
         {
-            _ =  _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            _ = _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

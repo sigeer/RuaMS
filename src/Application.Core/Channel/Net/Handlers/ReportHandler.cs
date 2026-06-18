@@ -43,7 +43,7 @@ public class ReportHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int type = p.ReadSByte(); //00 = Illegal program claim, 01 = Conversation claim
         string victim = p.readString();
@@ -56,17 +56,17 @@ public class ReportHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getMeso() > 299)
                 {
                     c.OnlinedCharacter.decreaseReports();
-                    c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
+                    await c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.reportResponse(4));
+                    await c.SendPacket(PacketCreator.reportResponse(4));
                     return;
                 }
             }
             else
             {
-                c.sendPacket(PacketCreator.reportResponse(2));
+                await c.SendPacket(PacketCreator.reportResponse(2));
                 return;
             }
             _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
@@ -83,11 +83,11 @@ public class ReportHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getMeso() > 299)
                 {
                     c.OnlinedCharacter.decreaseReports();
-                    c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
+                    await c.OnlinedCharacter.GainMeso(-300, GainItemShow.ShowInMessage);
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.reportResponse(4));
+                    await c.SendPacket(PacketCreator.reportResponse(4));
                     return;
                 }
             }

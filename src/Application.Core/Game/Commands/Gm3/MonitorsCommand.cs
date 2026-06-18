@@ -1,6 +1,7 @@
 using Application.Core.Channel.ServerData;
 
 namespace Application.Core.Game.Commands.Gm3;
+
 public class MonitorsCommand : CommandBase
 {
     readonly MonitorManager _adminService;
@@ -10,13 +11,13 @@ public class MonitorsCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var data = _adminService.GetMonitor();
         foreach (var item in data)
         {
-            player.yellowMessage(item.Value + " is being monitored.");
+            await player.Yellow(item.Value + " is being monitored.");
         }
     }
 }

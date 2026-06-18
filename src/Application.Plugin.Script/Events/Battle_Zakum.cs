@@ -30,15 +30,15 @@ namespace Application.Plugin.Script.Events
             RegistrationTime = 5 * 60;
         }
 
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == BossId)
             {
                 eim.setIntProperty("defeatedBoss", 1);
-                eim.showClearEffect(mob.getMap().getId());
-                eim.clearPQ();
+                await eim.showClearEffect(mob.getMap().getId());
+                await  eim.clearPQ();
 
-                eim.EventManager.ChannelServer.NodeActor.Send(s =>
+                await eim.EventManager.ChannelServer.NodeActor.Send(s =>
                 {
                     s.SendDropMessage(6,
                         "[Victory] At last, the tree of evil that for so long overwhelmed Ossyria has fallen. To the crew that managed to finally conquer Zakum, after numerous attempts, victory! You are the true heroes of Ossyria!!", false);
@@ -46,13 +46,13 @@ namespace Application.Plugin.Script.Events
             }
         }
 
-        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
-            base.OnPlayerUnregister(eim, chr);
+            await base.OnPlayerUnregister(eim, chr);
 
             if (eim.isEventCleared())
             {
-                eim.EventManager.completeQuest(chr, QuestId.ZakumBattle, 2030010);
+                await eim.EventManager.completeQuest(chr, QuestId.ZakumBattle, 2030010);
             }
         }
     }

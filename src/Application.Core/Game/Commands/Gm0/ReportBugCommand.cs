@@ -1,5 +1,4 @@
 using Application.Core.Managers;
-using tools;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -10,20 +9,20 @@ public class ReportBugCommand : CommandBase
         Description = "Send in a bug report.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, $"Message too short and not sent. Please do {CurrentCommand} <bug>");
+            await player.Pink($"Message too short and not sent. Please do {CurrentCommand} <bug>");
             return;
         }
         string message = player.getLastCommandMessage();
         c.CurrentServer.NodeService.SendDropMessage(-1, "[Bug]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message, true);
         c.CurrentServer.NodeService.SendDropMessage(1, message, true);
         log.Information("{CharacterName}: {LastCommand}", CharacterManager.makeMapleReadable(player.getName()), message);
-        player.dropMessage(5, "Your bug '" + message + "' was submitted successfully to our developers. Thank you!");
+        await player.Pink("Your bug '" + message + "' was submitted successfully to our developers. Thank you!");
 
     }
 }

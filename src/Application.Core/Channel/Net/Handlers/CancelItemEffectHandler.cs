@@ -28,13 +28,13 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelItemEffectHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int itemId = -p.readInt();
         if (ItemInformationProvider.getInstance().noCancelMouse(itemId))
         {
             return;
         }
-        c.OnlinedCharacter.cancelEffect(itemId);
+        await c.OnlinedCharacter.cancelEffect(itemId);
     }
 }

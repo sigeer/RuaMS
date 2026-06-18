@@ -37,7 +37,7 @@ public class InnerPortalHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         _logger.LogDebug("触发了 InnerPortalHandler");
     }

@@ -1,7 +1,6 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using server.life;
 using server.maps;
 using tools;
 
@@ -9,18 +8,18 @@ namespace ServiceTest.Games.Gameplay
 {
     public class MapTests
     {
-        private IMap LoadMap(int mapId)
+        private async Task<IMap> LoadMap(int mapId)
         {
             var chr = GameTestGlobal.TestServer.GetPlayer()!;
             var channel1 = chr.getChannelServer();
-            return MapFactory.Instance.loadMapFromWz(mapId, channel1, null);
+            return await MapFactory.Instance.loadMapFromWz(mapId, channel1, null);
         }
 
         [Test]
         [TestCase(10000, ExpectedResult = 3)]
-        public int SpawnNpc_Test(int mapId)
+        public async Task<int> SpawnNpc_Test(int mapId)
         {
-            var map = LoadMap(mapId);
+            var map = await LoadMap(mapId);
             var objects = map.getMapObjects();
             foreach (var obj in objects)
             {
@@ -57,11 +56,11 @@ namespace ServiceTest.Games.Gameplay
         //}
 
         [Test]
-        public void NPC_Test()
+        public async Task NPC_Test()
         {
             var npcId = 2000;
 
-            var map = LoadMap(20000);
+            var map = await LoadMap(20000);
             var mapNPC = map.getNPCById(npcId);
             Assert.That(mapNPC?.getMap() is not null);
         }
@@ -71,7 +70,7 @@ namespace ServiceTest.Games.Gameplay
         [TestCase(10000)]
         public void LoadMapFromWZ_Test(int mapId)
         {
-            Assert.DoesNotThrow(() => LoadMap(mapId));
+            Assert.DoesNotThrow(async () => await LoadMap(mapId));
         }
 
         [Test]
@@ -102,13 +101,11 @@ namespace ServiceTest.Games.Gameplay
             var chr = GameTestGlobal.TestServer.GetPlayer();
             var mapManager = chr.getChannelServer().getMapFactory();
 
-            var curMap = mapManager.getMap(curMapId);
-            var nextMap = mapManager.getMap(nextMapId);
+            var curMap = await mapManager.getMap(curMapId);
+            var nextMap = await mapManager.getMap(nextMapId);
 
-            chr.changeMap(curMap);
-
-            await Task.Delay(1000);
-            chr.changeMap(nextMap);
+            await chr.changeMap(curMap);
+            await chr.changeMap(nextMap);
             await Task.Delay(1000);
 
             Assert.Pass();
@@ -120,16 +117,16 @@ namespace ServiceTest.Games.Gameplay
             var mapId = 103000201;
 
             var chr = GameTestGlobal.TestServer.GetPlayer()!;
-            var map = LoadMap(mapId);
+            var map = await LoadMap(mapId);
 
-            chr.changeMap(map, map.getPortal(0));
+            await chr.changeMap(map, map.getPortal(0));
             chr.setMapTransitionComplete();
 
             await Task.Delay(2000);
 
-            map.ProcessMonster(m =>
+            await map.ProcessMonster(async m =>
             {
-                m.DamageBy(chr, int.MaxValue, 0);
+                await m.DamageBy(chr, int.MaxValue, 0);
             });
 
             var items = map.getItems();

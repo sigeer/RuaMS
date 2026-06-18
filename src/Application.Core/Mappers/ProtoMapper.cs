@@ -1,4 +1,3 @@
-using AllianceProto;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -12,9 +11,7 @@ using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
 using server;
-using server.life;
 using server.maps;
-using Application.Core.Server;
 
 namespace Application.Core.Mappers
 {

@@ -1,6 +1,5 @@
 using Application.Core.Game.Maps;
 using Application.Utility.Pipeline;
-using Polly;
 
 namespace Application.Core.Channel.Actor
 {

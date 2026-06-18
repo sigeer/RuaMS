@@ -26,7 +26,7 @@ using tools;
 
 namespace server.maps;
 
-public class MapEffect: ILifedTickable
+public class MapEffect : ILifedTickable
 {
     private string msg;
     private int itemId;
@@ -51,25 +51,26 @@ public class MapEffect: ILifedTickable
         return PacketCreator.startMapEffect(msg, itemId, active);
     }
 
-    public void sendStartData(IChannelClient client)
+    public async Task sendStartData(IChannelClient client)
     {
-        client.sendPacket(makeStartData());
+        await client.SendPacket(makeStartData());
     }
 
     public long ExpiredAt { get; }
 
     public TickableStatus Status { get; private set; }
-    public void OnTick(long now)
+    public Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (ExpiredAt <= now)
         {
             Status = TickableStatus.Remove;
-            return;
+            return Task.CompletedTask;
         }
+        return Task.CompletedTask;
     }
 }

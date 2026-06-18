@@ -45,7 +45,7 @@ public class EnterMTSHandler : Application.Core.Channel.Net.Handlers.EnterMTSHan
         _manager = manager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 

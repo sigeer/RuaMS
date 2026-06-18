@@ -86,7 +86,7 @@ namespace Application.Core.Game.Players
         }
 
 
-        public void closeMiniGame(bool forceClose)
+        public async Task closeMiniGame(bool forceClose)
         {
             var game = this.getMiniGame();
             if (game == null)
@@ -96,11 +96,11 @@ namespace Application.Core.Game.Players
 
             if (game.isOwner(this))
             {
-                game.closeRoom(forceClose);
+                await game.closeRoom(forceClose);
             }
             else
             {
-                game.removeVisitor(forceClose, this);
+                await game.removeVisitor(forceClose, this);
             }
         }
 
@@ -114,12 +114,12 @@ namespace Application.Core.Game.Players
             this.rps = rps;
         }
 
-        public void closeRPS()
+        public async Task closeRPS()
         {
             RockPaperScissor? rps = this.rps;
             if (rps != null)
             {
-                rps.dispose(Client);
+                await rps.dispose(Client);
                 setRPS(null);
             }
         }

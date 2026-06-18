@@ -31,6 +31,7 @@ using Application.Core.Game.Skills;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
+using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.status;
 using net.server.coordinator.world;
@@ -137,9 +138,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         AttackInfoHolders = mobTemplate.AttackInfos.ToDictionary(x => x.Index);
     }
 
-    public override void OnMounted(IMap map)
+    public override async Task OnMounted(IMap map)
     {
-        base.OnMounted(map);
+        await base.OnMounted(map);
 
         DispatchMonsterSpawned();
         map.ChannelServer.NodeService.PluginManager.OnMobSpawned(this);
@@ -403,12 +404,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         hp.set(-1);
     }
 
-    public void broadcastMobHpBar(Player from)
+    public async Task broadcastMobHpBar(Player from)
     {
         if (hasBossHPBar())
         {
             from.setPlayerAggro(this.GetHashCode());
-            from.getMap().broadcastBossHpMessage(this, this.GetHashCode(), makeBossHPBarPacket(), getPosition());
+            await from.getMap().broadcastBossHpMessage(this, this.GetHashCode(), makeBossHPBarPacket(), getPosition());
         }
         else if (!isBoss())
         {
@@ -423,18 +424,18 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                     var member = from.getMap().getCharacterById(mpc.Id); // god bless
                     if (member != null)
                     {
-                        member.sendPacket(packet);
+                        await member.SendPacket(packet);
                     }
                 }
             }
             else
             {
-                from.sendPacket(packet);
+                await from.SendPacket(packet);
             }
         }
     }
 
-    public bool DamageBy(ICombatantObject attacker, int damageValue, short delay, bool stayAlive = false)
+    public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
     {
         if (!this.isAlive())
         {
@@ -448,7 +449,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (damageValue > 0)
         {
-            this.applyDamage(attacker, damageValue, stayAlive, false);
+            await this.applyDamage(attacker, damageValue, stayAlive, false);
 
             var selfDestr = getStats().selfDestruction();
             if (selfDestr != null && selfDestr.Hp > -1)
@@ -456,14 +457,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 // 似乎由客户端触发？
                 if (getHp() <= selfDestr.Hp)
                 {
-                    MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
+                    await MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
                     return true;
                 }
             }
 
             if (!this.isAlive())
             {
-                MapModel.RemoveMob(this, attacker, true, dropDelay: delay);
+                await MapModel.RemoveMob(this, attacker, true, dropDelay: delay);
             }
             return true;
         }
@@ -475,7 +476,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
      * @param damage
      * @param stayAlive
      */
-    void applyDamage(ICombatantObject from, int damage, bool stayAlive, bool fake)
+    async Task applyDamage(ICombatantObject? from, int damage, bool stayAlive, bool fake)
     {
         var trueDamage = applyAndGetHpDamage(damage, stayAlive);
         if (trueDamage == null)
@@ -507,18 +508,18 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
 
             if (YamlConfig.config.server.USE_DEBUG)
-                chr.dropMessage(5, "Hitted MOB " + this.getId() + ", OID " + this.getObjectId());
+                await chr.dropMessage(5, "Hitted MOB " + this.getId() + ", OID " + this.getObjectId());
 
-            broadcastMobHpBar(chr);
+            await broadcastMobHpBar(chr);
         }
     }
 
-    public void applyFakeDamage(ICombatantObject from, int damage, bool stayAlive)
+    public async Task applyFakeDamage(ICombatantObject? from, int damage, bool stayAlive)
     {
-        applyDamage(from, damage, stayAlive, true);
+        await applyDamage(from, damage, stayAlive, true);
     }
 
-    public void heal(int hp, int mp)
+    public async Task heal(int hp, int mp)
     {
         var hpHealed = applyAndGetHpDamage(-hp, false);
         if (hpHealed == null)
@@ -536,7 +537,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (hp > 0)
         {
-            BroadcastMap(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
+            await BroadcastMap(PacketCreator.healMonster(getObjectId(), hp, getHp(), getMaxHp()));
         }
 
         maxHpPlusHeal.addAndGet(hpHealed.Value);
@@ -576,7 +577,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return avgExpReward + Math.Sqrt(varExpReward);
     }
 
-    private void distributePlayerExperience(Player chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
+    private async Task distributePlayerExperience(Player chr, float exp, float partyBonusMod, int totalPartyLevel, bool highestPartyDamager, bool whiteExpGain, bool hasPartySharers)
     {
         float playerExp = (YamlConfig.config.server.EXP_SPLIT_COMMON_MOD * chr.getLevel()) / totalPartyLevel;
         if (highestPartyDamager)
@@ -587,14 +588,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         playerExp *= exp;
         float bonusExp = partyBonusMod * playerExp;
 
-        this.giveExpToCharacter(chr, playerExp, bonusExp, whiteExpGain, hasPartySharers);
+        await this.giveExpToCharacter(chr, playerExp, bonusExp, whiteExpGain, hasPartySharers);
         foreach (var module in MapModel.ChannelServer.NodeService.Modules)
         {
             module.OnMonsterReward(new MonsterRewardEvent(chr, this));
         }
     }
 
-    private void distributePartyExperience(Dictionary<Player, long> partyParticipation, float expPerDmg, HashSet<Player> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
+    private async Task distributePartyExperience(Dictionary<Player, long> partyParticipation, float expPerDmg, HashSet<Player> underleveled, Dictionary<int, float> personalRatio, double sdevRatio)
     {
         IntervalBuilder leechInterval = new IntervalBuilder();
         leechInterval.addInterval(this.getLevel() - YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL, this.getLevel() + YamlConfig.config.server.EXP_SPLIT_LEVEL_INTERVAL);
@@ -653,7 +654,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         foreach (Player mc in expMembers)
         {
-            distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
+            await distributePlayerExperience(mc, participationExp, partyBonusMod, totalPartyLevel, mc == participationMvp, isWhiteExpGain(mc, personalRatio, sdevRatio), hasPartySharers);
             foreach (var module in MapModel.ChannelServer.NodeService.Modules)
             {
                 module.OnMonsterReward(new MonsterRewardEvent(mc, this));
@@ -661,7 +662,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    private void distributeExperience(int killerId)
+    private async Task distributeExperience(int killerId)
     {
         if (isAlive())
         {
@@ -744,12 +745,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             float exp = chrParticipation.Value * expPerDmg;
             Player chr = chrParticipation.Key;
 
-            distributePlayerExperience(chr, exp, 0.0f, chr.getLevel(), true, isWhiteExpGain(chr, personalRatio, sdevRatio), false);
+            await distributePlayerExperience(chr, exp, 0.0f, chr.getLevel(), true, isWhiteExpGain(chr, personalRatio, sdevRatio), false);
         }
 
         foreach (Dictionary<Player, long> partyParticipation in partyExpDist.Values)
         {
-            distributePartyExperience(partyParticipation, expPerDmg, underleveled, personalRatio, sdevRatio);
+            await distributePartyExperience(partyParticipation, expPerDmg, underleveled, personalRatio, sdevRatio);
         }
 
         var eim = getMap().getEventInstance();
@@ -764,7 +765,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         foreach (Player mc in underleveled)
         {
-            mc.showUnderleveledInfo(this);
+            await mc.showUnderleveledInfo(this);
         }
 
     }
@@ -810,7 +811,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return (int)Math.Round(exp);    // operations on float point are not point-precise... thanks IxianMace for noticing -1 EXP gains
     }
 
-    private void giveExpToCharacter(Player attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
+    private async Task giveExpToCharacter(Player attacker, float? personalExp, float? partyExp, bool white, bool hasPartySharers)
     {
         if (attacker.isAlive())
         {
@@ -858,9 +859,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 _partyExp = (int)(_partyExp * 0.5);
             }
 
-            attacker.gainExp(_personalExp, _partyExp, true, false, white);
-            attacker.increaseEquipExp(_personalExp);
-            attacker.raiseQuestMobCount(getId());
+            await attacker.gainExp(_personalExp, _partyExp, true, false, white);
+            await attacker.increaseEquipExp(_personalExp);
+            await attacker.raiseQuestMobCount(getId());
         }
     }
 
@@ -898,9 +899,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// </summary>
     /// <param name="killer"></param>
     /// <returns></returns>
-    public Player? killBy(Player? killer)
+    public async Task<Player?> killBy(Player? killer)
     {
-        distributeExperience(killer != null ? killer.getId() : 0);
+        await distributeExperience(killer != null ? killer.getId() : 0);
 
         // TODO: 文本大致意思是显示，不太可能用于被击杀时触发
         //var timeMob = reviveMap.TimeMob;
@@ -914,7 +915,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return MapModel.getCharacterById(getHighestDamagerId()) ?? killer;
     }
 
-    public void FriendlyDrop()
+    public async Task FriendlyDrop()
     {
         if (!isAlive())
         {
@@ -933,11 +934,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 eim.friendlyItemDrop(this);
             }
 
-            map.dropFromFriendlyMonster(chr, this);
+            await map.dropFromFriendlyMonster(chr, this);
         }
     }
 
-    private void dispatchRaiseQuestMobCount()
+    private async Task dispatchRaiseQuestMobCount()
     {
         var attackerChrids = takenDamage.Keys;
         if (attackerChrids.Count > 0)
@@ -953,32 +954,32 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
                     if (chr != null && chr.isLoggedinWorld())
                     {
-                        chr.raiseQuestMobCount(mobid);
+                        await chr.raiseQuestMobCount(mobid);
                     }
                 }
             }
         }
     }
 
-    public void dispatchMonsterKilled(ICombatantObject? killer)
+    public async Task dispatchMonsterKilled(ICombatantObject? killer)
     {
-        processMonsterKilled(killer);
+        await processMonsterKilled(killer);
 
-        var lastController = aggroRemoveController();
+        var lastController = await aggroRemoveController();
 
         if (stats.getRevives().Length > 0)
         {
             if (stats.getRevives().Contains(MobId.TRANSPARENT_ITEM) && MapModel.getId() > 925000000 && MapModel.getId() < 926000000)
             {
-                MapModel.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
-                MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
+                await MapModel.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
+                await MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
             }
 
-            MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
+            await MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
             {
-                MapModel.Send(map =>
+                MapModel.Send(async map =>
                 {
-                    Revive(killer, lastController);
+                    await Revive(killer, lastController);
                 });
             }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
@@ -1006,12 +1007,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    private void processMonsterKilled(ICombatantObject? killer)
+    private async Task processMonsterKilled(ICombatantObject? killer)
     {
         if (killer == null)
         {
             // players won't gain EXP from a mob that has no killer, but a quest count they should
-            dispatchRaiseQuestMobCount();
+            await dispatchRaiseQuestMobCount();
         }
 
         this.aggroClearDamages();
@@ -1026,27 +1027,27 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             switch (getId())
             {
                 case MobId.WATCH_HOG:
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(getId())));
                     break;
                 case MobId.MOON_BUNNY: //moon bunny
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(getId())));
                     break;
                 case MobId.TYLUS: //tylus
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(getId())));
                     break;
                 case MobId.JULIET: //juliet
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(getId())));
                     break;
                 case MobId.ROMEO: //romeo
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(getId())));
                     break;
                 case MobId.GIANT_SNOWMAN_LV1_EASY:
                 case MobId.GIANT_SNOWMAN_LV1_MEDIUM:
                 case MobId.GIANT_SNOWMAN_LV1_HARD:
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
                     break;
                 case MobId.DELLI: //delli
-                    MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(getId())));
                     break;
             }
         }
@@ -1059,7 +1060,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 var mainMob = MapModel.getMonsterByOid(ChaindMobOId);
                 if (mainMob != null)
                 {
-                    MapModel.makeMonsterReal(mainMob);
+                    await MapModel.makeMonsterReal(mainMob);
                 }
             }
         }
@@ -1141,7 +1142,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return isBoss() && getTagColor() > 0;
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
         if (hp.get() <= 0)
         { // mustn't monsterLock this function
@@ -1149,22 +1150,22 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
         if (fake)
         {
-            client.sendPacket(PacketCreator.spawnFakeMonster(this, 0));
+            await client.SendPacket(PacketCreator.spawnFakeMonster(this, 0));
         }
         else
         {
-            client.sendPacket(PacketCreator.spawnMonster(this, false));
+            await client.SendPacket(PacketCreator.spawnMonster(this, false));
         }
 
         if (hasBossHPBar())
         {
-            client.announceBossHpBar(this, this.GetHashCode(), makeBossHPBarPacket());
+            await client.announceBossHpBar(this, this.GetHashCode(), makeBossHPBarPacket());
         }
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.killMonster(getObjectId(), false));
+        await client.SendPacket(PacketCreator.killMonster(getObjectId(), false));
     }
 
     public override MapObjectType getType()
@@ -1216,27 +1217,27 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    public void broadcastMonsterStatusMessage(Packet packet)
+    public async Task broadcastMonsterStatusMessage(Packet packet)
     {
-        BroadcastMap(packet);
+        await BroadcastMap(packet);
 
         var chrController = getActiveController();
         if (chrController != null && !MapModel.IsMapObjectVisibleForPlayerCached(chrController, this))
         {
-            chrController.sendPacket(packet);
+            await chrController.SendPacket(packet);
         }
     }
 
-    private int broadcastStatusEffect(MonsterStatusEffect status)
+    private async Task<int> broadcastStatusEffect(MonsterStatusEffect status)
     {
         int animationTime = status.getSkill()!.getAnimationTime();
         Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), status, null);
-        broadcastMonsterStatusMessage(packet);
+        await broadcastMonsterStatusMessage(packet);
 
         return animationTime;
     }
 
-    public bool applyStatus(Player from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
+    public async Task<bool> applyStatus(Player from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
     {
         var effectSkill = status.getSkill()!;
         switch (getMonsterEffectiveness(effectSkill.getElement()))
@@ -1319,7 +1320,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             MapModel.ChannelServer.Send(new MonsterStatusRemoveCommand(this, status));
         };
-        IWorldChannelCommand? overtimeAction = null;
+        ICommand? overtimeAction = null;
         int overtimeDelay = -1;
 
         int animationTime;
@@ -1328,7 +1329,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             int poisonLevel = from.getSkillLevel(status.getSkill());
             int poisonDamage = Math.Min(short.MaxValue, (int)(getMaxHp() / (70.0 - poisonLevel) + 0.999));
             status.setValue(MonsterStatus.POISON, poisonDamage);
-            animationTime = broadcastStatusEffect(status);
+            animationTime = await broadcastStatusEffect(status);
 
             overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
             overtimeDelay = 1000;
@@ -1362,7 +1363,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 poisonDamage = Math.Min(short.MaxValue, poisonDamage);
                 status.setValue(MonsterStatus.VENOMOUS_WEAPON, poisonDamage);
                 status.setValue(MonsterStatus.POISON, poisonDamage);
-                animationTime = broadcastStatusEffect(status);
+                animationTime = await broadcastStatusEffect(status);
 
                 overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
                 overtimeDelay = 1000;
@@ -1389,14 +1390,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             int damage = (int)((from.getStr() + from.getLuk()) * ((3.7 * skill.getEffect(level).getDamage()) / 100.0));
 
             status.setValue(MonsterStatus.NINJA_AMBUSH, damage);
-            animationTime = broadcastStatusEffect(status);
+            animationTime = await broadcastStatusEffect(status);
 
             overtimeAction = new MonsterApplyDamageCommand(this, from, status, damage, 2);
             overtimeDelay = 1000;
         }
         else
         {
-            animationTime = broadcastStatusEffect(status);
+            animationTime = await broadcastStatusEffect(status);
         }
 
         foreach (MonsterStatus stat in status.getStati().Keys)
@@ -1410,7 +1411,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return true;
     }
 
-    public void dispelSkill(MobSkill skill)
+    public async Task dispelSkill(MobSkill skill)
     {
         List<MonsterStatus> toCancel = new();
         foreach (var effects in stati)
@@ -1424,15 +1425,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
         foreach (MonsterStatus stat in toCancel)
         {
-            debuffMobStat(stat);
+            await debuffMobStat(stat);
         }
     }
 
-    public void applyMonsterBuff(Dictionary<MonsterStatus, int> stats, int x, long duration, MobSkill skill, List<int> reflection)
+    public async Task applyMonsterBuff(Dictionary<MonsterStatus, int> stats, int x, long duration, MobSkill skill, List<int> reflection)
     {
         MonsterStatusEffect effect = new MonsterStatusEffect(stats, skill);
         Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), effect, reflection);
-        broadcastMonsterStatusMessage(packet);
+        await broadcastMonsterStatusMessage(packet);
 
         foreach (MonsterStatus stat in stats.Keys)
         {
@@ -1444,24 +1445,24 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         service.registerMobStatus(MapModel.getId(), effect, new MonsterBuffRemoveCommand(this, stats), duration);
     }
 
-    public void refreshMobPosition()
+    public async Task refreshMobPosition()
     {
-        resetMobPosition(getPosition());
+        await resetMobPosition(getPosition());
     }
 
-    public void resetMobPosition(Point newPoint)
+    public async Task resetMobPosition(Point newPoint)
     {
-        aggroRemoveController();
+        await aggroRemoveController();
 
         setPosition(newPoint);
-        BroadcastMap(
-            PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
-        MapModel.MoveMapObject(this);
+        await BroadcastMap(
+             PacketCreator.MoveMonsterIdle(this.getObjectId(), false, -1, 0, 0, 0, this.getPosition(), this.GetIdleMovementBytes()));
+        await MapModel.MoveMapObject(this);
 
-        aggroUpdateController();
+        await aggroUpdateController();
     }
 
-    private void debuffMobStat(MonsterStatus stat)
+    private async Task debuffMobStat(MonsterStatus stat)
     {
         MonsterStatusEffect? oldEffect;
 
@@ -1470,30 +1471,30 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         if (oldEffect != null)
         {
             Packet packet = PacketCreator.cancelMonsterStatus(getObjectId(), oldEffect.getStati());
-            broadcastMonsterStatusMessage(packet);
+            await broadcastMonsterStatusMessage(packet);
         }
     }
 
-    public void debuffMob(int skillid)
+    public async Task debuffMob(int skillid)
     {
         MonsterStatus[] statups = { MonsterStatus.WEAPON_ATTACK_UP, MonsterStatus.WEAPON_DEFENSE_UP, MonsterStatus.MAGIC_ATTACK_UP, MonsterStatus.MAGIC_DEFENSE_UP };
 
         if (skillid == Hermit.SHADOW_MESO)
         {
-            debuffMobStat(statups[1]);
-            debuffMobStat(statups[3]);
+            await debuffMobStat(statups[1]);
+            await debuffMobStat(statups[3]);
         }
         else if (skillid == Priest.DISPEL)
         {
             foreach (MonsterStatus ms in statups)
             {
-                debuffMobStat(ms);
+                await debuffMobStat(ms);
             }
         }
         else
         {    // is a crash skill
             int i = (skillid == Crusader.ARMOR_CRASH ? 1 : (skillid == WhiteKnight.MAGIC_CRASH ? 2 : 0));
-            debuffMobStat(statups[i]);
+            await debuffMobStat(statups[i]);
 
             if (YamlConfig.config.server.USE_ANTI_IMMUNITY_CRASH)
             {
@@ -1501,25 +1502,25 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 {
                     if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
                     {
-                        debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                        await debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
                     }
                     if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
                     {
-                        debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                        await debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
                     }
                 }
                 else if (skillid == WhiteKnight.MAGIC_CRASH)
                 {
                     if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
                     {
-                        debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                        await debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
                     }
                 }
                 else
                 {
                     if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
                     {
-                        debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                        await debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
                     }
                 }
             }
@@ -1954,7 +1955,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /**
      * Removes controllability status from the current controller of this mob.
      */
-    public MonsterControllerPair aggroRemoveController()
+    public async Task<MonsterControllerPair> aggroRemoveController()
     {
         Player? chrController;
         bool hadAggro;
@@ -1971,7 +1972,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             // this can/should only happen when a hidden gm attacks the monster
             if (!this.isFake())
             {
-                chrController.sendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
+                await chrController.SendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
             }
             chrController.stopControllingMonster(this);
         }
@@ -1983,7 +1984,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
      * Pass over the mob controllability and updates aggro status on the new
      * player controller.
      */
-    public void aggroSwitchController(Player? newController, bool immediateAggro)
+    public async Task aggroSwitchController(Player? newController, bool immediateAggro)
     {
 
         var prevController = getController();
@@ -1992,7 +1993,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             return;
         }
 
-        aggroRemoveController();
+        await aggroRemoveController();
         if (!(newController != null && newController.isLoggedinWorld() && newController.getMap() == this.getMap()))
         {
             return;
@@ -2004,17 +2005,17 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         this.setControllerHasPuppet(false);
 
         this.aggroUpdatePuppetVisibility();
-        aggroMonsterControl(newController.getClient(), this, immediateAggro);
+        await aggroMonsterControl(newController.getClient(), this, immediateAggro);
         newController.controlMonster(this);
 
     }
 
-    public void aggroAddPuppet(Player player)
+    public async Task aggroAddPuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.addPuppetAggro(player);
 
-        aggroUpdatePuppetController(player);
+        await aggroUpdatePuppetController(player);
 
         if (this.isControllerHasAggro())
         {
@@ -2022,12 +2023,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    public void aggroRemovePuppet(Player player)
+    public async Task aggroRemovePuppet(Player player)
     {
         var mmac = MapModel.getAggroCoordinator();
         mmac.removePuppetAggro(player.getId());
 
-        aggroUpdatePuppetController(null);
+        await aggroUpdatePuppetController(null);
 
         if (this.isControllerHasAggro())
         {
@@ -2039,7 +2040,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
      * Automagically finds a new controller for the given monster from the chars
      * on the map it is from...
      */
-    public void aggroUpdateController()
+    public async Task aggroUpdateController()
     {
         Player? chrController = this.getActiveController();
         if (chrController != null && chrController.isAlive())
@@ -2054,14 +2055,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             return;
         }
 
-        this.aggroSwitchController(newController, false);
+        await this.aggroSwitchController(newController, false);
     }
 
     /**
      * Finds a new controller for the given monster from the chars with deployed
      * puppet nearby on the map it is from...
      */
-    private void aggroUpdatePuppetController(Player? newController)
+    private async Task aggroUpdatePuppetController(Player? newController)
     {
         var chrController = this.getActiveController();
         bool updateController = false;
@@ -2112,7 +2113,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             {    // was a new controller found? (if not there's no puppet nearby)
                 if (updateController)
                 {
-                    aggroUpdateController();
+                    await aggroUpdateController();
                 }
 
                 return;
@@ -2123,17 +2124,17 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             this.aggroUpdatePuppetVisibility();
         }
 
-        this.aggroSwitchController(newController, this.isControllerHasAggro());
+        await this.aggroSwitchController(newController, this.isControllerHasAggro());
     }
 
     /**
      * Ensures controllability removal of the current player controller, and
      * fetches for any player on the map to start controlling in place.
      */
-    public void aggroRedirectController()
+    public async Task aggroRedirectController()
     {
-        this.aggroRemoveController();   // don't care if new controller not found, at least remove current controller
-        this.aggroUpdateController();
+        await this.aggroRemoveController();   // don't care if new controller not found, at least remove current controller
+        await this.aggroUpdateController();
     }
 
     /**
@@ -2163,13 +2164,13 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
      * Refreshes auto aggro for the player passed as parameter, does nothing if
      * there is already an active controller for this mob.
      */
-    public void aggroAutoAggroUpdate(Player player)
+    public async Task aggroAutoAggroUpdate(Player player)
     {
         var chrController = this.getActiveController();
 
         if (chrController == null)
         {
-            this.aggroSwitchController(player, true);
+            await this.aggroSwitchController(player, true);
         }
         else if (chrController.getId() == player.getId())
         {
@@ -2177,7 +2178,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             if (!YamlConfig.config.server.USE_AUTOAGGRO_NEARBY)
             {
                 // thanks Lichtmager for noticing autoaggro not updating the player properly
-                aggroMonsterControl(player.getClient(), this, true);
+                await aggroMonsterControl(player.getClient(), this, true);
             }
         }
     }
@@ -2186,7 +2187,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
      * Applied damage input for this mob, enough damage taken implies an aggro
      * target update for the attacker shortly.
      */
-    public void aggroMonsterDamage(Player attacker, int damage)
+    public async Task aggroMonsterDamage(Player attacker, int damage)
     {
         MonsterAggroCoordinator mmac = this.getMapAggroCoordinator();
         mmac.addAggroDamage(this, attacker.getId(), damage);
@@ -2196,7 +2197,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             if (this.getMapAggroCoordinator().isLeadingCharacterAggro(this, attacker))
             {
-                this.aggroSwitchController(attacker, true);
+                await this.aggroSwitchController(attacker, true);
             }
             else
             {
@@ -2221,12 +2222,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    private static void aggroMonsterControl(IChannelClient c, Monster mob, bool immediateAggro)
+    private static async Task aggroMonsterControl(IChannelClient c, Monster mob, bool immediateAggro)
     {
-        c.sendPacket(PacketCreator.controlMonster(mob, false, immediateAggro));
+        await c.SendPacket(PacketCreator.controlMonster(mob, false, immediateAggro));
     }
 
-    private void aggroRefreshPuppetVisibility(Player chrController, Summon puppet)
+    private async Task aggroRefreshPuppetVisibility(Player chrController, Summon puppet)
     {
         // lame patch for client to redirect all aggro to the puppet
 
@@ -2241,17 +2242,17 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         foreach (Monster mob in puppetControlled)
         {
-            chrController.sendPacket(PacketCreator.stopControllingMonster(mob.getObjectId()));
+            await chrController.SendPacket(PacketCreator.stopControllingMonster(mob.getObjectId()));
         }
-        chrController.sendPacket(PacketCreator.removeSummon(puppet, false));
+        await chrController.SendPacket(PacketCreator.removeSummon(puppet, false));
 
         var c = chrController.getClient();
         foreach (Monster mob in puppetControlled)
         {
             // thanks BHB for noticing puppets disrupting mobstatuses for bowmans
-            aggroMonsterControl(c, mob, mob.isControllerKnowsAboutAggro());
+            await aggroMonsterControl(c, mob, mob.isControllerKnowsAboutAggro());
         }
-        chrController.sendPacket(PacketCreator.spawnSummon(puppet, false));
+        await chrController.SendPacket(PacketCreator.spawnSummon(puppet, false));
     }
 
     public void aggroUpdatePuppetVisibility()
@@ -2267,7 +2268,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         service.registerOverallAction(this.getMap().getId(), new MonsterPuppetAggroCommand(this), YamlConfig.config.server.UPDATE_INTERVAL);
     }
 
-    public void ApplyPuppetAggro()
+    public async Task ApplyPuppetAggro()
     {
         try
         {
@@ -2285,7 +2286,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 if (puppet != null && isPuppetInVicinity(puppet))
                 {
                     controllerHasPuppet = true;
-                    aggroRefreshPuppetVisibility(chrController, puppet);
+                    await aggroRefreshPuppetVisibility(chrController, puppet);
                     return;
                 }
             }
@@ -2294,8 +2295,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             {
                 controllerHasPuppet = false;
 
-                chrController.sendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
-                aggroMonsterControl(chrController.getClient(), this, this.isControllerHasAggro());
+                await chrController.SendPacket(PacketCreator.stopControllingMonster(this.getObjectId()));
+                await aggroMonsterControl(chrController.getClient(), this, this.isControllerHasAggro());
             }
         }
         finally
@@ -2399,9 +2400,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             var others = RevivingMonsters.Where(x => x.getId() != MobId.HORNTAIL).ToList();
             foreach (var m in others)
             {
-                m.OnDamaged += (sender, args) =>
+                m.OnDamaged += async (sender, args) =>
                 {
-                    soul.applyFakeDamage(args.Attacker, args.Damage, true);
+                    await soul.applyFakeDamage(args.Attacker, args.Damage, true);
                 };
 
                 m.OnHealed += (sender, args) =>
@@ -2433,7 +2434,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         OnLifeCleared?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Revive(ICombatantObject? killer, MonsterControllerPair lastController)
+    public async Task Revive(ICombatantObject? killer, MonsterControllerPair lastController)
     {
         var curMob = this;
 
@@ -2455,13 +2456,13 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             {
                 mob.disableDrops();
             }
-            reviveMap.spawnMonster(mob);
+            await reviveMap.spawnMonster(mob);
             OnRevive?.Invoke(curMob, new MonsterReviveEventArgs(mob, killer));
             mob.RevivedFrom = curMob;
 
             if (controller != null)
             {
-                mob.aggroSwitchController(controller, aggro);
+                await mob.aggroSwitchController(controller, aggro);
             }
 
             if (eim != null)
@@ -2476,7 +2477,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     long _recoverMPNext;
     long _recoverMPPeriod = YamlConfig.config.server.RESPAWN_INTERVAL;
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
@@ -2491,19 +2492,19 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (_friendlyDropPeriod > 0 && _friendlyDropNext <= now)
         {
-            FriendlyDrop();
+            await FriendlyDrop();
 
             _friendlyDropNext = now + _friendlyDropPeriod;
         }
 
         if (_autoRemoveAction > 0 && Next <= now)
         {
-            MapModel.RemoveMob(this, null, true, _autoRemoveAction);
+            await MapModel.RemoveMob(this, null, true, _autoRemoveAction);
         }
 
         if (_recoverMPNext <= now)
         {
-            heal(0, getLevel());
+            await heal(0, getLevel());
             _recoverMPNext = now + _recoverMPPeriod;
         }
     }
@@ -2513,8 +2514,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
     }
 
-    public override void OnUnmounted()
+    public override async Task OnUnmounted()
     {
+        await base.OnUnmounted();
         disposeMapObject();
     }
 }

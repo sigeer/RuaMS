@@ -13,14 +13,14 @@ namespace Application.Core.Game.Players.Tickables
             Next = chr.getChannelServer().Node.getCurrentTime() + Period;
         }
 
-        protected override void Process(long now)
+        protected override async Task Process(long now)
         {
-            _chr.UpdateStatsChunk(() =>
+            await _chr.UpdateStatsChunk(async () =>
             {
-                if (_chr.ChangeHP(-Effect.getX()))
+                if (await _chr.ChangeHP(-Effect.getX()))
                 {
-                    _chr.sendPacket(PacketCreator.showOwnBuffEffect(Effect.getSourceId(), 5));
-                    _chr.BroadcastMap(PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), _chr.Id);
+                    await _chr.SendPacket(PacketCreator.showOwnBuffEffect(Effect.getSourceId(), 5));
+                    await _chr.BroadcastMap(PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), _chr.Id);
                 }
                 else
                 {

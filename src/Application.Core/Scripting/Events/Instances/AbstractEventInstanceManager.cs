@@ -4,19 +4,18 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Abstraction;
-using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using Application.Utility.Tickables;
 using server;
-using server.life;
 using server.maps;
+using System.Threading.Tasks;
 using tools;
 using ZLinq;
 
 namespace Application.Core.scripting.Events.Instances;
 
-public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposable, ITickableTree
+public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     protected Dictionary<int, Player> chars = new();
@@ -93,7 +92,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return mask;
     }
 
-    public void applyEventPlayersItemBuff(int itemId)
+    public async Task applyEventPlayersItemBuff(int itemId)
     {
         List<Player> players = getPlayerList();
         var mse = ItemInformationProvider.getInstance().getItemEffect(itemId);
@@ -102,17 +101,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             foreach (Player player in players)
             {
-                mse.applyTo(player);
+                await mse.applyTo(player);
             }
         }
     }
 
-    public void applyEventPlayersSkillBuff(int skillId)
+    public async Task applyEventPlayersSkillBuff(int skillId)
     {
-        applyEventPlayersSkillBuff(skillId, int.MaxValue);
+        await applyEventPlayersSkillBuff(skillId, int.MaxValue);
     }
 
-    public void applyEventPlayersSkillBuff(int skillId, int skillLv)
+    public async Task applyEventPlayersSkillBuff(int skillId, int skillLv)
     {
         List<Player> players = getPlayerList();
         var skill = SkillFactory.getSkill(skillId);
@@ -124,13 +123,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 foreach (Player player in players)
                 {
-                    mse.applyTo(player);
+                    await mse.applyTo(player);
                 }
             }
         }
     }
 
-    public void giveEventPlayersExp(int gain, int mapId = -1)
+    public async Task giveEventPlayersExp(int gain, int mapId = -1)
     {
         if (gain <= 0)
             return;
@@ -142,7 +141,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             foreach (Player mc in players)
             {
-                mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
+                await mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
             }
         }
         else
@@ -151,14 +150,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
+                    await mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
                 }
             }
         }
     }
 
 
-    public void giveEventPlayersMeso(int gain, int mapId = -1)
+    public async Task giveEventPlayersMeso(int gain, int mapId = -1)
     {
         if (gain == 0)
         {
@@ -171,7 +170,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             foreach (Player mc in players)
             {
-                mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
+                await mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
         else
@@ -180,7 +179,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             {
                 if (mc.getMapId() == mapId)
                 {
-                    mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
+                    await mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
                 }
             }
         }
@@ -194,35 +193,35 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// 退出副本
     /// </summary>
     /// <param name="chr"></param>
-    public void exitPlayer(Player chr)
+    public async Task exitPlayer(Player chr)
     {
-        EventManager.Template.OnPlayerExit(this, chr);
+        await EventManager.Template.OnPlayerExit(this, chr);
     }
 
 
-    public void unregisterPlayer(Player chr)
+    public async Task unregisterPlayer(Player chr)
     {
         chars.Remove(chr.getId());
         gridRemove(chr);
 
         if (chr.isLoggedin())
         {
-            EventManager.Template.OnPlayerUnregister(this, chr);
+            await EventManager.Template.OnPlayerUnregister(this, chr);
 
             chr.setEventInstance(null);
-            dropExclusiveItems(chr);
+            await dropExclusiveItems(chr);
         }
 
         if (chars.Count == 0)
         {
-            Dispose();
+            await DisposeAsync();
         }
     }
 
 
-    public void changedMap(Player chr, int mapId)
+    public async Task changedMap(Player chr, int mapId)
     {
-        EventManager.Template.OnPlayerMapChanging(this, chr, mapId);
+        await EventManager.Template.OnPlayerMapChanging(this, chr, mapId);
     }
 
     public void afterChangedMap(Player chr, int mapId)
@@ -230,9 +229,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         EventManager.Template.OnPlayerMapChanged(this, chr, mapId);
     }
 
-    public void changedLeader(Player ldr)
+    public async Task changedLeader(Player ldr)
     {
-        EventManager.Template.OnLeaderChanged(this, ldr);
+        await EventManager.Template.OnLeaderChanged(this, ldr);
 
         leaderId = ldr.getId();
     }
@@ -289,14 +288,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         EventManager.Template.OnMobRevive(this, mob);
     }
 
-    public bool revivePlayer(Player player)
+    public async Task<bool> revivePlayer(Player player)
     {
-        return EventManager.Template.OnPlayerRevive(this, player);
+        return await EventManager.Template.OnPlayerRevive(this, player);
     }
 
-    public void playerDisconnected(Player chr)
+    public async Task playerDisconnected(Player chr)
     {
-        EventManager.Template.OnPlayerDisconnected(this, chr);
+        await EventManager.Template.OnPlayerDisconnected(this, chr);
 
         if (EventManager.AllowReconnect)
         {
@@ -323,35 +322,35 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         killCount[chr] = killCount.GetValueOrDefault(chr) + val;
     }
 
-    public void leftParty(Player chr)
+    public async Task leftParty(Player chr)
     {
-        EventManager.Template.OnPlayerLeftParty(this, chr);
+        await EventManager.Template.OnPlayerLeftParty(this, chr);
     }
 
-    public void disbandParty()
+    public async Task disbandParty()
     {
-        EventManager.Template.OnPartyDisband(this);
+        await EventManager.Template.OnPartyDisband(this);
     }
 
-    public void clearPQ()
+    public async Task clearPQ()
     {
-        EventManager.Template.ClearPQ(this);
+        await EventManager.Template.ClearPQ(this);
     }
 
-    public virtual void startEvent()
+    public virtual async Task startEvent()
     {
         InstanceStatus = InstanceStatus.InProgress;
 
-        EventManager.Template.AfterSeup(this);
+        await EventManager.Template.AfterSeup(this);
     }
 
-    public void setEventCleared()
+    public async Task setEventCleared()
     {
         InstanceStatus = InstanceStatus.Cleared;
 
         foreach (Player chr in getPlayers())
         {
-            chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
+            await chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
 
         EventManager.DisposeInstance(name);
@@ -359,7 +358,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     #endregion
 
 
-    public bool registerPlayer(Player chr)
+    public async Task<bool> registerPlayer(Player chr)
     {
 
         if (chr == null || !chr.isLoggedinWorld() || InstanceStatus == InstanceStatus.Disposed)
@@ -371,29 +370,29 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             chr.setEventInstance(this);
 
-            EventManager.Template.OnPlayerRegister(this, chr);
+            await EventManager.Template.OnPlayerRegister(this, chr);
             return true;
         }
 
         return false;
     }
 
-    public void dropMessage(int type, string message)
+    public async Task dropMessage(int type, string message)
     {
         foreach (Player chr in getPlayers())
         {
-            chr.TypedMessage(type, message);
+            await chr.TypedMessage(type, message);
         }
     }
 
     EventInstanceTimperDismissRequest? _dismissRequest;
-    public void restartEventTimer(long time)
+    public async Task restartEventTimer(long time)
     {
-        stopEventTimer();
-        startEventTimer(time);
+        await stopEventTimer();
+        await startEventTimer(time);
     }
 
-    public void startEventTimer(long time)
+    public async Task startEventTimer(long time)
     {
         timeStarted = EventManager.ChannelServer.Node.getCurrentTime();
 
@@ -403,7 +402,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
             foreach (Player chr in getPlayers())
             {
-                chr.sendPacket(PacketCreator.getClock((int)(time / 1000)));
+                await chr.SendPacket(PacketCreator.getClock((int)(time / 1000)));
             }
 
             _dismissRequest = new EventInstanceTimperDismissRequest(this, timeStarted + time);
@@ -411,18 +410,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         }
     }
 
-    public void DismissEventTimer()
+    public async Task DismissEventTimer()
     {
-        dismissEventTimer();
+        await dismissEventTimer();
 
-        EventManager.Template.OnTimeOut(this);
+        await EventManager.Template.OnTimeOut(this);
     }
 
-    private void dismissEventTimer()
+    private async Task dismissEventTimer()
     {
         foreach (Player chr in getPlayers())
         {
-            chr.sendPacket(PacketCreator.removeClock());
+            await chr.SendPacket(PacketCreator.removeClock());
         }
 
 
@@ -430,11 +429,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         timeStarted = 0;
     }
 
-    public void stopEventTimer()
+    public async Task stopEventTimer()
     {
         _dismissRequest?.Status = TickableStatus.Remove;
 
-        dismissEventTimer();
+        await dismissEventTimer();
     }
 
     public bool isTimerStarted()
@@ -447,13 +446,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return eventTime - (EventManager.ChannelServer.Node.getCurrentTime() - timeStarted);
     }
 
-    public virtual void registerParty(List<Player> eligibleMembers)
+    public virtual async Task registerParty(List<Player> eligibleMembers)
     {
         foreach (var mpc in eligibleMembers)
         {
             if (mpc.IsOnlined)
             {
-                registerPlayer(mpc);
+                await registerPlayer(mpc);
             }
         }
     }
@@ -499,7 +498,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     }
 
 
-    public virtual void Dispose()
+    public virtual async ValueTask DisposeAsync()
     {
         // should not trigger any event script method after disposed
         if (InstanceStatus == InstanceStatus.Disposed)
@@ -517,11 +516,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         //    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.Name);
         //}
         InstanceStatus = InstanceStatus.Disposed;
-        stopEventTimer();
+        await stopEventTimer();
 
         foreach (Player chr in getPlayers())
         {
-            exitPlayer(chr);
+            await exitPlayer(chr);
         }
         chars.Clear();
         mobs.Clear();
@@ -532,13 +531,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
         EventManager.DisposeInstance(name);
 
-        EventManager.ChannelServer.TimerManager.schedule(() =>
-        {
-            EventManager.ChannelServer.Send(w =>
-            {
-                mapManager.Dispose();
-            });
-        }, TimeSpan.FromMinutes(1));
+        await EventManager.ChannelServer.TimerManager.schedule(() =>
+         {
+             EventManager.ChannelServer.Send(async w =>
+             {
+                 await mapManager.DisposeAsync();
+             });
+         }, TimeSpan.FromMinutes(1));
 
     }
 
@@ -547,7 +546,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return mapManager;
     }
 
-    public void Schedule(Action<AbstractEventInstanceManager> nextAction, long delay)
+    public void Schedule(Func<AbstractEventInstanceManager, Task> nextAction, long delay)
     {
         SubTickables.Add(new EventInstanceScheduleRequest(nextAction, this, EventManager.ChannelServer.Node.getCurrentTime() + delay));
     }
@@ -563,17 +562,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     /// </summary>
     /// <param name="mapid"></param>
     /// <returns></returns>
-    public IMap? getInstanceMap(int mapid)
+    public async Task<IMap?> getInstanceMap(int mapid)
     {
         if (InstanceStatus.Disposed == InstanceStatus)
         {
             return null;
         }
-        return mapManager.getMap(mapid);
+        return await mapManager.getMap(mapid);
     }
-    public IMap getMapInstance(int mapId)
+    public async Task<IMap> getMapInstance(int mapId)
     {
-        return mapManager.getMap(mapId);
+        return await mapManager.getMap(mapId);
     }
 
     public void setIntProperty(string key, int value)
@@ -625,7 +624,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     }
 
 
-    public bool disposeIfPlayerBelow(byte size, int towarp)
+    public async Task<bool> disposeIfPlayerBelow(byte size, int towarp)
     {
         if (InstanceStatus == InstanceStatus.Disposed)
         {
@@ -639,7 +638,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         IMap? map = null;
         if (towarp > 0)
         {
-            map = this.getMapFactory().getMap(towarp);
+            map = await this.getMapFactory().getMap(towarp);
         }
 
         List<Player> players = getPlayerList();
@@ -655,14 +654,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
                         continue;
                     }
 
-                    unregisterPlayer(chr);
+                    await unregisterPlayer(chr);
                     if (towarp > 0)
                     {
-                        chr.changeMap(map!, map!.getPortal(0));
+                        await chr.changeMap(map!, map!.getPortal(0));
                     }
                 }
 
-                Dispose();
+                await DisposeAsync();
                 return true;
             }
         }
@@ -674,14 +673,17 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return false;
     }
 
-    public void spawnNpc(int npcId, Point pos, IMap map)
+    public async Task spawnNpc(int npcId, Point pos, IMap map)
     {
-        map.SpawnNpc(npcId, pos);
+        await map.SpawnNpc(npcId, pos);
     }
 
-    public void dispatchRaiseQuestMobCount(int mobid, int mapid)
+    public async Task dispatchRaiseQuestMobCount(int mobid, int mapid)
     {
-        var mapChars = getInstanceMap(mapid)?.getMapPlayers() ?? [];
+        var map = await getInstanceMap(mapid);
+        if (map == null)
+            return;
+        var mapChars = map.getMapPlayers() ?? [];
         if (mapChars.Count > 0)
         {
             List<Player> eventMembers = getPlayers();
@@ -692,25 +694,28 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
                 if (chr != null && chr.isLoggedinWorld())
                 {
-                    chr.raiseQuestMobCount(mobid);
+                    await chr.raiseQuestMobCount(mobid);
                 }
             }
         }
     }
 
-    public void dropExclusiveItems(Player chr)
+    public async Task dropExclusiveItems(Player chr)
     {
-        chr.Bag.ClearPartyQuestItems();
+        await chr.Bag.ClearPartyQuestItems();
 
         foreach (var item in exclusiveItems)
         {
-            chr.GainItem(item, short.MinValue);
+            await chr.GainItem(item, short.MinValue);
         }
     }
 
-    public void dropAllExclusiveItems()
+    public async Task dropAllExclusiveItems()
     {
-        getPlayers().ForEach(dropExclusiveItems);
+        foreach (var chr in getPlayers())
+        {
+            await dropExclusiveItems(chr);
+        }
     }
 
 
@@ -796,7 +801,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return true;
     }
 
-    public void warpEventTeam(int warpFrom, int warpTo)
+    public async Task warpEventTeam(int warpFrom, int warpTo)
     {
         List<Player> players = getPlayerList();
 
@@ -804,22 +809,22 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             if (chr.getMapId() == warpFrom)
             {
-                chr.changeMap(warpTo);
+                await chr.changeMap(warpTo);
             }
         }
     }
 
-    public void warpEventTeam(int warpTo)
+    public async Task warpEventTeam(int warpTo)
     {
         List<Player> players = getPlayerList();
 
         foreach (Player chr in players)
         {
-            chr.changeMap(warpTo);
+            await chr.changeMap(warpTo);
         }
     }
 
-    public void warpEventTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
+    public async Task warpEventTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
         List<Player> players = getPlayerList();
 
@@ -827,18 +832,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         {
             if (chr.getMapId() == warpFrom)
             {
-                chr.changeMap(warpTo, toSp);
+                await chr.changeMap(warpTo, toSp);
             }
         }
     }
 
-    public void warpEventTeamToMapSpawnPoint(int warpTo, int toSp)
+    public async Task warpEventTeamToMapSpawnPoint(int warpTo, int toSp)
     {
         List<Player> players = getPlayerList();
 
         foreach (Player chr in players)
         {
-            chr.changeMap(warpTo, toSp);
+            await chr.changeMap(warpTo, toSp);
         }
     }
 
@@ -857,70 +862,70 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         leaderId = chr.getId();
     }
 
-    public void showWrongEffect()
+    public async Task showWrongEffect()
     {
         var leader = getLeader();
         if (leader != null)
         {
-            showWrongEffect(leader.getMapId());
+            await showWrongEffect(leader.getMapId());
         }
 
     }
 
-    public void showWrongEffect(int mapId)
+    public async Task showWrongEffect(int mapId)
     {
-        IMap map = getMapInstance(mapId);
-        map.broadcastMessage(PacketCreator.showEffect("quest/party/wrong_kor"));
-        map.broadcastMessage(PacketCreator.playSound("Party1/Failed"));
+        IMap map = await getMapInstance(mapId);
+        await map.broadcastMessage(PacketCreator.showEffect("quest/party/wrong_kor"));
+        await map.broadcastMessage(PacketCreator.playSound("Party1/Failed"));
     }
 
-    public void showClearEffect()
+    public async Task showClearEffect()
     {
-        showClearEffect(false);
+        await showClearEffect(false);
     }
 
-    public void showClearEffect(bool hasGate)
+    public async Task showClearEffect(bool hasGate)
     {
         var leader = getLeader();
         if (leader != null)
         {
-            showClearEffect(hasGate, leader.getMapId());
+            await showClearEffect(hasGate, leader.getMapId());
         }
     }
 
-    public void showClearEffect(int mapId)
+    public async Task showClearEffect(int mapId)
     {
-        showClearEffect(false, mapId);
+        await showClearEffect(false, mapId);
     }
 
-    public void showClearEffect(bool hasGate, int mapId)
+    public async Task showClearEffect(bool hasGate, int mapId)
     {
-        showClearEffect(hasGate, mapId, "gate", 2);
+        await showClearEffect(hasGate, mapId, "gate", 2);
     }
 
-    public void showClearEffect(int mapId, string mapObj, int newState)
+    public async Task showClearEffect(int mapId, string mapObj, int newState)
     {
-        showClearEffect(true, mapId, mapObj, newState);
+        await showClearEffect(true, mapId, mapObj, newState);
     }
 
-    public void showClearEffect(bool hasGate, int mapId, string mapObj, int newState)
+    public async Task showClearEffect(bool hasGate, int mapId, string mapObj, int newState)
     {
-        IMap map = getMapInstance(mapId);
-        map.broadcastMessage(PacketCreator.showEffect("quest/party/clear"));
-        map.broadcastMessage(PacketCreator.playSound("Party1/Clear"));
+        IMap map = await getMapInstance(mapId);
+        await map.broadcastMessage(PacketCreator.showEffect("quest/party/clear"));
+        await map.broadcastMessage(PacketCreator.playSound("Party1/Clear"));
         if (hasGate)
         {
-            map.broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
+            await map.broadcastMessage(PacketCreator.environmentChange(mapObj, newState));
 
             openedGates.AddOrUpdate(map.getId(), new(mapObj, newState));
         }
     }
 
-    public void recoverOpenedGate(Player chr, int thisMapId)
+    public async Task recoverOpenedGate(Player chr, int thisMapId)
     {
         if (openedGates.TryGetValue(thisMapId, out var gateData) && gateData != null)
         {
-            chr.sendPacket(PacketCreator.environmentChange(gateData.Value.Key, gateData.Value.Value));
+            await chr.SendPacket(PacketCreator.environmentChange(gateData.Value.Key, gateData.Value.Value));
         }
     }
 
@@ -944,19 +949,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
     //    }
     //}
 
-    public ClaimRewardResult GiveClearReward(Player player, int point = 1)
+    public async Task<ClaimRewardResult> GiveClearReward(Player player, int point = 1)
     {
-        return EventManager.Template.GiveClearReward(this, player, point);
+        return await EventManager.Template.GiveClearReward(this, player, point);
     }
 
-    public ClaimRewardResult GiveStageClearReward(Player player, int stageMap)
+    public async Task<ClaimRewardResult> GiveStageClearReward(Player player, int stageMap)
     {
-        return EventManager.Template.GiveStageClearReward(this, player, stageMap);
+        return await EventManager.Template.GiveStageClearReward(this, player, stageMap);
     }
 
-    public void GiveStageClearRewardAll(int stageMap)
+    public async Task GiveStageClearRewardAll(int stageMap)
     {
-        EventManager.Template.GiveStageClearRewardAll(this, stageMap);
+        await EventManager.Template.GiveStageClearRewardAll(this, stageMap);
     }
 
     //public void linkPortalToScript(int thisStage, string portalName, string scriptName, int thisMapId)
@@ -996,9 +1001,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         PlayerGrid.Clear();
     }
 
-    public bool activatedAllReactorsOnMap(int mapId, int minReactorId, int maxReactorId)
+    public async Task<bool> activatedAllReactorsOnMap(int mapId, int minReactorId, int maxReactorId)
     {
-        return activatedAllReactorsOnMap(this.getMapInstance(mapId), minReactorId, maxReactorId);
+        return activatedAllReactorsOnMap(await this.getMapInstance(mapId), minReactorId, maxReactorId);
     }
 
     public bool activatedAllReactorsOnMap(IMap map, int minReactorId, int maxReactorId)
@@ -1019,32 +1024,32 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
         return true;
     }
 
-    public void TypedMessage(int type, string messageKey, params string[] param)
+    public async Task TypedMessage(int type, string messageKey, params string[] param)
     {
         foreach (Player chr in getPlayers())
         {
-            chr.TypedMessage(type, messageKey, param);
+            await chr.TypedMessage(type, messageKey, param);
         }
     }
-    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
+    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
+    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
+    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
+    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
-    public void LightBlue(Func<ClientCulture, string> action)
+    public async Task LightBlue(Func<ClientCulture, string> action)
     {
         foreach (Player chr in getPlayers())
         {
-            chr.LightBlue(action);
+            await chr.LightBlue(action);
         }
     }
 
@@ -1064,25 +1069,25 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
 
     public TickableStatus Status { get; set; }
     public List<ITickable> SubTickables { get; }
-    public virtual void OnTick(long now)
+    public virtual async Task OnTick(long now)
     {
-        this.ProcessSubTickables(now);
+        await this.ProcessSubTickables(now);
     }
 
 
     class EventInstanceScheduleRequest : DelayedTickable
     {
-        Action<AbstractEventInstanceManager> _action;
+        Func<AbstractEventInstanceManager, Task> _action;
         AbstractEventInstanceManager _eim;
-        public EventInstanceScheduleRequest(Action<AbstractEventInstanceManager> action, AbstractEventInstanceManager eim, long next) : base(next)
+        public EventInstanceScheduleRequest(Func<AbstractEventInstanceManager, Task> action, AbstractEventInstanceManager eim, long next) : base(next)
         {
             _action = action;
             _eim = eim;
         }
 
-        protected override void Handle(long now)
+        protected override async Task Handle(long now)
         {
-            _action(_eim);
+            await _action(_eim);
         }
     }
 
@@ -1094,9 +1099,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IDisposab
             _eim = eim;
         }
 
-        protected override void Handle(long now)
+        protected override async Task Handle(long now)
         {
-            _eim.DismissEventTimer();
+            await _eim.DismissEventTimer();
         }
     }
 }

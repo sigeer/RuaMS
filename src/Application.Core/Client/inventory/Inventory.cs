@@ -21,7 +21,6 @@
 */
 
 
-using Acornima;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
@@ -29,7 +28,6 @@ using Application.Core.model;
 using Application.Templates.Item.Cash;
 using client.inventory.manipulator;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
 using ZLinq;
 
 namespace client.inventory;
@@ -64,13 +62,13 @@ public class Inventory : AbstractInventory
         return (byte)inventory.Length;
     }
 
-    public override void setSlotLimit(int newLimit)
+    public override async Task setSlotLimit(int newLimit)
     {
         if (newLimit < inventory.Length)
         {
             for (int i = newLimit + 1; i <= inventory.Length; i++)
             {
-                removeSlot((short)i);
+                await removeSlot((short)i);
             }
         }
 
@@ -201,7 +199,7 @@ public class Inventory : AbstractInventory
         inventory[MapServerSlot(pos)] = item;
     }
 
-    public InventoryAdd? AddItem(Item item)
+    public async Task<InventoryAdd?> AddItem(Item item)
     {
         var position = getNextFreeSlot();
         if (position == -1)
@@ -222,11 +220,11 @@ public class Inventory : AbstractInventory
 
         SetItemPosition(item, position);
 
-        OnItemEnter(position, item, false);
+        await OnItemEnter(position, item, false);
 
         return new InventoryAdd(item.getInventoryType(), item, position);
     }
-    public override void PutItem(short position, Item item, bool fromLogin)
+    public override async Task PutItem(short position, Item item, bool fromLogin)
     {
         if (position <= 0)
         {
@@ -236,7 +234,7 @@ public class Inventory : AbstractInventory
 
         SetItemPosition(item, position);
 
-        OnItemEnter(position, item, fromLogin);
+        await OnItemEnter(position, item, fromLogin);
     }
 
     public override void RemoveFromMove(short slot)
@@ -272,7 +270,7 @@ public class Inventory : AbstractInventory
     }
 
 
-    protected override void OnItemEnter(short position, Item item, bool fromLogin)
+    protected override async Task OnItemEnter(short position, Item item, bool fromLogin)
     {
         if (!fromLogin)
         {
@@ -282,10 +280,10 @@ public class Inventory : AbstractInventory
                 Owner.CalculateCoupon(Owner.Client.CurrentServer.Node.getCurrentTime());
             }
         }
-        base.OnItemEnter(position, item, fromLogin);
+        await base.OnItemEnter(position, item, fromLogin);
     }
 
-    protected override void OnItemLeave(Item item)
+    protected override async Task OnItemLeave(Item item)
     {
         if (item.SourceTemplate is CouponItemTemplate)
         {
@@ -295,17 +293,17 @@ public class Inventory : AbstractInventory
         {
             pet.MapPet?.Recall();
         }
-        base.OnItemLeave(item);
+        await base.OnItemLeave(item);
     }
 
-    public override IInventoryOperationCommand? removeSlot(short slot)
+    public override async Task<IInventoryOperationCommand?> removeSlot(short slot)
     {
         var item = getItem(slot);
         if (item != null)
         {
             inventory[MapServerSlot(slot)] = null;
 
-            OnItemLeave(item);
+            await OnItemLeave(item);
             return new InventoryRemove(item!.getInventoryType(), slot);
         }
         return null;
@@ -323,13 +321,12 @@ public class Inventory : AbstractInventory
     /// <param name="quantity"></param>
     /// <param name="item"></param>
     /// <returns></returns>
-    public IInventoryOperationCommand? Take(short slot, short quantity, out Item? item)
+    public async Task<(IInventoryOperationCommand?, Item?)> Take(short slot, short quantity)
     {
-        item = null;
         var srcItem = getItem(slot);
         if (srcItem == null)
         {
-            return null;
+            return (null, null);
         }
 
         if (ItemConstants.isRechargeable(srcItem.getItemId()))
@@ -337,17 +334,17 @@ public class Inventory : AbstractInventory
             quantity = srcItem.getQuantity();
         }
 
-        var op = removeItem(slot, out _, quantity);
+        var (op, _) = await removeItem(slot, quantity);
 
-        item = srcItem.copy();
+        var item = srcItem.copy();
         item.setQuantity(quantity);
-        return op;
+        return (op, item);
     }
 
     public override IEnumerator<Item> GetEnumerator()
     {
         foreach (var item in inventory)
-            if (item != null) 
+            if (item != null)
                 yield return item;
     }
 

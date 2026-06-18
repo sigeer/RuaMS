@@ -33,7 +33,7 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(5);
         try
@@ -46,8 +46,8 @@ public class MovePlayerHandler : AbstractMovementPacketHandler
             int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
-            c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());
-            c.OnlinedCharacter.BroadcastMovement(PacketCreator.movePlayer(c.OnlinedCharacter.getId(), clientStartPos, p, movementDataLength), serverStartPos);
+            await c.OnlinedCharacter.getMap().movePlayer(c.OnlinedCharacter, c.OnlinedCharacter.getPosition());
+            await c.OnlinedCharacter.BroadcastMovement(PacketCreator.movePlayer(c.OnlinedCharacter.getId(), clientStartPos, p, movementDataLength), serverStartPos);
         }
         catch (EmptyMovementException e)
         {

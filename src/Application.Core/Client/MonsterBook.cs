@@ -68,9 +68,9 @@ public class MonsterBook
         return cards.ToHashSet();
     }
 
-    public void addCard(int cardid)
+    public async Task addCard(int cardid)
     {
-        Owner.BroadcastMap(PacketCreator.showForeignCardEffect(Owner.Id), Owner.Id);
+        await Owner.BroadcastMap(PacketCreator.showForeignCardEffect(Owner.Id), Owner.Id);
 
         int qty;
 
@@ -101,12 +101,12 @@ public class MonsterBook
                 calculateLevel();
             }
 
-            Owner.sendPacket(PacketCreator.addCard(false, cardid, qty + 1));
-            Owner.sendPacket(PacketCreator.showGainCard());
+            await Owner.SendPacket(PacketCreator.addCard(false, cardid, qty + 1));
+            await Owner.SendPacket(PacketCreator.showGainCard());
         }
         else
         {
-            Owner.sendPacket(PacketCreator.addCard(true, cardid, CardMaxCount));
+            await Owner.SendPacket(PacketCreator.addCard(true, cardid, CardMaxCount));
         }
     }
 

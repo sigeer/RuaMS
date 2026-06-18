@@ -34,10 +34,10 @@ public class MessengerHandler : ChannelHandlerBase
         _chatRoomService = chatRoomService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 string input;
@@ -69,7 +69,7 @@ public class MessengerHandler : ChannelHandlerBase
                     case 0x03:
                         if (player.ChatRoomId == 0)
                         {
-                            c.sendPacket(PacketCreator.messengerChat(player.getName() + " : This Maple Messenger is currently unavailable. Please quit this chat."));
+                            await c.SendPacket(PacketCreator.messengerChat(player.getName() + " : This Maple Messenger is currently unavailable. Please quit this chat."));
                         }
                         else if (true)
                         {
@@ -81,7 +81,7 @@ public class MessengerHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            c.sendPacket(PacketCreator.messengerChat(player.getName() + " : You cannot have more than 3 people in the Maple Messenger"));
+                            await c.SendPacket(PacketCreator.messengerChat(player.getName() + " : You cannot have more than 3 people in the Maple Messenger"));
                         }
                         break;
                     case 0x05:

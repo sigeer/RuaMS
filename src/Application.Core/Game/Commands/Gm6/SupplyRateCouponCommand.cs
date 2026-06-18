@@ -7,16 +7,16 @@ public class SupplyRateCouponCommand : CommandBase
         Description = "Set availability of coupons in Cash Shop.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.dropMessage(5, "Syntax: !supplyratecoupon <yes|no>");
+            await player.Pink("Syntax: !supplyratecoupon <yes|no>");
             return;
         }
 
         YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS = !paramsValue[0].Equals("no", StringComparison.OrdinalIgnoreCase);
-        player.dropMessage(5, "Rate coupons are now " + (YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS ? "enabled" : "disabled") + " for purchase at the Cash Shop.");
+        await player.Pink("Rate coupons are now " + (YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS ? "enabled" : "disabled") + " for purchase at the Cash Shop.");
     }
 }

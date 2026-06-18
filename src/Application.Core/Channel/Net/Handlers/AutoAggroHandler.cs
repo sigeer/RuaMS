@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AutoAggroHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.isHidden())
@@ -39,7 +39,7 @@ public class AutoAggroHandler : ChannelHandlerBase
         var monster = map.getMonsterByOid(oid);
         if (monster != null)
         {
-            monster.aggroAutoAggroUpdate(player);
+            await monster.aggroAutoAggroUpdate(player);
         }
     }
 }

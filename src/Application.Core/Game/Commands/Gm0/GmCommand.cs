@@ -1,5 +1,4 @@
 using Application.Core.Managers;
-using tools;
 
 namespace Application.Core.Game.Commands.Gm0;
 
@@ -18,19 +17,19 @@ public class GmCommand : CommandBase
                 "Do not ask if you can receive help, just state your issue.",
                 "Do not say 'I have a bug to report', just state it.",
         };
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override async Task Execute(IChannelClient c, string[] paramValues)
     {
         var player = c.OnlinedCharacter;
         if (paramValues.Length < 1 || paramValues[0].Length < 3)
         { // #goodbye 'hi'
-            player.dropMessage(5, "Your message was too short. Please provide as much detail as possible.");
+            await player.Pink("Your message was too short. Please provide as much detail as possible.");
             return;
         }
         string message = player.getLastCommandMessage();
         c.CurrentServer.NodeService.SendDropMessage(-1, "[GM Message]:" + CharacterManager.makeMapleReadable(player.getName()) + ": " + message, true);
         c.CurrentServer.NodeService.SendDropMessage(1, message, true);
         log.Information("{CharacterName}: {Message}", CharacterManager.makeMapleReadable(player.getName()), message);
-        player.dropMessage(5, "Your message '" + message + "' was sent to GMs.");
-        player.dropMessage(5, tips[Randomizer.nextInt(tips.Length)]);
+        await player.Pink("Your message '" + message + "' was sent to GMs.");
+        await player.Pink(tips[Randomizer.nextInt(tips.Length)]);
     }
 }

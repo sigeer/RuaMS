@@ -1,18 +1,13 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
-using Application.Core.Scripting.Infrastructure;
 using Application.Resources.Messages;
-using Application.Shared.Events;
 using Application.Shared.Net.Logging;
 using Application.Utility.Performance;
-using client.inventory;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting;
 using scripting.npc;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -60,7 +55,7 @@ namespace Application.Core.Channel.Net
             {
                 try
                 {
-                    RemovePlayer(Character, IsServerTransition);
+                    await RemovePlayer(Character, IsServerTransition);
 
                     if (Channel != -1 && !isShutdown)
                     {
@@ -68,7 +63,7 @@ namespace Application.Core.Channel.Net
                         {
                             if (!fromCashShop)
                             {
-                                Character.forfeitExpirableQuests();    //This is for those quests that you have to stay logged in for a certain amount of time
+                                await Character.forfeitExpirableQuests();    //This is for those quests that you have to stay logged in for a certain amount of time
 
                                 //if (guild != null)
                                 //{
@@ -115,7 +110,7 @@ namespace Application.Core.Channel.Net
                     IsServerTransition = false;
                 }
             }
-            Dispose();
+            await DisposeAsync();
 
             _isDisconnecting = false;
         }
@@ -125,27 +120,31 @@ namespace Application.Core.Channel.Net
         /// </summary>
         /// <param name="player"></param>
         /// <param name="serverTransition"></param>
-        private static void RemovePlayer(Player player, bool serverTransition)
+        private static async Task RemovePlayer(Player player, bool serverTransition)
         {
-            player.cancelMagicDoor();
-            player.cancelAllBuffs(true);
+            await player.cancelMagicDoor();
+            await player.cancelAllBuffs(true);
             player.cancelAllDebuffs();
-            player.unregisterChairBuff();
+            await player.unregisterChairBuff();
 
-            player.closePlayerInteractions();
+            await player.closePlayerInteractions();
             player.closePartySearchInteractions();
 
             if (!serverTransition)
             {
-                player.getEventInstance()?.playerDisconnected(player);
+                var eim = player.getEventInstance();
+                if (eim != null)
+                {
+                    await eim.playerDisconnected(player);
+                }
 
-                player.Bag.ClearWhenLogout();
+                await player.Bag.ClearWhenLogout();
             }
 
             if (player.getMap() != null)
             {
                 int mapId = player.getMapId();
-                player.getMap().removePlayer(player);
+                await player.getMap().removePlayer(player);
                 if (MapId.isDojo(mapId))
                 {
                     player.getChannelServer().freeDojoSectionIfEmpty(mapId);
@@ -153,13 +152,13 @@ namespace Application.Core.Channel.Net
             }
         }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
-            base.Dispose();
+            await base.DisposeAsync();
             // player hard reference removal thanks to Steve (kaito1410)
             if (this.Character != null)
             {
-                this.Character.Dispose(); // clears schedules and stuff
+                await this.Character.DisposeAsync(); // clears schedules and stuff
             }
 
             this.AccountEntity = null;
@@ -169,19 +168,19 @@ namespace Application.Core.Channel.Net
 
 
 
-        public override void ForceDisconnect()
+        public override async Task ForceDisconnect()
         {
-            Disconnect(true);
+            await Disconnect(true);
         }
 
-        protected override void CloseSessionInternal()
+        protected override async Task CloseSessionInternal()
         {
             if (AccountEntity == null)
                 return;
 
             CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
-            Disconnect(false);
+            await Disconnect(false);
         }
 
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
@@ -191,18 +190,18 @@ namespace Application.Core.Channel.Net
             {
                 CurrentServer.Send(w =>
                 {
-                    ProcessPacket(msg);
+                    _ = ProcessPacket(msg);
                 });
             }
             else
             {
                 Character.MapModel.Send(m =>
                 {
-                    ProcessPacket(msg);
+                    _ = ProcessPacket(msg);
                 });
             }
         }
-        public override void ProcessPacket(InPacket packet)
+        public override async Task ProcessPacket(InPacket packet)
         {
             short opcode = packet.readShort();
             var handler = _packetProcessor.GetPacketHandler(opcode);
@@ -221,7 +220,7 @@ namespace Application.Core.Channel.Net
                 if (handler.ValidateState(this))
                 {
                     CurrentServer.NodeService.MonitorManager.LogPacketIfMonitored(this, opcode, packet.getBytes());
-                    handler.HandlePacket(packet, this);
+                    await handler.HandlePacket(packet, this);
                 }
             }
             else
@@ -231,9 +230,9 @@ namespace Application.Core.Channel.Net
             }
         }
 
-        public void enableCSActions()
+        public Task enableCSActions()
         {
-            sendPacket(PacketCreator.enableCSUse(OnlinedCharacter));
+            return SendPacket(PacketCreator.enableCSUse(OnlinedCharacter));
         }
 
         AbstractPlayerInteraction? _pi;
@@ -258,35 +257,32 @@ namespace Application.Core.Channel.Net
             lastNpcClick = 0;
         }
 
-        public void OpenNpc(int npcid, string? script = null)
-        {
-            OnlinedCharacter.OpenNpc(npcid, script);
-        }
-        public void closePlayerScriptInteractions()
+        public Task closePlayerScriptInteractions()
         {
             //this.removeClickedNPC();
             //NPCConversationManager?.dispose();
+            return Task.CompletedTask;
         }
 
-        private void announceDisableServerMessage()
+        private async Task announceDisableServerMessage()
         {
             if (!this.getChannelServer().ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
             {
-                sendPacket(PacketCreator.serverMessage(""));
+                await SendPacket(PacketCreator.serverMessage(""));
             }
         }
-        public void announceServerMessage()
+        public Task announceServerMessage()
         {
-            sendPacket(PacketCreator.serverMessage(this.CurrentServer.WorldServerMessage));
+            return SendPacket(PacketCreator.serverMessage(this.CurrentServer.WorldServerMessage));
         }
 
-        public void announceHint(string msg, int length)
+        public async Task announceHint(string msg, int length)
         {
-            sendPacket(PacketCreator.sendHint(msg, length, 10));
-            sendPacket(PacketCreator.enableActions());
+            await SendPacket(PacketCreator.sendHint(msg, length, 10));
+            await SendPacket(PacketCreator.enableActions());
         }
 
-        public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
+        public async Task announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             long timeNow = CurrentServer.Node.getCurrentTime();
             int targetHash = OnlinedCharacter.getTargetHpBarHash();
@@ -296,8 +292,8 @@ namespace Application.Core.Channel.Net
                 if (timeNow - OnlinedCharacter.getTargetHpBarTime() >= 5 * 1000)
                 {
                     // is there a way to INTERRUPT this annoying thread running on the client that drops the boss bar after some time at every attack?
-                    announceDisableServerMessage();
-                    sendPacket(packet);
+                    await announceDisableServerMessage();
+                    await SendPacket(packet);
 
                     OnlinedCharacter.setTargetHpBarHash(mobHash);
                     OnlinedCharacter.setTargetHpBarTime(timeNow);
@@ -305,8 +301,8 @@ namespace Application.Core.Channel.Net
             }
             else
             {
-                announceDisableServerMessage();
-                sendPacket(packet);
+                await announceDisableServerMessage();
+                await SendPacket(packet);
 
                 OnlinedCharacter.setTargetHpBarTime(timeNow);
             }
@@ -317,44 +313,40 @@ namespace Application.Core.Channel.Net
             return CurrentServer.Node.Transport.GainCharacterSlot(AccountId);
         }
 
-        public void ChangeChannel(int channel)
+        public async Task ChangeChannel(int channel)
         {
             if (Character == null)
                 return;
 
             if (Character.isBanned())
             {
-                Disconnect(false, false);
+                await Disconnect(false, false);
                 return;
             }
             if (!Character.isAlive() || FieldLimit.CANNOTMIGRATE.check(Character.getMap().getFieldLimit()))
             {
-                sendPacket(PacketCreator.enableActions());
+                await SendPacket(PacketCreator.enableActions());
                 return;
             }
             else if (MiniDungeonInfo.isDungeonMap(Character.getMapId()))
             {
-                Character.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
-                sendPacket(PacketCreator.enableActions());
+                await Character.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
+                await SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             var socket = CurrentServer.GetChannelEndPoint(channel);
             if (socket == null)
             {
-                Character.Popup(nameof(ClientMessage.ChangeChannel_ChannelDisabled), channel.ToString());
-                sendPacket(PacketCreator.enableActions());
+                await Character.Popup(nameof(ClientMessage.ChangeChannel_ChannelDisabled), channel.ToString());
+                await SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             try
             {
-                Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
-                    .ContinueWith(t =>
-                    {
-                        
-                        CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
-                    });
+                await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel);
+                await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
             }
             catch (IOException e)
             {
@@ -366,29 +358,26 @@ namespace Application.Core.Channel.Net
         /// 离开商城
         /// </summary>
         /// <param name="c"></param>
-        public void LeaveCashShop()
+        public async Task LeaveCashShop()
         {
             if (Character == null)
                 return;
 
             if (!Character.getCashShop().isOpened())
             {
-                Disconnect(false, false);
+                await Disconnect(false, false);
                 return;
             }
             var socket = CurrentServer.getIP();
             if (socket == null)
             {
-                enableCSActions();
+                await enableCSActions();
                 return;
             }
             Character.getCashShop().open(false);
 
-            Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel)
-                .ContinueWith(t =>
-                {
-                    CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
-                });
+            await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel);
+            await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
         }
 
         int csattempt = 0;

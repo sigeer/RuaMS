@@ -1,7 +1,4 @@
 using Application.Core.scripting.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -15,8 +12,8 @@ namespace Application.Plugin.Script.Npc
                 "避难准备都做好了，所有的人都上了方舟。避难船飞行的时候就只有听天由命了，没啥可担心的。准备得差不多就该向金银岛出发了。",
                 "战神的同伴们？他们……已经去找黑魔法师了。在我们避难的时候，他们打算阻止黑魔法师的进攻……什么？你也要去找黑魔法师？不行！你伤得太重，跟我们一起吧！"
                 ]);
-            setQuestProgress(21000, 21002, 1);
-            showIntro("Effect/Direction1.img/aranTutorial/Trio");
+            await setQuestProgress(21000, 21002, 1);
+            await showIntro("Effect/Direction1.img/aranTutorial/Trio");
         }
 
         // Npc: 1202000 
@@ -33,9 +30,9 @@ namespace Application.Plugin.Script.Npc
                         new SpeechText("……你在说什么？你到底是谁？", 2),
                         new SpeechText("等等……我是谁？我怎么什么都想不起来……啊……！头好疼！", 2),
                         ]);
-                    showIntro("Effect/Direction1.img/aranTutorial/face");
-                    showIntro("Effect/Direction1.img/aranTutorial/ClickLilin");
-                    updateAreaInfo(21019, "helper=clear");
+                    await showIntro("Effect/Direction1.img/aranTutorial/face");
+                    await showIntro("Effect/Direction1.img/aranTutorial/ClickLilin");
+                    await updateAreaInfo(21019, "helper=clear");
                 }
                 else
                 {
@@ -48,8 +45,8 @@ namespace Application.Plugin.Script.Npc
                         new SpeechText("我叫#p1201000#，属于里恩一族。里恩一族从很久以前就遵照预言在这里等待着英雄的归来。然后……我们终于发现了你。就在这个地方……", 8),
                         new SpeechText("我是不是一次说了太多？理解起来有些困难？没关系，慢慢你就会明白……#b咱们赶紧回村子里吧#k。回村子的路上，我再慢慢給你解释。", 8),
                         ]);
-                    spawnGuide();
-                    warp(140090100, 0);
+                    await spawnGuide();
+                    await warp(140090100, 0);
                 }
             }
             else
@@ -87,7 +84,7 @@ namespace Application.Plugin.Script.Npc
                     case 7:
                     case 8:
                     case 9:
-                        guideHint(option + 10);
+                        await guideHint(option + 10);
                         break;
                     default:
                         break;

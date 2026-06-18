@@ -7,22 +7,22 @@ public class GetAccCommand : CommandBase
         Description = "Show account name of an online player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !getacc <playername>");
+            await player.Yellow("Syntax: !getacc <playername>");
             return;
         }
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
-            player.message(victim.getName() + "'s account name is " + victim.getClient().AccountEntity!.Name + ".");
+            await player.Pink(victim.getName() + "'s account name is " + victim.getClient().AccountEntity!.Name + ".");
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this world.");
+            await player.Pink("Player '" + paramsValue[0] + "' could not be found on this world.");
         }
     }
 }

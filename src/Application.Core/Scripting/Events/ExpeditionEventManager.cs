@@ -1,8 +1,6 @@
 using Application.Core.Channel;
-using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Resources.Messages;
 
 namespace Application.Core.Scripting.Events
 {
@@ -18,7 +16,7 @@ namespace Application.Core.Scripting.Events
             return new ExpeditionEventInstanceManager(this, instanceName);
         }
 
-        
+
 
     }
 }

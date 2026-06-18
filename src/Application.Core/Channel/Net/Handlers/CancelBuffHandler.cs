@@ -29,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelBuffHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int sourceid = p.readInt();
 
@@ -44,11 +44,11 @@ public class CancelBuffHandler : ChannelHandlerBase
             case WindArcher.HURRICANE:
             case Evan.FIRE_BREATH:
             case Evan.ICE_BREATH:
-                c.OnlinedCharacter.BroadcastMap(PacketCreator.skillCancel(c.OnlinedCharacter, sourceid), c.OnlinedCharacter.Id);
+                await c.OnlinedCharacter.BroadcastMap(PacketCreator.skillCancel(c.OnlinedCharacter, sourceid), c.OnlinedCharacter.Id);
                 break;
 
             default:
-                c.OnlinedCharacter.cancelEffect(SkillFactory.GetSkillTrust(sourceid).getEffect(1), false);
+                await c.OnlinedCharacter.cancelEffect(SkillFactory.GetSkillTrust(sourceid).getEffect(1), false);
                 break;
         }
     }

@@ -24,7 +24,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DenyPartyRequestHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var value = p.readByte();
         string[] cname = p.readString().Split("PS: ");

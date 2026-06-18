@@ -13,7 +13,7 @@ namespace Application.Core.Game.Players.Tickables
             Next = chr.getChannelServer().Node.getCurrentTime() + 3_000;
         }
 
-        protected override void Process(long now)
+        protected override async Task Process(long now)
         {
             if (_chr.JobModel == Job.DARKKNIGHT)
             {
@@ -24,8 +24,8 @@ namespace Application.Core.Game.Players.Tickables
                     var buffEffect = BerserkX.getEffect(skilllevel);
                     var berserk = (_chr.HP * 100 / _chr.ActualMaxHP) < buffEffect.getX();
 
-                    _chr.sendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
-                    _chr.BroadcastMap(PacketCreator.showBerserk(_chr.Id, buffEffect.SkillLevel, berserk), _chr.Id);
+                    await _chr.SendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
+                    await _chr.BroadcastMap(PacketCreator.showBerserk(_chr.Id, buffEffect.SkillLevel, berserk), _chr.Id);
                 }
             }
         }

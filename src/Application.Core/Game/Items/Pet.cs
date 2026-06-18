@@ -85,25 +85,25 @@ public class Pet : Item
         return 3;
     }
 
-    public void addPetAttribute(Player owner, PetAttribute flag)
+    public async Task addPetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute |= (int)flag;
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
         {
-            owner.forceUpdateItem(petz);
+            await owner.forceUpdateItem(petz);
         }
     }
 
-    public void removePetAttribute(Player owner, PetAttribute flag)
+    public async Task removePetAttribute(Player owner, PetAttribute flag)
     {
         PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
 
         var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
         if (petz != null)
         {
-            owner.forceUpdateItem(petz);
+            await owner.forceUpdateItem(petz);
         }
     }
 

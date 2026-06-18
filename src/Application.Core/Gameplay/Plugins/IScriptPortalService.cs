@@ -1,5 +1,3 @@
-using Application.Core.Channel;
-using Application.Core.Game.Maps;
 using server.maps;
 
 namespace Application.Core.Gameplay.Plugins
@@ -9,6 +7,6 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptPortalService : IPluginServiceBase
     {
-        bool Enter(IChannelClient c, Portal p);
+        Task<bool> Enter(IChannelClient c, Portal p);
     }
 }

@@ -7,7 +7,7 @@ public class ShowMoveLifeCommand : CommandBase
         Description = "Toggle show move life in console.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE = !YamlConfig.config.server.USE_DEBUG_SHOW_RCVD_MVLIFE;
     }

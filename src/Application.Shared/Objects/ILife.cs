@@ -21,7 +21,7 @@ namespace Application.Shared.Objects
         int ActualMaxHP { get; }
         int ActualMaxMP { get; }
 
-        void ChangeMaxHP(int value);
+        Task ChangeMaxHP(int value);
         void ChangeMaxMP(int value);
 
         /// <summary>
@@ -30,15 +30,15 @@ namespace Application.Shared.Objects
         /// <param name="deltaValue"></param>
         /// <param name="useCheck">是否校验当前血量</param>
         /// <returns>校验当前血量时，如果当前血量不足返回false</returns>
-        bool ChangeHP(int deltaValue, bool useCheck = true);
+        Task<bool> ChangeHP(int deltaValue, bool useCheck = true);
         bool ChangeMP(int deltaValue, bool useCheck = true);
-        void SetHP(int value);
+        Task SetHP(int value);
         void SetMP(int value);
-        void KilledBy(ILife killer);
+        Task KilledBy(ILife killer);
         /// <summary>
         /// 修改HP 并立即发送数据包更新客户端
         /// </summary>
         /// <param name="value"></param>
-        void UpdateHP(int value);
+        Task UpdateHP(int value);
     }
 }

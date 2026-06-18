@@ -22,7 +22,6 @@
 
 
 using Application.Core.Client.inventory;
-using client.inventory;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -30,7 +29,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class InventorySortHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var unknown = p.readInt();
@@ -38,28 +37,28 @@ public class InventorySortHandler : ChannelHandlerBase
 
         if (!YamlConfig.config.server.USE_ITEM_SORT)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         sbyte invType = p.ReadSByte();
         if (invType < 1 || invType > 5)
         {
-            c.Disconnect(false, false);
+            await c.Disconnect(false, false);
             return;
         }
 
         var inventory = c.OnlinedCharacter.GetInventory(InventoryTypeUtils.getByType(invType));
         if (inventory == null)
         {
-            c.Disconnect(false);
+            await c.Disconnect(false);
             return;
         }
 
         var ops = new BagInventorySorter(inventory).Sort();
-        chr.SyncClientInventory(ops, true);
+        await chr.SyncClientInventory(ops, true);
 
-        c.sendPacket(PacketCreator.finishedSort2(invType));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.finishedSort2(invType));
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

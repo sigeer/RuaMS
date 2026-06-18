@@ -25,8 +25,6 @@
 
 using Application.Core.Game.Skills;
 using client.autoban;
-using constants.game;
-using System.Threading.Tasks;
 using tools;
 
 namespace client.processor.stat;
@@ -36,11 +34,11 @@ namespace client.processor.stat;
  */
 public class AssignSPProcessor
 {
-    public static bool CanAssinSP(Player player, int skillid)
+    public static async Task<bool> CanAssinSP(Player player, int skillid)
     {
         if (skillid == Aran.HIDDEN_FULL_DOUBLE || skillid == Aran.HIDDEN_FULL_TRIPLE || skillid == Aran.HIDDEN_OVER_DOUBLE || skillid == Aran.HIDDEN_OVER_TRIPLE)
         {
-            player.sendPacket(PacketCreator.enableActions());
+            await player.SendPacket(PacketCreator.enableActions());
             return false;
         }
 
@@ -51,7 +49,7 @@ public class AssignSPProcessor
             player.Client.CurrentServer.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, player, "tried to packet edit in distributing sp.");
             player.Log.Warning("Chr {CharacterName} tried to use skill {SkillId} without it being in their job.", player.getName(), skillid);
 
-            player.Client.Disconnect(true, false);
+            await player.Client.Disconnect(true, false);
             return false;
         }
 
@@ -64,12 +62,12 @@ public class AssignSPProcessor
     /// <param name="player"></param>
     /// <param name="SPTo"></param>
     /// <param name="SPFrom"></param>
-    public static void ResetSkill(Player player, int SPTo, int SPFrom)
+    public static async Task ResetSkill(Player player, int SPTo, int SPFrom)
     {
         var skillSPTo = SkillFactory.GetSkillTrust(SPTo);
         var skillSPFrom = SkillFactory.GetSkillTrust(SPFrom);
 
-        if (!CanAssinSP(player, SPTo))
+        if (!await CanAssinSP(player, SPTo))
         {
             return;
         }
@@ -78,8 +76,8 @@ public class AssignSPProcessor
         var curLevelSPFrom = player.getSkillLevel(skillSPFrom);
         if (curLevel < skillSPTo.getMaxLevel() && curLevelSPFrom > 0)
         {
-            player.changeSkillLevel(skillSPFrom, (sbyte)(curLevelSPFrom - 1), player.getMasterLevel(skillSPFrom), -1);
-            player.changeSkillLevel(skillSPTo, (sbyte)(curLevel + 1), player.getMasterLevel(skillSPTo), -1);
+            await player.changeSkillLevel(skillSPFrom, (sbyte)(curLevelSPFrom - 1), player.getMasterLevel(skillSPFrom), -1);
+            await player.changeSkillLevel(skillSPTo, (sbyte)(curLevel + 1), player.getMasterLevel(skillSPTo), -1);
 
             // update macros, thanks to Arnah
             if ((curLevelSPFrom - 1) == 0)
@@ -116,17 +114,17 @@ public class AssignSPProcessor
                 }
                 if (updated)
                 {
-                    player.sendMacros();
+                    await player.sendMacros();
                 }
             }
         }
     }
-    public static void SPAssignAction(IChannelClient c, int skillid)
+    public static async Task SPAssignAction(IChannelClient c, int skillid)
     {
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
-            if (!CanAssinSP(c.OnlinedCharacter, skillid))
+            if (!await CanAssinSP(c.OnlinedCharacter, skillid))
             {
                 return;
             }
@@ -151,33 +149,33 @@ public class AssignSPProcessor
             {
                 if (!isBeginnerSkill)
                 {
-                    player.gainSp(-1, GameConstants.getSkillBook(skillid / 10000), false);
+                    await player.gainSp(-1, GameConstants.getSkillBook(skillid / 10000), false);
                 }
                 else
                 {
-                    player.sendPacket(PacketCreator.enableActions());
+                    await player.SendPacket(PacketCreator.enableActions());
                 }
                 if (skill.getId() == Aran.FULL_SWING)
                 {
-                    player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
-                    player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_FULL_DOUBLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
-                    player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_FULL_TRIPLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_FULL_DOUBLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_FULL_TRIPLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
                 }
                 else if (skill.getId() == Aran.OVER_SWING)
                 {
-                    player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
-                    player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_OVER_DOUBLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
-                    player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_OVER_TRIPLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_OVER_DOUBLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(SkillFactory.GetSkillTrust(Aran.HIDDEN_OVER_TRIPLE), player.getSkillLevel(skill), player.getMasterLevel(skill), player.getSkillExpiration(skill));
                 }
                 else
                 {
-                    player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
+                    await player.changeSkillLevel(skill, (sbyte)(curLevel + 1), player.getMasterLevel(skill), player.getSkillExpiration(skill));
                 }
             }
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
     }
 }

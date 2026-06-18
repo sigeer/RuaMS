@@ -22,7 +22,6 @@
 
 
 using Application.Core.Channel.DataProviders;
-using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
@@ -36,7 +35,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemRewardHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var slot = p.readShort();
         var itemId = p.readInt(); // will load from xml I don't care.
@@ -53,13 +52,13 @@ public class ItemRewardHandler : ChannelHandlerBase
         {
             if (!InventoryManipulator.checkSpace(c, reward.itemid, reward.quantity, ""))
             {
-                c.sendPacket(PacketCreator.getShowInventoryFull());
+                await c.SendPacket(PacketCreator.getShowInventoryFull());
                 break;
             }
             if (Randomizer.nextInt(rewards.Key) < reward.prob)
             {
-                c.OnlinedCharacter.GainItem(reward.itemid, reward.quantity, expires: reward.period * 60 * 60 * 10);
-                InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, false, false);
+                await c.OnlinedCharacter.GainItem(reward.itemid, reward.quantity, expires: reward.period * 60 * 60 * 10);
+                await InventoryManipulator.removeById(c, InventoryType.USE, itemId, 1, false, false);
                 if (reward.worldmsg != null)
                 {
                     string msg = reward.worldmsg;
@@ -70,6 +69,6 @@ public class ItemRewardHandler : ChannelHandlerBase
                 break;
             }
         }
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

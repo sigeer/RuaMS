@@ -1,5 +1,3 @@
-using Application.Core.Channel;
-
 namespace Application.Core.Gameplay.Plugins
 {
     /// <summary>

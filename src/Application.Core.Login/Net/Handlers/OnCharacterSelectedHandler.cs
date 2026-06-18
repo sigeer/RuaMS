@@ -18,7 +18,7 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string hostString, string macs)
+        protected virtual async Task Process(ILoginClient c, int charId, string hostString, string macs)
         {
             if (c.AccountEntity == null)
                 return;
@@ -31,7 +31,7 @@ namespace Application.Core.Login.Net.Handlers
             catch (ArgumentException e)
             {
                 _logger.LogWarning(e, "Invalid host string: {Host}", hostString);
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(17));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(17));
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace Application.Core.Login.Net.Handlers
             AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity.Id, hwid);
             if (res != AntiMulticlientResult.SUCCESS)
             {
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
                 return;
             }
 
@@ -60,7 +60,7 @@ namespace Application.Core.Login.Net.Handlers
 
             if (_server.IsWorldCapacityFull())
             {
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace Application.Core.Login.Net.Handlers
             var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
             if (socket == null)
             {
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace Application.Core.Login.Net.Handlers
 
             try
             {
-                c.sendPacket(LoginPacketCreator.getServerIP(socket, charId));
+                await c.SendPacket(LoginPacketCreator.getServerIP(socket, charId));
             }
             catch (Exception e)
             {
@@ -101,16 +101,16 @@ namespace Application.Core.Login.Net.Handlers
         }
 
 
-        protected virtual void Process(ILoginClient c, int charId, string pic, string hostString, string macs)
+        protected virtual async Task Process(ILoginClient c, int charId, string pic, string hostString, string macs)
         {
             if (!c.CheckPic(pic))
             {
-                c.sendPacket(LoginPacketCreator.WrongPic());
+                await c.SendPacket(LoginPacketCreator.WrongPic());
                 return;
             }
 
 
-            base.Process(c, charId, hostString, macs);
+            await base.Process(c, charId, hostString, macs);
         }
     }
 }

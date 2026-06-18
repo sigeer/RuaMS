@@ -57,18 +57,18 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(res.Request.LeaderId)
-                    ?.Send(m =>
+                    ?.Send(async m =>
                     {
                         var player = m.getCharacterById(res.Request.LeaderId);
                         if (player != null)
                         {
                             player.Party = res.TeamDto.Id;
 
-                            player.sendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
+                            await player.SendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
 
-                            player.HandleTeamMemberCountChanged(null);
+                            await player.HandleTeamMemberCountChanged(null);
 
-                            player.sendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, player));
+                            await player.SendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, player));
                         }
                     });
 

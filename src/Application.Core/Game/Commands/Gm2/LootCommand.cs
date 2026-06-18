@@ -1,6 +1,7 @@
 using Application.Core.Game.Maps;
 
 namespace Application.Core.Game.Commands.Gm2;
+
 public class LootCommand : CommandBase
 {
     public LootCommand() : base(2, "loot")
@@ -8,15 +9,15 @@ public class LootCommand : CommandBase
         Description = "Loots all items that belong to you.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        c.OnlinedCharacter.getMap().ProcessMapObject(x => x.getType() == MapObjectType.ITEM, o =>
+        await c.OnlinedCharacter.getMap().ProcessMapObject(x => x.getType() == MapObjectType.ITEM, async o =>
         {
             if (o is MapItem mapItem)
             {
                 if (mapItem.getOwnerId() == c.OnlinedCharacter.getId() || mapItem.getOwnerId() == c.OnlinedCharacter.getPartyId())
                 {
-                    c.OnlinedCharacter.pickupItem(mapItem);
+                    await c.OnlinedCharacter.pickupItem(mapItem);
                 }
             }
         });

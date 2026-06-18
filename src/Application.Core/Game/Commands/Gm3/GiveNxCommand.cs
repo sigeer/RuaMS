@@ -8,12 +8,12 @@ public class GiveNxCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.GiveNxCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.GiveNxCommand_Syntax));
             return;
         }
 
@@ -64,11 +64,11 @@ public class GiveNxCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.getCashShop().gainCash(type, value);
-            player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+            await player.Yellow(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
         }
         else
         {
-            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
         }
     }
 }

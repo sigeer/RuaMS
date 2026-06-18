@@ -11,7 +11,7 @@ public class ReloadShopsCommand : CommandBase
         _shopManager = shopManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         _shopManager.reloadShops();
     }

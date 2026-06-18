@@ -43,7 +43,7 @@ namespace Application.Module.Fishing.Channel
             }
         }
 
-        protected override void HandleRun()
+        protected override async Task HandleRun()
         {
             double[] fishingLikelihoods = fetchFishingLikelihood();
             double yearLikelihood = fishingLikelihoods[0], timeLikelihood = fishingLikelihoods[1];
@@ -54,7 +54,7 @@ namespace Application.Module.Fishing.Channel
                 foreach (Player chr in fishingAttemptersList)
                 {
                     int baitLevel = UnregisterFisherPlayer(chr);
-                    doFishing(chr, baitLevel, yearLikelihood, timeLikelihood);
+                    await doFishing(chr, baitLevel, yearLikelihood, timeLikelihood);
                 }
             }
         }
@@ -79,21 +79,21 @@ namespace Application.Module.Fishing.Channel
             return new double[] { yearLikelihood, timeLikelihood };
         }
 
-        private bool hitFishingTime(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+        private async Task<bool> hitFishingTime(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
         {
             double baitLikelihood = 0.0002 * chr.getChannelServer().WorldFishingRate * baitLevel;   // can improve 10.0 at "max level 50000" on rate 1x
 
             if (YamlConfig.config.server.USE_DEBUG)
             {
-                chr.dropMessage(5, "----- FISHING RESULT -----");
-                chr.dropMessage(5, "Likelihoods - Year: " + yearLikelihood + " Time: " + timeLikelihood + " Meso: " + baitLikelihood);
-                chr.dropMessage(5, "Score rolls - Year: " + (0.23 * yearLikelihood) + " Time: " + (0.77 * timeLikelihood) + " Meso: " + baitLikelihood);
+                await chr.dropMessage(5, "----- FISHING RESULT -----");
+                await chr.dropMessage(5, "Likelihoods - Year: " + yearLikelihood + " Time: " + timeLikelihood + " Meso: " + baitLikelihood);
+                await chr.dropMessage(5, "Score rolls - Year: " + (0.23 * yearLikelihood) + " Time: " + (0.77 * timeLikelihood) + " Meso: " + baitLikelihood);
             }
 
             return (0.23 * yearLikelihood) + (0.77 * timeLikelihood) + (baitLikelihood) > 57.777;
         }
 
-        public void doFishing(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
+        public async Task doFishing(Player chr, int baitLevel, double yearLikelihood, double timeLikelihood)
         {
             // thanks Fadi, Vcoc for suggesting a custom fishing system
 
@@ -104,18 +104,18 @@ namespace Application.Module.Fishing.Channel
 
             if (!MapId.isFishingArea(chr.getMapId()))
             {
-                chr.dropMessage("You are not in a fishing area!");
+                await chr.Notice("You are not in a fishing area!");
                 return;
             }
 
             if (chr.getLevel() < 30)
             {
-                chr.dropMessage(5, "You must be above level 30 to fish!");
+                await chr.dropMessage(5, "You must be above level 30 to fish!");
                 return;
             }
 
             string fishingEffect;
-            if (!hitFishingTime(chr, baitLevel, yearLikelihood, timeLikelihood))
+            if (!await hitFishingTime(chr, baitLevel, yearLikelihood, timeLikelihood))
             {
                 fishingEffect = "Effect/BasicEff.img/Catch/Fail";
             }
@@ -129,13 +129,13 @@ namespace Application.Module.Fishing.Channel
                 {
                     case 0:
                         int mesoAward = (int)((1400.0 * Randomizer.nextDouble() + 1201) * chr.getMesoRate() + (15 * chr.getLevel() / 5));
-                        chr.GainMeso(mesoAward, GainItemShow.ShowInChat, true);
+                        await chr.GainMeso(mesoAward, GainItemShow.ShowInChat, true);
 
                         rewardStr = mesoAward + " mesos.";
                         break;
                     case 1:
                         int expAward = (int)((645.0 * Randomizer.nextDouble() + 620.0) * chr.getExpRate() + (15 * chr.getLevel() / 4));
-                        chr.gainExp(expAward, true, true);
+                        await chr.gainExp(expAward, true, true);
 
                         rewardStr = expAward + " EXP.";
                         break;
@@ -145,21 +145,21 @@ namespace Application.Module.Fishing.Channel
 
                         if (chr.canHold(itemid))
                         {
-                            chr.GainItem(itemid, 1, show: GainItemShow.ShowInChat);
+                            await chr.GainItem(itemid, 1, show: GainItemShow.ShowInChat);
                         }
                         else
                         {
-                            chr.showHint("Couldn't catch a(n) #r" + chr.Client.CurrentCulture.GetItemName(itemid) + "#k due to #e#b" + ItemConstants.getInventoryType(itemid) + "#k#n inventory limit.");
+                            await chr.showHint("Couldn't catch a(n) #r" + chr.Client.CurrentCulture.GetItemName(itemid) + "#k due to #e#b" + ItemConstants.getInventoryType(itemid) + "#k#n inventory limit.");
                             rewardStr += ".. but has goofed up due to full inventory.";
                         }
                         break;
                 }
 
-                chr.getMap().LightBlue(chr.getName() + " found " + rewardStr);
+                await chr.getMap().LightBlue(chr.getName() + " found " + rewardStr);
             }
 
-            chr.sendPacket(PacketCreator.showInfo(fishingEffect));
-            chr.getMap().broadcastMessage(chr, PacketCreator.showForeignInfo(chr.getId(), fishingEffect), false);
+            await chr.SendPacket(PacketCreator.showInfo(fishingEffect));
+            await chr.getMap().broadcastMessage(chr, PacketCreator.showForeignInfo(chr.getId(), fishingEffect), false);
         }
 
         public int getRandomItem()

@@ -8,7 +8,7 @@ namespace Application.Core.Login.Client
         MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         int CurrentHistoryId { get; set; }
-        void Disconnect();
+        Task Disconnect();
 
         void updateLoginState(sbyte newState);
         bool CanBypassPin();
@@ -20,7 +20,7 @@ namespace Application.Core.Login.Client
         LoginResultCode Login(string login, string pwd, Hwid nibbleHwid);
         LoginResultCode FinishLogin();
         bool CheckChar(int accid);
-        void SendCharList();
+        Task SendCharList();
         List<CharacterViewObject> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();

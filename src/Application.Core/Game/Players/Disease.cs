@@ -24,7 +24,7 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void announceDiseases()
+        public async Task announceDiseases()
         {
             // Poison damage visibility and diseases status visibility, extended through map transitions thanks to Ronan
             if (!this.isLoggedinWorld())
@@ -42,16 +42,16 @@ namespace Application.Core.Game.Players
 
                 if (di.Disease != Disease.SLOW)
                 {
-                    BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
+                    await BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
                 }
                 else
                 {
-                    BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
+                    await BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
                 }
             }
         }
 
-        public void collectDiseases()
+        public async Task collectDiseases()
         {
             foreach (Player chr in MapModel.getAllPlayers())
             {
@@ -65,17 +65,17 @@ namespace Application.Core.Game.Players
 
                     if (disease != Disease.SLOW)
                     {
-                        this.sendPacket(PacketCreator.giveForeignDebuff(cid, debuff, skill));
+                        await this.SendPacket(PacketCreator.giveForeignDebuff(cid, debuff, skill));
                     }
                     else
                     {
-                        this.sendPacket(PacketCreator.giveForeignSlowDebuff(cid, debuff, skill));
+                        await this.SendPacket(PacketCreator.giveForeignSlowDebuff(cid, debuff, skill));
                     }
                 }
             }
         }
 
-        public void giveDebuff(Disease disease, MobSkill skill)
+        public async Task giveDebuff(Disease disease, MobSkill skill)
         {
             if (!hasDisease(disease) && getDiseasesSize() < 2)
             {
@@ -93,59 +93,59 @@ namespace Application.Core.Game.Players
 
                 if (disease == Disease.SEDUCE && chair.get() < 0)
                 {
-                    sitChair(-1);
+                    await sitChair(-1);
                 }
 
                 List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
-                sendPacket(PacketCreator.giveDebuff(debuff, skill));
+                await SendPacket(PacketCreator.giveDebuff(debuff, skill));
 
                 if (disease != Disease.SLOW)
                 {
-                    BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, skill), Id);
+                    await BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, skill), Id);
                 }
                 else
                 {
-                    BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill), Id);
+                    await BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill), Id);
                 }
             }
         }
 
-        public void dispelDebuff(Disease debuff)
+        public async Task dispelDebuff(Disease debuff)
         {
             if (hasDisease(debuff))
             {
                 long mask = (long)debuff.getValue();
-                sendPacket(PacketCreator.cancelDebuff(mask));
+                await SendPacket(PacketCreator.cancelDebuff(mask));
 
                 if (debuff != Disease.SLOW)
                 {
-                    BroadcastMap(PacketCreator.cancelForeignDebuff(Id, mask), Id);
+                    await BroadcastMap(PacketCreator.cancelForeignDebuff(Id, mask), Id);
                 }
                 else
                 {
-                    BroadcastMap(PacketCreator.cancelForeignSlowDebuff(Id), Id);
+                    await BroadcastMap(PacketCreator.cancelForeignSlowDebuff(Id), Id);
                 }
 
                 Diseases.Remove(debuff);
             }
         }
 
-        public void dispelDebuffs()
+        public async Task dispelDebuffs()
         {
-            dispelDebuff(Disease.CURSE);
-            dispelDebuff(Disease.DARKNESS);
-            dispelDebuff(Disease.POISON);
-            dispelDebuff(Disease.SEAL);
-            dispelDebuff(Disease.WEAKEN);
-            dispelDebuff(Disease.SLOW);    // thanks Conrad for noticing ZOMBIFY isn't dispellable
+            await dispelDebuff(Disease.CURSE);
+            await dispelDebuff(Disease.DARKNESS);
+            await dispelDebuff(Disease.POISON);
+            await dispelDebuff(Disease.SEAL);
+            await dispelDebuff(Disease.WEAKEN);
+            await dispelDebuff(Disease.SLOW);    // thanks Conrad for noticing ZOMBIFY isn't dispellable
         }
 
-        public void purgeDebuffs()
+        public async Task purgeDebuffs()
         {
-            dispelDebuff(Disease.SEDUCE);
-            dispelDebuff(Disease.ZOMBIFY);
-            dispelDebuff(Disease.CONFUSE);
-            dispelDebuffs();
+            await dispelDebuff(Disease.SEDUCE);
+            await dispelDebuff(Disease.ZOMBIFY);
+            await dispelDebuff(Disease.CONFUSE);
+            await dispelDebuffs();
         }
 
         public void cancelAllDebuffs()
@@ -154,21 +154,21 @@ namespace Application.Core.Game.Players
         }
 
 
-        public void ClearExpiredDisease(long now)
+        public async Task ClearExpiredDisease(long now)
         {
             var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= now).Select(x => x.Disease).ToList();
 
             foreach (var item in expired)
             {
-                dispelDebuff(item);
+                await dispelDebuff(item);
             }
         }
 
-        public void DebugListAllDisease()
+        public async Task DebugListAllDisease()
         {
-            Debug(6, string.Join(", ", Diseases.Values
-                    .Select(entry => $"type= {entry.Disease.name()}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
-            );
+            await Debug(6, string.Join(", ", Diseases.Values
+                      .Select(entry => $"type= {entry.Disease.name()}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
+              );
         }
     }
 }

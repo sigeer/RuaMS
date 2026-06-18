@@ -31,9 +31,9 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class LeftKnockbackHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        c.sendPacket(PacketCreator.leftKnockBack());
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.leftKnockBack());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

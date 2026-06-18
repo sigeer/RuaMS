@@ -40,7 +40,7 @@ public class AfterLoginHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         byte c2 = p.readByte();
         byte c3 = 5;
@@ -52,11 +52,11 @@ public class AfterLoginHandler : LoginHandlerBase
         {
             if (string.IsNullOrEmpty(c.AccountEntity?.Pin))
             {
-                c.sendPacket(LoginPacketCreator.registerPin());
+                await c.SendPacket(LoginPacketCreator.registerPin());
             }
             else
             {
-                c.sendPacket(LoginPacketCreator.requestPin());
+                await c.SendPacket(LoginPacketCreator.requestPin());
             }
         }
         else if (c2 == 1 && c3 == 0)
@@ -64,11 +64,11 @@ public class AfterLoginHandler : LoginHandlerBase
             string pin = p.readString();
             if (c.CheckPin(pin))
             {
-                c.sendPacket(LoginPacketCreator.pinAccepted());
+                await c.SendPacket(LoginPacketCreator.pinAccepted());
             }
             else
             {
-                c.sendPacket(LoginPacketCreator.requestPinAfterFailure());
+                await c.SendPacket(LoginPacketCreator.requestPinAfterFailure());
             }
         }
         else if (c2 == 2 && c3 == 0)
@@ -76,11 +76,11 @@ public class AfterLoginHandler : LoginHandlerBase
             string pin = p.readString();
             if (c.CheckPin(pin))
             {
-                c.sendPacket(LoginPacketCreator.registerPin());
+                await c.SendPacket(LoginPacketCreator.registerPin());
             }
             else
             {
-                c.sendPacket(LoginPacketCreator.requestPinAfterFailure());
+                await c.SendPacket(LoginPacketCreator.requestPinAfterFailure());
             }
         }
         else if (c2 == 0 && c3 == 5)

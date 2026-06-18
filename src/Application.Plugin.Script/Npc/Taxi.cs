@@ -24,8 +24,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getMeso() > cost)
                 {
-                    gainMeso(-cost);
-                    warp(options[option].map, 0);
+                    await gainMeso(-cost);
+                    await warp(options[option].map, 0);
                 }
                 else
                 {
@@ -87,8 +87,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainMeso(-cost);
-                    warp(105070001);
+                    await gainMeso(-cost);
+                    await warp(105070001);
                 }
             }
             else
@@ -118,8 +118,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getMeso() > v.Cost)
                 {
-                    gainMeso(-v.Cost);
-                    warp(v.ToMap, v.ToPortal);
+                    await gainMeso(-v.Cost);
+                    await warp(v.ToMap, v.ToPortal);
                 }
                 else
                 {
@@ -189,7 +189,7 @@ namespace Application.Plugin.Script.Npc
                     await SayOK($"好的，我将送你回到#b#m{fromMapID}##k");
                     if (fromMapID != -1)
                     {
-                        warp(fromMapID);
+                        await warp(fromMapID);
                     }
                     else
                     {
@@ -232,9 +232,9 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        gainMeso(-selectedMap.Fee);
+                        await gainMeso(-selectedMap.Fee);
                         getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
-                        warp(selectedMap.MapID, selectedMap.Portal);
+                        await warp(selectedMap.MapID, selectedMap.Portal);
                     }
                 }
                 else

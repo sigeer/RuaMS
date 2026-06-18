@@ -1,11 +1,5 @@
-using Application.Core.Channel.DataProviders;
-using Application.Core.scripting.npc;
 using Application.Resources.Messages;
-using Application.Scripting.JS;
-using Application.Templates.Providers;
 using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
-using server.quest;
 using System.Diagnostics;
 using System.Text;
 
@@ -17,12 +11,12 @@ public class SearchCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SearchCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.SearchCommand_Syntax));
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -74,7 +68,6 @@ public class SearchCommand : CommandBase
             sb.Append("#bNo ").Append(paramsValue[0].ToLower()).Append("s found.\r\n");
         }
 
-
-        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        await c.OnlinedCharacter.Dialog(sb.ToString());
     }
 }

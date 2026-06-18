@@ -8,7 +8,6 @@ using Application.Resources.Messages;
 using Application.Templates.Map;
 using server.maps;
 using tools;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.scripting.Events.Templates
 {
@@ -28,9 +27,20 @@ namespace Application.Core.scripting.Events.Templates
             EventTime = MapMonsterCarnivalTemplate.TimeDefault - 10;
         }
 
+
         public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
         {
             return new MonsterCarnivalEventManager(worldChannel, this);
+        }
+
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+            var pEim = eim as MonsterCarnivalEventInstanceManager;
+            var map = await pEim.GetEventMap();
+            map.allowSummonState(false);
+            await map.clearMapObjects();
+
+            await base.OnSetup(eim, level, lobbyId);
         }
         public override List<Player> GetEligibleParty(Player leader)
         {
@@ -98,22 +108,23 @@ namespace Application.Core.scripting.Events.Templates
             }
         }
         public virtual void OnBattlePrepare(MonsterCarnivalEventInstanceManager eim) { }
-        public virtual void OnBattleStarted(MonsterCarnivalEventInstanceManager pEim)
+        public virtual async Task OnBattleStarted(MonsterCarnivalEventInstanceManager pEim)
         {
-            pEim.EventMap.allowSummonState(true);
+            var map = await pEim.GetEventMap();
+            map.allowSummonState(true);
             foreach (var mc in pEim.getPlayers())
             {
                 var playerData = pEim.GetPlayerData(mc.Id)!;
 
                 mc.setTeam(playerData.TeamFlag);
-                mc.changeMap(pEim.EventMap, pEim.EventMap.GetInitPortal(playerData.TeamFlag));
-                mc.sendPacket(PacketCreator.startMonsterCarnival(playerData, pEim.GetPlayerTeamData(mc.Id)!, pEim.GetPlayerEnemyTeamData(mc.Id)!));
-                mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
+                await mc.changeMap(map, map.GetInitPortal(playerData.TeamFlag));
+                await mc.SendPacket(PacketCreator.startMonsterCarnival(playerData, pEim.GetPlayerTeamData(mc.Id)!, pEim.GetPlayerEnemyTeamData(mc.Id)!));
+                await mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
             }
         }
-        public override void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
-            base.OnPlayerUnregister(eim, chr);
+            await base.OnPlayerUnregister(eim, chr);
 
             chr.setTeam(-1);
 
@@ -123,53 +134,53 @@ namespace Application.Core.scripting.Events.Templates
                 case InstanceStatus.Prepare:
                 case InstanceStatus.InProgress:
                     var pEim = eim as MonsterCarnivalEventInstanceManager;
-                    eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
+                    await eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
                     if (eim.InstanceStatus != InstanceStatus.InProgress)
                     {
-                        eim.Dispose();
+                        await eim.DisposeAsync();
                     }
                     break;
                 default:
                     break;
             }
         }
-        public override void OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
         {
-            base.OnPlayerDied(eim, chr);
+            await base.OnPlayerDied(eim, chr);
 
             var pEim = eim as MonsterCarnivalEventInstanceManager;
             var playerData = pEim.GetPlayerData(chr.Id)!;
             var losing = Math.Min(playerData.AvailableCP, MapMonsterCarnivalTemplate.DeathCP);
-            pEim.GainCP(chr, -losing);
+            await pEim.GainCP(chr, -losing);
             foreach (var item in eim.getPlayers())
             {
-                item.sendPacket(PacketCreator.CPQ_PlayerDied(chr.Name, losing, playerData.TeamFlag));
+                await item.SendPacket(PacketCreator.CPQ_PlayerDied(chr.Name, losing, playerData.TeamFlag));
             }
         }
-        public override bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
+        public override Task<bool> OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
         {
-            return true;
+            return Task.FromResult(true);
         }
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            base.OnMobKilled(eim, mob, killer);
+            await base.OnMobKilled(eim, mob, killer);
 
             if (mob.getCP() > 0 && killer is Player chr)
             {
                 var pEim = eim as MonsterCarnivalEventInstanceManager;
-                pEim.GainCP(chr, mob.getCP());
+                await pEim.GainCP(chr, mob.getCP());
             }
         }
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             var e = (eim as MonsterCarnivalEventInstanceManager)!;
             switch (eim.InstanceStatus)
             {
                 case InstanceStatus.Recruitment:
-                    eim.Dispose();
+                    await eim.DisposeAsync();
                     break;
                 case InstanceStatus.Prepare:
-                    e.StartBattle();
+                    await e.StartBattle();
                     break;
                 case InstanceStatus.InProgress:
                     var team0 = e.Teams[0];
@@ -178,13 +189,13 @@ namespace Application.Core.scripting.Events.Templates
                     if (team0 == null || team1 == null)
                     {
                         // 数据不正常
-                        eim.Dispose();
+                        await eim.DisposeAsync();
                         return;
                     }
 
                     if (team0.TotalCP != team1.TotalCP)
                     {
-                        var map = eim.getInstanceMap(EntryMap);
+                        var map = await eim.getInstanceMap(EntryMap);
                         map?.killAllMonsters();
                         map?.allowSummonState(false);
 
@@ -197,24 +208,24 @@ namespace Application.Core.scripting.Events.Templates
                             var effect = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.EffectWin : MapMonsterCarnivalTemplate.EffectLose;
                             if (!string.IsNullOrEmpty(effect))
                             {
-                                chr.sendPacket(PacketCreator.showEffect(effect));
+                                await chr.SendPacket(PacketCreator.showEffect(effect));
                             }
 
                             var sound = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.SoundWin : MapMonsterCarnivalTemplate.SoundLose;
                             if (!string.IsNullOrEmpty(sound))
                             {
-                                chr.sendPacket(PacketCreator.playSound(sound));
+                                await chr.SendPacket(PacketCreator.playSound(sound));
                             }
 
-                            chr.dispelDebuffs();
+                            await chr.dispelDebuffs();
                         }
 
                         eim.Schedule(ClearPQ, MapMonsterCarnivalTemplate.TimeFinish * 1000);
                     }
                     else
                     {
-                        eim.Pink(nameof(ClientMessage.CPQ_ExtendTime));
-                        eim.restartEventTimer(MapMonsterCarnivalTemplate.TimeExpand * 1000);
+                        await eim.Pink(nameof(ClientMessage.CPQ_ExtendTime));
+                        await eim.restartEventTimer(MapMonsterCarnivalTemplate.TimeExpand * 1000);
                     }
                     break;
                 default:
@@ -222,20 +233,20 @@ namespace Application.Core.scripting.Events.Templates
             }
         }
 
-        public override void ClearPQ(AbstractEventInstanceManager eim)
+        public override async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-            base.ClearPQ(eim);
+            await base.ClearPQ(eim);
 
             var pEim = eim as MonsterCarnivalEventInstanceManager;
 
             foreach (var chr in eim.getPlayers())
             {
-                var rewardMap = eim.getInstanceMap(pEim.IsWinner(chr) ? MapMonsterCarnivalTemplate.RewardMapWin : MapMonsterCarnivalTemplate.RewardMapLose);
+                var rewardMap = await eim.getInstanceMap(pEim.IsWinner(chr) ? MapMonsterCarnivalTemplate.RewardMapWin : MapMonsterCarnivalTemplate.RewardMapLose);
                 if (rewardMap != null)
                 {
-                    chr.changeMap(rewardMap);
+                    await chr.changeMap(rewardMap);
                     chr.setTeam(-1);
-                    chr.dispelDebuffs();
+                    await chr.dispelDebuffs();
                 }
             }
         }

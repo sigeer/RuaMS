@@ -20,7 +20,6 @@
  */
 
 
-using Acornima.Ast;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.GameEvents.CPQ;
@@ -43,14 +42,12 @@ using client;
 using client.inventory;
 using client.keybind;
 using client.status;
-using constants.game;
 using server;
 using server.events.gm;
 using server.life;
 using server.maps;
 using server.movement;
 using System.Net;
-using System.Numerics;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
 
@@ -2385,7 +2382,7 @@ public class PacketCreator
                 {
                     addMovement = 2;
                 }
-               
+
             }
             else if (cmd is InventoryUpdateEquipExp exp)
             {
@@ -2628,7 +2625,7 @@ public class PacketCreator
         p.writeInt(chr.getId());
         p.writeByte(chr.getLevel());
         p.writeShort(chr.getJob().getId());
-        p.writeShort(chr.getFame());    
+        p.writeShort(chr.getFame());
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
         p.writeString(chr.GetGuild()?.Name ?? "");
         p.writeString(chr.GetAlliance()?.Name ?? "");  // does not seem to work
@@ -4864,6 +4861,37 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOP_LINK_RESULT);
         p.writeByte(msg); // depending on the byte sent, a different message is sent.
+        return p;
+    }
+
+    public static Packet OwlOfMinerva(int itemId, ItemProto.OwlSearchResponse result)
+    {
+        sbyte itemType = ItemConstants.getInventoryType(itemId).getType();
+
+        OutPacket p = OutPacket.create(SendOpcode.SHOP_SCANNER_RESULT);
+        p.writeByte(6);
+        p.writeInt(0);
+        p.writeInt(itemId);
+        p.writeInt(result.Items.Count);
+
+        var ii = ItemInformationProvider.getInstance();
+        foreach (var item in result.Items)
+        {
+            p.writeString(item.OwnerName);
+            p.writeInt(item.MapId);
+            p.writeString(item.Title);
+            p.writeInt(item.Item.Bundles);
+            p.writeInt(item.Item.Item.Quantity);
+            p.writeInt(item.Item.Price);
+            p.writeInt(item.MapObjectId);
+            p.writeByte(item.Channel - 1);
+
+            p.writeByte(itemType);
+            if (itemType == InventoryType.EQUIP.getType())
+            {
+                PacketCommon.EncodeItem(p, item.Item.Item, ii.GetTrustTemplate(item.Item.Item.Itemid), true);
+            }
+        }
         return p;
     }
 

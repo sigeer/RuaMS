@@ -1,5 +1,4 @@
 using Application.Core.Channel.Events;
-using Application.Shared.Servers;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.Modules
@@ -39,7 +38,7 @@ namespace Application.Core.Channel.Modules
         }
         public virtual void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg) { }
         public virtual void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg) { }
-        public virtual void OnPlayerServerChanged(SyncProto.PlayerFieldChange arg) 
+        public virtual void OnPlayerServerChanged(SyncProto.PlayerFieldChange arg)
         {
             if (arg.FromChannel == 0 && arg.Channel > 0)
             {

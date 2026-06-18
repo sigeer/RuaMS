@@ -7,7 +7,7 @@ public class StatLukCommand : CommandBase
         Description = "Assign AP into LUK.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int remainingAp = player.getRemainingAp();
@@ -22,7 +22,7 @@ public class StatLukCommand : CommandBase
             catch (Exception e)
             {
                 log.Error(e.ToString());
-                player.dropMessage("That is not a valid number!");
+                await player.Notice("That is not a valid number!");
                 return;
             }
         }
@@ -30,9 +30,9 @@ public class StatLukCommand : CommandBase
         {
             amount = Math.Min(remainingAp, YamlConfig.config.server.MAX_AP - player.getLuk());
         }
-        if (!player.assignLuk(Math.Max(amount, 0)))
+        if (!await player.assignLuk(Math.Max(amount, 0)))
         {
-            player.dropMessage("Please make sure your AP is not over " + YamlConfig.config.server.MAX_AP + " and you have enough to distribute.");
+            await player.Notice("Please make sure your AP is not over " + YamlConfig.config.server.MAX_AP + " and you have enough to distribute.");
         }
     }
 }

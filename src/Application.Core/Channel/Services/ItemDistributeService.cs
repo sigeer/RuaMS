@@ -12,7 +12,7 @@ namespace Application.Core.Channel.Services
         /// <param name="items"></param>
         /// <param name="meso"></param>
         /// <param name="title"></param>
-        void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
+        Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
     }
 
     /// <summary>
@@ -20,35 +20,35 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public class DefaultItemDistributeService : IItemDistributeService
     {
-        public void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public async Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
             foreach (var item in items)
             {
                 if (chr.canHold(item.getItemId(), item.getQuantity()))
-                    InventoryManipulator.addFromDrop(chr.Client, item, false);
+                    await InventoryManipulator.addFromDrop(chr.Client, item, false);
                 else
                 {
                     needNotice = true;
-                    chr.getMap().spawnItemDrop(chr, chr, item, chr.getPosition(), false, true);
+                    await chr.getMap().spawnItemDrop(chr, chr, item, chr.getPosition(), false, true);
                 }
             }
 
             if (meso != 0)
             {
                 if (chr.canHoldMeso(meso))
-                    chr.GainMeso(meso);
+                    await chr.GainMeso(meso);
                 else
                 {
                     needNotice = true;
-                    chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, DropType.OnlyOwner);
+                    await chr.getMap().spawnMesoDrop(meso, chr.getPosition(), chr, chr, true, DropType.OnlyOwner);
                 }
             }
 
             chr.getCashShop().gainCash(cashType, cashValue);
             if (needNotice)
             {
-                chr.dropMessage($"你的背包满了，物品掉落在{chr.getMap().getStreetName()}");
+                await chr.Notice($"你的背包满了，物品掉落在{chr.getMap().getStreetName()}");
             }
         }
     }

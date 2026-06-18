@@ -25,27 +25,27 @@ namespace Application.Core.Gameplay
         protected virtual Packet GetPickupPacket(MapItem mapItem) =>
             PacketCreator.removeItemFromMap(mapItem.getObjectId(), IsPetPickup ? DropLeaveFieldType.PickupByPet : DropLeaveFieldType.PickupByPlayer, _player.Id, IsPetPickup, _petIndex);
 
-        protected override void Process(MapItem mapItem)
+        protected override async Task Process(MapItem mapItem)
         {
             if (mapItem.Item == null)
             {
-                if (PickupMeso(mapItem))
+                if (await PickupMeso(mapItem))
                 {
-                    _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
+                    await _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
                 }
             }
             else
             {
-                if (PickupSpecialItem(mapItem.Item) || PickupItem(mapItem.Item))
+                if (await PickupSpecialItem(mapItem.Item) || await PickupItem(mapItem.Item))
                 {
-                    _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
+                    await _player.MapModel.pickItemDrop(GetPickupPacket(mapItem), mapItem);
                 }
             }
 
-            _player.sendPacket(PacketCreator.enableActions());
+            await _player.SendPacket(PacketCreator.enableActions());
         }
 
-        protected override bool Before(MapItem mapItem)
+        protected override async Task<bool> Before(MapItem mapItem)
         {
             if (IsPetPickup)
             {
@@ -53,7 +53,7 @@ namespace Application.Core.Gameplay
                 {
                     if (!_player.isEquippedMesoMagnet(_petIndex))
                     {
-                        _player.sendPacket(PacketCreator.enableActions());
+                        await _player.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
@@ -62,7 +62,7 @@ namespace Application.Core.Gameplay
                         HashSet<int> petIgnore = _player.getExcludedItems();
                         if (petIgnore.Count > 0 && petIgnore.Contains(int.MaxValue))
                         {
-                            _player.sendPacket(PacketCreator.enableActions());
+                            await _player.SendPacket(PacketCreator.enableActions());
                             return false;
                         }
                     }
@@ -71,7 +71,7 @@ namespace Application.Core.Gameplay
                 {
                     if (!_player.isEquippedItemPouch(_petIndex))
                     {
-                        _player.sendPacket(PacketCreator.enableActions());
+                        await _player.SendPacket(PacketCreator.enableActions());
                         return false;
                     }
 
@@ -80,7 +80,7 @@ namespace Application.Core.Gameplay
                         HashSet<int> petIgnore = _player.getExcludedItems();
                         if (petIgnore.Count > 0 && petIgnore.Contains(mapItem.getItemId()))
                         {
-                            _player.sendPacket(PacketCreator.enableActions());
+                            await _player.SendPacket(PacketCreator.enableActions());
                             return false;
                         }
                     }
@@ -90,31 +90,31 @@ namespace Application.Core.Gameplay
             // 掉落物捡取时间限制
             if (Flags.HasFlag(PickupCheckFlags.CoolDown) && (_player.Client.CurrentServer.Node.getCurrentTime() - mapItem.getDropTime() < 400))
             {
-                _player.sendPacket(PacketCreator.enableActions());
+                await _player.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
             // 所有权限制
             if (Flags.HasFlag(PickupCheckFlags.Owner) && !mapItem.canBePickedBy(_player))
             {
-                _player.sendPacket(PacketCreator.enableActions());
+                await _player.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
             // 已经被捡取
             if (mapItem.isPickedUp())
             {
-                _player.sendPacket(PacketCreator.showItemUnavailable());
-                _player.sendPacket(PacketCreator.enableActions());
+                await _player.SendPacket(PacketCreator.showItemUnavailable());
+                await _player.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
             // 道具需要空间但是空间不足
             if (mapItem.NeedCheckSpace && !InventoryManipulator.checkSpace(_player.Client, mapItem.getItemId(), mapItem.Item!.getQuantity(), mapItem.Item!.getOwner()))
             {
-                _player.sendPacket(PacketCreator.getInventoryFull());
-                _player.sendPacket(PacketCreator.getShowInventoryFull());
-                _player.sendPacket(PacketCreator.enableActions());
+                await _player.SendPacket(PacketCreator.getInventoryFull());
+                await _player.SendPacket(PacketCreator.getShowInventoryFull());
+                await _player.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
@@ -124,15 +124,15 @@ namespace Application.Core.Gameplay
                 // 其他人丢弃的道具
                 if (mapItem.isPlayerDrop() && mapItem.getDropper().getObjectId() != _player.getObjectId())
                 {
-                    _player.sendPacket(PacketCreator.showItemUnavailable());
-                    _player.sendPacket(PacketCreator.enableActions());
+                    await _player.SendPacket(PacketCreator.showItemUnavailable());
+                    await _player.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
 
                 // 有物品脚本 或者 会被使用的特殊道具
                 if (ItemId.HasScript(mapItem.getItemId()) || (mapItem.getItemId() / 1000000 == 2 && ItemInformationProvider.getInstance().isConsumeOnPickup(mapItem.getItemId())))
                 {
-                    _player.sendPacket(PacketCreator.enableActions());
+                    await _player.SendPacket(PacketCreator.enableActions());
                     return false;
                 }
             }
@@ -140,23 +140,23 @@ namespace Application.Core.Gameplay
             // 任务道具 已捡取足够 不需要继续捡取
             if (!_player.needQuestItem(mapItem.getQuest(), mapItem.getItemId()))
             {
-                _player.sendPacket(PacketCreator.showItemUnavailable());
-                _player.sendPacket(PacketCreator.enableActions());
+                await _player.SendPacket(PacketCreator.showItemUnavailable());
+                await _player.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
             return true;
         }
 
-        public override void Handle(MapItem? mapItem)
+        public override async Task Handle(MapItem? mapItem)
         {
             if (mapItem == null)
                 return;
-            base.Handle(mapItem);
+            await base.Handle(mapItem);
 
         }
 
-        private bool PickupMeso(MapItem mapItem)
+        private async Task<bool> PickupMeso(MapItem mapItem)
         {
             var meso = mapItem.getMeso();
             if (meso > 0)
@@ -167,12 +167,12 @@ namespace Application.Core.Gameplay
                     int mesosamm = mapItem.getMeso() / mpcs.Count;
                     foreach (var partymem in mpcs)
                     {
-                        partymem.GainMeso(mesosamm, GainItemShow.ShowInMessage, true);
+                        await partymem.GainMeso(mesosamm, GainItemShow.ShowInMessage, true);
                     }
                 }
                 else
                 {
-                    _player.GainMeso(meso, GainItemShow.ShowInMessage, true);
+                    await _player.GainMeso(meso, GainItemShow.ShowInMessage, true);
                 }
                 return true;
             }
@@ -184,7 +184,7 @@ namespace Application.Core.Gameplay
         /// </summary>
         /// <param name="mapItem"></param>
         /// <returns></returns>
-        private bool PickupSpecialItem(Item mapItem)
+        private async Task<bool> PickupSpecialItem(Item mapItem)
         {
             if (ItemId.isNxCard(mapItem.getItemId()))
             {
@@ -195,7 +195,7 @@ namespace Application.Core.Gameplay
 
                 if (YamlConfig.config.server.USE_ANNOUNCE_NX_COUPON_LOOT)
                 {
-                    _player.showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + _player.getCashShop().getCash(CashShop.NX_CREDIT) + " NX)", 300);
+                    await _player.showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + _player.getCashShop().getCash(CashShop.NX_CREDIT) + " NX)", 300);
                 }
                 return true;
             }
@@ -204,7 +204,7 @@ namespace Application.Core.Gameplay
             {
                 if (scriptItemTemplate.RunOnPickup)
                 {
-                    ItemScriptManager.getInstance().runItemScript(_player.Client, scriptItemTemplate);
+                    await ItemScriptManager.getInstance().runItemScript(_player.Client, scriptItemTemplate);
                     return true;
                 }
                 else
@@ -213,16 +213,16 @@ namespace Application.Core.Gameplay
 
             else if (mapItem.SourceTemplate is PetItemTemplate petItemTemplate)
             {
-                return _player.GainItem(mapItem.getItemId(), 1) != null;
+                return await _player.GainItem(mapItem.getItemId(), 1) != null;
             }
 
             else
-                return _player.applyConsumeOnPickup(mapItem);
+                return await _player.applyConsumeOnPickup(mapItem);
         }
 
-        private bool PickupItem(Item mapItem)
+        private async Task<bool> PickupItem(Item mapItem)
         {
-            if (InventoryManipulator.addFromDrop(_player.Client, mapItem, true))
+            if (await InventoryManipulator.addFromDrop(_player.Client, mapItem, true))
             {
                 if (mapItem.getItemId() == ItemId.ARPQ_SPIRIT_JEWEL)
                 {

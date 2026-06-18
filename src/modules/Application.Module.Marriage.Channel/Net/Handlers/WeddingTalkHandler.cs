@@ -42,19 +42,19 @@ public class WeddingTalkHandler : ChannelHandlerBase
 
             if (eim != null && !(c.OnlinedCharacter.getId() == eim.getIntProperty("groomId") || c.OnlinedCharacter.getId() == eim.getIntProperty("brideId")))
             {
-                c.sendPacket(WeddingPackets.OnWeddingProgress(false, 0, 0, 2));
+                await c.SendPacket(WeddingPackets.OnWeddingProgress(false, 0, 0, 2));
             }
             else
             {
-                c.sendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
+                await c.SendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
             }
         }
         else
         {
-            c.sendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
+            await c.SendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
         }
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
         return Task.CompletedTask;
     }
 }

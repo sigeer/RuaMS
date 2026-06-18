@@ -32,13 +32,13 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
         if (!chr.isAlive())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -51,25 +51,25 @@ public class UseItemHandler : ChannelHandlerBase
             var itemEffect = ii.GetItemEffectTrust(toUse.getItemId());
             if (toUse.getItemId() != ItemId.HAPPY_BIRTHDAY)
             {
-                if (itemEffect.applyTo(chr))
+                if (await itemEffect.applyTo(chr))
                 {
-                    remove(c, slot);
+                    await remove(c, slot);
                 }
             }
             else
             {
                 foreach (var player in chr.getMap().getAllPlayers())
                 {
-                    itemEffect.applyTo(player);
+                    await itemEffect.applyTo(player);
                 }
-                remove(c, slot);
+                await remove(c, slot);
             }
         }
     }
 
-    private void remove(IChannelClient c, short slot)
+    private async Task remove(IChannelClient c, short slot)
     {
-        InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
-        c.sendPacket(PacketCreator.enableActions());
+        await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

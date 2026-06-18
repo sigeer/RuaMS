@@ -10,7 +10,7 @@ public class ClearCacheCommand : ParamsCommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var p = GetParamByIndex(0);
         if (string.IsNullOrEmpty(p))
@@ -19,13 +19,13 @@ public class ClearCacheCommand : ParamsCommandBase
         if (p.Equals("quest", StringComparison.OrdinalIgnoreCase))
         {
             QuestFactory.Instance.clearCache();
-            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
+            await c.OnlinedCharacter.Yellow(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
 
         if (p.Equals("script", StringComparison.OrdinalIgnoreCase))
         {
             AbstractScriptManager.ClearCache();
-            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
+            await c.OnlinedCharacter.Yellow(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
         }
     }
 }

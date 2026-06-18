@@ -36,18 +36,18 @@ public abstract class ServerChannelInitializer : ChannelInitializer<ISocketChann
         return remoteAddress;
     }
 
-    protected void initPipeline(ISocketChannel socketChannel, SocketClient client)
+    protected async Task initPipeline(ISocketChannel socketChannel, SocketClient client)
     {
         InitializationVector sendIv = InitializationVector.generateSend();
         InitializationVector recvIv = InitializationVector.generateReceive();
-        writeInitialUnencryptedHelloPacket(socketChannel, sendIv, recvIv);
+        await writeInitialUnencryptedHelloPacket(socketChannel, sendIv, recvIv);
         setUpHandlers(socketChannel.Pipeline, sendIv, recvIv, client);
     }
 
-    private void writeInitialUnencryptedHelloPacket(ISocketChannel socketChannel, InitializationVector sendIv, InitializationVector recvIv)
+    private async Task writeInitialUnencryptedHelloPacket(ISocketChannel socketChannel, InitializationVector sendIv, InitializationVector recvIv)
     {
         var p = PacketCommon.getHello(sendIv, recvIv);
-        socketChannel.WriteAndFlushAsync(p.GetByteBuffer()).ConfigureAwait(false).GetAwaiter().GetResult();
+        await socketChannel.WriteAndFlushAsync(p.GetByteBuffer());
     }
 
     private void setUpHandlers(IChannelPipeline pipeline, InitializationVector sendIv, InitializationVector recvIv,

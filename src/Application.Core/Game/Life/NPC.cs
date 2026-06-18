@@ -44,21 +44,23 @@ public class NPC : AbstractLifeObject
         return c.CurrentServer.NodeService.ShopManager.getShopForNPC(getId()) != null;
     }
 
-    public void sendShop(IChannelClient c)
+    public async Task sendShop(IChannelClient c)
     {
-        c.CurrentServer.NodeService.ShopManager.getShopForNPC(getId())?.sendShop(c);
+        var shop = c.CurrentServer.NodeService.ShopManager.getShopForNPC(getId());
+        if (shop != null)
+            await shop.sendShop(c);
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.spawnNPC(this));
-        client.sendPacket(PacketCreator.spawnNPCRequestController(this, true));
+        await client.SendPacket(PacketCreator.spawnNPC(this));
+        await client.SendPacket(PacketCreator.spawnNPCRequestController(this, true));
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeNPCController(getObjectId()));
-        client.sendPacket(PacketCreator.removeNPC(getObjectId()));
+        await client.SendPacket(PacketCreator.removeNPCController(getObjectId()));
+        await client.SendPacket(PacketCreator.removeNPC(getObjectId()));
     }
 
     public override MapObjectType getType()

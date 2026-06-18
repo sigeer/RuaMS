@@ -36,10 +36,10 @@ namespace Application.Core.Channel.Net.Handlers;
 public class ScrollHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 p.readInt(); // whatever...
@@ -65,7 +65,7 @@ public class ScrollHandler : ChannelHandlerBase
 
                 if (toScroll == null)
                 {
-                    announceCannotScroll(c, legendarySpirit);
+                    await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
 
@@ -76,7 +76,7 @@ public class ScrollHandler : ChannelHandlerBase
 
                 if (scroll == null)
                 {
-                    announceCannotScroll(c, legendarySpirit);
+                    await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
 
@@ -84,19 +84,19 @@ public class ScrollHandler : ChannelHandlerBase
 
                 if (ItemConstants.isCleanSlate(scroll.getItemId()) && !ii.canUseCleanSlate(toScroll))
                 {
-                    announceCannotScroll(c, legendarySpirit);
+                    await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
                 else if (!ItemConstants.isModifierScroll(scroll.getItemId()) && toScroll.getUpgradeSlots() < 1)
                 {
-                    announceCannotScroll(c, legendarySpirit);   // thanks onechord for noticing zero upgrade slots freezing Legendary Scroll UI
+                    await announceCannotScroll(c, legendarySpirit);   // thanks onechord for noticing zero upgrade slots freezing Legendary Scroll UI
                     return;
                 }
 
                 var scrollReqs = ii.getScrollReqs(scroll.getItemId());
                 if (scrollReqs.Length > 0 && !scrollReqs.Contains(toScroll.getItemId()))
                 {
-                    announceCannotScroll(c, legendarySpirit);
+                    await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
                 if (whiteScroll)
@@ -112,7 +112,7 @@ public class ScrollHandler : ChannelHandlerBase
                 {
                     if (!canScroll(scroll.getItemId(), toScroll.getItemId()))
                     {
-                        announceCannotScroll(c, legendarySpirit);
+                        await announceCannotScroll(c, legendarySpirit);
                         return;
                     }
                 }
@@ -132,7 +132,7 @@ public class ScrollHandler : ChannelHandlerBase
 
                 if (scroll.getQuantity() < 1)
                 {
-                    announceCannotScroll(c, legendarySpirit);
+                    await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
 
@@ -140,14 +140,14 @@ public class ScrollHandler : ChannelHandlerBase
                 {
                     if (wscroll!.getQuantity() < 1)
                     {
-                        announceCannotScroll(c, legendarySpirit);
+                        await announceCannotScroll(c, legendarySpirit);
                         return;
                     }
 
-                    c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
+                    await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
                 }
 
-                c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
+                await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
 
                 List<IInventoryOperationCommand> ops = [];
                 if (scrollSuccess == Equip.ScrollResult.CURSE)
@@ -157,16 +157,16 @@ public class ScrollHandler : ChannelHandlerBase
                         if (equipSlot < 0)
                         {
                             var inv = chr.getInventory(InventoryType.EQUIPPED);
-                            var removeRes = inv.removeItem(toScroll.getPosition(), actualRemoved: out _);
+                            var (removeRes, _) = await inv.removeItem(toScroll.getPosition());
                             if (removeRes != null)
-                                chr.SyncClientInventory(removeRes);
+                                await chr.SyncClientInventory(removeRes);
                         }
                         else
                         {
                             var inv = chr.getInventory(InventoryType.EQUIP);
-                            var removeRes = inv.removeItem(toScroll.getPosition(), actualRemoved: out _);
+                            var (removeRes, _) = await inv.removeItem(toScroll.getPosition());
                             if (removeRes != null)
-                                chr.SyncClientInventory(removeRes);
+                                await chr.SyncClientInventory(removeRes);
                         }
                     }
                     else
@@ -174,15 +174,15 @@ public class ScrollHandler : ChannelHandlerBase
                         scrolled = toScroll;
                         scrollSuccess = Equip.ScrollResult.FAIL;
 
-                        chr.forceUpdateItem(scrolled);
+                        await chr.forceUpdateItem(scrolled);
                     }
                 }
                 else
                 {
-                    chr.forceUpdateItem(scrolled);
+                    await chr.forceUpdateItem(scrolled);
                 }
 
-                chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
+                await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
             }
             finally
             {
@@ -191,15 +191,15 @@ public class ScrollHandler : ChannelHandlerBase
         }
     }
 
-    private static void announceCannotScroll(IChannelClient c, bool legendarySpirit)
+    private static async Task announceCannotScroll(IChannelClient c, bool legendarySpirit)
     {
         if (legendarySpirit)
         {
-            c.sendPacket(PacketCreator.getScrollEffect(c.OnlinedCharacter.getId(), Equip.ScrollResult.FAIL, false, false));
+            await c.SendPacket(PacketCreator.getScrollEffect(c.OnlinedCharacter.getId(), Equip.ScrollResult.FAIL, false, false));
         }
         else
         {
-            c.sendPacket(PacketCreator.getInventoryFull());
+            await c.SendPacket(PacketCreator.getInventoryFull());
         }
     }
 

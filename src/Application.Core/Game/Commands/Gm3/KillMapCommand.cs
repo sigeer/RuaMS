@@ -6,12 +6,12 @@ public class KillMapCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var mch in player.getMap().getAllPlayers())
         {
-            mch.KilledBy(player);
+            await mch.KilledBy(player);
         }
     }
 }

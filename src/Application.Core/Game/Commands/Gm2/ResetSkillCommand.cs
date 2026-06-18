@@ -1,6 +1,7 @@
 using Application.Core.Game.Skills;
 
 namespace Application.Core.Game.Commands.Gm2;
+
 public class ResetSkillCommand : CommandBase
 {
     public ResetSkillCommand() : base(2, "resetskill")
@@ -8,7 +9,7 @@ public class ResetSkillCommand : CommandBase
         Description = "Set all skill levels to 0.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var skillId in c.CurrentCulture.StringProvider.GetSubProvider(Templates.String.StringCategory.Skill).LoadAll().Select(x => x.TemplateId))
@@ -16,7 +17,7 @@ public class ResetSkillCommand : CommandBase
             try
             {
                 var skill = SkillFactory.GetSkillTrust(skillId);
-                player.changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
+                await player.changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception e)
             {
@@ -28,14 +29,14 @@ public class ResetSkillCommand : CommandBase
         if (player.getJob().isA(Job.ARAN1) || player.getJob().isA(Job.LEGEND))
         {
             Skill skill = SkillFactory.GetSkillTrust(5001005);
-            player.changeSkillLevel(skill, -1, -1, -1);
+            await player.changeSkillLevel(skill, -1, -1, -1);
         }
         else
         {
             Skill skill = SkillFactory.GetSkillTrust(21001001);
-            player.changeSkillLevel(skill, -1, -1, -1);
+            await player.changeSkillLevel(skill, -1, -1, -1);
         }
 
-        player.yellowMessage("Skills reseted.");
+        await player.Yellow("Skills reseted.");
     }
 }

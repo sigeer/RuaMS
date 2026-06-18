@@ -9,7 +9,6 @@ using client.inventory.manipulator;
 using DueyDto;
 using Microsoft.Extensions.Logging;
 using tools;
-using XmlWzReader;
 
 namespace Application.Core.Channel.DueyService
 {
@@ -43,25 +42,25 @@ namespace Application.Core.Channel.DueyService
             var dueyResponseCode = (SendDueyItemResponseCode)res.Code;
             if (dueyResponseCode == SendDueyItemResponseCode.Success)
             {
-                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
+                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SUCCESSFULLY_SENT.getCode()));
                 if (quick)
                 {
-                    chr.GainItem(ItemId.QUICK_DELIVERY_TICKET, -1);
-                    chr.GainMeso(-costMeso);
+                    await chr.GainItem(ItemId.QUICK_DELIVERY_TICKET, -1);
+                    await chr.GainMeso(-costMeso);
                 }
             }
             else if (dueyResponseCode == SendDueyItemResponseCode.SameAccount)
             {
-                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
+                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_SAMEACC_ERROR.getCode()));
             }
             else if (dueyResponseCode == SendDueyItemResponseCode.CharacterNotExisted)
             {
-                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
+                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NAME_DOES_NOT_EXIST.getCode()));
             }
         }
 
 
-        private (int, Item?) RemoveFromInventoryForDuey(IChannelClient c, sbyte invTypeId, short itemPos, short amount)
+        private async Task<(int, Item?)> RemoveFromInventoryForDuey(IChannelClient c, sbyte invTypeId, short itemPos, short amount)
         {
             if (invTypeId > 0)
             {
@@ -81,11 +80,11 @@ namespace Application.Core.Channel.DueyService
 
                     if (ItemConstants.isRechargeable(item.getItemId()))
                     {
-                        InventoryManipulator.removeFromSlot(c, invType, itemPos, item.getQuantity(), true);
+                        await InventoryManipulator.removeFromSlot(c, invType, itemPos, item.getQuantity(), true);
                     }
                     else
                     {
-                        InventoryManipulator.removeFromSlot(c, invType, itemPos, amount, true, false);
+                        await InventoryManipulator.removeFromSlot(c, invType, itemPos, amount, true, false);
                     }
 
                     item = item.copy();
@@ -108,17 +107,17 @@ namespace Application.Core.Channel.DueyService
             return (0, null);
         }
 
-        public void DueySendItemFromInventory(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
+        public async Task DueySendItemFromInventory(IChannelClient c, sbyte invTypeId, short itemPos, short amount, int sendMesos, string? sendMessage, string recipient, bool quick)
         {
-            if (c.tryacquireClient())
             {
+                await c.tryacquireClient();
                 try
                 {
                     if (c.OnlinedCharacter.isGM() && c.OnlinedCharacter.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_DUEY)
                     {
-                        c.OnlinedCharacter.message("You cannot use Duey to send items at your GM level.");
+                        await c.OnlinedCharacter.Pink("You cannot use Duey to send items at your GM level.");
                         _logger.LogWarning("GM {GM} tried to send a namespace to {Recipient}", c.OnlinedCharacter.getName(), recipient);
-                        c.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
+                        await c.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                         return;
                     }
 
@@ -126,7 +125,7 @@ namespace Application.Core.Channel.DueyService
                     {
                         _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with too long of a text", c.OnlinedCharacter.getName());
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
@@ -139,7 +138,7 @@ namespace Application.Core.Channel.DueyService
                     {
                         _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with Quick Delivery on duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with Quick Delivery without a ticket, mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
@@ -148,28 +147,28 @@ namespace Application.Core.Channel.DueyService
                     {
                         _server.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit with duey.");
                         _logger.LogWarning("Chr {CharacterName} tried to use duey with mesos {Meso} and amount {Amount}", c.OnlinedCharacter.getName(), sendMesos, amount);
-                        c.Disconnect(true, false);
+                        await c.Disconnect(true, false);
                         return;
                     }
 
                     if (c.OnlinedCharacter.getMeso() < finalcost)
                     {
-                        c.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NOT_ENOUGH_MESOS.getCode()));
+                        await c.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_NOT_ENOUGH_MESOS.getCode()));
                         return;
                     }
 
-                    var (res, item) = RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
+                    var (res, item) = await RemoveFromInventoryForDuey(c, invTypeId, itemPos, amount);
                     if (res == 0)
                     {
-                        CreateDueyPackage(c.OnlinedCharacter, (int)finalcost, sendMesos, item, sendMessage, recipient, quick);
+                        await CreateDueyPackage(c.OnlinedCharacter, (int)finalcost, sendMesos, item, sendMessage, recipient, quick);
                     }
                     else if (res > 0)
                     {
-                        c.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_ENABLE_ACTIONS.getCode()));
+                        await c.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_ENABLE_ACTIONS.getCode()));
                     }
                     else
                     {
-                        c.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
+                        await c.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_SEND_INCORRECT_REQUEST.getCode()));
                     }
                 }
                 finally
@@ -179,31 +178,31 @@ namespace Application.Core.Channel.DueyService
             }
         }
 
-        public void RemoveDueyPackage(Player chr, int packageId)
+        public async Task RemoveDueyPackage(Player chr, int packageId)
         {
-            _ = _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
+            await _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
         }
 
-        public void TakePackage(Player chr, int packageId)
+        public async Task TakePackage(Player chr, int packageId)
         {
-            _ = _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
+            await _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
         }
 
-        public void SendTalk(IChannelClient c)
+        public async Task SendTalk(IChannelClient c)
         {
-            if (c.tryacquireClient())
             {
+                await c.tryacquireClient();
                 try
                 {
                     long timeNow = c.CurrentServer.Node.getCurrentTime();
                     if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
                     c.OnlinedCharacter.setNpcCooldown(timeNow);
 
-                    _ = _server.Transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
+                    await _server.Transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
                 }
                 finally
                 {

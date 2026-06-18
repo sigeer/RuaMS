@@ -1,9 +1,5 @@
-using Application.Core.Channel;
 using Application.Utility.Tickables;
-using constants.game;
-using System.Runtime.ConstrainedExecution;
 using tools;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Core.Game.Items;
 
@@ -93,7 +89,7 @@ public class Mount : ILoopTickable, IDisposable
         return Tiredness;
     }
 
-    public void AddExp(float delta)
+    public async Task AddExp(float delta)
     {
         if (delta > 0.0f)
         {
@@ -103,7 +99,7 @@ public class Mount : ILoopTickable, IDisposable
             {
                 Level++;
 
-                owner.BroadcastMap(PacketCreator.updateMount(owner.Id, this, true));
+                await owner.BroadcastMap(PacketCreator.updateMount(owner.Id, this, true));
             }
         }
     }
@@ -130,7 +126,7 @@ public class Mount : ILoopTickable, IDisposable
     }
 
     int step = 0;
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
@@ -148,12 +144,12 @@ public class Mount : ILoopTickable, IDisposable
             {
                 int tiredness = incrementAndGetTiredness();
 
-                this.owner.BroadcastMap(PacketCreator.updateMount(this.getId(), this, false));
+                await this.owner.BroadcastMap(PacketCreator.updateMount(this.getId(), this, false));
                 if (tiredness > 99)
                 {
                     setTiredness(99);
-                    owner.dispelSkill(owner.getJobType() * 10000000 + 1004);
-                    owner.dropMessage(6, "Your mount grew tired! Treat it some revitalizer before riding it again!");
+                    await owner.dispelSkill(owner.getJobType() * 10000000 + 1004);
+                    await owner.dropMessage(6, "Your mount grew tired! Treat it some revitalizer before riding it again!");
                 }
             }
             else
@@ -161,6 +157,6 @@ public class Mount : ILoopTickable, IDisposable
                 step++;
             }
             Next = now + Period;
-        }        
+        }
     }
 }

@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ServerData;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Managers;
@@ -32,8 +31,6 @@ using Application.Scripting.Lua;
 using Application.Shared.Events;
 using client;
 using client.inventory;
-using client.inventory.manipulator;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using server.life;
 using System.Collections.Concurrent;

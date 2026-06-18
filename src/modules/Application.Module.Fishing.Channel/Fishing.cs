@@ -85,7 +85,7 @@ public class Fishing
 
         if (!MapId.isFishingArea(chr.getMapId()))
         {
-            chr.dropMessage("You are not in a fishing area!");
+            chr.Notice("You are not in a fishing area!");
             return;
         }
 
@@ -139,7 +139,7 @@ public class Fishing
             chr.getMap().LightBlue(chr.getName() + " found " + rewardStr);
         }
 
-        chr.sendPacket(PacketCreator.showInfo(fishingEffect));
+        chr.SendPacket(PacketCreator.showInfo(fishingEffect));
         chr.getMap().broadcastMessage(chr, PacketCreator.showForeignInfo(chr.getId(), fishingEffect), false);
     }
 

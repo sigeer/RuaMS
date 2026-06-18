@@ -37,7 +37,7 @@ public class NoteActionHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int action = p.readByte();
         if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)
@@ -47,10 +47,10 @@ public class NoteActionHandler : ChannelHandlerBase
             string message = p.readString();
             if (c.OnlinedCharacter.getCashShop().isOpened())
             {
-                c.sendPacket(PacketCreator.showCashInventory(c));
+                await c.SendPacket(PacketCreator.showCashInventory(c));
             }
 
-            bool sendNoteSuccess = c.CurrentServer.Node.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
+            bool sendNoteSuccess = await c.CurrentServer.Node.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
             if (sendNoteSuccess)
             {
                 c.OnlinedCharacter.getCashShop().decreaseNotes();
@@ -79,7 +79,7 @@ public class NoteActionHandler : ChannelHandlerBase
             }
             if (fame > 0)
             {
-                c.OnlinedCharacter.gainFame(fame);
+                await c.OnlinedCharacter.gainFame(fame);
             }
         }
     }

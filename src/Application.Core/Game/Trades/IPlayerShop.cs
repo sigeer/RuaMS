@@ -29,21 +29,21 @@ namespace Application.Core.Game.Trades
         /// <param name="chr"></param>
         /// <returns></returns>
         bool IsOwner(Player chr);
-        bool VisitShop(Player chr);
-        void RemoveVisitor(Player visitor);
+        Task<bool> VisitShop(Player chr);
+        Task RemoveVisitor(Player visitor);
         bool hasItem(int itemid);
         bool AddCommodity(PlayerShopItem item);
-        void GainMeso(int meso);
+        Task GainMeso(int meso);
         string? MesoCheck(int meso);
-        void InsertSoldHistory(int idx, SoldItem soldItem);
+        Task InsertSoldHistory(int idx, SoldItem soldItem);
 
-        void OnCommoditySellout();
+        Task OnCommoditySellout();
         /// <summary>
         /// 对访问者发送更新报
         /// </summary>
-        void BroadcastShopItemUpdate();
+        Task BroadcastShopItemUpdate();
 
-        void takeItemBack(int slotIndex, Player chr);
+        Task takeItemBack(int slotIndex, Player chr);
 
         List<PlayerShopItem> QueryAvailableBundles(int itemid);
         /// <summary>
@@ -51,12 +51,12 @@ namespace Application.Core.Game.Trades
         /// </summary>
         /// <param name="chr"></param>
         /// <returns></returns>
-        bool Retrieve(Player owner);
-        void Close();
+        Task<bool> Retrieve(Player owner);
+        Task Close();
         void SetOpen();
-        void SetMaintenance(Player chr);
+        Task SetMaintenance(Player chr);
 
-        void sendMessage(Player fromChr, string msg);
+        Task sendMessage(Player fromChr, string msg);
         Packet MakeSpawnPacket();
     }
 }

@@ -6,12 +6,12 @@ public class DropRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !droprate <newrate>");
+            await player.Yellow("Syntax: !droprate <newrate>");
             return;
         }
 
@@ -19,6 +19,6 @@ public class DropRateCommand : CommandBase
             return;
 
         int droprate = Math.Max(d, 1);
-        _ = c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { DropRate = droprate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { DropRate = droprate });
     }
 }

@@ -1,11 +1,11 @@
 namespace Application.Core.Login.Commands
 {
-    internal class CommitDBCommand : IMasterCommand
+    internal class CommitDBCommand : IMasterAsyncCommand
     {
         public string? Name => nameof(CommitDBCommand);
-        public void Execute(MasterServer ctx)
+        public async Task Execute(MasterServer ctx)
         {
-            ctx.ServerManager.CommitAll();
+            await ctx.ServerManager.CommitAllImmediately();
         }
     }
 }

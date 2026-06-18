@@ -9,11 +9,11 @@ public class PapCommand : CommandBase
         Description = "Spawn Papulatus on your location.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         // thanks Conrad for noticing mobid typo here
-        player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PAPULATUS_CLOCK), player.getPosition());
+        await player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(MobId.PAPULATUS_CLOCK), player.getPosition());
     }
 }

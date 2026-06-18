@@ -1,5 +1,4 @@
 using Application.Core.Channel.Commands;
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using Google.Protobuf;
 using MessageProto;

@@ -9,12 +9,12 @@ public class TimerMapCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.TimerMapCommand_Syntax));
             return;
         }
 
@@ -22,7 +22,7 @@ public class TimerMapCommand : CommandBase
         {
             foreach (var victim in player.getMap().getAllPlayers())
             {
-                victim.sendPacket(PacketCreator.removeClock());
+                await victim.SendPacket(PacketCreator.removeClock());
             }
         }
         else
@@ -32,13 +32,13 @@ public class TimerMapCommand : CommandBase
                 int seconds = int.Parse(paramsValue[0]);
                 foreach (var victim in player.getMap().getAllPlayers())
                 {
-                    victim.sendPacket(PacketCreator.getClock(seconds));
+                    await victim.SendPacket(PacketCreator.getClock(seconds));
                 }
             }
             catch (FormatException e)
             {
                 log.Warning(e.ToString());
-                player.YellowMessageI18N(nameof(ClientMessage.TimerMapCommand_Syntax));
+                await player.Yellow(nameof(ClientMessage.TimerMapCommand_Syntax));
             }
         }
     }

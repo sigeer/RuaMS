@@ -2,7 +2,7 @@ namespace Application.Utility.Tickables
 {
     public interface ITickable
     {
-        void OnTick(long now);
+        Task OnTick(long now);
 
         TickableStatus Status { get; }
     }
@@ -53,19 +53,19 @@ namespace Application.Utility.Tickables
 
         public TickableStatus Status { get; set; }
 
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             if (Status != TickableStatus.Active)
                 return;
 
             if (Next <= now)
             {
-                Handle(now);
+                await Handle(now);
 
                 Status = TickableStatus.Remove;
             }
         }
 
-        protected abstract void Handle(long now);
+        protected abstract Task Handle(long now);
     }
 }

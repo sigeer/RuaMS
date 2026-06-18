@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 
 namespace Application.Core.Gameplay.Plugins

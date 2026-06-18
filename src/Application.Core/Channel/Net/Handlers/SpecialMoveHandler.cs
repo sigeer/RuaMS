@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class SpecialMoveHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         p.readInt();
@@ -58,8 +58,8 @@ public class SpecialMoveHandler : ChannelHandlerBase
             }
             skillLevel = 1;
             chr.setDojoEnergy(0);
-            c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
-            c.sendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
+            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
         }
         if (skillLevel == 0 || skillLevel != __skillLevel)
         {
@@ -81,7 +81,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                     cooldownTime /= 60;
                 }
 
-                c.sendPacket(PacketCreator.skillCooldown(skillid, cooldownTime));
+                await c.SendPacket(PacketCreator.skillCooldown(skillid, cooldownTime));
                 chr.addCooldown(skillid, c.CurrentServer.Node.getCurrentTime(), 1000 * (cooldownTime));
             }
         }
@@ -92,33 +92,33 @@ public class SpecialMoveHandler : ChannelHandlerBase
             {
                 int mobOid = p.readInt();
                 byte success = p.readByte();
-                chr.BroadcastMap(PacketCreator.catchMonster(mobOid, success), chr.Id);
+                await chr.BroadcastMap(PacketCreator.catchMonster(mobOid, success), chr.Id);
                 var monster = chr.getMap().getMonsterByOid(mobOid);
                 if (monster != null)
                 {
                     if (!monster.isBoss())
                     {
                         monster.aggroClearDamages();
-                        monster.aggroMonsterDamage(chr, 1);
+                        await monster.aggroMonsterDamage(chr, 1);
 
                         // thanks onechord for pointing out Magnet crashing the caster (issue would actually happen upon failing to catch mob)
                         // thanks Conrad for noticing Magnet crashing when trying to pull bosses and fixed mobs
-                        monster.aggroSwitchController(chr, true);
+                        await monster.aggroSwitchController(chr, true);
                     }
                 }
             }
             byte direction = p.readByte();   // thanks MedicOP for pointing some 3rd-party related issues with Magnet
-            chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), chr.Id);
-            c.sendPacket(PacketCreator.enableActions());
+            await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), chr.Id);
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (skillid == Brawler.MP_RECOVERY)
         {// MP Recovery
             var s = SkillFactory.GetSkillTrust(skillid);
             StatEffect ef = s.getEffect(chr.getSkillLevel(s));
 
-            int lose = chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
+            int lose = await chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
             int gain = (int)(-lose * (ef.getY() / 100.0));
-            chr.UpdateStatsChunk(() =>
+            await chr.UpdateStatsChunk(() =>
             {
                 chr.ChangeMP(gain);
             });
@@ -126,7 +126,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {
             p.skip(11);
-            chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid)), chr.Id);
+            await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid)), chr.Id);
         }
         else if (skillid % 10000000 == 1004)
         {
@@ -143,27 +143,27 @@ public class SpecialMoveHandler : ChannelHandlerBase
             {
                 if (skill.getId() % 10000000 != 1005)
                 {
-                    skill.getEffect(skillLevel).applyTo(chr, pos);
+                    await skill.getEffect(skillLevel).applyTo(chr, pos);
                 }
                 else
                 {
-                    skill.getEffect(skillLevel).applyEchoOfHero(chr);
+                    await skill.getEffect(skillLevel).applyEchoOfHero(chr);
                 }
             }
             else
             {
-                if (c.tryacquireClient())
                 {
+                    await c.tryacquireClient();
                     try
                     {
                         if (chr.canDoor())
                         {
-                            chr.cancelMagicDoor();
-                            skill.getEffect(skillLevel).applyTo(chr, pos);
+                            await chr.cancelMagicDoor();
+                            await skill.getEffect(skillLevel).applyTo(chr, pos);
                         }
                         else
                         {
-                            chr.message("Please wait 5 seconds before casting Mystic Door again.");
+                            await chr.Pink("Please wait 5 seconds before casting Mystic Door again.");
                         }
                     }
                     finally
@@ -172,12 +172,12 @@ public class SpecialMoveHandler : ChannelHandlerBase
                     }
                 }
 
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
         }
         else
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
     }
 }

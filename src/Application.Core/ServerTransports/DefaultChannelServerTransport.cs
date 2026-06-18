@@ -10,7 +10,6 @@ using BaseProto;
 using CashProto;
 using Config;
 using ConfigProto;
-using CreatorProto;
 using Dto;
 using DueyDto;
 using ExpeditionProto;
@@ -22,16 +21,13 @@ using ItemProto;
 using JailProto;
 using LifeProto;
 using MessageProto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RankProto;
-using server.quest;
 using ServerProto;
 using ServiceProto;
 using SyncProto;
 using System.Net;
-using System.Threading.Tasks;
 using SystemProto;
 using TeamProto;
 
@@ -91,7 +87,7 @@ namespace Application.Core.ServerTransports
         }
         public async Task SendAsync(int type, IMessage message, CancellationToken cancellationToken = default)
         {
-             await InternalSession.SendAsync(type, message, cancellationToken);
+            await InternalSession.SendAsync(type, message, cancellationToken);
         }
 
         public long GetCurrentTime()
@@ -247,9 +243,9 @@ namespace Application.Core.ServerTransports
             _cashClient.CommitRetrieveGift(req);
         }
 
-        public bool SendNormalNoteMessage(int senderId, string toName, string noteMessage)
+        public async Task<bool> SendNormalNoteMessage(int senderId, string toName, string noteMessage)
         {
-            return _gameClient.SendNote(new SendNormalNoteRequest { FromId = senderId, Message = noteMessage, ToName = toName }).Value;
+            return (await _gameClient.SendNoteAsync(new SendNormalNoteRequest { FromId = senderId, Message = noteMessage, ToName = toName })).Value;
         }
 
         public NoteDto? DeleteNoteMessage(int id)
@@ -283,12 +279,13 @@ namespace Application.Core.ServerTransports
         }
         public async Task SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId, int reason)
         {
-            await InternalSession.SendAsync(ChannelSendCode.UpdateTeam, 
-                new UpdateTeamRequest { 
-                    FromId = fromId, 
-                    Operation = (int)operation, 
-                    TargetId = toId, 
-                    TeamId = teamId ,
+            await InternalSession.SendAsync(ChannelSendCode.UpdateTeam,
+                new UpdateTeamRequest
+                {
+                    FromId = fromId,
+                    Operation = (int)operation,
+                    TargetId = toId,
+                    TeamId = teamId,
                     Reason = reason
                 });
         }

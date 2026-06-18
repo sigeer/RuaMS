@@ -1,4 +1,3 @@
-using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Trades;
 using Application.Resources.Messages;
 using AutoMapper;
@@ -8,7 +7,6 @@ using client.inventory.manipulator;
 using ItemProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel
@@ -135,7 +133,7 @@ namespace Application.Core.Channel
             return true;
         }
 
-        public bool AddCommodity(Player chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
+        public async Task<bool> AddCommodity(Player chr, InventoryType ivType, Item ivItem, short perBundle, short bundles, int price)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -153,27 +151,27 @@ namespace Application.Core.Channel
             if (!shop.Status.Is(PlayerShopStatus.Maintenance) || !shop.AddCommodity(shopItem))
             {
                 // thanks Vcoc for pointing an exploit with unlimited shop slots
-                chr.Popup(nameof(ClientMessage.PlayerShop_CannotSold));
+                await chr.Popup(nameof(ClientMessage.PlayerShop_CannotSold));
                 return false;
             }
 
             if (ItemConstants.isRechargeable(shopItem.getItem().getItemId()))
             {
-                InventoryManipulator.removeFromSlot(chr.Client, ivType, ivItem.getPosition(), ivItem.getQuantity(), true);
+                await InventoryManipulator.removeFromSlot(chr.Client, ivType, ivItem.getPosition(), ivItem.getQuantity(), true);
             }
             else
             {
-                InventoryManipulator.removeFromSlot(chr.Client, ivType, ivItem.getPosition(), (short)(bundles * perBundle), true);
+                await InventoryManipulator.removeFromSlot(chr.Client, ivType, ivItem.getPosition(), (short)(bundles * perBundle), true);
             }
 
             if (shop is PlayerShop ps)
-                chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(ps));
+                await chr.SendPacket(PacketCreator.getPlayerShopItemUpdate(ps));
             else if (shop is HiredMerchant hm)
-                chr.sendPacket(PacketCreator.updateHiredMerchant(hm, chr));
+                await chr.SendPacket(PacketCreator.updateHiredMerchant(hm, chr));
             return true;
         }
 
-        public void BuyItem(Player buyer, int itemIndex, int quantity)
+        public async Task BuyItem(Player buyer, int itemIndex, int quantity)
         {
             var shop = buyer.VisitingShop;
             if (shop == null)
@@ -181,7 +179,7 @@ namespace Application.Core.Channel
 
             if (buyer.Id == shop.OwnerId)
             {
-                buyer.sendPacket(PacketCreator.enableActions());
+                await buyer.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -189,7 +187,7 @@ namespace Application.Core.Channel
 
             if (quantity < 1 || !pItem.isExist() || pItem.getBundles() < quantity)
             {
-                buyer.sendPacket(PacketCreator.enableActions());
+                await buyer.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -198,7 +196,7 @@ namespace Application.Core.Channel
             newItem.setQuantity((short)(pItem.getItem().getQuantity() * quantity));
             if (newItem.getInventoryType().Equals(InventoryType.EQUIP) && newItem.getQuantity() > 1)
             {
-                buyer.sendPacket(PacketCreator.enableActions());
+                await buyer.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -209,29 +207,29 @@ namespace Application.Core.Channel
             var mesoCheck = shop.MesoCheck(price);
             if (mesoCheck != null)
             {
-                buyer.dropMessage(1, mesoCheck);
-                buyer.sendPacket(PacketCreator.enableActions());
+                await buyer.dropMessage(1, mesoCheck);
+                await buyer.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             if (buyer.getMeso() >= price)
             {
                 if (InventoryManipulator.checkSpace(buyer.Client, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())
-                    && InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
+                    && await InventoryManipulator.addFromDrop(buyer.Client, newItem, false))
                 {
-                    buyer.GainMeso(-price);
+                    await buyer.GainMeso(-price);
                     price -= TradeManager.GetFee(price);  // thanks BHB for pointing out trade fees not applying here
 
-                    shop.GainMeso(price);
+                    await shop.GainMeso(price);
 
-                    shop.InsertSoldHistory(itemIndex, new SoldItem(buyer.getName(), pItem.getItem().getItemId(), newItem.getQuantity(), price));
+                    await shop.InsertSoldHistory(itemIndex, new SoldItem(buyer.getName(), pItem.getItem().getItemId(), newItem.getQuantity(), price));
 
                     pItem.setBundles((short)(pItem.getBundles() - quantity));
                     if (pItem.getBundles() < 1)
                     {
                         pItem.setDoesExist(false);
 
-                        shop.OnCommoditySellout();
+                        await shop.OnCommoditySellout();
                     }
 
                     //if (shop is HiredMerchant hm)
@@ -240,19 +238,19 @@ namespace Application.Core.Channel
                     //        hm.announceItemSold(newItem, price, hm.getQuantityLeft(pItem.getItem().getItemId()));
                     //}
 
-                    shop.BroadcastShopItemUpdate();
+                    await shop.BroadcastShopItemUpdate();
                 }
                 else
                 {
-                    buyer.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
-                    buyer.sendPacket(PacketCreator.enableActions());
+                    await buyer.dropMessage(1, "Your inventory is full. Please clear a slot before buying this item.");
+                    await buyer.SendPacket(PacketCreator.enableActions());
                     return;
                 }
             }
             else
             {
-                buyer.dropMessage(1, "You don't have enough mesos to purchase this item.");
-                buyer.sendPacket(PacketCreator.enableActions());
+                await buyer.dropMessage(1, "You don't have enough mesos to purchase this item.");
+                await buyer.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -270,7 +268,7 @@ namespace Application.Core.Channel
             }
         }
 
-        public bool CloseByPlayer(Player chr)
+        public async Task<bool> CloseByPlayer(Player chr)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -279,11 +277,11 @@ namespace Application.Core.Channel
             if (shop.OwnerId != chr.Id)
                 return false;
 
-            shop.Close();
+            await shop.Close();
 
             bool needStore = true;
             if (shop.Type == PlayerShopType.HiredMerchant)
-                needStore = !shop.Retrieve(chr);
+                needStore = !await shop.Retrieve(chr);
 
             shop.ChannelServer.PlayerShopManager.UnregisterShop(shop, needStore);
             return true;
@@ -336,7 +334,7 @@ namespace Application.Core.Channel
 
             foreach (var item in allShops)
             {
-                item.Close();
+                await item.Close();
 
                 if (item.Type == PlayerShopType.PlayerShop)
                     playerShopData.TryRemove(item.OwnerId, out var _);

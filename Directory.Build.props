@@ -7,5 +7,6 @@
 	  <RepositoryUrl>https://github.com/sigeer/RuaMS</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
 	  <PackageProjectUrl>https://github.com/sigeer/RuaMS</PackageProjectUrl>
+		<NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 </Project>

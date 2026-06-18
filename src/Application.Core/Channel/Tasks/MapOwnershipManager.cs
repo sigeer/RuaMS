@@ -11,11 +11,11 @@ public class MapOwnershipTask : TaskBase
     {
         _server = server;
     }
-    protected override void HandleRun()
+    protected override async Task HandleRun()
     {
-        _server.Broadcast(w =>
+        await _server.BroadcastAsync(async w =>
         {
-            w.MapOwnershipManager.HandleRun();
+            await w.MapOwnershipManager.HandleRun();
         });
     }
 }

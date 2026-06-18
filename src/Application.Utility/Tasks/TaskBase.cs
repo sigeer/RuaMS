@@ -20,9 +20,9 @@ namespace Application.Utility.Tasks
             await StopAsync();
         }
 
-        public virtual void Register(ITimerManager timerManager)
+        public virtual async Task Register(ITimerManager timerManager)
         {
-            _scheduler = timerManager.register(new NamedRunnable(_taskName, HandleRun), _repeatDuration, _repeatDelay);
+            _scheduler = await timerManager.RegisterAsync(new FuncAsyncRunnable(_taskName, HandleRun), _repeatDuration, _repeatDelay);
         }
         public virtual async Task StopAsync()
         {
@@ -30,6 +30,6 @@ namespace Application.Utility.Tasks
                 await _scheduler.CancelAsync(false);
         }
 
-        protected abstract void HandleRun();
+        protected abstract Task HandleRun();
     }
 }

@@ -19,11 +19,11 @@ namespace Application.Plugin.Script.Events
             MaxMap = 914020000;
         }
 
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == 9001014)
             {
-                eim.clearPQ();
+                await eim.clearPQ();
             }
         }
     }

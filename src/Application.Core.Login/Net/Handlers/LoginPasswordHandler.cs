@@ -43,12 +43,12 @@ public class LoginPasswordHandler : LoginHandlerBase
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string remoteHost = c.RemoteAddress;
         if (string.IsNullOrEmpty(remoteHost) || remoteHost == "null")
         {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed(14));          // thanks Alchemist for noting remoteHost could be null
+            await c.SendPacket(LoginPacketCreator.GetLoginFailed(14));          // thanks Alchemist for noting remoteHost could be null
             return;
         }
 
@@ -80,31 +80,31 @@ public class LoginPasswordHandler : LoginHandlerBase
         var banInfo = _server.AccountBanManager.GetAccountBanInfo(c.AccountId);
         if (banInfo != null)
         {
-            c.sendPacket(LoginPacketCreator.GetTempBan(banInfo.EndTime.ToUnixTimeMilliseconds(), (byte)banInfo.Reason));
+            await c.SendPacket(LoginPacketCreator.GetTempBan(banInfo.EndTime.ToUnixTimeMilliseconds(), (byte)banInfo.Reason));
             return;
         }
 
         if (_server.AccountBanManager.IsIPBlocked(remoteHost) || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
         {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed(3));
+            await c.SendPacket(LoginPacketCreator.GetLoginFailed(3));
             return;
         }
 
         if (loginok != 0)
         {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed((int)loginok));
+            await c.SendPacket(LoginPacketCreator.GetLoginFailed((int)loginok));
             return;
         }
         if (c.FinishLogin() == LoginResultCode.Success && c.CheckChar(c.AccountEntity!.Id))
         {
-            c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
+            await c.SendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
             _server.RegisterLoginState(c);
             c.CurrentHistoryId = _server.AccountHistoryManager.InsertAccountLoginHistory(c.AccountId, c.RemoteAddress, hwid.hwid).Id;
 
         }
         else
         {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed(7));
+            await c.SendPacket(LoginPacketCreator.GetLoginFailed(7));
         }
     }
 }

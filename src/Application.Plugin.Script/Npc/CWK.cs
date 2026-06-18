@@ -63,17 +63,16 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9201114 
-        public Task glpqEnter()
+        public async Task glpqEnter()
         {
             if (haveItem(3992041, 1))
             {
-                warp(610030020, "out00");
+                await warp(610030020, "out00");
             }
             else
             {
-                playerMessage(5, "The giant gate of iron will not budge no matter what, however there is a visible key-shaped socket.");
+                await Pink("The giant gate of iron will not budge no matter what, however there is a visible key-shaped socket.");
             }
-            return Task.CompletedTask;
         }
 
 
@@ -99,18 +98,18 @@ namespace Application.Plugin.Script.Npc
                 await SayNext("欢迎来到扭曲大师的堡垒。我将是今晚的主持人…");
                 await SayNext("今晚，我们有一群冒险岛玩家的盛宴.. 哈哈哈...");
                 await SayNext("让我们经过特别训练的守护大师护送你！");
-                mapMessage(6, "Engarde! Master Guardians approach!");
+                await mapMessage(6, "Engarde! Master Guardians approach!");
                 for (var i = 0; i < 10; i++)
                 {
                     var mob = LifeFactory.Instance.GetMonsterTrust(9400594);
                     var xPos = -1337 + Random.Shared.Next(1337);
-                    getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
+                    await getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
                 }
                 for (var i = 0; i < 20; i++)
                 {
                     var mob = LifeFactory.Instance.GetMonsterTrust(9400582);
                     var xPos = -1337 + Random.Shared.Next(1337);
-                    getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
+                    await getMap().spawnMonsterOnGroundBelow(mob, new Point(xPos, 276));
                 }
                 eim.setIntProperty("glpq6", 1);
             }
@@ -120,23 +119,23 @@ namespace Application.Plugin.Script.Npc
                 {
                     await SayOK("嗯，这是什么？你打败了它们？");
                     await SayNext("好吧，无论如何！扭曲之主将很高兴欢迎你。");
-                    mapMessage(6, "Twisted Masters approach!");
+                    await mapMessage(6, "Twisted Masters approach!");
 
                     //Margana
                     var mob = LifeFactory.Instance.GetMonsterTrust(9400590);
-                    getMap().spawnMonsterOnGroundBelow(mob, new Point(-22, 1));
+                    await getMap().spawnMonsterOnGroundBelow(mob, new Point(-22, 1));
 
                     //Red Nirg
                     var mob2 = LifeFactory.Instance.GetMonsterTrust(9400591);
-                    getMap().spawnMonsterOnGroundBelow(mob2, new Point(-22, 276));
+                    await getMap().spawnMonsterOnGroundBelow(mob2, new Point(-22, 276));
 
                     //Hsalf
                     var mob4 = LifeFactory.Instance.GetMonsterTrust(9400593);
-                    getMap().spawnMonsterOnGroundBelow(mob4, new Point(496, 276));
+                    await getMap().spawnMonsterOnGroundBelow(mob4, new Point(496, 276));
 
                     //Rellik
                     var mob3 = LifeFactory.Instance.GetMonsterTrust(9400592);
-                    getMap().spawnMonsterOnGroundBelow(mob3, new Point(-496, 276));
+                    await getMap().spawnMonsterOnGroundBelow(mob3, new Point(-496, 276));
 
                     eim.setIntProperty("glpq6", 2);
                 }
@@ -150,13 +149,13 @@ namespace Application.Plugin.Script.Npc
                 if (getMap().countMonsters() == 0)
                 {
                     await SayOK("什么？呃...这不可能发生。");
-                    mapMessage(5, "The portal to the next stage has opened!");
+                    await mapMessage(5, "The portal to the next stage has opened!");
                     eim.setIntProperty("glpq6", 3);
 
-                    eim.showClearEffect(true);
-                    eim.GiveStageClearRewardAll(6);
+                    await eim.showClearEffect(true);
+                    await eim.GiveStageClearRewardAll(6);
 
-                    eim.clearPQ();
+                    await eim.clearPQ();
                 }
                 else
                 {

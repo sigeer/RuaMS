@@ -26,7 +26,6 @@ using client;
 using server.quest;
 using System.Text;
 using tools;
-using static Application.Core.Game.Players.Player;
 
 
 namespace scripting.map;
@@ -51,91 +50,91 @@ public class MapScriptMethods : AbstractPlayerInteraction
         return Map.Id;
     }
 
-    public void displayCygnusIntro()
+    public async Task displayCygnusIntro()
     {
         switch (c.OnlinedCharacter.getMapId())
         {
             case MapId.CYGNUS_INTRO_LEAD:
                 {
-                    lockUI();
-                    c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene0"));
+                    await lockUI();
+                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene0"));
                     break;
                 }
-            case MapId.CYGNUS_INTRO_WARRIOR: c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene1")); break;
-            case MapId.CYGNUS_INTRO_BOWMAN: c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene2")); break;
-            case MapId.CYGNUS_INTRO_MAGE: c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene3")); break;
-            case MapId.CYGNUS_INTRO_PIRATE: c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene4")); break;
-            case MapId.CYGNUS_INTRO_THIEF: c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene5")); break;
+            case MapId.CYGNUS_INTRO_WARRIOR: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene1")); break;
+            case MapId.CYGNUS_INTRO_BOWMAN: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene2")); break;
+            case MapId.CYGNUS_INTRO_MAGE: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene3")); break;
+            case MapId.CYGNUS_INTRO_PIRATE: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene4")); break;
+            case MapId.CYGNUS_INTRO_THIEF: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene5")); break;
             case MapId.CYGNUS_INTRO_CONCLUSION:
                 {
-                    lockUI();
-                    c.sendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene6"));
+                    await lockUI();
+                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene6"));
                     break;
                 }
         }
     }
 
-    public override void displayAranIntro()
+    public override async Task displayAranIntro()
     {
         switch (c.OnlinedCharacter.getMapId())
         {
             case MapId.ARAN_TUTO_1:
                 {
-                    lockUI();
-                    c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene0"));
+                    await lockUI();
+                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene0"));
                     break;
                 }
             case MapId.ARAN_TUTO_2:
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender()));
                 break;
             case MapId.ARAN_TUTO_3:
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender()));
                 break;
-            case MapId.ARAN_TUTO_4: c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene3")); break;
+            case MapId.ARAN_TUTO_4: await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene3")); break;
             case MapId.ARAN_POLEARM:
                 {
-                    lockUI();
-                    c.sendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender()));
+                    await lockUI();
+                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender()));
                     break;
                 }
         }
     }
 
-    public void startExplorerExperience()
+    public async Task startExplorerExperience()
     {
         switch (c.OnlinedCharacter.getMapId())
         {
             case 1020100: //Swordman
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/swordman/Scene" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/swordman/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020200: //Magician
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/magician/Scene" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/magician/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020300: //Archer
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/archer/Scene" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/archer/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020400: //Rogue
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/rogue/Scene" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/rogue/Scene" + c.OnlinedCharacter.getGender()));
                 break;
             case 1020500: //Pirate
-                c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/pirate/Scene" + c.OnlinedCharacter.getGender()));
+                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/pirate/Scene" + c.OnlinedCharacter.getGender()));
                 break;
         }
     }
 
-    public void goAdventure()
+    public async Task goAdventure()
     {
-        lockUI();
-        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender()));
+        await lockUI();
+        await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender()));
     }
 
-    public void goLith()
+    public async Task goLith()
     {
-        lockUI();
-        c.sendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender()));
+        await lockUI();
+        await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender()));
     }
 
-    public void explorerQuest(short questid)
+    public async Task explorerQuest(short questid)
     {
         Quest quest = Quest.getInstance(questid);
         if (isQuestCompleted(questid))
@@ -145,7 +144,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
         if (!isQuestStarted(questid))
         {
-            if (!quest.forceStart(getPlayer(), 9000066))
+            if (!await quest.forceStart(getPlayer(), 9000066))
             {
                 return;
             }
@@ -163,7 +162,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
 
         // explorer quests all have an infoex/infonumber requirement that points to another quest
         // THAT quest's progress needs to be updated for Quest.canComplete() to return true
-        getPlayer().setQuestProgress(quest.getId(), quest.getInfoNumber(qs.getStatus()), status);
+        await getPlayer().setQuestProgress(quest.getId(), quest.getInfoNumber(qs.getStatus()), status);
 
         StringBuilder smp = new StringBuilder();
         StringBuilder etm = new StringBuilder();
@@ -171,15 +170,15 @@ public class MapScriptMethods : AbstractPlayerInteraction
         {
             etm.Append("Earned the ").Append(questName).Append(" title!");
             smp.Append("You have earned the <").Append(questName).Append(">").Append(rewardstring);
-            getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
+            await getPlayer().SendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else
         {
-            getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/" + infoex + " regions explored."));
+            await getPlayer().SendPacket(PacketCreator.earnTitleMessage(status + "/" + infoex + " regions explored."));
             etm.Append("Trying for the ").Append(questName).Append(" title.");
             smp.Append("You made progress on the ").Append(questName).Append(" title. ").Append(status).Append("/").Append(infoex);
         }
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage(etm.ToString()));
-        showInfoText(smp.ToString());
+        await getPlayer().SendPacket(PacketCreator.earnTitleMessage(etm.ToString()));
+        await showInfoText(smp.ToString());
     }
 }

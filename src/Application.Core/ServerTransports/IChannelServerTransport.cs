@@ -1,23 +1,17 @@
 using AllianceProto;
-using Application.Core.Channel;
 using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
-using BaseProto;
 using CashProto;
 using Config;
-using CreatorProto;
 using Dto;
 using DueyDto;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using ItemProto;
 using JailProto;
-using LifeProto;
 using MessageProto;
-using Polly;
 using SyncProto;
 using System.Net;
 using SystemProto;
@@ -79,7 +73,7 @@ namespace Application.Core.ServerTransports
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        SyncProto.PlayerGetterDto? GetPlayerData(string clientSession,int cid);
+        SyncProto.PlayerGetterDto? GetPlayerData(string clientSession, int cid);
         bool CheckCharacterName(string name);
         void SendBuffObject(int v, SyncProto.PlayerBuffDto playerBuffSaveDto);
         SyncProto.PlayerBuffDto GetBuffObject(int id);
@@ -95,7 +89,7 @@ namespace Application.Core.ServerTransports
 
         GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
-        bool SendNormalNoteMessage(int senderId, string toName, string noteMessage);
+        Task<bool> SendNormalNoteMessage(int senderId, string toName, string noteMessage);
         Dto.NoteDto? DeleteNoteMessage(int id);
         Dto.ShopDto? GetShop(int id, bool isShopId);
         RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
@@ -202,7 +196,7 @@ namespace Application.Core.ServerTransports
         #endregion
 
         Task SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
-        
+
 
         UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
         bool GainCharacterSlot(int accountId);

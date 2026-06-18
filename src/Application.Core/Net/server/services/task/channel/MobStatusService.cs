@@ -20,8 +20,8 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Life.Monsters;
+using Application.Utility.Pipeline;
 
 namespace net.server.services.task.channel;
 
@@ -53,12 +53,12 @@ public class MobStatusService : BaseService
         }
     }
 
-    public void registerMobStatus(int mapid, MonsterStatusEffect mse, IWorldChannelCommand cancelAction, long duration)
+    public void registerMobStatus(int mapid, MonsterStatusEffect mse, ICommand cancelAction, long duration)
     {
         registerMobStatus(mapid, mse, cancelAction, duration, null, -1);
     }
 
-    public void registerMobStatus(int mapid, MonsterStatusEffect mse, IWorldChannelCommand cancelAction, long duration, IWorldChannelCommand? overtimeAction, int overtimeDelay)
+    public void registerMobStatus(int mapid, MonsterStatusEffect mse, ICommand cancelAction, long duration, ICommand? overtimeAction, int overtimeDelay)
     {
         mobStatusSchedulers[getChannelSchedulerIndex(mapid)].registerMobStatus(mse, cancelAction, duration, overtimeAction, overtimeDelay);
     }
@@ -77,16 +77,16 @@ public class MobStatusService : BaseService
         {
             private int procCount;
             private int procLimit;
-            private IWorldChannelCommand r;
+            private ICommand r;
 
-            public MobStatusOvertimeEntry(int delay, IWorldChannelCommand run)
+            public MobStatusOvertimeEntry(int delay, ICommand run)
             {
                 procCount = 0;
                 procLimit = (int)Math.Ceiling((float)delay / YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
                 r = run;
             }
 
-            public void update(List<IWorldChannelCommand> toRun)
+            public void update(List<ICommand> toRun)
             {
                 procCount++;
                 if (procCount >= procLimit)
@@ -102,7 +102,7 @@ public class MobStatusService : BaseService
 
             base.addListener((List<object> toRemove, bool update) =>
                 {
-                    List<IWorldChannelCommand> toRun = new();
+                    List<ICommand> toRun = new();
 
                     foreach (object mseo in toRemove)
                     {
@@ -129,7 +129,7 @@ public class MobStatusService : BaseService
             );
         }
 
-        public void registerMobStatus(MonsterStatusEffect mse, IWorldChannelCommand cancelStatus, long duration, IWorldChannelCommand? overtimeStatus, int overtimeDelay)
+        public void registerMobStatus(MonsterStatusEffect mse, ICommand cancelStatus, long duration, ICommand? overtimeStatus, int overtimeDelay)
         {
             if (overtimeStatus != null)
             {

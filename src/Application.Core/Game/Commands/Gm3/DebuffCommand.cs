@@ -2,25 +2,26 @@ using Application.Resources.Messages;
 using server.life;
 
 namespace Application.Core.Game.Commands.Gm3;
+
 public class DebuffCommand : CommandBase
 {
     public DebuffCommand() : base(3, "debuff")
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.DebuffCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax));
             return;
         }
 
         var disease = EnumClassCache<Disease>.GetValue(paramsValue[0]);
         if (disease == null)
         {
-            player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
             return;
         }
 
@@ -31,7 +32,7 @@ public class DebuffCommand : CommandBase
         var skill = MobSkillFactory.getMobSkill(disease.getMobSkillType(), level);
         if (skill == null)
         {
-            player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
             return;
         }
 
@@ -39,7 +40,7 @@ public class DebuffCommand : CommandBase
         {
             Player chr = (Player)mmo;
 
-            chr.giveDebuff(disease, skill);
+            await chr.giveDebuff(disease, skill);
         }
     }
 }
