@@ -23,7 +23,6 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using tools;
@@ -74,32 +73,32 @@ public class Pyramid : PartyQuest
         }
     }
 
-    public void startGaugeSchedule()
+    public async Task startGaugeSchedule()
     {
         if (gaugeSchedule == null)
         {
             gauge = 100;
             count = 0;
-            gaugeSchedule = worldChannel.TimerManager.register(() =>
+            gaugeSchedule = await worldChannel.TimerManager.register(() =>
             {
-                worldChannel.Send(w =>
+                worldChannel.Send(async w =>
                 {
-                    ProcessGauge();
+                    await ProcessGauge();
                 });
             }, 1000);
         }
     }
 
-    public void ProcessGauge()
+    public async Task ProcessGauge()
     {
         gauge -= decrease;
         if (gauge <= 0)
         {
-            warp(MapId.NETTS_PYRAMID);
+            await warp(MapId.NETTS_PYRAMID);
         }
     }
 
-    public void kill()
+    public async Task kill()
     {
         _kill++;
         if (gauge < 100)
@@ -107,15 +106,15 @@ public class Pyramid : PartyQuest
             count++;
         }
         gauge++;
-        broadcastInfo("hit", _kill);
+        await broadcastInfo("hit", _kill);
         if (gauge >= 100)
         {
             gauge = 100;
         }
-        checkBuffs();
+        await checkBuffs();
     }
 
-    public void cool()
+    public async Task cool()
     {
         _cool++;
         short plus = coolAdd;
@@ -129,20 +128,20 @@ public class Pyramid : PartyQuest
         {
             gauge = 100;
         }
-        broadcastInfo("cool", _cool);
-        checkBuffs();
+        await broadcastInfo("cool", _cool);
+        await checkBuffs();
 
     }
 
-    public void miss()
+    public async Task miss()
     {
         _miss++;
         count -= missSub;
         gauge -= missSub;
-        broadcastInfo("miss", _miss);
+        await broadcastInfo("miss", _miss);
     }
 
-    public int timer()
+    public async Task<int> timer()
     {
         int value;
         if (stage > 0)
@@ -154,36 +153,36 @@ public class Pyramid : PartyQuest
             value = 120;
         }
 
-        _timer = worldChannel.TimerManager.schedule(() =>
+        _timer = await worldChannel.TimerManager.schedule(() =>
         {
-            worldChannel.Send(w =>
+            worldChannel.Send(async w =>
             {
-                ProcessTimeout();
+                await ProcessTimeout();
             });
         }, TimeSpan.FromSeconds(value));//, 4000
-        broadcastInfo("party", getParticipants().Count > 1 ? 1 : 0);
-        broadcastInfo("hit", _kill);
-        broadcastInfo("miss", _miss);
-        broadcastInfo("cool", _cool);
-        broadcastInfo("skill", skill);
-        broadcastInfo("laststage", stage);
-        startGaugeSchedule();
+        await broadcastInfo("party", getParticipants().Count > 1 ? 1 : 0);
+        await broadcastInfo("hit", _kill);
+        await broadcastInfo("miss", _miss);
+        await broadcastInfo("cool", _cool);
+        await broadcastInfo("skill", skill);
+        await broadcastInfo("laststage", stage);
+        await startGaugeSchedule();
         return value;
     }
 
-    public void ProcessTimeout()
+    public async Task ProcessTimeout()
     {
         stage++;
-        warp(map + (stage * 100));//Should work :D
+        await warp(map + (stage * 100));//Should work :D
     }
 
-    public void warp(int mapid)
+    public async Task warp(int mapid)
     {
         foreach (var chr in getParticipants())
         {
-            chr.MapModel.Send(m =>
+            await chr.MapModel.Send(async m =>
             {
-                chr.changeMap(mapid, 0);
+                await chr.changeMap(mapid, 0);
             });
         }
         if (stage > -1)
@@ -199,16 +198,16 @@ public class Pyramid : PartyQuest
         }
     }
 
-    public void broadcastInfo(string info, int amount)
+    public async Task broadcastInfo(string info, int amount)
     {
         foreach (var chr in getParticipants())
         {
-            chr.sendPacket(PacketCreator.getEnergy("massacre_" + info, amount));
-            chr.sendPacket(PacketCreator.pyramidGauge(count));
+            await chr.SendPacket(PacketCreator.getEnergy("massacre_" + info, amount));
+            await chr.SendPacket(PacketCreator.pyramidGauge(count));
         }
     }
 
-    public bool useSkill()
+    public async Task<bool> useSkill()
     {
         if (skill < 1)
         {
@@ -216,11 +215,11 @@ public class Pyramid : PartyQuest
         }
 
         skill--;
-        broadcastInfo("skill", skill);
+        await broadcastInfo("skill", skill);
         return true;
     }
 
-    public void checkBuffs()
+    public async Task checkBuffs()
     {
         int total = (_kill + _cool);
         if (buffcount == 0 && total >= 250)
@@ -240,7 +239,7 @@ public class Pyramid : PartyQuest
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             foreach (var chr in getParticipants())
             {
-                chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
+                await chr.SendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_2)?.applyTo(chr);
             }
         }
@@ -251,14 +250,14 @@ public class Pyramid : PartyQuest
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             foreach (var chr in getParticipants())
             {
-                chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
+                await chr.SendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_3)?.applyTo(chr);
             }
         }
         else if (buffcount == 3 && total >= 1500)
         {
             skill++;
-            broadcastInfo("skill", skill);
+            await broadcastInfo("skill", skill);
         }
         else if (buffcount == 4 && total >= 2000)
         {
@@ -267,23 +266,23 @@ public class Pyramid : PartyQuest
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
             foreach (var chr in getParticipants())
             {
-                chr.sendPacket(PacketCreator.getEnergy("massacre_skill", skill));
+                await chr.SendPacket(PacketCreator.getEnergy("massacre_skill", skill));
                 ii.getItemEffect(ItemId.PHARAOHS_BLESSING_4)?.applyTo(chr);
             }
         }
         else if (buffcount == 5 && total >= 2500)
         {
             skill++;
-            broadcastInfo("skill", skill);
+            await broadcastInfo("skill", skill);
         }
         else if (buffcount == 6 && total >= 3000)
         {
             skill++;
-            broadcastInfo("skill", skill);
+            await broadcastInfo("skill", skill);
         }
     }
 
-    public void sendScore(Player chr)
+    public async Task sendScore(Player chr)
     {
         if (_exp == 0)
         {
@@ -342,8 +341,8 @@ public class Pyramid : PartyQuest
 
             _exp += ((_kill * 2) + (_cool * 10));
         }
-        chr.sendPacket(PacketCreator.pyramidScore(rank, _exp));
-        chr.gainExp(_exp, true, true);
+        await chr.SendPacket(PacketCreator.pyramidScore(rank, _exp));
+        await chr.gainExp(_exp, true, true);
     }
 }
 

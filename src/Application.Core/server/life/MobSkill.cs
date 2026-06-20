@@ -185,13 +185,13 @@ public class MobSkill : ISkill
         service.registerOverallAction(monster.getMap().getId(), new MobSkillApplyCommand(monster, this, player), animationTime);
     }
 
-    public void applyEffect(Monster monster)
+    public async Task applyEffect(Monster monster)
     {
-        applyEffect(null, monster, false, []);
+        await applyEffect(null, monster, false, []);
     }
 
     // TODO: avoid output argument banishPlayersOutput
-    public void applyEffect(Player? player, Monster monster, bool skill, List<Player>? banishPlayersOutput)
+    public async Task applyEffect(Player? player, Monster monster, bool skill, List<Player>? banishPlayersOutput)
     {
         // See if the MobSkill is successful before doing anything
         if (!makeChanceResult(player))
@@ -225,7 +225,7 @@ public class MobSkill : ISkill
                 stats.AddOrUpdate(MonsterStatus.MAGIC_DEFENSE_UP, x);
                 break;
             case MobSkillType.HEAL_M:
-                applyHealEffect(skill, monster);
+                await applyHealEffect(skill, monster);
                 break;
             case MobSkillType.SEAL:
                 disease = Disease.SEAL;
@@ -249,7 +249,7 @@ public class MobSkill : ISkill
                 disease = Disease.SLOW;
                 break;
             case MobSkillType.DISPEL:
-                applyDispelEffect(skill, monster, player);
+                await applyDispelEffect(skill, monster, player);
                 break;
             case MobSkillType.SEDUCE:
                 disease = Disease.SEDUCE;
@@ -258,7 +258,7 @@ public class MobSkill : ISkill
                 applyBanishEffect(skill, monster, player, banishPlayersOutput);
                 break;
             case MobSkillType.AREA_POISON:
-                spawnMonsterMist(monster);
+                await spawnMonsterMist(monster);
                 break;
             case MobSkillType.REVERSE_INPUT:
                 disease = Disease.CONFUSE;
@@ -310,20 +310,20 @@ public class MobSkill : ISkill
                 stats.AddOrUpdate(MonsterStatus.SEAL_SKILL, x);
                 break;
             case MobSkillType.SUMMON:
-                summonMonsters(monster);
+                await summonMonsters(monster);
                 break;
         }
         if (stats.Count > 0)
         {
-            applyMonsterBuffs(stats, skill, monster, reflection);
+            await applyMonsterBuffs(stats, skill, monster, reflection);
         }
         if (disease != null)
         {
-            applyDisease(disease, skill, monster, player);
+            await applyDisease(disease, skill, monster, player);
         }
     }
 
-    private void applyHealEffect(bool skill, Monster monster)
+    private async Task applyHealEffect(bool skill, Monster monster)
     {
         if (lt != null && rb != null && skill)
         {
@@ -331,24 +331,27 @@ public class MobSkill : ISkill
             int hps = (getX() / 1000) * (int)(950 + 1050 * Randomizer.nextDouble());
             foreach (var mons in objects)
             {
-                ((Monster)mons).heal(hps, getY());
+                await ((Monster)mons).heal(hps, getY());
             }
         }
         else
         {
-            monster.heal(getX(), getY());
+            await monster.heal(getX(), getY());
         }
     }
 
-    private void applyDispelEffect(bool skill, Monster monster, Player player)
+    private async Task applyDispelEffect(bool skill, Monster monster, Player player)
     {
         if (lt != null && rb != null && skill)
         {
-            getPlayersInRange(monster).ForEach(x => x.dispel());
+            foreach (var chr in getPlayersInRange(monster))
+            {
+                await chr.dispel();
+            }
         }
         else
         {
-            player.dispel();
+            await player.dispel();
         }
     }
 
@@ -365,15 +368,15 @@ public class MobSkill : ISkill
         }
     }
 
-    private void spawnMonsterMist(Monster monster)
+    private async Task spawnMonsterMist(Monster monster)
     {
         Rectangle mistArea = calculateBoundingBox(monster.getPosition());
         var mist = new MobMist(mistArea, monster, this);
         int mistDuration = x * 100;
-        monster.getMap().spawnMist(mist, mistDuration, false, false, false);
+        await monster.getMap().spawnMist(mist, mistDuration, false, false, false);
     }
 
-    private void summonMonsters(Monster monster)
+    private async Task summonMonsters(Monster monster)
     {
         int skillLimit = this.limit;
         var map = monster.getMap();
@@ -395,7 +398,7 @@ public class MobSkill : ISkill
 
                 foreach (int mobId in summons.Take(summonLimit))
                 {
-                    var toSpawnData =  LifeFactory.Instance.getMonster(mobId);
+                    var toSpawnData = LifeFactory.Instance.getMonster(mobId);
                     if (toSpawnData != null)
                     {
                         int ypos, xpos;
@@ -463,11 +466,11 @@ public class MobSkill : ISkill
                         }
                         if (toSpawn.getId() == MobId.LOW_DARKSTAR)
                         {
-                            map.spawnFakeMonster(toSpawn);
+                            await map.spawnFakeMonster(toSpawn);
                         }
                         else
                         {
-                            map.spawnMonster(toSpawn);
+                            await map.spawnMonster(toSpawn);
                         }
                         monster.addSummonedMob(toSpawn);
                     }
@@ -476,22 +479,22 @@ public class MobSkill : ISkill
         }
     }
 
-    private void applyMonsterBuffs(Dictionary<MonsterStatus, int> stats, bool skill, Monster monster, List<int> reflection)
+    private async Task applyMonsterBuffs(Dictionary<MonsterStatus, int> stats, bool skill, Monster monster, List<int> reflection)
     {
         if (lt != null && rb != null && skill)
         {
             foreach (var mons in getObjectsInRange(monster, MapObjectType.MONSTER))
             {
-                ((Monster)mons).applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
+                await ((Monster)mons).applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
             }
         }
         else
         {
-            monster.applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
+            await monster.applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
         }
     }
 
-    private void applyDisease(Disease disease, bool skill, Monster monster, Player player)
+    private async Task applyDisease(Disease disease, bool skill, Monster monster, Player player)
     {
         if (lt != null && rb != null && skill)
         {
@@ -500,7 +503,7 @@ public class MobSkill : ISkill
             {
                 if (i < count)
                 {
-                    character.giveDebuff(disease, this);
+                    await character.giveDebuff(disease, this);
                     i++;
                 }
                 else
@@ -511,7 +514,7 @@ public class MobSkill : ISkill
         }
         else
         {
-            player.giveDebuff(disease, this);
+            await player.giveDebuff(disease, this);
         }
     }
 

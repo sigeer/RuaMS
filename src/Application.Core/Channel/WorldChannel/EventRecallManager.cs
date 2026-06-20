@@ -19,7 +19,6 @@
 */
 
 using Application.Core.scripting.Events.Instances;
-using scripting.Event;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Channel;
@@ -37,7 +36,7 @@ public class EventRecallManager : TaskBase
     {
     }
 
-    protected override void HandleRun()
+    protected override Task HandleRun()
     {
         if (eventHistory.Count > 0)
         {
@@ -56,6 +55,7 @@ public class EventRecallManager : TaskBase
                 eventHistory.Remove(r);
             }
         }
+        return Task.CompletedTask;
     }
 
 
@@ -64,11 +64,11 @@ public class EventRecallManager : TaskBase
         return eim != null && !eim.isEventDisposed();
     }
 
-    public void recallEventInstance(Player chr)
+    public async Task recallEventInstance(Player chr)
     {
         if (eventHistory.TryRemove(chr.Id, out var eim) && isRecallableEvent(eim))
         {
-            eim.registerPlayer(chr);
+            await eim.registerPlayer(chr);
         }
     }
 

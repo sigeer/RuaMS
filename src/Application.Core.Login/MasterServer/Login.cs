@@ -2,19 +2,10 @@ using Application.Core.Login.Client;
 using Application.Core.Login.Datas;
 using Application.Core.Login.Models;
 using Application.Core.Login.Session;
-using Application.EF.Entities;
 using Application.Shared.Login;
-using Application.Shared.Message;
-using Application.Shared.Models;
 using Application.Utility.Configs;
-using CreatorProto;
-using Google.Protobuf;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using SystemProto;
-using XmlWzReader;
 
 namespace Application.Core.Login
 {
@@ -96,74 +87,40 @@ namespace Application.Core.Login
             }
         }
 
-
-        private Lock srvLock = new ();
-
-        private Dictionary<ILoginClient, DateTimeOffset> inLoginState = new(100);
+        private ConcurrentDictionary<ILoginClient, DateTimeOffset> inLoginState = new();
         public void RegisterLoginState(ILoginClient c)
         {
-            srvLock.Enter();
-            try
-            {
-                inLoginState[c] = DateTimeOffset.UtcNow.AddMinutes(10);
-            }
-            finally
-            {
-                srvLock.Exit();
-            }
+            inLoginState[c] = DateTimeOffset.UtcNow.AddMinutes(10);
         }
 
         public void UnregisterLoginState(ILoginClient c)
         {
-            srvLock.Enter();
-            try
-            {
-                inLoginState.Remove(c);
-            }
-            finally
-            {
-                srvLock.Exit();
-            }
+            inLoginState.TryRemove(c, out _);
         }
 
         private async Task DisconnectIdlesOnLoginState()
         {
-            List<ILoginClient> toDisconnect = new();
+            var timeNow = DateTimeOffset.UtcNow;
+            var toDisconnect = inLoginState
+                .Where(x => timeNow > x.Value)
+                .ToList();
 
-            srvLock.Enter();
-            try
+            foreach (var kvp in toDisconnect)
             {
-                var timeNow = DateTimeOffset.UtcNow;
-
-                foreach (var mc in inLoginState)
-                {
-                    if (timeNow > mc.Value)
-                    {
-                        toDisconnect.Add(mc.Key);
-                    }
-                }
-
-                foreach (var c in toDisconnect)
-                {
-                    inLoginState.Remove(c);
-                }
-            }
-            finally
-            {
-                srvLock.Exit();
+                inLoginState.TryRemove(kvp);
             }
 
             var sessionCoordinator = ServiceProvider.GetRequiredService<SessionCoordinator>();
             foreach (var c in toDisconnect)
             {
                 // thanks Lei for pointing a deadlock issue with srvLock
-                if (c.IsOnlined)
+                if (c.Key.IsOnlined)
                 {
-                    c.Disconnect();
+                    await c.Key.Disconnect();
                 }
                 else
                 {
-                    sessionCoordinator.closeSession(c, true);
+                    sessionCoordinator.closeSession(c.Key, true);
                 }
             }
         }

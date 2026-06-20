@@ -1,7 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
-using Application.Core.Channel.Invitation;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
@@ -14,7 +13,6 @@ using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using server.life;
 using server.maps;
 
 namespace Application.Core.Channel.HostExtensions

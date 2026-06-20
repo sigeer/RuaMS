@@ -1,6 +1,5 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Models;
-using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using System.Text;
 
@@ -14,12 +13,12 @@ public class GachaCommand : CommandBase
         _gachaponManager = gachaponManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override async Task Execute(IChannelClient c, string[] paramValues)
     {
         GachaponDataObject? gacha = null;
         string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
-        string[] names = { 
+        string[] names = {
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Henesys)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Ellinia)),
             c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Perion)),
@@ -59,10 +58,10 @@ public class GachaCommand : CommandBase
 
         if (gacha == null)
         {
-            c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.GachaCommand_Syntax));
+            await c.OnlinedCharacter.Yellow(nameof(ClientMessage.GachaCommand_Syntax));
             foreach (string name in names)
             {
-                c.OnlinedCharacter.yellowMessage(name);
+                await c.OnlinedCharacter.Yellow(name);
             }
             return;
         }
@@ -77,6 +76,6 @@ public class GachaCommand : CommandBase
         }
         sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message2)));
 
-        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        await c.OnlinedCharacter.Dialog(sb.ToString());
     }
 }

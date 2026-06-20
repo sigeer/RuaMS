@@ -11,10 +11,10 @@ public class RanksCommand : CommandBase
         _rankService = rankService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
-        player.sendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, _rankService.LoadPlayerRanking()));
+        await player.SendPacket(GuildPackets.showPlayerRanks(NpcId.MAPLE_ADMINISTRATOR, _rankService.LoadPlayerRanking()));
     }
 }

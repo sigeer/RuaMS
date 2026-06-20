@@ -11,7 +11,6 @@ using AutoMapper;
 using client;
 using client.inventory;
 using client.keybind;
-using Humanizer;
 using net.server.guild;
 using server;
 using server.events;
@@ -63,13 +62,13 @@ namespace Application.Core.Channel.Services
         //    _transport.BatchSyncPlayer(list, saveDB);
         //}
 
-        public Player? Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
+        public async Task<Player?> Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
         {
             if (o == null)
                 return null;
 
             var mapManager = c.CurrentServer.getMapFactory();
-            var mapModel = mapManager.getMap(o.Character.Map) ?? mapManager.getMap(MapId.HENESYS);
+            var mapModel = await mapManager.getMap(o.Character.Map) ?? await mapManager.getMap(MapId.HENESYS);
 
             var portal = mapModel.getPortal(o.Character.Spawnpoint);
             if (portal == null)
@@ -129,7 +128,7 @@ namespace Application.Core.Channel.Services
 
                 var itemObj = _mapper.Map<Item>(item);
                 var type = InventoryTypeUtils.GetByType(item.InventoryType);
-                player.Bag[type].PutItem((short)item.Position, itemObj, true);
+                await player.Bag[type].PutItem((short)item.Position, itemObj, true);
 
                 if (itemObj is Equip equipObj)
                 {
@@ -171,7 +170,7 @@ namespace Application.Core.Channel.Services
                     player.addExcluded(petId, itemId);
                 }
             }
-            player.commitExcludedItems();
+            await player.commitExcludedItems();
 
             player.PlayerTrockLocation.LoadData(o.TrockLocations);
             player.AreaInfo = o.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
@@ -223,7 +222,6 @@ namespace Application.Core.Channel.Services
                 player.giveCoolDowns(skillid, startTime, length);
             }
 
-            // TODO Disease
 
             foreach (var item in o.SkillMacros)
             {
@@ -256,7 +254,7 @@ namespace Application.Core.Channel.Services
             }
 
             player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.BuddyList));
-            player.UpdateLocalStats(true);
+            await player.UpdateLocalStats(true);
             return player;
         }
 
@@ -407,41 +405,38 @@ namespace Application.Core.Channel.Services
             return data;
         }
 
-        public void CompleteLogin(WorldChannel server, Player chr, SyncProto.PlayerGetterDto o)
+        public async Task CompleteLogin(WorldChannel server, Player chr, SyncProto.PlayerGetterDto o)
         {
-            _ = _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel)
-                .ContinueWith(t =>
+            await _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
+            await chr.MapModel.Send(async map =>
+            {
+                var mapChr = map.getCharacterById(chr.Id);
+                if (mapChr != null)
                 {
-                    chr.MapModel.Send(map =>
+                    if (o.LoginInfo.IsNewCommer)
                     {
-                        var mapChr = map.getCharacterById(chr.Id);
-                        if (mapChr != null)
-                        {
-                            if (o.LoginInfo.IsNewCommer)
-                            {
-                                mapChr.setLoginTime(server.Node.GetCurrentTimeDateTimeOffset());
-                                mapChr.sendPacket(PacketCreator.SyncHpMpAlert(mapChr.HpAlert, mapChr.MpAlert));
-                            }
+                        mapChr.setLoginTime(server.Node.GetCurrentTimeDateTimeOffset());
+                        await mapChr.SendPacket(PacketCreator.SyncHpMpAlert(mapChr.HpAlert, mapChr.MpAlert));
+                    }
 
-                            var guild = mapChr.GetGuild();
-                            if (guild != null)
-                            {
-                                mapChr.sendPacket(GuildPackets.ShowGuildInfo(guild));
-                            }
+                    var guild = mapChr.GetGuild();
+                    if (guild != null)
+                    {
+                        await mapChr.SendPacket(GuildPackets.ShowGuildInfo(guild));
+                    }
 
-                            var alliance = mapChr.GetAlliance();
-                            if (alliance != null)
-                            {
-                                mapChr.sendPacket(GuildPackets.UpdateAllianceInfo(alliance));
-                                mapChr.sendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.Notice));
-                            }
+                    var alliance = mapChr.GetAlliance();
+                    if (alliance != null)
+                    {
+                        await mapChr.SendPacket(GuildPackets.UpdateAllianceInfo(alliance));
+                        await mapChr.SendPacket(GuildPackets.allianceNotice(alliance.AllianceId, alliance.Notice));
+                    }
 
-                            server.NodeService.RemoteCallService.RunEventAfterLogin(mapChr, o.RemoteCallList);
+                    server.NodeService.RemoteCallService.RunEventAfterLogin(mapChr, o.RemoteCallList);
 
-                            mapChr.CheckJail();
-                        }
-                    });
-                });
+                    await mapChr.CheckJail();
+                }
+            });
         }
 
         //public PlayerSaveDto DeserializeCashShop(Player player)
@@ -504,7 +499,7 @@ namespace Application.Core.Channel.Services
             _transport.SendBuffObject(player.getId(), DeserializeBuff(player));
         }
 
-        public void RecoverCharacterBuff(Player player)
+        public async Task RecoverCharacterBuff(Player player)
         {
             var buffdto = _transport.GetBuffObject(player.Id);
 
@@ -514,14 +509,15 @@ namespace Application.Core.Channel.Services
                     ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel)
                     : ItemInformationProvider.getInstance().getItemEffect(-x.SourceId);
 
-                statEffect?.silentApplyBuff(player, x.StartTime, x.Stats.Select(y => new BuffStatValue(BuffStat.From(y.BuffStat), y.Value)).ToList());
+                if (statEffect != null)
+                    await statEffect.silentApplyBuff(player, x.StartTime, x.Stats.Select(y => new BuffStatValue(BuffStat.From(y.BuffStat), y.Value)).ToList());
             }
 
             player.silentApplyDiseases(buffdto.Diseases);
             foreach (var e in player.Diseases.Values)
             {
                 var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Disease, e.FromMobSkill.getX()));
-                player.sendPacket(PacketCreator.giveDebuff(debuff, e.FromMobSkill));
+                await player.SendPacket(PacketCreator.giveDebuff(debuff, e.FromMobSkill));
             }
         }
 
@@ -532,7 +528,7 @@ namespace Application.Core.Channel.Services
                 var mob = LifeFactory.Instance.getMonster(lifeId);
                 if (mob == null)
                 {
-                    chr.dropMessage("You have entered an invalid mob id.");
+                    chr.Notice("You have entered an invalid mob id.");
                     return;
                 }
             }
@@ -542,7 +538,7 @@ namespace Application.Core.Channel.Services
                 var npc = LifeFactory.Instance.getNPC(lifeId);
                 if (npc == null)
                 {
-                    chr.dropMessage("You have entered an invalid npc id.");
+                    chr.Notice("You have entered an invalid npc id.");
                     return;
                 }
             }

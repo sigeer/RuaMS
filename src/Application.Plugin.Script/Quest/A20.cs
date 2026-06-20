@@ -15,20 +15,20 @@ namespace Application.Plugin.Script.Quest
             {
                 if (getPlayer().HP >= 50)
                 {
-                    getPlayer().UpdateHP(25);
+                    await getPlayer().UpdateHP(25);
                 }
 
                 if (!haveItem(2010007))
                 {
-                    gainItem(2010007, 1);
+                    await gainItem(2010007, 1);
                 }
 
-                forceStartQuest();
+                await forceStartQuest();
                 await SaySpeech([
                     "是不是吓了一跳？HP跌到0就坏了。来，给你#r#t2010007##k，把它吃掉就会恢复了。你打开道具窗看看",
                         "你要把我给你的#t2010007#全部吃掉，停滞在一个地方什么都不做HP也会恢复的。。。你恢复了全部的HP在跟我聊聊吧。"
                     ]);
-                showInfo("UI/tutorial.img/28");
+                await showInfo("UI/tutorial.img/28");
             }
         }
         // Quest: 1021 
@@ -48,18 +48,18 @@ namespace Application.Plugin.Script.Quest
                     ]);
                 if (isQuestCompleted(1021))
                 {
-                    dropMessage(1, "未知错误");
+                    await Popup("未知错误");
                 }
                 else if (canHold(2010000) && canHold(2010009))
                 {
-                    gainExp(10);
-                    gainItem(2010000, 3);
-                    gainItem(2010009, 3);
-                    forceCompleteQuest();
+                    await gainExp(10);
+                    await gainItem(2010000, 3);
+                    await gainItem(2010009, 3);
+                    await forceCompleteQuest();
                 }
                 else
                 {
-                    dropMessage(1, "你的背包已经满了。");
+                    await Popup("你的背包已经满了。");
                 }
             }
         }

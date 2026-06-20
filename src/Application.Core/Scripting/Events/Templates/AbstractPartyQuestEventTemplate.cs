@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Scripting.Events;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.scripting.Events.Templates
 {

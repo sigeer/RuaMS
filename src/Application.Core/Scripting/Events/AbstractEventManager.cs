@@ -4,16 +4,16 @@ using Application.Core.model;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Resources.Messages;
 using Application.Utility.Performance;
 using Application.Utility.Tickables;
 using server.quest;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events
 {
-    public abstract class AbstractEventManager : ITickableTree, IDisposable
+    public abstract class AbstractEventManager : ITickableTree, IAsyncDisposable
     {
         protected ILogger log = LogFactory.GetLogger(LogType.EventManager);
 
@@ -74,7 +74,7 @@ namespace Application.Core.Scripting.Events
             return disposed;
         }
 
-        public virtual void Dispose()
+        public virtual async ValueTask DisposeAsync()
         {
             if (disposed)
                 return;
@@ -87,7 +87,7 @@ namespace Application.Core.Scripting.Events
 
             foreach (var eim in eimList)
             {
-                eim.Dispose();
+                await eim.DisposeAsync();
             }
 
             openedLobbys.Clear();
@@ -97,7 +97,7 @@ namespace Application.Core.Scripting.Events
 
             foreach (var eim in readyEims)
             {
-                eim.Dispose();
+                await eim.DisposeAsync();
             }
             onLoadInstances = 0;
         }
@@ -112,9 +112,9 @@ namespace Application.Core.Scripting.Events
             return cserv;
         }
 
-        public IMap GetMap(int mapId)
+        public async Task<IMap> GetMap(int mapId)
         {
-            var map = getChannelServer().getMapFactory().getMap(mapId);
+            var map = await getChannelServer().getMapFactory().getMap(mapId);
             return map;
         }
 
@@ -123,11 +123,11 @@ namespace Application.Core.Scripting.Events
             return Name;
         }
 
-        public void startQuest(Player chr, int id, int npcid)
+        public async Task startQuest(Player chr, int id, int npcid)
         {
             try
             {
-                Quest.getInstance(id).forceStart(chr, npcid);
+                await Quest.getInstance(id).forceStart(chr, npcid);
             }
             catch (NullReferenceException ex)
             {
@@ -135,11 +135,11 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public void completeQuest(Player chr, int id, int npcid)
+        public async Task completeQuest(Player chr, int id, int npcid)
         {
             try
             {
-                Quest.getInstance(id).forceComplete(chr, npcid);
+                await Quest.getInstance(id).forceComplete(chr, npcid);
             }
             catch (NullReferenceException ex)
             {
@@ -147,9 +147,9 @@ namespace Application.Core.Scripting.Events
             }
         }
 
-        public virtual void OnTick(long now)
+        public virtual async Task OnTick(long now)
         {
-            this.ProcessSubTickables(now);
+            await this.ProcessSubTickables(now);
         }
 
         protected virtual AbstractEventInstanceManager CreateNewInstance(string instanceName)
@@ -211,9 +211,9 @@ namespace Application.Core.Scripting.Events
             SubTickables.Add(new DelayedDisposeRequest(this, instanceName, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));
         }
 
-        protected AbstractEventInstanceManager CreateInstance(int level, int lobbyId)
+        protected async Task<AbstractEventInstanceManager> CreateInstance(int level, int lobbyId)
         {
-            return Setup(level, lobbyId);
+            return await Setup(level, lobbyId);
         }
 
         protected void registerEventInstance(AbstractEventInstanceManager eim, int lobbyId)
@@ -312,17 +312,17 @@ namespace Application.Core.Scripting.Events
             return -1;
         }
 
-        public abstract CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1);
+        public abstract Task<CreateInstanceResult> StartInstance(Player leader, int difficulty = 1, int lobbyId = -1);
 
-        public virtual AbstractEventInstanceManager Setup(int level, int lobbyId)
+        public virtual async Task<AbstractEventInstanceManager> Setup(int level, int lobbyId)
         {
             var eim = newInstance(Name + lobbyId);
             eim.setProperty("level", level);
 
-            Template.OnSetup(eim, level, lobbyId);
-            Template.respawnStages(eim);
-            eim.startEventTimer(EventTime * 1000);
-            Template.setEventRewards(eim);
+            await Template.OnSetup(eim, level, lobbyId);
+            await Template.respawnStages(eim);
+            await eim.startEventTimer(EventTime * 1000);
+            await Template.setEventRewards(eim);
 
             return eim;
         }
@@ -339,9 +339,10 @@ namespace Application.Core.Scripting.Events
                 _instanceName = instanceName;
             }
 
-            protected override void Handle(long now)
+            protected override Task Handle(long now)
             {
                 _src.ProcessDisposeInstanceInternal(_instanceName);
+                return Task.CompletedTask;
             }
         }
     }

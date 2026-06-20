@@ -33,7 +33,7 @@ public class PetTamenessAction : AbstractQuestAction
         questID = quest.getId();
         tameness = data;
     }
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
         var c = chr.getClient();
 
@@ -43,14 +43,14 @@ public class PetTamenessAction : AbstractQuestAction
             return;
         }
 
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
-            pet.gainTamenessFullness(tameness, 0, 0);
+            await pet.gainTamenessFullness(tameness, 0, 0);
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
     }
 }

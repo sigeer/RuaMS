@@ -10,10 +10,10 @@ public class UptimeCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var dur = TimeSpan.FromMilliseconds(c.CurrentServer.Node.getCurrentTimestamp());
 
-        c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.UptimeCommand_Message1), dur.Humanize(culture: c.CurrentCulture.CultureInfo));
+        await c.OnlinedCharacter.Yellow(nameof(ClientMessage.UptimeCommand_Message1), dur.Humanize(culture: c.CurrentCulture.CultureInfo));
     }
 }

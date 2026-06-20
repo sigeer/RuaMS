@@ -212,24 +212,24 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         return MapObjectType.ITEM;
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
         var chr = client.OnlinedCharacter;
 
         if (chr.needQuestItem(questid, getItemId()))
         {
-            client.sendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2, 0));
+            await client.SendPacket(PacketCreator.dropItemFromMapObject(chr, this, null, getPosition(), 2, 0));
         }
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeItemFromMap(getObjectId(), DropLeaveFieldType.None, 0));
+        await client.SendPacket(PacketCreator.removeItemFromMap(getObjectId(), DropLeaveFieldType.None, 0));
     }
 
-    public override void OnMounted(IMap map)
+    public override async Task OnMounted(IMap map)
     {
-        base.OnMounted(map);
+        await base.OnMounted(map);
 
         dropTime = map.ChannelServer.Node.getCurrentTime();
         ExpiredTime = dropper.getMap().getEverlast() ? long.MaxValue : dropTime + YamlConfig.config.server.ITEM_EXPIRE_TIME;
@@ -238,11 +238,11 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         willHitReactor = map.CanHitReactor(this);
     }
 
-    public override void OnUnmounted()
+    public override async Task OnUnmounted()
     {
         setPickedUp(true);
 
-        base.OnUnmounted();
+        await base.OnUnmounted();
     }
 
 
@@ -253,7 +253,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
 
     bool willHitReactor;
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
@@ -268,7 +268,7 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
 
         if (willHitReactor && !isPickedUp() && Next <= now)
         {
-            MapModel.TryHitReactorByMapItem(this);
+            await MapModel.TryHitReactorByMapItem(this);
             Status = TickableStatus.InActive;
             return;
         }

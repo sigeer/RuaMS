@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterBombHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var monster = c.OnlinedCharacter.getMap().getMonsterByOid(oid);
@@ -37,9 +37,9 @@ public class MonsterBombHandler : ChannelHandlerBase
         }
         if (monster.getId() == MobId.HIGH_DARKSTAR || monster.getId() == MobId.LOW_DARKSTAR)
         {
-            c.OnlinedCharacter.getMap().RemoveMapObject(monster, mapChr =>
+            await c.OnlinedCharacter.getMap().RemoveMapObject(monster, mapChr =>
             {
-                mapChr.sendPacket(PacketCreator.killMonster(monster.getObjectId(), 4));
+                return mapChr.SendPacket(PacketCreator.killMonster(monster.getObjectId(), 4));
             });
         }
     }

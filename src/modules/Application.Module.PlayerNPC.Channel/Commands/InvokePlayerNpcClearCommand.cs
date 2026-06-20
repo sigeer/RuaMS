@@ -35,8 +35,8 @@ namespace Application.Module.PlayerNPC.Channel.Commands
                     {
                         map.RemoveMapObject(pn, mapChr =>
                         {
-                            mapChr.sendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                            mapChr.sendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                            mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                            mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                         });
                     }
                 }

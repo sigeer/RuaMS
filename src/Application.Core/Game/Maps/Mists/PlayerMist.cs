@@ -70,7 +70,7 @@ namespace Application.Core.Game.Maps.Mists
             return Source.makeChanceResult();
         }
 
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             if (!this.IsAvailable())
             {
@@ -99,7 +99,7 @@ namespace Application.Core.Game.Maps.Mists
                         if (makeChanceResult())
                         {
                             MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), getSourceSkill());
-                            ((Monster)mo).applyStatus(owner, poisonEffect, true, Source.getDuration());
+                            await ((Monster)mo).applyStatus(owner, poisonEffect, true, Source.getDuration());
                         }
                     }
                 }

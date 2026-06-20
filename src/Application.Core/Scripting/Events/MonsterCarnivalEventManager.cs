@@ -7,9 +7,10 @@ namespace Application.Core.Scripting.Events
 {
     public class MonsterCarnivalEventManager : PartyQuestEventManager
     {
-        public override AbstractMonsterCarnivalEventTemplate GetTemplate => (Template as AbstractMonsterCarnivalEventTemplate)!;
+        public override AbstractMonsterCarnivalEventTemplate GetTemplate { get; }
         public MonsterCarnivalEventManager(WorldChannel cserv, AbstractMonsterCarnivalEventTemplate template) : base(cserv, template)
         {
+            GetTemplate = template;
         }
 
         protected override AbstractEventInstanceManager CreateNewInstance(string instanceName)

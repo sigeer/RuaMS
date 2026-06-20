@@ -25,7 +25,7 @@ namespace ServiceTest.Games.Inventory
             var item = inv.findById(5000041);
             Assert.That(item is Pet);
 
-            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
+            await chr.SyncCharAsync(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
             var storageSerivce = GameTestGlobal.TestServer.ServiceProvider.GetRequiredService<ServerManager>();
             await storageSerivce.CommitAllImmediately();
             //模拟重新登录
@@ -41,8 +41,8 @@ namespace ServiceTest.Games.Inventory
             var item2 = inv2.findById(5000041);
             Assert.That(item2 is Pet);
 
-            InventoryManipulator.removeById(chr.Client, InventoryType.CASH, 5000041, 1, false, false);
-            chr.saveCharToDB(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
+            await InventoryManipulator.removeById(chr.Client, InventoryType.CASH, 5000041, 1, false, false);
+            await chr.SyncCharAsync(Application.Shared.Events.SyncCharacterTrigger.EnterCashShop);
             await storageSerivce.CommitAllImmediately();
         }
     }

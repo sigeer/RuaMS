@@ -1,5 +1,4 @@
 using Application.Shared.Invitations;
-using Dto;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -25,9 +24,11 @@ namespace Application.Core.Channel.Invitation
                 if (result == InviteResultType.DENIED)
                 {
                     var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                    senderActor?.Send(m =>
+                    senderActor?.Send(async m =>
                     {
-                        m.getCharacterById(data.SenderPlayerId)?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 5, 0));
+                        var chr = m.getCharacterById(data.SenderPlayerId);
+                        if (chr != null)
+                            await chr.SendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 5, 0));
                     });
                 }
             }
@@ -39,21 +40,25 @@ namespace Application.Core.Channel.Invitation
             if (code == InviteResponseCode.Success)
             {
                 var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
-                receiverActor?.Send(m =>
+                receiverActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
+                    var chr = m.getCharacterById(data.ReceivePlayerId);
+                    if (chr != null)
+                        await chr.SendPacket(PacketCreator.messengerInvite(data.SenderPlayerName, data.Key));
                 });
 
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                senderActor?.Send(m =>
+                senderActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 1));
+                    var chr = m.getCharacterById(data.SenderPlayerId);
+                    if (chr != null)
+                        await chr.SendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 1));
                 });
             }
             else
             {
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                senderActor?.Send(m =>
+                senderActor?.Send(async m =>
                 {
                     var sender = m.getCharacterById(data.SenderPlayerId);
                     if (sender != null)
@@ -61,16 +66,16 @@ namespace Application.Core.Channel.Invitation
                         switch (code)
                         {
                             case InviteResponseCode.ChatRoom_AlreadInRoom:
-                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already using Maple Messenger"));
+                                await sender.SendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already using Maple Messenger"));
                                 break;
                             case InviteResponseCode.MANAGING_INVITE:
-                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already managing a Maple Messenger invitation"));
+                                await sender.SendPacket(PacketCreator.messengerChat(sender.Name + " : " + data.ReceivePlayerName + " is already managing a Maple Messenger invitation"));
                                 break;
                             case InviteResponseCode.InviteesNotFound:
-                                sender.sendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 0));
+                                await sender.SendPacket(PacketCreator.messengerNote(data.ReceivePlayerName, 4, 0));
                                 break;
                             case InviteResponseCode.ChatRoom_CapacityFull:
-                                sender.sendPacket(PacketCreator.messengerChat(sender.Name + " : You cannot have more than 3 people in the Maple Messenger"));
+                                await sender.SendPacket(PacketCreator.messengerChat(sender.Name + " : You cannot have more than 3 people in the Maple Messenger"));
                                 break;
                             default:
                                 _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", data.Type, code);

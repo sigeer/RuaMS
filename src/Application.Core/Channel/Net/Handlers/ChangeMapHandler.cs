@@ -37,7 +37,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -48,22 +48,22 @@ public class ChangeMapHandler : ChannelHandlerBase
                 _logger.LogWarning("Chr {CharacterName} got stuck when changing maps. Last visited mapids: {LastVisitedMapId}", chr.getName(), chr.getLastVisitedMapids());
             }
 
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
-        chr.getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+        await chr.closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
 
         bool enteringMapFromCashShop = p.available() == 0;
         if (enteringMapFromCashShop)
         {
-            c.LeaveCashShop();
+            await c.LeaveCashShop();
             return;
         }
 
         if (chr.getCashShop().isOpened())
         {
-            c.Disconnect(false, false);
+            await c.Disconnect(false, false);
             return;
         }
 
@@ -92,25 +92,25 @@ public class ChangeMapHandler : ChannelHandlerBase
                     {
                         // thanks lucasziron (lziron) for showing revivePlayer() triggering by Wheel
 
-                        InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.WHEEL_OF_FORTUNE, 1, true, false);
-                        chr.sendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE)));
+                        await InventoryManipulator.removeById(c, InventoryType.CASH, ItemId.WHEEL_OF_FORTUNE, 1, true, false);
+                        await chr.SendPacket(PacketCreator.showWheelsLeft(chr.getItemQuantity(ItemId.WHEEL_OF_FORTUNE)));
 
-                        chr.UpdateStatsChunk(() =>
+                        await chr.UpdateStatsChunk(async () =>
                         {
-                            chr.SetHP(50);
+                            await chr.SetHP(50);
                         });
-                        chr.changeMap(map, map.findClosestPlayerSpawnpoint(chr.getPosition()));
+                        await chr.changeMap(map, map.findClosestPlayerSpawnpoint(chr.getPosition()));
                     }
                     else
                     {
                         bool executeStandardPath = true;
                         if (chr.getEventInstance() != null)
                         {
-                            executeStandardPath = chr.getEventInstance()!.revivePlayer(chr);
+                            executeStandardPath = await chr.getEventInstance()!.revivePlayer(chr);
                         }
                         if (executeStandardPath)
                         {
-                            chr.respawn(map.getReturnMapId());
+                            await chr.respawn(map.getReturnMapId());
                         }
                     }
                 }
@@ -118,8 +118,8 @@ public class ChangeMapHandler : ChannelHandlerBase
                 {
                     if (chr.isGM())
                     {
-                        var to = chr.getWarpMap(targetMapId);
-                        chr.changeMap(to, to.getPortal(0));
+                        var to = await chr.getWarpMap(targetMapId);
+                        await chr.changeMap(to, to.getPortal(0));
                     }
                     else
                     {
@@ -136,8 +136,8 @@ public class ChangeMapHandler : ChannelHandlerBase
                         {
                             if (targetMapId == MapId.LITH_HARBOUR)
                             {
-                                c.sendPacket(PacketCreator.lockUI(false));
-                                c.sendPacket(PacketCreator.disableUI(false));
+                                await c.SendPacket(PacketCreator.lockUI(false));
+                                await c.SendPacket(PacketCreator.disableUI(false));
                                 warp = true;
                             }
                         }
@@ -171,8 +171,8 @@ public class ChangeMapHandler : ChannelHandlerBase
                         }
                         if (warp)
                         {
-                            var to = chr.getWarpMap(targetMapId);
-                            chr.changeMap(to, to.getPortal(0));
+                            var to = await chr.getWarpMap(targetMapId);
+                            await chr.changeMap(to, to.getPortal(0));
                         }
                     }
                 }
@@ -180,8 +180,8 @@ public class ChangeMapHandler : ChannelHandlerBase
 
             if (portal != null && !portal.getPortalStatus())
             {
-                c.sendPacket(PacketCreator.BlockMapMessage(1));
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.BlockMapMessage(1));
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -198,15 +198,15 @@ public class ChangeMapHandler : ChannelHandlerBase
             {
                 if (portal.getPosition().distanceSq(chr.getPosition()) > 400000)
                 {
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
-                portal.enterPortal(c);
+                await portal.enterPortal(c);
             }
             else
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
         }
         catch (Exception e)

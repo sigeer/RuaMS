@@ -1,7 +1,4 @@
 using Application.Core.Channel;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Game.ContiMove
 {
@@ -10,7 +7,7 @@ namespace Application.Core.Game.ContiMove
     /// </summary>
     internal class Genie : ContiMoveBase
     {
-        public Genie(WorldChannel channelServer) : 
+        public Genie(WorldChannel channelServer) :
             base(channelServer,
                 200000100, 0, 260000100, 0,
                 200000152, 260000110,

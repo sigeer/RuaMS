@@ -7,12 +7,12 @@ public class HorntailCommand : CommandBase
         Description = "Spawn Horntail on your location.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var targetPoint = player.getPosition();
         var targetMap = player.getMap();
 
-        targetMap.spawnHorntailOnGroundBelow(targetPoint);
+        await targetMap.spawnHorntailOnGroundBelow(targetPoint);
     }
 }

@@ -1,12 +1,8 @@
-using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
-using Application.Core.Game.Items;
 using Application.Core.Models;
 using Application.Templates.Item;
 using Application.Utility.Tickables;
 using client.inventory;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -97,19 +93,19 @@ namespace Application.Core.Game.Players
             Dispose(disposing: true);
         }
 
-        void RemoveItemInternal(AbstractInventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        async Task RemoveItemInternal(AbstractInventory inv, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             bool allowZero = consume && ItemConstants.isRechargeable(invItem.getItemId());
-            var removeRes = inv.removeItem(invItem.getPosition(), out var actualRemoved, quantity, allowZero);
+            var (removeRes, actualRemoved) = await inv.removeItem(invItem.getPosition(), quantity, allowZero);
             if (removeRes != null)
             {
                 if (inv.getType() != InventoryType.CANHOLD)
                 {
-                    Owner.SyncClientInventory(removeRes, fromDrop);
+                    await Owner.SyncClientInventory(removeRes, fromDrop);
                 }
 
                 if (showMessage && actualRemoved > 0)
-                    Owner.sendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-actualRemoved, true));
+                    await Owner.SendPacket(PacketCreator.getShowItemGain(invItem.getItemId(), (short)-actualRemoved, true));
             }
         }
 
@@ -122,14 +118,14 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <returns></returns>
-        public bool TryRemoveFromSlot(InventoryType type, short slot, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public async Task<bool> TryRemoveFromSlot(InventoryType type, short slot, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             var inv = this[type];
             var item = inv.getItem(slot);
             if (item == null)
                 return false;
 
-            return TryRemoveFromItem(type, item, quantity, fromDrop, consume, showMessage);
+            return await TryRemoveFromItem(type, item, quantity, fromDrop, consume, showMessage);
         }
 
         /// <summary>
@@ -141,7 +137,7 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <returns></returns>
-        public bool TryRemoveFromItem(InventoryType type, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public async Task<bool> TryRemoveFromItem(InventoryType type, Item invItem, short quantity = 1, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             var inv = this[type];
             if (invItem.getQuantity() < quantity)
@@ -150,7 +146,7 @@ namespace Application.Core.Game.Players
             if (!inv.Contains(invItem))
                 return false;
 
-            RemoveItemInternal(inv, invItem, quantity, fromDrop, consume, showMessage);
+            await RemoveItemInternal(inv, invItem, quantity, fromDrop, consume, showMessage);
 
             return true;
         }
@@ -164,7 +160,7 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <param name="showMessage"></param>
-        public void RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public async Task RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             var inv = this[invType];
 
@@ -179,7 +175,7 @@ namespace Application.Core.Game.Players
                 if (filter == null || filter(p.Item))
                 {
                     bool allowZero = consume && ItemConstants.isRechargeable(p.Item.getItemId());
-                    var removeRes = inv.removeItem(p.Slot, out var removedCount, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
+                    var (removeRes, removedCount) = await inv.removeItem(p.Slot, toRemoveCount >= short.MaxValue ? short.MaxValue : (short)toRemoveCount, allowZero);
                     if (removeRes != null)
                     {
                         ops.Add(removeRes);
@@ -192,7 +188,7 @@ namespace Application.Core.Game.Players
 
             if (invType != InventoryType.CANHOLD)
             {
-                Owner.SyncClientInventory(ops, fromDrop);
+                await Owner.SyncClientInventory(ops, fromDrop);
             }
 
             if (showMessage)
@@ -200,7 +196,7 @@ namespace Application.Core.Game.Players
                 var showData = modifiedItems.GroupBy(x => x.ItemId).ToDictionary(x => x.Key, x => x.Sum(x => x.RemovedCount));
                 foreach (var data in showData)
                 {
-                    Owner.sendPacket(PacketCreator.getShowItemGain(data.Key, (short)-data.Value, true));
+                    await Owner.SendPacket(PacketCreator.getShowItemGain(data.Key, (short)-data.Value, true));
                 }
             }
         }
@@ -209,26 +205,26 @@ namespace Application.Core.Game.Players
         /// 移除背包中所有组队任务道具
         /// </summary>
         /// <param name="chr"></param>
-        public void ClearPartyQuestItems()
+        public async Task ClearPartyQuestItems()
         {
             InventoryType[] includedInv = [InventoryType.USE, InventoryType.ETC];
-            BatchRemoveFromInventory(includedInv, item => (item.SourceTemplate as ItemTemplateBase)?.PartyQuest ?? false, showMessage: true);
+            await BatchRemoveFromInventory(includedInv, item => (item.SourceTemplate as ItemTemplateBase)?.PartyQuest ?? false, showMessage: true);
         }
 
         /// <summary>
         /// 离线时移除
         /// </summary>
-        public void ClearWhenLogout()
+        public async Task ClearWhenLogout()
         {
             InventoryType[] includedInv = [InventoryType.EQUIP, InventoryType.EQUIPPED, InventoryType.SETUP, InventoryType.ETC];
-            BatchRemoveFromInventory(includedInv, item => item.SourceTemplate.ExpireOnLogout, showMessage: true);
+            await BatchRemoveFromInventory(includedInv, item => item.SourceTemplate.ExpireOnLogout, showMessage: true);
         }
 
-        public void BatchRemoveFromInventory(InventoryType[] inventoryTypes, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public async Task BatchRemoveFromInventory(InventoryType[] inventoryTypes, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
         {
             foreach (var type in inventoryTypes)
             {
-                RemoveFromInventory(type, int.MaxValue, filter, fromDrop, consume, showMessage);
+                await RemoveFromInventory(type, int.MaxValue, filter, fromDrop, consume, showMessage);
             }
         }
 
@@ -238,7 +234,7 @@ namespace Application.Core.Game.Players
 
         public TickableStatus Status { get; private set; }
 
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             if (this.IsAvailable())
             {
@@ -246,7 +242,7 @@ namespace Application.Core.Game.Players
                 {
                     foreach (var inv in GetValues())
                     {
-                        inv.OnTick(now);
+                        await inv.OnTick(now);
                     }
 
                     Next = now + Period;

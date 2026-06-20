@@ -1,7 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Events.Instances;
@@ -19,7 +18,7 @@ using server.maps;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
+    public interface IMap : IAsyncDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
     {
         int Id { get; }
         bool IsPirateDocked { get; }
@@ -51,7 +50,7 @@ namespace Application.Core.Game.Maps
         void allowSummonState(bool b);
         Point calcDropPos(Point initial, Point fallback);
         float getRecovery();
-        IMap getReturnMap();
+        Task<IMap> getReturnMap();
         int getReturnMapId();
         int getSeats();
         IDictionary<string, int> getEnvironment();
@@ -59,7 +58,7 @@ namespace Application.Core.Game.Maps
         bool getEverlast();
         int getFieldLimit();
         int getForcedReturnId();
-        IMap getForcedReturnMap();
+        Task<IMap> getForcedReturnMap();
         Point getGroundBelow(Point pos);
         int getHPDec();
         int getHPDecProtect();
@@ -74,21 +73,31 @@ namespace Application.Core.Game.Maps
         void setEventStarted(bool @event);
         void setMuted(bool mute);
         void setOxQuiz(bool b);
-        void setReactorState();
-        void addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team);
-        void addMonsterSpawn(int mobId, Point pos, int mobTime, int team);
+        Task setReactorState();
+        Task addMonsterSpawn(int mobId, Point pos, int cy, int f, int fh, int rx0, int rx1, int mobTime, bool hide, int team);
+        Task addMonsterSpawn(int mobId, Point pos, int mobTime, int team);
         #endregion
 
         #region MapObjects
-        bool AddMapObject(IMapObject mapobject, Action<IChannelClient>? packetbakery, bool allocateMabObjectId = true);
-        void ProcessMapObject(Func<IMapObject, bool> codition, Action<IMapObject> action);
+        Task<bool> AddMapObject(IMapObject mapobject, Func<IChannelClient, Task>? packetbakery, bool allocateMabObjectId = true);
+        Task ProcessMapObject(Func<IMapObject, bool> codition, Func<IMapObject, Task> action);
         IMapObject? getMapObject(int oid);
         List<IMapObject> getMapObjects();
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, HashSet<MapObjectType> types);
         List<IMapObject> getMapObjectsInRange(Point from, double rangeSq, HashSet<MapObjectType> types);
         List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject;
-        void clearMapObjects();
+        /// <summary>
+        /// 清理掉落物、怪物、反应堆
+        /// </summary>
+        /// <returns></returns>
+        Task clearMapObjects();
+        /// <summary>
+        /// 清理后立即生成怪物
+        /// </summary>
+        /// <returns></returns>
+        Task resetMapObjects();
+        Task resetPQ(int difficulty = 1);
         #endregion
 
         #region Players
@@ -101,17 +110,17 @@ namespace Application.Core.Game.Maps
         int getNumPlayersInArea(int index);
         int getNumPlayersInRect(Rectangle rect);
         List<Player> getPlayersInRange(Rectangle box);
-        void movePlayer(Player player, Point newPosition);
+        Task movePlayer(Player player, Point newPosition);
         /// <summary>
         /// 非玩家的可移动对象移动时
         /// </summary>
         /// <param name="mapObject"></param>
-        void MoveMapObject(AbstractAnimatedMapObject mapObject);
+        Task MoveMapObject(AbstractAnimatedMapObject mapObject);
         bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj);
-        void SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true);
-        void SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true);
-        void removePlayer(Player chr);
-        void addPlayer(Player chr);
+        Task SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true);
+        Task SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true);
+        Task removePlayer(Player chr);
+        Task addPlayer(Player chr);
         #endregion
 
         #region Monster
@@ -120,47 +129,45 @@ namespace Application.Core.Game.Maps
         int countMonsters();
         int countBosses();
 
-        void ProcessMonster(Action<Monster> action);
+        Task ProcessMonster(Func<Monster, Task> action);
 
         Monster? getMonsterById(int id);
         Monster? getMonsterByOid(int oid);
 
-        void spawnFakeMonster(Monster monster);
-        void spawnFakeMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
-        void spawnHorntailOnGroundBelow(Point targetPoint);
+        Task spawnFakeMonster(Monster monster);
+        Task spawnFakeMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
+        Task spawnHorntailOnGroundBelow(Point targetPoint);
         /// <summary>
         /// 召唤扎昆（复合型Mob）
         /// </summary>
         /// <param name="targetPoint"></param>
-        void SpawnZakumOnGroundBelow(Point targetPoint);
-        void spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
-        void spawnMonsterOnGroundBelow(int id, int x, int y);
+        Task SpawnZakumOnGroundBelow(Point targetPoint);
+        Task spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
+        Task spawnMonsterOnGroundBelow(int id, int x, int y);
         Monster CreateMonster(MobTemplate mobData, Point pos);
-        void spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
-        void spawnDojoMonster(MobTemplate monster);
-        void spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
-        void spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
+        Task spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
+        Task spawnDojoMonster(MobTemplate monster);
+        Task spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
+        Task spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);
 
         #endregion
 
 
-        void addPlayerPuppet(Player player);
 
-        void broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
-        void broadcastEnemyShip(bool state);
 
-        void broadcastMessage(Packet packet);
-        void broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false);
-        void broadcastMessage(Player? source, Packet packet, Point rangedFrom);
+        Task broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null);
+        Task broadcastEnemyShip(bool state);
 
-        void broadcastNightEffect();
+        Task broadcastMessage(Packet packet);
+        Task broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false);
+        Task broadcastMessage(Player? source, Packet packet, Point rangedFrom);
 
-        void broadcastHorntailVictory();
-        void broadcastPinkBeanVictory(int channel);
-        void broadcastShip(bool state);
+        Task broadcastNightEffect();
 
-        bool canDeployDoor(Point pos);
-        void checkMapOwnerActivity();
+        Task broadcastHorntailVictory();
+        Task broadcastPinkBeanVictory(int channel);
+        Task broadcastShip(bool state);
+        Task checkMapOwnerActivity();
         bool claimOwnership(Player chr);
 
 
@@ -185,10 +192,10 @@ namespace Application.Core.Game.Maps
 
         #region Npc
         NPC CreateNPC(NpcTemplate template, Point pos);
-        void SpawnNpc(int npcId, Point pos);
+        Task SpawnNpc(int npcId, Point pos);
         NPC? getNPCById(int id);
         bool containsNPC(int npcid);
-        void destroyNPC(int npcid);
+        Task destroyNPC(int npcid);
         #endregion
 
         #region Portal
@@ -201,8 +208,8 @@ namespace Application.Core.Game.Maps
         Portal getRandomPlayerSpawnpoint();
         int getSpawnedMonstersOnMap();
 
-        void instanceMapForceRespawn();
-        void instanceMapRespawn();
+        Task instanceMapForceRespawn();
+        Task instanceMapRespawn();
 
         bool isBlueCPQMap();
         bool isCPQLobby();
@@ -220,7 +227,7 @@ namespace Application.Core.Game.Maps
         /// <returns></returns>
         bool isHorntailDefeated();
         bool isMuted();
-        bool isOwnershipRestricted(Player chr);
+        Task<bool> isOwnershipRestricted(Player chr);
         bool isOxQuiz();
         bool isPurpleCPQMap();
         bool isStartingEventMap();
@@ -228,17 +235,17 @@ namespace Application.Core.Game.Maps
         /// <summary>
         /// 杀死所有怪物，不会掉落物品，不重生
         /// </summary>
-        void killAllMonsters();
+        Task killAllMonsters();
         /// <summary>
         /// 杀死所有怪物（友方单位除外）不会掉落物品，不重生
         /// </summary>
-        void killAllMonstersNotFriendly();
+        Task killAllMonstersNotFriendly();
         /// <summary>
         /// 击杀友方单位
         /// </summary>
         /// <param name="mob"></param>
-        void killFriendlies(Monster mob);
-        void killMonster(int mobId, bool withDrops = false);
+        Task killFriendlies(Monster mob);
+        Task killMonster(int mobId, bool withDrops = false);
 
         /// <summary>
         /// 从地图上移除Mob
@@ -248,87 +255,89 @@ namespace Application.Core.Game.Maps
         /// <param name="withDrops"></param>
         /// <param name="animation"></param>
         /// <param name="dropDelay"></param>
-        void RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0);
+        Task RemoveMob(Monster? monster, ICombatantObject? killer, bool withDrops, int animation = 1, short dropDelay = 0);
         #endregion
 
 
-        void makeMonsterReal(Monster monster);
-        void moveEnvironment(string ms, int type);
+        Task makeMonsterReal(Monster monster);
 
-        bool RemoveMapObject(IMapObject obj, Action<Player>? removePacketAction);
+
+        Task<bool> RemoveMapObject(IMapObject obj, Func<Player, Task>? removePacketAction);
         void removeMonsterSpawn(int mobId, int x, int y);
 
-        void removePlayerPuppet(Player player);
+        Task addPlayerPuppet(Player player);
+        Task removePlayerPuppet(Player player);
         bool removeSelfDestructive(int mapobjectid);
-        void reportMonsterSpawnPoints(Player chr);
-        void resetFully();
-        void resetMapObjects();
-        void resetPQ(int difficulty = 1);
+        Task reportMonsterSpawnPoints(Player chr);
 
-        void respawn();
+
+
+        Task respawn();
         void restoreMapSpawnPoints();
-        void sendNightEffect(Player chr);
+        Task sendNightEffect(Player chr);
         void setAllowSpawnPointInBox(bool allow, Rectangle box);
 
-        void spawnDoor(DoorObject door);
-        void spawnKite(Kite kite);
-        void spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short delay = 0);
-        void spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
+        Task spawnDoor(DoorObject door);
+        Task spawnKite(Kite kite);
+        Task spawnMesoDrop(int meso, Point position, IMapObject dropper, Player owner, bool playerDrop, DropType droptype, short delay = 0);
+        Task spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery);
 
 
-        void spawnSummon(Summon summon);
+        Task spawnSummon(Summon summon);
         void startEvent();
-        void startEvent(Player chr);
-        void startMapEffect(string msg, int itemId, long time = 30000);
+        Task startEvent(Player chr);
+        Task startMapEffect(string msg, int itemId, long time = 30000);
         void toggleDrops();
-        void toggleEnvironment(string ms);
+        Task toggleEnvironment(string ms);
+        Task moveEnvironment(string ms, int type);
         Player? unclaimOwnership();
         bool unclaimOwnership(Player? chr);
-        void updatePartyItemDropsToNewcomer(Player newcomer, List<MapItem> partyItems);
-        List<MapItem> updatePlayerItemDropsToParty(int partyid, int charid, List<Player> partyMembers, Player? partyLeaver);
-        void warpEveryone(int to);
-        void warpEveryone(int to, int pto);
-        void warpOutByTeam(int team, int mapid);
+
+        Task warpEveryone(int to);
+        Task warpEveryone(int to, int pto);
+        Task warpOutByTeam(int team, int mapid);
 
         /// <summary>
         /// 广播，无距离筛选
         /// </summary>
         /// <param name="effectPlayer"></param>
         /// <param name="exceptId"></param>
-        void BroadcastAll(Action<Player> effectPlayer, int exceptId = -1);
-        void Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Action<Player> effectPlayer);
-        void SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
+        Task BroadcastAll(Func<Player, Task> effectPlayer, int exceptId = -1);
+        Task Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Func<Player, Task> effectPlayer);
+        Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
 
         #region Reactors
-        void spawnReactor(Reactor reactor);
+        Task spawnReactor(Reactor reactor);
         int countReactors();
-        void destroyReactor(int oid);
-        void destroyReactors(int first, int last);
+        Task destroyReactor(int oid);
+        Task destroyReactors(int first, int last);
         Reactor? getReactorById(int Id);
         Reactor? getReactorByName(string name);
         Reactor? getReactorByOid(int oid);
         List<IMapObject> getReactors();
         List<Reactor> getReactorsByIdRange(int first, int last);
         bool isAllReactorState(int reactorId, int state);
-        void resetReactors();
-        void resetReactors(List<Reactor> list);
+        Task resetReactors();
+        Task resetReactors(List<Reactor> list);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
         void shuffleReactors(List<object> list);
         List<Reactor> getAllReactors();
-        void TryHitReactorByMapItem(MapItem mapItem);
+        Task TryHitReactorByMapItem(MapItem mapItem);
         bool CanHitReactor(MapItem mapItem);
         #endregion
 
         #region Drop
-        void DropItemDestroy(int itemId, Point dropperPos);
-        void dropFromFriendlyMonster(Player chr, Monster mob);
-        void dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
-        void DropItemFromMonsterBySteal(List<DropEntry> list, Player chr, Monster mob, short delay);
-        void pickItemDrop(Packet pickupPacket, MapItem mdrop);
-        void spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
+        Task updatePartyItemDropsToNewcomer(Player newcomer, List<MapItem> partyItems);
+        Task<List<MapItem>> updatePlayerItemDropsToParty(int partyid, int charid, List<Player> partyMembers, Player? partyLeaver);
+        Task DropItemDestroy(int itemId, Point dropperPos);
+        Task dropFromFriendlyMonster(Player chr, Monster mob);
+        Task dropFromReactor(Player chr, Reactor reactor, Item drop, Point dropPos, short questid, short delay = 0);
+        Task DropItemFromMonsterBySteal(List<DropEntry> list, Player chr, Monster mob, short delay);
+        Task pickItemDrop(Packet pickupPacket, MapItem mdrop);
+        Task spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop);
         int countItems();
         int getDroppedItemsCountById(int itemid);
-        void clearDrops();
+        Task clearDrops();
         List<MapItem> getItems();
         #endregion
     }

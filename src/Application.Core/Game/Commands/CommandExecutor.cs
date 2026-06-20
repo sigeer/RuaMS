@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Core.Game.Commands;
 
@@ -49,34 +48,30 @@ public class CommandExecutor
         }
     }
 
-    public void handle(IChannelClient client, string message)
+    public async Task handle(IChannelClient client, string message)
     {
         if (!loaded)
         {
             RegisterCommands();
         }
-        if (client.tryacquireClient())
         {
+            await client.tryacquireClient();
             try
             {
-                handleInternal(client, message);
+                await handleInternal(client, message);
             }
             finally
             {
                 client.releaseClient();
             }
         }
-        else
-        {
-            client.OnlinedCharacter.dropMessage(5, "Try again in a while... Latest commands are currently being processed.");
-        }
     }
 
-    private void handleInternal(IChannelClient client, string message)
+    private async Task handleInternal(IChannelClient client, string message)
     {
         if (client.OnlinedCharacter.getMapId() == MapId.JAIL)
         {
-            client.OnlinedCharacter.yellowMessage("You do not have permission to use commands while in jail.");
+            await client.OnlinedCharacter.Yellow("You do not have permission to use commands while in jail.");
             return;
         }
         string splitRegex = " ";
@@ -93,12 +88,12 @@ public class CommandExecutor
         var command = registeredCommands.GetValueOrDefault(commandName);
         if (command == null)
         {
-            client.OnlinedCharacter.yellowMessage("Command '" + commandName + "' is not available. See !commands for a list of available commands.");
+            await client.OnlinedCharacter.Yellow("Command '" + commandName + "' is not available. See !commands for a list of available commands.");
             return;
         }
         if (client.OnlinedCharacter.gmLevel() < command.Rank)
         {
-            client.OnlinedCharacter.yellowMessage("You do not have permission to use this command.");
+            await client.OnlinedCharacter.Yellow("You do not have permission to use this command.");
             return;
         }
         string[] paramsValue;
@@ -112,7 +107,7 @@ public class CommandExecutor
         }
 
         command.CurrentCommand = commandName;
-        command.RunAsync(client, paramsValue);
+        await command.RunAsync(client, paramsValue);
         log.LogInformation("Chr {CharacterName} used command {Command}, Params: {Params}", client.OnlinedCharacter.getName(), command.GetType().Name, string.Join(", ", paramsValue));
     }
 }

@@ -1,4 +1,3 @@
-using Acornima;
 using Application.Core.Client.inventory;
 
 namespace client.inventory;
@@ -27,9 +26,7 @@ public class InventoryEquipped : AbstractInventory
         return byte.MinValue;
     }
 
-    public override void setSlotLimit(int newLimit)
-    {
-    }
+    public override Task setSlotLimit(int newLimit) => Task.CompletedTask;
 
     public override short getNextFreeSlot()
     {
@@ -76,7 +73,7 @@ public class InventoryEquipped : AbstractInventory
     /// <param name="position"></param>
     /// <param name="item"></param>
     /// <returns></returns>
-    public override void PutItem(short position, Item item, bool fromLogin)
+    public override async Task PutItem(short position, Item item, bool fromLogin)
     {
         if (position >= 0 || item is not Equip eqp)
         {
@@ -84,22 +81,22 @@ public class InventoryEquipped : AbstractInventory
         }
 
         SetItemPosition(eqp, position);
-        OnItemEnter(position, item, fromLogin);
+        await OnItemEnter(position, item, fromLogin);
     }
 
-    public Equip? Equip(short slot, Equip newEqp)
+    public async Task<Equip?> Equip(short slot, Equip newEqp)
     {
         var oldEquip = getItem(slot);
         if (oldEquip != null && oldEquip.NeedRecalcEffect(newEqp))
         {
-            removeSlot(slot);
+            await removeSlot(slot);
         }
         SetItemPosition(newEqp, slot);
-        OnItemEnter(slot, newEqp, false);
+        await OnItemEnter(slot, newEqp, false);
         return oldEquip;
     }
 
-    protected override void OnItemEnter(short position, Item item, bool fromLogin)
+    protected override async Task OnItemEnter(short position, Item item, bool fromLogin)
     {
         if (item is not client.inventory.Equip equip)
         {
@@ -120,14 +117,16 @@ public class InventoryEquipped : AbstractInventory
             var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
             if (petIndex != -1)
             {
-                Owner.getPet(petIndex)?.BroadcastNameChanged();
+                var mapPet = Owner.getPet(petIndex);
+                if (mapPet != null)
+                    await mapPet.BroadcastNameChanged();
             }
         }
 
-        base.OnItemEnter(position, item, fromLogin);
+        await base.OnItemEnter(position, item, fromLogin);
     }
 
-    protected override void OnItemLeave(Item item)
+    protected override async Task OnItemLeave(Item item)
     {
         if (item is not client.inventory.Equip equip)
         {
@@ -137,7 +136,7 @@ public class InventoryEquipped : AbstractInventory
 
         if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
         {
-            Owner.CalculateSpiritPendant(Owner.Client.CurrentServer.Node.getCurrentTime(), false);
+            await Owner.CalculateSpiritPendant(Owner.Client.CurrentServer.Node.getCurrentTime(), false);
         }
 
         Owner.getRingById(equip.getRingId())?.unequip();
@@ -145,9 +144,11 @@ public class InventoryEquipped : AbstractInventory
         var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
         if (petIndex != -1)
         {
-            Owner.getPet(petIndex)?.BroadcastNameChanged();
+            var mapPet = Owner.getPet(petIndex);
+            if (mapPet != null)
+                await mapPet.BroadcastNameChanged();
         }
-        base.OnItemLeave(item);
+        await base.OnItemLeave(item);
     }
 
     public override void RemoveFromMove(short slot)
@@ -192,11 +193,11 @@ public class InventoryEquipped : AbstractInventory
         return inventory.ContainsKey(slot);
     }
 
-    public override IInventoryOperationCommand? removeSlot(short slot)
+    public override async Task<IInventoryOperationCommand?> removeSlot(short slot)
     {
         if (inventory.Remove(slot, out var item))
         {
-            OnItemLeave(item);
+            await OnItemLeave(item);
 
             return new InventoryRemove(item!.getInventoryType(), slot);
         }
@@ -218,11 +219,11 @@ public class InventoryEquipped : AbstractInventory
         inventory.Clear();
     }
 
-    protected override void OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove)
+    protected override async Task OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove)
     {
         if (item.getItemId() == ItemId.PENDANT_OF_THE_SPIRIT)
         {
-            Owner.CalculateSpiritPendant(now, true);
+            await Owner.CalculateSpiritPendant(now, true);
         }
     }
 }

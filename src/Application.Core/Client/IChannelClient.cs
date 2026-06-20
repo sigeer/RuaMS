@@ -1,9 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
-using Application.Core.Scripting.Infrastructure;
 using scripting;
-using scripting.Event;
 using scripting.npc;
 
 namespace Application.Core.Client
@@ -19,16 +17,13 @@ namespace Application.Core.Client
         NPCConversationManager? NPCConversationManager { get; set; }
         Task Disconnect(bool isShutdown, bool fromCashShop = false);
 
-        void enableCSActions();
+        Task enableCSActions();
         AbstractPlayerInteraction getAbstractPlayerInteraction();
-        void lockClient();
-        void unlockClient();
-        void OpenNpc(int npcid, string? script = null);
         bool canClickNPC();
         void setClickedNPC();
-        void announceServerMessage();
-        void closePlayerScriptInteractions();
-        void announceHint(string msg, int length);
+
+        Task closePlayerScriptInteractions();
+
         bool GainCharacterSlot();
 
         bool attemptCsCoupon();
@@ -37,14 +32,19 @@ namespace Application.Core.Client
         void SetAccount(AccountCtrl accountEntity);
         WorldChannel getChannelServer();
         int getChannel();
-        void announceBossHpBar(Monster mm, int mobHash, Packet packet);
+
 
         AbstractEventManager? getEventManager(string @event);
         void removeClickedNPC();
 
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
-        void LeaveCashShop();
-        void ChangeChannel(int channel);
+        Task LeaveCashShop();
+        Task ChangeChannel(int channel);
+        #region Announce
+        Task announceServerMessage();
+        Task announceBossHpBar(Monster mm, int mobHash, Packet packet);
+        Task announceHint(string msg, int length);
+        #endregion
     }
 }

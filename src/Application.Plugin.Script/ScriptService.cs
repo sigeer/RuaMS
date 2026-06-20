@@ -28,6 +28,8 @@ namespace Application.Plugin.Script
         Dictionary<string, MethodInfo> _mapFirstEnterSource;
         Dictionary<string, MethodInfo> _reactorHitSource;
         Dictionary<string, MethodInfo> _reactorActSource;
+        Dictionary<string, MethodInfo> _reactorTouchSource;
+        Dictionary<string, MethodInfo> _reactorUntouchSource;
         Dictionary<string, MethodInfo> _questSource;
 
         public ScriptService()
@@ -41,12 +43,14 @@ namespace Application.Plugin.Script
 
             _reactorHitSource = TypeUtils.ExtractMethodsToDictionary(typeof(ReactorHitScript));
             _reactorActSource = TypeUtils.ExtractMethodsToDictionary(typeof(ReactorActScript));
+            _reactorTouchSource = TypeUtils.ExtractMethodsToDictionary(typeof(ReactorTouchScript));
+            _reactorUntouchSource = TypeUtils.ExtractMethodsToDictionary(typeof(ReactorUntouchScript));
 
             _questSource = TypeUtils.ExtractMethodsToDictionary(typeof(QuestScript));
         }
 
 
-        public bool Enter(IChannelClient c, Portal p)
+        public async Task<bool> Enter(IChannelClient c, Portal p)
         {
             if (!_portalSource.TryGetValue(p.getScriptName()!, out var methodInfo))
             {
@@ -55,14 +59,14 @@ namespace Application.Plugin.Script
             }
 
             var script = new PortalScript(c, p);
-            return (bool)methodInfo.Invoke(script, null)!;
+            return await (Task<bool>)methodInfo.Invoke(script, null)!;
         }
 
         public async Task<bool> Start(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
             if (c.NPCConversationManager != null)
             {
-                c.OnlinedCharacter.Pink("卡对话了");
+                await c.OnlinedCharacter.Pink("卡对话了");
                 return false;
             }
 
@@ -73,18 +77,18 @@ namespace Application.Plugin.Script
 
             if (!c.canClickNPC())
             {
-                c.OnlinedCharacter.Pink("对话太过频繁");
+                await c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
             }
 
             if (!_npcSource.TryGetValue(scriptName, out var methodInfo))
             {
-                c.OnlinedCharacter.Debug(5, $"不支持的脚本 {scriptName}");
+                await c.OnlinedCharacter.Debug(5, $"不支持的脚本 {scriptName}");
                 return false;
             }
 
 
-            var talk = new NpcScript(c, npcId, npcObject);
+            await using var talk = new NpcScript(c, npcId, npcObject);
             try
             {
                 if (npcObject != null && c.OnlinedCharacter.getEventInstance() != npcObject.getMap().getEventInstance())
@@ -106,7 +110,7 @@ namespace Application.Plugin.Script
             {
                 if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
                 {
-                    talk.WarpOut();
+                    await talk.WarpOut();
                 }
 
                 Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
@@ -129,11 +133,6 @@ namespace Application.Plugin.Script
 
                 throw;
             }
-            finally
-            {
-                talk.dispose();
-            }
-
         }
 
         public Task<bool> StartQuest(IChannelClient c, server.quest.Quest questObj, int npcId) => HandleQuestScript(c, questObj, npcId, true);
@@ -144,13 +143,13 @@ namespace Application.Plugin.Script
         {
             if (c.NPCConversationManager != null)
             {
-                c.OnlinedCharacter.Pink("卡对话了");
+                await c.OnlinedCharacter.Pink("卡对话了");
                 return false;
             }
 
             if (!c.canClickNPC())
             {
-                c.OnlinedCharacter.Pink("对话太过频繁");
+                await c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
             }
 
@@ -163,7 +162,7 @@ namespace Application.Plugin.Script
             if (!_questSource.TryGetValue(scriptName, out var methodInfo))
             {
                 // 
-                c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                await c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
                 return false;
             }
 
@@ -173,7 +172,7 @@ namespace Application.Plugin.Script
             }
 
 
-            var talk = new QuestScript(c, questObj, npcId);
+            await using var talk = new QuestScript(c, questObj, npcId);
             try
             {
                 c.NPCConversationManager = talk;
@@ -191,7 +190,7 @@ namespace Application.Plugin.Script
             {
                 if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
                 {
-                    talk.WarpOut();
+                    await talk.WarpOut();
                 }
                 Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
@@ -212,22 +211,13 @@ namespace Application.Plugin.Script
             {
                 throw;
             }
-            finally
-            {
-                talk.dispose();
-            }
-
         }
 
         public async Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            if (c.NPCConversationManager is NpcScript npcTalk)
+            if (c.NPCConversationManager != null)
             {
-                await npcTalk.Response(mode, type, selection, inputText);
-            }
-            else if (c.NPCConversationManager is QuestActionManager questTalk)
-            {
-                await questTalk.Response(mode, type, selection, inputText);
+                await c.NPCConversationManager.Response(mode, type, selection, inputText);
             }
         }
 
@@ -235,49 +225,40 @@ namespace Application.Plugin.Script
         {
             if (!_itemSource.TryGetValue(scriptName, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本{scriptName}");
-                return;
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {scriptName}");
             }
 
-            var talk = new ItemScript(c, npcId);
+            await using var talk = new ItemScript(c, npcId);
             c.NPCConversationManager = talk;
             await (Task)methodInfo.Invoke(talk, null)!;
-            talk.dispose();
         }
 
-        public void MapFirstEnter(IChannelClient c, IMap map)
+        public async Task MapFirstEnter(IChannelClient c, IMap map)
         {
             if (!_mapFirstEnterSource.TryGetValue(map.SourceTemplate.OnFirstUserEnter, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本{map.SourceTemplate.OnFirstUserEnter}");
-                return;
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {map.SourceTemplate.OnFirstUserEnter}");
             }
 
             var script = new MapFirstEnterScript(c, map);
-            methodInfo.Invoke(script, null);
+            await (Task)methodInfo.Invoke(script, null)!;
         }
 
-        public void MapEnter(IChannelClient c, IMap map)
+        public async Task MapEnter(IChannelClient c, IMap map)
         {
             if (!_mapEnterSource.TryGetValue(map.SourceTemplate.OnUserEnter, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本 {map.SourceTemplate.OnUserEnter}");
-                return;
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {map.SourceTemplate.OnUserEnter}");
             }
 
             var script = new MapEnterScript(c, map);
-            methodInfo.Invoke(script, null);
+            await(Task)methodInfo.Invoke(script, null)!;
         }
         public async Task ReactorHit(IChannelClient c, Reactor r)
         {
             if (!_reactorHitSource.TryGetValue(r.getStats().Action, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本 {r.getStats().Action}");
-                return;
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {r.getStats().Action}");
             }
 
             var script = new ReactorHitScript(c, r);
@@ -288,12 +269,32 @@ namespace Application.Plugin.Script
         {
             if (!_reactorActSource.TryGetValue(r.getStats().Action, out var methodInfo))
             {
-                // 
-                c.OnlinedCharacter.Pink($"不支持的脚本 {r.getStats().Action}");
-                return;
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {r.getStats().Action}");
             }
 
             var script = new ReactorActScript(c, r);
+            await (Task)methodInfo.Invoke(script, null)!;
+        }
+
+        public async Task ReactorTouch(IChannelClient c, Reactor r)
+        {
+            if (!_reactorTouchSource.TryGetValue(r.getStats()!.Action, out var methodInfo))
+            {
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {r.getStats().Action}");
+            }
+
+            var script = new ReactorTouchScript(c, r);
+            await (Task)methodInfo.Invoke(script, null)!;
+        }
+
+        public async Task ReactorUntouch(IChannelClient c, Reactor r)
+        {
+            if (!_reactorUntouchSource.TryGetValue(r.getStats().Action, out var methodInfo))
+            {
+                throw new BusinessScriptNotFoundException($"不支持的脚本 {r.getStats().Action}");
+            }
+
+            var script = new ReactorUntouchScript(c, r);
             await (Task)methodInfo.Invoke(script, null)!;
         }
         public async ValueTask DisposeAsync()

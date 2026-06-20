@@ -38,7 +38,7 @@ public class DenyGuildRequestHandler : ChannelHandlerBase
         _guildManager = guildManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var value = p.readByte();
         var invitor = p.readString();

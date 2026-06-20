@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TouchReactorHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var reactor = c.OnlinedCharacter.getMap().getReactorByOid(oid);
@@ -39,11 +39,11 @@ public class TouchReactorHandler : ChannelHandlerBase
 
         if (p.readByte() != 0)
         {
-            c.CurrentServer.ReactorScriptManager.touch(c, reactor);
+            await c.CurrentServer.ReactorScriptManager.touch(c, reactor);
         }
         else
         {
-            c.CurrentServer.ReactorScriptManager.untouch(c, reactor);
+            await c.CurrentServer.ReactorScriptManager.untouch(c, reactor);
         }
     }
 }

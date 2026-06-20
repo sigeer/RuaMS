@@ -79,7 +79,7 @@ namespace Application.Core.Channel.Net.Packets
             p.writeShort(type.getBitfieldEncoding());
             p.writeShort(0);
             p.writeInt(0);
-            p.writeByte(items.Count());  
+            p.writeByte(items.Count());
             foreach (Item item in items)
             {
                 PacketCreator.addItemInfo(p, item, true);

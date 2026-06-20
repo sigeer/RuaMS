@@ -24,7 +24,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class FaceExpressionHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int emote = p.readInt();
@@ -42,13 +42,13 @@ public class FaceExpressionHandler : ChannelHandlerBase
             return;
         }
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {   // expecting players never intends to wear the emote 0 (default face, that changes back after 5sec timeout)
                 if (chr.isLoggedinWorld())
                 {
-                    chr.changeFaceExpression(emote);
+                    await chr.changeFaceExpression(emote);
                 }
             }
             finally

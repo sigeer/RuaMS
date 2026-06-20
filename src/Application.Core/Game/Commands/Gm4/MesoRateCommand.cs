@@ -6,12 +6,12 @@ public class MesoRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !mesorate <newrate>");
+            await player.Yellow("Syntax: !mesorate <newrate>");
             return;
         }
 

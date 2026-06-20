@@ -42,18 +42,18 @@ public class UseGachaExpHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 if (c.OnlinedCharacter.getGachaExp() <= 0)
                 {
-                    _autoBanManager.Autoban(AutobanFactory.GACHA_EXP, c.OnlinedCharacter, "Player tried to redeem GachaEXP, but had none to redeem.");
+                    await _autoBanManager.Autoban(AutobanFactory.GACHA_EXP, c.OnlinedCharacter, "Player tried to redeem GachaEXP, but had none to redeem.");
                 }
-                c.OnlinedCharacter.gainGachaExp();
+                await c.OnlinedCharacter.gainGachaExp();
             }
             finally
             {
@@ -61,6 +61,6 @@ public class UseGachaExpHandler : ChannelHandlerBase
             }
         }
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

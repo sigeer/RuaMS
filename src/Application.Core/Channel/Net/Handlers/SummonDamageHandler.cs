@@ -40,7 +40,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         var player = c.OnlinedCharacter;
@@ -53,7 +53,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         {
             return;
         }
-        var summonSkill = SkillFactory.getSkill(summon.getSkill());
+        var summonSkill = SkillFactory.GetSkillTrust(summon.getSkill());
         StatEffect summonEffect = summonSkill.getEffect(summon.getSkillLevel());
         p.skip(4);
         List<SummonAttackEntry> allDamage = new();
@@ -70,9 +70,9 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             int damage = p.readInt();
             allDamage.Add(new SummonAttackEntry(monsterOid, damage, delay));
         }
-        summon.BroadcastMap(PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), player.Id);
+        await summon.BroadcastMap(PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), player.Id);
 
-        if (player.getMap().isOwnershipRestricted(player))
+        if (await player.getMap().isOwnershipRestricted(player))
         {
             return;
         }
@@ -98,17 +98,17 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                 {
                     if (summonEffect.makeChanceResult())
                     {
-                        target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
+                        await target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
                     }
                 }
-                target.DamageBy(player, damage, attackEntry.delay);
+                await target.DamageBy(player, damage, attackEntry.delay);
                 // 这里怎么没有广播伤害
             }
         }
 
         if (summon.getSkill() == Outlaw.GAVIOTA)
         {  // thanks Periwinks for noticing Gaviota not cancelling after grenade toss
-            player.cancelEffect(summonEffect, false);
+            await player.cancelEffect(summonEffect, false);
         }
     }
 

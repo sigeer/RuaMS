@@ -6,10 +6,10 @@ public class ChatCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         player.toggleWhiteChat();
-        player.message("Your chat is now " + (player.getWhiteChat() ? " white" : "normal") + ".");
+        await player.Pink("Your chat is now " + (player.getWhiteChat() ? " white" : "normal") + ".");
     }
 }

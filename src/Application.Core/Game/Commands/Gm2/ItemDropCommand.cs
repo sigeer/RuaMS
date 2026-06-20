@@ -1,8 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
 using Application.Resources.Messages;
-using Application.Templates.Item.Pet;
-using client.inventory;
 
 namespace Application.Core.Game.Commands.Gm2;
 
@@ -12,13 +10,13 @@ public class ItemDropCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ItemDropCommand_Syntax));
             return;
         }
 
@@ -33,14 +31,14 @@ public class ItemDropCommand : CommandBase
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemDropCommand_CannotCreateCashItem));
+            await player.Yellow(nameof(ClientMessage.ItemDropCommand_CannotCreateCashItem));
             return;
         }
 
         var item = ii.GenerateVirtualItemById(itemId, quantity);
         if (item == null)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), itemId.ToString());
+            await player.Yellow(nameof(ClientMessage.ItemNotFound), itemId.ToString());
             return;
         }
 
@@ -60,6 +58,6 @@ public class ItemDropCommand : CommandBase
             item.setOwner("TRIAL-MODE");
         }
 
-        c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, item, c.OnlinedCharacter.getPosition(), true, true);
+        await c.OnlinedCharacter.getMap().spawnItemDrop(c.OnlinedCharacter, c.OnlinedCharacter, item, c.OnlinedCharacter.getPosition(), true, true);
     }
 }

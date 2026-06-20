@@ -21,11 +21,9 @@
 */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using tools;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace server.events.gm;
 
@@ -53,7 +51,7 @@ public class OxQuiz
         double y = chr.getPosition().Y;
         if ((x > -234 && y > -26 && answer == 0) || (x < -234 && y > -26 && answer == 1))
         {
-            chr.dropMessage("Correct!");
+            chr.Notice("Correct!");
             return true;
         }
         return false;
@@ -64,14 +62,14 @@ public class OxQuiz
         map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
         map.ChannelServer.TimerManager.schedule(() =>
         {
-            map.Send(w =>
+            map.Send(async w =>
             {
-                ProcessSendQuestion();
+                await ProcessSendQuestion();
             });
         }, 30_000); // Time to answer = 30 seconds ( Ox Quiz packet shows a 30 second timer.
     }
 
-    public void ProcessSendQuestion()
+    public async Task ProcessSendQuestion()
     {
         int gm = 0;
         foreach (var mc in map.getAllPlayers())
@@ -83,7 +81,7 @@ public class OxQuiz
         }
         int number = gm;
 
-        map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
+        await map.broadcastMessage(PacketCreator.showOXQuiz(round, question, true));
         List<Player> chars = new(map.getAllPlayers());
 
         foreach (var chr in chars)
@@ -92,11 +90,11 @@ public class OxQuiz
             {
                 if (!isCorrectAnswer(chr, getOXAnswer(round, question)) && !chr.isGM())
                 {
-                    chr.changeMap(chr.getMap().getReturnMap());
+                    await chr.changeMap(await chr.getMap().getReturnMap());
                 }
                 else
                 {
-                    chr.gainExp(expGain, true, true);
+                    await chr.gainExp(expGain, true, true);
                 }
             }
         }
@@ -112,7 +110,7 @@ public class OxQuiz
         //send question
         if (map.getAllPlayers().Count - number <= 2)
         {
-            map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
+            await map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
             map.getPortal("join00")!.setPortalStatus(true);
             map.Ox = null;
             map.setOxQuiz(false);

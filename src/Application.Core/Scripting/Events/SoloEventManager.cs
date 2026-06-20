@@ -15,7 +15,7 @@ namespace Application.Core.Scripting.Events
         }
 
         #region Start Instance
-        public override CreateInstanceResult StartInstance(Player chr, int difficulty = 1, int lobbyId = -1)
+        public override async Task<CreateInstanceResult> StartInstance(Player chr, int difficulty = 1, int lobbyId = -1)
         {
             if (this.isDisposed())
             {
@@ -51,7 +51,7 @@ namespace Application.Core.Scripting.Events
                             AbstractEventInstanceManager eim;
                             try
                             {
-                                eim = CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : chr.getId());
+                                eim = await CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : chr.getId());
                                 registerEventInstance(eim, lobbyId);
                             }
                             catch (EventInstanceInProgressException)
@@ -63,10 +63,10 @@ namespace Application.Core.Scripting.Events
 
                             if (chr != null)
                             {
-                                eim.registerPlayer(chr);
+                                await eim.registerPlayer(chr);
                             }
 
-                            eim.startEvent();
+                            await eim.startEvent();
                         }
                         catch (Exception ex)
                         {

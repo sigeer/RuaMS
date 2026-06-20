@@ -14,28 +14,28 @@ namespace Application.Plugin.Script.Quest
             {
                 if (getPlayer().getInventory(InventoryType.USE).getNumFreeSlot() >= 1)
                 {
-                    gainItem(4031092, -10);
+                    await gainItem(4031092, -10);
 
                     var rnd = Random.Shared.Next(4);
                     if (rnd == 0)
                     {
-                        gainItem(2040704, 1);
+                        await gainItem(2040704, 1);
                     }
                     else if (rnd == 1)
                     {
-                        gainItem(2040705, 1);
+                        await gainItem(2040705, 1);
                     }
                     else if (rnd == 2)
                     {
-                        gainItem(2040707, 1);
+                        await gainItem(2040707, 1);
                     }
                     else
                     {
-                        gainItem(2040708, 1);
+                        await gainItem(2040708, 1);
                     }
 
-                    gainExp(2700);
-                    forceCompleteQuest();
+                    await gainExp(2700);
+                    await forceCompleteQuest();
 
                     await SayOK("干得好！你带回了所有丢失的#t4031092#。在这里，拿着这卷轴作为我的谢意……");
                 }
@@ -56,7 +56,7 @@ namespace Application.Plugin.Script.Quest
 
             if (getPlayer().getInventory(InventoryType.USE).getNumFreeSlot() < 1)
             {
-                Popup("USE inventory full.");
+                await Popup("USE inventory full.");
                 return;
             }
 
@@ -90,14 +90,14 @@ namespace Application.Plugin.Script.Quest
             }
             var selection = await AskMenu(talkStr);
             var item = vecItem[selection];
-            gainItem(item, 1);
-            gainItem(4031103, -1);
-            gainItem(4031104, -1);
-            gainItem(4031105, -1);
-            gainItem(4031106, -1);
-            gainExp(12000);
+            await gainItem(item, 1);
+            await gainItem(4031103, -1);
+            await gainItem(4031104, -1);
+            await gainItem(4031105, -1);
+            await gainItem(4031106, -1);
+            await gainExp(12000);
 
-            completeQuest();
+            await completeQuest();
         }
         // Quest: 3437 
         public async Task q3437e()
@@ -139,10 +139,10 @@ namespace Application.Plugin.Script.Quest
             }
 
             await SayNext(talkStr);
-            completeQuest();
-            gainItem(item, 1);
-            gainItem(4000122, -120);
-            gainExp(6100);
+            await completeQuest();
+            await gainItem(item, 1);
+            await gainItem(4000122, -120);
+            await gainExp(6100);
             await SayOK("非常感谢你作为Mesorangers之一完成任务。我已经告诉部门你成功的故事，部门似乎对你也很满意。希望你继续和我们合作。再见~");
         }
         // Quest: 3452 
@@ -151,11 +151,11 @@ namespace Application.Plugin.Script.Quest
             await SayNext("接受这些 #b#t2000011##k 作为我的感激之情。");
             if (canHold(2000011, 50))
             {
-                gainItem(4000099, -1);
-                gainItem(2000011, 50);
-                gainExp(8000);
+                await gainItem(4000099, -1);
+                await gainItem(2000011, 50);
+                await gainExp(8000);
 
-                forceCompleteQuest();
+                await forceCompleteQuest();
             }
             else
             {
@@ -178,15 +178,15 @@ namespace Application.Plugin.Script.Quest
                 "#b(...嘭！)#k"
                 ]);
 
-            gainItem(4000125, -1);
-            gainItem(4031926, -10);
-            gainItem(4000119, -30);
-            gainItem(4000118, -30);
+            await gainItem(4000125, -1);
+            await gainItem(4031926, -10);
+            await gainItem(4000119, -30);
+            await gainItem(4000118, -30);
 
-            gainItem(4031928, 1);//
+            await gainItem(4031928, 1);//
             // gainItem(4031927, 1);
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
             await SayOK("来，解读机做好了。因为刚做好，所以没来得及测试性能，如果发生错误，请不要太吃惊。你可以再来找我，只要你能给我材料，我可以重新帮你制造解读机。");
         }
         // Quest: 7103 
@@ -209,9 +209,9 @@ namespace Application.Plugin.Script.Quest
                             return;
                         }
 
-                        gainItem(4031179, 1);
+                        await gainItem(4031179, 1);
                     }
-                    forceStartQuest();
+                    await forceStartQuest();
                 }
             }
         }

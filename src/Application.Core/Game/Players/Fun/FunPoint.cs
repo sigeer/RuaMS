@@ -1,6 +1,3 @@
-using Application.Shared.Events;
-using tools;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player

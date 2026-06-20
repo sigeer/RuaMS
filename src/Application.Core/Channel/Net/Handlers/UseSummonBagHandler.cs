@@ -35,12 +35,12 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseSummonBagHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         //[4A 00][6C 4C F2 02][02 00][63 0B 20 00]
         if (!c.OnlinedCharacter.isAlive())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         p.readInt();
@@ -59,10 +59,10 @@ public class UseSummonBagHandler : ChannelHandlerBase
                 return;
             }
 
-            c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Mob), c.OnlinedCharacter.getPosition());
-            InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+            await c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Mob), c.OnlinedCharacter.getPosition());
+            await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
 
         }
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

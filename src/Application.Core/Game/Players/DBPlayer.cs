@@ -1,6 +1,4 @@
 using Application.Shared.Events;
-using System.Security.Cryptography.Xml;
-using XmlWzReader;
 
 namespace Application.Core.Game.Players
 {

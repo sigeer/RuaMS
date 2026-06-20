@@ -57,7 +57,7 @@ public class MiniGame : AbstractMapObject
         WIN, LOSS, TIE
     }
 
-    public MiniGame(Player owner, string description, string password, byte gameType, int pieceType): base(owner.MapModel, owner.getPosition())
+    public MiniGame(Player owner, string description, string password, byte gameType, int pieceType) : base(owner.MapModel, owner.getPosition())
     {
         this.owner = owner;
         this.description = description;
@@ -86,7 +86,7 @@ public class MiniGame : AbstractMapObject
         return owner.Equals(chr);
     }
 
-    public void addVisitor(Player challenger)
+    public async Task addVisitor(Player challenger)
     {
         visitor = challenger;
         if (lastvisitor != challenger.getId())
@@ -102,25 +102,25 @@ public class MiniGame : AbstractMapObject
         var owner = getOwner();
         if (GameType == MiniGameType.OMOK)
         {
-            owner.sendPacket(PacketCreator.getMiniGameNewVisitor(this, challenger, 1));
-            owner.getMap().broadcastMessage(PacketCreator.addOmokBox(owner, 2, 0));
+            await owner.SendPacket(PacketCreator.getMiniGameNewVisitor(this, challenger, 1));
+            await owner.getMap().broadcastMessage(PacketCreator.addOmokBox(owner, 2, 0));
         }
         else if (GameType == MiniGameType.MATCH_CARD)
         {
-            owner.sendPacket(PacketCreator.getMatchCardNewVisitor(this, challenger, 1));
-            owner.getMap().broadcastMessage(PacketCreator.addMatchCardBox(owner, 2, 0));
+            await owner.SendPacket(PacketCreator.getMatchCardNewVisitor(this, challenger, 1));
+            await owner.getMap().broadcastMessage(PacketCreator.addMatchCardBox(owner, 2, 0));
         }
     }
 
-    public void closeRoom(bool forceClose)
+    public async Task closeRoom(bool forceClose)
     {
-        owner.getMap().broadcastMessage(PacketCreator.removeMinigameBox(owner));
+        await owner.getMap().broadcastMessage(PacketCreator.removeMinigameBox(owner));
 
         if (forceClose)
         {
-            broadcastToOwner(PacketCreator.getMiniGameClose(false, 4));
+            await broadcastToOwner(PacketCreator.getMiniGameClose(false, 4));
         }
-        broadcastToVisitor(PacketCreator.getMiniGameClose(true, 3));
+        await broadcastToVisitor(PacketCreator.getMiniGameClose(true, 3));
 
         if (visitor != null)
         {
@@ -132,30 +132,30 @@ public class MiniGame : AbstractMapObject
         owner = null;
     }
 
-    public void removeVisitor(bool forceClose, Player challenger)
+    public async Task removeVisitor(bool forceClose, Player challenger)
     {
         if (visitor == challenger)
         {
             if (isMatchInProgress())
             { // owner is winner if visitor leave in progress
-                minigameMatchOwnerWins(true);
+                await minigameMatchOwnerWins(true);
             }
             if (forceClose)
             {
-                visitor.sendPacket(PacketCreator.getMiniGameClose(true, 4));
+                await visitor.SendPacket(PacketCreator.getMiniGameClose(true, 4));
             }
 
             challenger.setMiniGame(null);
             visitor = null;
 
-            getOwner().sendPacket(PacketCreator.getMiniGameRemoveVisitor());
+            await getOwner().SendPacket(PacketCreator.getMiniGameRemoveVisitor());
             if (GameType == MiniGameType.OMOK)
             {
-                getOwner().getMap().broadcastMessage(PacketCreator.addOmokBox(owner, 1, 0));
+                await getOwner().getMap().broadcastMessage(PacketCreator.addOmokBox(owner, 1, 0));
             }
             else if (GameType == MiniGameType.MATCH_CARD)
             {
-                getOwner().getMap().broadcastMessage(PacketCreator.addMatchCardBox(owner, 1, 0));
+                await getOwner().getMap().broadcastMessage(PacketCreator.addMatchCardBox(owner, 1, 0));
             }
         }
     }
@@ -165,20 +165,20 @@ public class MiniGame : AbstractMapObject
         return visitor == challenger;
     }
 
-    public void broadcastToOwner(Packet packet)
+    public async Task broadcastToOwner(Packet packet)
     {
         var c = owner.getClient();
         if (c != null)
         {
-            c.sendPacket(packet);
+            await c.SendPacket(packet);
         }
     }
 
-    public void broadcastToVisitor(Packet packet)
+    public async Task broadcastToVisitor(Packet packet)
     {
         if (visitor != null)
         {
-            visitor.sendPacket(packet);
+            await visitor.SendPacket(packet);
         }
     }
 
@@ -192,9 +192,9 @@ public class MiniGame : AbstractMapObject
         return firstslot;
     }
 
-    private void updateMiniGameBox()
+    private async Task updateMiniGameBox()
     {
-        getOwner().getMap().broadcastMessage(PacketCreator.addOmokBox(owner, visitor != null ? 2 : 1, inprogress));
+        await getOwner().getMap().broadcastMessage(PacketCreator.addOmokBox(owner, visitor != null ? 2 : 1, inprogress));
     }
 
     private bool minigameMatchFinish()
@@ -210,13 +210,13 @@ public class MiniGame : AbstractMapObject
         }
     }
 
-    private void minigameMatchFinished()
+    private async Task minigameMatchFinished()
     {
-        updateMiniGameBox();
+        await updateMiniGameBox();
 
         if (ownerquit)
         {
-            owner.closeMiniGame(true);
+            await owner.closeMiniGame(true);
         }
         else if (visitorquit)
         {
@@ -272,7 +272,7 @@ public class MiniGame : AbstractMapObject
         }
     }
 
-    public void minigameMatchOwnerWins(bool forfeit)
+    public async Task minigameMatchOwnerWins(bool forfeit)
     {
         if (!minigameMatchFinish())
         {
@@ -291,12 +291,12 @@ public class MiniGame : AbstractMapObject
             visitorforfeits++;
         }
 
-        broadcast(PacketCreator.getMiniGameOwnerWin(this, forfeit));
+        await broadcast(PacketCreator.getMiniGameOwnerWin(this, forfeit));
 
-        minigameMatchFinished();
+        await minigameMatchFinished();
     }
 
-    public void minigameMatchVisitorWins(bool forfeit)
+    public async Task minigameMatchVisitorWins(bool forfeit)
     {
         if (!minigameMatchFinish())
         {
@@ -315,12 +315,12 @@ public class MiniGame : AbstractMapObject
             ownerforfeits++;
         }
 
-        broadcast(PacketCreator.getMiniGameVisitorWin(this, forfeit));
+        await broadcast(PacketCreator.getMiniGameVisitorWin(this, forfeit));
 
-        minigameMatchFinished();
+        await minigameMatchFinished();
     }
 
-    public void minigameMatchDraw()
+    public async Task minigameMatchDraw()
     {
         if (!minigameMatchFinish())
         {
@@ -338,49 +338,49 @@ public class MiniGame : AbstractMapObject
             nextavailabletie = timeNow + 5 * 60 * 1000;
         }
 
-        broadcast(PacketCreator.getMiniGameTie(this));
+        await broadcast(PacketCreator.getMiniGameTie(this));
 
-        minigameMatchFinished();
+        await minigameMatchFinished();
     }
 
-    public void setOwnerPoints()
+    public async Task setOwnerPoints()
     {
         ownerpoints++;
         if (ownerpoints + visitorpoints == matchestowin)
         {
             if (ownerpoints == visitorpoints)
             {
-                minigameMatchDraw();
+                await minigameMatchDraw();
             }
             else if (ownerpoints > visitorpoints)
             {
-                minigameMatchOwnerWins(false);
+                await minigameMatchOwnerWins(false);
             }
             else
             {
-                minigameMatchVisitorWins(false);
+                await minigameMatchVisitorWins(false);
             }
             ownerpoints = 0;
             visitorpoints = 0;
         }
     }
 
-    public void setVisitorPoints()
+    public async Task setVisitorPoints()
     {
         visitorpoints++;
         if (ownerpoints + visitorpoints == matchestowin)
         {
             if (ownerpoints > visitorpoints)
             {
-                minigameMatchOwnerWins(false);
+                await minigameMatchOwnerWins(false);
             }
             else if (visitorpoints > ownerpoints)
             {
-                minigameMatchVisitorWins(false);
+                await minigameMatchVisitorWins(false);
             }
             else
             {
-                minigameMatchDraw();
+                await minigameMatchDraw();
             }
             ownerpoints = 0;
             visitorpoints = 0;
@@ -526,32 +526,32 @@ public class MiniGame : AbstractMapObject
         return loser;
     }
 
-    public void broadcast(Packet packet)
+    public async Task broadcast(Packet packet)
     {
-        broadcastToOwner(packet);
-        broadcastToVisitor(packet);
+        await broadcastToOwner(packet);
+        await broadcastToVisitor(packet);
     }
 
-    public void chat(IChannelClient c, string chat)
+    public async Task chat(IChannelClient c, string chat)
     {
-        broadcast(PacketCreator.getPlayerShopChat(c.OnlinedCharacter, chat, isOwner(c.OnlinedCharacter)));
+        await broadcast(PacketCreator.getPlayerShopChat(c.OnlinedCharacter, chat, isOwner(c.OnlinedCharacter)));
     }
 
-    public void SendGameInfo(IChannelClient c)
+    public async Task SendGameInfo(IChannelClient c)
     {
         if (GameType == MiniGameType.OMOK)
-            sendOmok(c, piecetype);
+            await sendOmok(c, piecetype);
         if (GameType == MiniGameType.MATCH_CARD)
-            sendMatchCard(c, piecetype);
+            await sendMatchCard(c, piecetype);
     }
-    public void sendOmok(IChannelClient c, int type)
+    public async Task sendOmok(IChannelClient c, int type)
     {
-        c.sendPacket(PacketCreator.getMiniGame(c, this, isOwner(c.OnlinedCharacter), type));
+        await c.SendPacket(PacketCreator.getMiniGame(c, this, isOwner(c.OnlinedCharacter), type));
     }
 
-    public void sendMatchCard(IChannelClient c, int type)
+    public async Task sendMatchCard(IChannelClient c, int type)
     {
-        c.sendPacket(PacketCreator.getMatchCard(c, this, isOwner(c.OnlinedCharacter), type));
+        await c.SendPacket(PacketCreator.getMatchCard(c, this, isOwner(c.OnlinedCharacter), type));
     }
 
     public Player getOwner()
@@ -564,13 +564,13 @@ public class MiniGame : AbstractMapObject
         return visitor;
     }
 
-    public void setPiece(int move1, int move2, int type, Player chr)
+    public async Task setPiece(int move1, int move2, int type, Player chr)
     {
         int slot = move2 * 15 + move1 + 1;
         if (piece[slot] == 0)
         {
             piece[slot] = type;
-            broadcast(PacketCreator.getMiniGameMoveOmok(this, move1, move2, type));
+            await broadcast(PacketCreator.getMiniGameMoveOmok(this, move1, move2, type));
             for (int y = 0; y < 15; y++)
             {
                 for (int x = 0; x < 11; x++)
@@ -579,12 +579,12 @@ public class MiniGame : AbstractMapObject
                     {
                         if (isOwner(chr))
                         {
-                            minigameMatchOwnerWins(false);
+                            await minigameMatchOwnerWins(false);
                             setLoser(0);
                         }
                         else
                         {
-                            minigameMatchVisitorWins(false);
+                            await minigameMatchVisitorWins(false);
                             setLoser(1);
                         }
                         for (int y2 = 0; y2 < 15; y2++)
@@ -606,12 +606,12 @@ public class MiniGame : AbstractMapObject
                     {
                         if (isOwner(chr))
                         {
-                            minigameMatchOwnerWins(false);
+                            await minigameMatchOwnerWins(false);
                             setLoser(0);
                         }
                         else
                         {
-                            minigameMatchVisitorWins(false);
+                            await minigameMatchVisitorWins(false);
                             setLoser(1);
                         }
                         for (int y2 = 0; y2 < 15; y2++)

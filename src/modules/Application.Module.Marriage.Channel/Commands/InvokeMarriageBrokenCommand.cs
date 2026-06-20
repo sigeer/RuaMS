@@ -35,7 +35,7 @@ namespace Application.Module.Marriage.Channel.Commands
 
                 chr.dropMessage(5, "You have successfully break the " + (data.Type == 0 ? "engagement." : "marriage") + " with " + data.MasterPartnerName + ".");
                 //chr.sendPacket(Wedding.OnMarriageResult((byte) 0));
-                chr.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                chr.SendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
             }
 
             var partner = ctx.getPlayerStorage().getCharacterById(data.MasterPartnerId);
@@ -45,7 +45,7 @@ namespace Application.Module.Marriage.Channel.Commands
 
                 partner.dropMessage(5, data.MasterName + " has decided to break up the " + (data.Type == 0 ? "engagement." : "marriage."));
                 //partner.sendPacket(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
-                partner.sendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
+                partner.SendPacket(WeddingPackets.OnNotifyWeddingPartnerTransfer(0, 0));
             }
         }
 

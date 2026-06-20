@@ -3,7 +3,7 @@ using tools;
 
 namespace Application.Core.Channel.Commands
 {
-    public class PlayerPreEnterChannelCommand : IWorldChannelCommand
+    public class PlayerPreEnterChannelCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(PlayerPreEnterChannelCommand);
         int _chrId;
@@ -17,9 +17,9 @@ namespace Application.Core.Channel.Commands
             this.fromChannel = fromChannel;
         }
 
-        public void Execute(WorldChannel w)
+        public async Task Execute(WorldChannel w)
         {
-            var chr = fromChannel 
+            var chr = fromChannel
                 ? w.getPlayerStorage().getCharacterById(_chrId)
                 : w.PlayersAway.GetValueOrDefault(_chrId);
             if (chr != null)
@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Commands
                     chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
 
                 chr.Client.SetCharacterOnSessionTransitionState(_chrId);
-                chr.sendPacket(PacketCreator.getChannelChange(_channelSocket));
+                await chr.SendPacket(PacketCreator.getChannelChange(_channelSocket));
             }
         }
     }

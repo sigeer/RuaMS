@@ -12,17 +12,17 @@ public class WhoDropsCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.WhoDropsCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.WhoDropsCommand_Syntax));
             return;
         }
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 string searchString = player.getLastCommandMessage();
@@ -35,17 +35,12 @@ public class WhoDropsCommand : CommandBase
                     output += string.Join(", ", MonsterInformationProvider.getInstance().FindDropperNames(c, data.Id).Take(50));
                     output += "\r\n\r\n";
                 }
-                c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
+                await c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
             }
             finally
             {
                 c.releaseClient();
             }
         }
-        else
-        {
-            player.yellowMessage("Please wait a while for your request to be processed.");
-        }
-
     }
 }

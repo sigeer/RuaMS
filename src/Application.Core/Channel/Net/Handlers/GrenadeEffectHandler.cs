@@ -38,7 +38,7 @@ public class GrenadeEffectHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var position = new Point(p.readInt(), p.readInt());
@@ -52,7 +52,7 @@ public class GrenadeEffectHandler : ChannelHandlerBase
                 int skillLevel = chr.getSkillLevel(skillId);
                 if (skillLevel > 0)
                 {
-                    chr.getMap().broadcastMessage(chr, PacketCreator.throwGrenade(chr.getId(), position, keyDown, skillId, skillLevel), position);
+                    await chr.getMap().broadcastMessage(chr, PacketCreator.throwGrenade(chr.getId(), position, keyDown, skillId, skillLevel), position);
                 }
                 break;
             default:

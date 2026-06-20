@@ -8,12 +8,12 @@ public class ApCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ApCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ApCommand_Syntax));
             return;
         }
 
@@ -29,7 +29,7 @@ public class ApCommand : CommandBase
                 newAp = YamlConfig.config.server.MAX_AP;
             }
 
-            player.changeRemainingAp(newAp, false);
+            await player.changeRemainingAp(newAp, false);
         }
         else
         {
@@ -46,11 +46,11 @@ public class ApCommand : CommandBase
                     newAp = YamlConfig.config.server.MAX_AP;
                 }
 
-                victim.changeRemainingAp(newAp, false);
+                await victim.changeRemainingAp(newAp, false);
             }
             else
             {
-                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
     }

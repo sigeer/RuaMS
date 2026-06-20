@@ -34,14 +34,14 @@ public class CharlistRequestHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         p.readByte();
         int world = p.readByte();
 
         if (_server.IsWorldCapacityFull())
         {
-            c.sendPacket(LoginPacketCreator.getServerStatus(2));
+            await c.SendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 
@@ -49,12 +49,12 @@ public class CharlistRequestHandler : LoginHandlerBase
         var ch = _server.GetChannel(channel);
         if (ch == null)
         {
-            c.sendPacket(LoginPacketCreator.getServerStatus(2));
+            await c.SendPacket(LoginPacketCreator.getServerStatus(2));
             return;
         }
 
         c.SelectedChannel = channel;
 
-        c.SendCharList();
+        await c.SendCharList();
     }
 }

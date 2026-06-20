@@ -38,7 +38,7 @@ public class JobRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         if (chr.isGM())
             return true;

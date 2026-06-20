@@ -42,12 +42,12 @@ public class QuestAction : AbstractQuestAction
         quests = data.ToDictionary(x => x.QuestId, x => x.State);
     }
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
         foreach (int questID in quests.Keys)
         {
             var stat = quests[questID];
-            chr.updateQuestStatus(new QuestStatus(Quest.getInstance(questID), (QuestStatus.Status)(stat)));
+            await chr.updateQuestStatus(new QuestStatus(Quest.getInstance(questID), (QuestStatus.Status)(stat)));
         }
     }
 }

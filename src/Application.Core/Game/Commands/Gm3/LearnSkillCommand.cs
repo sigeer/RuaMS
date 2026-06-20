@@ -6,12 +6,12 @@ namespace Application.Core.Game.Commands.Gm3
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var skillId = GetIntParam("skillid");
             var skillLevel = TryGetIntParam("skilllevel", -1);
 
-            client.OnlinedCharacter.LearnSkill(skillId);
+            await client.OnlinedCharacter.LearnSkill(skillId);
         }
     }
 }

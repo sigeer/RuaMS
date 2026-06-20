@@ -1,27 +1,28 @@
 using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm3;
+
 public class WarpAreaCommand : CommandBase
 {
     public WarpAreaCommand() : base(3, "warparea")
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.WarpAreaCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.WarpAreaCommand_Syntax));
             return;
         }
 
         try
         {
-            var target = c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
+            var target = await c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
             if (target == null)
             {
-                player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
+                await player.Yellow(nameof(ClientMessage.MapNotFound));
                 return;
             }
 
@@ -34,14 +35,14 @@ public class WarpAreaCommand : CommandBase
                 if (victim.getPosition().distanceSq(pos) <= 50000)
                 {
                     victim.saveLocationOnWarp();
-                    victim.changeMap(target, target.getRandomPlayerSpawnpoint());
+                    await victim.changeMap(target, target.getRandomPlayerSpawnpoint());
                 }
             }
         }
         catch (Exception e)
         {
             log.Error(e.ToString());
-            player.YellowMessageI18N(nameof(ClientMessage.MapNotFound));
+            await player.Yellow(nameof(ClientMessage.MapNotFound));
         }
     }
 }

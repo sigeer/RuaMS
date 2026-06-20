@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class AranComboHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         int skillLevel = player.getSkillLevel(SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY));
@@ -57,10 +57,10 @@ public class AranComboHandler : ChannelHandlerBase
                     {
                         break;
                     }
-                    SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY).getEffect(combo / 10).applyComboBuff(player, combo);
+                    await SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY).getEffect(combo / 10).applyComboBuff(player, combo);
                     break;
             }
-            player.setCombo(combo);
+            await player.setCombo(combo);
             player.setLastCombo(currentTime);
         }
     }

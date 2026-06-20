@@ -21,7 +21,6 @@
 */
 
 
-using Application.Templates;
 using Application.Templates.Providers;
 using Application.Templates.Skill;
 using Application.Templates.XmlWzReader.Provider;

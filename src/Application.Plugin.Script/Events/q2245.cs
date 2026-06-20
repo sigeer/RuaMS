@@ -20,11 +20,11 @@ namespace Application.Plugin.Script.Events
             MaxMap = 910520000;
         }
 
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == 9300326)
             {
-                eim.spawnNpc(1061015, new Point(0, 115), mob.getMap());
+                await eim.spawnNpc(1061015, new Point(0, 115), mob.getMap());
             }
         }
     }

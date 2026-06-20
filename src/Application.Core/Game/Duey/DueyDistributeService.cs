@@ -1,7 +1,5 @@
 using Application.Core.Channel.Services;
-using Application.Core.Game.Players;
 using Application.Core.ServerTransports;
-using Application.Shared.Constants;
 using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
@@ -31,7 +29,7 @@ namespace Application.Core.Channel.DueyService
                 Item = _mapper.Map<Dto.ItemDto>(item),
             });
         }
-        public void Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public async Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
         {
             bool needNotice = false;
 
@@ -39,7 +37,7 @@ namespace Application.Core.Channel.DueyService
             {
                 if (chr.canHoldMeso(meso))
                 {
-                    chr.GainMeso(meso);
+                    await chr.GainMeso(meso);
                 }
                 else
                 {
@@ -51,7 +49,7 @@ namespace Application.Core.Channel.DueyService
             foreach (var item in items)
             {
                 if (chr.canHold(item.getItemId(), item.getQuantity()))
-                    InventoryManipulator.addFromDrop(chr.Client, item, false);
+                    await InventoryManipulator.addFromDrop(chr.Client, item, false);
                 else
                 {
                     needNotice = true;
@@ -63,7 +61,7 @@ namespace Application.Core.Channel.DueyService
 
             if (needNotice)
             {
-                chr.dropMessage($"你的背包满了，请通过Duey领取额外的物品！");
+                await chr.Notice($"你的背包满了，请通过Duey领取额外的物品！");
             }
         }
     }

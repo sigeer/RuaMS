@@ -30,8 +30,8 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class TouchingCashShopHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        c.sendPacket(PacketCreator.showCash(c.OnlinedCharacter));
+        await c.SendPacket(PacketCreator.showCash(c.OnlinedCharacter));
     }
 }

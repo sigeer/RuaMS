@@ -41,7 +41,7 @@ public class Summon : AbstractAnimatedMapObject
 
     public override Player? Controller => owner;
 
-    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType): base(owner.MapModel, pos, 0)
+    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType) : base(owner.MapModel, pos, 0)
     {
         this.owner = owner;
         this.skill = skill;
@@ -51,14 +51,14 @@ public class Summon : AbstractAnimatedMapObject
         this.movementType = movementType;
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.spawnSummon(this, false));
+        return client.SendPacket(PacketCreator.spawnSummon(this, false));
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removeSummon(this, true));
+        return client.SendPacket(PacketCreator.removeSummon(this, true));
     }
 
     public Player getOwner()

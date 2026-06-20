@@ -27,10 +27,11 @@ using Application.Utility.Performance;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace server.maps;
 
-public class MapManager : IDisposable, INamedInstance, ITickable
+public class MapManager : IAsyncDisposable, INamedInstance, ITickable
 {
     public string InstanceName { get; }
     public TickableStatus Status { get; private set; }
@@ -48,13 +49,13 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         InstanceName = $"{worldChannel.InstanceName}:{nameof(MapManager)}:{(evt == null ? "None" : evt.getName())}";
     }
 
-    public IMap resetMap(int mapid)
+    public async Task<IMap> resetMap(int mapid)
     {
-        RemoveMap(mapid);
-        return getMap(mapid);
+        await RemoveMap(mapid);
+        return await getMap(mapid);
     }
 
-    private IMap loadMapFromWz(int mapid)
+    private async Task<IMap> loadMapFromWz(int mapid)
     {
         if (maps.TryGetValue(mapid, out var map) && map != null)
         {
@@ -62,18 +63,19 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         }
 
 
-        map = MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
+        map = await MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
         maps[mapid] = map;
+        await _channelServer.NodeService.PluginManager.OnMapLoad(map);
 
-        GameMetrics.ActiveMapCount.Add(1, 
-            new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName), 
+        GameMetrics.ActiveMapCount.Add(1,
+            new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName),
             new KeyValuePair<string, object?>("Name", InstanceName));
         return map;
     }
 
-    public IMap getMap(int mapid)
+    public async Task<IMap> getMap(int mapid)
     {
-        return loadMapFromWz(mapid);
+        return await loadMapFromWz(mapid);
     }
 
 
@@ -94,7 +96,7 @@ public class MapManager : IDisposable, INamedInstance, ITickable
 
     public List<IMap> GetAllMaps() => maps.Values.ToList();
 
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
         var sw = Stopwatch.StartNew();
 
@@ -102,11 +104,11 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         {
             if (item is ITickable tickable)
             {
-                item.OnTick(now);
+                await item.OnTick(now);
 
                 if (tickable.Status == TickableStatus.Remove)
                 {
-                    RemoveMap(item.Id);
+                    await RemoveMap(item.Id);
                 }
             }
         }
@@ -118,19 +120,20 @@ public class MapManager : IDisposable, INamedInstance, ITickable
             new KeyValuePair<string, object?>("Name", InstanceName));
     }
 
-    void RemoveMap(int mapId)
+    async Task RemoveMap(int mapId)
     {
         if (maps.TryRemove(mapId, out var oldMap))
         {
             GameMetrics.ActiveMapCount.Add(-1
                 , new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName)
                 , new KeyValuePair<string, object?>("Name", InstanceName));
-            oldMap.Dispose();
+            await _channelServer.NodeService.PluginManager.OnMapUnload(oldMap);
+            await oldMap.DisposeAsync();
         }
     }
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (!this.IsAvailable())
             return;
@@ -138,7 +141,7 @@ public class MapManager : IDisposable, INamedInstance, ITickable
         Status = TickableStatus.Remove;
         foreach (var kv in getMaps())
         {
-            RemoveMap(kv.Key);
+            await RemoveMap(kv.Key);
         }
 
         this.evt = null;

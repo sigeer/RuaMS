@@ -32,9 +32,10 @@ namespace Application.Core.Login.Modules
         /// <summary>
         /// Master服务器注册定时任务时调用
         /// </summary>
-        public virtual void RegisterTask(ITimerManager timerManager)
+        public virtual Task RegisterTask(ITimerManager timerManager)
         {
             _logger.LogInformation("模块 {Name}：注册定时任务", _moduleName);
+            return Task.CompletedTask;
         }
 
 

@@ -22,7 +22,6 @@
 
 
 using Application.Templates.Item.Consume;
-using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
@@ -36,14 +35,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class UseSolomonHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var chr = c.OnlinedCharacter;
@@ -66,8 +65,8 @@ public class UseSolomonHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                chr.addGachaExp(itemTemplate.Exp);
-                InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+                await chr.addGachaExp(itemTemplate.Exp);
+                await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
             }
             finally
             {
@@ -75,6 +74,6 @@ public class UseSolomonHandler : ChannelHandlerBase
             }
         }
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

@@ -21,10 +21,7 @@
 
 
 
-using Application.Core.Channel.Commands;
-using Application.Core.Channel.Services;
 using Application.Resources.Messages;
-using Microsoft.Extensions.Logging;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -35,9 +32,9 @@ namespace Application.Core.Channel.Net.Handlers;
 public class EnterCashShopHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        c.OnlinedCharacter.MapModel.Send(async m =>
+        await c.OnlinedCharacter.MapModel.Send(async m =>
         {
             var mc = m.getCharacterById(c.OnlinedCharacter.Id);
             if (mc == null)
@@ -47,21 +44,21 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             if (mc.cannotEnterCashShop())
             {
-                mc.sendPacket(PacketCreator.enableActions());
+                await mc.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             if (mc.getEventInstance() != null)
             {
-                mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
-                mc.sendPacket(PacketCreator.enableActions());
+                await mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
+                await mc.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
             {
-                mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
-                mc.sendPacket(PacketCreator.enableActions());
+                await mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
+                await mc.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -72,23 +69,23 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             await mc.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.EnterCashShop);
 
-            mc.closePlayerInteractions();
+            await mc.closePlayerInteractions();
             mc.closePartySearchInteractions();
 
-            mc.unregisterChairBuff();
+            await mc.unregisterChairBuff();
             mc.Client.CurrentServer.NodeService.DataService.SaveBuff(mc);
 
             mc.Client.CurrentServer.EnterExtralWorld(mc);
 
-            mc.cancelAllBuffs(true);
+            await mc.cancelAllBuffs(true);
             mc.cancelAllDebuffs();
-            mc.forfeitExpirableQuests();
+            await mc.forfeitExpirableQuests();
 
-            mc.sendPacket(PacketCreator.openCashShop(mc.Client, false));
-            mc.sendPacket(PacketCreator.showCashInventory(mc.Client));
-            mc.sendPacket(PacketCreator.showGifts(mc.Client.CurrentServer.NodeService.ItemService.LoadPlayerGifts(mc)));
-            mc.sendPacket(PacketCreator.showWishList(mc, false));
-            mc.sendPacket(PacketCreator.showCash(mc));
+            await mc.SendPacket(PacketCreator.openCashShop(mc.Client, false));
+            await mc.SendPacket(PacketCreator.showCashInventory(mc.Client));
+            await mc.SendPacket(PacketCreator.showGifts(mc.Client.CurrentServer.NodeService.ItemService.LoadPlayerGifts(mc)));
+            await mc.SendPacket(PacketCreator.showWishList(mc, false));
+            await mc.SendPacket(PacketCreator.showCash(mc));
 
             mc.getCashShop().open(true);
         });

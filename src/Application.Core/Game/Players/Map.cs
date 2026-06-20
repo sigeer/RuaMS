@@ -3,15 +3,16 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Trades;
 using Application.Shared.WzEntity;
 using server.maps;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Game.Players
 {
-    public partial class Player : IMapPlayer
+    public partial class Player
     {
-        public override void OnMounted(IMap map)
+        public override async Task OnMounted(IMap map)
         {
-            base.OnMounted(map);
+            await base.OnMounted(map);
             this.Map = map.getId();
 
             var pets = getPets();
@@ -19,39 +20,39 @@ namespace Application.Core.Game.Players
             {
                 if (pet != null)
                 {
-                    MapModel.AddMapObject(pet, null);
-                    pet.sendSpawnData(Client);
+                    await MapModel.AddMapObject(pet, null);
+                    await pet.sendSpawnData(Client);
 
-                    // 宠物首次进入地图是通过 spawnPlayerMapObject 此时必然会显示
-                    MapModel.SetPlayerVisibleObject(this, pet, false);
+                    // 宠物首次进入地图是通过 spawnPlayerMapObject 此时必然会对自己显示
+                    await MapModel.SetPlayerVisibleObject(this, pet, false);
                 }
             }
-            commitExcludedItems();
+            await commitExcludedItems();
         }
 
-        public override void OnUnmounted()
+        public override async Task OnUnmounted()
         {
-            unregisterChairBuff();
+            await unregisterChairBuff();
 
-            releaseControlledMonsters();
+            await releaseControlledMonsters();
             setChair(-1);
 
             foreach (Summon summon in getSummonsValues())
             {
                 if (summon.isStationary())
                 {
-                    cancelEffectFromBuffStat(BuffStat.PUPPET);
+                    await cancelEffectFromBuffStat(BuffStat.PUPPET);
                 }
                 else
                 {
-                    MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
+                    await MapModel.RemoveMapObject(summon, p => summon.sendDestroyData(p.Client));
                 }
             }
 
             var dragon = getDragon();
             if (dragon != null)
             {
-                MapModel.RemoveMapObject(dragon, p => PacketCreator.removeDragon(Id));
+                await MapModel.RemoveMapObject(dragon, p => dragon.sendDestroyData(p.Client));
             }
 
             foreach (var pet in getPets())
@@ -59,7 +60,7 @@ namespace Application.Core.Game.Players
                 if (pet != null)
                 {
                     // 似乎不需要另外再销毁
-                    MapModel.RemoveMapObject(pet, null);
+                    await MapModel.RemoveMapObject(pet, null);
                 }
 
             }
@@ -72,89 +73,89 @@ namespace Application.Core.Game.Players
             }
             return Map;
         }
-        public IMap getWarpMap(int map)
+        public async Task<IMap> getWarpMap(int map)
         {
             IMap warpMap;
             var eim = getEventInstance();
             if (eim != null)
             {
-                warpMap = eim.getMapInstance(map);
+                warpMap = await eim.getMapInstance(map);
             }
             else
             {
-                warpMap = Client.getChannelServer().getMapFactory().getMap(map);
+                warpMap = await Client.getChannelServer().getMapFactory().getMap(map);
             }
             return warpMap;
         }
 
-        private void eventChangedMap(int map)
+        private async Task eventChangedMap(int map)
         {
             var eim = getEventInstance();
             if (eim != null)
             {
-                eim.changedMap(this, map);
+                await eim.changedMap(this, map);
             }
         }
 
-        public void changeMapBanish(BanishInfo? banishInfo)
+        public async Task changeMapBanish(BanishInfo? banishInfo)
         {
             if (banishInfo == null)
                 return;
 
             if (banishInfo.msg != null)
             {
-                Pink(banishInfo.msg);
+                await Pink(banishInfo.msg);
             }
 
-            IMap map_ = getWarpMap(banishInfo.map);
+            IMap map_ = await getWarpMap(banishInfo.map);
             var portal_ = map_.getPortal(banishInfo.portal);
-            changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
+            await changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
         }
 
-        public void changeMap(int map)
+        public async Task changeMap(int map)
         {
-            IMap warpMap = getWarpMap(map);
-            changeMap(warpMap, warpMap.getRandomPlayerSpawnpoint());
+            IMap warpMap = await getWarpMap(map);
+            await changeMap(warpMap, warpMap.getRandomPlayerSpawnpoint());
         }
 
-        public void changeMap(int map, int portal)
+        public async Task changeMap(int map, int portal)
         {
-            IMap warpMap = getWarpMap(map);
-            changeMap(warpMap, warpMap.getPortal(portal));
+            IMap warpMap = await getWarpMap(map);
+            await changeMap(warpMap, warpMap.getPortal(portal));
         }
 
-        public void changeMap(int map, string portal)
+        public async Task changeMap(int map, string portal)
         {
-            IMap warpMap = getWarpMap(map);
-            changeMap(warpMap, warpMap.getPortal(portal));
+            IMap warpMap = await getWarpMap(map);
+            await changeMap(warpMap, warpMap.getPortal(portal));
         }
 
-        public void changeMap(int map, Portal? portal)
+        public async Task changeMap(int map, Portal? portal)
         {
-            changeMap(getWarpMap(map), portal);
+            await changeMap(await getWarpMap(map), portal);
         }
 
-        public void changeMap(IMap to, int portal = 0)
+        public async Task changeMap(IMap to, int portal = 0)
         {
-            changeMap(to, to.getPortal(portal));
+            await changeMap(to, to.getPortal(portal));
         }
 
-        public void changeMap(IMap to, Portal? pto)
+        public async Task changeMap(IMap to, Portal? pto)
         {
-            eventChangedMap(to.getId());
+            await eventChangedMap(to.getId());
             pto ??= to.getPortal(0)!;
-            var warpTo = getWarpMap(to.getId());
-            changeMapInternal(warpTo, pto.getPosition(), PacketCreator.getWarpToMap(warpTo, pto.getId(), this));
+            var warpTo = await getWarpMap(to.getId());
+            await changeMapInternal(warpTo, pto.getPosition(), PacketCreator.getWarpToMap(warpTo, pto.getId(), this));
         }
 
-        public void changeMap(IMap to, Point pos)
+        public async Task changeMap(IMap to, Point pos)
         {
-            eventChangedMap(to.getId());
-            var warpTo = getWarpMap(to.getId());
-            changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
+            await eventChangedMap(to.getId());
+            var warpTo = await getWarpMap(to.getId());
+            await changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
         }
 
-        private void changeMapInternal(IMap to, Point pos, Packet warpPacket)
+        private async Task changeMapInternal(IMap to, Point pos, Packet warpPacket)
         {
             if (mapTransitioning)
                 return;
@@ -162,30 +163,31 @@ namespace Application.Core.Game.Players
             this.mapTransitioning.Set(true);
 
             var from = MapModel;
-            from.Send(m =>
+            await from.Send(async m =>
             {
-                this.unregisterChairBuff();
-                getTrade()?.CancelTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
-                this.closePlayerInteractions();
+                await this.unregisterChairBuff();
+                await closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+                await this.closePlayerInteractions();
 
-                m.removePlayer(this);
-                if (isLoggedinWorld())
-                {
-                    setPosition(pos);
-                    to.Send(t =>
-                    {
-                        sendPacket(warpPacket);
-                        t.addPlayer(this);
-
-                        Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = t.getId() });
-                    });
-                }
-                else
-                {
-                    Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), m.getId());
-                    Client.Disconnect(true, false);
-                }
+                await m.removePlayer(this);
             });
+
+            if (isLoggedinWorld())
+            {
+                setPosition(pos);
+                await to.Send(async t =>
+                {
+                    await SendPacket(warpPacket);
+                    await t.addPlayer(this);
+
+                    Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = t.getId() });
+                });
+            }
+            else
+            {
+                Log.Warning("Chr {CharacterName} got stuck when moving to map {MapId}", getName(), to.getId());
+                await Client.Disconnect(true, false);
+            }
         }
 
         public bool isChangingMaps()
@@ -199,11 +201,11 @@ namespace Application.Core.Game.Players
         }
 
 
-        public void forceChangeMap(IMap target, Portal? pto = null)
+        public async Task forceChangeMap(IMap target, Portal? pto = null)
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 
-            eventChangedMap(MapId.NONE);
+            await eventChangedMap(MapId.NONE);
 
             var mapEim = target.getEventInstance();
             if (mapEim != null)
@@ -211,11 +213,11 @@ namespace Application.Core.Game.Players
                 var playerEim = this.getEventInstance();
                 if (playerEim != null)
                 {
-                    playerEim.exitPlayer(this);
+                    await playerEim.exitPlayer(this);
                 }
 
                 // thanks Thora for finding an issue with players not being actually warped into the target event map (rather sent to the event starting map)
-                mapEim.registerPlayer(this);
+                await mapEim.registerPlayer(this);
             }
 
             IMap to = target; // warps directly to the target intead of the target's map id, this allows GMs to patrol players inside instances.
@@ -223,7 +225,7 @@ namespace Application.Core.Game.Players
             {
                 pto = to.getPortal(0)!;
             }
-            changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
+            await changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
         }
 
         private int getVisitedMapIndex(IMap map)
@@ -300,17 +302,17 @@ namespace Application.Core.Game.Players
         }
 
         MapEffect? _mapEffect;
-        public void startMapEffect(string msg, int itemId, int duration = 30000)
+        public async Task startMapEffect(string msg, int itemId, int duration = 30000)
         {
             if (_mapEffect != null)
             {
                 return;
             }
             _mapEffect = new MapEffect(msg, itemId, Client.CurrentServer.Node.getCurrentTime() + duration);
-            sendPacket(_mapEffect.makeStartData());
+            await SendPacket(_mapEffect.makeStartData());
         }
 
-        public void showMapOwnershipInfo(Player mapOwner)
+        public async Task showMapOwnershipInfo(Player mapOwner)
         {
             long curTime = Client.CurrentServer.Node.getCurrentTime();
             if (nextWarningTime < curTime)
@@ -325,12 +327,12 @@ namespace Application.Core.Game.Players
                 strLines.Add("");
                 strLines.Insert(this.getClient().getChannelServer().getServerMessage().Count() == 0 ? 0 : 1, "Get off my lawn!!");
 
-                this.sendPacket(PacketCreator.getAvatarMega(mapOwner, medal, this.getClient().getChannel(), ItemId.ROARING_TIGER_MESSENGER, strLines, true));
+                await this.SendPacket(PacketCreator.getAvatarMega(mapOwner, medal, this.getClient().getChannel(), ItemId.ROARING_TIGER_MESSENGER, strLines, true));
             }
         }
-        public void ForcedWarpOut()
+        public async Task ForcedWarpOut()
         {
-            changeMap(MapModel.getForcedReturnMap());
+            await changeMap(await MapModel.getForcedReturnMap());
         }
     }
 }

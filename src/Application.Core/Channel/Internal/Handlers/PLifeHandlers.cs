@@ -20,11 +20,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(CreatePLifeRequest data)
             {
-                _server.Broadcast(w =>
+                _server.Broadcast(async w =>
                 {
                     if (w.getMapFactory().isMapLoaded(data.Data.MapId))
                     {
-                        var map = w.getMapFactory().getMap(data.Data.MapId);
+                        var map = await w.getMapFactory().getMap(data.Data.MapId);
                         if (data.Data.Type == LifeType.NPC)
                         {
                             var npc = new NPC(LifeFactory.Instance.GetNPCTemplateTrust(data.Data.LifeId), map, new Point(data.Data.X, data.Data.Y));
@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                 npc.setRx1(data.Data.Rx1);
                                 npc.setFh(data.Data.Fh);
 
-                                map.AddMapObject(npc, c => c.sendPacket(PacketCreator.spawnNPC(npc)));
+                                await map.AddMapObject(npc, c => c.SendPacket(PacketCreator.spawnNPC(npc)));
 
                             }
                         }
@@ -45,24 +45,24 @@ namespace Application.Core.Channel.Internal.Handlers
                             var mob = LifeFactory.Instance.getMonster(data.Data.LifeId);
                             if (mob != null)
                             {
-                                map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
+                                await map.addMonsterSpawn(data.Data.LifeId, new Point(data.Data.X, data.Data.Y),
                                     data.Data.Cy, data.Data.F, data.Data.Fh, data.Data.Rx0, data.Data.Rx1, data.Data.Mobtime, data.Data.Hide > 0, data.Data.Team);
                             }
                         }
                     }
 
-                    w.getPlayerStorage().GetCharacterActor(data.MasterId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(data.MasterId)?.Send(async m =>
                     {
                         var chr = m.getCharacterById(data.MasterId);
                         if (chr != null)
                         {
                             if (data.Data.Type == LifeType.NPC)
                             {
-                                chr.yellowMessage("Pnpc created.");
+                                await chr.Yellow("Pnpc created.");
                             }
                             if (data.Data.Type == LifeType.Monster)
                             {
-                                chr.yellowMessage("Pmob created.");
+                                await chr.Yellow("Pmob created.");
                             }
                         }
                     });
@@ -84,16 +84,16 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(RemovePLifeResponse res)
             {
-                _server.Broadcast(w =>
+                _server.Broadcast(async w =>
                 {
                     foreach (var data in res.RemovedItems)
                     {
                         if (w.getMapFactory().isMapLoaded(data.MapId))
                         {
-                            var map = w.getMapFactory().getMap(data.MapId);
+                            var map = await w.getMapFactory().getMap(data.MapId);
                             if (data.Type == LifeType.NPC)
                             {
-                                map.destroyNPC(data.LifeId);
+                                await map.destroyNPC(data.LifeId);
                             }
                             else if (data.Type == LifeType.Monster)
                             {
@@ -102,18 +102,18 @@ namespace Application.Core.Channel.Internal.Handlers
                         }
                     }
 
-                    w.getPlayerStorage().GetCharacterActor(res.MasterId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(res.MasterId)?.Send(async m =>
                     {
                         var chr = m.getCharacterById(res.MasterId);
                         if (chr != null)
                         {
                             if (res.LifeType == LifeType.NPC)
                             {
-                                chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pNPC placements.");
+                                await chr.Yellow("Cleared " + res.RemovedItems.Count + " pNPC placements.");
                             }
                             if (res.LifeType == LifeType.Monster)
                             {
-                                chr.yellowMessage("Cleared " + res.RemovedItems.Count + " pmob placements.");
+                                await chr.Yellow("Cleared " + res.RemovedItems.Count + " pmob placements.");
                             }
                         }
                     });

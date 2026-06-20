@@ -19,9 +19,6 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Life;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -36,7 +33,7 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mobOid = p.readInt();    // packet structure found thanks to Darter (Rajan)
         int dmg = p.readInt();
@@ -56,16 +53,16 @@ public class FieldDamageMobHandler : ChannelHandlerBase
         {
             if (dmg < 0 || dmg > GameUtils.MAX_FIELD_MOB_DAMAGE)
             {
-                _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}", 
+                _logger.LogWarning("Chr {CharacterName} tried to use an obstacle on mapid {MapId} to attack {MobName} with damage {Damage}",
                     c.OnlinedCharacter.getName(),
-                    map.getId(), 
-                    ClientCulture.SystemCulture.GetMobName(mob.getId()), 
+                    map.getId(),
+                    ClientCulture.SystemCulture.GetMobName(mob.getId()),
                     dmg);
                 return;
             }
 
-            mob.DamageBy(chr, dmg, 0);
-            mob.BroadcastMap(PacketCreator.damageMonster(mobOid, dmg));
+            await mob.DamageBy(chr, dmg, 0);
+            await mob.BroadcastMap(PacketCreator.damageMonster(mobOid, dmg));
         }
         return;
     }

@@ -15,7 +15,7 @@ public class ViewAllCharSelectedWithPicHandler : OnCharacterSelectedWithPicHandl
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
 
         string pic = p.readString();
@@ -25,6 +25,6 @@ public class ViewAllCharSelectedWithPicHandler : OnCharacterSelectedWithPicHandl
         string macs = p.readString();
         string hostString = p.readString();
 
-        Process(c, charId, pic, hostString, macs);
+        await Process(c, charId, pic, hostString, macs);
     }
 }

@@ -3,7 +3,7 @@ using tools;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class InvokeTVCommand : IWorldChannelCommand
+    internal class InvokeTVCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeTVCommand);
         CreateTVMessageBroadcast res;
@@ -13,25 +13,25 @@ namespace Application.Core.Channel.Commands
             this.res = res;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             var noticeMsg = string.Join(" ", res.Request.MessageList);
-            ctx.broadcastPacket(PacketCreator.enableTV());
-            ctx.broadcastPacket(PacketCreator.sendTV(res.Master, res.Request.MessageList.ToArray(), res.Request.Type <= 2 ? res.Request.Type : res.Request.Type - 3, res.MasterPartner));
+            await ctx.broadcastPacket(PacketCreator.enableTV());
+            await ctx.broadcastPacket(PacketCreator.sendTV(res.Master, res.Request.MessageList.ToArray(), res.Request.Type <= 2 ? res.Request.Type : res.Request.Type - 3, res.MasterPartner));
 
             if (res.Request.Type >= 3)
-                ctx.broadcastPacket(PacketCreator.serverNotice(3, res.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(res.Master) + " : " + noticeMsg, res.Request.ShowEar));
+                await ctx.broadcastPacket(PacketCreator.serverNotice(3, res.Master.Channel, CharacterViewDtoUtils.GetPlayerNameWithMedal(res.Master) + " : " + noticeMsg, res.Request.ShowEar));
 
             return;
         }
     }
 
-    internal class InvokeTVFinishCommand : IWorldChannelCommand
+    internal class InvokeTVFinishCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeTVFinishCommand);
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
-            ctx.broadcastPacket(PacketCreator.removeTV());
+            await ctx.broadcastPacket(PacketCreator.removeTV());
 
             return;
         }

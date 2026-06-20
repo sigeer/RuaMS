@@ -12,7 +12,7 @@ namespace Application.Plugin.FakeCharacter.Commands
             _manager = manager;
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var chr = client.OnlinedCharacter;
 
@@ -33,7 +33,7 @@ namespace Application.Plugin.FakeCharacter.Commands
                 }
                 else if (int.TryParse(idxStr, out var idx))
                 {
-                    _manager.Summon(chr, idx);
+                    await _manager.Summon(chr, idx);
                 }
 
             }
@@ -45,7 +45,7 @@ namespace Application.Plugin.FakeCharacter.Commands
                 }
                 else if (int.TryParse(idxStr, out var idx))
                 {
-                    _manager.Remove(chr, idx);
+                    await _manager.Remove(chr, idx);
                 }
             }
 

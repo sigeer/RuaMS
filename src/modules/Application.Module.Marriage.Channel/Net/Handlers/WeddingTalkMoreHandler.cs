@@ -42,8 +42,8 @@ public class WeddingTalkMoreHandler : ChannelHandlerBase
             c.OnlinedCharacter.dropMessage(5, "High Priest John: Your blessings have been added to their love. What a noble act for a lovely couple!");
         }
 
-        c.sendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(WeddingPackets.OnWeddingProgress(true, 0, 0, 3));
+        await c.SendPacket(PacketCreator.enableActions());
         return Task.CompletedTask;
     }
 }

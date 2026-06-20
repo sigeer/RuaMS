@@ -24,9 +24,11 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(data.Package.ReceiverId)?
-                    .Send(m =>
+                    .Send(async m =>
                     {
-                        m.getCharacterById(data.Package.ReceiverId)?.sendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
+                        var chr = m.getCharacterById(data.Package.ReceiverId);
+                        if (chr != null)
+                            await chr.SendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
                     });
                 });
             }
@@ -46,13 +48,13 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 if (data.Code == 0)
                 {
-                    _server.Broadcast(w =>
+                    _server.Broadcast(async w =>
                     {
                         if (data.Code == 0)
                         {
                             var chr = w.getPlayerStorage().GetCharacterClientById(data.Request.MasterId);
                             if (chr != null)
-                                chr.sendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
+                                await chr.SendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
                         }
                     });
                 }
@@ -76,13 +78,13 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(data.ReceiverId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var chr = m.getCharacterById(data.ReceiverId);
                             if (chr != null)
                             {
                                 var dataList = w.Mapper.Map<DueyPackageObject[]>(data.List);
-                                chr.sendPacket(DueyPacketCreator.sendDuey(DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode(), dataList));
+                                await chr.SendPacket(DueyPacketCreator.sendDuey(DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode(), dataList));
                             }
                         });
                 });
@@ -109,7 +111,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 _server.Broadcast(w =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.Package.ReceiverId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(data.Package.ReceiverId)?.Send(async m =>
                     {
                         var chr = m.getCharacterById(data.Package.ReceiverId);
                         if (chr != null)
@@ -122,8 +124,8 @@ namespace Application.Core.Channel.Internal.Handlers
 
                                 if (!chr.canHoldMeso(dp.Mesos))
                                 {
-                                    chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                                    _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                    await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
+                                    await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                                     return;
                                 }
 
@@ -131,26 +133,26 @@ namespace Application.Core.Channel.Internal.Handlers
                                 {
                                     if (!chr.CanHoldUniquesOnly(dpItem.getItemId()))
                                     {
-                                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
-                                        _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                        await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
+                                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                                         return;
                                     }
 
                                     if (!chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
                                     {
-                                        chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
-                                        _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                        await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
+                                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                                         return;
                                     }
                                 }
 
 
-                                _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                                _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
+                                await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
                             }
                             else
                             {
-                                chr.sendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
+                                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
                                 if (data.Code == 1)
                                 {
                                     chr.Log.Warning("Chr {CharacterName} tried to receive package from duey with id {PackageId}", chr.Name, data.Request.PackageId);
@@ -181,9 +183,11 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.Broadcast(w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(data.ReceiverId)?
-                    .Send(m =>
+                    .Send(async m =>
                     {
-                        m.getCharacterById(data.ReceiverId)?.sendPacket(DueyPacketCreator.sendDueyParcelNotification(data.Type));
+                        var chr = m.getCharacterById(data.ReceiverId);
+                        if (chr != null)
+                            await chr.SendPacket(DueyPacketCreator.sendDueyParcelNotification(data.Type));
                     });
                 });
             }

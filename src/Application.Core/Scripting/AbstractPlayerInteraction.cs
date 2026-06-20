@@ -30,9 +30,9 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
-using Application.Core.Scripting.Events;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
+using Application.Core.Scripting.Events;
 using Application.Shared.Events;
 using client;
 using client.inventory;
@@ -41,6 +41,7 @@ using server.expeditions;
 using server.life;
 using server.partyquest;
 using server.quest;
+using System.Threading.Tasks;
 using tools;
 using static Application.Core.Game.Players.Player;
 
@@ -115,9 +116,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().ToLocalTime().Hour;
     }
 
-    public int getMarketPortalId(int mapId)
+    public async Task<int> getMarketPortalId(int mapId)
     {
-        return getMarketPortalId(getWarpMap(mapId));
+        return getMarketPortalId(await getWarpMap(mapId));
     }
 
     private int getMarketPortalId(IMap map)
@@ -125,34 +126,34 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (map.findMarketPortal() != null) ? map.findMarketPortal()!.getId() : map.getRandomPlayerSpawnpoint().getId();
     }
 
-    public void WarpOut()
+    public async Task WarpOut()
     {
-        warp(getPlayer().getMap().getForcedReturnId());
+        await warp(getPlayer().getMap().getForcedReturnId());
     }
 
-    public void WarpReturn()
+    public async Task WarpReturn()
     {
-        warp(getPlayer().getMap().getReturnMapId());
+        await warp(getPlayer().getMap().getReturnMapId());
     }
 
-    public void WarpReturn(int portal)
+    public async Task WarpReturn(int portal)
     {
-        warp(getPlayer().getMap().getReturnMapId(), portal);
+        await warp(getPlayer().getMap().getReturnMapId(), portal);
     }
 
-    public void warp(int mapid)
+    public async Task warp(int mapid)
     {
-        getPlayer().changeMap(mapid);
+        await getPlayer().changeMap(mapid);
     }
 
-    public void warp(int map, int portal)
+    public async Task warp(int map, int portal)
     {
-        getPlayer().changeMap(map, portal);
+        await getPlayer().changeMap(map, portal);
     }
 
-    public void warp(int map, string portal)
+    public async Task warp(int map, string portal)
     {
-        getPlayer().changeMap(map, portal);
+        await getPlayer().changeMap(map, portal);
     }
 
     public void warpMap(int map)
@@ -160,22 +161,22 @@ public class AbstractPlayerInteraction : IClientMessenger
         getPlayer().getMap().warpEveryone(map);
     }
 
-    public void warpParty(int id)
+    public async Task warpParty(int id)
     {
-        warpParty(id, 0);
+        await warpParty(id, 0);
     }
 
-    public void warpParty(int id, int portalId)
+    public async Task warpParty(int id, int portalId)
     {
         int mapid = getMapId();
-        warpParty(id, portalId, mapid, mapid);
+        await warpParty(id, portalId, mapid, mapid);
     }
 
-    public void warpParty(int map, string portalName)
+    public async Task warpParty(int map, string portalName)
     {
 
         int mapid = getMapId();
-        var warpMap = c.CurrentServer.getMapFactory().getMap(map);
+        var warpMap = await c.CurrentServer.getMapFactory().getMap(map);
 
         var portal = warpMap.getPortal(portalName);
 
@@ -186,16 +187,16 @@ public class AbstractPlayerInteraction : IClientMessenger
 
         var portalId = portal.getId();
 
-        warpParty(map, portalId, mapid, mapid);
+        await warpParty(map, portalId, mapid, mapid);
 
     }
 
-    public void warpParty(int id, int fromMinId, int fromMaxId)
+    public async Task warpParty(int id, int fromMinId, int fromMaxId)
     {
-        warpParty(id, 0, fromMinId, fromMaxId);
+        await warpParty(id, 0, fromMinId, fromMaxId);
     }
 
-    public void warpParty(int id, int portalId, int fromMinId, int fromMaxId)
+    public async Task warpParty(int id, int portalId, int fromMinId, int fromMaxId)
     {
         foreach (var mc in this.getPlayer().getPartyMembersOnline())
         {
@@ -203,25 +204,25 @@ public class AbstractPlayerInteraction : IClientMessenger
             {
                 if (mc.getMapId() >= fromMinId && mc.getMapId() <= fromMaxId)
                 {
-                    mc.changeMap(id, portalId);
+                    await mc.changeMap(id, portalId);
                 }
             }
         }
     }
 
-    public IMap getWarpMap(int map)
+    public async Task<IMap> getWarpMap(int map)
     {
-        return getPlayer().getWarpMap(map);
+        return await getPlayer().getWarpMap(map);
     }
 
-    public IMap getMap(int map)
+    public async Task<IMap> getMap(int map)
     {
-        return getWarpMap(map);
+        return await getWarpMap(map);
     }
 
-    public int countAllMonstersOnMap(int map)
+    public async Task<int> countAllMonstersOnMap(int map)
     {
-        return getMap(map).countMonsters();
+        return (await getMap(map)).countMonsters();
     }
 
     public int countMonster()
@@ -229,9 +230,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getPlayer().getMap().countMonsters();
     }
 
-    public void resetMapObjects(int mapid)
+    public async Task resetMapObjects(int mapid)
     {
-        getWarpMap(mapid).resetMapObjects();
+        await (await getWarpMap(mapid)).resetMapObjects();
     }
 
     public AbstractEventManager? getEventManager(string @event)
@@ -318,9 +319,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         return canHoldAll(Collections.singletonList(itemid), Collections.singletonList(quantity), true);
     }
 
-    public bool canHold(int itemid, int quantity, int removeItemid, int removeQuantity)
+    public async Task<bool> canHold(int itemid, int quantity, int removeItemid, int removeQuantity)
     {
-        return canHoldAllAfterRemoving(Collections.singletonList(itemid), Collections.singletonList(quantity), Collections.singletonList(removeItemid), Collections.singletonList(removeQuantity));
+        return await canHoldAllAfterRemoving(Collections.singletonList(itemid), Collections.singletonList(quantity), Collections.singletonList(removeItemid), Collections.singletonList(removeQuantity));
     }
 
     private List<int> convertToIntegerList(List<object> objects)
@@ -396,7 +397,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return invList;
     }
 
-    public bool canHoldAllAfterRemoving(List<int> toAddItemids, List<int> toAddQuantity, List<int> toRemoveItemids, List<int> toRemoveQuantity)
+    public async Task<bool> canHoldAllAfterRemoving(List<int> toAddItemids, List<int> toAddQuantity, List<int> toRemoveItemids, List<int> toRemoveQuantity)
     {
         List<List<ItemQuantity>> toAddItemList = prepareInventoryItemList(toAddItemids, toAddQuantity);
         List<List<ItemQuantity>> toRemoveItemList = prepareInventoryItemList(toRemoveItemids, toRemoveQuantity);
@@ -418,7 +419,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
                     foreach (var p in toRemove)
                     {
-                        InventoryManipulator.removeById(c, InventoryType.CANHOLD, p.ItemId, p.Quantity, false, false);
+                        await InventoryManipulator.removeById(c, InventoryType.CANHOLD, p.ItemId, p.Quantity, false, false);
                     }
 
                     List<TypedItemQuantity> addItems = prepareProofInventoryItems(toAdd);
@@ -453,9 +454,9 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     //---- /\ /\ /\ /\ /\ /\ /\  NOT TESTED  /\ /\ /\ /\ /\ /\ /\ /\ /\ ----
 
-    public void openNpc(int npcid, string? script = null)
+    public async Task openNpc(int npcid, string? script = null)
     {
-        c.OpenNpc(npcid, script);
+        await c.OnlinedCharacter.OpenNpc(npcid, script);
     }
 
     public int getQuestStatus(int id)
@@ -517,24 +518,24 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public void setQuestProgress(int id, string progress)
+    public async Task setQuestProgress(int id, string progress)
     {
-        setQuestProgress(id, 0, progress);
+        await setQuestProgress(id, 0, progress);
     }
 
-    public void setQuestProgress(int id, int progress)
+    public async Task setQuestProgress(int id, int progress)
     {
-        setQuestProgress(id, 0, progress.ToString());
+        await setQuestProgress(id, 0, progress.ToString());
     }
 
-    public void setQuestProgress(int id, int infoNumber, int progress)
+    public async Task setQuestProgress(int id, int infoNumber, int progress)
     {
-        setQuestProgress(id, infoNumber, progress.ToString());
+        await setQuestProgress(id, infoNumber, progress.ToString());
     }
 
-    public void setQuestProgress(int id, int infoNumber, string progress)
+    public async Task setQuestProgress(int id, int infoNumber, string progress)
     {
-        c.OnlinedCharacter.setQuestProgress(id, infoNumber, progress);
+        await c.OnlinedCharacter.setQuestProgress(id, infoNumber, progress);
     }
 
     public string getQuestProgress(int id)
@@ -550,81 +551,81 @@ public class AbstractPlayerInteraction : IClientMessenger
     public int getQuestProgressInt(int id) => getPlayer().GetQuestProgressInt(id);
     public int getQuestProgressInt(int id, int infoNumber) => getPlayer().GetQuestProgressInt(id, infoNumber);
 
-    public void resetAllQuestProgress(int id)
+    public async Task resetAllQuestProgress(int id)
     {
         QuestStatus qs = getPlayer().getQuest(Quest.getInstance(id));
         if (qs != null)
         {
             qs.resetAllProgress();
-            getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
+            await getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
         }
     }
 
-    public void resetQuestProgress(int id, int infoNumber)
+    public async Task resetQuestProgress(int id, int infoNumber)
     {
         QuestStatus qs = getPlayer().getQuest(Quest.getInstance(id));
         if (qs != null)
         {
             qs.resetProgress(infoNumber);
-            getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
+            await getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, false);
         }
     }
 
-    public virtual bool forceStartQuest(int id)
+    public virtual async Task<bool> forceStartQuest(int id)
     {
-        return forceStartQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return await forceStartQuest(id, NpcId.MAPLE_ADMINISTRATOR);
     }
 
-    public virtual bool forceStartQuest(int id, int npc)
+    public virtual async Task<bool> forceStartQuest(int id, int npc)
     {
-        return startQuest(id, npc);
+        return await startQuest(id, npc);
     }
 
-    public virtual bool forceCompleteQuest(int id)
+    public virtual async Task<bool> forceCompleteQuest(int id)
     {
-        return forceCompleteQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return await forceCompleteQuest(id, NpcId.MAPLE_ADMINISTRATOR);
     }
 
-    public virtual bool forceCompleteQuest(int id, int npc)
+    public virtual async Task<bool> forceCompleteQuest(int id, int npc)
     {
-        return completeQuest(id, npc);
+        return await completeQuest(id, npc);
     }
 
-    public virtual bool startQuest(short id)
+    public virtual async Task<bool> startQuest(short id)
     {
-        return startQuest((int)id);
+        return await startQuest((int)id);
     }
 
-    public virtual bool completeQuest(short id)
+    public virtual async Task<bool> completeQuest(short id)
     {
-        return completeQuest((int)id);
+        return await completeQuest((int)id);
     }
 
-    public virtual bool startQuest(int id)
+    public virtual async Task<bool> startQuest(int id)
     {
-        return startQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return await startQuest(id, NpcId.MAPLE_ADMINISTRATOR);
     }
 
-    public virtual bool completeQuest(int id)
+    public virtual async Task<bool> completeQuest(int id)
     {
-        return completeQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return await completeQuest(id, NpcId.MAPLE_ADMINISTRATOR);
     }
 
-    public virtual bool startQuest(short id, int npc)
+    public virtual async Task<bool> startQuest(short id, int npc)
     {
-        return startQuest((int)id, npc);
+        return await startQuest((int)id, npc);
     }
 
-    public virtual bool completeQuest(short id, int npc)
+    public virtual async Task<bool> completeQuest(short id, int npc)
     {
-        return completeQuest((int)id, npc);
+        return await completeQuest((int)id, npc);
     }
 
-    public virtual bool startQuest(int id, int npc)
+    public virtual async Task<bool> startQuest(int id, int npc)
     {
         try
         {
-            return Quest.getInstance(id).forceStart(getPlayer(), npc);
+            return await Quest.getInstance(id).forceStart(getPlayer(), npc);
         }
         catch (NullReferenceException ex)
         {
@@ -633,11 +634,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public virtual bool completeQuest(int id, int npc)
+    public virtual async Task<bool> completeQuest(int id, int npc)
     {
         try
         {
-            return Quest.getInstance(id).forceComplete(getPlayer(), npc);
+            return await Quest.getInstance(id).forceComplete(getPlayer(), npc);
         }
         catch (NullReferenceException ex)
         {
@@ -646,7 +647,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public Item? evolvePet(sbyte slot)
+    public async Task<Item?> evolvePet(sbyte slot)
     {
         var target = getPlayer().getPet(slot);
         if (target != null)
@@ -654,15 +655,15 @@ public class AbstractPlayerInteraction : IClientMessenger
             var pet = target.PetItem.EvolvePet(getPlayer());
             if (pet != null)
             {
-                InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.PetItem.getPosition(), 1, false);
+                await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.PetItem.getPosition(), 1, false);
 
-                InventoryManipulator.addFromDrop(getClient(), pet, false);
-                getPlayer().SummonPet(pet);
+                await InventoryManipulator.addFromDrop(getClient(), pet, false);
+                await getPlayer().SummonPet(pet);
                 return pet;
             }
         }
 
-        getPlayer().message("Pet could not be evolved...");
+        await getPlayer().Pink("Pet could not be evolved...");
         return null;
 
         /*
@@ -681,8 +682,8 @@ public class AbstractPlayerInteraction : IClientMessenger
         getPlayer().addPet(evolved);
 
         getPlayer().getMap().broadcastMessage(c.OnlinedCharacter, PacketCreator.showPet(c.OnlinedCharacter, evolved, false, false), true);
-        c.sendPacket(PacketCreator.petStatUpdate(c.OnlinedCharacter));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.petStatUpdate(c.OnlinedCharacter));
+        await c.SendPacket(PacketCreator.enableActions());
         chr.getClient().getWorldServer().registerPetHunger(chr, chr.getPetIndex(evolved));
         */
 
@@ -690,61 +691,61 @@ public class AbstractPlayerInteraction : IClientMessenger
     }
     // js使用
     [ScriptCall]
-    public void gainItem(int id, bool show) => gainItem(id, 1, show);
+    public Task gainItem(int id, bool show) => gainItem(id, 1, show);
 
-    public void gainItem(int id, int quantity = 1, bool show = true)
+    public async Task gainItem(int id, int quantity = 1, bool show = true)
     {
         //this will fk randomStats equip :P
-        gainItem(id, (short)quantity, false, show);
+        await gainItem(id, (short)quantity, false, show);
     }
 
-    public Item? gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
+    public async Task<Item?> gainItem(int id, short quantity, bool randomStats, bool showMessage, long expires = -1)
     {
-        return getPlayer().GainItem(id, quantity, randomStats,
+        return await getPlayer().GainItem(id, quantity, randomStats,
             showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown, expires: expires);
     }
 
-    public void gainFame(int delta)
+    public async Task gainFame(int delta)
     {
-        getPlayer().gainFame(delta);
+        await getPlayer().gainFame(delta);
     }
 
-    public void changeMusic(string songName)
+    public async Task changeMusic(string songName)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.musicChange(songName));
+        await getPlayer().getMap().broadcastMessage(PacketCreator.musicChange(songName));
     }
 
-    public void playerMessage(int type, string message)
+    public async Task playerMessage(int type, string message)
     {
-        getPlayer().dropMessage(type, message);
+        await getPlayer().dropMessage(type, message);
     }
 
-    public void message(string message)
+    public async Task message(string message)
     {
-        getPlayer().message(message);
+        await Pink(message);
     }
 
-    public void dropMessage(int type, string message)
+    public async Task dropMessage(int type, string message)
     {
-        getPlayer().TypedMessage(type, message);
+        await TypedMessage(type, message);
     }
 
-    public void mapMessage(int type, string message)
+    public async Task mapMessage(int type, string message)
     {
-        getPlayer().getMap().TypedMessage(type, message);
+        await getPlayer().getMap().TypedMessage(type, message);
     }
 
-    public void mapEffect(string path)
+    public async Task mapEffect(string path)
     {
-        c.sendPacket(PacketCreator.mapEffect(path));
+        await c.SendPacket(PacketCreator.mapEffect(path));
     }
 
-    public void mapSound(string path)
+    public async Task mapSound(string path)
     {
-        c.sendPacket(PacketCreator.mapSound(path));
+        await c.SendPacket(PacketCreator.mapSound(path));
     }
 
-    public virtual void displayAranIntro()
+    public virtual async Task displayAranIntro()
     {
         string intro = (c.OnlinedCharacter.getMapId()) switch
         {
@@ -756,18 +757,18 @@ public class AbstractPlayerInteraction : IClientMessenger
             MapId.ARAN_MAHA => "Effect/Direction1.img/aranTutorial/Maha",
             _ => ""
         };
-        showIntro(intro);
+        await showIntro(intro);
     }
 
-    public void showIntro(string path)
+    public async Task showIntro(string path)
     {
-        c.sendPacket(PacketCreator.showIntro(path));
+        await c.SendPacket(PacketCreator.showIntro(path));
     }
 
-    public void showInfo(string path)
+    public async Task showInfo(string path)
     {
-        c.sendPacket(PacketCreator.showInfo(path));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.showInfo(path));
+        await c.SendPacket(PacketCreator.enableActions());
     }
 
     public virtual Team? getParty()
@@ -800,56 +801,56 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getEventInstance() != null && getPlayer().getId() == getEventInstance()!.getLeaderId();
     }
 
-    public void giveCharacterExp(int amount, Player chr)
+    public async Task giveCharacterExp(int amount, Player chr)
     {
-        chr.gainExp((int)(amount * chr.getExpRate()), true, true);
+        await chr.gainExp((int)(amount * chr.getExpRate()), true, true);
     }
 
-    public void removeAll(int id)
+    public async Task removeAll(int id)
     {
-        removeAll(id, c);
+        await removeAll(id, c);
     }
 
-    public void removeAll(int id, IChannelClient cl)
+    public async Task removeAll(int id, IChannelClient cl)
     {
         InventoryType invType = ItemConstants.getInventoryType(id);
         int possessed = cl.OnlinedCharacter.getInventory(invType).countById(id);
         if (possessed > 0)
         {
-            InventoryManipulator.removeById(cl, invType, id, possessed, true, false);
-            cl.sendPacket(PacketCreator.getShowItemGain(id, (short)-possessed, true));
+            await InventoryManipulator.removeById(cl, invType, id, possessed, true, false);
+            await cl.SendPacket(PacketCreator.getShowItemGain(id, (short)-possessed, true));
         }
 
         if (invType == InventoryType.EQUIP)
         {
             if (cl.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).countById(id) > 0)
             {
-                InventoryManipulator.removeById(cl, InventoryType.EQUIPPED, id, 1, true, false);
-                cl.sendPacket(PacketCreator.getShowItemGain(id, -1, true));
+                await InventoryManipulator.removeById(cl, InventoryType.EQUIPPED, id, 1, true, false);
+                await cl.SendPacket(PacketCreator.getShowItemGain(id, -1, true));
             }
         }
     }
 
-    public void RemoveFirstSlot(InventoryType type)
+    public async Task RemoveFirstSlot(InventoryType type)
     {
-        InventoryManipulator.removeFromSlot(getClient(), type, 1, 1, true);
+        await InventoryManipulator.removeFromSlot(getClient(), type, 1, 1, true);
     }
 
 
-    public int getPlayerCount(int mapid)
+    public async Task<int> getPlayerCount(int mapid)
     {
-        return c.CurrentServer.getMapFactory().getMap(mapid).getAllPlayers().Count;
+        return (await c.CurrentServer.getMapFactory().getMap(mapid)).getAllPlayers().Count;
     }
 
-    public void showInstruction(string msg, int width, int height)
+    public async Task showInstruction(string msg, int width, int height)
     {
-        c.sendPacket(PacketCreator.sendHint(msg, width, height));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.sendHint(msg, width, height));
+        await c.SendPacket(PacketCreator.enableActions());
     }
 
-    public void disableMinimap()
+    public async Task disableMinimap()
     {
-        c.sendPacket(PacketCreator.disableMinimap());
+        await c.SendPacket(PacketCreator.disableMinimap());
     }
 
     public bool isAllReactorState(int reactorId, int state)
@@ -857,23 +858,23 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c.OnlinedCharacter.getMap().isAllReactorState(reactorId, state);
     }
 
-    public virtual void resetMap(int mapid)
+    public virtual async Task resetMap(int mapid)
     {
-        getMap(mapid).clearMapObjects();
+        await (await getMap(mapid)).clearMapObjects();
     }
 
-    public void useItem(int id)
+    public async Task useItem(int id)
     {
-        ItemInformationProvider.getInstance().GetItemEffectTrust(id).applyTo(c.OnlinedCharacter);
-        c.sendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
+        await ItemInformationProvider.getInstance().GetItemEffectTrust(id).applyTo(c.OnlinedCharacter);
+        await c.SendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
     }
 
-    public void cancelItem(int id)
+    public async Task cancelItem(int id)
     {
-        getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false);
+        await getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false);
     }
 
-    public void teachSkill(int skillid, sbyte level, sbyte masterLevel, long expiration, bool force = false)
+    public async Task teachSkill(int skillid, sbyte level, sbyte masterLevel, long expiration, bool force = false)
     {
         var skill = SkillFactory.GetSkillTrust(skillid);
         var skillEntry = getPlayer().getSkills().GetValueOrDefault(skill);
@@ -881,60 +882,60 @@ public class AbstractPlayerInteraction : IClientMessenger
         {
             if (!force && level > -1)
             {
-                getPlayer().changeSkillLevel(skill,
-                    Math.Max(skillEntry.skillevel, level),
-                    Math.Max(skillEntry.masterlevel, masterLevel),
-                    expiration == -1 ? -1 : Math.Max(skillEntry.expiration, expiration));
+                await getPlayer().changeSkillLevel(skill,
+                     Math.Max(skillEntry.skillevel, level),
+                     Math.Max(skillEntry.masterlevel, masterLevel),
+                     expiration == -1 ? -1 : Math.Max(skillEntry.expiration, expiration));
                 return;
             }
         }
         else if (GameConstants.isAranSkills(skillid))
         {
-            c.sendPacket(PacketCreator.showInfo("Effect/BasicEff.img/AranGetSkill"));
+            await c.SendPacket(PacketCreator.showInfo("Effect/BasicEff.img/AranGetSkill"));
         }
 
-        getPlayer().changeSkillLevel(skill, level, masterLevel, expiration);
+        await getPlayer().changeSkillLevel(skill, level, masterLevel, expiration);
     }
 
-    public void removeEquipFromSlot(short slot)
+    public async Task removeEquipFromSlot(short slot)
     {
         var tempItem = c.OnlinedCharacter.getInventory(InventoryType.EQUIPPED).getItem(slot);
         if (tempItem == null)
             return;
 
-        InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
+        await InventoryManipulator.removeFromSlot(c, InventoryType.EQUIPPED, slot, tempItem.getQuantity(), false, false);
     }
 
 
-    public void spawnNpc(int npcId, Point pos, IMap map)
+    public async Task spawnNpc(int npcId, Point pos, IMap map)
     {
-        map.SpawnNpc(npcId, pos);
+        await map.SpawnNpc(npcId, pos);
     }
 
-    public void spawnMonster(int id, int x, int y)
+    public async Task spawnMonster(int id, int x, int y)
     {
-        getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
+        await getPlayer().getMap().spawnMonsterOnGroundBelow(id, x, y);
     }
 
 
-    public void spawnGuide()
+    public async Task spawnGuide()
     {
-        c.sendPacket(PacketCreator.spawnGuide(true));
+        await c.SendPacket(PacketCreator.spawnGuide(true));
     }
 
-    public void removeGuide()
+    public async Task removeGuide()
     {
-        c.sendPacket(PacketCreator.spawnGuide(false));
+        await c.SendPacket(PacketCreator.spawnGuide(false));
     }
 
-    public void displayGuide(int num)
+    public async Task displayGuide(int num)
     {
-        c.sendPacket(PacketCreator.showInfo("UI/tutorial.img/" + num));
+        await c.SendPacket(PacketCreator.showInfo("UI/tutorial.img/" + num));
     }
 
-    public void goDojoUp()
+    public async Task goDojoUp()
     {
-        c.sendPacket(PacketCreator.dojoWarpUp());
+        await c.SendPacket(PacketCreator.dojoWarpUp());
     }
 
     public void resetDojoEnergy()
@@ -950,35 +951,35 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public void enableActions()
+    public async Task enableActions()
     {
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 
-    public virtual void showEffect(string effect)
+    public virtual async Task showEffect(string effect)
     {
-        c.sendPacket(PacketCreator.showEffect(effect));
+        await c.SendPacket(PacketCreator.showEffect(effect));
     }
 
-    public void dojoEnergy()
+    public async Task dojoEnergy()
     {
-        c.sendPacket(PacketCreator.getEnergy("energy", getPlayer().getDojoEnergy()));
+        await c.SendPacket(PacketCreator.getEnergy("energy", getPlayer().getDojoEnergy()));
     }
 
-    public void talkGuide(string message)
+    public async Task talkGuide(string message)
     {
-        c.sendPacket(PacketCreator.talkGuide(message));
+        await c.SendPacket(PacketCreator.talkGuide(message));
     }
 
-    public void guideHint(int hint)
+    public async Task guideHint(int hint)
     {
-        c.sendPacket(PacketCreator.guideHint(hint));
+        await c.SendPacket(PacketCreator.guideHint(hint));
     }
 
-    public void updateAreaInfo(short area, string info)
+    public async Task updateAreaInfo(short area, string info)
     {
-        c.OnlinedCharacter.updateAreaInfo(area, info);
-        c.sendPacket(PacketCreator.enableActions());//idk, nexon does the same :P
+        await c.OnlinedCharacter.updateAreaInfo(area, info);
+        await c.SendPacket(PacketCreator.enableActions());//idk, nexon does the same :P
     }
 
     public bool containsAreaInfo(short area, string info)
@@ -986,41 +987,41 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c.OnlinedCharacter.containsAreaInfo(area, info);
     }
 
-    public void earnTitle(string msg)
+    public async Task earnTitle(string msg)
     {
-        c.sendPacket(PacketCreator.earnTitleMessage(msg));
+        await c.SendPacket(PacketCreator.earnTitleMessage(msg));
     }
 
-    public void showInfoText(string msg)
+    public async Task showInfoText(string msg)
     {
-        c.sendPacket(PacketCreator.showInfoText(msg));
+        await c.SendPacket(PacketCreator.showInfoText(msg));
     }
 
-    public void openUI(byte ui)
+    public async Task openUI(byte ui)
     {
-        c.sendPacket(PacketCreator.openUI(ui));
+        await c.SendPacket(PacketCreator.openUI(ui));
     }
 
-    public void lockUI()
+    public async Task lockUI()
     {
-        c.sendPacket(PacketCreator.disableUI(true));
-        c.sendPacket(PacketCreator.lockUI(true));
+        await c.SendPacket(PacketCreator.disableUI(true));
+        await c.SendPacket(PacketCreator.lockUI(true));
     }
 
-    public void unlockUI()
+    public async Task unlockUI()
     {
-        c.sendPacket(PacketCreator.disableUI(false));
-        c.sendPacket(PacketCreator.lockUI(false));
+        await c.SendPacket(PacketCreator.disableUI(false));
+        await c.SendPacket(PacketCreator.lockUI(false));
     }
 
-    public void playSound(string sound)
+    public async Task playSound(string sound)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(sound, 4));
+        await getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(sound, 4));
     }
 
-    public void environmentChange(string env, int mode)
+    public async Task environmentChange(string env, int mode)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(env, mode));
+        await getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(env, mode));
     }
 
     public string numberWithCommas(int number)
@@ -1033,7 +1034,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getPlayer().getPartyQuest() as Pyramid;
     }
 
-    public int createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
+    public async Task<int> createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
     {
         var player = getPlayer();
         Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
@@ -1046,7 +1047,7 @@ public class AbstractPlayerInteraction : IClientMessenger
             return 1;
         }
 
-        if (exped.addChannelExpedition(player.getClient().getChannelServer()))
+        if (await exped.addChannelExpedition(player.getClient().getChannelServer()))
         {
             return 0;
         }
@@ -1104,9 +1105,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         return list;
     }
 
-    public bool startDungeonInstance(int dungeonid)
+    public async Task<bool> startDungeonInstance(int dungeonid)
     {
-        return c.CurrentServer.addMiniDungeon(dungeonid);
+        return await c.CurrentServer.addMiniDungeon(dungeonid);
     }
 
     public bool canGetFirstJob(int jobType)
@@ -1140,9 +1141,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         };
     }
 
-    public void npcTalk(int npcid, string message)
+    public async Task npcTalk(int npcid, string message)
     {
-        c.sendPacket(PacketCreator.getNPCTalk(npcid, 0, message, "00 00", 0));
+        await c.SendPacket(PacketCreator.getNPCTalk(npcid, 0, message, "00 00", 0));
     }
 
     public long getCurrentTime()
@@ -1150,7 +1151,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return c.CurrentServer.Node.getCurrentTime();
     }
 
-    public void weakenAreaBoss(int monsterId, string message)
+    public async Task weakenAreaBoss(int monsterId, string message)
     {
         var map = c.OnlinedCharacter.getMap();
         var monster = map.getMonsterById(monsterId);
@@ -1159,59 +1160,59 @@ public class AbstractPlayerInteraction : IClientMessenger
             return;
         }
 
-        applySealSkill(monster);
-        applyReduceAvoid(monster);
-        map.LightBlue(message);
+        await applySealSkill(monster);
+        await applyReduceAvoid(monster);
+        await map.LightBlue(message);
     }
 
-    private void applySealSkill(Monster monster)
+    private async Task applySealSkill(Monster monster)
     {
         MobSkill sealSkill = MobSkillFactory.getMobSkillOrThrow(MobSkillType.SEAL_SKILL, 1);
-        sealSkill.applyEffect(monster);
+        await sealSkill.applyEffect(monster);
     }
 
-    private void applyReduceAvoid(Monster monster)
+    private async Task applyReduceAvoid(Monster monster)
     {
         MobSkill reduceAvoidSkill = MobSkillFactory.getMobSkillOrThrow(MobSkillType.EVA, 2);
-        reduceAvoidSkill.applyEffect(monster);
+        await reduceAvoidSkill.applyEffect(monster);
     }
 
-    public void LearnExtraSkill(int skillId)
+    public async Task LearnExtraSkill(int skillId)
     {
-        getPlayer().LearnSkill(skillId);
+        await getPlayer().LearnSkill(skillId);
     }
 
-    public void TypedMessage(int type, string messageKey, params string[] param)
+    public Task TypedMessage(int type, string messageKey, params string[] param)
     {
-        getPlayer().TypedMessage(type, messageKey, param);
+        return getPlayer().TypedMessage(type, messageKey, param);
     }
 
-    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
+    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
+    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
+    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
+    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
-    public void LightBlue(Func<ClientCulture, string> action)
+    public Task LightBlue(Func<ClientCulture, string> action)
     {
-        getPlayer().LightBlue(action);
+        return getPlayer().LightBlue(action);
     }
 
     #region Quest
-    public void touchTheSky()
+    public async Task touchTheSky()
     { //29004
         Quest quest = Quest.getInstance(29004);
         if (!isQuestStarted(29004))
         {
-            if (!quest.forceStart(getPlayer(), 9000066))
+            if (!await quest.forceStart(getPlayer(), 9000066))
             {
                 return;
             }
@@ -1222,17 +1223,17 @@ public class AbstractPlayerInteraction : IClientMessenger
             return;
         }
         string status = qs.getMedalProgress().ToString();
-        getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage(status + "/5 已完成"));
-        getPlayer().sendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
+        await getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
+        await getPlayer().SendPacket(PacketCreator.earnTitleMessage(status + "/5 已完成"));
+        await getPlayer().SendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
         if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
         {
-            showInfoText("T站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
-            getPlayer().sendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
+            await showInfoText("T站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
+            await getPlayer().SendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else
         {
-            showInfoText("站在巅峰的人 勋章挑战正在进行中。 " + status + "/5 已完成");
+            await showInfoText("站在巅峰的人 勋章挑战正在进行中。 " + status + "/5 已完成");
         }
     }
     #endregion

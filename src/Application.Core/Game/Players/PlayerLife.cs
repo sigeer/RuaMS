@@ -3,7 +3,6 @@ using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.Objects;
 using client.inventory.manipulator;
-using constants.game;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -30,10 +29,10 @@ namespace Application.Core.Game.Players
         public int HpAlert { get; set; } = DefaultConfigs.HPAlert;
         public int MpAlert { get; set; } = DefaultConfigs.MPAlert;
 
-        public void ChangeMaxHP(int value)
+        public async Task ChangeMaxHP(int value)
         {
             var targetValue = MaxHP + value;
-            SetMaxHP(targetValue);
+            await SetMaxHP(targetValue);
         }
         public void ChangeMaxMP(int value)
         {
@@ -41,7 +40,7 @@ namespace Application.Core.Game.Players
             SetMaxMP(targetValue);
         }
 
-        private void SetMaxHP(int value)
+        private async Task SetMaxHP(int value)
         {
             if (value < NumericConfig.MinHp)
                 value = NumericConfig.MinHp;
@@ -53,7 +52,7 @@ namespace Application.Core.Game.Players
 
             MaxHP = value;
             statUpdates[Stat.MAXHP] = MaxHP;
-            RecalculateMaxHP();
+            await RecalculateMaxHP();
         }
 
         private void SetMaxMP(int value)
@@ -70,7 +69,7 @@ namespace Application.Core.Game.Players
             statUpdates[Stat.MAXMP] = MaxMP;
             RecalculateMaxMP();
         }
-        public bool ChangeHP(int deltaValue, bool useCheck = true)
+        public async Task<bool> ChangeHP(int deltaValue, bool useCheck = true)
         {
             if (deltaValue == 0)
                 return true;
@@ -79,7 +78,7 @@ namespace Application.Core.Game.Players
             if (useCheck && targetValue <= 0)
                 return false;
 
-            SetHP(targetValue);
+            await SetHP(targetValue);
             return true;
         }
         public bool ChangeMP(int deltaValue, bool useCheck = true)
@@ -92,7 +91,7 @@ namespace Application.Core.Game.Players
             return true;
         }
 
-        public void SetHP(int value)
+        public async Task SetHP(int value)
         {
             if (value < 0)
                 value = 0;
@@ -107,11 +106,11 @@ namespace Application.Core.Game.Players
 
             if (MapModel != null)
             {
-                updatePartyMemberHP();
+                await updatePartyMemberHP();
 
                 if (HP <= 0)
                 {
-                    OnDead();
+                    await OnDead();
                 }
                 else
                 {
@@ -121,12 +120,12 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void UpdateHP(int value)
+        public async Task UpdateHP(int value)
         {
-            UpdateStatsChunk(() =>
-            {
-                SetHP(value);
-            });
+            await UpdateStatsChunk(async () =>
+              {
+                  await SetHP(value);
+              });
         }
 
         public void SetMP(int value)
@@ -180,14 +179,14 @@ namespace Application.Core.Game.Players
             }
         }
 
-        private void RecalculateMaxHP()
+        private async Task RecalculateMaxHP()
         {
             var newMaxHp = (int)(MaxHP + BuffMaxHP + EquipMaxHP);
             if (newMaxHp != ActualMaxHP)
             {
                 ActualMaxHP = newMaxHp;
 
-                SetHP(HP);
+                await SetHP(HP);
             }
         }
 
@@ -202,16 +201,16 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public void KilledBy(ILife killer)
+        public async Task KilledBy(ILife killer)
         {
-            UpdateStatsChunk(() =>
+            await UpdateStatsChunk(async () =>
             {
-                SetHP(0);
+                await SetHP(0);
             });
         }
 
         // 需要在UpdateStatsChunk内调用
-        public bool DamageBy(ICombatantObject attacker, int damageValue, short delay, bool stayAlive = false)
+        public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
         {
             if (!isAlive())
             {
@@ -221,14 +220,14 @@ namespace Application.Core.Game.Players
             if (stayAlive)
                 damageValue = Math.Min(HP, damageValue) - 1;
 
-            ChangeHP(-damageValue, false);
+            await ChangeHP(-damageValue, false);
             return true;
         }
 
-        void OnDead()
+        async Task OnDead()
         {
-            cancelAllBuffs(false);
-            dispelDebuffs();
+            await cancelAllBuffs(false);
+            await dispelDebuffs();
             lastDeathtime = Client.CurrentServer.Node.getCurrentTime();
 
             var eim = getEventInstance();
@@ -251,9 +250,9 @@ namespace Application.Core.Game.Players
                     var itemCount = inv.countById(ItemId.SafetyCharms[i]);
                     if (itemCount > 0)
                     {
-                        InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
+                        await InventoryManipulator.removeById(Client, invType, ItemId.SafetyCharms[i], 1, true, false);
                         usedSafetyCharm = true;
-                        sendPacket(EffectPacket.ExpDidNotDrop(ItemId.SafetyCharms[i]));
+                        await SendPacket(EffectPacket.ExpDidNotDrop(ItemId.SafetyCharms[i]));
                         break;
                     }
                 }
@@ -282,21 +281,21 @@ namespace Application.Core.Game.Players
                     int curExp = getExp();
                     if (curExp > XPdummy)
                     {
-                        loseExp(XPdummy, false, false);
+                        await loseExp(XPdummy, false, false);
                     }
                     else
                     {
-                        loseExp(curExp, false, false);
+                        await loseExp(curExp, false, false);
                     }
                 }
             }
 
-            cancelEffectFromBuffStat(BuffStat.MORPH);
+            await cancelEffectFromBuffStat(BuffStat.MORPH);
 
-            cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
+            await cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
 
-            unsitChairInternal();
-            sendPacket(PacketCreator.enableActions());
+            await unsitChairInternal();
+            await SendPacket(PacketCreator.enableActions());
         }
 
     }

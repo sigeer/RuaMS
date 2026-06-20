@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class DoorHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int doorOId = p.readInt();
         p.readByte(); // specifies if backwarp or not, 1 town to target, 0 target to town
@@ -39,17 +39,17 @@ public class DoorHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         if (chr.isChangingMaps() || chr.isBanned())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         if (chr.getMap().getMapObject(doorOId) is DoorObject door)
         {
-            door.warp(chr);
+            await door.warp(chr);
             return;
         }
 
-        c.sendPacket(PacketCreator.BlockMapMessage(6));
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.BlockMapMessage(6));
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

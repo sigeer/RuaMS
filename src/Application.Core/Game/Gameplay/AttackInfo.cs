@@ -1,6 +1,5 @@
 using Application.Core.Game.Skills;
 using client.autoban;
-using constants.game;
 using server;
 
 namespace Application.Core.Game.Gameplay
@@ -15,7 +14,7 @@ namespace Application.Core.Game.Gameplay
         public List<int> explodedMesos = [];
         public short attackDelay;
 
-        public StatEffect? getAttackEffect(Player chr, Skill? theSkill)
+        public async Task<StatEffect?> getAttackEffect(Player chr, Skill? theSkill)
         {
             var mySkill = theSkill ?? SkillFactory.getSkill(skill);
             if (mySkill == null)
@@ -38,7 +37,7 @@ namespace Application.Core.Game.Gameplay
                 //Hmm
                 if (!mySkill.getAction())
                 {
-                    chr.Client.CurrentServer.NodeService.AutoBanManager.Autoban(AutobanFactory.GACHA_EXP, chr, "WZ Edit; adding action to a skill: " + display);
+                    await chr.Client.CurrentServer.NodeService.AutoBanManager.Autoban(AutobanFactory.GACHA_EXP, chr, "WZ Edit; adding action to a skill: " + display);
                     return null;
                 }
             }

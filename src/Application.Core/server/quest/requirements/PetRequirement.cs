@@ -41,7 +41,7 @@ public class PetRequirement : AbstractQuestRequirement
     }
 
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         foreach (var pet in chr.getPets())
         {

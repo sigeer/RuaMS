@@ -36,7 +36,7 @@ public class SkillMacroHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         int num = p.ReadSByte();
@@ -51,7 +51,7 @@ public class SkillMacroHandler : ChannelHandlerBase
             if (name.Length > 12)
             {
                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, "Invalid name length " + name + " (" + name.Length + ") for skill macro.");
-                c.Disconnect(false, false);
+                await c.Disconnect(false, false);
                 break;
             }
 

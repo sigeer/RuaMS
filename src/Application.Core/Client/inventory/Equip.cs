@@ -25,7 +25,6 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Relation;
 using Application.Templates.Character;
-using constants.game;
 using tools;
 
 namespace client.inventory;
@@ -612,7 +611,7 @@ public class Equip : Item
         return new(lvupStr, new(gotSlot, gotVicious));
     }
 
-    private void gainLevel(IChannelClient c)
+    private async Task gainLevel(IChannelClient c)
     {
         List<KeyValuePair<StatUpgrade, int>> stats = new();
 
@@ -692,11 +691,11 @@ public class Equip : Item
             lvupStr += "+UPGSLOT ";
         }
 
-        c.OnlinedCharacter.showHint(showStr, 300);
-        c.OnlinedCharacter.dropMessage(6, lvupStr);
+        await c.OnlinedCharacter.showHint(showStr, 300);
+        await c.OnlinedCharacter.dropMessage(6, lvupStr);
 
-        c.sendPacket(PacketCreator.showEquipmentLevelUp());
-        c.OnlinedCharacter.BroadcastMap(PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15), c.OnlinedCharacter.Id);
+        await c.SendPacket(PacketCreator.showEquipmentLevelUp());
+        await c.OnlinedCharacter.BroadcastMap(PacketCreator.showForeignEffect(c.OnlinedCharacter.getId(), 15), c.OnlinedCharacter.Id);
     }
 
     public int getItemExp()
@@ -731,7 +730,7 @@ public class Equip : Item
         }
     }
 
-    public void gainItemExp(IChannelClient c, int gain)
+    public async Task gainItemExp(IChannelClient c, int gain)
     {
         // Ronan's Equip Exp gain method
         if (!SourceTemplate.IsUpgradeable())
@@ -766,7 +765,7 @@ public class Equip : Item
             while (itemExp >= expNeeded)
             {
                 itemExp -= expNeeded;
-                gainLevel(c);
+                await gainLevel(c);
 
                 if (itemLevel >= MaxLevel)
                 {
@@ -778,7 +777,7 @@ public class Equip : Item
             }
         }
 
-        c.OnlinedCharacter.forceUpdateItem(this);
+        await c.OnlinedCharacter.forceUpdateItem(this);
         //if(YamlConfig.config.server.USE_DEBUG) c.getPlayer().dropMessage("'" + ii.getName(this.getItemId()) + "': " + itemExp + " / " + expNeeded);
     }
 

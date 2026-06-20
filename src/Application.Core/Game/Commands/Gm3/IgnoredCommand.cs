@@ -11,12 +11,12 @@ public class IgnoredCommand : CommandBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         foreach (var item in _autoBanManager.GetAutobanIngores())
         {
-            player.yellowMessage(item.Value + " is being ignored.");
+            await player.Yellow(item.Value + " is being ignored.");
         }
     }
 }

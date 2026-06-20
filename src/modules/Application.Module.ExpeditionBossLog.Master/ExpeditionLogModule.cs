@@ -24,10 +24,10 @@ namespace Application.Module.ExpeditionBossLog.Master
 
         }
 
-        public override void RegisterTask(ITimerManager timerManager)
+        public override async Task RegisterTask(ITimerManager timerManager)
         {
             var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task = timerManager.register(new BossLogTask(_manager), TimeSpan.FromDays(1), timeLeft);
+            _task =  await timerManager.register(new BossLogTask(_manager), TimeSpan.FromDays(1), timeLeft);
         }
 
         public override async Task UninstallAsync()

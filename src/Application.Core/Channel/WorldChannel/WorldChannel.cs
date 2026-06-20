@@ -4,7 +4,6 @@ using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
-using Application.Core.Game.Commands.Gm6;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
@@ -24,6 +23,7 @@ using server.events.gm;
 using server.expeditions;
 using server.maps;
 using System.Net;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel;
@@ -106,12 +106,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     #region
     public MobClearSkillService MobClearSkillService { get; }
-    public MobMistService MobMistService { get; }
     public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
     public CommandLoop<WorldChannel> CommandLoop { get; }
-    public EventRecallManager? EventRecallManager { get; private set; }
+    public EventRecallManager EventRecallManager { get; }
 
     public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
@@ -164,7 +163,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         DojoInstance = new DojoInstance(this);
 
         MobClearSkillService = new MobClearSkillService(this);
-        MobMistService = new MobMistService(this);
         MobStatusService = new MobStatusService(this);
         OverallService = new OverallService(this);
 
@@ -175,6 +173,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
+        EventRecallManager = new EventRecallManager(this);
 
         CommandLoop = new CommandLoop<WorldChannel>(this);
         InviteChannelHandlerRegistry = new();
@@ -189,59 +188,59 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return (int)Math.Ceiling(travelTime / WorldTravelRate);
     }
 
-    public void UpdateWorldConfig(Config.WorldConfig updatePatch)
+    public async Task UpdateWorldConfig(Config.WorldConfig updatePatch)
     {
         if (updatePatch.MobRate.HasValue)
         {
             WorldMobRate = updatePatch.MobRate.Value;
 
-            dropMessage(6, "[Rate] Mob Rate has been changed to " + WorldMobRate + "x.");
+            await dropMessage(6, "[Rate] Mob Rate has been changed to " + WorldMobRate + "x.");
         }
         if (updatePatch.MesoRate.HasValue)
         {
             WorldMesoRate = updatePatch.MesoRate.Value;
 
-            dropMessage(6, "[Rate] Meso Rate has been changed to " + WorldMesoRate + "x.");
+            await dropMessage(6, "[Rate] Meso Rate has been changed to " + WorldMesoRate + "x.");
         }
         if (updatePatch.ExpRate.HasValue)
         {
             WorldExpRate = updatePatch.ExpRate.Value;
 
-            dropMessage(6, "[Rate] Exp Rate has been changed to " + WorldExpRate + "x.");
+            await dropMessage(6, "[Rate] Exp Rate has been changed to " + WorldExpRate + "x.");
         }
         if (updatePatch.DropRate.HasValue)
         {
             WorldDropRate = updatePatch.DropRate.Value;
 
-            dropMessage(6, "[Rate] Drop Rate has been changed to " + WorldDropRate + "x.");
+            await dropMessage(6, "[Rate] Drop Rate has been changed to " + WorldDropRate + "x.");
         }
         if (updatePatch.QuestRate.HasValue)
         {
             WorldQuestRate = updatePatch.QuestRate.Value;
 
-            dropMessage(6, "[Rate] Quest Rate has been changed to " + WorldQuestRate + "x.");
+            await dropMessage(6, "[Rate] Quest Rate has been changed to " + WorldQuestRate + "x.");
         }
         if (updatePatch.BossDropRate.HasValue)
         {
             WorldBossDropRate = updatePatch.BossDropRate.Value;
 
-            dropMessage(6, "[Rate] Boss Drop Rate has been changed to " + WorldBossDropRate + "x.");
+            await dropMessage(6, "[Rate] Boss Drop Rate has been changed to " + WorldBossDropRate + "x.");
         }
         if (updatePatch.TravelRate.HasValue)
         {
             WorldTravelRate = updatePatch.TravelRate.Value;
 
-            dropMessage(6, "[Rate] Travel Rate has been changed to " + WorldTravelRate + "x.");
+            await dropMessage(6, "[Rate] Travel Rate has been changed to " + WorldTravelRate + "x.");
         }
         if (updatePatch.FishingRate.HasValue)
         {
             WorldFishingRate = updatePatch.FishingRate.Value;
 
-            dropMessage(6, "[Rate] Fishing Rate has been changed to " + WorldFishingRate + "x.");
+            await dropMessage(6, "[Rate] Fishing Rate has been changed to " + WorldFishingRate + "x.");
         }
         if (updatePatch.ServerMessage != null)
         {
-            setServerMessage(updatePatch.ServerMessage);
+            await setServerMessage(updatePatch.ServerMessage);
         }
     }
 
@@ -259,14 +258,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     {
         log.Information("[{ServerName}] 初始化...", InstanceName);
 
-        UpdateWorldConfig(config.Config);
+        await UpdateWorldConfig(config.Config);
         log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
             InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-        EventRecallManager = new EventRecallManager(this);
-        EventRecallManager.Register(TimerManager);
+        await EventRecallManager.Register(TimerManager);
 
         var inviteHandlerLogger = LifeScope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<InviteChannelHandler>>();
         InviteChannelHandlerRegistry.Register(new PartyInviteChannelHandler(this, inviteHandlerLogger));
@@ -276,7 +274,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         foreach (var item in ContiMoves)
         {
-            item.Value.Initialize();
+            await item.Value.Initialize();
         }
         SubTickables.Add(mapManager);
         SubTickables.Add(EventScriptManager); ;
@@ -323,9 +321,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             await Players.disconnectAll(true);
             await PlayerShopManager.DisposeAsync();
 
-            EventScriptManager.Dispose();
+            await EventScriptManager.DisposeAsync();
 
-            mapManager.Dispose();
+            await mapManager.DisposeAsync();
 
             await closeChannelSchedules();
 
@@ -350,7 +348,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     private void closeChannelServices()
     {
         MobClearSkillService.dispose();
-        MobMistService.dispose();
         MobStatusService.dispose();
         OverallService.dispose();
     }
@@ -377,14 +374,14 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return world;
     }
 
-    public void addPlayer(Player chr)
+    public async Task addPlayer(Player chr)
     {
         if (PlayersAway.Remove(chr.Id))
             GameMetrics.OnlinePlayerCount.Add(-1);
 
         Players.AddPlayer(chr);
         GameMetrics.OnlinePlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", InstanceName));
-        chr.sendPacket(PacketCreator.serverMessage(WorldServerMessage));
+        await chr.SendPacket(PacketCreator.serverMessage(WorldServerMessage));
     }
 
     public string getServerMessage()
@@ -416,11 +413,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return (int)(Math.Ceiling(((float)Players.getAllCharacters().Count / ChannelConfig.MaxSize) * 800));
     }
 
-    public void broadcastPacket(Packet packet)
+    public async Task broadcastPacket(Packet packet)
     {
         foreach (var chr in Players.getAllCharacters())
         {
-            chr.sendPacket(packet);
+            await chr.SendPacket(packet);
         }
     }
 
@@ -449,13 +446,13 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return EventScriptManager;
     }
 
-    public void broadcastGMPacket(Packet packet)
+    public async Task broadcastGMPacket(Packet packet)
     {
         foreach (var chr in Players.getAllCharacters())
         {
             if (chr.isGM())
             {
-                chr.sendPacket(packet);
+                await chr.SendPacket(packet);
             }
         }
     }
@@ -489,16 +486,16 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         {
             if (chr != null && chr.isLoggedinWorld())
             {
-                chr.getClient().ForceDisconnect();
+                await chr.getClient().ForceDisconnect();
             }
         }
     }
 
-    public bool addExpedition(Expedition exped)
+    public async Task<bool> addExpedition(Expedition exped)
     {
         if (expeditions.TryAdd(exped.getType(), exped))
         {
-            exped.beginRegistration();
+            await exped.beginRegistration();
             return true;
         }
         return false;
@@ -520,10 +517,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     }
 
 
-    public void setServerMessage(string message)
+    public async Task setServerMessage(string message)
     {
         this.WorldServerMessage = message;
-        broadcastPacket(PacketCreator.serverMessage(message));
+        await broadcastPacket(PacketCreator.serverMessage(message));
         ServerMessageManager.resetDisabledServerMessages();
     }
 
@@ -543,19 +540,19 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return DojoInstance.LookupPartyDojo(party);
     }
 
-    public int ingressDojo(bool isPartyDojo, int fromStage)
+    public async Task<int> ingressDojo(bool isPartyDojo, int fromStage)
     {
-        return ingressDojo(isPartyDojo, null, fromStage);
+        return await ingressDojo(isPartyDojo, null, fromStage);
     }
 
-    public int ingressDojo(bool isPartyDojo, Team? party, int fromStage)
+    public async Task<int> ingressDojo(bool isPartyDojo, Team? party, int fromStage)
     {
-        return DojoInstance.IngressDojo(isPartyDojo, party, fromStage);
+        return await DojoInstance.IngressDojo(isPartyDojo, party, fromStage);
     }
 
-    public void resetDojoMap(int fromMapId)
+    public async Task resetDojoMap(int fromMapId)
     {
-        DojoInstance.ResetDojoMap(fromMapId);
+         await DojoInstance.ResetDojoMap(fromMapId);
     }
 
     public void resetDojo(int dojoMapId)
@@ -563,9 +560,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         DojoInstance.ResetDojo(dojoMapId, -1);
     }
 
-    public void freeDojoSectionIfEmpty(int dojoMapId)
+    public async Task freeDojoSectionIfEmpty(int dojoMapId)
     {
-        DojoInstance.FreeDojoSectionIfEmpty(dojoMapId);
+        await DojoInstance.FreeDojoSectionIfEmpty(dojoMapId);
     }
 
     public void dismissDojoSchedule(int dojoMapId, Team party)
@@ -584,7 +581,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     }
     #endregion
 
-    public bool addMiniDungeon(int dungeonid)
+    public async Task<bool> addMiniDungeon(int dungeonid)
     {
         if (dungeons.ContainsKey(dungeonid))
         {
@@ -592,8 +589,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         }
 
         MiniDungeonInfo mmdi = MiniDungeonInfo.getDungeon(dungeonid);
-        MiniDungeon mmd = new MiniDungeon(this, mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
-
+        var dungeonMap = await this.getMapFactory().getMap(mmdi.getDungeonId());
+        MiniDungeon mmd = new MiniDungeon(this, mmdi.getBase(), dungeonMap.getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
+        await mmd.Initialize();
         dungeons.Add(dungeonid, mmd);
         return true;
     }
@@ -650,11 +648,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     //}
 
     #endregion
-    public void dropMessage(int type, string message)
+    public async Task dropMessage(int type, string message)
     {
         foreach (var player in getPlayerStorage().getAllCharacters())
         {
-            player.dropMessage(type, message);
+            await player.dropMessage(type, message);
         }
     }
 
@@ -687,43 +685,43 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return NodeService.GetChannelEndPoint(channel);
     }
 
-    public void TypedMessage(int type, string messageKey, params string[] param)
+    public async Task TypedMessage(int type, string messageKey, params string[] param)
     {
         foreach (var chr in Players.getAllCharacters())
         {
-            chr.TypedMessage(type, messageKey, param);
+            await chr.TypedMessage(type, messageKey, param);
         }
     }
 
-    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
+    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
+    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
+    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
+    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
-    public void LightBlue(Func<ClientCulture, string> action)
+    public async Task LightBlue(Func<ClientCulture, string> action)
     {
         foreach (var chr in Players.getAllCharacters())
         {
-            chr.LightBlue(action);
+            await chr.LightBlue(action);
         }
     }
 
     public Task Send(ICommand command) => CommandLoop.Register(command);
-    public void OnTick(long now)
+    public async Task OnTick(long now)
     {
-        Send(new ChannelTickCommand(c =>
-        {
-            this.ProcessSubTickables(now);
-        }));
+        await Send(new ChannelTickCommand(async c =>
+         {
+             await this.ProcessSubTickables(now);
+         }));
 
     }
 

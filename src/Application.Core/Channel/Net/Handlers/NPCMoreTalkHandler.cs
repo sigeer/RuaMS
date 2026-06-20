@@ -20,10 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using Application.Core.scripting.npc;
-using scripting.quest;
-
 namespace Application.Core.Channel.Net.Handlers;
 
 /**
@@ -31,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class NPCMoreTalkHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         sbyte lastMsg = p.ReadSByte(); // 00 (last msg type I think)
         sbyte action = p.ReadSByte(); // 00 = end chat, 01 == follow
@@ -43,20 +39,12 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                 if (c.NPCConversationManager != null)
                 {
                     c.NPCConversationManager.setGetText(returnText);
-                    if (c.NPCConversationManager is TempConversation temp)
-                    {
-                        temp.Handle(action, lastMsg, -1);
-                    }
-                    else
-                    {
-                        // c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, -1);
-                        _ = c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, -1, returnText);
-                    }
+                    await c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, -1, returnText);
                 }
             }
             else
             {
-                c.NPCConversationManager?.dispose();
+                c.NPCConversationManager?.DisposeAsync();
             }
         }
         else
@@ -71,14 +59,10 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                 selection = p.readByte();
             }
 
-            if (c.NPCConversationManager is TempConversation temp)
-            {
-                temp.Handle(action, lastMsg, selection);
-            }
-            else if (c.NPCConversationManager != null)
+            if (c.NPCConversationManager != null)
             {
                 // c.CurrentServer.NPCScriptManager.action(c, action, lastMsg, selection);
-                _ = c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, selection);
+                await c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, selection);
             }
         }
     }

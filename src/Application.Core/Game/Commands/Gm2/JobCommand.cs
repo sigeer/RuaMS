@@ -8,7 +8,7 @@ public class JobCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length == 1)
@@ -16,12 +16,12 @@ public class JobCommand : CommandBase
             int jobid = int.Parse(paramsValue[0]);
             if (jobid < 0 || jobid >= 2200)
             {
-                player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
+                await player.Yellow(nameof(ClientMessage.JobNotFound), jobid.ToString());
                 return;
             }
 
-            player.changeJob(JobFactory.GetById(jobid));
-            player.equipChanged();
+            await player.changeJob(JobFactory.GetById(jobid));
+            await player.equipChanged();
         }
         else if (paramsValue.Length == 2)
         {
@@ -32,21 +32,21 @@ public class JobCommand : CommandBase
                 int jobid = int.Parse(paramsValue[1]);
                 if (jobid < 0 || jobid >= 2200)
                 {
-                    player.YellowMessageI18N(nameof(ClientMessage.JobNotFound), jobid.ToString());
+                    await player.Yellow(nameof(ClientMessage.JobNotFound), jobid.ToString());
                     return;
                 }
 
-                victim.changeJob(JobFactory.GetById(jobid));
-                player.equipChanged();
+                await victim.changeJob(JobFactory.GetById(jobid));
+                await player.equipChanged();
             }
             else
             {
-                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
         else
         {
-            player.YellowMessageI18N(nameof(ClientMessage.JobCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.JobCommand_Syntax));
         }
     }
 }

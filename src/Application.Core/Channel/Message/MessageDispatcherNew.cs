@@ -1,7 +1,4 @@
-
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.Internal;
-using Application.Shared.Internal;
 using Application.Utility.Performance;
 using Google.Protobuf;
 using Microsoft.Extensions.DependencyInjection;

@@ -5,7 +5,7 @@ using tools;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class MonsterStatusRemoveCommand : IWorldChannelCommand
+    internal class MonsterStatusRemoveCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(MonsterStatusRemoveCommand);
         Monster _mob;
@@ -17,12 +17,12 @@ namespace Application.Core.Channel.Commands
             _statueEffect = statueEffect;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {
                 Packet packet = PacketCreator.cancelMonsterStatus(_mob.getObjectId(), _statueEffect.getStati());
-                _mob.broadcastMonsterStatusMessage(packet);
+                await _mob.broadcastMonsterStatusMessage(packet);
             }
 
             var mobStatis = _mob.getStati();

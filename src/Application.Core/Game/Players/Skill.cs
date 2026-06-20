@@ -1,11 +1,9 @@
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
 using net.server;
 using server;
 using tools;
-using static server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Game.Players
 {
@@ -55,20 +53,20 @@ namespace Application.Core.Game.Players
             return skill.getEffect(skillLevel);
         }
 
-        public void changeSkillLevel(Skill skill, sbyte newLevel, int newMasterlevel, long expiration)
+        public async Task changeSkillLevel(Skill skill, sbyte newLevel, int newMasterlevel, long expiration)
         {
             if (newLevel > -1)
             {
                 Skills.AddOrUpdate(skill, new SkillEntry(newLevel, newMasterlevel, expiration));
                 if (!GameConstants.isHiddenSkills(skill.getId()))
                 {
-                    sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, expiration));
+                    await SendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, expiration));
                 }
             }
             else
             {
                 Skills.Remove(skill);
-                sendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1)); //Shouldn't use expiration anymore :)
+                await SendPacket(PacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1)); //Shouldn't use expiration anymore :)
             }
         }
 
@@ -110,10 +108,10 @@ namespace Application.Core.Game.Players
 
         #region skill macro
         public SkillMacro?[] SkillMacros { get; set; }
-        public void sendMacros()
+        public async Task sendMacros()
         {
             // Always send the macro packet to fix a Client side bug when switching characters.
-            sendPacket(PacketCreator.getMacros(SkillMacros));
+            await SendPacket(PacketCreator.getMacros(SkillMacros));
         }
 
         public SkillMacro?[] getMacros()
@@ -144,7 +142,7 @@ namespace Application.Core.Game.Players
             return coolDowns.ContainsKey(skillId);
         }
 
-        public void ClearExpiredSkillCooldown(long now)
+        public async Task ClearExpiredSkillCooldown(long now)
         {
             HashSet<KeyValuePair<int, CooldownValueHolder>> es = new(coolDowns);
 
@@ -159,12 +157,12 @@ namespace Application.Core.Game.Players
                 if (now >= mcdvh.startTime + mcdvh.length)
                 {
                     removeCooldown(mcdvh.skillId);
-                    sendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
+                    await SendPacket(PacketCreator.skillCooldown(mcdvh.skillId, 0));
                 }
             }
         }
 
-        public void removeAllCooldownsExcept(int id, bool packet)
+        public async Task removeAllCooldownsExcept(int id, bool packet)
         {
             List<CooldownValueHolder> list = new(coolDowns.Values);
             foreach (CooldownValueHolder mcvh in list)
@@ -174,7 +172,7 @@ namespace Application.Core.Game.Players
                     coolDowns.Remove(mcvh.skillId);
                     if (packet)
                     {
-                        sendPacket(PacketCreator.skillCooldown(mcvh.skillId, 0));
+                        await SendPacket(PacketCreator.skillCooldown(mcvh.skillId, 0));
                     }
                 }
             }
@@ -209,7 +207,7 @@ namespace Application.Core.Game.Players
             return getSkillLevel((getJob().getId() / 1000) * 10000000 + 1007);
         }
 
-        public bool LearnSkill(int skillId, int skillLevel = -1)
+        public async Task<bool> LearnSkill(int skillId, int skillLevel = -1)
         {
             var skill = SkillFactory.getSkill(skillId);
             if (skill == null)
@@ -217,9 +215,9 @@ namespace Application.Core.Game.Players
                 return false;
             }
             var level = skillLevel == -1 ? skill.getMaxLevel() : skillLevel;
-            changeSkillLevel(skill, (sbyte)level, level, -1);
+            await changeSkillLevel(skill, (sbyte)level, level, -1);
             changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
-            sendKeymap();
+            await sendKeymap();
             return true;
         }
 

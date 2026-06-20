@@ -21,6 +21,7 @@
 */
 
 namespace server.movement;
+
 public class JumpDownMovement : AbstractLifeMovement
 {
     private Point pixelsPerSecond;

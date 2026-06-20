@@ -11,12 +11,12 @@ public class MonitorCommand : CommandBase
         _monitorManager = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !monitor <ign>");
+            await player.Yellow("Syntax: !monitor <ign>");
             return;
         }
 

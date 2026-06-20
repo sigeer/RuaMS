@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using server.life;
 using System.Drawing;
+using System.Threading.Tasks;
 using ZLinq;
 
 namespace Application.Module.PlayerNPC.Channel
@@ -52,15 +53,15 @@ namespace Application.Module.PlayerNPC.Channel
 
         }
 
-        public void SpawnPlayerNPCByHonor(Player chr)
+        public async Task SpawnPlayerNPCByHonor(Player chr)
         {
             var mapId = GameConstants.getHallOfFameMapid(chr.getJob());
-            CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), null, chr, true);
+            CreatePlayerNPCInternal(await chr.getClient().getChannelServer().getMapFactory().getMap(mapId), null, chr, true);
         }
 
-        public void SpawnPlayerNPCHere(int mapId, Point position, Player chr)
+        public async Task SpawnPlayerNPCHere(int mapId, Point position, Player chr)
         {
-            CreatePlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapId), position, chr, false);
+            CreatePlayerNPCInternal(await chr.getClient().getChannelServer().getMapFactory().getMap(mapId), position, chr, false);
         }
 
 
@@ -256,10 +257,10 @@ namespace Application.Module.PlayerNPC.Channel
 
         public void SpawnPlayerNPC(IMap map, PlayerNpc pn)
         {
-            map.AddMapObject(pn, mapChr =>
+            map.AddMapObject(pn, async mapChr =>
             {
-                mapChr.sendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
-                mapChr.sendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
+                await mapChr.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
+                await mapChr.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
             });
         }
     }

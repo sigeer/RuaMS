@@ -1,16 +1,17 @@
 namespace Application.Core.Game.Commands.Gm2;
+
 public class SetStatCommand : CommandBase
 {
     public SetStatCommand() : base(2, "setstat")
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !setstat <newstat>");
+            await player.Yellow("Syntax: !setstat <newstat>");
             return;
         }
 
@@ -28,7 +29,7 @@ public class SetStatCommand : CommandBase
                 x = NumericConfig.MinStat;
             }
 
-            player.updateStrDexIntLuk(x);
+            await player.updateStrDexIntLuk(x);
         }
         catch (Exception e)
         {

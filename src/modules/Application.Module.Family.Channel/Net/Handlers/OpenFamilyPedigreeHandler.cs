@@ -48,7 +48,7 @@ public class OpenFamilyPedigreeHandler : ChannelHandlerBase
             var family = _familyManager.GetFamilyByPlayerId(target.Id);
             if (family != null)
             {
-                c.sendPacket(FamilyPacketCreator.showPedigree(family, target.Id));
+                await c.SendPacket(FamilyPacketCreator.showPedigree(family, target.Id));
             }
         }
         return Task.CompletedTask;

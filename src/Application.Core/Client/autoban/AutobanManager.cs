@@ -32,7 +32,7 @@ public class AutobanManager
         this.chr = chr;
     }
 
-    public void addPoint(AutobanFactory fac, string reason)
+    public async Task addPoint(AutobanFactory fac, string reason)
     {
         if (YamlConfig.config.server.USE_AUTOBAN)
         {
@@ -57,7 +57,7 @@ public class AutobanManager
 
             if (points[fac] >= fac.getMaximum())
             {
-                chr.autoban(reason);
+                await chr.autoban(reason);
             }
         }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)
@@ -72,7 +72,7 @@ public class AutobanManager
         this.misses++;
     }
 
-    public void resetMisses()
+    public async Task resetMisses()
     {
         if (lastmisses == misses && misses > 6)
         {
@@ -80,7 +80,7 @@ public class AutobanManager
         }
         if (samemisscount > 4)
         {
-            chr.sendPolice("You will be disconnected for miss godmode.");
+            await chr.autoban("You will be disconnected for miss godmode.");
         }
         //chr.autoban("Autobanned for : " + misses + " Miss godmode", 1);
         else if (samemisscount > 0)

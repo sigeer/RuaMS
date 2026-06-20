@@ -34,7 +34,7 @@ public class PetSpeedAction : AbstractQuestAction
 
 
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
         var c = chr.getClient();
 
@@ -44,14 +44,14 @@ public class PetSpeedAction : AbstractQuestAction
             return;
         }
 
-        c.lockClient();
+        await c.tryacquireClient();
         try
         {
-            pet.PetItem.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
+            await pet.PetItem.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
         }
         finally
         {
-            c.unlockClient();
+            c.releaseClient();
         }
 
     }

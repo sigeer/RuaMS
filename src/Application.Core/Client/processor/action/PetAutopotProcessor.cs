@@ -75,13 +75,13 @@ public class PetAutopotProcessor
             return false;
         }
 
-        public void run()
+        public async Task run()
         {
             var c = this.c;
             var chr = c.OnlinedCharacter;
             if (!chr.isAlive())
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -101,7 +101,7 @@ public class PetAutopotProcessor
             {
                 if (toUse.getItemId() != itemId)
                 {
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -112,7 +112,7 @@ public class PetAutopotProcessor
                 {
                     if (!cursorOnNextAvailablePot(chr))
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
                 }
@@ -162,7 +162,7 @@ public class PetAutopotProcessor
                 while (true)
                 {
                     short qtyToUse = (short)Math.Min(qtyCount, toUse.getQuantity());
-                    InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, qtyToUse, false);
+                    await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, qtyToUse, false);
 
                     curHp += (int)(incHp * qtyToUse);
                     curMp += (int)(incMp * qtyToUse);
@@ -190,18 +190,18 @@ public class PetAutopotProcessor
             {
                 for (int i = 0; i < useCount; i++)
                 {
-                    stat.applyTo(chr);
+                    await stat.applyTo(chr);
                 }
             }
 
-            chr.sendPacket(PacketCreator.enableActions());
+            await chr.SendPacket(PacketCreator.enableActions());
         }
     }
 
-    public static void runAutopotAction(IChannelClient c, short slot, int itemid)
+    public static async Task runAutopotAction(IChannelClient c, short slot, int itemid)
     {
         AutopotAction action = new AutopotAction(c, slot, itemid);
-        action.run();
+        await action.run();
     }
 
 }

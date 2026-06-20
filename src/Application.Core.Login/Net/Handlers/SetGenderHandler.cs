@@ -42,7 +42,7 @@ public class SetGenderHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         if (c.AccountEntity?.Gender == 10)
         {
@@ -52,7 +52,7 @@ public class SetGenderHandler : LoginHandlerBase
             {
                 c.AccountEntity.Gender = p.ReadSByte();
                 c.CurrentServer.CommitAccountEntity(c.AccountEntity);
-                c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));
+                await c.SendPacket(LoginPacketCreator.GetAuthSuccess(c));
 
                 _server.RegisterLoginState(c);
             }

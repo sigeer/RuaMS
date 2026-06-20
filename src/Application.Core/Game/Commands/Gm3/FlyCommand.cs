@@ -1,6 +1,7 @@
 using Application.Core.Channel.Services;
 
 namespace Application.Core.Game.Commands.Gm3;
+
 public class FlyCommand : ParamsCommandBase
 {
     readonly AdminService _adminService;
@@ -10,7 +11,7 @@ public class FlyCommand : ParamsCommandBase
         Description = "Enable/disable fly feature.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         _adminService.SetFly(c.OnlinedCharacter, GetParamByIndex(0)?.Equals("on", StringComparison.OrdinalIgnoreCase) ?? false);
     }

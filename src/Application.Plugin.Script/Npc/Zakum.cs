@@ -12,7 +12,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001109, 1))
             {
-                warp(921100000, "out00");
+                await warp(921100000, "out00");
                 return;
             }
 
@@ -40,7 +40,7 @@ namespace Application.Plugin.Script.Npc
 
             if (selection == 0)
             {
-                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
             }
             else if (selection == 1)
             {
@@ -48,7 +48,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("你已经成功通过了第一阶段。你还有很长的路才能到达扎昆的祭台。所以，你想好挑战下一个阶段了吗？"))
                     {
-                        warp(280020000, 0);
+                        await warp(280020000, 0);
                     }
                 }
                 else
@@ -73,11 +73,11 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        completeQuest(100201);
-                        gainItem(4031061, -1);
-                        gainItem(4031062, -1);
-                        gainItem(4000082, -30);
-                        gainItem(4001017, 5);
+                        await completeQuest(100201);
+                        await gainItem(4031061, -1);
+                        await gainItem(4031062, -1);
+                        await gainItem(4000082, -30);
+                        await gainItem(4001017, 5);
                         await SayOK("你 #r已经完成了试炼#k，从现在开始我批准你挑战扎昆。");
                     }
                 }
@@ -98,14 +98,14 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
                     {
-                        warp(211042300);
+                        await warp(211042300);
                     }
                 }
                 else
                 {
                     if (await AskYesNo("你们终于打败了扎昆，真是了不起的壮举！恭喜！你确定现在要离开吗？"))
                     {
-                        warp(211042300);
+                        await warp(211042300);
                     }
                 }
             }
@@ -113,7 +113,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("如果你现在离开，你将不得不重新开始。你确定要离开吗？"))
                 {
-                    warp(211042300);
+                    await warp(211042300);
                 }
             }
         }
@@ -123,10 +123,10 @@ namespace Application.Plugin.Script.Npc
         public async Task Zakum04()
         {
             await SayOK("下次见。");
-            warp(211042300);
-            removeAll(4001015);
-            removeAll(4001016);
-            removeAll(4001018);
+            await warp(211042300);
+            await removeAll(4001015);
+            await removeAll(4001016);
+            await removeAll(4001018);
         }
 
 
@@ -165,7 +165,7 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else
@@ -203,7 +203,7 @@ namespace Application.Plugin.Script.Npc
                         if (kickSelection > 0)
                         {
                             var banned = expedMembers[kickSelection - 1];
-                            expedition.ban(banned.Id);
+                            await expedition.ban(banned.Id);
                             await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
                         }
                     }
@@ -218,12 +218,12 @@ namespace Application.Plugin.Script.Npc
 
                         await SayOK($"远征队将开始，现在我将护送你前往 #b#m{expedition.EventManager.EntryMap}##k。");
 
-                        expedition.StartBattle();
+                        await expedition.StartBattle();
                     }
                     else if (selection == 3)
                     {
-                        player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
-                        expedition.Dispose();
+                        await player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
+                        await expedition.DisposeAsync();
                         await SayOK("这次远征已经结束。有时候最好的策略就是逃跑。");
                     }
                 }
@@ -236,7 +236,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(em.GetTemplate.JoinMember(expedition, getPlayer()), c));
+                    await SayOK(em.GetTemplate.HandleJoinInstanceResult(await em.GetTemplate.JoinMember(expedition, getPlayer()), c));
                 }
             }
             else if (expedition.isInProgress())
@@ -245,7 +245,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (expedition.getIntProperty("canJoin") == 1)
                     {
-                        expedition.registerPlayer(player);
+                        await expedition.registerPlayer(player);
                     }
                     else
                     {
@@ -290,20 +290,20 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (await AskYesNo("所以，你带了#b #v4001018##t4001018# #k来了？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心。确保你的整个队伍在继续之前有足够的背包空间。"))
                             {
-                                gainItem(4001018, -1);
-                                eim.giveEventPlayersExp(12000);
-                                eim.clearPQ();
+                                await gainItem(4001018, -1);
+                                await eim.giveEventPlayersExp(12000);
+                                await eim.clearPQ();
                             }
                         }
                         else
                         {
                             if (await AskYesNo("所以，你带来了#b #v4001018##t4001018# #k和#b #v4001015##t4001015# #k吗？我可以给你和你的每个队员#b一块#v4031061##t4031061##k，这应该足够制作扎昆的核心了。\r\n\r\n另外，既然你带来了#b #v4001015##t4001015# * 30#k，我还可以给你#b#v2030007##t2030007# * 5#k，可以随时带你到矿井入口。在继续之前，请确保你的整个队伍的背包有足够的空间。"))
                             {
-                                gainItem(4001018, -1);
-                                gainItem(4001015, -30);
+                                await gainItem(4001018, -1);
+                                await gainItem(4001015, -30);
                                 eim.setProperty("gotDocuments", 1);
-                                eim.giveEventPlayersExp(20000);
-                                eim.clearPQ();
+                                await eim.giveEventPlayersExp(20000);
+                                await eim.clearPQ();
                             }
                         }
                     }
@@ -312,7 +312,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("你确定要退出吗？如果你是队伍的队长，你的队伍也将离开矿区。"))
                     {
-                        warp(211042300);
+                        await warp(211042300);
                     }
                 }
             }
@@ -326,8 +326,8 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (CanHoldAll([new ItemQuantity(2030007, 5), new ItemQuantity(4031061, 1)]))
                         {
-                            gainItem(2030007, 5);
-                            gainItem(4031061, 1);
+                            await gainItem(2030007, 5);
+                            await gainItem(4031061, 1);
                             eim.gridInsert(getPlayer(), 1);
                         }
                         else
@@ -346,7 +346,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (canHold(4031061, 1))
                         {
-                            gainItem(4031061, 1);
+                            await gainItem(4031061, 1);
                             eim.gridInsert(getPlayer(), 1);
                         }
                         else
@@ -376,9 +376,9 @@ namespace Application.Plugin.Script.Npc
 
             await SayNext("好了，你是时候离开了。");
 
-            gainItem(4031062, 1);
-            gainExp((int)(10000 * getPlayer().getExpRate()));
-            warp(211042300);
+            await gainItem(4031062, 1);
+            await gainExp((int)(10000 * getPlayer().getExpRate()));
+            await warp(211042300);
         }
     }
 }

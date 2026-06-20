@@ -4,12 +4,12 @@ namespace Application.Shared.Net
 {
     public class CustomPacketHandler<TClient> : IPacketHandlerBase<TClient> where TClient : IClientBase
     {
-        public void HandlePacket(InPacket p, TClient c)
+        public async Task HandlePacket(InPacket p, TClient c)
         {
             if (p.available() > 0 && c.AccountGMLevel == 4)
             {
                 //w/e
-                c.sendPacket(PacketCommon.customPacket(p.readBytes(p.available())));
+                await c.SendPacket(PacketCommon.customPacket(p.readBytes(p.available())));
             }
         }
 

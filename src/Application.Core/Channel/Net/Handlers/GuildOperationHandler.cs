@@ -38,18 +38,18 @@ public class GuildOperationHandler : ChannelHandlerBase
         _guildManager = guildManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var mc = c.OnlinedCharacter;
         byte type = p.readByte();
         switch (type)
         {
             case 0x00:
-                //c.sendPacket(PacketCreator.showGuildInfo(mc));
+                //await c.SendPacket(PacketCreator.showGuildInfo(mc));
                 break;
             case 0x02:
                 string guildName = p.readString();
-                _guildManager.CreateGuild(mc, guildName);
+                await _guildManager.CreateGuild(mc, guildName);
                 break;
             case 0x05:
                 if (mc.GuildId <= 0 || mc.GuildRank > 2)
@@ -129,7 +129,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
                 if (mc.getMeso() < YamlConfig.config.server.CHANGE_EMBLEM_COST)
                 {
-                    mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), mc.Client.CurrentCulture.Number(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
+                    await mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), mc.Client.CurrentCulture.Number(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
                     return;
                 }
                 short bg = p.readShort();
@@ -137,7 +137,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 short logo = p.readShort();
                 byte logocolor = p.readByte();
 
-                mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, GainItemShow.ShowInChat);
+                await mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, GainItemShow.ShowInChat);
                 _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
 

@@ -1,5 +1,4 @@
 using Application.Core.Game.Maps;
-using Application.Core.Game.Relation;
 using Application.Shared.Team;
 using TeamProto;
 

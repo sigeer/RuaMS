@@ -23,10 +23,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(UseItemMegaphoneBroadcast res)
             {
-                _server.Broadcast(w =>
+                _server.Broadcast(async w =>
                 {
                     var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.Map<Item>(res.Request.Item));
-                    w.broadcastPacket(p);
+                    await w.broadcastPacket(p);
                 });
             }
 

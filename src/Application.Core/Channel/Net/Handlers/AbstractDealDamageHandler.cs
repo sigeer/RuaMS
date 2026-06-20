@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Gameplay;
@@ -31,12 +30,9 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using client.autoban;
 using client.status;
-using constants.game;
 using Microsoft.Extensions.Logging;
-using scripting;
 using server;
 using server.life;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -54,10 +50,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    protected void applyAttack(AttackInfo attack, Player player, int attackCount)
+    protected async Task applyAttack(AttackInfo attack, Player player, int attackCount)
     {
         var map = player.getMap();
-        if (map.isOwnershipRestricted(player))
+        if (await map.isOwnershipRestricted(player))
         {
             return;
         }
@@ -74,16 +70,16 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             if (attack.skill != 0)
             {
                 theSkill = SkillFactory.getSkill(attack.skill); // thanks Conrad for noticing some Aran skills not consuming MP
-                attackEffect = attack.getAttackEffect(player, theSkill); //returns back the player's attack effect so we are gucci
+                attackEffect = await attack.getAttackEffect(player, theSkill); //returns back the player's attack effect so we are gucci
                 if (attackEffect == null)
                 {
-                    player.sendPacket(PacketCreator.enableActions());
+                    await player.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
                 if (player.MP < attackEffect.getMpCon())
                 {
-                    autoBanDataManager.AddPoint(AutobanFactory.MPCON, player, "Skill: " + attack.skill + "; Player MP: " + player.MP + "; MP Needed: " + attackEffect.getMpCon());
+                    await autoBanDataManager.AddPoint(AutobanFactory.MPCON, player, "Skill: " + attack.skill + "; Player MP: " + player.MP + "; MP Needed: " + attackEffect.getMpCon());
                 }
 
                 int mobCount = attackEffect.getMobCount();
@@ -104,11 +100,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         else if (attack.skill == NightWalker.POISON_BOMB)
                         {
                             // Poison Bomb
-                            attackEffect.applyTo(player, new Point(attack.position.X, attack.position.Y));
+                            await attackEffect.applyTo(player, new Point(attack.position.X, attack.position.Y));
                         }
                         else
                         {
-                            attackEffect.applyTo(player);
+                            await attackEffect.applyTo(player);
 
                             if (attack.skill == Page.FINAL_ATTACK_BW
                                 || attack.skill == Page.FINAL_ATTACK_SWORD
@@ -133,13 +129,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        player.sendPacket(PacketCreator.enableActions());
+                        await player.SendPacket(PacketCreator.enableActions());
                     }
                 }
 
                 if (attack.numAttacked > mobCount)
                 {
-                    autoBanDataManager.Autoban(AutobanFactory.MOB_COUNT, player, "Skill: " + attack.skill + "; Count: " + attack.numAttacked + " Max: " + attackEffect.getMobCount());
+                    await autoBanDataManager.Autoban(AutobanFactory.MOB_COUNT, player, "Skill: " + attack.skill + "; Count: " + attack.numAttacked + " Max: " + attackEffect.getMobCount());
                     return;
                 }
             }
@@ -206,7 +202,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     if (distance > distanceToDetect)
                     {
                         autoBanDataManager.Alert(AutobanFactory.DISTANCE_HACK, player, "Distance Sq to monster: " + distance + " SID: " + attack.skill + " MID: " + monster.getId());
-                        monster.refreshMobPosition();
+                        await monster.refreshMobPosition();
                     }
 
                     int totDamageToOneMonster = 0;
@@ -242,7 +238,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         totDamageToOneMonster += tempInt;
                     }
                     totDamage += totDamageToOneMonster;
-                    monster.aggroMonsterDamage(player, totDamageToOneMonster);
+                    await monster.aggroMonsterDamage(player, totDamageToOneMonster);
                     if (player.getBuffedValue(BuffStat.PICKPOCKET) != null
                         && (attack.skill == 0
                             || attack.skill == Rogue.DOUBLE_STAB
@@ -273,7 +269,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                                     int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
                                     var position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
-                                    map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
+                                    await map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
                                     delay += 100;
                                 }
                             }
@@ -285,10 +281,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         || attack.skill == Assassin.DRAIN)
                     {
                         var skillModel = SkillFactory.GetSkillTrust(attack.skill);
-                        player.UpdateStatsChunk(() =>
+                        await player.UpdateStatsChunk(async () =>
                         {
                             // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
-                            player.ChangeHP(
+                            await player.ChangeHP(
                                 Math.Min(monster.getMaxHp(),
                                 Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
                                 player.ActualMaxHP / 2)));
@@ -319,7 +315,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                     List<DropEntry> toSteal = new();
                                     toSteal.Add(mi.retrieveDrop(monster.getId())[i]);
 
-                                    map.DropItemFromMonsterBySteal(toSteal, player, monster, target.Value!.delay);
+                                    await map.DropItemFromMonsterBySteal(toSteal, player, monster, target.Value!.delay);
                                     monster.addStolen(toSteal[0].ItemId);
                                 }
                             }
@@ -338,7 +334,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
                     {
                         StatEffect beacon = player.GetPlayerSkillEffect(attack.skill);
-                        beacon.applyBeaconBuff(player, monster.getObjectId());
+                        await beacon.applyBeaconBuff(player, monster.getObjectId());
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)
                     {
@@ -349,7 +345,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             {
                                 StatEffect DoT = type.getEffect(player.getSkillLevel(type));
                                 var monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), type);
-                                monster.applyStatus(player, monsterStatusEffect, true, DoT.getDuration(), false);
+                                await monster.applyStatus(player, monsterStatusEffect, true, DoT.getDuration(), false);
                             }
                         }
                     }
@@ -363,7 +359,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             {
                                 MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, snowCharge.getEffect(player.getSkillLevel(snowCharge)).getX()), snowCharge);
                                 long duration = snowCharge.getEffect(player.getSkillLevel(snowCharge)).getY() * 1000;
-                                monster.applyStatus(player, monsterStatusEffect, false, duration);
+                                await monster.applyStatus(player, monsterStatusEffect, false, duration);
                             }
                         }
                     }
@@ -374,7 +370,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, hamstring.getEffect(player.getSkillLevel(hamstring)).getX()), hamstring);
                             long duration = 1000 * (hamstring.getEffect(player.getSkillLevel(hamstring)).getY());
-                            monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
                         }
                     }
                     if (player.getBuffedValue(BuffStat.SLOW) != null)
@@ -384,7 +380,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, slow.getEffect(player.getSkillLevel(slow)).getX()), slow);
                             long duration = 60 * 1000 * (slow.getEffect(player.getSkillLevel(slow)).getY());
-                            monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
                         }
                     }
                     if (player.getBuffedValue(BuffStat.BLIND) != null)
@@ -394,7 +390,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.ACC, blind.getEffect(player.getSkillLevel(blind)).getX()), blind);
                             long duration = 1000 * (blind.getEffect(player.getSkillLevel(blind)).getY());
-                            monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
                         }
                     }
                     if (player.JobModel == Job.WHITEKNIGHT || player.JobModel == Job.PALADIN)
@@ -438,9 +434,9 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     else if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
                     {
                         Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
-                        player.UpdateStatsChunk(() =>
+                        await player.UpdateStatsChunk(async () =>
                         {
-                            player.ChangeHP((int)((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100.0));
+                            await player.ChangeHP((int)((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100.0));
                         });
                     }
                     else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
@@ -457,7 +453,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                     {
                                         monster.setVenomMulti((monster.getVenomMulti() + 1));
                                         MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), type);
-                                        monster.applyStatus(player, monsterStatusEffect, false, venomEffect.getDuration(), true);
+                                        await monster.applyStatus(player, monsterStatusEffect, false, venomEffect.getDuration(), true);
                                     }
                                 }
                             }
@@ -485,7 +481,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 {
                                     if (Randomizer.rand(1, 100) <= mortal.getY())
                                     {
-                                        monster.DamageBy(player, int.MaxValue, target.Value!.delay);
+                                        await monster.DamageBy(player, int.MaxValue, target.Value!.delay);
                                     }
                                 }
                             }
@@ -497,7 +493,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             if (totDamageToOneMonster != attackEffect.getFixDamage() && totDamageToOneMonster != 0)
                             {
-                                autoBanDataManager.Autoban(AutobanFactory.FIX_DAMAGE, player, totDamageToOneMonster + " damage");
+                                await autoBanDataManager.Autoban(AutobanFactory.FIX_DAMAGE, player, totDamageToOneMonster + " damage");
                             }
 
                             int threeSnailsId = player.getJobType() * 10000000 + 1000;
@@ -519,12 +515,12 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                                         if (player.haveItemWithId(shellId, false))
                                         {
-                                            player.GainItem(shellId, -1);
+                                            await player.GainItem(shellId, -1);
                                             totDamageToOneMonster *= player.getLevel();
                                         }
                                         else
                                         {
-                                            player.dropMessage(5, "You have ran out of shells to activate the hidden power of Three Snails.");
+                                            await player.Pink("You have ran out of shells to activate the hidden power of Three Snails.");
                                         }
                                     }
                                     else
@@ -542,7 +538,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             if (attackEffect.makeChanceResult())
                             {
-                                monster.applyStatus(player, new MonsterStatusEffect(attackEffectStati, theSkill), attackEffect.isPoison(), attackEffect.getDuration());
+                                await monster.applyStatus(player, new MonsterStatusEffect(attackEffectStati, theSkill), attackEffect.isPoison(), attackEffect.getDuration());
                             }
                         }
                     }
@@ -576,10 +572,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     {
                         if (attack.skill == Aran.BODY_PRESSURE)
                         {
-                            monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
+                            await monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), totDamageToOneMonster));
                         }
 
-                        monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
+                        await monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
                     }
                     if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
                     {
@@ -588,11 +584,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.UpdateStatsChunk(() =>
+                                await player.UpdateStatsChunk(async () =>
                                 {
-                                    player.DamageBy(monster, toUse.getX(), attack.attackDelay);
+                                    await player.DamageBy(monster, toUse.getX(), attack.attackDelay);
                                 });
-                                player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
+                                await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
                             }
                         }
                     }
@@ -603,11 +599,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
                             {
                                 MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                player.UpdateStatsChunk(() =>
+                                await player.UpdateStatsChunk(async () =>
                                 {
-                                    player.DamageBy(monster, toUse.getY(), attack.attackDelay);
+                                    await player.DamageBy(monster, toUse.getY(), attack.attackDelay);
                                 });
-                                player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
+                                await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
                             }
                         }
                     }
@@ -626,10 +622,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
         var damageCore = () =>
         {
-            map.Send(m =>
+            map.Send(async m =>
             {
-                monster.DamageBy(attacker, damage, 0);
-                monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), damage));
+                await monster.DamageBy(attacker, damage, 0);
+                await monster.BroadcastMap(PacketCreator.damageMonster(monster.getObjectId(), damage));
             });
         };
         if (animationTime > 0)
@@ -643,7 +639,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         }
     }
 
-    protected AttackInfo parseDamage(InPacket p, Player chr, bool ranged, bool magic)
+    protected async Task<AttackInfo> parseDamage(InPacket p, Player chr, bool ranged, bool magic)
     {
         //2C 00 00 01 91 A1 12 00 A5 57 62 FC E2 75 99 10 00 47 80 01 04 01 C6 CC 02 DD FF 5F 00
         AttackInfo ret = new AttackInfo();
@@ -898,7 +894,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
         if (ret.skill != 0)
         {
-            int fixedValue = ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill))?.getFixDamage() ?? 0;
+            int fixedValue = (await ret.getAttackEffect(chr, SkillFactory.getSkill(ret.skill)))?.getFixDamage() ?? 0;
             if (fixedValue > 0)
             {
                 calcDmgMax = fixedValue;
@@ -1002,7 +998,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 {
                     if (monster != null)
                     {
-                        monster.debuffMob(Hermit.SHADOW_MESO);
+                        await monster.debuffMob(Hermit.SHADOW_MESO);
                     }
                 }
                 else if (ret.skill == Aran.BODY_PRESSURE)
@@ -1065,7 +1061,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 // Add a ab point if its over 5x what we calculated.
                 if (damage > maxWithCrit * 5)
                 {
-                    autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
+                    await autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
                         "DMG: " + damage + " MaxDMG: " + maxWithCrit + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                 }
 
@@ -1084,7 +1080,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     if (ret.numDamage > maxattack)
                     {
-                        autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
+                        await autoBanDataManager.AddPoint(AutobanFactory.DAMAGE_HACK, chr,
 "Too many lines: " + ret.numDamage + " Max lines: " + maxattack + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                     }
                 }
@@ -1166,13 +1162,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             {
                 return;
             }
-                if (mapItem.isPickedUp())
-                {
-                    return;
-                }
-                int delay = attack.attackDelay + (index++ % 5) * EXPLODED_MESO_SPREAD_DELAY;
-                delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
-                map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
+            if (mapItem.isPickedUp())
+            {
+                return;
+            }
+            int delay = attack.attackDelay + (index++ % 5) * EXPLODED_MESO_SPREAD_DELAY;
+            delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
+            map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
         }
     }
 }

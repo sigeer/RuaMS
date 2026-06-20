@@ -35,18 +35,18 @@ public class ExpAction : AbstractQuestAction
         exp = data;
     }
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        runAction(chr, exp);
+        await runAction(chr, exp);
     }
 
-    public static void runAction(Player chr, int gain)
+    public static async Task runAction(Player chr, int gain)
     {
         var expGain = gain * chr.getExpRate();
         if (YamlConfig.config.server.USE_QUEST_RATE)
         {
             expGain = gain * chr.getQuestExpRate();
         }
-        chr.gainExp((int)expGain, true, true);
+        await chr.gainExp((int)expGain, true, true);
     }
 }

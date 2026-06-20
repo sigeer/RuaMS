@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Trades;
 using client.autoban;
@@ -41,7 +40,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
         _autobanManager = autobanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int channel = p.readByte() + 1;
         p.readInt();
@@ -49,7 +48,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
         if (c.Channel == channel)
         {
             _autobanManager.Alert(AutobanFactory.GENERAL, c.OnlinedCharacter, "CCing to same channel.");
-            c.Disconnect(false, false);
+            await c.Disconnect(false, false);
             return;
         }
         else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.VisitingShop is PlayerShop)
@@ -57,6 +56,6 @@ public class ChangeChannelHandler : ChannelHandlerBase
             return;
         }
 
-        c.ChangeChannel(channel);
+        await c.ChangeChannel(channel);
     }
 }

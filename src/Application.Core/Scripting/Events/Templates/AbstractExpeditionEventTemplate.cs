@@ -3,7 +3,6 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.scripting.Events.Templates
 {
@@ -20,7 +19,7 @@ namespace Application.Core.scripting.Events.Templates
             return new ExpeditionEventManager(worldChannel, this);
         }
 
-        public override JoinInstanceResult JoinMember(BehindPartyQuestEventInstanceManager eim, Player player)
+        public override async Task<JoinInstanceResult> JoinMember(BehindPartyQuestEventInstanceManager eim, Player player)
         {
 
             int channel = eim.ChannelServer.getId();
@@ -31,23 +30,23 @@ namespace Application.Core.scripting.Events.Templates
                 return JoinInstanceResult.ChannelFull;
             }
 
-            return base.JoinMember(eim, player);
+            return await base.JoinMember(eim, player);
         }
 
         // 队伍变动不影响远征
-        public override void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
+        public override Task OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
         {
-
+            return Task.CompletedTask;
         }
 
-        public override void OnPartyDisband(AbstractEventInstanceManager eim)
+        public override Task OnPartyDisband(AbstractEventInstanceManager eim)
         {
-
+            return Task.CompletedTask;
         }
 
-        public override void OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
+        public override Task OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
         {
-
+            return Task.CompletedTask;
         }
 
         public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
@@ -62,45 +61,45 @@ namespace Application.Core.scripting.Events.Templates
                     return "在开始远征时发生了意外错误，请稍后重试。";
             }
         }
-        public override void OnPlayerBanned(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerBanned(AbstractEventInstanceManager eim, Player chr)
         {
-            chr.Notice("[Expedition] You have been banned from this expedition.");
+            await chr.Notice("[Expedition] You have been banned from this expedition.");
 
-            eim.Notice("[Expedition] " + chr.Name + " has been banned from the expedition.");
+            await eim.Notice("[Expedition] " + chr.Name + " has been banned from the expedition.");
         }
 
-        public override void OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
         {
-            eim.LightBlue(nameof(ClientMessage.Expedition_Join), chr.Name);
+            await eim.LightBlue(nameof(ClientMessage.Expedition_Join), chr.Name);
         }
 
 
-        public override void OnBattleStarted(AbstractEventInstanceManager eim)
+        public override async Task OnBattleStarted(AbstractEventInstanceManager eim)
         {
-            eim.LightBlue(nameof(ClientMessage.Expedition_Start));
-            eim.ChannelServer.NodeActor
+            await eim.LightBlue(nameof(ClientMessage.Expedition_Start));
+            await eim.ChannelServer.NodeActor
                 .Send(s =>
                 {
                     s.SendDropMessage(6, "[Expedition] " + Name + " Expedition started with leader: " + eim.getLeader().getName(), true);
                 });
         }
 
-        public override void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
+        public override async Task OnPlayerExit(AbstractEventInstanceManager eim, Player player)
         {
-            eim.LightBlue(nameof(ClientMessage.Expedition_Left), player.Name);
-            player.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
+            await eim.LightBlue(nameof(ClientMessage.Expedition_Left), player.Name);
+            await player.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
 
-            base.OnPlayerExit(eim, player);
+            await base.OnPlayerExit(eim, player);
         }
 
-        public override void OnTimeOut(AbstractEventInstanceManager eim)
+        public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             if (eim.InstanceStatus == InstanceStatus.Recruitment)
             {
-                eim.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
+                await eim.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
             }
 
-            base.OnTimeOut(eim);
+            await base.OnTimeOut(eim);
         }
 
         public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
@@ -114,16 +113,16 @@ namespace Application.Core.scripting.Events.Templates
                 return leavingEventMap && eim.getPlayerCount() <= 1;
             }
         }
-        public override void AfterSeup(AbstractEventInstanceManager eim)
+        public override async Task AfterSeup(AbstractEventInstanceManager eim)
         {
-            base.AfterSeup(eim);
+            await base.AfterSeup(eim);
 
-            eim.getLeader().getMap().BroadcastAll(e =>
+            await eim.getLeader().getMap().BroadcastAll(async e =>
             {
                 if (e != eim.getLeader())
-                    e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
+                    await e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
             });
-            eim.getLeader()?.LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
+            await eim.getLeader().LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
         }
     }
 }

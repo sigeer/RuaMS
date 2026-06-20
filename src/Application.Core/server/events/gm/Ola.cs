@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
 using tools;
 
@@ -42,33 +41,34 @@ public class Ola
     public Ola(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
-        {
-            chr.MapModel.Send(m =>
-            {
-                ProcessTimeout();
-            });
-        }, 360_000);
-    }
 
-    public void ProcessTimeout()
+    }
+    public async Task ProcessTimeout()
     {
         if (MapId.isOlaOla(chr.getMapId()))
         {
-            chr.changeMap(chr.getMap().getReturnMap());
+            await chr.changeMap(await chr.getMap().getReturnMap());
         }
         resetTimes();
     }
 
-    public void startOla()
-    { // TODO: Messages
+    public async Task startOla()
+    {
+        // TODO: Messages
+        this.schedule = await chr.Client.CurrentServer.TimerManager.schedule(() =>
+        {
+            chr.MapModel.Send(async m =>
+            {
+                await ProcessTimeout();
+            });
+        }, 360_000);
         chr.getMap().startEvent();
-        chr.sendPacket(PacketCreator.getClock(360));
+        await chr.SendPacket(PacketCreator.getClock(360));
         this.timeStarted = chr.getChannelServer().Node.getCurrentTime();
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
-        chr.Notice(nameof(ClientMessage.Notice_EventStart));
+        await chr.Notice(nameof(ClientMessage.Notice_EventStart));
     }
 
     public bool isTimerStarted()

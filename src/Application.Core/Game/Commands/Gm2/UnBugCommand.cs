@@ -9,8 +9,8 @@ public class UnBugCommand : CommandBase
         Description = "Unbug self.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.enableActions());
+        await c.OnlinedCharacter.getMap().broadcastMessage(PacketCreator.enableActions());
     }
 }

@@ -6,10 +6,10 @@ public class EnableAuthCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramValues)
+    public override async Task Execute(IChannelClient c, string[] paramValues)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 //

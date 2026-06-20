@@ -9,7 +9,7 @@ public class CakeCommand : CommandBase
         Description = "Spawn Cake boss with specified HP.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var monster = LifeFactory.Instance.GetMonsterTrust(MobId.GIANT_CAKE)!;
@@ -19,7 +19,7 @@ public class CakeCommand : CommandBase
             newHp = (mobHp <= 0) ? int.MaxValue : ((mobHp > int.MaxValue) ? int.MaxValue : (int)mobHp);
         }
 
-        player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition(), mob =>
+        await player.getMap().spawnMonsterOnGroundBelow(monster, player.getPosition(), mob =>
         {
             if (newHp != 0)
             {

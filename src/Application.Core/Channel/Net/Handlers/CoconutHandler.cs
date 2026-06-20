@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class CoconutHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         /*CB 00 A6 00 06 01
          * A6 00 = coconut id
@@ -61,37 +61,37 @@ public class CoconutHandler : ChannelHandlerBase
             {
                 nut.setHittable(false);
                 coconutMap.Coconut.stopCoconut();
-                map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
+                await map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
                 return;
             }
             nut.setHittable(false); // for sure :)
             nut.resetHits(); // For next event (without restarts)
             if (Randomizer.nextDouble() < 0.05 && coconutMap.Coconut.getBombings() > 0)
             {
-                map.broadcastMessage(PacketCreator.hitCoconut(false, id, 2));
+                await map.broadcastMessage(PacketCreator.hitCoconut(false, id, 2));
                 coconutMap.Coconut.bombCoconut();
             }
             else if (coconutMap.Coconut.getFalling() > 0)
             {
-                map.broadcastMessage(PacketCreator.hitCoconut(false, id, 3));
+                await map.broadcastMessage(PacketCreator.hitCoconut(false, id, 3));
                 coconutMap.Coconut.fallCoconut();
                 if (c.OnlinedCharacter.getTeam() == 0)
                 {
                     coconutMap.Coconut.addMapleScore();
-                    map.Pink(nameof(ClientMessage.Coconut_Effect_Maple), c.OnlinedCharacter.Name);
+                    await map.Pink(nameof(ClientMessage.Coconut_Effect_Maple), c.OnlinedCharacter.Name);
                 }
                 else
                 {
                     coconutMap.Coconut.addStoryScore();
-                    map.Pink(nameof(ClientMessage.Coconut_Effect_Story), c.OnlinedCharacter.Name);
+                    await map.Pink(nameof(ClientMessage.Coconut_Effect_Story), c.OnlinedCharacter.Name);
                 }
-                map.broadcastMessage(PacketCreator.coconutScore(coconutMap.Coconut.getMapleScore(), coconutMap.Coconut.getStoryScore()));
+                await map.broadcastMessage(PacketCreator.coconutScore(coconutMap.Coconut.getMapleScore(), coconutMap.Coconut.getStoryScore()));
             }
         }
         else
         {
             nut.hit();
-            map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
+            await map.broadcastMessage(PacketCreator.hitCoconut(false, id, 1));
         }
         return;
     }

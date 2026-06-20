@@ -1,5 +1,3 @@
-using constants.game;
-
 namespace Application.Core.Game.Players
 {
     public partial class Player
@@ -15,7 +13,7 @@ namespace Application.Core.Game.Players
             return GachaExpValue.get();
         }
 
-        public void gainGachaExp()
+        public async Task gainGachaExp()
         {
             int expgain = 0;
             long currentgexp = GachaExpValue.get();
@@ -36,13 +34,13 @@ namespace Application.Core.Game.Players
             {
                 expgain = this.GachaExpValue.getAndSet(0);
             }
-            gainExp(expgain, false, true);
-            updateSingleStat(Stat.GACHAEXP, this.GachaExpValue.get());
+            await gainExp(expgain, false, true);
+            await updateSingleStat(Stat.GACHAEXP, this.GachaExpValue.get());
         }
 
-        public void addGachaExp(int gain)
+        public async Task addGachaExp(int gain)
         {
-            updateSingleStat(Stat.GACHAEXP, GachaExpValue.addAndGet(gain));
+            await updateSingleStat(Stat.GACHAEXP, GachaExpValue.addAndGet(gain));
         }
     }
 }

@@ -14,14 +14,14 @@ namespace Application.Core.Channel.Net.Handlers;
 public class RaiseIncExpHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         sbyte inventorytype = p.ReadSByte();//nItemIT
         short slot = p.readShort();//nSlotPosition
         int itemid = p.readInt();//nItemID
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -38,7 +38,7 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 var quest = QuestFactory.Instance.GetInstanceFromInfoNumber(infoNumber);
                 if (!chr.getQuest(quest).getStatus().Equals(QuestStatus.Status.STARTED))
                 {
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -51,13 +51,13 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                     return;
                 }
 
-                InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
+                await InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
 
                 int questid = quest.getId();
                 int nextValue = Math.Min(consumables.GetValueOrDefault(consId) + c.getAbstractPlayerInteraction().getQuestProgressInt(questid, infoNumber), consItem.exp * consItem.grade);
-                c.getAbstractPlayerInteraction().setQuestProgress(questid, infoNumber, nextValue);
+                await c.getAbstractPlayerInteraction().setQuestProgress(questid, infoNumber, nextValue);
 
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
             finally
             {

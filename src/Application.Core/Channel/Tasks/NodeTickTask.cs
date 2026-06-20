@@ -1,7 +1,6 @@
 using Application.Core.Channel.Actor;
 using Application.Core.Game.Maps;
 using Application.Utility.Pipeline;
-using static Application.Core.Channel.Tasks.NodeTickTask;
 
 namespace Application.Core.Channel.Tasks
 {
@@ -16,10 +15,10 @@ namespace Application.Core.Channel.Tasks
             this._server = server;
         }
 
-        protected override void HandleRun()
+        protected override async Task HandleRun()
         {
             _server.UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            _server.OnTick(_server.getCurrentTime());
+            await _server.OnTick(_server.getCurrentTime());
         }
     }
 

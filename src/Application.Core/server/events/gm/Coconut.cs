@@ -22,7 +22,6 @@
 
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using tools;
@@ -34,7 +33,7 @@ namespace server.events.gm;
 /// <summary>
 /// TODO: 待重构，让其与WorldChannel关联或EventInstance
 /// </summary>
-public class Coconut 
+public class Coconut
 {
     public ICoconutMap Map { get; }
     private int MapleScore = 0;
@@ -52,39 +51,39 @@ public class Coconut
         countStopped = this.Map.CountStopped;
     }
 
-    public void startEvent()
+    public async Task startEvent()
     {
         Map.startEvent();
         for (int i = 0; i < 506; i++)
         {
             coconuts.Add(new Coconuts(this, i));
         }
-        Map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
+        await Map.broadcastMessage(PacketCreator.hitCoconut(true, 0, 0));
         setCoconutsHittable(true);
 
-        StartTimer(Map.TimeDefault);
+        await StartTimer(Map.TimeDefault);
     }
 
-    public void StartTimer(int time)
+    public async Task StartTimer(int time)
     {
-        Map.broadcastMessage(PacketCreator.getClock(time));
+        await Map.broadcastMessage(PacketCreator.getClock(time));
 
-        Map.ChannelServer.TimerManager.schedule(() =>
+        await Map.ChannelServer.TimerManager.schedule(() =>
         {
-            Map.Send(m =>
+            Map.Send(async m =>
             {
-                Check();
+                await Check();
             });
         }, TimeSpan.FromSeconds(time));
     }
 
-    public void Check()
+    public async Task Check()
     {
         if (Map.getId() == MapId.EVENT_COCONUT_HARVEST)
         {
             if (getMapleScore() == getStoryScore())
             {
-                bonusTime();
+                await bonusTime();
             }
             else
             {
@@ -93,37 +92,37 @@ public class Coconut
                 {
                     if (chr.getTeam() == winnerTeam)
                     {
-                        chr.sendPacket(PacketCreator.showEffect(Map.EffectWin));
-                        chr.sendPacket(PacketCreator.playSound(Map.SoundWin));
+                        await chr.SendPacket(PacketCreator.showEffect(Map.EffectWin));
+                        await chr.SendPacket(PacketCreator.playSound(Map.SoundWin));
                     }
                     else
                     {
-                        chr.sendPacket(PacketCreator.showEffect(Map.EffectLose));
-                        chr.sendPacket(PacketCreator.playSound(Map.SoundLose));
+                        await chr.SendPacket(PacketCreator.showEffect(Map.EffectLose));
+                        await chr.SendPacket(PacketCreator.playSound(Map.SoundLose));
                     }
                 }
-                warpOut();
+                await warpOut();
             }
         }
     }
-    public void bonusTime()
+    public async Task bonusTime()
     {
-        StartTimer(Map.TimeExpand);
+        await StartTimer(Map.TimeExpand);
     }
 
-    public void warpOut()
+    public async Task warpOut()
     {
         setCoconutsHittable(false);
-        Map.ChannelServer.TimerManager.schedule(() =>
+        await Map.ChannelServer.TimerManager.schedule(() =>
         {
-            Map.Send(m =>
+            Map.Send(async m =>
             {
-                ProcessWarpOut();
+                await ProcessWarpOut();
             });
         }, TimeSpan.FromSeconds(Map.TimeFinish));
     }
 
-    public void ProcessWarpOut()
+    public async Task ProcessWarpOut()
     {
         List<Player> chars = new(Map.getAllPlayers());
 
@@ -131,11 +130,11 @@ public class Coconut
         {
             if ((getMapleScore() > getStoryScore() && chr.getTeam() == 0) || (getStoryScore() > getMapleScore() && chr.getTeam() == 1))
             {
-                chr.changeMap(MapId.EVENT_WINNER);
+                await chr.changeMap(MapId.EVENT_WINNER);
             }
             else
             {
-                chr.changeMap(Map.getForcedReturnId());
+                await chr.changeMap(Map.getForcedReturnId());
             }
         }
         Map.Coconut = null;

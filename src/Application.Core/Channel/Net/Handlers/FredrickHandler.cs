@@ -36,18 +36,18 @@ public class FredrickHandler : ChannelHandlerBase
         _service = service;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte operation = p.readByte();
 
         switch (operation)
         {
             case 0x19: //Will never come...
-                // c.sendPacket(PacketCreator.getFredrick((byte) 0x24));
+                // await c.SendPacket(PacketCreator.getFredrick((byte) 0x24));
                 break;
             case 0x1A:
-                _service.FredrickRetrieveItems(c);
-                c.NPCConversationManager?.dispose();
+                await _service.FredrickRetrieveItems(c);
+                c.NPCConversationManager?.DisposeAsync();
                 break;
             case 0x1C: //Exit
                 break;

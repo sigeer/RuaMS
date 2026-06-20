@@ -1,5 +1,3 @@
-using Application.Core.Channel.Actor;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Shared.Message;
 using Dto;
@@ -24,7 +22,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     return;
                 }
-                _server.Broadcast(w =>
+                _server.Broadcast(async w =>
                 {
                     var code = (JoinChatRoomResult)data.Code;
                     if (code == JoinChatRoomResult.Success)
@@ -39,12 +37,12 @@ namespace Application.Core.Channel.Internal.Handlers
                             {
                                 if (member.PlayerInfo.Character.Id != newComer.PlayerInfo.Character.Id)
                                 {
-                                    chr.sendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
+                                    await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
                                 }
                             }
                         }
 
-                        w.getPlayerStorage().GetCharacterActor(newComer.PlayerInfo.Character.Id)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(newComer.PlayerInfo.Character.Id)?.Send(async m =>
                         {
                             var newComerChr = m.getCharacterById(newComer.PlayerInfo.Character.Id);
                             if (newComerChr != null)
@@ -56,9 +54,9 @@ namespace Application.Core.Channel.Internal.Handlers
                                         continue;
 
                                     if (newComerChr.Id != member.PlayerInfo.Character.Id)
-                                        newComerChr.sendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
+                                        await newComerChr.SendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
                                     else
-                                        newComerChr.sendPacket(ChatRoomPacket.joinMessenger(member.Position));
+                                        await newComerChr.SendPacket(ChatRoomPacket.joinMessenger(member.Position));
                                 }
                             }
                         });
@@ -80,7 +78,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             protected override void HandleMessage(LeaveChatRoomResponse data)
             {
-                _server.Broadcast(w =>
+                _server.Broadcast(async w =>
                 {
                     w.getPlayerStorage().GetCharacterActor(data.LeftPlayerID)?.Send(m =>
                     {
@@ -94,7 +92,8 @@ namespace Application.Core.Channel.Internal.Handlers
                             continue;
 
                         var chr = w.getPlayerStorage().GetCharacterClientById(member.PlayerInfo.Character.Id);
-                        chr?.sendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
+                        if (chr != null)
+                            await chr.SendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
                     }
                 });
             }
@@ -117,9 +116,11 @@ namespace Application.Core.Channel.Internal.Handlers
                     foreach (var member in res.Members)
                     {
                         var actor = worldChannel.getPlayerStorage().GetCharacterActor(member);
-                        actor?.Send(map =>
+                        actor?.Send(async map =>
                         {
-                            map.getCharacterById(member)?.sendPacket(PacketCreator.messengerChat(res.Text));
+                            var chr = map.getCharacterById(member);
+                            if (chr != null)
+                                await chr.SendPacket(PacketCreator.messengerChat(res.Text));
                         });
                     }
                 });

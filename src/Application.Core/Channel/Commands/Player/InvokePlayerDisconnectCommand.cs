@@ -1,6 +1,6 @@
 namespace Application.Core.Channel.Commands
 {
-    internal class InvokePlayerDisconnectCommand : IWorldChannelCommand
+    internal class InvokePlayerDisconnectCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokePlayerDisconnectCommand);
         int _chrId;
@@ -10,12 +10,12 @@ namespace Application.Core.Channel.Commands
             _chrId = chrId;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             var chr = ctx.getPlayerStorage().GetCharacterClientById(_chrId);
             if (chr != null)
             {
-                chr.Client.Disconnect(false, false);
+                await chr.Client.Disconnect(false, false);
             }
 
         }

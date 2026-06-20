@@ -1,4 +1,3 @@
-using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using System.Text;
 
@@ -10,7 +9,7 @@ public class MapPlayersCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int map = player.getMapId();
@@ -24,6 +23,6 @@ public class MapPlayersCommand : CommandBase
             string name = chr.getName() + ": " + hp + "/" + maxhp;
             sb.Append(name).Append("\r\n");
         }
-        TempConversation.Create(c)?.RegisterTalk(sb.ToString());
+        await player.Dialog(sb.ToString());
     }
 }

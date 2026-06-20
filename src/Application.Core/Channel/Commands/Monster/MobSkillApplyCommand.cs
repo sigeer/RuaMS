@@ -3,7 +3,7 @@ using server.life;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class MobSkillApplyCommand : IWorldChannelCommand
+    internal class MobSkillApplyCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(MobSkillApplyCommand);
         Monster _mob;
@@ -17,11 +17,11 @@ namespace Application.Core.Channel.Commands
             _target = target;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (_mob.isAlive())
             {
-                _skill.applyEffect(_target, _mob, true, null);
+                await _skill.applyEffect(_target, _mob, true, null);
             }
         }
     }

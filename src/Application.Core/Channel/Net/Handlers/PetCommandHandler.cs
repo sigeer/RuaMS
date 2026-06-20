@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PetCommandHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         var petId = p.readLong();
@@ -36,6 +36,6 @@ public class PetCommandHandler : ChannelHandlerBase
         p.readByte();
         byte command = p.readByte();
 
-        pet.HandleCommand(command);
+        await pet.HandleCommand(command);
     }
 }

@@ -21,26 +21,19 @@
  */
 
 
-using Acornima.Ast;
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Instances;
-using Application.Resources;
-using Application.Shared.MapObjects;
-using Application.Shared.Objects;
-using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Templates.Providers;
-using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.Extensions.DependencyInjection;
-using scripting.Event;
 using server.life;
 using server.partyquest;
-using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
 using tools;
 
 
@@ -85,7 +78,7 @@ public class MapFactory : IStaticService
             {
                 myLife = map.CreateMonster(mobData, new Point(x, y));
             }
- 
+
         }
         else
         {
@@ -157,11 +150,11 @@ public class MapFactory : IStaticService
 
     public MapTemplate GetMapTemplate(int mapId) => mapSource.GetItem(mapId) ?? throw new BusinessResException($"Map {mapId} not existed");
 
-    public IMap loadMapFromWz(int mapid, WorldChannel worldChannel, AbstractEventInstanceManager? evt)
+    public async Task<IMap> loadMapFromWz(int mapid, WorldChannel worldChannel, AbstractEventInstanceManager? evt)
     {
         IMap? map = null;
 
-        var mapData = mapSource.GetItem(mapid); 
+        var mapData = mapSource.GetItem(mapid);
         if (mapData == null)
             throw new BusinessResException($"Map {mapid} not existed");
 
@@ -256,7 +249,7 @@ public class MapFactory : IStaticService
         foreach (var item in mapData.Reactors)
         {
             Reactor newReactor = loadReactor(map, item);
-            map.spawnReactor(newReactor);
+            await map.spawnReactor(newReactor);
         }
 
         if (mapData.ReactorShuffle)
@@ -276,7 +269,7 @@ public class MapFactory : IStaticService
         myReactor.setFacingDirection((sbyte)mapReactor.F);
         myReactor.setDelay(mapReactor.ReactorTime * 1000);
         myReactor.setName(mapReactor.Name ?? "");
-        myReactor.resetReactorActions(0);
+        _ = myReactor.resetReactorActions(0);
         return myReactor;
     }
 

@@ -20,7 +20,6 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using tools;
 
 namespace server.maps;
@@ -43,27 +42,32 @@ public class MiniDungeon
         baseMap = baseValue;
         expireTime = timeLimit * 1000;
 
-        timeoutTask = worldChannel.TimerManager.schedule(() =>
+
+    }
+
+    public async Task Initialize()
+    {
+        timeoutTask = await _worldChannel.TimerManager.schedule(() =>
         {
-            worldChannel.Send(w =>
+            _worldChannel.Send(async w =>
             {
-                ProcessTimeout();
+                await ProcessTimeout();
             });
         }, expireTime);
-        expireTime += worldChannel.Node.getCurrentTime();
+        expireTime += _worldChannel.Node.getCurrentTime();
     }
 
-    public void ProcessTimeout()
+    public async Task ProcessTimeout()
     {
-        close();
+        await close();
     }
 
-    public bool registerPlayer(Player chr)
+    public async Task<bool> registerPlayer(Player chr)
     {
         int time = (int)((expireTime - _worldChannel.Node.getCurrentTime()) / 1000);
         if (time > 0)
         {
-            chr.sendPacket(PacketCreator.getClock(time));
+            await chr.SendPacket(PacketCreator.getClock(time));
         }
 
         if (timeoutTask == null)
@@ -76,9 +80,9 @@ public class MiniDungeon
         return true;
     }
 
-    public bool unregisterPlayer(Player chr)
+    public async Task<bool> unregisterPlayer(Player chr)
     {
-        chr.sendPacket(PacketCreator.removeClock());
+        await chr.SendPacket(PacketCreator.removeClock());
 
         players.Remove(chr);
 
@@ -90,19 +94,19 @@ public class MiniDungeon
 
         if (chr.isPartyLeader())
         {  // thanks Conrad for noticing party is not sent out of the MD as soon as leader leaves it
-            close();
+            await close();
         }
 
         return true;
     }
 
-    public void close()
+    public async Task close()
     {
         List<Player> lchr = new(players);
 
         foreach (Player chr in lchr)
         {
-            chr.changeMap(baseMap);
+            await chr.changeMap(baseMap);
         }
 
         dispose();

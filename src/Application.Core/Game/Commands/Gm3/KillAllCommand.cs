@@ -9,9 +9,9 @@ public class KillAllCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        var count = AdminManager.KillAllMonster(c.OnlinedCharacter);
-        c.OnlinedCharacter.MessageI18N(nameof(ClientMessage.KillAllCommand_MonsterKilled), count.ToString());
+        var count = await AdminManager.KillAllMonster(c.OnlinedCharacter);
+        await c.OnlinedCharacter.Pink(nameof(ClientMessage.KillAllCommand_MonsterKilled), count.ToString());
     }
 }

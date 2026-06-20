@@ -27,11 +27,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DistributeSPHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt();
         int skillid = p.readInt();
 
-        AssignSPProcessor.SPAssignAction(c, skillid);
+        await AssignSPProcessor.SPAssignAction(c, skillid);
     }
 }

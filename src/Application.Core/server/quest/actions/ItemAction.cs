@@ -43,7 +43,7 @@ public class ItemAction : AbstractQuestAction
         items.AddRange(data.Select(x => new ItemData(x.ItemID, x.Count, x.Prop, x.Job, x.Gender, x.Period)));
     }
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
         List<ItemData> takeItem = new();
         List<ItemData> giveItem = new();
@@ -124,19 +124,19 @@ public class ItemAction : AbstractQuestAction
                 }
             }
 
-            InventoryManipulator.removeById(chr.Client, type, itemid, quantity, true, false);
-            chr.sendPacket(PacketCreator.getShowItemGain(itemid, (short)count, true));
+            await InventoryManipulator.removeById(chr.Client, type, itemid, quantity, true, false);
+            await chr.SendPacket(PacketCreator.getShowItemGain(itemid, (short)count, true));
         }
 
         foreach (ItemData iEntry in giveItem)
         {
             int itemid = iEntry.getId(), count = iEntry.getCount(), period = iEntry.getPeriod();    // thanks Vcoc for noticing quest milestone item not getting removed from inventory after a while
 
-            chr.GainItem(itemid, (short)count, true, GainItemShow.ShowInChat, expires: (long)TimeSpan.FromMinutes(period).TotalMilliseconds);
+            await chr.GainItem(itemid, (short)count, true, GainItemShow.ShowInChat, expires: (long)TimeSpan.FromMinutes(period).TotalMilliseconds);
         }
     }
 
-    public override bool check(Player chr, int? extSelection)
+    public override async Task<bool> check(Player chr, int? extSelection)
     {
         List<ItemInventoryType> gainList = new();
         List<ItemInventoryType> selectList = new();
@@ -189,7 +189,7 @@ public class ItemAction : AbstractQuestAction
                             continue;
                         }
 
-                        announceInventoryLimit(Collections.singletonList(item.getId()), chr);
+                        await announceInventoryLimit(Collections.singletonList(item.getId()), chr);
                         return false;
                     }
                     else
@@ -219,7 +219,7 @@ public class ItemAction : AbstractQuestAction
                 result = InventoryManipulator.checkSpaceProgressively(c, it.Item.getItemId(), it.Item.getQuantity(), "", rndUsed.get(idx), false);
                 if (result % 2 == 0)
                 {
-                    announceInventoryLimit(Collections.singletonList(it.Item.getItemId()), chr);
+                    await announceInventoryLimit(Collections.singletonList(it.Item.getItemId()), chr);
                     return false;
                 }
 
@@ -233,7 +233,7 @@ public class ItemAction : AbstractQuestAction
             gainList.Add(selected);
         }
 
-        if (!canHold(chr, gainList))
+        if (!await canHold(chr, gainList))
         {
             List<int> gainItemids = new();
             foreach (var it in gainList)
@@ -241,24 +241,24 @@ public class ItemAction : AbstractQuestAction
                 gainItemids.Add(it.Item.getItemId());
             }
 
-            announceInventoryLimit(gainItemids, chr);
+            await announceInventoryLimit(gainItemids, chr);
             return false;
         }
         return true;
     }
 
-    private void announceInventoryLimit(List<int> itemids, Player chr)
+    private async Task announceInventoryLimit(List<int> itemids, Player chr)
     {
         if (!chr.canHoldUniques(itemids))
         {
-            chr.dropMessage(1, "Please check if you already have a similar one-of-a-kind item in your inventory.");
+            await chr.dropMessage(1, "Please check if you already have a similar one-of-a-kind item in your inventory.");
             return;
         }
 
-        chr.dropMessage(1, "Please check if you have enough space in your inventory.");
+        await chr.dropMessage(1, "Please check if you have enough space in your inventory.");
     }
 
-    private bool canHold(Player chr, List<ItemInventoryType> gainList)
+    private async Task<bool> canHold(Player chr, List<ItemInventoryType> gainList)
     {
         List<int> toAddItemids = new();
         List<int> toAddQuantity = new();
@@ -282,7 +282,7 @@ public class ItemAction : AbstractQuestAction
         }
 
         // thanks onechord for noticing quests unnecessarily giving out "full inventory" from quests that also takes items from players
-        return chr.getAbstractPlayerInteraction().canHoldAllAfterRemoving(toAddItemids, toAddQuantity, toRemoveItemids, toRemoveQuantity);
+        return await chr.getAbstractPlayerInteraction().canHoldAllAfterRemoving(toAddItemids, toAddQuantity, toRemoveItemids, toRemoveQuantity);
     }
 
     private bool canGetItem(ItemData item, Player chr)
@@ -310,7 +310,7 @@ public class ItemAction : AbstractQuestAction
         return true;
     }
 
-    public bool restoreLostItem(Player chr, int itemid)
+    public async Task<bool> restoreLostItem(Player chr, int itemid)
     {
         if (!ItemInformationProvider.getInstance().isQuestItem(itemid))
         {
@@ -327,11 +327,11 @@ public class ItemAction : AbstractQuestAction
                 {
                     if (!chr.canHold(itemid, missingQty))
                     {
-                        chr.dropMessage(1, "Please check if you have enough space in your inventory.");
+                        await chr.dropMessage(1, "Please check if you have enough space in your inventory.");
                         return false;
                     }
 
-                    chr.GainItem(itemid, (short)missingQty);
+                    await chr.GainItem(itemid, (short)missingQty);
                     log.Debug("Chr {CharacterId} obtained {ItemId}x {ItemQuantility} from questId {QuestId}", chr.getId(), itemid, missingQty, questID);
                 }
                 return true;

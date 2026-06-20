@@ -2,12 +2,10 @@ using Application.Resources.Messages;
 using Application.Shared.Languages;
 using Application.Templates.Exceptions;
 using Application.Templates.Providers;
-using Application.Templates.Quest;
 using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
 using Humanizer;
 using System.Globalization;
-using System.Resources;
 
 namespace Application.Core.Channel
 {

@@ -23,25 +23,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
-using Application.Resources;
-using Application.Shared.Constants.Npc;
 using Application.Shared.WzEntity;
-using Application.Templates.Mob;
 using Application.Templates.Providers;
-using Application.Templates.String;
 using Application.Templates.XmlWzReader.Provider;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using tools;
 
 namespace server.life;
 
 
 [Obsolete("用于测试")]
-public class OldLifeFactory 
+public class OldLifeFactory
 {
     private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);

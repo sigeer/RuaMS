@@ -45,9 +45,9 @@ public class Dragon : AbstractAnimatedMapObject
         return MapObjectType.DRAGON;
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.spawnDragon(this));
+        return client.SendPacket(PacketCreator.spawnDragon(this));
     }
 
     public override int getObjectId()
@@ -55,9 +55,9 @@ public class Dragon : AbstractAnimatedMapObject
         return owner.getId();
     }
 
-    public override void sendDestroyData(IChannelClient c)
+    public override Task sendDestroyData(IChannelClient c)
     {
-        c.sendPacket(PacketCreator.removeDragon(owner.getId()));
+        return c.SendPacket(PacketCreator.removeDragon(owner.getId()));
     }
 
     public Player getOwner()

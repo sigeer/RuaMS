@@ -7,7 +7,7 @@ public class LeaveEventCommand : CommandBase
         Description = "Leave active event.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         int returnMap = player.getSavedLocation("EVENT");
@@ -25,12 +25,12 @@ public class LeaveEventCommand : CommandBase
             }
 
             player.saveLocationOnWarp();
-            player.changeMap(returnMap);
+            await player.changeMap(returnMap);
             c.getChannelServer().getEvent()?.addLimit();
         }
         else
         {
-            player.dropMessage(5, "You are not currently in an event.");
+            await player.Pink("You are not currently in an event.");
         }
 
     }

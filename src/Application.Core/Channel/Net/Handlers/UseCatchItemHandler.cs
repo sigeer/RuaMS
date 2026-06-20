@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class UseCatchItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
@@ -66,11 +66,11 @@ public class UseCatchItemHandler : ChannelHandlerBase
             {
                 if (!string.IsNullOrEmpty(itemTemplate.DelayMsg))
                 {
-                    chr.Pink(itemTemplate.DelayMsg);
+                    await chr.Pink(itemTemplate.DelayMsg);
                 }
                 if (itemId == ItemId.ARPQ_ELEMENT_ROCK)
                 {
-                    c.sendPacket(PacketCreator.catchMessage(1));
+                    await c.SendPacket(PacketCreator.catchMessage(1));
                 }
                 return;
             }
@@ -80,25 +80,25 @@ public class UseCatchItemHandler : ChannelHandlerBase
 
         if (itemTemplate.MobHP > 0 && mob.getHp() < ((mob.getMaxHp() / 100.0) * itemTemplate.MobHP))
         {
-            c.sendPacket(PacketCreator.catchMessage(0));
+            await c.SendPacket(PacketCreator.catchMessage(0));
             return;
         }
 
         if (itemTemplate.Create > 0 && !chr.canHold(itemTemplate.Create, 1))
         {
-            chr.Pink("Make a ETC slot available before using this item.");
+            await chr.Pink("Make a ETC slot available before using this item.");
             return;
         }
 
         if (itemTemplate.BridleProp == 0 || Random.Shared.Next(100) < itemTemplate.BridleProp)
         {
-            mob.BroadcastMap(PacketCreator.catchMonster(objectId, itemId, true));
-            mob.getMap().RemoveMob(mob, null, false);
-            InventoryManipulator.removeById(c, invType, itemId, 1, true, true);
+            await mob.BroadcastMap(PacketCreator.catchMonster(objectId, itemId, true));
+            await mob.getMap().RemoveMob(mob, null, false);
+            await InventoryManipulator.removeById(c, invType, itemId, 1, true, true);
 
             if (itemTemplate.Create > 0)
             {
-                chr.GainItem(itemTemplate.Create, 1);
+                await chr.GainItem(itemTemplate.Create, 1);
 
                 if (itemTemplate.Create == ItemId.ARPQ_SPIRIT_JEWEL)
                     chr.updateAriantScore();
@@ -106,9 +106,9 @@ public class UseCatchItemHandler : ChannelHandlerBase
         }
         else
         {
-            mob.BroadcastMap(PacketCreator.catchMonster(objectId, itemId, false));
+            await mob.BroadcastMap(PacketCreator.catchMonster(objectId, itemId, false));
         }
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

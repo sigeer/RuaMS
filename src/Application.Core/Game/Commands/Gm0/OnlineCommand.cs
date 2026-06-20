@@ -13,7 +13,7 @@ public class OnlineCommand : CommandBase
         _adminService = adminService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
@@ -34,22 +34,22 @@ public class OnlineCommand : CommandBase
             }
         }
 
-        TempConversation.Create(c)?.RegisterSelect(sb.ToString(), (idx, ctx) =>
-        {
-            var item = list[idx];
-            if (item.Id == c.OnlinedCharacter.Id)
-            {
-                ctx.RegisterTalk(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CannotWarpMySelf)));
-            }
-            else
-            {
-                ctx.RegisterYesOrNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name), async ctx =>
-                {
-                    _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
-                    list.Clear();
-                    ctx.dispose();
-                });
-            }
-        });
+        await TempConversation.CreateScope(c, async ctx =>
+         {
+             var idx = await ctx.AskMenu(sb.ToString());
+             var item = list[idx];
+             if (item.Id == c.OnlinedCharacter.Id)
+             {
+                 await ctx.SayOK(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CannotWarpMySelf)));
+             }
+             else
+             {
+                 if (await ctx.AskYesNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name)))
+                 {
+                     await _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
+                 }
+
+             }
+         });
     }
 }

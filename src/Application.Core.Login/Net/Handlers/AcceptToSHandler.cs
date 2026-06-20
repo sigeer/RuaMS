@@ -20,20 +20,20 @@ public class AcceptToSHandler : LoginHandlerBase
         return !c.isLoggedIn();
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         if (p.available() == 0 || p.readByte() != 1 || c.AcceptToS())
         {
-            c.Disconnect();//IClient dc's but just because I am cool I do this (:
+            await c.Disconnect();//IClient dc's but just because I am cool I do this (:
             return;
         }
         if (c.FinishLogin() == LoginResultCode.Success)
         {
-            c.sendPacket(LoginPacketCreator.GetAuthSuccess(c));
+            await c.SendPacket(LoginPacketCreator.GetAuthSuccess(c));
         }
         else
         {
-            c.sendPacket(LoginPacketCreator.GetLoginFailed(9));//shouldn't happen XD
+            await c.SendPacket(LoginPacketCreator.GetLoginFailed(9));//shouldn't happen XD
         }
     }
 }

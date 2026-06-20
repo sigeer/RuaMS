@@ -1,13 +1,8 @@
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Buddy;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using System.Numerics;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -47,21 +42,21 @@ namespace Application.Core.Channel.ServerData
 
         }
 
-        internal void AnswerInvite(Player chr, int fromId)
+        internal async Task AnswerInvite(Player chr, int fromId)
         {
             if (chr.BuddyList.isFull())
             {
-                chr.dropMessage(1, "好友位已满");
+                await chr.dropMessage(1, "好友位已满");
                 return;
             }
 
             if (chr.BuddyList.Contains(fromId))
             {
-                chr.dropMessage(1, "已经是你的好友了");
+                await chr.dropMessage(1, "已经是你的好友了");
                 return;
             }
 
-            _ = _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
+            await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
         }
 
         public void DeleteBuddy(Player chr, int targetId)
@@ -74,16 +69,16 @@ namespace Application.Core.Channel.ServerData
             _ = _transport.SendWhisper(new MessageProto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
         }
 
-        internal void GetLocation(Player chr, string name)
+        internal async Task GetLocation(Player chr, string name)
         {
             var sameChannelSearch = chr.Client.CurrentServer.Players.getCharacterByName(name);
             if (sameChannelSearch != null)
             {
-                chr.sendPacket(PacketCreator.GetSameChannelFindResult(sameChannelSearch, WhisperFlag.LOCATION));
+                await chr.SendPacket(PacketCreator.GetSameChannelFindResult(sameChannelSearch, WhisperFlag.LOCATION));
                 return;
             }
 
-            _ = _transport.GetLocation(new BuddyProto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
+            await _transport.GetLocation(new BuddyProto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
 
         }
     }

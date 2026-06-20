@@ -9,13 +9,13 @@ public class QuestResetCommand : CommandBase
         Description = "Reset a completed quest.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !resetquest <questid>");
+            await player.Yellow("Syntax: !resetquest <questid>");
             return;
         }
 
@@ -26,12 +26,12 @@ public class QuestResetCommand : CommandBase
             Quest quest = Quest.getInstance(questid_);
             if (quest != null)
             {
-                quest.reset(player);
-                player.dropMessage(5, "QUEST " + questid_ + " reseted.");
+                await quest.reset(player);
+                await player.Pink("QUEST " + questid_ + " reseted.");
             }
             else
             {    // should not occur
-                player.dropMessage(5, "QUESTID " + questid_ + " is invalid.");
+                await player.Pink("QUESTID " + questid_ + " is invalid.");
             }
         }
     }

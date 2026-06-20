@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int attacker = p.readInt();
         p.readInt();
@@ -48,9 +48,9 @@ public class MobDamageMobFriendlyHandler : ChannelHandlerBase
 
         int damage = Randomizer.nextInt(((monster.getMaxHp() / 13 + monster.getPADamage() * 10)) * 2 + 500) / 10; // Formula planned by Beng.
 
-        monster.DamageBy(attackerMob, damage, 0);
-        monster.BroadcastMap(PacketCreator.MobDamageMobFriendly(monster, damage, monster.getHp()));
+        await monster.DamageBy(attackerMob, damage, 0);
+        await monster.BroadcastMap(PacketCreator.MobDamageMobFriendly(monster, damage, monster.getHp()));
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

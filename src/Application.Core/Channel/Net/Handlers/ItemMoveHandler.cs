@@ -22,9 +22,7 @@
 
 
 using Application.Core.Client.inventory;
-using client.inventory;
 using client.inventory.manipulator;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -34,12 +32,12 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ItemMoveHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.skip(4);
         if (c.OnlinedCharacter.getAutobanManager().getLastSpam(6) + 300 > c.CurrentServer.Node.getCurrentTime())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -50,20 +48,20 @@ public class ItemMoveHandler : ChannelHandlerBase
 
         if (src < 0 && action > 0)
         {
-            InventoryManipulator.unequip(c, src, action);
+            await InventoryManipulator.unequip(c, src, action);
         }
         else if (action < 0)
         {
-            InventoryManipulator.equip(c, src, action);
+            await InventoryManipulator.equip(c, src, action);
         }
         else if (action == 0)
         {
-            InventoryManipulator.drop(c, type, src, quantity);
+            await InventoryManipulator.drop(c, type, src, quantity);
         }
         else
         {
             var ops = new BagInventorySorter(c.OnlinedCharacter.GetInventory(type)).Move(src, action);
-            c.OnlinedCharacter.SyncClientInventory(ops, true);
+            await c.OnlinedCharacter.SyncClientInventory(ops, true);
         }
 
         c.OnlinedCharacter.getAutobanManager().spam(6);

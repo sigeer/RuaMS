@@ -45,7 +45,7 @@ public class MobRequirement : AbstractQuestRequirement
         RequiredMobs = data.ToDictionary(x => x.MobID, x => x.Count);
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         QuestStatus status = chr.getQuest(Quest.getInstance(questID));
         foreach (int mobID in RequiredMobs.Keys)

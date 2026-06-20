@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 /// </summary>
 public class UseOwlOfMinervaHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var owlSearched = c.CurrentServer.Service.GetOwlSearchedItems();
         List<int> owlLeaderboards;
@@ -46,6 +46,6 @@ public class UseOwlOfMinervaHandler : ChannelHandlerBase
             owlLeaderboards = owlSearched.OrderByDescending(x => x.Count).Select(x => x.ItemId).ToList();
         }
 
-        c.sendPacket(PacketCreator.getOwlOpen(owlLeaderboards));
+        await c.SendPacket(PacketCreator.getOwlOpen(owlLeaderboards));
     }
 }

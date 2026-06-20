@@ -50,7 +50,7 @@ public class Quest
     private bool autoPreComplete, autoComplete;
     private bool repeatable = false;
     public bool IsValid { get; } = true;
-   
+
     public int ViewMedalItem { get; }
 
     public Quest(QuestTemplate template)
@@ -162,7 +162,7 @@ public class Quest
         return true;
     }
 
-    public bool canStart(Player chr, int npcid)
+    public async Task<bool> canStart(Player chr, int npcid)
     {
         if (!canStartQuestByStatus(chr))
         {
@@ -171,7 +171,7 @@ public class Quest
 
         foreach (AbstractQuestRequirement r in startReqs.Values)
         {
-            if (!r.check(chr, npcid))
+            if (!await r.check(chr, npcid))
             {
                 return false;
             }
@@ -180,7 +180,7 @@ public class Quest
         return canQuestByInfoProgress(chr);
     }
 
-    public bool canComplete(Player chr, int? npcid)
+    public async Task<bool> canComplete(Player chr, int? npcid)
     {
         QuestStatus mqs = chr.getQuest(this);
         if (!mqs.getStatus().Equals(Status.STARTED))
@@ -190,7 +190,7 @@ public class Quest
 
         foreach (AbstractQuestRequirement r in completeReqs.Values)
         {
-            if (!r.check(chr, npcid))
+            if (!await r.check(chr, npcid))
             {
                 return false;
             }
@@ -199,58 +199,58 @@ public class Quest
         return canQuestByInfoProgress(chr);
     }
 
-    public void start(Player chr, int npc)
+    public async Task start(Player chr, int npc)
     {
-        if (autoStart || canStart(chr, npc))
+        if (autoStart || await canStart(chr, npc))
         {
             var acts = startActs.Values;
             foreach (AbstractQuestAction a in acts)
             {
-                if (!a.check(chr, null))
+                if (!await a.check(chr, null))
                 { // would null be good ?
                     return;
                 }
             }
             foreach (AbstractQuestAction a in acts)
             {
-                a.run(chr, null);
+                await a.run(chr, null);
             }
-            forceStart(chr, npc);
+            await forceStart(chr, npc);
         }
     }
 
 
-    public void complete(Player chr, int npc, int? selection = null)
+    public async Task complete(Player chr, int npc, int? selection = null)
     {
-        if (autoPreComplete || canComplete(chr, npc))
+        if (autoPreComplete || await canComplete(chr, npc))
         {
             var acts = completeActs.Values;
             foreach (AbstractQuestAction a in acts)
             {
-                if (!a.check(chr, selection))
+                if (!await a.check(chr, selection))
                 {
                     return;
                 }
             }
-            forceComplete(chr, npc);
+            await forceComplete(chr, npc);
             foreach (AbstractQuestAction a in acts)
             {
-                a.run(chr, selection);
+                await a.run(chr, selection);
             }
             if (!this.hasNextQuestAction())
             {
-                chr.announceUpdateQuest(DelayedQuestUpdate.INFO, chr.getQuest(this));
+                await chr.announceUpdateQuest(DelayedQuestUpdate.INFO, chr.getQuest(this));
             }
         }
     }
 
-    public void reset(Player chr)
+    public async Task reset(Player chr)
     {
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.NOT_STARTED);
-        chr.updateQuestStatus(newStatus);
+        await chr.updateQuestStatus(newStatus);
     }
 
-    public bool forfeit(Player chr)
+    public async Task<bool> forfeit(Player chr)
     {
         if (!chr.getQuest(this).getStatus().Equals(Status.STARTED))
         {
@@ -258,15 +258,15 @@ public class Quest
         }
         if (timeLimit > 0)
         {
-            chr.sendPacket(QuestPacket.RemoveQuestTimeLimit(id));
+            await chr.SendPacket(QuestPacket.RemoveQuestTimeLimit(id));
         }
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.NOT_STARTED);
         newStatus.setForfeited(chr.getQuest(this).getForfeited() + 1);
-        chr.updateQuestStatus(newStatus);
+        await chr.updateQuestStatus(newStatus);
         return true;
     }
 
-    public bool forceStart(Player chr, int npc)
+    public async Task<bool> forceStart(Player chr, int npc)
     {
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.STARTED, npc);
 
@@ -296,15 +296,15 @@ public class Quest
         if (timeLimit > 0)
         {
             newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit).ToUnixTimeMilliseconds());
-            chr.questTimeLimit(this, timeLimit);
+            await chr.questTimeLimit(this, timeLimit);
         }
         if (timeLimit2 > 0)
         {
             newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMilliseconds(timeLimit2).ToUnixTimeMilliseconds());
-            chr.questTimeLimit2(this, newStatus.getExpirationTime());
+            await chr.questTimeLimit2(this, newStatus.getExpirationTime());
         }
 
-        chr.updateQuestStatus(newStatus);
+        await chr.updateQuestStatus(newStatus);
         if (YamlConfig.config.server.USE_DEBUG)
         {
             Log.Logger.Debug("开始任务：{QuestId}", id);
@@ -312,21 +312,21 @@ public class Quest
         return true;
     }
 
-    public bool forceComplete(Player chr, int npc)
+    public async Task<bool> forceComplete(Player chr, int npc)
     {
         if (timeLimit > 0)
         {
-            chr.sendPacket(QuestPacket.RemoveQuestTimeLimit(id));
+            await chr.SendPacket(QuestPacket.RemoveQuestTimeLimit(id));
         }
 
         QuestStatus newStatus = new QuestStatus(this, QuestStatus.Status.COMPLETED, npc);
         newStatus.setForfeited(chr.getQuest(this).getForfeited());
         newStatus.setCompleted(chr.getQuest(this).getCompleted());
         newStatus.setCompletionTime(chr.Client.CurrentServer.Node.getCurrentTime());
-        chr.updateQuestStatus(newStatus);
+        await chr.updateQuestStatus(newStatus);
 
-        chr.sendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
-        chr.BroadcastMap(PacketCreator.showForeignEffect(chr.getId(), 9), chr.Id); //use 9 instead of 12 for both
+        await chr.SendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
+        await chr.BroadcastMap(PacketCreator.showForeignEffect(chr.getId(), 9), chr.Id); //use 9 instead of 12 for both
         return true;
     }
 
@@ -501,14 +501,14 @@ public class Quest
         return dict;
     }
 
-    public bool restoreLostItem(Player chr, int itemid)
+    public async Task<bool> restoreLostItem(Player chr, int itemid)
     {
         if (chr.getQuest(this).getStatus().Equals(QuestStatus.Status.STARTED))
         {
             var itemAct = startActs.GetValueOrDefault(QuestActionType.ITEM) as ItemAction;
             if (itemAct != null)
             {
-                return itemAct.restoreLostItem(chr, itemid);
+                return await itemAct.restoreLostItem(chr, itemid);
             }
         }
 

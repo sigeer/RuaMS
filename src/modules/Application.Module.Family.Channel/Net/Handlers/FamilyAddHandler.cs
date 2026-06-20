@@ -47,48 +47,48 @@ public class FamilyAddHandler : ChannelHandlerBase
         _options = options;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         string toAdd = p.readString();
         var addChr = c.CurrentServer.getPlayerStorage().getCharacterByName(toAdd);
         var chr = c.OnlinedCharacter;
         if (addChr == null)
         {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(65, 0));
+            await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(65, 0));
             return;
         }
         if (addChr == chr)
         {
             //only possible through packet editing/client editing i think?
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
         if (addChr.getMap() != chr.getMap() || addChr.isHidden() && chr.gmLevel() < addChr.gmLevel())
         {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(69, 0));
+            await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(69, 0));
             return;
         }
         if (addChr.getLevel() <= 10)
         {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(77, 0));
+            await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(77, 0));
             return;
         }
 
         if (Math.Abs(addChr.getLevel() - chr.getLevel()) > 20)
         {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(72, 0));
+            await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(72, 0));
             return;
         }
 
         if (_familyManager.GetFamilyByPlayerId(addChr.Id) == _familyManager.GetFamilyByPlayerId(chr.Id))
         {
             //same family
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
-        _ = _familyManager.CreateInvite(chr, toAdd);
-        c.sendPacket(PacketCreator.enableActions());
+        await _familyManager.CreateInvite(chr, toAdd);
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

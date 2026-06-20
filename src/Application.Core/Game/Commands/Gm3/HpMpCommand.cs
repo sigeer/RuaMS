@@ -7,7 +7,7 @@ public class HpMpCommand : CommandBase
         Description = "Set HP/MP of a player.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         var victim = player;
@@ -24,20 +24,20 @@ public class HpMpCommand : CommandBase
         }
         else
         {
-            player.yellowMessage("Syntax: !hpmp [<playername>] <value>");
+            await player.Yellow("Syntax: !hpmp [<playername>] <value>");
         }
 
         if (victim != null && victim.IsOnlined)
         {
-            victim.UpdateStatsChunk(() =>
+            await victim.UpdateStatsChunk(async () =>
             {
-                victim.SetHP(statUpdate);
+                await victim.SetHP(statUpdate);
                 victim.SetMP(statUpdate);
             });
         }
         else
         {
-            player.message("Player '" + paramsValue[0] + "' could not be found on this channel.");
+            await player.Pink("Player '" + paramsValue[0] + "' could not be found on this channel.");
         }
     }
 }

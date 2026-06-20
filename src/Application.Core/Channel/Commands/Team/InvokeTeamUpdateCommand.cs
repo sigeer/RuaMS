@@ -5,7 +5,7 @@ using TeamProto;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class InvokeTeamUpdateCommand : IWorldChannelCommand
+    internal class InvokeTeamUpdateCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeTeamUpdateCommand);
         UpdateTeamResponse res;
@@ -15,7 +15,7 @@ namespace Application.Core.Channel.Commands
             this.res = res;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             var operation = (PartyOperation)res.Request.Operation;
             var errorCode = (UpdateTeamCheckResult)res.Code;
@@ -26,13 +26,13 @@ namespace Application.Core.Channel.Commands
                 {
                     // 人数已满
                     if (errorCode == UpdateTeamCheckResult.Join_TeamMemberFull)
-                        operatorPlayer.sendPacket(TeamPacketCreator.TeamFullCapacity());
+                        await operatorPlayer.SendPacket(TeamPacketCreator.TeamFullCapacity());
                     // 队伍已解散
                     if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
-                        operatorPlayer.Pink(nameof(ClientMessage.Team_TeamNotFound));
+                        await operatorPlayer.Pink(nameof(ClientMessage.Team_TeamNotFound));
                     // 已有队伍
                     if (errorCode == UpdateTeamCheckResult.Join_HasTeam)
-                        operatorPlayer.sendPacket(TeamPacketCreator.AlreadInTeam());
+                        await operatorPlayer.SendPacket(TeamPacketCreator.AlreadInTeam());
                 }
                 return;
             }
@@ -45,7 +45,7 @@ namespace Application.Core.Channel.Commands
             foreach (var partychar in partyMembers)
             {
                 partychar!.Party = operation == PartyOperation.DISBAND ? -1 : res.Team.Id;
-                partychar.sendPacket(TeamPacketCreator.UpdateParty(partychar.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
+                await partychar.SendPacket(TeamPacketCreator.UpdateParty(partychar.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
             }
 
             var targetPlayer = ctx.getPlayerStorage().getCharacterById(res.Request.TargetId);
@@ -57,11 +57,11 @@ namespace Application.Core.Channel.Commands
                     {
                         if (partychar!.MapModel == targetPlayer.MapModel)
                         {
-                            partychar.sendPacket(TeamPacketCreator.updatePartyMemberHP(targetPlayer.Id, targetPlayer.HP, targetPlayer.ActualMaxHP));
-                            targetPlayer.sendPacket(TeamPacketCreator.updatePartyMemberHP(partychar.Id, partychar.HP, partychar.ActualMaxHP));
+                            await partychar.SendPacket(TeamPacketCreator.updatePartyMemberHP(targetPlayer.Id, targetPlayer.HP, targetPlayer.ActualMaxHP));
+                            await targetPlayer.SendPacket(TeamPacketCreator.updatePartyMemberHP(partychar.Id, partychar.HP, partychar.ActualMaxHP));
                         }
                     }
-                    targetPlayer.HandleTeamMemberCountChanged(null);
+                    await targetPlayer.HandleTeamMemberCountChanged(null);
                 }
             }
             else if (operation == PartyOperation.LEAVE)
@@ -73,16 +73,16 @@ namespace Application.Core.Channel.Commands
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
-                        eim.leftParty(targetPlayer);
+                        await eim.leftParty(targetPlayer);
                     }
 
                     targetPlayer.Party = -1;
-                    targetPlayer.sendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
-                    targetPlayer.HandleTeamMemberCountChanged(partymembers);
+                    await targetPlayer.SendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
+                    await targetPlayer.HandleTeamMemberCountChanged(partymembers);
 
                     if (res.Request.Reason == 1)
                     {
-                        targetPlayer.showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
+                        await targetPlayer.showHint("You have reached #blevel 10#k, therefore you must leave your #rstarter party#k.");
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace Application.Core.Channel.Commands
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
-                        eim.disbandParty();
+                        await eim.disbandParty();
                     }
                 }
 
@@ -108,12 +108,12 @@ namespace Application.Core.Channel.Commands
                     var eim = targetPlayer.getEventInstance();
                     if (eim != null)
                     {
-                        eim.leftParty(targetPlayer);
+                        await eim.leftParty(targetPlayer);
                     }
 
                     targetPlayer.Party = -1;
-                    targetPlayer.sendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
-                    targetPlayer.HandleTeamMemberCountChanged(preData);
+                    await targetPlayer.SendPacket(TeamPacketCreator.UpdateParty(targetPlayer.getChannelServer(), res.Team, operation, res.Request.TargetId, res.TargetName));
+                    await targetPlayer.HandleTeamMemberCountChanged(preData);
                 }
             }
             else if (operation == PartyOperation.CHANGE_LEADER)
@@ -125,7 +125,7 @@ namespace Application.Core.Channel.Commands
 
                     if (eim != null && eim.isEventLeader(mc))
                     {
-                        eim.changedLeader(targetPlayer);
+                        await eim.changedLeader(targetPlayer);
                     }
                     else
                     {
@@ -138,7 +138,7 @@ namespace Application.Core.Channel.Commands
                                 var mmd = ctx.getMiniDungeon(oldLeaderMapid);
                                 if (mmd != null)
                                 {
-                                    mmd.close();
+                                    await mmd.close();
                                 }
                             }
                         }

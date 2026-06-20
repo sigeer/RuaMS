@@ -23,14 +23,12 @@
 
 using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
-using client.keybind;
-using constants.game;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class KeymapChangeHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (p.available() >= 8)
         {
@@ -80,7 +78,7 @@ public class KeymapChangeHandler : ChannelHandlerBase
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
-                    c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
+                    await c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
                 c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionHP, new KeyBinding(KeyBindingType.AutoPotion, itemID));
@@ -91,7 +89,7 @@ public class KeymapChangeHandler : ChannelHandlerBase
                 int itemID = p.readInt();
                 if (itemID != 0 && c.OnlinedCharacter.getInventory(InventoryType.USE).findById(itemID) == null)
                 {
-                    c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
+                    await c.Disconnect(false, false); // Don't let them send a packet with a use item they dont have.
                     return;
                 }
                 c.OnlinedCharacter.changeKeybinding((int)KeyCode.VirtualAutoPotionMP, new KeyBinding(KeyBindingType.AutoPotion, itemID));

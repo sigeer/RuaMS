@@ -22,7 +22,6 @@
 
 
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Templates.Mob;
 
@@ -89,7 +88,7 @@ public class SpawnPoint
     }
 
 
-    public bool shouldSpawn()
+    public virtual bool shouldSpawn()
     {
         if (denySpawn || mobTime < 0 || spawnedMonsters.get() >= GetMaxMobCount())
         {
@@ -154,6 +153,10 @@ public class SpawnPoint
         {
             nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime() + mobInterval;
         }
+        else if (mobTime > 0)
+        {
+            nextPossibleSpawn = _map.ChannelServer.Node.getCurrentTime() + mobTime * 1000;
+        }
         return mob;
     }
 
@@ -199,7 +202,7 @@ public class SpawnPoint
         return (int)Math.Floor(rate);
     }
 
-    public void SpawnMonster(int difficulty = 1, bool isPq = false)
+    public async Task SpawnMonster(int difficulty = 1, bool isPq = false)
     {
         var rate = _map.ActualMonsterRate;
         if (_map.getEventInstance() != null || _monsterMeta.Boss)
@@ -207,7 +210,7 @@ public class SpawnPoint
 
         while (rate > Randomizer.NextFloat())
         {
-            _map.spawnMonster(GenrateMonster(), difficulty, isPq);
+            await _map.spawnMonster(GenrateMonster(), difficulty, isPq);
             rate -= 1;
         }
     }

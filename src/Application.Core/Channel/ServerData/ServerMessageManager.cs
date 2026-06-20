@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using tools;
 
 namespace Application.Core.Channel.ServerData
@@ -32,7 +31,7 @@ namespace Application.Core.Channel.ServerData
             return disabledServerMessages.Remove(chrid, out var d);
         }
 
-        public void HandleRun()
+        public async Task HandleRun()
         {
             List<int> toRemove = new();
 
@@ -61,7 +60,7 @@ namespace Application.Core.Channel.ServerData
 
                 if (chr != null && chr.isLoggedinWorld())
                 {
-                    chr.sendPacket(PacketCreator.serverMessage(_server.WorldServerMessage));
+                    await chr.SendPacket(PacketCreator.serverMessage(_server.WorldServerMessage));
                 }
             }
         }

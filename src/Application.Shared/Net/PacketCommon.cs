@@ -1,7 +1,13 @@
 using Application.Shared.Constants;
+using Application.Shared.Constants.Item;
 using Application.Shared.Net.Encryption;
+using Application.Templates;
+using Application.Templates.Character;
+using Application.Templates.Item.Pet;
+using Application.Templates.Providers;
 using Application.Utility;
 using DotNetty.Buffers;
+using Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +47,10 @@ namespace Application.Shared.Net
             }
 
             return utcTimestamp * 10000 + FT_UT_OFFSET;
+        }
+        public static void addExpirationTime(OutPacket p, long time)
+        {
+            p.writeLong(getTime(time)); // offset expiration time issue found thanks to Thora
         }
 
 
@@ -172,6 +182,112 @@ namespace Application.Shared.Net
             MethodEventSource.Instance.TrackCall(nameof(PacketCommon.RebroadcastMovementList));
 #endif
             op.WriteBytes(ip, movementDataLength);
+        }
+
+        public static void EncodeItem(OutPacket p, ItemDto item, AbstractItemTemplate itemTemplate, bool forLook = false)
+        {
+            bool isCash = itemTemplate.Cash;
+            var pos = item.Position;
+            var itemType = itemTemplate is PetItemTemplate ? 3 : (itemTemplate is EquipTemplate ? 1: 2);
+            bool isEquip = itemType == 1;
+            if (forLook)
+            {
+                if (isEquip)
+                {
+                    if (pos < 0)
+                    {
+                        pos *= -1;
+                    }
+                    p.writeShort(pos > 100 ? pos - 100 : pos);
+                }
+                else
+                {
+                    p.writeByte(pos);
+                }
+            }
+            p.writeByte(itemType);
+            p.writeInt(item.Itemid);
+            p.writeBool(isCash);
+            if (isCash)
+            {
+                p.writeLong(item.PetInfo != null ? item.PetInfo.Petid : (item.EquipInfo?.RingId ?? 0));
+            }
+            addExpirationTime(p, item.Expiration);
+            if (item.PetInfo != null)
+            {
+                p.writeFixedString(item.PetInfo.Name);
+                p.writeByte(item.PetInfo.Level);
+                p.writeShort(item.PetInfo.Closeness);
+                p.writeByte(item.PetInfo.Fullness);
+                addExpirationTime(p, item.Expiration);
+                p.writeShort(item.PetInfo.Flag); // PetAttribute noticed by lrenex & Spoon
+                p.writeShort(0); // PetSkill
+                p.writeInt(18000); // RemainLife
+                p.writeShort(0); // attribute
+                return;
+            }
+            if (item.EquipInfo == null)
+            {
+                p.writeShort(item.Quantity);
+                p.writeString(item.Owner);
+                p.writeShort(item.Flag); // flag
+
+                if (ItemConstants.isRechargeable(item.Itemid))
+                {
+                    p.writeInt(2);
+                    p.writeBytes(new byte[] { 0x54, 0, 0, 0x34 });
+                }
+                return;
+            }
+            else
+            {
+                var equip = item.EquipInfo;
+                var template = (itemTemplate as EquipTemplate)!;
+
+                p.writeByte(equip.Upgradeslots); // upgrade slots
+                p.writeByte(equip.Level); // level
+                p.writeShort(equip.Str); // str
+                p.writeShort(equip.Dex); // dex
+                p.writeShort(equip.Int); // int
+                p.writeShort(equip.Luk); // luk
+                p.writeShort(equip.Hp); // hp
+                p.writeShort(equip.Mp); // mp
+                p.writeShort(equip.Watk); // watk
+                p.writeShort(equip.Matk); // matk
+                p.writeShort(equip.Wdef); // wdef
+                p.writeShort(equip.Mdef); // mdef
+                p.writeShort(equip.Acc); // accuracy
+                p.writeShort(equip.Avoid); // avoid
+                p.writeShort(equip.Hands); // hands
+                p.writeShort(equip.Speed); // speed
+                p.writeShort(equip.Jump); // jump
+                p.writeString(item.Owner); // owner name
+                p.writeShort(item.Flag); //Item Flags
+
+                if (isCash)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        p.writeByte(0x40);
+                    }
+                }
+                else
+                {
+                    int itemLevel = equip.Itemlevel;
+                    long expNibble = (ExpTable.getExpNeededForLevel(template.ReqLevel) * equip.Itemexp);
+                    expNibble /= ExpTable.getEquipExpNeededForLevel(itemLevel);
+
+                    p.writeByte(0);
+                    p.writeByte(itemLevel); //Item Level
+                    p.writeInt((int)expNibble);
+                    p.writeInt(equip.Vicious); //WTF NEXON ARE YOU SERIOUS?
+                    p.writeLong(0);
+                }
+                p.writeLong(PacketCommon.getTime(-2));
+                p.writeInt(-1);
+            }
+
+
         }
 
     }

@@ -1,4 +1,3 @@
-using Application.Resources.Messages;
 using Application.Templates.Providers;
 using Application.Templates.XmlWzReader.Provider;
 using Microsoft.AspNetCore.Builder;

@@ -8,13 +8,13 @@ public class QuestCompleteCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !completequest <questid>");
+            await player.Yellow("Syntax: !completequest <questid>");
             return;
         }
 
@@ -25,18 +25,18 @@ public class QuestCompleteCommand : CommandBase
             Quest quest = Quest.getInstance(questId);
             if (quest != null && quest.getNpcRequirement(true) != -1)
             {
-                c.getAbstractPlayerInteraction().forceCompleteQuest(questId, quest.getNpcRequirement(true));
+                await c.getAbstractPlayerInteraction().forceCompleteQuest(questId, quest.getNpcRequirement(true));
             }
             else
             {
-                c.getAbstractPlayerInteraction().forceCompleteQuest(questId);
+                await c.getAbstractPlayerInteraction().forceCompleteQuest(questId);
             }
 
-            player.dropMessage(5, "QUEST " + questId + " completed.");
+            await player.Pink("QUEST " + questId + " completed.");
         }
         else
         {
-            player.dropMessage(5, "QUESTID " + questId + " not started or already completed.");
+            await player.Pink("QUESTID " + questId + " not started or already completed.");
         }
     }
 }

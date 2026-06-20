@@ -40,7 +40,7 @@ namespace Application.Core.Game.Players.Tickables
 
         StatEffect? _healEffect;
         StatEffect? _hexEffect;
-        public override void OnTick(long now)
+        public override async Task OnTick(long now)
         {
             if (this.IsAvailable())
             {
@@ -52,14 +52,16 @@ namespace Application.Core.Game.Players.Tickables
 
                 if (auraNext <= now)
                 {
-                    _healEffect?.applyTo(_chr);
+                    if (_healEffect != null)
+                        await _healEffect.applyTo(_chr);
 
                     auraNext = now + auraPeriod;
                 }
 
                 if (hexNext <= now)
                 {
-                    _hexEffect?.applyTo(_chr);
+                    if (_hexEffect != null)
+                        await _hexEffect.applyTo(_chr);
 
                     hexNext = now + hexPeriod;
                 }

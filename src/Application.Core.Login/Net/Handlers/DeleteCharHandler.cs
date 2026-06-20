@@ -34,7 +34,7 @@ public class DeleteCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         string pic = p.readString();
         int cid = p.readInt();
@@ -51,7 +51,7 @@ public class DeleteCharHandler : LoginHandlerBase
                     var checkResult = module.DeleteCharacterCheck(cid);
                     if (checkResult != 0)
                     {
-                        c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, checkResult));
+                        await c.SendPacket(LoginPacketCreator.deleteCharResponse(cid, checkResult));
                         return;
                     }
                 }
@@ -59,23 +59,23 @@ public class DeleteCharHandler : LoginHandlerBase
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to delete chrId {CharacterId}", cid);
-                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
+                await c.SendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
                 return;
             }
 
             if (_server.CharacterManager.RemoveCharacter(cid, c.AccountId))
             {
                 _logger.LogInformation("Account {AccountName} deleted chrId {CharacterId}", c.AccountEntity!.Name, cid);
-                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0));
+                await c.SendPacket(LoginPacketCreator.deleteCharResponse(cid, 0));
             }
             else
             {
-                c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
+                await c.SendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x09));
             }
         }
         else
         {
-            c.sendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x14));
+            await c.SendPacket(LoginPacketCreator.deleteCharResponse(cid, 0x14));
         }
     }
 }

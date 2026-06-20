@@ -18,8 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Application.Core.Client.inventory;
-
 namespace client.inventory;
 
 /**
@@ -49,13 +47,11 @@ public class InventoryProof : Inventory
         Array.Fill(inventory, null);
     }
 
-    protected override void OnItemEnter(short position, Item item, bool isLogin)
-    {
-        
-    }
+    protected override Task OnItemEnter(short position, Item item, bool isLogin)
+     => Task.CompletedTask;
 
-    protected override void OnItemLeave(Item item)
+    protected override Task OnItemLeave(Item item)
     {
-        
+        return Task.CompletedTask;
     }
 }

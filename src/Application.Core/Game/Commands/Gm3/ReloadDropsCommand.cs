@@ -9,10 +9,10 @@ public class ReloadDropsCommand : CommandBase
         Description = "Reload all drop data.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         MonsterInformationProvider.getInstance().clearDrops();
-        player.dropMessage(5, "Reloaded Drops");
+        await player.Pink("Reloaded Drops");
     }
 }

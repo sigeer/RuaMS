@@ -23,7 +23,6 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Skills;
-using constants.game;
 using Microsoft.Extensions.Logging;
 using server;
 using tools;
@@ -36,7 +35,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
     {
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
@@ -46,12 +45,12 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         }
         chr.getAutobanManager().spam(8);*/
 
-        var attack = parseDamage(p, chr, false, false);
+        var attack = await parseDamage(p, chr, false, false);
 
         if (chr.IsMorphWithoutAttack())
         {
             // How are they attacking when the client won't let them?
-            chr.getClient().Disconnect(false, false);
+            await chr.getClient().Disconnect(false, false);
             return;
         }
 
@@ -63,10 +62,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_ATK);
-            c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
-        chr.BroadcastMap(
+        await chr.BroadcastMap(
             PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
             chr.Id);
         int numFinisherOrbs = 0;
@@ -77,7 +76,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             {
                 numFinisherOrbs = comboBuff.Value - 1;
             }
-            chr.handleOrbconsume();
+            await chr.handleOrbconsume();
         }
         else if (attack.numAttacked > 0)
         {
@@ -135,8 +134,8 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                         chr.setBuffedValue(BuffStat.COMBO, neworbcount);
                         duration -= (int)(c.CurrentServer.Node.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
 
-                        c.sendPacket(PacketCreator.giveBuff(oid, duration, stat));
-                        chr.BroadcastMap(PacketCreator.giveForeignBuff(chr.getId(), stat), chr.Id);
+                        await c.SendPacket(PacketCreator.giveBuff(oid, duration, stat));
+                        await chr.BroadcastMap(PacketCreator.giveForeignBuff(chr.getId(), stat), chr.Id);
                     }
                 }
             }
@@ -145,7 +144,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             {
                 for (int i = 0; i < attack.numAttacked; i++)
                 {
-                    chr.handleEnergyChargeGain();
+                    await chr.handleEnergyChargeGain();
                 }
             }
         }
@@ -153,7 +152,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         {
             int totDamageToOneMonster = attack.targets.Values.FirstOrDefault()?.damageLines?.FirstOrDefault() ?? 0;
 
-            chr.safeAddHP(-1 * totDamageToOneMonster * attack.getAttackEffect(chr, null).getX() / 100);
+            await chr.safeAddHP(-1 * totDamageToOneMonster * (await attack.getAttackEffect(chr, null))!.getX() / 100);
         }
         if (attack.numAttacked > 0 && attack.skill == WhiteKnight.CHARGE_BLOW)
         {
@@ -166,13 +165,13 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             }
             if (!advcharge_prob)
             {
-                chr.cancelEffectFromBuffStat(BuffStat.WK_CHARGE);
+                await chr.cancelEffectFromBuffStat(BuffStat.WK_CHARGE);
             }
         }
         int attackCount = 1;
         if (attack.skill != 0)
         {
-            attackCount = attack.getAttackEffect(chr, null).getAttackCount();
+            attackCount = (await attack.getAttackEffect(chr, null))!.getAttackCount();
         }
         if (numFinisherOrbs == 0 && GameConstants.isFinisherSkill(attack.skill))
         {
@@ -186,8 +185,8 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             }
 
             chr.setDojoEnergy(0);
-            c.sendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
-            c.sendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
+            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
         }
         else if (attack.skill > 0)
         {
@@ -201,7 +200,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
+                    await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
                     chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect_.getCooldown()));
                 }
             }
@@ -210,15 +209,15 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
         {
             // && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004
-            chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
-            chr.cancelBuffStats(BuffStat.DARKSIGHT);
+            await chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
+            await chr.cancelBuffStats(BuffStat.DARKSIGHT);
         }
         else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 && chr.getBuffedValue(BuffStat.WIND_WALK) != null)
         {
-            chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);
-            chr.cancelBuffStats(BuffStat.WIND_WALK);
+            await chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);
+            await chr.cancelBuffStats(BuffStat.WIND_WALK);
         }
 
-        applyAttack(attack, chr, attackCount);
+        await applyAttack(attack, chr, attackCount);
     }
 }

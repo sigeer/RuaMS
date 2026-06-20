@@ -19,7 +19,6 @@
 */
 
 
-using Application.Core.Channel.Tasks;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Utility.Tickables;
@@ -273,11 +272,11 @@ public class MonsterAggroCoordinator : ILoopTickable
         mobAggroEntries.Clear();
     }
 
-    public void OnTick(long now)
+    public Task OnTick(long now)
     {
         if (!this.IsAvailable())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (Next <= now)
@@ -288,5 +287,7 @@ public class MonsterAggroCoordinator : ILoopTickable
 
             Next = now + Period;
         }
+
+        return Task.CompletedTask;
     }
 }

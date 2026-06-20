@@ -17,7 +17,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         p.readByte();
         int charId = p.readInt();
@@ -34,7 +34,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
         catch (ArgumentException e)
         {
             _logger.LogWarning(e, "Invalid host string: {Host}", hostString);
-            c.sendPacket(LoginPacketCreator.getAfterLoginError(17));
+            await c.SendPacket(LoginPacketCreator.getAfterLoginError(17));
             return;
         }
 
@@ -47,7 +47,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
         AntiMulticlientResult res = _sessionCoordinator.attemptGameSession(c, c.AccountEntity!.Id, hwid);
         if (res != AntiMulticlientResult.SUCCESS)
         {
-            c.sendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
+            await c.SendPacket(LoginPacketCreator.getAfterLoginError(ParseAntiMulticlientError(res)));
             return;
         }
 
@@ -59,7 +59,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
         if (_server.IsWorldCapacityFull())
         {
-            c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
+            await c.SendPacket(LoginPacketCreator.getAfterLoginError(10));
             return;
         }
 
@@ -72,14 +72,14 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
             if (_server.IsWorldCapacityFull())
             {
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
             var socket = _server.GetChannelIPEndPoint(c.SelectedChannel);
             if (socket == null)
             {
-                c.sendPacket(LoginPacketCreator.getAfterLoginError(10));
+                await c.SendPacket(LoginPacketCreator.getAfterLoginError(10));
                 return;
             }
 
@@ -88,7 +88,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
 
             try
             {
-                c.sendPacket(LoginPacketCreator.getServerIP(socket, charId));
+                await c.SendPacket(LoginPacketCreator.getServerIP(socket, charId));
             }
             catch (Exception e)
             {

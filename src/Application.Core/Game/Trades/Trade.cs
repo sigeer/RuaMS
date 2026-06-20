@@ -52,14 +52,14 @@ public class Trade
         this.number = number;
     }
 
-    private void lockTrade()
+    private async Task lockTrade()
     {
         locked.Set(true);
-        PartnerTrade.getChr().sendPacket(PacketCreator.getTradeConfirmation());
+        await PartnerTrade.getChr().SendPacket(PacketCreator.getTradeConfirmation());
     }
 
 
-    public void GainItemByComplete()
+    public async Task GainItemByComplete()
     {
         if (PartnerTrade == null)
             return;
@@ -70,21 +70,21 @@ public class Trade
         foreach (Item item in PartnerTrade.ItemList)
         {
             KarmaManipulator.toggleKarmaFlagToUntradeable(item);
-            InventoryManipulator.addFromDrop(chr.Client, item, show);
+            await InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
 
         if (PartnerTrade.Meso > 0)
         {
             int fee = TradeManager.GetFee(PartnerTrade.Meso);
             var actualGainMeso = PartnerTrade.Meso - fee;
-            chr.GainMeso(actualGainMeso, GainItemShow.ShowInChat, true);
+            await chr.GainMeso(actualGainMeso, GainItemShow.ShowInChat, true);
             if (fee > 0)
             {
-                chr.dropMessage(1, "Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos due to trade fees.");
+                await chr.Popup("Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos due to trade fees.");
             }
             else
             {
-                chr.dropMessage(1, "Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos.");
+                await chr.Popup("Transaction completed. You received " + chr.Client.CurrentCulture.Number(actualGainMeso) + " mesos.");
             }
 
             result = (byte)TradeResult.NO_RESPONSE;
@@ -97,30 +97,30 @@ public class Trade
         PartnerTrade.Meso = 0;
         PartnerTrade.ItemList.Clear();
 
-        chr.sendPacket(PacketCreator.getTradeResult(number, result));
+        await chr.SendPacket(PacketCreator.getTradeResult(number, result));
     }
 
-    public void GainItemByCancel(byte result)
+    public async Task GainItemByCancel(byte result)
     {
         bool show = YamlConfig.config.server.USE_DEBUG;
 
         foreach (Item item in ItemList)
         {
-            InventoryManipulator.addFromDrop(chr.Client, item, show);
+            await InventoryManipulator.addFromDrop(chr.Client, item, show);
         }
         if (Meso > 0)
         {
-            chr.GainMeso(Meso, GainItemShow.ShowInChat, true);
+            await chr.GainMeso(Meso, GainItemShow.ShowInChat, true);
         }
         Meso = 0;
         ItemList.Clear();
 
-        chr.sendPacket(PacketCreator.getTradeResult(number, result));
+        await chr.SendPacket(PacketCreator.getTradeResult(number, result));
     }
 
-    public void CancelTrade(TradeResult result)
+    public async Task CancelTrade(TradeResult result)
     {
-        cancelHandshake((byte)result);
+        await cancelHandshake((byte)result);
     }
 
     private bool isLocked()
@@ -128,7 +128,7 @@ public class Trade
         return locked.Get();
     }
 
-    public void setMeso(int meso)
+    public async Task setMeso(int meso)
     {
         if (locked)
         {
@@ -141,13 +141,13 @@ public class Trade
         }
         if (chr.getMeso() >= meso)
         {
-            chr.GainMeso(-meso, enableActions: true);
+            await chr.GainMeso(-meso, enableActions: true);
             this.Meso += meso;
-            chr.sendPacket(PacketCreator.getTradeMesoSet(0, this.Meso));
+            await chr.SendPacket(PacketCreator.getTradeMesoSet(0, this.Meso));
 
             if (PartnerTrade != null)
             {
-                PartnerTrade.getChr().sendPacket(PacketCreator.getTradeMesoSet(1, this.Meso));
+                await PartnerTrade.getChr().SendPacket(PacketCreator.getTradeMesoSet(1, this.Meso));
             }
         }
     }
@@ -164,12 +164,12 @@ public class Trade
         return true;
     }
 
-    public void chat(string message)
+    public async Task chat(string message)
     {
-        chr.sendPacket(PacketCreator.getTradeChat(chr, message, true));
+        await chr.SendPacket(PacketCreator.getTradeChat(chr, message, true));
         if (PartnerTrade != null)
         {
-            PartnerTrade.getChr().sendPacket(PacketCreator.getTradeChat(chr, message, false));
+            await PartnerTrade.getChr().SendPacket(PacketCreator.getTradeChat(chr, message, false));
         }
     }
 
@@ -213,7 +213,7 @@ public class Trade
         return chr.canHoldUniques(exchangeItemids);
     }
 
-    private bool checkTradeCompleteHandshake(bool updateSelf)
+    private async Task<bool> checkTradeCompleteHandshake(bool updateSelf)
     {
         Trade self, other;
 
@@ -233,44 +233,48 @@ public class Trade
             return false;
         }
 
-        self.lockTrade();
+        await self.lockTrade();
         return other.isLocked();
     }
 
-    public bool checkCompleteHandshake()
+    public async Task<bool> checkCompleteHandshake()
     {
-        return checkTradeCompleteHandshake(true);
+        return await checkTradeCompleteHandshake(true);
     }
 
 
 
-    object cancelLock = new object();
-    private void tradeCancelHandshake(bool updateSelf, byte result)
+    private readonly SemaphoreSlim _cancelLock = new SemaphoreSlim(1, 1);
+    private async Task tradeCancelHandshake(bool updateSelf, byte result)
     {
-        lock (cancelLock)
+        await _cancelLock.WaitAsync();
+        try
         {
             var (selfResult, partnerResult) = tradeResultsPair(result);
-
             var self = updateSelf ? this : PartnerTrade;
-            CancelTradeInternal(self, selfResult, partnerResult);
+            await CancelTradeInternal(self, selfResult, partnerResult);
+        }
+        finally
+        {
+            _cancelLock.Release();
         }
     }
 
-    private void cancelHandshake(byte result)
+    private async Task cancelHandshake(byte result)
     {
-        tradeCancelHandshake(true, result);
+        await tradeCancelHandshake(true, result);
     }
 
 
-    private static void CancelTradeInternal(Trade? trade, byte selfResult, byte partnerResult)
+    private static async Task CancelTradeInternal(Trade? trade, byte selfResult, byte partnerResult)
     {
         if (trade == null)
             return;
 
-        trade.GainItemByCancel(selfResult);
+        await trade.GainItemByCancel(selfResult);
         if (trade.PartnerTrade != null)
         {
-            trade.PartnerTrade.GainItemByCancel(partnerResult);
+            await trade.PartnerTrade.GainItemByCancel(partnerResult);
             trade.PartnerTrade.getChr().setTrade(null);
 
             InviteType.TRADE.AnswerInvite(trade.getChr().getId(), trade.PartnerTrade.getChr().getId(), false);

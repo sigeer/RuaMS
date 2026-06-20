@@ -532,27 +532,27 @@ namespace Application.Core.Login
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
-            TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
-            TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
+            await TimerManager.register(new NamedRunnable("ServerTimeUpdate", () => UpdateServerTime(YamlConfig.config.server.MOB_STATUS_MONITOR_PROC)), YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
+            await TimerManager.register(new NamedRunnable("ServerTimeForceUpdate", ForceUpdateServerTime), YamlConfig.config.server.PURGING_INTERVAL);
 
             await TimerManager.RegisterAsync(new FuncAsyncRunnable("DisconnectIdlesOnLoginState", DisconnectIdlesOnLoginState), TimeSpan.FromMinutes(5));
 
-            TimerManager.register(new LoginCoordinatorTask(this), TimeSpan.FromHours(1), timeLeft);
-            TimerManager.register(new LoginStorageTask(this), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
-            TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
-            TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
-            TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            await TimerManager.register(new LoginCoordinatorTask(this), TimeSpan.FromHours(1), timeLeft);
+            await TimerManager.register(new LoginStorageTask(this), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
+            await TimerManager.register(ServiceProvider.GetRequiredService<DueyFredrickTask>(), TimeSpan.FromHours(1), timeLeft);
+            await TimerManager.register(ServiceProvider.GetRequiredService<RankingLoginTask>(), YamlConfig.config.server.RANKING_INTERVAL, (long)timeLeft.TotalMilliseconds);
+            await TimerManager.register(ServiceProvider.GetRequiredService<RankingCommandTask>(), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
-            InvitationManager.Register(TimerManager);
-            ServerManager.Register(TimerManager);
+            await InvitationManager.Register(TimerManager);
+            await ServerManager.Register(TimerManager);
 
-            TimerManager.register(new NamedRunnable("NewYearCardNotify", async () =>
+            await TimerManager.register(new NamedRunnable("NewYearCardNotify", async () =>
             {
                 await NewYearCardManager.NotifyNewYearCard();
             }), TimeSpan.FromHours(1), timeLeft);
             foreach (var module in Modules)
             {
-                module.RegisterTask(TimerManager);
+                await module.RegisterTask(TimerManager);
             }
             _logger.LogInformation("[{ServerName}] 定时任务加载完成", InstanceName);
         }

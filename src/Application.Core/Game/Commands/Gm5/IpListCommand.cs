@@ -1,5 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Core.scripting.npc;
 
 namespace Application.Core.Game.Commands.Gm5;
 
@@ -17,7 +16,7 @@ public class IpListCommand : CommandBase
         Description = "Show IP of all players.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         string str = "Player-IP relation:";
 
@@ -28,7 +27,7 @@ public class IpListCommand : CommandBase
             str += "  " + chr.CharacterName + " - " + chr.CurrentIP + "\r\n";
         }
 
-        TempConversation.Create(c, 22000)?.RegisterTalk(str);
+        await c.OnlinedCharacter.Dialog(str);
     }
 
 }

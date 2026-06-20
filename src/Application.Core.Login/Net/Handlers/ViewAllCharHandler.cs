@@ -37,24 +37,24 @@ public class ViewAllCharHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         try
         {
             if (!c.CanRequestCharlist())
             {
                 // client breaks if the charlist request pops too soon
-                c.sendPacket(LoginPacketCreator.showAllCharacter(0, 0));
+                await c.SendPacket(LoginPacketCreator.showAllCharacter(0, 0));
                 return;
             }
 
             var worldChrs = c.LoadCharactersView();
 
             int totalWorlds = worldChrs.Count;
-            c.sendPacket(LoginPacketCreator.showAllCharacter(totalWorlds, worldChrs.Count));
+            await c.SendPacket(LoginPacketCreator.showAllCharacter(totalWorlds, worldChrs.Count));
 
             bool usePic = YamlConfig.config.server.ENABLE_PIC && !c.CanBypassPic();
-            c.sendPacket(LoginPacketCreator.showAllCharacterInfo(c, 0, worldChrs, usePic));
+            await c.SendPacket(LoginPacketCreator.showAllCharacterInfo(c, 0, worldChrs, usePic));
             c.UpdateRequestCharListTick();
         }
         catch (Exception e)

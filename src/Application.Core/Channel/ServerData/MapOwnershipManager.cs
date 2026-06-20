@@ -11,11 +11,11 @@ public class MapOwnershipManager
     {
         _server = server;
     }
-    public void HandleRun()
+    public async Task HandleRun()
     {
         foreach (var map in ownedMaps)
         {
-            map.checkMapOwnerActivity();
+            await map.checkMapOwnerActivity();
         }
     }
 

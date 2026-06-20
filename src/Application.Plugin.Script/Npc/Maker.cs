@@ -75,15 +75,15 @@ namespace Application.Plugin.Script.Npc
             {
                 foreach (var item in selected.Items)
                 {
-                    gainItem(item.ItemId, -item.Quantity * count);
+                    await gainItem(item.ItemId, -item.Quantity * count);
                 }
 
                 if (stimulatorId > 0)
                 {
-                    gainItem(stimulatorId, -count);
+                    await gainItem(stimulatorId, -count);
                 }
 
-                gainMeso(-(cost * count));
+                await gainMeso(-(cost * count));
 
                 if (stimulatorId > 0 && Random.Shared.Next(10) == 0)
                 {
@@ -91,7 +91,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainItem(selected.TargetItemId, (short)resultQty, stimulatorId > 0, true);
+                    await gainItem(selected.TargetItemId, (short)resultQty, stimulatorId > 0, true);
                     await SayOK("一如既往，物品完美无缺。如果你需要其他东西，就来找我吧。");
                 }
             }
@@ -814,9 +814,9 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            gainItem(requiredItem, -100);
-            gainExp(500);
-            gainItem(prizeItem, prizeQuantity);
+            await gainItem(requiredItem, -100);
+            await gainExp(500);
+            await gainItem(prizeItem, prizeQuantity);
             await SayOK($"对于你的#b100 #t{requiredItem}##k，这里是我的#b{prizeQuantity} #t{prizeItem}##k。你觉得怎么样？你喜欢我给你的物品吗？我打算在这里待一段时间，所以如果你收集到更多物品，我随时可以交易…");
         }
 
@@ -1666,8 +1666,8 @@ namespace Application.Plugin.Script.Npc
 
             if (prizeItem == 0)
             {
-                gainItem(requiredItem, -qnt);
-                gainMeso(prizeQuantity);
+                await gainItem(requiredItem, -qnt);
+                await gainMeso(prizeQuantity);
                 await SayOK($"对于你的 #b{qnt} #t{requiredItem}##k，这里有 #b{prizeQuantity} 金币#k。你觉得怎么样？你喜欢我给你的物品吗？我打算在这里待一段时间，所以如果你收集更多物品，我随时可以交易…");
             }
             else
@@ -1677,8 +1677,8 @@ namespace Application.Plugin.Script.Npc
                     await SayOK("你的物品栏似乎已经满了。你需要腾出空间才能和我交易！清理一下，然后找到我。");
                     return;
                 }
-                gainItem(requiredItem, -qnt);
-                gainItem(prizeItem, (short)prizeQuantity);
+                await gainItem(requiredItem, -qnt);
+                await gainItem(prizeItem, (short)prizeQuantity);
                 await SayOK($"对于你的 #b{qnt} #t{requiredItem}##k，这是我的 #b{prizeQuantity} #t{prizeItem}##k。你觉得怎么样？你喜欢我给你的回报物品吗？我打算在这里待一段时间，所以如果你收集到更多物品，我随时可以交易…");
             }
         }
@@ -1702,7 +1702,7 @@ namespace Application.Plugin.Script.Npc
                     else
                     {
                         await SayOK("所以你确实丢了你的钥匙，对吧？很好，我会给你制作另一个，但请不要再丢了。进入要塞内部的内殿是至关重要的。");
-                        gainItem(3992041, 1);
+                        await gainItem(3992041, 1);
                     }
                 }
             }
@@ -1775,7 +1775,7 @@ namespace Application.Plugin.Script.Npc
                 if (canHold(4031554, 1))
                 {
                     await SayOK("哦，那个男孩想让你给他带一个 #t4031554#？没问题，我本来就欠他的。现在，告诉他我正在还债，好吗？");
-                    gainItem(4031554, 1);
+                    await gainItem(4031554, 1);
                 }
                 else
                 {
@@ -1902,8 +1902,8 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                gainItem(itemToDonate, -100);
-                gainItem(4001124, (short)rewardQty);
+                await gainItem(itemToDonate, -100);
+                await gainItem(4001124, (short)rewardQty);
                 await SayOK("非常感谢你的捐赠！这里是你的奖励。");
             }
         }

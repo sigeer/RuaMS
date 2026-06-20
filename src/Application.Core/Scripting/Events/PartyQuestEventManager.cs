@@ -10,16 +10,17 @@ namespace Application.Core.Scripting.Events
     {
         public bool PartyLeaderRequired => GetTemplate.PartyLeaderRequired;
         public int RecruitMap => GetTemplate.RecruitMap;
-        public override AbstractPartyQuestEventTemplate GetTemplate => (Template as AbstractPartyQuestEventTemplate)!;
+        public override AbstractPartyQuestEventTemplate GetTemplate { get; }
         public PartyQuestEventManager(WorldChannel cserv, AbstractPartyQuestEventTemplate template) : base(cserv, template)
         {
+            GetTemplate = template;
         }
 
 
 
         #region StartInstance
         public virtual void SetupInstance(AbstractEventInstanceManager eim, Player leader, List<Player> members) { }
-        public override CreateInstanceResult StartInstance(Player leader, int difficulty = 1, int lobbyId = -1)
+        public override async Task<CreateInstanceResult> StartInstance(Player leader, int difficulty = 1, int lobbyId = -1)
         {
             if (this.isDisposed())
             {
@@ -74,7 +75,7 @@ namespace Application.Core.Scripting.Events
                             AbstractEventInstanceManager? eim = null;
                             try
                             {
-                                eim = CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
+                                eim = await CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
                                 registerEventInstance(eim, lobbyId);
                                 eim.Type = Application.Shared.Events.EventInstanceType.PartyQuest;
                             }
@@ -88,10 +89,10 @@ namespace Application.Core.Scripting.Events
 
                             foreach (var item in members)
                             {
-                                eim.registerPlayer(item);
+                                await eim.registerPlayer(item);
                             }
 
-                            eim.startEvent();
+                            await eim.startEvent();
                             SetupInstance(eim, leader, members);
                         }
                         catch (Exception ex)

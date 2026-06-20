@@ -41,10 +41,10 @@ public class QuartzTimerManager : ITimerManager
     /// <param name="repeatTime"></param>
     /// <param name="delay"></param>
     /// <returns>job id</returns>
-    public ScheduledFuture register(AbstractRunnable r, long repeatTime, long? delay = null) =>
-        register(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
+    public async Task<ScheduledFuture> register(AbstractRunnable r, long repeatTime, long? delay = null) =>
+        await register(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
 
-    public ScheduledFuture register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
+    public async Task<ScheduledFuture> register(AbstractRunnable r, TimeSpan repeatTime, TimeSpan? delay = null)
     {
         var taskName = $"{Scheduler.SchedulerName}_{r.Name}";
         var job = JobBuilder.Create<QuartzJob>()
@@ -65,12 +65,12 @@ public class QuartzTimerManager : ITimerManager
                             .RepeatForever()) // 一直重复执行
                         .Build();
 
-        Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        await Scheduler.ScheduleJob(job, trigger);
         return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
-    public ScheduledFuture register(Action r, long repeatTime, long? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
-    public ScheduledFuture register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => register(TempRunnable.Parse(r), repeatTime, delay);
+    public async Task<ScheduledFuture> register(Action r, long repeatTime, long? delay = null) => await register(TempRunnable.Parse(r), repeatTime, delay);
+    public async Task<ScheduledFuture> register(Action r, TimeSpan repeatTime, TimeSpan? delay = null) => await register(TempRunnable.Parse(r), repeatTime, delay);
 
     public async Task<ScheduledFuture> RegisterAsync(AsyncAbstractRunnable r, long repeatTime, long? delay = null) =>
         await RegisterAsync(r, TimeSpan.FromMilliseconds(repeatTime), delay == null ? null : TimeSpan.FromMilliseconds(delay.Value));
@@ -100,7 +100,7 @@ public class QuartzTimerManager : ITimerManager
     }
 
 
-    public ScheduledFuture schedule(AbstractRunnable r, TimeSpan delay)
+    public async Task<ScheduledFuture> schedule(AbstractRunnable r, TimeSpan delay)
     {
         var taskName = $"{Scheduler.SchedulerName}_{r.Name}";
         var job = JobBuilder.Create<QuartzJob>()
@@ -113,13 +113,13 @@ public class QuartzTimerManager : ITimerManager
             .StartAt(DateTimeOffset.UtcNow.Add(delay))
             .Build();
 
-        Scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        await Scheduler.ScheduleJob(job, trigger);
         return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
-    public ScheduledFuture schedule(Action r, TimeSpan delay)
+    public async Task<ScheduledFuture> schedule(Action r, TimeSpan delay)
     {
-        return schedule(TempRunnable.Parse(r), delay);
+        return await schedule(TempRunnable.Parse(r), delay);
     }
 
     public async Task<ScheduledFuture> ScheduleAsync(string taskName, Func<Task> r, TimeSpan delay)
@@ -139,16 +139,16 @@ public class QuartzTimerManager : ITimerManager
         return TaskScheduler[taskName] = new QuartzScheduledFuture(this, taskName, trigger.Key);
     }
 
-    public ScheduledFuture schedule(Action r, long delay) => schedule(TempRunnable.Parse(r), TimeSpan.FromMilliseconds(delay));
+    public async Task<ScheduledFuture> schedule(Action r, long delay) => await schedule(TempRunnable.Parse(r), TimeSpan.FromMilliseconds(delay));
 
-    public ScheduledFuture scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
+    public async Task<ScheduledFuture> scheduleAtTimestamp(AbstractRunnable r, DateTimeOffset time)
     {
-        return schedule(r, (time - DateTimeOffset.UtcNow));
+        return await schedule(r, (time - DateTimeOffset.UtcNow));
     }
 
-    public ScheduledFuture scheduleAtTimestamp(Action r, DateTimeOffset time)
+    public async Task<ScheduledFuture> scheduleAtTimestamp(Action r, DateTimeOffset time)
     {
-        return schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
+        return await schedule(TempRunnable.Parse(r), time - DateTimeOffset.UtcNow);
     }
 
     public bool isShutdown()

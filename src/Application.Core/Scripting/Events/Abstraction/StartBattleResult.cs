@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Core.scripting.Events.Abstraction
 {
-    public enum StartBattleResult: byte
+    public enum StartBattleResult : byte
     {
         Success = 0,
 

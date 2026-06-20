@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Channel;
 using client.inventory;
 using System.Diagnostics;
-using static Application.Core.Channel.Internal.Handlers.PLifeHandlers;
 
 namespace server;
 

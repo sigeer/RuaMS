@@ -1,5 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
@@ -62,29 +61,29 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         Status = new AtomicEnum<PlayerShopStatus>(PlayerShopStatus.Maintenance);
     }
 
-    public void broadcastToVisitorsThreadsafe(Packet packet)
+    public async Task broadcastToVisitorsThreadsafe(Packet packet)
     {
-        broadcastToVisitors(packet);
+        await broadcastToVisitors(packet);
     }
 
-    private void broadcastToVisitors(Packet packet)
+    private async Task broadcastToVisitors(Packet packet)
     {
         foreach (var visitor in visitors)
         {
             if (visitor != null)
             {
-                visitor.chr.sendPacket(packet);
+                await visitor.chr.SendPacket(packet);
             }
         }
     }
 
-    public void BroadcastShopItemUpdate()
+    public async Task BroadcastShopItemUpdate()
     {
         foreach (var visitor in visitors)
         {
             if (visitor != null)
             {
-                visitor.chr.sendPacket(PacketCreator.updateHiredMerchant(this, visitor.chr));
+                await visitor.chr.SendPacket(PacketCreator.updateHiredMerchant(this, visitor.chr));
             }
         }
     }
@@ -110,14 +109,14 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return new byte[] { count, (byte)(visitors.Length + 1) };
     }
 
-    public bool AddVisitor(Player visitor)
+    public async Task<bool> AddVisitor(Player visitor)
     {
         int i = getFreeSlot();
         if (i > -1)
         {
             visitors[i] = new Visitor(visitor, ChannelServer.Node.GetCurrentTimeDateTimeOffset());
-            broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
-            MapModel.broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
+            await broadcastToVisitors(PacketCreator.hiredMerchantVisitorAdd(visitor, i + 1));
+            await MapModel.broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
 
             return true;
         }
@@ -136,7 +135,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         SetOpen();
     }
 
-    public void RemoveVisitor(Player chr)
+    public async Task RemoveVisitor(Player chr)
     {
         int slot = getVisitorSlot(chr);
         if (slot < 0)
@@ -150,8 +149,8 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         {
             visitors[slot] = null;
             addVisitorToHistory(visitor);
-            broadcastToVisitors(PacketCreator.hiredMerchantVisitorLeave(slot + 1));
-            getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
+            await broadcastToVisitors(PacketCreator.hiredMerchantVisitorLeave(slot + 1));
+            await getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
         }
     }
 
@@ -172,7 +171,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return Array.FindIndex(getVisitorCharacters(), x => x?.Id == visitor.Id);
     }
 
-    private void removeAllVisitors()
+    private async Task removeAllVisitors()
     {
         for (int i = 0; i < 3; i++)
         {
@@ -181,36 +180,36 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             {
                 Player visitorChr = visitor.chr;
                 visitorChr.VisitingShop = null;
-                visitorChr.sendPacket(PacketCreator.leaveHiredMerchant(i + 1, 0x11));
-                visitorChr.sendPacket(PacketCreator.hiredMerchantMaintenanceMessage());
+                await visitorChr.SendPacket(PacketCreator.leaveHiredMerchant(i + 1, 0x11));
+                await visitorChr.SendPacket(PacketCreator.hiredMerchantMaintenanceMessage());
                 visitors[i] = null;
                 addVisitorToHistory(visitor);
             }
         }
 
-        getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
+        await getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
     }
 
-    public void ProcessVisitingOwner()
+    public async Task ProcessVisitingOwner()
     {
         if (Owner != null)
         {
-            Owner.sendPacket(PacketCreator.hiredMerchantOwnerLeave());
-            Owner.sendPacket(PacketCreator.leaveHiredMerchant(0x00, 0x03));
+            await Owner.SendPacket(PacketCreator.hiredMerchantOwnerLeave());
+            await Owner.SendPacket(PacketCreator.leaveHiredMerchant(0x00, 0x03));
             Owner.VisitingShop = null;
             Owner = null;
         }
     }
 
-    public void withdrawMesos(Player chr)
+    public async Task withdrawMesos(Player chr)
     {
         if (IsOwner(chr))
         {
-            Mesos = chr.GainMeso(Mesos);
+            Mesos = await chr.GainMeso(Mesos);
         }
     }
 
-    public void takeItemBack(int slot, Player chr)
+    public async Task takeItemBack(int slot, Player chr)
     {
         var shopItem = Commodity[slot];
         if (shopItem.isExist())
@@ -222,31 +221,31 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
                 if (!Inventory.checkSpot(chr, iitem))
                 {
-                    chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
-                InventoryManipulator.addFromDrop(chr.Client, iitem, true);
+                await InventoryManipulator.addFromDrop(chr.Client, iitem, true);
             }
 
             removeFromSlot(slot);
-            chr.sendPacket(PacketCreator.updateHiredMerchant(this, chr));
+            await chr.SendPacket(PacketCreator.updateHiredMerchant(this, chr));
         }
 
         if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE)
         {
-            chr.saveCharToDB();
+            await chr.SyncCharAsync();
         }
     }
 
-    private static bool canBuy(IChannelClient c, Item newItem)
+    private static async Task<bool> canBuy(IChannelClient c, Item newItem)
     {
         // thanks xiaokelvin (Conrad) for noticing a leaked test code here
-        return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && InventoryManipulator.addFromDrop(c, newItem, false);
+        return InventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner()) && await InventoryManipulator.addFromDrop(c, newItem, false);
     }
 
-    public void GainMeso(int meso)
+    public Task GainMeso(int meso)
     {
         using var activity = GameMetrics.ActivitySource.StartActivity("HiredMerchantGainMeso");
         activity?.SetTag("PlayerId", OwnerId);
@@ -254,6 +253,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         activity?.SetTag("Meso", meso);
 
         Mesos += meso;
+        return Task.CompletedTask;
     }
 
     public string? MesoCheck(int meso)
@@ -265,14 +265,15 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return null;
     }
 
-    public void InsertSoldHistory(int idx, SoldItem soldItem)
+    public Task InsertSoldHistory(int idx, SoldItem soldItem)
     {
         SoldHistory.Add(soldItem);
+        return Task.CompletedTask;
     }
 
-    public void OnCommoditySellout()
+    public Task OnCommoditySellout()
     {
-
+        return Task.CompletedTask;
     }
 
     private int getQuantityLeft(int itemid)
@@ -290,13 +291,13 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return count;
     }
 
-    public void Close()
+    public async Task Close()
     {
-        MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
+        await MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
-        ProcessVisitingOwner();
+        await ProcessVisitingOwner();
 
-        removeAllVisitors();
+        await removeAllVisitors();
     }
 
 
@@ -310,18 +311,18 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         Owner = null;
     }
 
-    public void SetMaintenance(Player chr)
+    public async Task SetMaintenance(Player chr)
     {
         if (chr.Id == OwnerId)
         {
             Status.Set(PlayerShopStatus.Maintenance);
             Owner = chr;
 
-            removeAllVisitors();
+            await removeAllVisitors();
         }
     }
 
-    public bool Retrieve(Player owner)
+    public async Task<bool> Retrieve(Player owner)
     {
         if (owner.Id != this.OwnerId)
             return false;
@@ -335,7 +336,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
                     Item iItem = mpsi.getItem().copy();
                     iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
 
-                    InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
+                    await InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
                 }
             }
 
@@ -346,34 +347,34 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     }
 
-    public bool VisitShop(Player chr)
+    public async Task<bool> VisitShop(Player chr)
     {
         if (chr.VisitingShop != null)
         {
-            chr.sendPacket(PacketCreator.getMiniRoomError(17));
+            await chr.SendPacket(PacketCreator.getMiniRoomError(17));
             return false;
         }
         if (IsOwner(chr))
         {
-            SetMaintenance(chr);
+            await SetMaintenance(chr);
         }
         else if (!Status.Is(PlayerShopStatus.Opening))
         {
-            chr.sendPacket(PacketCreator.getMiniRoomError(18));
+            await chr.SendPacket(PacketCreator.getMiniRoomError(18));
             return false;
         }
         else if (BlackList.Contains(chr.getName()))
         {
-            chr.sendPacket(PacketCreator.getMiniRoomError(17));
+            await chr.SendPacket(PacketCreator.getMiniRoomError(17));
             return false;
         }
-        else if (!AddVisitor(chr))
+        else if (!await AddVisitor(chr))
         {
-            chr.sendPacket(PacketCreator.getMiniRoomError(2));
+            await chr.SendPacket(PacketCreator.getMiniRoomError(2));
             return false;
         }
 
-        chr.sendPacket(PacketCreator.getHiredMerchant(chr, this, false));
+        await chr.SendPacket(PacketCreator.getHiredMerchant(chr, this, false));
         chr.VisitingShop = this;
         return true;
     }
@@ -408,13 +409,13 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     /// 整理道具
     /// </summary>
     /// <param name="chr"></param>
-    public void Restore(Player chr)
+    public async Task Restore(Player chr)
     {
         if (IsOwner(chr))
         {
             Commodity.RemoveAll(x => !x.isExist());
 
-            Mesos = chr.GainMeso(Mesos);
+            Mesos = await chr.GainMeso(Mesos);
         }
     }
 
@@ -439,16 +440,16 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return chr.Id == OwnerId;
     }
 
-    public void sendMessage(Player chr, string msg)
+    public async Task sendMessage(Player chr, string msg)
     {
         string message = chr.Name + " : " + msg;
         byte slot = (byte)(getVisitorSlot(chr) + 1);
 
         messages.Add(new(message, slot));
-        broadcastToVisitorsThreadsafe(PacketCreator.hiredMerchantChat(message, slot));
+        await broadcastToVisitorsThreadsafe(PacketCreator.hiredMerchantChat(message, slot));
         if (Owner != null)
         {
-            Owner.sendPacket(PacketCreator.hiredMerchantChat(message, slot));
+            await Owner.SendPacket(PacketCreator.hiredMerchantChat(message, slot));
         }
     }
 
@@ -567,11 +568,14 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return MapObjectType.HIRED_MERCHANT;
     }
 
-    public override void sendDestroyData(IChannelClient client) { }
-
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.spawnHiredMerchantBox(this));
+        await client.SendPacket(PacketCreator.removeHiredMerchantBox(getObjectId()));
+    }
+
+    public override async Task sendSpawnData(IChannelClient client)
+    {
+        await client.SendPacket(PacketCreator.spawnHiredMerchantBox(this));
     }
 
     public Packet MakeSpawnPacket() => PacketCreator.spawnHiredMerchantBox(this);
@@ -586,9 +590,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return SourceItemId;
     }
 
-    public void ExpiredInvoke()
+    public async Task ExpiredInvoke()
     {
-        Close();
+        await Close();
         ChannelServer.PlayerShopManager.UnregisterShop(this);
     }
 }

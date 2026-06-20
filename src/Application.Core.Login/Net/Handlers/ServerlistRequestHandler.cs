@@ -11,11 +11,11 @@ public class ServerlistRequestHandler : LoginHandlerBase
     {
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
-        c.sendPacket(LoginPacketCreator.GetServerList(_server));
-        c.sendPacket(LoginPacketCreator.GetEndOfServerList());
-        c.sendPacket(LoginPacketCreator.SelectWorld(0));
-        c.sendPacket(LoginPacketCreator.SendRecommended(_server));
+        await c.SendPacket(LoginPacketCreator.GetServerList(_server));
+        await c.SendPacket(LoginPacketCreator.GetEndOfServerList());
+        await c.SendPacket(LoginPacketCreator.SelectWorld(0));
+        await c.SendPacket(LoginPacketCreator.SendRecommended(_server));
     }
 }

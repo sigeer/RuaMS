@@ -1,6 +1,6 @@
 namespace Application.Core.Channel.Commands
 {
-    internal class InvokeSyncAllPlayerCommand : IChannelCommand
+    internal class InvokeSyncAllPlayerCommand : IChannelAsyncCommand
     {
         public string Name => nameof(InvokeSyncAllPlayerCommand);
         bool _saveDB;
@@ -12,14 +12,14 @@ namespace Application.Core.Channel.Commands
             _data = data;
         }
 
-        public void Execute(WorldChannelServer ctx)
+        public async Task Execute(WorldChannelServer ctx)
         {
             if (ctx.SyncPlayerSession == null)
                 ctx.SyncPlayerSession = ctx.CreateSyncPlayerSession();
 
             if (ctx.SyncPlayerSession.CompleteChunk(_data))
             {
-                _ = ctx.Transport.BatchSyncPlayer(ctx.SyncPlayerSession.Chunks, _saveDB);
+                await ctx.Transport.BatchSyncPlayer(ctx.SyncPlayerSession.Chunks, _saveDB);
                 ctx.SyncPlayerSession = null;
             }
         }

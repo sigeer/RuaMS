@@ -36,8 +36,8 @@ public class FameAction : AbstractQuestAction
     }
 
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        chr.gainFame(fame);
+        await chr.gainFame(fame);
     }
 }

@@ -6,6 +6,7 @@ using Application.Shared.Net;
 using server.movement;
 using SyncProto;
 using System.Drawing;
+using System.Threading.Tasks;
 using tools;
 
 namespace Application.Plugin.FakeCharacter
@@ -88,9 +89,7 @@ namespace Application.Plugin.FakeCharacter
     ///   bit1+ = 动作类型（IDA 确认 MoveAction2RawAction @0x451ec8 如此拆分）
     ///   动作 ID 的视觉含义在客户端 WZ (Character.wz) 中定义，
     ///   以下值来自通用 MapleStory 开发经验，非 IDA 验证：
-    ///   2/3 走  4/5. 站 6/7. 跳 16/17=1<<4. 爬绳子   朝右/左
-    ///   （不成熟的猜测：6/7/8/9 可能对应攀爬/梯子相关，但 spawnPlayerMapObject
-    ///     enteringField=true 硬编码 stance=6 为出生动画，说明 6 的实际含义并非攀爬）
+    ///   2/3 走  4/5. 站 6/7. 跳 16/17. 爬绳子   朝右/左
     /// </summary>
     public class FakePlayer : Player
     {
@@ -133,9 +132,10 @@ namespace Application.Plugin.FakeCharacter
         /// <summary>
         /// 假人没有真实客户端，不需要向自身发送数据包
         /// </summary>
-        public override void sendPacket(Packet packet)
+        public override Task SendPacket(Packet packet)
         {
             // 不存在客户端，不需要发送
+            return Task.CompletedTask;
         }
 
         public static int GetFakePlayerId(Player chr, int idx)
@@ -148,9 +148,10 @@ namespace Application.Plugin.FakeCharacter
             return true;
         }
 
-        public override void OnTick(long now)
+        public override Task OnTick(long now)
         {
             // TODO: 在此实现巡逻/跟随等定时行为
+            return Task.CompletedTask;
         }
 
         // ================================================================
@@ -202,7 +203,7 @@ namespace Application.Plugin.FakeCharacter
         /// </summary>
         /// <param name="targetPos">目标位置</param>
         /// <param name="durationMs">移动持续时间（毫秒），越小速度越快</param>
-        public void WalkTo(Point targetPos, int durationMs = 400)
+        public async Task WalkTo(Point targetPos, int durationMs = 400)
         {
             var startPos = getPosition();
 
@@ -211,7 +212,7 @@ namespace Application.Plugin.FakeCharacter
 
             if (Math.Abs(dx) < 1 && Math.Abs(dy) < 1)
             {
-                BroadcastIdle();
+                await BroadcastIdle();
                 return;
             }
 
@@ -231,7 +232,7 @@ namespace Application.Plugin.FakeCharacter
             ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(velocity);
             ((AbsoluteLifeMovement)movements[0]).setFh(GetFoothold(targetPos));
 
-            BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
             setPosition(targetPos);
         }
 
@@ -247,7 +248,7 @@ namespace Application.Plugin.FakeCharacter
         /// <param name="targetPos">目标位置</param>
         /// <param name="stepPx">每段最大像素</param>
         /// <param name="segmentDurationMs">每段持续时间（毫秒）</param>
-        public void WalkToStepped(Point targetPos, int stepPx = 120, int segmentDurationMs = 400)
+        public async Task WalkToStepped(Point targetPos, int stepPx = 120, int segmentDurationMs = 400)
         {
             var startPos = getPosition();
             int dx = targetPos.X - startPos.X;
@@ -256,7 +257,7 @@ namespace Application.Plugin.FakeCharacter
 
             if (distance <= stepPx)
             {
-                WalkTo(targetPos, segmentDurationMs);
+                await WalkTo(targetPos, segmentDurationMs);
                 return;
             }
 
@@ -274,7 +275,7 @@ namespace Application.Plugin.FakeCharacter
                 ));
             }
 
-            WalkPath(path, segmentDurationMs);
+            await WalkPath(path, segmentDurationMs);
         }
 
         // ================================================================
@@ -294,7 +295,7 @@ namespace Application.Plugin.FakeCharacter
         /// <param name="path">路径点列表（至少一个点）</param>
         /// <param name="segmentDurationMs">每段移动的毫秒数</param>
         /// <param name="finalStance">最后一段终点的姿态，null=自动根据方向决定</param>
-        public void WalkPath(List<Point> path, int segmentDurationMs = 400, int? finalStance = null)
+        public async Task WalkPath(List<Point> path, int segmentDurationMs = 400, int? finalStance = null)
         {
             if (path.Count == 0) return;
 
@@ -327,7 +328,7 @@ namespace Application.Plugin.FakeCharacter
                 prevPos = target;
             }
 
-            BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
             setPosition(path[^1]);
         }
 
@@ -352,7 +353,7 @@ namespace Application.Plugin.FakeCharacter
         /// </summary>
         /// <param name="pos">目标位置</param>
         /// <param name="newstate">到达后的姿态，默认 0（站立朝右）</param>
-        public void TeleportTo(Point pos, int newstate = 0)
+        public async Task TeleportTo(Point pos, int newstate = 0)
         {
             var startPos = getPosition();
 
@@ -364,7 +365,7 @@ namespace Application.Plugin.FakeCharacter
             ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(new Point(0, 0));
             ((AbsoluteLifeMovement)movements[0]).setFh(GetFoothold(pos));
 
-            BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
             setPosition(pos);
         }
 
@@ -381,13 +382,13 @@ namespace Application.Plugin.FakeCharacter
         ///   [stance:1B][duration:0]
         /// 共 13 字节，表示"我在当前位置以姿态 X 站立"。
         /// </summary>
-        public void BroadcastIdle(int? newstate = null)
+        public async Task BroadcastIdle(int? newstate = null)
         {
             if (newstate.HasValue)
             {
                 setStance(newstate.Value);
             }
-            BroadcastMovement(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), getPosition());
+            await BroadcastMovement(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), getPosition());
         }
 
         // ================================================================
@@ -411,7 +412,7 @@ namespace Application.Plugin.FakeCharacter
         ///    建议优先使用 WalkTo/WalkPath（cmd=0），完全无兼容问题。
         /// </summary>
         [Obsolete("优先使用 WalkTo/WalkPath（cmd=0，格式完全兼容），本文的 cmd=1 有字段语义差异")]
-        public void Jump(Point relativeDisplacement, int durationMs = 300, int newstate = 4)
+        public async Task Jump(Point relativeDisplacement, int durationMs = 300, int newstate = 4)
         {
             var startPos = getPosition();
             Point targetPos = new(startPos.X + relativeDisplacement.X, startPos.Y + relativeDisplacement.Y);
@@ -421,7 +422,7 @@ namespace Application.Plugin.FakeCharacter
                 new RelativeLifeMovement(1, targetPos, durationMs, newstate)
             ];
 
-            BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
             setPosition(targetPos);
         }
 
@@ -446,7 +447,7 @@ namespace Application.Plugin.FakeCharacter
         /// </summary>
         /// <param name="closeEnoughPx">认为"到达"的距离阈值（像素）</param>
         /// <returns>true=到达目标, false=需销毁重建</returns>
-        public bool Follow(Player owner, int closeEnoughPx = 60)
+        public async Task<bool> Follow(Player owner, int closeEnoughPx = 60)
         {
             Point targetPos = owner.getPosition();
             int targetStance = owner.getStance();
@@ -459,7 +460,7 @@ namespace Application.Plugin.FakeCharacter
             }
 
             // 尝试移动
-            bool reached = TryFollowMove(targetPos, targetStance, closeEnoughPx);
+            bool reached = await TryFollowMove(targetPos, targetStance, closeEnoughPx);
 
             if (reached)
             {
@@ -472,7 +473,7 @@ namespace Application.Plugin.FakeCharacter
             if (_followFailCount <= 2)
             {
                 // 再来一次
-                reached = TryFollowMove(targetPos, targetStance, closeEnoughPx);
+                reached = await TryFollowMove(targetPos, targetStance, closeEnoughPx);
                 if (reached)
                 {
                     _followFailCount = 0;
@@ -485,7 +486,7 @@ namespace Application.Plugin.FakeCharacter
             {
                 // 第三次——闪现
                 setStance(targetStance);
-                TeleportTo(targetPos);
+                await TeleportTo(targetPos);
                 if (Distance(getPosition(), targetPos) <= closeEnoughPx)
                 {
                     _followFailCount = 0;
@@ -502,7 +503,7 @@ namespace Application.Plugin.FakeCharacter
         /// 单次跟随尝试。不做寻路——直接走直线，到不了就返回 false，
         /// 由 Follow 的重试/闪现兜底。
         /// </summary>
-        private bool TryFollowMove(Point targetPos, int targetStance, int closeEnoughPx)
+        private async Task<bool> TryFollowMove(Point targetPos, int targetStance, int closeEnoughPx)
         {
             var startPos = getPosition();
             double dist = Distance(startPos, targetPos);
@@ -517,7 +518,7 @@ namespace Application.Plugin.FakeCharacter
             // 如果跨越不同平台/在空中的部分，客户端会渲染为行走 + 下落动画，
             // 看起来不太自然，但 Follow 会快速重试 → TeleportTo 兜底。
             setStance(targetStance);
-            WalkToStepped(targetPos);
+            await WalkToStepped(targetPos);
 
             return Distance(getPosition(), targetPos) <= closeEnoughPx;
         }

@@ -22,9 +22,7 @@
 
 
 
-using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace server.events.gm;
@@ -45,33 +43,35 @@ public class Fitness
     public Fitness(Player chr)
     {
         this.chr = chr;
-        this.schedule = chr.Client.CurrentServer.TimerManager.schedule(() =>
-        {
-            chr.MapModel.Send(w =>
-            {
-                ProcessTimeout();
-            });
-        }, 900_000);
+
     }
 
-    public void ProcessTimeout()
+
+    public async Task ProcessTimeout()
     {
         if (MapId.isPhysicalFitness(chr.getMapId()))
         {
-            chr.changeMap(chr.getMap().getReturnMap());
+            await chr.changeMap(await chr.getMap().getReturnMap());
         }
     }
 
-    public void startFitness()
+    public async Task startFitness()
     {
-        chr.getMap().startEvent();
-        chr.getClient().sendPacket(PacketCreator.getClock(900));
         this.timeStarted = chr.getChannelServer().Node.getCurrentTime();
         this.time = 900_000;
-        checkAndMessage();
+        this.schedule = await chr.Client.CurrentServer.TimerManager.schedule(() =>
+        {
+            chr.MapModel.Send(async w =>
+            {
+                await ProcessTimeout();
+            });
+        }, time);
+        chr.getMap().startEvent();
+        await chr.getClient().SendPacket(PacketCreator.getClock(900));
+        await checkAndMessage();
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
-        chr.Notice(nameof(ClientMessage.Notice_EventStart));
+        await chr.Notice(nameof(ClientMessage.Notice_EventStart));
     }
 
     public bool isTimerStarted()
@@ -97,9 +97,9 @@ public class Fitness
         return time - (chr.getChannelServer().Node.getCurrentTime() - timeStarted);
     }
 
-    public void checkAndMessage()
+    public async Task checkAndMessage()
     {
-        this.schedulemsg = chr.Client.CurrentServer.TimerManager.register(() =>
+        this.schedulemsg = await chr.Client.CurrentServer.TimerManager.register(() =>
         {
             chr.MapModel.Send(w =>
             {

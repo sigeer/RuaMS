@@ -14,12 +14,12 @@ public class SpawnCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1 || paramsValue.Length > 2)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SpawnCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.SpawnCommand_Syntax));
             return;
         }
 
@@ -40,30 +40,29 @@ public class SpawnCommand : CommandBase
                     messages.Append($"\r\n#L{i}# {item.Id} - {item.Name} #l");
                 }
 
-                TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
-                    .RegisterSelect(messages.ToString(), (idx, ctx) =>
-                    {
-                        var item = list.MatchedItems[idx];
-                        ctx.RegisterYesOrNo($"你确定要召唤 {item.Id} - {item.Name}？", ctx =>
-                        {
-                            SpawnById(player, item.Id, paramsValue);
-                            ctx.dispose();
-                        });
-                    });
+                await TempConversation.CreateScope(c, async ctx =>
+                 {
+                     var idx = await ctx.AskMenu(messages.ToString());
+                     var item = list.MatchedItems[idx];
+                     if (await ctx.AskYesNo($"你确定要召唤 {item.Id} - {item.Name}？"))
+                     {
+                         await SpawnById(player, item.Id, paramsValue);
+                     }
+                 });
                 return;
             }
             else
             {
-                player.YellowMessageI18N(nameof(ClientMessage.MobNotFound), paramsValue[0]);
+                await player.Yellow(nameof(ClientMessage.MobNotFound), paramsValue[0]);
                 return;
             }
 
         }
 
-        SpawnById(player, mobId, paramsValue);
+        await SpawnById(player, mobId, paramsValue);
     }
 
-    private void SpawnById(Player player, int mobId, string[] paramsValue)
+    private async Task SpawnById(Player player, int mobId, string[] paramsValue)
     {
         int monsterCount = paramsValue.Length != 2 ? 1 : (int.TryParse(paramsValue[1], out var d) ? d : 1);
         if (monsterCount < 1)
@@ -73,7 +72,7 @@ public class SpawnCommand : CommandBase
 
         for (int i = 0; i < monsterCount; i++)
         {
-            player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), player.getPosition());
+            await player.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), player.getPosition());
         }
     }
 }

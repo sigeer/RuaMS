@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 namespace client.status;
+
 public class MonsterStatus : EnumClass
 {
     public static readonly MonsterStatus WATK = new MonsterStatus(0x1);

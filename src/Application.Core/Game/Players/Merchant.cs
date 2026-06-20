@@ -7,7 +7,7 @@ namespace Application.Core.Game.Players
         public PlayerHiredMerchantStatus PlayerHiredMerchantStatus { get; set; }
         public IPlayerShop? VisitingShop { get; set; }
 
-        public void LeaveVisitingShop()
+        public async Task LeaveVisitingShop()
         {
             if (VisitingShop == null)
                 return;
@@ -15,12 +15,12 @@ namespace Application.Core.Game.Players
             if (VisitingShop.IsOwner(this))
             {
                 if (VisitingShop is not HiredMerchant hm)
-                    Client.CurrentServer.PlayerShopManager.CloseByPlayer(this);
+                    await Client.CurrentServer.PlayerShopManager.CloseByPlayer(this);
                 else
                     hm.OwnerLeave(this);
             }
             else
-                VisitingShop.RemoveVisitor(this);
+                await VisitingShop.RemoveVisitor(this);
             VisitingShop = null;
         }
     }

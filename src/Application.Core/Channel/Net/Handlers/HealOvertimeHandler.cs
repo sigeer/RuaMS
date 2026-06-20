@@ -36,7 +36,7 @@ public class HealOvertimeHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         if (!chr.isLoggedinWorld())
@@ -54,22 +54,22 @@ public class HealOvertimeHandler : ChannelHandlerBase
             abm.setTimestamp(8, timestamp, 28);  // thanks Vcoc & Thora for pointing out d/c happening here
             if ((abm.getLastSpam(0) + 1500) > timestamp)
             {
-                autoBanDataManager.AddPoint(AutobanFactory.FAST_HP_HEALING, chr, "Fast hp healing");
+                await autoBanDataManager.AddPoint(AutobanFactory.FAST_HP_HEALING, chr, "Fast hp healing");
             }
 
             var map = chr.getMap();
             int abHeal = (int)(77 * map.getRecovery() * 1.5); // thanks Ari for noticing players not getting healed in sauna in certain cases
             if (healHP > abHeal)
             {
-                autoBanDataManager.Autoban(AutobanFactory.HIGH_HP_HEALING, chr, "Healing: " + healHP + "; Max is " + abHeal + ".");
+                await autoBanDataManager.Autoban(AutobanFactory.HIGH_HP_HEALING, chr, "Healing: " + healHP + "; Max is " + abHeal + ".");
                 return;
             }
 
-            chr.UpdateStatsChunk(() =>
+            await chr.UpdateStatsChunk(async () =>
             {
-                chr.ChangeHP(healHP);
+                await chr.ChangeHP(healHP);
             });
-            chr.BroadcastMap(PacketCreator.showHpHealed(chr.getId(), healHP), chr.Id);
+            await chr.BroadcastMap(PacketCreator.showHpHealed(chr.getId(), healHP), chr.Id);
             abm.spam(0, timestamp);
         }
         short healMP = p.readShort();
@@ -78,10 +78,10 @@ public class HealOvertimeHandler : ChannelHandlerBase
             abm.setTimestamp(9, timestamp, 28);
             if ((abm.getLastSpam(1) + 1500) > timestamp)
             {
-                autoBanDataManager.AddPoint(AutobanFactory.FAST_MP_HEALING, chr, "Fast mp healing");
+                await autoBanDataManager.AddPoint(AutobanFactory.FAST_MP_HEALING, chr, "Fast mp healing");
                 return;
             }
-            chr.UpdateStatsChunk(() =>
+            await chr.UpdateStatsChunk(() =>
             {
                 chr.ChangeMP(healMP);
             });

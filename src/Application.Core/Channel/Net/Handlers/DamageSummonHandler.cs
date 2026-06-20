@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DamageSummonHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
         p.skip(1);   // -1
@@ -43,9 +43,9 @@ public class DamageSummonHandler : ChannelHandlerBase
             summon.addHP(-damage);
             if (summon.getHP() <= 0)
             {
-                player.cancelEffectFromBuffStat(BuffStat.PUPPET);
+                await player.cancelEffectFromBuffStat(BuffStat.PUPPET);
             }
-            summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), player.Id);
+            await summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), player.Id);
         }
     }
 }

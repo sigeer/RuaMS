@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using tools;
@@ -59,7 +58,7 @@ public class Snowball
         }
     }
 
-    public void startEvent()
+    public async Task startEvent()
     {
         if (hittable == true)
         {
@@ -70,19 +69,19 @@ public class Snowball
         {
             if (chr != null)
             {
-                chr.sendPacket(PacketCreator.rollSnowBall(false, 1, map.getSnowball(0)!, map.getSnowball(1)!));
-                chr.sendPacket(PacketCreator.getClock(600));
+                await chr.SendPacket(PacketCreator.rollSnowBall(false, 1, map.getSnowball(0)!, map.getSnowball(1)!));
+                await chr.SendPacket(PacketCreator.getClock(600));
             }
         }
         hittable = true;
-        map.ChannelServer.TimerManager.schedule(() =>
+        await map.ChannelServer.TimerManager.schedule(() =>
         {
             map.Send(m => ProcessTimeout());
         }, 600_000);
 
     }
 
-    public void ProcessTimeout()
+    public async Task ProcessTimeout()
     {
         var ball0 = map.getSnowball(0)!;
         var ball1 = map.getSnowball(1)!;
@@ -94,7 +93,7 @@ public class Snowball
             {
                 if (chr != null)
                 {
-                    chr.sendPacket(PacketCreator.rollSnowBall(false, 3, ball0, ball0));
+                    await chr.SendPacket(PacketCreator.rollSnowBall(false, 3, ball0, ball0));
                 }
             }
             winner = true;
@@ -105,12 +104,12 @@ public class Snowball
             {
                 if (chr != null)
                 {
-                    chr.sendPacket(PacketCreator.rollSnowBall(false, 4, ball0, ball0));
+                    await chr.SendPacket(PacketCreator.rollSnowBall(false, 4, ball0, ball0));
                 }
             }
             winner = true;
         } //Else
-        warpOut();
+        await warpOut();
     }
 
     public bool isHittable()
@@ -138,7 +137,7 @@ public class Snowball
         this.snowmanhp = hp;
     }
 
-    public void hit(int what, int damage)
+    public async Task hit(int what, int damage)
     {
         var ball0 = map.getSnowball(0)!;
         var ball1 = map.getSnowball(1)!;
@@ -154,16 +153,16 @@ public class Snowball
                 {
                     this.snowmanhp = 0;
 
-                    map.ChannelServer.TimerManager.schedule(() =>
-                    {
-                        map.Send(m => SnowmanRespawn());
-                    }, 10_000);
+                    await map.ChannelServer.TimerManager.schedule(() =>
+                       {
+                           map.Send(m => SnowmanRespawn());
+                       }, 10_000);
                 }
                 else
                 {
                     this.snowmanhp -= damage;
                 }
-                map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
+                await map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
             }
         }
 
@@ -173,43 +172,43 @@ public class Snowball
             switch (this.position)
             {
                 case 45:
-                    (team == 0 ? ball1 : ball0).message(1);
+                    await (team == 0 ? ball1 : ball0).message(1);
                     break;
                 case 290:
-                    (team == 0 ? ball1 : ball0).message(2);
+                    await (team == 0 ? ball1 : ball0).message(2);
                     break;
                 case 560:
-                    (team == 0 ? ball1 : ball0).message(3);
+                    await (team == 0 ? ball1 : ball0).message(3);
                     break;
             }
 
             this.hits = 3;
-            map.broadcastMessage(PacketCreator.rollSnowBall(false, 0, ball0, ball1));
-            map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
+            await map.broadcastMessage(PacketCreator.rollSnowBall(false, 0, ball0, ball1));
+            await map.broadcastMessage(PacketCreator.rollSnowBall(false, 1, ball0, ball1));
         }
-        map.broadcastMessage(PacketCreator.hitSnowBall(what, damage));
+        await map.broadcastMessage(PacketCreator.hitSnowBall(what, damage));
     }
 
-    public void SnowmanRespawn()
+    public async Task SnowmanRespawn()
     {
         setSnowmanHP(map.SnowManHP);
-        message(5);
+        await message(5);
     }
 
-    public void message(int message)
+    public async Task message(int message)
     {
         foreach (var chr in characters)
         {
             if (chr != null)
             {
-                chr.sendPacket(PacketCreator.snowballMessage(team, message));
+                await chr.SendPacket(PacketCreator.snowballMessage(team, message));
             }
         }
     }
 
-    public void warpOut()
+    public async Task warpOut()
     {
-        map.ChannelServer.TimerManager.schedule(() =>
+        await map.ChannelServer.TimerManager.schedule(() =>
         {
             map.Send(m => ProcessWarpOut());
         }, 10000);

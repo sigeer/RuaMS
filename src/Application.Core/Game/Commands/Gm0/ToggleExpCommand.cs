@@ -6,10 +6,10 @@ public class ToggleExpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 c.OnlinedCharacter.toggleExpGain();  // Vcoc's idea

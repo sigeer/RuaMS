@@ -26,14 +26,14 @@ namespace Application.Plugin.Script.Npc
                         await SayOK("看起来你丢失了你的 #b#t4000313##k。很抱歉，但是没有那个物品我不能让你前往狩猎场地。");
                         return;
                     }
-                    warp(680000400, 0);
+                    await warp(680000400, 0);
                 }
                 else if (isMap400 && selection == 0)
                 {
                     if (haveItem(4031217, 7))
                     {
-                        gainItem(4031217, -7);
-                        warp(680000401, 0);
+                        await gainItem(4031217, -7);
+                        await warp(680000401, 0);
                     }
                     else
                     {
@@ -42,14 +42,14 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    warp(680000500, 0);
+                    await warp(680000500, 0);
                     await SayOK("再见。希望你喜欢这场婚礼！");
                 }
             }
             else
             {
                 await AskMenu("你好，你现在想回去吗？再次返回这里将花费你 #r另外7把钥匙#k。", ["请将我传送回训练场"]);
-                warp(680000400, 0);
+                await warp(680000400, 0);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo($"我可以带你去#m680000000#。你准备好了吗？"))
                 {
-                    warp(680000000, 0);
+                    await warp(680000000, 0);
                 }
                 else
                 {
@@ -71,7 +71,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo($"我可以带你回到#m100000000#。你准备好了吗？"))
                 {
-                    warp(100000000, 5);
+                    await warp(100000000, 5);
                 }
                 else
                 {
@@ -103,20 +103,20 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (canHold(rewardItem, 1))
                         {
-                            gainItem(questItems[idx], -50);
-                            gainItem(rewardItem, 1);
+                            await gainItem(questItems[idx], -50);
+                            await gainItem(rewardItem, 1);
 
                             await SayOK("咿呀~ 非常感谢，这里拿着 #b#t4031367##k。");
                             return true;
                         }
                         else
                         {
-                            sendOk("请确保有一个空余的ETC槽位来存放爱之令牌。");
+                            await sendOk("请确保有一个空余的ETC槽位来存放爱之令牌。");
                         }
                     }
                     else
                     {
-                        sendOk("请带着 #b50 #t" + questItems[idx] + "##k到我这里。");
+                        await sendOk("请带着 #b50 #t" + questItems[idx] + "##k到我这里。");
                     }
 
                     return false;
@@ -132,15 +132,15 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await processNanaQuest())
                     {
-                        gainExp((int)(questExp[idx] * getPlayer().getExpRate()));
-                        completeQuest(questId);
+                        await gainExp((int)(questExp[idx] * getPlayer().getExpRate()));
+                        await completeQuest(questId);
                     }
                 }
                 else
                 {
                     if (await SayAcceptDecline($"你是在找#k#t{rewardItem}##k吗？我可以给你一个，不过你得先帮我办件事，没问题吧？"))
                     {
-                        startQuest(questId);
+                        await startQuest(questId);
                         await SayOK($"我需要你去给我找来#r50个#t{questItems[idx]}#");
                     }
                 }

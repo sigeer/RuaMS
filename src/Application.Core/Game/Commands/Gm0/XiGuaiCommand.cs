@@ -6,7 +6,7 @@ namespace Application.Core.Game.Commands.Gm0
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
 
             var map = client.OnlinedCharacter.getMap();
@@ -14,7 +14,7 @@ namespace Application.Core.Game.Commands.Gm0
             {
                 if (map.XiGuai != null && map.XiGuai.Controller != client.OnlinedCharacter)
                 {
-                    client.OnlinedCharacter.message("其他人在吸了");
+                    await client.OnlinedCharacter.Pink("其他人在吸了");
                     return;
                 }
 
@@ -23,7 +23,7 @@ namespace Application.Core.Game.Commands.Gm0
                 else
                     map.XiGuai.RestPosition();
 
-                map.XiGuai.Start();
+                await map.XiGuai.Start();
             }
 
             else if (values[0] == "off")
@@ -31,7 +31,7 @@ namespace Application.Core.Game.Commands.Gm0
                 if (map.XiGuai != null && map.XiGuai.Controller == client.OnlinedCharacter)
                     map.XiGuai = null;
 
-                client.OnlinedCharacter.message("已停止吸怪");
+                await client.OnlinedCharacter.Pink("已停止吸怪");
             }
         }
     }

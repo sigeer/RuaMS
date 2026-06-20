@@ -1,5 +1,3 @@
-using server.life;
-
 namespace Application.Core.Models
 {
     public class NoteObject

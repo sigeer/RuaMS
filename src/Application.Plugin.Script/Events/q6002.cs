@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
@@ -18,17 +17,17 @@ namespace Application.Plugin.Script.Events
             MaxMap = 923010000;
         }
 
-        public override void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
+        public override async Task OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
         {
             if (mob.getHp() < mob.getMaxHp() / 2.0)
             {
-                eim.Notice("小心！外星人想抓走猪猪去烤乳猪！快挡住它们！");
+                await eim.Notice("小心！外星人想抓走猪猪去烤乳猪！快挡住它们！");
             }
         }
 
-        public override void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            End(eim);
+            await End(eim);
         }
     }
 }

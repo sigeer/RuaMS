@@ -174,7 +174,7 @@ public class MusicCommand : CommandBase
         return songList;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
 
         var player = c.OnlinedCharacter;
@@ -185,7 +185,7 @@ public class MusicCommand : CommandBase
             sendMsgTemp += "Syntax: #r!music <song>#k\r\n\r\n";
             sendMsgTemp += getSongList();
 
-            c.sendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsgTemp, "00 00", 0));
+            await c.SendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsgTemp, "00 00", 0));
             return;
         }
 
@@ -194,8 +194,8 @@ public class MusicCommand : CommandBase
         {
             if (s.Equals(song, StringComparison.OrdinalIgnoreCase))
             {    // thanks Masterrulax for finding an issue here
-                player.getMap().broadcastMessage(PacketCreator.musicChange(s));
-                player.yellowMessage("Now playing song " + s + ".");
+                await player.getMap().broadcastMessage(PacketCreator.musicChange(s));
+                await player.Yellow("Now playing song " + s + ".");
                 return;
             }
         }
@@ -204,6 +204,6 @@ public class MusicCommand : CommandBase
         sendMsg += "Song not found, please enter a song below.\r\n\r\n";
         sendMsg += getSongList();
 
-        c.sendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsg, "00 00", 0));
+        await c.SendPacket(PacketCreator.getNPCTalk(NpcId.BILLY, 0, sendMsg, "00 00", 0));
     }
 }

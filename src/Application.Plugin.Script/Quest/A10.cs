@@ -38,9 +38,9 @@ namespace Application.Plugin.Script.Quest
                 "炼金术可以胜任这项任务。干净而迅速，#r它将形成物品的部分合并起来，几乎没有任何副作用#k，如果做得正确，几乎不会有任何废料，最大程度地利用了这个过程。要掌握它需要一段时间，但一旦掌握，一切都会井井有条。",
                 "还要记住：#b交换#k的极限，即炼金术基础领域，材料的总量不会改变，没有任何物品可以从虚无中创造出来。明白了吗？"
                 ]);
-            gainMeso(-10000);
+            await gainMeso(-10000);
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 6031 
         public async Task q6031e()
@@ -52,9 +52,9 @@ namespace Application.Plugin.Script.Quest
                 "记住这一点：科学的主要视角，使其流畅运转的那一台引擎，无论是什么情况，都是#b理解产生结果的过程#k，而不是随意地尝试。",
                 "这清楚了吗？很好，那么课程结束。下课。"
                 ]);
-            gainMeso(-10000);
+            await gainMeso(-10000);
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 6032 
         public async Task q6032e()
@@ -66,9 +66,9 @@ namespace Application.Plugin.Script.Quest
                 "好的，现在你需要交给我一笔费用，就是10,000金币，作为这些信息的费用。收取的费用将用于获取你学习#b制造者#k这门艺术所需的材料。",
                 ]);
 
-            gainMeso(-10000);
+            await gainMeso(-10000);
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 6033 
         public async Task q6033e()
@@ -77,7 +77,7 @@ namespace Application.Plugin.Script.Quest
             if (getQuestProgressInt(6033) == 1 && haveItem(4260003, 1))
             {
                 await SayNext("你确实制作了一块精美的怪物水晶，我看到了。你通过了！现在，我将教你制造者技能的下一步。记得保留怪物水晶，这是你的作品。");
-                forceCompleteQuest();
+                await forceCompleteQuest();
 
                 var skillid = (int)Math.Floor(getPlayer().getJob().getId() / 1000.0) * 10000000 + 1007;
                 teachSkill(skillid, 2, 3, -1);
@@ -98,9 +98,9 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("你制作了一件#b#t4031980##k？！怎么可能，你是怎么做到的？？...好吧，我猜没办法了。学生超越了老师！年轻人确实能让人的感知能力发生奇迹。\r\n\r\n你现在已经准备好迈向制造者技能的最后一步，将其完美地体现出来！");
 
-                forceCompleteQuest();
+                await forceCompleteQuest();
 
-                gainItem(4031980, -1);
+                await gainItem(4031980, -1);
                 var skillid = (int)Math.Floor(getPlayer().getJob().getId() / 1000.0) * 10000000 + 1007;
                 teachSkill(skillid, 3, 3, -1);
                 gainExp(300000);

@@ -29,13 +29,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class PetFoodHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         AutobanManager abm = chr.getAutobanManager();
         if (abm.getLastSpam(2) + 500 > c.CurrentServer.Node.getCurrentTime())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         abm.spam(2);
@@ -43,7 +43,7 @@ public class PetFoodHandler : ChannelHandlerBase
         abm.setTimestamp(1, c.CurrentServer.Node.getCurrentTimestamp(), 3);
         if (chr.getNoPets() == 0)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         int previousFullness = 100;
@@ -71,8 +71,8 @@ public class PetFoodHandler : ChannelHandlerBase
         short pos = p.readShort();
         int itemId = p.readInt();
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var useInv = chr.getInventory(InventoryType.USE);
@@ -83,8 +83,8 @@ public class PetFoodHandler : ChannelHandlerBase
                     return;
                 }
 
-                pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
-                InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
+                await pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
+                await InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
             }
             finally
             {

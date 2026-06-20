@@ -11,25 +11,25 @@ public class PnpcCommand : CommandBase
         _dataService = dataService;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.PnpcCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.PnpcCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var npcId))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
+            await player.Yellow(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
             return;
         }
 
         // command suggestion thanks to HighKey21, none, bibiko94 (TAYAMO), asafgb
         if (player.getMap().containsNPC(npcId))
         {
-            player.dropMessage(5, "This map already contains the specified NPC.");
+            await player.Pink("This map already contains the specified NPC.");
             return;
         }
 

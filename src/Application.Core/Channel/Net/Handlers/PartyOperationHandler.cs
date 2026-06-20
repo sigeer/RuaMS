@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class PartyOperationHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int operation = p.readByte();
         var player = c.OnlinedCharacter;
@@ -35,13 +35,13 @@ public class PartyOperationHandler : ChannelHandlerBase
         {
             case 1:
                 { // create
-                    c.CurrentServer.NodeService.TeamManager.CreateTeam(player);
+                    await c.CurrentServer.NodeService.TeamManager.CreateTeam(player);
                     break;
                 }
             case 2:
-                { 
+                {
                     // leave/disband
-                    c.CurrentServer.NodeService.TeamManager.LeaveParty(player);
+                    await c.CurrentServer.NodeService.TeamManager.LeaveParty(player);
                     break;
                 }
             case 3:

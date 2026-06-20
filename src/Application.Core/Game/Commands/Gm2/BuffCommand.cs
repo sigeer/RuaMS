@@ -9,12 +9,12 @@ public class BuffCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.BuffCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.BuffCommand_Syntax));
             return;
         }
         int skillid = int.Parse(paramsValue[0]);
@@ -22,7 +22,7 @@ public class BuffCommand : CommandBase
         var skill = SkillFactory.getSkill(skillid);
         if (skill != null)
         {
-            skill.getEffect(skill.getMaxLevel()).applyTo(player);
+            await skill.getEffect(skill.getMaxLevel()).applyTo(player);
         }
     }
 }

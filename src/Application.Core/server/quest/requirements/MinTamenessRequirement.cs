@@ -35,7 +35,7 @@ public class MinTamenessRequirement : AbstractQuestRequirement
         minTameness = data;
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         int curTameness = 0;
 

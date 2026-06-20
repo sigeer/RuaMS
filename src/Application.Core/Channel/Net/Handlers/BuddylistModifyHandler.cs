@@ -38,7 +38,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         _buddyManager = buddyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int mode = p.readByte();
         var player = c.OnlinedCharacter;
@@ -60,7 +60,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
             // accept buddy
             int otherCid = p.readInt();
             var unknown = p.available();
-            _buddyManager.AnswerInvite(player, otherCid);
+            await _buddyManager.AnswerInvite(player, otherCid);
         }
         else if (mode == 3)
         {

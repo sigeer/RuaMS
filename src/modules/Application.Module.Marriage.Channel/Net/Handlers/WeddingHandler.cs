@@ -39,11 +39,11 @@ public class WeddingHandler : ChannelHandlerBase
         _config = options.Value;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var chr = c.OnlinedCharacter;
@@ -91,17 +91,17 @@ public class WeddingHandler : ChannelHandlerBase
                                                         newItem = item.copy();
                                                         newItem.setQuantity(quantity);
                                                         marriage.addGiftItem(groomWishlist, newItem);
-                                                        InventoryManipulator.removeFromSlot(c, type, slot, quantity, false, false);
+                                                        await InventoryManipulator.removeFromSlot(c, type, slot, quantity, false, false);
 
                                                         KarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
                                                         marriage.setIntProperty(groomWishlistProp, giftCount + 1);
 
-                                                        c.sendPacket(WeddingPackets.onWeddingGiftResult(0xB, marriage.getWishlistItems(groomWishlist), Collections.singletonList(newItem)));
+                                                        await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xB, marriage.getWishlistItems(groomWishlist), Collections.singletonList(newItem)));
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
+                                                    await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
                                                 }
                                             }
                                         }
@@ -121,17 +121,17 @@ public class WeddingHandler : ChannelHandlerBase
                                     }
                                     else
                                     {
-                                        c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
+                                        await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
                                     }
                                 }
                                 else
                                 {
-                                    c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
+                                    await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist), null));
                                 }
                             }
                             else
                             {
-                                c.sendPacket(WeddingPackets.onWeddingGiftResult(0xC, marriage.getWishlistItems(groomWishlist), null));
+                                await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xC, marriage.getWishlistItems(groomWishlist), null));
                             }
                         }
                         catch (FormatException e)
@@ -141,7 +141,7 @@ public class WeddingHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                     }
                 }
                 else if (mode == 7)
@@ -165,32 +165,32 @@ public class WeddingHandler : ChannelHandlerBase
                                     marriage.removeGiftItem(groomWishlist.Value, item);
                                     // marriage.saveGiftItemsToDb(c, groomWishlist.Value, chr.getId());
 
-                                    InventoryManipulator.addFromDrop(c, item, true);
+                                    await InventoryManipulator.addFromDrop(c, item, true);
 
-                                    c.sendPacket(WeddingPackets.onWeddingGiftResult(0xF, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
+                                    await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xF, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
                                 }
                                 else
                                 {
-                                    c.OnlinedCharacter.dropMessage(1, "Free a slot on your inventory before collecting this item.");
-                                    c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
+                                    await c.OnlinedCharacter.dropMessage(1, "Free a slot on your inventory before collecting this item.");
+                                    await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
                                 }
                             }
                             else
                             {
-                                c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
-                                c.sendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
+                                await c.OnlinedCharacter.dropMessage(1, "You have already collected this item.");
+                                await c.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, marriage.getWishlistItems(groomWishlist.Value), marriage.getGiftItems(c, groomWishlist.Value)));
                             }
                         }
                     }
                     else
                     {
-                        _weddingManager.TakeItemFromGifts(c.OnlinedCharacter, itemPos);
+                        await _weddingManager.TakeItemFromGifts(c.OnlinedCharacter, itemPos);
                     }
                 }
                 else if (mode == 8)
                 {
                     // out of Wedding Registry
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                 }
                 else
                 {

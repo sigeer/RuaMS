@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-
 namespace Application.Core.Channel.ServerData
 {
     public class ServerMessageTask : TaskBase
@@ -12,11 +10,11 @@ namespace Application.Core.Channel.ServerData
         }
 
 
-        protected override void HandleRun()
+        protected override async Task HandleRun()
         {
-            _server.Broadcast(w =>
+            await _server.BroadcastAsync(async w =>
             {
-                w.ServerMessageManager.HandleRun();
+                await w.ServerMessageManager.HandleRun();
             });
         }
 

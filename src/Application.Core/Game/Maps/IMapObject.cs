@@ -12,23 +12,23 @@ namespace Application.Core.Game.Maps
         void setObjectId(int id);
         MapObjectType getType();
         void setPosition(Point position);
-        void sendSpawnData(IChannelClient client);
-        void sendDestroyData(IChannelClient client);
+        Task sendSpawnData(IChannelClient client);
+        Task sendDestroyData(IChannelClient client);
 
         /// <summary>
         /// 添加到地图时
         /// </summary>
         /// <param name="map"></param>
-        void OnMounted(IMap map);
+        Task OnMounted(IMap map);
         /// <summary>
         /// 从地图移除后
         /// </summary>
-        void OnUnmounted();
+        Task OnUnmounted();
         /// <summary>
         /// 可以对 <paramref name="chr"/> 显示
         /// </summary>
         /// <param name="chr"></param>
         bool IsVisibleForPlayer(Player chr);
-        void BroadcastMap(Packet packet, int exceptCId = -1);
+        Task BroadcastMap(Packet packet, int exceptCId = -1);
     }
 }

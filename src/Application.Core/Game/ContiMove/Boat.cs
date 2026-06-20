@@ -1,6 +1,8 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using System.Threading.Tasks;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace Application.Core.Game.ContiMove
 {
@@ -12,31 +14,39 @@ namespace Application.Core.Game.ContiMove
         /// <summary>
         /// 船舱
         /// </summary>
-        public IMap CabinAMap { get; }
-        public IMap CabinBMap { get; }
+        public IMap CabinAMap { get; private set; } = null!;
+        public IMap CabinBMap { get; private set; } = null!;
 
         double _invasionARate = 0.42;
         double _invasionBRate = 0.42;
-        public Boat(WorldChannel channelServer) : base(channelServer, 
-                200000100, 0, 101000300, 1, 
-                200000112, 101000301, 
-                200090000, 200090010, 
+        public Boat(WorldChannel channelServer) : base(channelServer,
+                200000100, 0, 101000300, 1,
+                200000112, 101000301,
+                200090000, 200090010,
                 200000111, 101000300, 5 * 60 * 1000, 4 * 60 * 1000, 10 * 60 * 1000,
                 4031047, 5000,
                 4031045, 5000)
         {
-            CabinAMap = channelServer.getMapFactory().getMap(200090001);
-            CabinBMap = channelServer.getMapFactory().getMap(200090011);
+
+        }
+
+        protected override async Task OnMapLoad()
+        {
+            await base.OnMapLoad();
+            CabinAMap = await ChannelServer.getMapFactory().getMap(200090001);
+            CabinBMap = await ChannelServer.getMapFactory().getMap(200090011);
         }
 
         public override void NewTask()
         {
             base.NewTask();
+
+
         }
 
-        public override void OnStart()
+        public override async Task OnStart()
         {
-            base.OnStart();
+            await base.OnStart();
 
             if (Random.Shared.NextDouble() < _invasionARate)
             {
@@ -50,51 +60,51 @@ namespace Application.Core.Game.ContiMove
             }
         }
 
-        public override void OnArrived()
+        public override async Task OnArrived()
         {
-            CabinAMap.warpEveryone(StationBMap.getId(), StationBPortal);
-            CabinBMap.warpEveryone(StationAMap.getId(), StationAPortal);
+            await CabinAMap.warpEveryone(StationBMap.getId(), StationBPortal);
+            await CabinBMap.warpEveryone(StationAMap.getId(), StationAPortal);
 
-            base.OnArrived();
+            await base.OnArrived();
 
             if (TransportAMap.IsPirateDocked)
             {
-                TransportAMap.broadcastEnemyShip(false);
-                TransportAMap.killAllMonsters();
+                await TransportAMap.broadcastEnemyShip(false);
+                await TransportAMap.killAllMonsters();
             }
 
             if (TransportBMap.IsPirateDocked)
             {
-                TransportBMap.broadcastEnemyShip(false);
-                TransportBMap.killAllMonsters();
+                await TransportBMap.broadcastEnemyShip(false);
+                await TransportBMap.killAllMonsters();
             }
         }
 
-        public override void OnTick(long now)
+        public override async Task OnTick(long now)
         {
-            base.OnTick(now);
+            await base.OnTick(now);
 
             if (_approachAFlag && _approachA <= now)
             {
-                ApproachA(now);
+                await ApproachA(now);
                 _approachAFlag = false;
             }
 
             if (_summonAFlag && _summonADelay <= now)
             {
-                SummonA();
+                await SummonA();
                 _summonAFlag = false;
             }
 
             if (_approachBFlag && _approachB <= now)
             {
-                ApproachB(now);
+                await ApproachB(now);
                 _approachBFlag = false;
             }
 
             if (_summonBFlag && _summonBDelay <= now)
             {
-                SummonB();
+                await SummonB();
                 _summonBFlag = false;
             }
         }
@@ -102,11 +112,11 @@ namespace Application.Core.Game.ContiMove
         long _approachA;
         bool _approachAFlag;
 
-        void ApproachA(long now)
+        async Task ApproachA(long now)
         {
-            TransportAMap.broadcastEnemyShip(true);
+            await TransportAMap.broadcastEnemyShip(true);
             // 更改背景音乐
-            TransportAMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await TransportAMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
 
             _summonADelay = now + GetTransportationTime(5_000);
             _summonAFlag = true;
@@ -114,20 +124,20 @@ namespace Application.Core.Game.ContiMove
 
         long _summonADelay;
         bool _summonAFlag;
-        void SummonA()
+        async Task SummonA()
         {
-            TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
-            TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
+            await TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
+            await TransportAMap.spawnMonsterOnGroundBelow(8150000, -538, 143);
         }
 
         bool _approachBFlag;
         long _approachB;
 
-        void ApproachB(long now)
+        async Task ApproachB(long now)
         {
-            TransportBMap.broadcastEnemyShip(true);
+            await TransportBMap.broadcastEnemyShip(true);
             // 更改背景音乐
-            TransportBMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await TransportBMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
 
             _summonBDelay = now + GetTransportationTime(5_000);
             _summonBFlag = true;
@@ -135,10 +145,10 @@ namespace Application.Core.Game.ContiMove
 
         bool _summonBFlag;
         long _summonBDelay;
-        void SummonB()
+        async Task SummonB()
         {
-            TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
-            TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
+            await TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
+            await TransportBMap.spawnMonsterOnGroundBelow(8150000, 339, 148);
         }
     }
 }

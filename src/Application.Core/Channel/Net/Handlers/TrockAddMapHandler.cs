@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class TrockAddMapHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         byte type = p.readByte();
@@ -47,7 +47,7 @@ public class TrockAddMapHandler : ChannelHandlerBase
             {
                 chr.deleteFromTrocks(mapId);
             }
-            c.sendPacket(PacketCreator.trockRefreshMapList(chr, true, vip));
+            await c.SendPacket(PacketCreator.trockRefreshMapList(chr, true, vip));
         }
         else if (type == 0x01)
         {
@@ -62,11 +62,11 @@ public class TrockAddMapHandler : ChannelHandlerBase
                     chr.addTrockMap();
                 }
 
-                c.sendPacket(PacketCreator.trockRefreshMapList(chr, false, vip));
+                await c.SendPacket(PacketCreator.trockRefreshMapList(chr, false, vip));
             }
             else
             {
-                chr.message("You may not save this map.");
+                await chr.Pink("You may not save this map.");
             }
         }
     }

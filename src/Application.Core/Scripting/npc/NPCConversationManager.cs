@@ -30,12 +30,11 @@ using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using Application.Shared.Events;
 using GuildProto;
 using server;
-using server.expeditions;
 using server.partyquest;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using tools;
 using static server.partyquest.Pyramid;
 
@@ -45,7 +44,7 @@ namespace scripting.npc;
 /**
  * @author Matze
  */
-public class NPCConversationManager : AbstractPlayerInteraction
+public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposable
 {
     private ILogger log = LogFactory.GetLogger(LogType.Conversation);
 
@@ -80,18 +79,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public virtual void dispose()
+    public virtual async ValueTask DisposeAsync()
     {
         _talkChannel.Writer.Complete();
         NextLevelContext.Clear();
-        c.CurrentServer.NPCScriptManager.dispose(this);
-        c.sendPacket(PacketCreator.enableActions());
+        await c.CurrentServer.NPCScriptManager.dispose(this);
+        await c.SendPacket(PacketCreator.enableActions());
         c.removeClickedNPC();
     }
 
-    public void sendDefault(int checkQuestId = 0)
+    public async Task sendDefault(int checkQuestId = 0)
     {
-        sendOk(GetDefaultTalk(checkQuestId));
+        await sendOk(GetDefaultTalk(checkQuestId));
     }
 
     public string GetDefaultTalk(int checkQuestId = 0)
@@ -115,63 +114,63 @@ public class NPCConversationManager : AbstractPlayerInteraction
     public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
     public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
-    public void sendNext(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendNext(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker, speakerNpc));
     }
 
-    public void sendPrev(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker, speakerNpc));
     }
 
-    public void sendNextPrev(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendNextPrev(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker, speakerNpc));
     }
 
-    public void sendOk(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendOk(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker, speakerNpc));
     }
 
-    public void sendYesNo(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendYesNo(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker, speakerNpc));
     }
 
-    public void sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 12, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 12, text, "", speaker, speakerNpc));
     }
 
-    public void sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker, speakerNpc));
     }
 
-    public void sendStyle(string text, int[] styles)
+    public async Task sendStyle(string text, int[] styles)
     {
         if (styles.Length > 0)
         {
-            getClient().sendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
+            await getClient().SendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
         }
         else
         {
             // thanks Conrad for noticing empty styles crashing players
-            sendOk("Sorry, there are no options of cosmetics available for you here at the moment.");
-            dispose();
+            await sendOk("Sorry, there are no options of cosmetics available for you here at the moment.");
+            await DisposeAsync();
         }
     }
 
-    public void sendGetNumber(string text, int def, int min, int max, byte speaker = 0)
+    public async Task sendGetNumber(string text, int def, int min, int max, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalkNum(npc, text, def, min, max, speaker));
+        await getClient().SendPacket(PacketCreator.getNPCTalkNum(npc, text, def, min, max, speaker));
     }
 
-    public void sendGetText(string text, byte speaker = 0)
+    public async Task sendGetText(string text, byte speaker = 0)
     {
-        getClient().sendPacket(PacketCreator.getNPCTalkText(npc, text, "", speaker));
+        await getClient().SendPacket(PacketCreator.getNPCTalkText(npc, text, "", speaker));
     }
 
     /*
@@ -183,9 +182,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
      * 5 = Pyramid PQ
      * 6 = Kerning Subway
      */
-    public void sendDimensionalMirror(string text)
+    public async Task sendDimensionalMirror(string text)
     {
-        getClient().sendPacket(PacketCreator.getDimensionalMirror(text));
+        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
     }
 
     public void setGetText(string text)
@@ -198,34 +197,34 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return this._getText;
     }
 
-    public override bool forceStartQuest(int id)
+    public override async Task<bool> forceStartQuest(int id)
     {
-        return forceStartQuest(id, npc);
+        return await forceStartQuest(id, npc);
     }
 
-    public override bool forceCompleteQuest(int id)
+    public override async Task<bool> forceCompleteQuest(int id)
     {
-        return forceCompleteQuest(id, npc);
+        return await forceCompleteQuest(id, npc);
     }
 
-    public override bool startQuest(short id)
+    public override async Task<bool> startQuest(short id)
     {
-        return startQuest((int)id);
+        return await startQuest((int)id);
     }
 
-    public override bool completeQuest(short id)
+    public override async Task<bool> completeQuest(short id)
     {
-        return completeQuest((int)id);
+        return await completeQuest((int)id);
     }
 
-    public override bool startQuest(int id)
+    public override async Task<bool> startQuest(int id)
     {
-        return startQuest(id, npc);
+        return await startQuest(id, npc);
     }
 
-    public override bool completeQuest(int id)
+    public override async Task<bool> completeQuest(int id)
     {
-        return completeQuest(id, npc);
+        return await completeQuest(id, npc);
     }
 
     public virtual int getMeso()
@@ -233,40 +232,40 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().getMeso();
     }
 
-    public virtual void gainMeso(int gain)
+    public virtual async Task gainMeso(int gain)
     {
-        getPlayer().GainMeso(gain, GainItemShow.ShowInChat);
+        await getPlayer().GainMeso(gain, GainItemShow.ShowInChat);
     }
 
-    public virtual void gainExp(int gain)
+    public virtual async Task gainExp(int gain)
     {
-        getPlayer().gainExp(gain, true, true);
+        await getPlayer().gainExp(gain, true, true);
     }
 
-    public override void showEffect(string effect)
+    public override async Task showEffect(string effect)
     {
-        getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(effect, 3));
+        await getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(effect, 3));
     }
 
-    public void setHair(int hair)
+    public async Task setHair(int hair)
     {
         getPlayer().setHair(hair);
-        getPlayer().updateSingleStat(Stat.HAIR, hair);
-        getPlayer().equipChanged();
+        await getPlayer().updateSingleStat(Stat.HAIR, hair);
+        await getPlayer().equipChanged();
     }
 
-    public void setFace(int face)
+    public async Task setFace(int face)
     {
         getPlayer().setFace(face);
-        getPlayer().updateSingleStat(Stat.FACE, face);
-        getPlayer().equipChanged();
+        await getPlayer().updateSingleStat(Stat.FACE, face);
+        await getPlayer().equipChanged();
     }
 
-    public void setSkin(int color)
+    public async Task setSkin(int color)
     {
         getPlayer().setSkinColor(SkinColorUtils.getById(color));
-        getPlayer().updateSingleStat(Stat.SKIN, color);
-        getPlayer().equipChanged();
+        await getPlayer().updateSingleStat(Stat.SKIN, color);
+        await getPlayer().equipChanged();
     }
 
     public int itemQuantity(int itemid)
@@ -274,17 +273,17 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().getInventory(ItemConstants.getInventoryType(itemid)).countById(itemid);
     }
 
-    public void displayGuildRanks()
+    public async Task displayGuildRanks()
     {
-        c.CurrentServer.NodeService.GuildManager.ShowRankedGuilds(c, npc);
+        await c.CurrentServer.NodeService.GuildManager.ShowRankedGuilds(c, npc);
     }
 
-    public bool canSpawnPlayerNpc(int mapid)
+    public async Task<bool> canSpawnPlayerNpc(int mapid)
     {
         var chr = getPlayer();
         return chr.getLevel() >= chr.getMaxClassLevel()
                 && !chr.isGM()
-                && c.CurrentServer.NodeService.PlayerNPCService.CanSpawnHonor(c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
+                && c.CurrentServer.NodeService.PlayerNPCService.CanSpawnHonor(await c.CurrentServer.getMapFactory().getMap(mapid), chr.Name);
     }
 
     public IMapObject? getPlayerNPCByScriptid(int scriptId)
@@ -360,18 +359,18 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return maxLevel - minLevel <= range;
     }
 
-    public override void resetMap(int mapid)
+    public override async Task resetMap(int mapid)
     {
-        getClient().CurrentServer.getMapFactory().getMap(mapid).resetReactors();
+        await (await getClient().CurrentServer.getMapFactory().getMap(mapid)).resetReactors();
     }
 
-    public void gainTameness(int tameness)
+    public async Task gainTameness(int tameness)
     {
         foreach (var pet in getPlayer().getPets())
         {
             if (pet != null)
             {
-                pet.gainTamenessFullness(tameness, 0, 0);
+                await pet.gainTamenessFullness(tameness, 0, 0);
             }
         }
     }
@@ -386,14 +385,14 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().getGender();
     }
 
-    public void changeJobById(int a)
+    public async Task changeJobById(int a)
     {
-        changeJob(JobFactory.GetById(a));
+        await changeJob(JobFactory.GetById(a));
     }
 
-    public void changeJob(Job job)
+    public async Task changeJob(Job job)
     {
-        getPlayer().changeJob(job);
+        await getPlayer().changeJob(job);
     }
 
     public string getJobName(int id)
@@ -402,12 +401,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
     }
 
 
-    public void resetStats()
+    public async Task resetStats()
     {
-        getPlayer().resetStats();
+        await getPlayer().resetStats();
     }
 
-    public void openShopNPC(int id)
+    public async Task openShopNPC(int id)
     {
         var shop = c.CurrentServer.NodeService.ShopManager.getShop(id);
 
@@ -417,10 +416,10 @@ public class NPCConversationManager : AbstractPlayerInteraction
             log.Warning("Shop ID: {ShopId} is missing from database.", id);
             shop = c.CurrentServer.NodeService.ShopManager.getShop(11000) ?? throw new BusinessResException("ShopId: 11000");
         }
-        shop.sendShop(c);
+        await shop.sendShop(c);
     }
 
-    public void maxMastery()
+    public async Task maxMastery()
     {
         var provider = ClientCulture.SystemCulture.StringProvider;
         foreach (var skillData in provider.GetSubProvider(Application.Templates.String.StringCategory.Skill).LoadAll())
@@ -428,7 +427,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             try
             {
                 Skill skill = SkillFactory.GetSkillTrust(skillData.TemplateId);
-                getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
+                await getPlayer().changeSkillLevel(skill, 0, skill.getMaxLevel(), -1);
             }
             catch (Exception nfe)
             {
@@ -438,9 +437,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
     }
 
-    public void OpenStorage()
+    public async Task OpenStorage()
     {
-        c.OnlinedCharacter.Storage.OpenStorage(npc);
+        await c.OnlinedCharacter.Storage.OpenStorage(npc);
     }
 
     public bool CheckGachaponStorage(int willGot)
@@ -448,9 +447,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return c.OnlinedCharacter.GachaponStorage.CanGainItem(willGot);
     }
 
-    public void OpenGachaponStorage()
+    public async Task OpenGachaponStorage()
     {
-        c.OnlinedCharacter.GachaponStorage.OpenStorage(npc);
+        await c.OnlinedCharacter.GachaponStorage.OpenStorage(npc);
     }
     static Dictionary<int, int> gachaponNpcMapMapping = new Dictionary<int, int>()
     {
@@ -470,7 +469,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         return c.CurrentCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
     }
-    public GachaponPoolItemDataObject? doGachapon()
+    public async Task<GachaponPoolItemDataObject?> doGachapon()
     {
         var reward = c.CurrentServer.NodeService.GachaponManager.DoGachapon(npc);
         var rewardItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(reward.ItemId, reward.Quantity, true);
@@ -480,7 +479,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             return null;
         }
 
-        if (!c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem))
+        if (!await c.OnlinedCharacter.GachaponStorage.PutItem(rewardItem))
             return null;
 
         string map = ClientCulture.SystemCulture.GetMapName(gachaponNpcMapMapping.GetValueOrDefault(getNpc()));
@@ -502,9 +501,9 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return c.CurrentServer.NodeService.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
     }
 
-    public void ShowFredrick(RemoteHiredMerchantData store)
+    public async Task ShowFredrick(RemoteHiredMerchantData store)
     {
-        c.sendPacket(PacketCreator.getFredrick(store));
+        await c.SendPacket(PacketCreator.getFredrick(store));
     }
 
     public server.events.gm.Event? getEvent()
@@ -525,7 +524,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         MapleLeafLogger.log(getPlayer(), true, prize);
     }
 
-    public bool createPyramid(string mode, bool party)
+    public async Task<bool> createPyramid(string mode, bool party)
     {
         //lol
         PyramidMode mod = Enum.Parse<PyramidMode>(mode);
@@ -543,7 +542,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         for (byte b = 0; b < 5; b++)
         {
-            map = mapManager.getMap(mapid + b);
+            map = await mapManager.getMap(mapid + b);
             //They cannot warp to the next map before the timer ends ( in map = mapManager.getMap(mapid + b);
             if (map.getAllPlayers().Count > 0)
             {
@@ -566,8 +565,8 @@ public class NPCConversationManager : AbstractPlayerInteraction
         }
         Pyramid py = new Pyramid(c.CurrentServer, partyz, mod, map.getId());
         getPlayer().setPartyQuest(py);
-        py.warp(mapid);
-        dispose();
+        await py.warp(mapid);
+        await DisposeAsync();
         return true;
     }
 
@@ -747,7 +746,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         {
             return;
         }
-        sendNext(text, speaker, speakerNpc);
+        await sendNext(text, speaker, speakerNpc);
         await WaitingForAnswer();
     }
 
@@ -765,7 +764,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             var text = messages[current];
             if (current == 0)
             {
-                sendNext(text, 0);
+                await sendNext(text, 0);
                 if (await WaitingForAnswer())
                 {
                     current++;
@@ -775,12 +774,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
             {
                 if (finalNext)
                 {
-                    sendNextPrev(text, 0);
+                    await sendNextPrev(text, 0);
                     current += (await WaitingForAnswer()) ? 1 : -1;
                 }
                 else
                 {
-                    sendPrev(text, 0);
+                    await sendPrev(text, 0);
                     if (!await WaitingForAnswer())
                     {
                         current--;
@@ -789,7 +788,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             }
             else
             {
-                sendNextPrev(text, 0);
+                await sendNextPrev(text, 0);
                 current += (await WaitingForAnswer()) ? 1 : -1;
             }
         }
@@ -810,7 +809,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             var text = messages[current];
             if (current == 0)
             {
-                sendNext(text.Text, text.Speaker, text.SpeakerNpc);
+                await sendNext(text.Text, text.Speaker, text.SpeakerNpc);
                 if (await WaitingForAnswer())
                 {
                     current++;
@@ -820,12 +819,12 @@ public class NPCConversationManager : AbstractPlayerInteraction
             {
                 if (finalNext)
                 {
-                    sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    await sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
                     current += (await WaitingForAnswer()) ? 1 : -1;
                 }
                 else
                 {
-                    sendPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    await sendPrev(text.Text, text.Speaker, text.SpeakerNpc);
                     if (!await WaitingForAnswer())
                     {
                         current--;
@@ -834,7 +833,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
             }
             else
             {
-                sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                await sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
                 current += (await WaitingForAnswer()) ? 1 : -1;
             }
         }
@@ -848,31 +847,31 @@ public class NPCConversationManager : AbstractPlayerInteraction
             return;
         }
 
-        sendOk(text, speaker);
+        await sendOk(text, speaker);
         await WaitingForAnswer();
     }
 
     public async Task<bool> AskYesNo(string text, byte speaker = 0)
     {
-        sendYesNo(text, speaker);
+        await sendYesNo(text, speaker);
         return await WaitingForAnswer();
     }
 
     public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
     {
-        sendAcceptDecline(text, speaker);
+        await sendAcceptDecline(text, speaker);
         return await WaitingForAnswer();
     }
 
     public async Task<int> AskMenu(string text, byte speaker = 0)
     {
-        sendSimple(text, speaker);
+        await sendSimple(text, speaker);
         return await WaitingForOption();
     }
 
     public async Task<int> AskDimensionalMirror(string text)
     {
-        getClient().sendPacket(PacketCreator.getDimensionalMirror(text));
+        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
         return await WaitingForOption();
     }
 
@@ -914,7 +913,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
     {
         if (styles.Length > 0)
         {
-            sendStyle(text, styles);
+            await sendStyle(text, styles);
             return await WaitingForOption();
         }
         else
@@ -927,13 +926,13 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
     public async Task<int> AskNumber(string text, int def, int min, int max, byte speaker = 0)
     {
-        sendGetNumber(text, def, min, max, speaker);
+        await sendGetNumber(text, def, min, max, speaker);
         return await WaitingForInputNumber();
     }
 
     public async Task<string?> AskText(string text, byte speaker = 0)
     {
-        sendGetText(text, speaker);
+        await sendGetText(text, speaker);
         return await WaitingForInputText();
     }
     #endregion
@@ -1173,7 +1172,7 @@ public class NPCConversationManager : AbstractPlayerInteraction
         return getPlayer().GetAlliance()?.Capacity ?? 0;
     }
 
-    public void increaseGuildCapacity()
+    public async Task increaseGuildCapacity()
     {
         var guild = GetGuild();
         if (guild == null)
@@ -1183,11 +1182,11 @@ public class NPCConversationManager : AbstractPlayerInteraction
 
         if (getMeso() < cost)
         {
-            dropMessage(1, "You don't have enough mesos.");
+            await dropMessage(1, "You don't have enough mesos.");
             return;
         }
 
-        c.CurrentServer.NodeService.GuildManager.IncreaseGuildCapacity(getPlayer(), cost);
+        await c.CurrentServer.NodeService.GuildManager.IncreaseGuildCapacity(getPlayer(), cost);
     }
 
     public void disbandGuild()

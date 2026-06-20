@@ -25,7 +25,6 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Skills;
 using Application.Shared.KeyMaps;
-using client.inventory;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -48,39 +47,34 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
         return !c.IsOnlined;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int cid = p.readInt(); // TODO: investigate if this is the "client id" supplied in PacketCreator#getServerIP()
 
-        if (!c.tryacquireClient())
-        {
-            // thanks MedicOP for assisting on concurrency protection here
-            c.sendPacket(PacketCreator.getAfterLoginError(10));
-        }
-
+        await c.tryacquireClient();
         try
         {
             var cserv = c.CurrentServer;
             if (cserv == null || !cserv.IsRunning)
             {
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
 
             var playerObject = _dataService.GetPlayerData(cserv.getId(), c.GetSessionRemoteHost(), cid);
             if (playerObject == null)
             {
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
 
             c.Hwid = new Hwid(playerObject.Account.CurrentHwid);
 
-            var player = _dataService.Serialize(c, playerObject);
+            var player = await _dataService.Serialize(c, playerObject);
             if (player == null)
             {
                 // 1. 玩家不存在 2. 玩家并不处于切换服务器状态
-                c.Disconnect(true, false);
+                await c.Disconnect(true, false);
                 return;
             }
             c.Language = playerObject.LoginInfo.Language;
@@ -103,55 +97,56 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
             }
             */
 
-            cserv.addPlayer(player);
+            await cserv.addPlayer(player);
 
-            _dataService.RecoverCharacterBuff(player);
+            await _dataService.RecoverCharacterBuff(player);
 
-            c.sendPacket(PacketCreator.getCharInfo(player));
+            await c.SendPacket(PacketCreator.getCharInfo(player));
             if (!player.isHidden())
             {
                 if (player.isGM() && YamlConfig.config.server.USE_AUTOHIDE_GM)
                 {
-                    player.toggleHide(true);
+                    await player.toggleHide(true);
                 }
             }
-            player.sendKeymap();
-            player.sendQuickmap();
-            player.sendMacros();
+            await player.sendKeymap();
+            await player.sendQuickmap();
+            await player.sendMacros();
 
             // pot bindings being passed through other characters on the account detected thanks to Croosade dev team
             var autohpPot = player.KeyMap.GetData((int)KeyCode.VirtualAutoPotionHP);
-            player.sendPacket(PacketCreator.sendAutoHpPot(autohpPot != null ? autohpPot.getAction() : 0));
+            await player.SendPacket(PacketCreator.sendAutoHpPot(autohpPot != null ? autohpPot.getAction() : 0));
 
             var autompPot = player.KeyMap.GetData((int)KeyCode.VirtualAutoPotionMP);
-            player.sendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
+            await player.SendPacket(PacketCreator.sendAutoMpPot(autompPot != null ? autompPot.getAction() : 0));
 
-            player.getMap().addPlayer(player);
+            await player.getMap().addPlayer(player);
 
-            c.sendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
+            await c.SendPacket(PacketCreator.updateBuddylist(player.BuddyList.getBuddies()));
 
-            c.sendPacket(PacketCreator.updateGender(player));
+            // 有必要？
+            await c.SendPacket(PacketCreator.updateGender(player));
 
             //退出游戏/切换频道会退出聊天室，那这里的方法又有什么用？
             // player.checkMessenger();
-            c.sendPacket(PacketCreator.enableReport());
-            player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
+            await c.SendPacket(PacketCreator.enableReport());
+            await player.changeSkillLevel(SkillFactory.GetSkillTrust(10000000 * player.getJobType() + 12), (sbyte)(player.getLinkedLevel() / 10), 20, -1);
 
             if (newcomer)
             {
                 var mount = player.getMount();   // thanks Ari for noticing a scenario where Silver Mane quest couldn't be started
                 if (mount != null && mount.getItemId() != 0)
                 {
-                    player.sendPacket(PacketCreator.updateMount(player.getId(), mount, false));
+                    await player.SendPacket(PacketCreator.updateMount(player.getId(), mount, false));
                 }
 
-                player.reloadQuestExpirations();
+                await player.reloadQuestExpirations();
             }
             else
             {
                 if (player.isRidingBattleship())
                 {
-                    player.announceBattleshipHp();
+                    await player.announceBattleshipHp();
                 }
             }
 
@@ -160,12 +155,12 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 player.createDragon();
             }
 
-            player.commitExcludedItems();
+            await player.commitExcludedItems();
 
 
             if (newcomer)
             {
-                c.CurrentServer.EventRecallManager?.recallEventInstance(player);
+                await c.CurrentServer.EventRecallManager.recallEventInstance(player);
             }
 
             // Tell the client to use the custom scripts available for the NPCs provided, instead of the WZ entries.
@@ -175,10 +170,10 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 // Create a copy to prevent always adding entries to the server's list.
                 Dictionary<int, string> npcsIds = YamlConfig.config.server.NPCS_SCRIPTABLE.Select(x => new KeyValuePair<int, string>(int.Parse(x.Key), x.Value)).ToDictionary();
 
-                c.sendPacket(PacketCreator.setNPCScriptable(npcsIds));
+                await c.SendPacket(PacketCreator.setNPCScriptable(npcsIds));
             }
 
-            _dataService.CompleteLogin(c.CurrentServer, player, playerObject);
+            await _dataService.CompleteLogin(c.CurrentServer, player, playerObject);
         }
         catch (Exception e)
         {

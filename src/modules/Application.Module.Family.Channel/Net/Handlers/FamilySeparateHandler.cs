@@ -81,7 +81,7 @@ public class FamilySeparateHandler : ChannelHandlerBase
         cost += levelDiff * levelDiff;
         if (c.OnlinedCharacter.getMeso() < cost)
         {
-            c.sendPacket(FamilyPacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
+            await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(isSenior ? 81 : 80, cost));
             return Task.CompletedTask;
         }
         _familyManager.Fork(forkOn.Id, cost);

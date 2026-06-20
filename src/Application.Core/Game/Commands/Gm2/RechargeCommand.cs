@@ -10,7 +10,7 @@ public class RechargeCommand : CommandBase
         Description = "Recharge and refill all USE items.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
@@ -19,24 +19,24 @@ public class RechargeCommand : CommandBase
             if (ItemConstants.isThrowingStar(torecharge.getItemId()))
             {
                 torecharge.setQuantity(ii.getSlotMax(c, torecharge.getItemId()));
-                c.OnlinedCharacter.forceUpdateItem(torecharge);
+                await c.OnlinedCharacter.forceUpdateItem(torecharge);
             }
             else if (ItemConstants.isArrow(torecharge.getItemId()))
             {
                 torecharge.setQuantity(ii.getSlotMax(c, torecharge.getItemId()));
-                c.OnlinedCharacter.forceUpdateItem(torecharge);
+                await c.OnlinedCharacter.forceUpdateItem(torecharge);
             }
             else if (ItemConstants.isBullet(torecharge.getItemId()))
             {
                 torecharge.setQuantity(ii.getSlotMax(c, torecharge.getItemId()));
-                c.OnlinedCharacter.forceUpdateItem(torecharge);
+                await c.OnlinedCharacter.forceUpdateItem(torecharge);
             }
             else if (ItemConstants.isConsumable(torecharge.getItemId()))
             {
                 torecharge.setQuantity(ii.getSlotMax(c, torecharge.getItemId()));
-                c.OnlinedCharacter.forceUpdateItem(torecharge);
+                await c.OnlinedCharacter.forceUpdateItem(torecharge);
             }
         }
-        player.dropMessage(5, "USE Recharged.");
+        await player.dropMessage(5, "USE Recharged.");
     }
 }

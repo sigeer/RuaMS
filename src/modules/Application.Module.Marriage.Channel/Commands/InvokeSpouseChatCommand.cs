@@ -33,7 +33,7 @@ namespace Application.Module.Marriage.Channel.Commands
                     return;
                 }
 
-                sender.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
+                sender.SendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
             }
 
             if (data.Code == 0)
@@ -41,7 +41,7 @@ namespace Application.Module.Marriage.Channel.Commands
                 var receiver = ctx.getPlayerStorage().GetCharacterClientById(data.SenderPartnerId);
                 if (receiver != null)
                 {
-                    receiver.sendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
+                    receiver.SendPacket(WeddingPackets.OnCoupleMessage(data.SenderName, data.Request.Text, true));
                 }
             }
         }

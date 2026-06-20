@@ -21,17 +21,14 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
-using client.inventory.manipulator;
 using client.processor.action;
-using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 public class PetAutoPotHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var petId = p.readLong();
         p.readByte();
@@ -40,6 +37,6 @@ public class PetAutoPotHandler : ChannelHandlerBase
         short slot = p.readShort();
         int itemId = p.readInt();
 
-        PetAutopotProcessor.runAutopotAction(c, slot, itemId);
+        await PetAutopotProcessor.runAutopotAction(c, slot, itemId);
     }
 }

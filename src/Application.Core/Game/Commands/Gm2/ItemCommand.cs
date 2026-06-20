@@ -3,7 +3,6 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Game.Items;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
-using Application.Templates.Item.Pet;
 using client.inventory.manipulator;
 using System.Text;
 
@@ -17,13 +16,13 @@ public class ItemCommand : CommandBase
         _wzManager = wzManager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ItemCommand_Syntax));
             return;
         }
 
@@ -41,35 +40,34 @@ public class ItemCommand : CommandBase
                     messages.Append($"\r\n#L{i}# {item.Id} #t{item.Id}# - {item.Name} #l");
                 }
 
-                TempConversation.Create(c, NpcId.MAPLE_ADMINISTRATOR)?
-                    .RegisterSelect(messages.ToString(), (idx, ctx) =>
+                await TempConversation.CreateScope(c, async ctx =>
+                {
+                    var idx = await ctx.AskMenu(messages.ToString());
+                    var item = findResult.MatchedItems[idx];
+                    if (await ctx.AskYesNo($"选择 {item.Id} #t{item.Id}# - {item.Name}？"))
                     {
-                        var item = findResult.MatchedItems[idx];
-                        ctx.RegisterYesOrNo($"选择 {item.Id} #t{item.Id}# - {item.Name}？", ctx =>
-                        {
-                            SendItem(c, item.Id, paramsValue);
-                            ctx.dispose();
-                        });
-                    });
+                        await SendItem(c, item.Id, paramsValue);
+                    }
+                });
                 return;
             }
             else
             {
-                player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
+                await player.Yellow(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
                 return;
             }
         }
-        SendItem(c, itemId, paramsValue);
+        await SendItem(c, itemId, paramsValue);
     }
 
-    private void SendItem(IChannelClient c, int itemId, string[] paramsValue)
+    private async Task SendItem(IChannelClient c, int itemId, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
+            await player.Yellow(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
             return;
         }
 
@@ -83,7 +81,7 @@ public class ItemCommand : CommandBase
         var item = ii.GenerateVirtualItemById(itemId, quantity);
         if (item == null)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), itemId.ToString());
+            await player.Yellow(nameof(ClientMessage.ItemNotFound), itemId.ToString());
             return;
         }
 
@@ -103,6 +101,6 @@ public class ItemCommand : CommandBase
         item.setFlag(flag);
         item.setOwner(player.getName());
 
-        InventoryManipulator.addFromDrop(c, item, false);
+        await InventoryManipulator.addFromDrop(c, item, false);
     }
 }

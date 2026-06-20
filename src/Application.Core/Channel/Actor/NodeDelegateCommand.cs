@@ -1,4 +1,3 @@
-using Application.Utility.Performance;
 using Application.Utility.Pipeline;
 
 namespace Application.Core.Channel.Actor

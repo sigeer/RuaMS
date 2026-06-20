@@ -43,7 +43,7 @@ public class SkillAction : AbstractQuestAction
         skillData = data.ToDictionary(x => x.SkillID, x => new SkillData(x.SkillID, x.SkillLevel, x.MasterLevel, x.Job.ToList()));
     }
 
-    public override void run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
         foreach (SkillData skill in skillData.Values)
         {
@@ -59,7 +59,7 @@ public class SkillAction : AbstractQuestAction
             int masterLevel = Math.Max(skill.getMasterLevel(), chr.getMasterLevel(skillObject));
             if (shouldLearn)
             {
-                chr.changeSkillLevel(skillObject, skillLevel, masterLevel, -1);
+                await chr.changeSkillLevel(skillObject, skillLevel, masterLevel, -1);
             }
 
         }

@@ -1,5 +1,4 @@
 using Application.Core.Channel.Services;
-using Application.Core.scripting.npc;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2
@@ -13,7 +12,7 @@ namespace Application.Core.Game.Commands.Gm2
             Description = "列举当前频道服务器上的所有任务。";
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             var data = _adminService.GetChannelServerTasks();
 
@@ -24,7 +23,7 @@ namespace Application.Core.Game.Commands.Gm2
                 message.Append("-").Append(item).Append("\r\n");
             }
 
-            TempConversation.Create(client)?.RegisterTalk(message.ToString());
+            await client.OnlinedCharacter.Dialog(message.ToString());
         }
     }
 }

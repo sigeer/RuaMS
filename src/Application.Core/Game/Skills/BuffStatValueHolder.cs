@@ -1,10 +1,9 @@
 using Application.Utility.Tickables;
 using server;
-using tools;
 
 namespace Application.Core.Game.Skills
 {
-    public class BuffStatValueHolder: ILoopTickable, ILifedTickable
+    public class BuffStatValueHolder : ILoopTickable, ILifedTickable
     {
         protected Player _chr;
         public StatEffect Effect { get; }
@@ -32,7 +31,7 @@ namespace Application.Core.Game.Skills
         public long Period { get; init; }
 
         public TickableStatus Status { get; set; }
-        public virtual void OnTick(long now)
+        public virtual async Task OnTick(long now)
         {
             if (this.IsAvailable())
             {
@@ -42,14 +41,14 @@ namespace Application.Core.Game.Skills
                     return;
                 }
 
-                Process(now);
+                await Process(now);
                 Next = now + Period;
             }
         }
 
-        protected virtual void Process(long now)
+        protected virtual Task Process(long now)
         {
-            return;
+            return Task.CompletedTask;
         }
     }
 }

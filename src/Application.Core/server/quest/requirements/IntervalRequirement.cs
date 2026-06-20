@@ -60,7 +60,7 @@ public class IntervalRequirement : AbstractQuestRequirement
         return string.Join(", ", messages);
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         bool check = !chr.getQuest(Quest.getInstance(questID)).getStatus().Equals(QuestStatus.Status.COMPLETED);
         bool check2 = chr.getQuest(Quest.getInstance(questID)).getCompletionTime() <= chr.Client.CurrentServer.Node.getCurrentTime() - interval;
@@ -71,7 +71,7 @@ public class IntervalRequirement : AbstractQuestRequirement
         }
         else
         {
-            chr.message("This quest will become available again in approximately " + getIntervalTimeLeft(chr, this) + ".");
+            await chr.Pink("This quest will become available again in approximately " + getIntervalTimeLeft(chr, this) + ".");
             return false;
         }
     }

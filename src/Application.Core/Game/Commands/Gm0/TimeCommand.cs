@@ -9,10 +9,10 @@ public class TimeCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient client, string[] paramsValue)
+    public override async Task Execute(IChannelClient client, string[] paramsValue)
     {
-        client.OnlinedCharacter.yellowMessage(
-            client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ServerTime)) 
+        await client.OnlinedCharacter.Yellow(
+            client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ServerTime))
             + client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().Humanize(culture: client.CurrentCulture.CultureInfo));
     }
 }

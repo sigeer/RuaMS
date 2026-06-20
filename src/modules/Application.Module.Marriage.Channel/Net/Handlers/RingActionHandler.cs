@@ -74,7 +74,7 @@ public class RingActionHandler : ChannelHandlerBase
         if (source.getLevel() < 50)
         {
             source.dropMessage(1, "You can only propose being level 50 or higher.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
@@ -82,14 +82,14 @@ public class RingActionHandler : ChannelHandlerBase
         if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Married)
         {
             source.dropMessage(1, "You're already married!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
         if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Engaged)
         {
             source.dropMessage(1, "You're already engaged!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
@@ -97,30 +97,30 @@ public class RingActionHandler : ChannelHandlerBase
         if (target == null)
         {
             source.dropMessage(1, "Unable to find " + name + " on this channel.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         if (target == source)
         {
             source.dropMessage(1, "You can't engage yourself.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (target.getLevel() < 50)
         {
             source.dropMessage(1, "You can only propose to someone level 50 or higher.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (!target.getMap().Equals(source.getMap()))
         {
             source.dropMessage(1, "Make sure your partner is on the same map!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (!source.haveItem(itemid) || itemid < ItemId.ENGAGEMENT_BOX_MIN || itemid > ItemId.ENGAGEMENT_BOX_MAX)
         {
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
@@ -128,48 +128,48 @@ public class RingActionHandler : ChannelHandlerBase
         if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Married)
         {
             source.dropMessage(1, "The player is already married!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
         if (marriageInfo?.Status == Common.Models.MarriageStatusEnum.Engaged)
         {
             source.dropMessage(1, "The player is already engaged!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (_weddingManager.HasWeddingRing(target))
         {
             source.dropMessage(1, "The player already holds a marriage ring...");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (_weddingManager.HasWeddingRing(source))
         {
             source.dropMessage(1, "You can't propose while holding a marriage ring!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (target.getGender() == source.getGender())
         {
             source.dropMessage(1, "You may only propose to a " + (source.getGender() == 1 ? "male" : "female") + "!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (!InventoryManipulator.checkSpace(c, newBoxId, 1, ""))
         {
             source.dropMessage(5, "You don't have a ETC slot available right now!");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
         else if (!InventoryManipulator.checkSpace(target.Client, newBoxId + 1, 1, ""))
         {
             source.dropMessage(5, "The girl you proposed doesn't have a ETC slot available right now.");
-            source.sendPacket(WeddingPackets.OnMarriageResult(0));
+            source.SendPacket(WeddingPackets.OnMarriageResult(0));
             return;
         }
 
-        target.sendPacket(WeddingPackets.onMarriageRequest(source.getName(), itemid));
+        target.SendPacket(WeddingPackets.onMarriageRequest(source.getName(), itemid));
         _marriageManager.SetInProposal(source);
     }
 
@@ -202,13 +202,13 @@ public class RingActionHandler : ChannelHandlerBase
 
                 if (source == null || !source.IsOnlined)
                 {
-                    target.sendPacket(PacketCreator.enableActions());
+                    target.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
                 if (!_marriageManager.IsProposalActive(source) || !source.haveItem(itemid) || !source.isAlive() || !target.isAlive())
                 {
-                    target.sendPacket(PacketCreator.enableActions());
+                    target.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
@@ -222,7 +222,7 @@ public class RingActionHandler : ChannelHandlerBase
                 else
                 {
                     source.dropMessage(1, "She has politely declined your engagement request.");
-                    source.sendPacket(WeddingPackets.OnMarriageResult(0));
+                    source.SendPacket(WeddingPackets.OnMarriageResult(0));
 
                     _marriageManager.CancelProposal(source);
                 }
@@ -247,14 +247,14 @@ public class RingActionHandler : ChannelHandlerBase
                     var item = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot);
                     if (item == null)
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
 
                     var itemId = item.getItemId();
                     if ((itemId != ItemId.INVITATION_CHAPEL && itemId != ItemId.INVITATION_CATHEDRAL) || !c.OnlinedCharacter.haveItem(itemId))
                     {
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         return;
                     }
 
@@ -275,7 +275,7 @@ public class RingActionHandler : ChannelHandlerBase
                         var item = c.OnlinedCharacter.getInventory(InventoryType.ETC).getItem(slot);
                         if (item == null || item.getItemId() != invitationItemId || int.TryParse(item.getGiftFrom(), out var weddingId))
                         {
-                            c.sendPacket(PacketCreator.enableActions());
+                            await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
 
@@ -342,6 +342,6 @@ public class RingActionHandler : ChannelHandlerBase
                 break;
         }
 
-        c.sendPacket(PacketCreator.enableActions());
+        await c.SendPacket(PacketCreator.enableActions());
     }
 }

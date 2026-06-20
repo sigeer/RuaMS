@@ -23,12 +23,9 @@
 
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
-using Jint;
-using Jint.Runtime;
+using Application.Utility.Pipeline;
 using net.server.services.task.channel;
 using server.partyquest;
-using System.Numerics;
-using System.Xml.Linq;
 using tools;
 
 namespace server.maps;
@@ -52,7 +49,7 @@ public class Reactor : AbstractMapObject
     private bool shouldCollect;
     private bool attackHit;
     private ScheduledFuture? timeoutTask = null;
-    private IWorldChannelCommand? delayedRespawnRun = null;
+    private ICommand? delayedRespawnRun = null;
     private GuardianSpawnPoint? guardian = null;
     private sbyte facingDirection = 0;
 
@@ -149,9 +146,9 @@ public class Reactor : AbstractMapObject
         this.alive = alive;
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(makeDestroyData());
+        await client.SendPacket(makeDestroyData());
     }
 
     public Packet makeDestroyData()
@@ -159,11 +156,11 @@ public class Reactor : AbstractMapObject
         return PacketCreator.destroyReactor(this);
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
         if (this.isAlive())
         {
-            client.sendPacket(makeSpawnData());
+            await client.SendPacket(makeSpawnData());
         }
     }
 
@@ -172,72 +169,72 @@ public class Reactor : AbstractMapObject
         return PacketCreator.spawnReactor(this);
     }
 
-    public void resetReactorActions(int newState)
+    public async Task resetReactorActions(int newState)
     {
         setState((sbyte)newState);
-        cancelReactorTimeout();
+        await cancelReactorTimeout();
         setShouldCollect(true);
-        refreshReactorTimeout();
+        await refreshReactorTimeout();
     }
 
-    public void forceHitReactor(sbyte newState)
+    public async Task forceHitReactor(sbyte newState)
     {
-        this.resetReactorActions(newState);
-        BroadcastMap(PacketCreator.triggerReactor(this, 0));
+        await this.resetReactorActions(newState);
+        await BroadcastMap(PacketCreator.triggerReactor(this, 0));
     }
 
-    public void tryForceHitReactor(sbyte newState)
+    public async Task tryForceHitReactor(sbyte newState)
     {  // weak hit state signal, if already changed reactor state before timeout then drop this
 
-        this.resetReactorActions(newState);
-        BroadcastMap(PacketCreator.triggerReactor(this, 0));
+        await this.resetReactorActions(newState);
+        await BroadcastMap(PacketCreator.triggerReactor(this, 0));
     }
 
-    public void cancelReactorTimeout()
+    public async Task cancelReactorTimeout()
     {
         if (timeoutTask != null)
         {
-            timeoutTask.cancel(false);
+            await timeoutTask.CancelAsync(false);
             timeoutTask = null;
         }
     }
 
-    private void refreshReactorTimeout()
+    private async Task refreshReactorTimeout()
     {
         int timeOut = stats.getTimeout(state);
         if (timeOut > -1)
         {
             sbyte nextState = stats.getTimeoutState(state);
 
-            timeoutTask = MapModel.ChannelServer.TimerManager.schedule(() =>
+            timeoutTask = await MapModel.ChannelServer.TimerManager.schedule(() =>
             {
                 timeoutTask = null;
 
-                MapModel.Send(map =>
+                MapModel.Send(async map =>
                 {
-                    tryForceHitReactor(nextState);
+                    await tryForceHitReactor(nextState);
                 });
             }, timeOut);
         }
     }
 
-    public void delayedHitReactor(IChannelClient c, long delay)
+    public async Task delayedHitReactor(IChannelClient c, long delay)
     {
-        c.CurrentServer.TimerManager.schedule(() =>
-        {
-            MapModel.Send(map =>
-            {
-                hitReactor(c);
-            });
-        }, delay);
+        await c.CurrentServer.TimerManager.schedule(() =>
+          {
+              MapModel.Send(async map =>
+              {
+                  await hitReactor(c);
+              });
+          }, delay);
     }
 
-    public void hitReactor(IChannelClient c)
+    public async Task hitReactor(IChannelClient c)
     {
-        hitReactor(false, 0, 0, 0, c);
+        await hitReactor(false, 0, 0, 0, c);
     }
 
-    public void hitReactor(bool wHit, int charPos, short stance, int skillid, IChannelClient c)
+    public async Task hitReactor(bool wHit, int charPos, short stance, int skillid, IChannelClient c)
     {
         try
         {
@@ -247,11 +244,11 @@ public class Reactor : AbstractMapObject
             }
 
 
-            cancelReactorTimeout();
+            await cancelReactorTimeout();
             attackHit = wHit;
 
-            c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
-            c.CurrentServer.ReactorScriptManager.onHit(c, this);
+            await c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
+            await c.CurrentServer.ReactorScriptManager.onHit(c, this);
 
             int reactorType = stats.getType(state);
             if (reactorType < 999 && reactorType != -1)
@@ -283,34 +280,34 @@ public class Reactor : AbstractMapObject
                                 //reactor broken
                                 if (delay > 0)
                                 {
-                                    MapModel.destroyReactor(getObjectId());
+                                    await MapModel.destroyReactor(getObjectId());
                                 }
                                 else
                                 {
                                     //trigger as normal
-                                    BroadcastMap(PacketCreator.triggerReactor(this, stance));
+                                    await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                                 }
                             }
                             else
                             {
                                 //item-triggered on step
-                                BroadcastMap(PacketCreator.triggerReactor(this, stance));
+                                await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                             }
 
-                            c.CurrentServer.ReactorScriptManager.act(c, this);
+                            await c.CurrentServer.ReactorScriptManager.act(c, this);
                         }
                         else
                         {
                             //reactor not broken yet
-                            BroadcastMap(PacketCreator.triggerReactor(this, stance));
+                            await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                             if (state == stats.getNextState(state, b))
                             {
                                 //current state = next state, looping reactor
-                                c.CurrentServer.ReactorScriptManager.act(c, this);
+                                await c.CurrentServer.ReactorScriptManager.act(c, this);
                             }
 
                             setShouldCollect(true);     // refresh collectability on item drop-based reactors
-                            refreshReactorTimeout();
+                            await refreshReactorTimeout();
                         }
                         break;
                     }
@@ -319,14 +316,14 @@ public class Reactor : AbstractMapObject
             else
             {
                 state++;
-                BroadcastMap(PacketCreator.triggerReactor(this, stance));
+                await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                 if (this.getId() != 9980000 && this.getId() != 9980001)
                 {
-                    c.CurrentServer.ReactorScriptManager.act(c, this);
+                    await c.CurrentServer.ReactorScriptManager.act(c, this);
                 }
 
                 setShouldCollect(true);
-                refreshReactorTimeout();
+                await refreshReactorTimeout();
             }
 
 
@@ -342,14 +339,14 @@ public class Reactor : AbstractMapObject
     /// 2次调用才会真的移除？
     /// </summary>
     /// <returns></returns>
-    public bool destroy()
+    public async Task<bool> destroy()
     {
         bool alive = this.isAlive();
         // reactor neither alive nor in delayed respawn, remove map object allowed
         if (alive)
         {
             this.setAlive(false);
-            this.cancelReactorTimeout();
+            await this.cancelReactorTimeout();
 
             if (this.getDelay() > 0)
             {
@@ -362,22 +359,22 @@ public class Reactor : AbstractMapObject
         }
 
 
-        BroadcastMap(PacketCreator.destroyReactor(this));
+        await BroadcastMap(PacketCreator.destroyReactor(this));
         return false;
     }
 
-    public void respawn(bool fromDestroyed = true)
+    public async Task respawn(bool fromDestroyed = true)
     {
-        this.resetReactorActions(0);
+        await this.resetReactorActions(0);
         this.setAlive(true);
 
         if (fromDestroyed)
         {
-            BroadcastMap(this.makeSpawnData());
+            await BroadcastMap(this.makeSpawnData());
         }
         else
         {
-            BroadcastMap(PacketCreator.triggerReactor(this, 0));
+            await BroadcastMap(PacketCreator.triggerReactor(this, 0));
         }
 
     }
@@ -470,7 +467,7 @@ public class Reactor : AbstractMapObject
         return reactItem.ItemId == mapItem.getItemId() && reactItem.Quantity == mapItem.getItem()!.getQuantity();
     }
 
-    public void HitByMapItem(MapItem mapItem)
+    public async Task HitByMapItem(MapItem mapItem)
     {
         if (getReactorType() == 100)
         {
@@ -487,10 +484,10 @@ public class Reactor : AbstractMapObject
                     return;
                 }
 
-                MapModel.pickItemDrop(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem);
+                await MapModel.pickItemDrop(PacketCreator.removeItemFromMap(mapItem.getObjectId(), DropLeaveFieldType.Expired, 0), mapItem);
                 setShouldCollect(false);
 
-                hitReactor(ownerClient);
+                await hitReactor(ownerClient);
 
                 if (getDelay() > 0)
                 {

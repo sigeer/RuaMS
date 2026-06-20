@@ -11,28 +11,36 @@ namespace Application.Core.Game.ContiMove
         /// <summary>
         /// 抵达目的地时的地图
         /// </summary>
-        public IMap StationAMap { get; }
-        public int StationAPortal { get; }
-        public IMap StationBMap { get; }
-        public int StationBPortal { get; }
+        public IMap StationAMap { get; protected set; } = null!;
+        int _stationAMapId;
+        public int StationAPortal { get; protected set; }
+        int _stationBMapId;
+        public IMap StationBMap { get; protected set; } = null!;
+        public int StationBPortal { get; protected set; }
 
+        int _waitingRoomAMapId;
         /// <summary>
         /// 等待室
         /// </summary>
-        public IMap WaitingRoomAMap { get; }
-        public IMap WaitingRoomBMap { get; }
+        public IMap WaitingRoomAMap { get; protected set; } = null!;
+        int _waitingRoomBMapId;
+        public IMap WaitingRoomBMap { get; protected set; } = null!;
 
+        int _transportAMapId;
         /// <summary>
         /// 传送中
         /// </summary>
-        public IMap TransportAMap { get; }
-        public IMap TransportBMap { get; }
+        public IMap TransportAMap { get; protected set; } = null!;
+        int _transportBMapId;
+        public IMap TransportBMap { get; protected set; } = null!;
 
+        int _dockAMapId;
         /// <summary>
         /// 码头，用于播放到站/离站动画
         /// </summary>
-        public IMap? DockAMap { get; }
-        public IMap? DockBMap { get; }
+        public IMap? DockAMap { get; protected set; }
+        int _dockBMapId;
+        public IMap? DockBMap { get; protected set; }
 
 
         public TickableStatus Status => TickableStatus.Active;
@@ -41,9 +49,9 @@ namespace Application.Core.Game.ContiMove
         public long CloseTime { get; }
         public long RideTime { get; }
 
-        private int TicketAItemId ;
-        private int TicketAPrice ;
-        private int TicketBItemId ;
+        private int TicketAItemId;
+        private int TicketAPrice;
+        private int TicketBItemId;
         private int TicketBPrice;
 
         protected float _currentTransitionRate;
@@ -62,17 +70,19 @@ namespace Application.Core.Game.ContiMove
             int ticketBItemId, int ticketBPrice)
         {
             ChannelServer = channelServer;
-            var mapManager = ChannelServer.getMapFactory();
-            StationAMap = mapManager.getMap(stationAMap);
+
+            _stationAMapId = stationAMap; 
+            _stationBMapId = stationBMap;
             StationAPortal = stationAPortal;
-            StationBMap = mapManager.getMap(stationBMap);
             StationBPortal = stationBPortal;
-            WaitingRoomAMap = mapManager.getMap(waitingRoomAMap);
-            WaitingRoomBMap = mapManager.getMap(waitingRoomBMap);
-            TransportAMap = mapManager.getMap(transportAMap);
-            TransportBMap = mapManager.getMap(transportBMap);
-            DockAMap = dockAMap > 0 ? mapManager.getMap(dockAMap) : null;
-            DockBMap = dockBMap > 0 ? mapManager.getMap(dockBMap) : null;
+
+            _transportAMapId = transportAMap;
+            _transportBMapId = transportBMap;
+            _dockAMapId = dockAMap;
+            _dockBMapId = dockBMap;
+            _waitingRoomAMapId = waitingRoomAMap;
+            _waitingRoomBMapId = waitingRoomBMap;
+
 
             BeginTime = beginTime;
             CloseTime = closeTime;
@@ -82,7 +92,6 @@ namespace Application.Core.Game.ContiMove
             TicketAPrice = ticketAPrice;
             TicketBItemId = ticketBItemId;
             TicketBPrice = ticketBPrice;
-
         }
 
         /// <summary>
@@ -106,9 +115,25 @@ namespace Application.Core.Game.ContiMove
             return (int)Math.Ceiling(travelTime / _currentTransitionRate);
         }
 
-        public virtual void Initialize()
+        public virtual async Task Initialize()
         {
+            await OnMapLoad();
+
             NewTask();
+        }
+
+        protected virtual async Task OnMapLoad()
+        {
+            var mapManager = ChannelServer.getMapFactory();
+            StationAMap = await mapManager.getMap(_stationAMapId);
+            StationBMap = await mapManager.getMap(_stationBMapId);
+
+            WaitingRoomAMap = await mapManager.getMap(_waitingRoomAMapId);
+            WaitingRoomBMap = await mapManager.getMap(_waitingRoomBMapId);
+            TransportAMap = await mapManager.getMap(_transportAMapId);
+            TransportBMap = await mapManager.getMap(_transportBMapId);
+            DockAMap = _dockAMapId > 0 ? await mapManager.getMap(_dockAMapId) : null;
+            DockBMap = _dockBMapId > 0 ? await mapManager.getMap(_dockBMapId) : null;
         }
 
         public virtual void NewTask()
@@ -132,7 +157,7 @@ namespace Application.Core.Game.ContiMove
             CanEnter = true;
         }
 
-        public virtual bool Enter(Player chr)
+        public virtual async Task<bool> Enter(Player chr)
         {
             if (!CanEnter)
             {
@@ -141,12 +166,12 @@ namespace Application.Core.Game.ContiMove
 
             if (chr.MapModel == StationAMap)
             {
-                chr.changeMap(WaitingRoomAMap);
+                await chr.changeMap(WaitingRoomAMap);
                 return true;
             }
             if (chr.MapModel == StationBMap)
             {
-                chr.changeMap(WaitingRoomBMap);
+                await chr.changeMap(WaitingRoomBMap);
                 return true;
             }
             return false;
@@ -178,32 +203,37 @@ namespace Application.Core.Game.ContiMove
             return null;
         }
 
-        public virtual void OnStart()
+        public virtual async Task OnStart()
         {
-            WaitingRoomAMap.warpEveryone(TransportAMap.getId());
-            DockAMap?.broadcastShip(false);
+            await WaitingRoomAMap.warpEveryone(TransportAMap.getId());
+            if (DockAMap != null)
+                await DockAMap.broadcastShip(false);
 
-            WaitingRoomBMap.warpEveryone(TransportBMap.getId());
-            DockBMap?.broadcastShip(false);
+
+            await WaitingRoomBMap.warpEveryone(TransportBMap.getId());
+            if (DockBMap != null)
+                await DockBMap.broadcastShip(false);
 
             ArriveAt = ChannelServer.Node.getCurrentTime() + _currentRideTime;
             _arriveFlag = true;
         }
 
-        public virtual void OnArrived()
+        public virtual async Task OnArrived()
         {
-            TransportAMap.warpEveryone(StationBMap.getId(), StationBPortal);
-            DockBMap?.broadcastShip(true);
+            await TransportAMap.warpEveryone(StationBMap.getId(), StationBPortal);
+            if (DockBMap != null)
+                await DockBMap.broadcastShip(true);
 
-            TransportBMap.warpEveryone(StationAMap.getId(), StationAPortal);
-            DockAMap?.broadcastShip(true);
+            await TransportBMap.warpEveryone(StationAMap.getId(), StationAPortal);
+            if (DockAMap != null)
+                await DockAMap.broadcastShip(true);
 
             NewTask();
         }
 
         public bool CanEnter { get; private set; }
 
-        public virtual void OnTick(long now)
+        public virtual async Task OnTick(long now)
         {
             if (_stopFlag && _stopEntryAt <= now)
             {
@@ -213,13 +243,13 @@ namespace Application.Core.Game.ContiMove
 
             if (_startFlag && _startAt <= now)
             {
-                OnStart();
+                await OnStart();
                 _startFlag = false;
             }
 
             if (_arriveFlag && ArriveAt <= now)
             {
-                OnArrived();
+                await OnArrived();
                 _arriveFlag = false;
             }
         }

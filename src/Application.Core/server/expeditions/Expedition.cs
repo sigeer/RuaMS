@@ -23,16 +23,12 @@
 
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
 using Application.Shared.Events;
-using Google.Protobuf;
-using System;
 using System.Collections.Concurrent;
 using tools;
-using static Application.Core.Channel.Internal.Handlers.PlayerFieldHandlers;
 
 namespace server.expeditions;
 
@@ -114,56 +110,56 @@ public class Expedition : IClientMessenger
         return maxSize;
     }
 
-    public void beginRegistration()
+    public async Task beginRegistration()
     {
         registering = true;
-        leader.sendPacket(PacketCreator.getClock(60 * (type.getRegistrationMinutes())));
+        await leader.SendPacket(PacketCreator.getClock(60 * (type.getRegistrationMinutes())));
         if (!silent)
         {
-            startMap.BroadcastAll(e =>
+            await startMap.BroadcastAll(async e =>
             {
                 if (e != leader)
-                    e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
+                    await e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
             });
-            leader.LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
+            await leader.LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
         }
-        scheduleRegistrationEnd();
+        await scheduleRegistrationEnd();
     }
 
-    private void scheduleRegistrationEnd()
+    private async Task scheduleRegistrationEnd()
     {
         Expedition exped = this;
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMinutes(type.getRegistrationMinutes());
 
-        schedule = ChannelServer.TimerManager.schedule(() =>
+        schedule = await ChannelServer.TimerManager.schedule(() =>
         {
             ChannelServer.Send((c) => ProcessRegistrationTimeout());
         }, TimeSpan.FromMinutes(type.getRegistrationMinutes()));
     }
 
-    public void ProcessRegistrationTimeout()
+    public async Task ProcessRegistrationTimeout()
     {
         if (registering)
         {
-            ChannelServer.Send(w =>
+            await ChannelServer.Send(w =>
             {
                 w.removeExpedition(this);
             });
             if (!silent)
             {
-                startMap.Send(m =>
+                await startMap.Send(m =>
                 {
                     m.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
                 });
             }
 
-            dispose(false);
+            await dispose(false);
         }
     }
 
-    public void dispose(bool needLog)
+    public async Task dispose(bool needLog)
     {
-        broadcastExped(PacketCreator.removeClock());
+        await broadcastExped(PacketCreator.removeClock());
 
         if (schedule != null)
         {
@@ -207,24 +203,24 @@ public class Expedition : IClientMessenger
         registering = false;
     }
 
-    public void start()
+    public async Task start()
     {
         finishRegistration();
         registerExpeditionAttempt();
-        broadcastExped(PacketCreator.removeClock());
+        await broadcastExped(PacketCreator.removeClock());
         if (!silent)
         {
-            LightBlue(nameof(ClientMessage.Expedition_Start));
+            await LightBlue(nameof(ClientMessage.Expedition_Start));
         }
         startTime = leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
-        ChannelServer.NodeActor
+        await ChannelServer.NodeActor
             .Send(s =>
             {
                 s.SendDropMessage(6, "[Expedition] " + type.ToString() + " Expedition started with leader: " + leader.getName(), true);
             });
     }
 
-    public string addMember(Player player)
+    public async Task<string> addMember(Player player)
     {
         if (!registering)
         {
@@ -249,15 +245,15 @@ public class Expedition : IClientMessenger
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset()).Seconds));
+        await player.SendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset()).Seconds));
         if (!silent)
         {
-            LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
+            await LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
         }
         return "You have registered for the expedition successfully!";
     }
 
-    public int addMemberInt(Player player)
+    public async Task<int> addMemberInt(Player player)
     {
         if (!registering)
         {
@@ -273,10 +269,10 @@ public class Expedition : IClientMessenger
         }
 
         members.AddOrUpdate(player.getId(), player.getName());
-        player.sendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset()).Seconds));
+        await player.SendPacket(PacketCreator.getClock((startTime - leader.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset()).Seconds));
         if (!silent)
         {
-            LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
+            await LightBlue(nameof(ClientMessage.Expedition_Join), player.Name);
         }
         return 0; //"You have registered for the expedition successfully!";
     }
@@ -289,23 +285,23 @@ public class Expedition : IClientMessenger
         currentServer.NodeService.ExpeditionService.RegisterExpedition(getActiveMembers().Select(x => x.getId()).ToArray(), channel, this.getType().name());
     }
 
-    private void broadcastExped(Packet packet)
+    private async Task broadcastExped(Packet packet)
     {
         foreach (Player chr in getActiveMembers())
         {
-            chr.sendPacket(packet);
+            await chr.SendPacket(packet);
         }
     }
 
-    public bool removeMember(Player chr)
+    public async Task<bool> removeMember(Player chr)
     {
         if (members.Remove(chr.getId(), out var d) && d != null)
         {
-            chr.sendPacket(PacketCreator.removeClock());
+            await chr.SendPacket(PacketCreator.removeClock());
             if (!silent)
             {
-                LightBlue(nameof(ClientMessage.Expedition_Left), chr.Name);
-                chr.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
+                await LightBlue(nameof(ClientMessage.Expedition_Left), chr.Name);
+                await chr.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
             }
             return true;
         }
@@ -313,7 +309,7 @@ public class Expedition : IClientMessenger
         return false;
     }
 
-    public void ban(CharacterIdNamePair chr)
+    public async Task ban(CharacterIdNamePair chr)
     {
         int cid = chr.Id;
         if (!banned.Contains(cid))
@@ -323,21 +319,21 @@ public class Expedition : IClientMessenger
 
             if (!silent)
             {
-                broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
+                await broadcastExped(PacketCreator.serverNotice(6, "[Expedition] " + chr.Name + " has been banned from the expedition."));
             }
 
 
             var player = ChannelServer.getPlayerStorage().getCharacterById(cid);
             if (player != null && player.isLoggedinWorld())
             {
-                player.sendPacket(PacketCreator.removeClock());
+                await player.SendPacket(PacketCreator.removeClock());
                 if (!silent)
                 {
-                    player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
+                    await player.dropMessage(6, "[Expedition] You have been banned from this expedition.");
                 }
                 if (ExpeditionType.ARIANT.Equals(type) || ExpeditionType.ARIANT1.Equals(type) || ExpeditionType.ARIANT2.Equals(type))
                 {
-                    player.changeMap(MapId.ARPQ_LOBBY);
+                    await player.changeMap(MapId.ARPQ_LOBBY);
                 }
             }
             else
@@ -414,7 +410,7 @@ public class Expedition : IClientMessenger
         return chars.GroupBy(x => x.getMapId()).Count() <= 1;
     }
 
-    public void warpExpeditionTeam(int warpFrom, int warpTo)
+    public async Task warpExpeditionTeam(int warpFrom, int warpTo)
     {
         List<Player> players = getActiveMembers();
 
@@ -422,22 +418,22 @@ public class Expedition : IClientMessenger
         {
             if (chr.getMapId() == warpFrom)
             {
-                chr.changeMap(warpTo);
+                await chr.changeMap(warpTo);
             }
         }
     }
 
-    public void warpExpeditionTeam(int warpTo)
+    public async Task warpExpeditionTeam(int warpTo)
     {
         List<Player> players = getActiveMembers();
 
         foreach (Player chr in players)
         {
-            chr.changeMap(warpTo);
+            await chr.changeMap(warpTo);
         }
     }
 
-    public void warpExpeditionTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
+    public async Task warpExpeditionTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
         List<Player> players = getActiveMembers();
 
@@ -445,24 +441,24 @@ public class Expedition : IClientMessenger
         {
             if (chr.getMapId() == warpFrom)
             {
-                chr.changeMap(warpTo, toSp);
+                await chr.changeMap(warpTo, toSp);
             }
         }
     }
 
-    public void warpExpeditionTeamToMapSpawnPoint(int warpTo, int toSp)
+    public async Task warpExpeditionTeamToMapSpawnPoint(int warpTo, int toSp)
     {
         List<Player> players = getActiveMembers();
 
         foreach (Player chr in players)
         {
-            chr.changeMap(warpTo, toSp);
+            await chr.changeMap(warpTo, toSp);
         }
     }
 
-    public bool addChannelExpedition(WorldChannel ch)
+    public async Task<bool> addChannelExpedition(WorldChannel ch)
     {
-        return ch.addExpedition(this);
+        return await ch.addExpedition(this);
     }
 
     public void removeChannelExpedition(WorldChannel ch)
@@ -511,33 +507,33 @@ public class Expedition : IClientMessenger
     }
 
 
-    public void TypedMessage(int type, string messageKey, params string[] param)
+    public async Task TypedMessage(int type, string messageKey, params string[] param)
     {
         foreach (Player chr in getActiveMembers())
         {
-            chr.TypedMessage(type, messageKey, param);
+            await chr.TypedMessage(type, messageKey, param);
         }
     }
 
-    public void Notice(string key, params string[] param) => TypedMessage(0, key, param);
+    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
 
-    public void Popup(string key, params string[] param) => TypedMessage(1, key, param);
+    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
 
-    public void TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
+    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
 
-    public void Pink(string key, params string[] param) => TypedMessage(5, key, param);
+    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
 
-    public void LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
+    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
 
-    public void Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public void EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public void Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
+    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
+    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
 
-    public void LightBlue(Func<ClientCulture, string> action)
+    public async Task LightBlue(Func<ClientCulture, string> action)
     {
         foreach (var chr in getActiveMembers())
         {
-            chr.LightBlue(action);
+            await chr.LightBlue(action);
         }
     }
 }

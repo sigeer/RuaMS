@@ -53,38 +53,34 @@ public class NPCScriptManager : AbstractScriptManager
         return engine != null;
     }
 
-    public bool start(IChannelClient c, int npc, Player? chr)
+    public async Task<bool> start(IChannelClient c, int npc, Player? chr)
     {
-        return start(c, npc, -1, chr);
+        return await start(c, npc, -1, chr);
     }
 
-    public bool start(IChannelClient c, int npc, int oid, Player? chr)
+    public async Task<bool> start(IChannelClient c, int npc, int oid, Player? chr)
     {
-        return start(c, npc, oid, null, chr);
+        return await start(c, npc, oid, null, chr);
     }
 
-    public bool start(IChannelClient c, int npc, string? fileName, Player? chr)
+    public async Task<bool> start(IChannelClient c, int npc, string? fileName, Player? chr)
     {
-        return start(c, npc, -1, fileName, chr);
+        return await start(c, npc, -1, fileName, chr);
     }
 
-    public bool start(IChannelClient c, int npc, int oid, string? fileName, Player? chr)
+    public async Task<bool> start(IChannelClient c, int npc, int oid, string? fileName, Player? chr)
     {
-        return start(c, npc, oid, fileName, chr, false, "cm");
+        return await start(c, npc, oid, fileName, chr, false, "cm");
     }
 
-    public bool StartScriptByItem(IChannelClient c, int npc, string? script)
-    {
-        return start(c, npc, -1, script, null, true, "im");
-    }
 
-    private bool start(IChannelClient c, int npc, int oid, string? fileName, Player? chr, bool itemScript, string engineName)
+    private async Task<bool> start(IChannelClient c, int npc, int oid, string? fileName, Player? chr, bool itemScript, string engineName)
     {
         try
         {
             if (c.NPCConversationManager != null)
             {
-                c.NPCConversationManager.dispose();
+                await c.NPCConversationManager.DisposeAsync();
                 return false;
             }
 
@@ -120,7 +116,7 @@ public class NPCScriptManager : AbstractScriptManager
                 c.NPCConversationManager = new NPCConversationManager(c, npc, oid, scriptMeta);
                 if (engine == null)
                 {
-                    c.NPCConversationManager.dispose();
+                    await c.NPCConversationManager.DisposeAsync();
                     return false;
                 }
                 engine.AddHostedObject(engineName, c.NPCConversationManager);
@@ -132,20 +128,20 @@ public class NPCScriptManager : AbstractScriptManager
             }
             else
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
             return true;
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error starting NPC script: {ScriptName}, Npc: {Npc}", fileName, npc);
-            c.NPCConversationManager?.dispose();
+            c.NPCConversationManager?.DisposeAsync();
 
             return false;
         }
     }
 
-    public bool action(IChannelClient c, sbyte mode, sbyte type, int selection)
+    public async Task<bool> action(IChannelClient c, sbyte mode, sbyte type, int selection)
     {
         var iv = _scripts[c];
         if (iv != null)
@@ -170,7 +166,7 @@ public class NPCScriptManager : AbstractScriptManager
                         catch (Exception)
                         {
                         }
-                        c.NPCConversationManager?.dispose();
+                        c.NPCConversationManager?.DisposeAsync();
                     }
                 }
                 else
@@ -183,7 +179,7 @@ public class NPCScriptManager : AbstractScriptManager
                 if (c.NPCConversationManager != null)
                 {
                     _logger.LogError(t, "Error performing NPC script action for ScriptName: {ScriptName}, Npc: {Npc}", c.NPCConversationManager.ScriptMeta, c.NPCConversationManager.getNpc());
-                    c.NPCConversationManager.dispose();
+                    await c.NPCConversationManager.DisposeAsync();
                 }
                 return false;
             }
@@ -191,13 +187,13 @@ public class NPCScriptManager : AbstractScriptManager
         return false;
     }
 
-    public void dispose(NPCConversationManager cm)
+    public async Task dispose(NPCConversationManager cm)
     {
         var c = cm.getClient();
         c.OnlinedCharacter.setCS(false);
         c.OnlinedCharacter.setNpcCooldown(c.CurrentServer.Node.getCurrentTime());
         c.NPCConversationManager = null;
         _scripts.Remove(c);
-        c.OnlinedCharacter.flushDelayedUpdateQuests();
+        await c.OnlinedCharacter.flushDelayedUpdateQuests();
     }
 }

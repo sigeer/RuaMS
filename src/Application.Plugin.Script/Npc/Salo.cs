@@ -70,10 +70,10 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(couponId))
                 {
-                    gainItem(couponId, -1);
+                    await gainItem(couponId, -1);
                     var hairOptions = GetHairOptions(maleHairs, femaleHairs);
                     var hair = Randomizer.Select(hairOptions.ToArray());
-                    setHair(hair);
+                    await setHair(hair);
                     await SayOK("享受你的新发型吧！");
                     return true;
                 }
@@ -92,8 +92,8 @@ namespace Application.Plugin.Script.Npc
 
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setHair(hairOptions[hairIdx]);
+                await gainItem(couponId, -1);
+                await setHair(hairOptions[hairIdx]);
                 await SayOK("享受你的新发型吧！");
                 return true;
             }
@@ -110,10 +110,10 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(couponId))
                 {
-                    gainItem(couponId, -1);
+                    await gainItem(couponId, -1);
                     var hairColorOptions = GetHairColorOptions();
                     var color = Randomizer.Select(hairColorOptions.ToArray());
-                    setHair(color);
+                    await setHair(color);
                     await SayOK("享受你的新发色吧！");
                     return true;
                 }
@@ -131,8 +131,8 @@ namespace Application.Plugin.Script.Npc
             var colorIdx = await AskAvatar($"我完全可以改变你的发色，让它看起来那么好。你为什么不改一下呢？只需要 #b#t{couponId}##k，剩下的交给我，选你喜欢的颜色吧！", hairColorOptions.ToArray());
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setHair(hairColorOptions[colorIdx]);
+                await gainItem(couponId, -1);
+                await setHair(hairColorOptions[colorIdx]);
                 await SayOK("享受你的新发色吧！");
                 return true;
             }
@@ -149,10 +149,10 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(couponId))
                 {
-                    gainItem(couponId, -1);
+                    await gainItem(couponId, -1);
                     var lensOptions = GetLensOptions(colorOffsets);
                     var lens = Randomizer.Select(lensOptions.ToArray());
-                    setFace(lens);
+                    await setFace(lens);
                     await SayOK("享受你的新款和升级版的隐形眼镜吧！");
                     return true;
                 }
@@ -170,8 +170,8 @@ namespace Application.Plugin.Script.Npc
             var lensIdx = await AskAvatar("用我们的专业机器，您可以提前看到治疗后的自己，您想戴什么样的镜片呢？选择自己喜欢的款式吧。", lensOptions.ToArray());
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setFace(lensOptions[lensIdx]);
+                await gainItem(couponId, -1);
+                await setFace(lensOptions[lensIdx]);
                 await SayOK("享受你的新款和升级版的隐形眼镜吧！");
                 return true;
             }
@@ -195,8 +195,8 @@ namespace Application.Plugin.Script.Npc
             var couponId = 5152100 + color;
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setFace(lensOptions[lensIdx]);
+                await gainItem(couponId, -1);
+                await setFace(lensOptions[lensIdx]);
                 await SayOK("享受你的新款和升级版的隐形眼镜吧！");
                 return true;
             }
@@ -213,10 +213,10 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(couponId))
                 {
-                    gainItem(couponId, -1);
+                    await gainItem(couponId, -1);
                     var faceOptions = GetFaceOptions(maleFaces, femaleFaces);
                     var face = Randomizer.Select(faceOptions.ToArray());
-                    setFace(face);
+                    await setFace(face);
                     await SayOK("享受你的新面容吧！");
                     return true;
                 }
@@ -235,8 +235,8 @@ namespace Application.Plugin.Script.Npc
 
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setFace(faceOptions[faceIdx]);
+                await gainItem(couponId, -1);
+                await setFace(faceOptions[faceIdx]);
                 await SayOK("享受你的新面容吧！");
                 return true;
             }
@@ -253,8 +253,8 @@ namespace Application.Plugin.Script.Npc
             var skinIdx = await AskAvatar(styleMessage, skinOptions);
             if (haveItem(couponId))
             {
-                gainItem(couponId, -1);
-                setSkin(skinOptions[skinIdx]);
+                await gainItem(couponId, -1);
+                await setSkin(skinOptions[skinIdx]);
 
                 await SayOK("享受你的新肤色吧！");
                 return true;
@@ -283,8 +283,8 @@ namespace Application.Plugin.Script.Npc
             }
             if (hasCoupon)
             {
-                gainItem(usedCouponId, -1);
-                setHair(hairOptions[hairIdx]);
+                await gainItem(usedCouponId, -1);
+                await setHair(hairOptions[hairIdx]);
                 await SayOK("享受你的新发型吧！");
                 return true;
             }
@@ -891,9 +891,9 @@ namespace Application.Plugin.Script.Npc
 
                 if (haveItem(4031528))
                 {
-                    gainItem(4031528, -1);
+                    await gainItem(4031528, -1);
                     var hair = Randomizer.Select(hairnew.ToArray());
-                    setHair(hair);
+                    await setHair(hair);
                     await SayNext("还不错，如果我这么说的话！我知道我学习的那些书会派上用场……");
                 }
                 else

@@ -6,12 +6,12 @@ public class FishingRateCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !fishrate <newrate>");
+            await player.Yellow("Syntax: !fishrate <newrate>");
             return;
         }
 

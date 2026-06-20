@@ -15,13 +15,13 @@ public class DebugCommand : CommandBase
     }
 
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !debug <type>");
+            await player.Yellow("Syntax: !debug <type>");
             return;
         }
 
@@ -35,7 +35,7 @@ public class DebugCommand : CommandBase
                     msgTypes += ("#L" + i + "#" + debugTypes[i] + "#l\r\n");
                 }
 
-                c.getAbstractPlayerInteraction().npcTalk(NpcId.STEWARD, msgTypes);
+                await c.getAbstractPlayerInteraction().npcTalk(NpcId.STEWARD, msgTypes);
                 break;
 
             case "monster":
@@ -44,7 +44,7 @@ public class DebugCommand : CommandBase
                 {
                     var monster = (Monster)monstermo;
                     var controller = monster.getController();
-                    player.message("Monster ID: " + monster.getId() + " Aggro target: " + ((controller != null) ? controller.getName() + " Has aggro: " + monster.isControllerHasAggro() + " Knowns aggro: " + monster.isControllerKnowsAboutAggro() : "<none>"));
+                    await player.Pink("Monster ID: " + monster.getId() + " Aggro target: " + ((controller != null) ? controller.getName() + " Has aggro: " + monster.isControllerHasAggro() + " Knowns aggro: " + monster.isControllerKnowsAboutAggro() : "<none>"));
                 }
                 break;
 
@@ -56,11 +56,11 @@ public class DebugCommand : CommandBase
                 var portal = player.getMap().findClosestPortal(player.getPosition());
                 if (portal != null)
                 {
-                    player.dropMessage(6, "Closest portal: " + portal.getId() + " '" + portal.getName() + "' Type: " + portal.getType() + " --> toMap: " + portal.getTargetMapId() + " scriptname: '" + portal.getScriptName() + "' state: " + (portal.getPortalState() ? 1 : 0) + ".");
+                    await player.LightBlue("Closest portal: " + portal.getId() + " '" + portal.getName() + "' Type: " + portal.getType() + " --> toMap: " + portal.getTargetMapId() + " scriptname: '" + portal.getScriptName() + "' state: " + (portal.getPortalState() ? 1 : 0) + ".");
                 }
                 else
                 {
-                    player.dropMessage(6, "There is no portal on this map.");
+                    await player.LightBlue("There is no portal on this map.");
                 }
                 break;
 
@@ -68,55 +68,55 @@ public class DebugCommand : CommandBase
                 var sp = player.getMap().findClosestSpawnpoint(player.getPosition());
                 if (sp != null)
                 {
-                    player.dropMessage(6, "Closest mob spawn point: " + " Position: x " + sp.getPosition().X + " y " + sp.getPosition().Y + " Spawns mobid: '" + sp.getMonsterId() + "' --> canSpawn: " + !sp.getDenySpawn() + " canSpawnRightNow: " + sp.shouldSpawn() + ".");
+                    await player.LightBlue("Closest mob spawn point: " + " Position: x " + sp.getPosition().X + " y " + sp.getPosition().Y + " Spawns mobid: '" + sp.getMonsterId() + "' --> canSpawn: " + !sp.getDenySpawn() + " canSpawnRightNow: " + sp.shouldSpawn() + ".");
                 }
                 else
                 {
-                    player.dropMessage(6, "There is no mob spawn point on this map.");
+                    await player.LightBlue("There is no mob spawn point on this map.");
                 }
                 break;
 
             case "pos":
-                player.dropMessage(6, "Current map position: (" + player.getPosition().X + ", " + player.getPosition().Y + ").");
+                await player.LightBlue("Current map position: (" + player.getPosition().X + ", " + player.getPosition().Y + ").");
                 break;
 
             case "map":
-                player.dropMessage(6, "Current map id " + player.getMap().getId() + ", event: '" + (player.getMap().getEventInstance()?.getName() ?? "null") + "'; Players: " + player.getMap().getAllPlayers().Count + ", Mobs: " + player.getMap().countMonsters() + ", Reactors: " + player.getMap().countReactors() + ", Items: " + player.getMap().countItems() + ", Objects: " + player.getMap().getMapObjects().Count + ".");
+                await player.LightBlue("Current map id " + player.getMap().getId() + ", event: '" + (player.getMap().getEventInstance()?.getName() ?? "null") + "'; Players: " + player.getMap().getAllPlayers().Count + ", Mobs: " + player.getMap().countMonsters() + ", Reactors: " + player.getMap().countReactors() + ", Items: " + player.getMap().countItems() + ", Objects: " + player.getMap().getMapObjects().Count + ".");
                 break;
 
             case "mobsp":
-                player.getMap().reportMonsterSpawnPoints(player);
+                await player.getMap().reportMonsterSpawnPoints(player);
                 break;
 
             case "event":
                 if (player.getEventInstance() == null)
                 {
-                    player.dropMessage(6, "Player currently not in an event.");
+                    await player.LightBlue("Player currently not in an event.");
                 }
                 else
                 {
-                    player.dropMessage(6, "Current event name: " + player.getEventInstance()!.getName() + ".");
+                    await player.LightBlue("Current event name: " + player.getEventInstance()!.getName() + ".");
                 }
                 break;
 
             case "areas":
-                player.dropMessage(6, "Configured areas on map " + player.getMapId() + ":");
+                await player.LightBlue("Configured areas on map " + player.getMapId() + ":");
 
                 byte index = 0;
                 foreach (Rectangle rect in player.getMap().getAreas())
                 {
-                    player.dropMessage(6, "Id: " + index + " -> posX: " + rect.X + " posY: '" + rect.Y + "' dX: " + rect.Width + " dY: " + rect.Height + ".");
+                    await player.LightBlue("Id: " + index + " -> posX: " + rect.X + " posY: '" + rect.Y + "' dX: " + rect.Width + " dY: " + rect.Height + ".");
                     index++;
                 }
                 break;
 
             case "reactors":
-                player.dropMessage(6, "Current reactor states on map " + player.getMapId() + ":");
+                await player.LightBlue("Current reactor states on map " + player.getMapId() + ":");
 
                 foreach (var mmo in player.getMap().getReactors())
                 {
                     Reactor mr = (Reactor)mmo;
-                    player.dropMessage(6, "Id: " + mr.getId() + " Oid: " + mr.getObjectId() + " name: '" + mr.getName() + "' -> Type: " + mr.getReactorType() + " State: " + mr.getState() + " Event State: " + mr.getEventState() + " Position: x " + mr.getPosition().X + " y " + mr.getPosition().Y + ".");
+                    await player.LightBlue("Id: " + mr.getId() + " Oid: " + mr.getObjectId() + " name: '" + mr.getName() + "' -> Type: " + mr.getReactorType() + " State: " + mr.getState() + " Event State: " + mr.getEventState() + " Position: x " + mr.getPosition().X + " y " + mr.getPosition().Y + ".");
                 }
                 break;
 
@@ -127,7 +127,7 @@ public class DebugCommand : CommandBase
                     st += (i + " ");
                 }
 
-                player.dropMessage(6, st);
+                await player.LightBlue(st);
                 break;
 
             //case "marriage":
@@ -143,7 +143,7 @@ public class DebugCommand : CommandBase
                 break;
 
             case "disease":
-                c.OnlinedCharacter.DebugListAllDisease();
+                await c.OnlinedCharacter.DebugListAllDisease();
                 break;
         }
     }

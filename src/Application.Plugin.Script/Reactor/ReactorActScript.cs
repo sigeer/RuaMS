@@ -6,7 +6,6 @@ using scripting.reactor;
 using server.life;
 using server.maps;
 using System.Drawing;
-using tools;
 
 namespace Application.Plugin.Script
 {
@@ -17,292 +16,286 @@ namespace Application.Plugin.Script
     // 9208000, 9208001, 9208002, 9208004, 9208007, 9208009, 9400300, 9400301
     internal class ReactorActScript : ReactorActionManager
     {
-        public ReactorActScript(IChannelClient c, Reactor r) : base(c, r, null)
+        public ReactorActScript(IChannelClient c, Reactor r) : base(c, r)
         {
         }
 
         // Reactor: 2000, 2001 
-        public Task mBoxItem0()
+        public async Task mBoxItem0()
         {
-            dropItems(true, 2, 8, 15, 1);
-            return Task.CompletedTask;
+            await dropItems(true, 2, 8, 15, 1);
+
         }
 
 
         // Reactor: 1002000 
-        public Task babyBirdItem0()
+        public async Task babyBirdItem0()
         {
             // TODO
             // 1002000
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1002001 
-        public Task BF_item0()
+        public async Task BF_item0()
         {
             // TODO
             // 1002001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1002002 
-        public Task BF_item1()
+        public async Task BF_item1()
         {
             // TODO
             // 1002002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1002003 
-        public Task BF_item2()
+        public async Task BF_item2()
         {
             // TODO
             // 1002003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1002006 
-        public Task BF_item5()
+        public async Task BF_item5()
         {
             // TODO
             // 1002006
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1006000 
-        public Task lostDoyoNPC0()
+        public async Task lostDoyoNPC0()
         {
             // TODO
             // 1006000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1009000 
-        public Task BF_scr0()
+        public async Task BF_scr0()
         {
             // TODO
             // 1009000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1012000 
-        public Task vFlowerItem0()
+        public async Task vFlowerItem0()
         {
-            dropItems(true, 2, 20, 40);
+            await dropItems(true, 2, 20, 40);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020000 
-        public Task s4hitmanMap0()
+        public async Task s4hitmanMap0()
         {
-            warp(910200000, "pt00");
-
-            return Task.CompletedTask;
+            await warp(910200000, "pt00");
         }
 
 
         // Reactor: 1020001 
-        public Task s4hitmanMap1()
+        public async Task s4hitmanMap1()
         {
-            warp(910200000, "pt01");
-
-            return Task.CompletedTask;
+            await warp(910200000, "pt01");
         }
 
 
         // Reactor: 1020002 
-        public Task s4hitmanMap2()
+        public async Task s4hitmanMap2()
         {
-            warp(910200000, "pt02");
-
-            return Task.CompletedTask;
+            await warp(910200000, "pt02");
         }
 
 
         // Reactor: 1020003 
-        public Task s4hitmanMap3()
+        public async Task s4hitmanMap3()
         {
             // TODO
             // 1020003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020004 
-        public Task s4hitmanMap4()
+        public async Task s4hitmanMap4()
         {
             // TODO
             // 1020004
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020005 
-        public Task s4hitmanMap5()
+        public async Task s4hitmanMap5()
         {
             // TODO
             // 1020005
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020006 
-        public Task s4hitmanMap6()
+        public async Task s4hitmanMap6()
         {
             // TODO
             // 1020006
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020007 
-        public Task s4hitmanMap7()
+        public async Task s4hitmanMap7()
         {
             // TODO
             // 1020007
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1020008 
-        public Task s4hitmanMap8()
+        public async Task s4hitmanMap8()
         {
             // TODO
             // 1020008
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1021000 
-        public Task s4hitmanMob0()
+        public async Task s4hitmanMob0()
         {
-            spawnMonster(9300091);
+            await spawnMonster(9300091);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1021001 
-        public Task s4hitmanMob1()
+        public async Task s4hitmanMob1()
         {
-            spawnMonster(9300091);
+            await spawnMonster(9300091);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1022000 
-        public Task s4hitmanItem0()
+        public async Task s4hitmanItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1022001 
-        public Task periItem0()
+        public async Task periItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1022002, 1032000, 1202000, 1202004 
-        public Task EpisodeQuest0()
+        public async Task EpisodeQuest0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1029000 
-        public Task scaScript0()
+        public async Task scaScript0()
         {
             if (isAllReactorState(1029000, 0x04))
             { // 0x04 appears to be the destroyed state
-                killMonster(3230300);
-                killMonster(3230301);
-                playerMessage(6, "Once the rock crumbled, Jr. Boogie was in great pain and disappeared.");
+                await killMonster(3230300);
+                await killMonster(3230301);
+                await LightBlue("Once the rock crumbled, Jr. Boogie was in great pain and disappeared.");
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1050000 
-        public Task s4berserkMap0()
+        public async Task s4berserkMap0()
         {
             if (Random.Shared.NextDouble() > 0.7)
             {
-                dropItems();
+                await dropItems();
             }
             else
             {
-                warp(105090200, 0);
+                await warp(105090200, 0);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1052000 
-        public Task s4berserkItem0()
+        public async Task s4berserkItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1052001, 1052002, 1052003 
-        public Task balogItem0()
+        public async Task balogItem0()
         {
-            sprayItems(true, 1, 500, 1000, 15);
+            await dropItems(true, 1, 500, 1000, 15);
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1058001, 1058003, 1058004, 1058011, 1058013, 1058014 
-        public Task minibalogSummon()
+        public async Task minibalogSummon()
         {
             // TODO
             // 1058001
@@ -318,144 +311,144 @@ namespace Application.Plugin.Script
             // 1058014
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1058005 
-        public Task balogReactor()
+        public async Task balogReactor()
         {
             // TODO
             // 1058005
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1058015 
-        public Task Easy_balogReactor()
+        public async Task Easy_balogReactor()
         {
             // TODO
             // 1058015
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1072000 
-        public Task vFlowerItem1()
+        public async Task vFlowerItem1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1102000 
-        public Task coconut0()
+        public async Task coconut0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1102001 
-        public Task coconut1()
+        public async Task coconut1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1102002 
-        public Task coconut2()
+        public async Task coconut2()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1102003 
-        public Task florinaBox0()
+        public async Task florinaBox0()
         {
             // TODO
             // 1102003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1200000 
-        public Task ntQuest02()
+        public async Task ntQuest02()
         {
             // string visibility thanks to ProXAIMeRx & Glvelturall
-            message("Failed to find Bart. Returning to the original location.");
-            warp(120000102);
+            await Pink("Failed to find Bart. Returning to the original location.");
+            await warp(120000102);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1202002 
-        public Task ntItem03()
+        public async Task ntItem03()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1202003 
-        public Task EpisodeQuest1()
+        public async Task EpisodeQuest1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1209000 
-        public Task ntQuest01()
+        public async Task ntQuest01()
         {
             // string visibility thanks to ProXAIMeRx & Glvelturall
             if (isQuestStarted(6400))
             {
-                setQuestProgress(6400, 1, 2);
-                setQuestProgress(6400, 6401, "q3");
+                await setQuestProgress(6400, 1, 2);
+                await setQuestProgress(6400, 6401, "q3");
             }
 
-            message("Real Bart has been found. Return to Jonathan through the portal.");
+            await Pink("Real Bart has been found. Return to Jonathan through the portal.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1302000 
-        public Task erebItem0()
+        public async Task erebItem0()
         {
-            dropItems(true, 2, 8, 12, 2);
+            await dropItems(true, 2, 8, 12, 2);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 1402000 
-        public Task rienItem0()
+        public async Task rienItem0()
         {
-            dropItems(true, 2, 8, 15);
+            await dropItems(true, 2, 8, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001000 
-        public Task fgodMob0()
+        public async Task fgodMob0()
         {
             if (getMap().getSummonState())
             {
@@ -470,22 +463,22 @@ namespace Application.Plugin.Script
                     {
                         getMap().allowSummonState(false);
                     }
-                    spawnMonster(monsterId);
+                    await spawnMonster(monsterId);
                     GetEventInstanceTrust().setProperty("statusStg7_c", nextCount);
                 }
                 else
                 {
-                    spawnMonster(9300049);
+                    await spawnMonster(9300049);
                     getMap().allowSummonState(false);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001001 
-        public Task fgodMob1()
+        public async Task fgodMob1()
         {
             if (getMap().getSummonState())
             {
@@ -500,22 +493,22 @@ namespace Application.Plugin.Script
                     {
                         getMap().allowSummonState(false);
                     }
-                    spawnMonster(monsterId);
+                    await spawnMonster(monsterId);
                     GetEventInstanceTrust().setProperty("statusStg7_c", nextCount);
                 }
                 else
                 {
-                    spawnMonster(9300049);
+                    await spawnMonster(9300049);
                     getMap().allowSummonState(false);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001002 
-        public Task fgodMob2()
+        public async Task fgodMob2()
         {
             var eim = GetEventInstanceTrust();
             if (eim.getIntProperty("statusStg2") == -1)
@@ -530,12 +523,12 @@ namespace Application.Plugin.Script
             var count = eim.getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -545,15 +538,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001003 
-        public Task fgodMob3()
+        public async Task fgodMob3()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -567,13 +560,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -583,15 +576,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001004 
-        public Task fgodMob4()
+        public async Task fgodMob4()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -605,13 +598,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -621,15 +614,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001005 
-        public Task fgodMob5()
+        public async Task fgodMob5()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -643,13 +636,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -659,15 +652,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001006 
-        public Task fgodMob6()
+        public async Task fgodMob6()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -681,13 +674,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -697,15 +690,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001007 
-        public Task fgodMob7()
+        public async Task fgodMob7()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -719,13 +712,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -735,15 +728,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001008 
-        public Task fgodMob8()
+        public async Task fgodMob8()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -757,13 +750,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -773,15 +766,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001009 
-        public Task fgodMob9()
+        public async Task fgodMob9()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -795,13 +788,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -811,15 +804,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001010 
-        public Task fgodMob10()
+        public async Task fgodMob10()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -833,13 +826,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -849,15 +842,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001011 
-        public Task fgodMob11()
+        public async Task fgodMob11()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -871,13 +864,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -887,15 +880,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001012 
-        public Task fgodMob12()
+        public async Task fgodMob12()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -909,13 +902,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -925,15 +918,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001013 
-        public Task fgodMob13()
+        public async Task fgodMob13()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -947,13 +940,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -963,15 +956,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001014 
-        public Task fgodMob14()
+        public async Task fgodMob14()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -985,13 +978,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -1001,15 +994,15 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001015 
-        public Task fgodMob15()
+        public async Task fgodMob15()
         {
             if (GetEventInstanceTrust().getIntProperty("statusStg2") == -1)
             {
@@ -1023,13 +1016,13 @@ namespace Application.Plugin.Script
             var count = GetEventInstanceTrust().getIntProperty("statusStg2_c");
             if (count >= limit)
             {
-                dropItems();
+                await dropItems();
 
                 var eim = GetEventInstanceTrust();
-                eim.giveEventPlayersExp(3500);
+                await eim.giveEventPlayersExp(3500);
 
                 eim.setProperty("statusStg2", "1");
-                eim.showClearEffect(true);
+                await eim.showClearEffect(true);
             }
             else
             {
@@ -1039,315 +1032,315 @@ namespace Application.Plugin.Script
                 var nextHashed = (11 * (count)) % 14;
 
                 var nextPos = getMap().getReactorById(2001002 + nextHashed).getPosition();
-                spawnMonster(9300040, 1, nextPos);
+                await spawnMonster(9300040, 1, nextPos);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2001016 
-        public Task fgodBoss()
+        public async Task fgodBoss()
         {
-            getMap().killAllMonsters();
+            await getMap().killAllMonsters();
             getMap().allowSummonState(false);
-            spawnMonster(9300039, 260, 490);
-            mapMessage(5, "As the air on the tower outskirts starts to become more dense, Papa Pixie appears.");
+            await spawnMonster(9300039, 260, 490);
+            await mapMessage(5, "As the air on the tower outskirts starts to become more dense, Papa Pixie appears.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002000 
-        public Task oBoxItem0()
+        public async Task oBoxItem0()
         {
-            dropItems(true, 2, 60, 80);
+            await dropItems(true, 2, 60, 80);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002001 
-        public Task fgodItem0()
+        public async Task fgodItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002002 
-        public Task fgodItem1()
+        public async Task fgodItem1()
         {
             // TODO
             // 2002002
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002003 
-        public Task fgodItem2()
+        public async Task fgodItem2()
         {
-            dropItems();
+            await dropItems();
 
             var eim = GetEventInstanceTrust();
             eim.setProperty("statusStg7", "1");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002004 
-        public Task fgodItem3()
+        public async Task fgodItem3()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002005 
-        public Task fgodItem4()
+        public async Task fgodItem4()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002006 
-        public Task fgodItem5()
+        public async Task fgodItem5()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002007 
-        public Task fgodItem6()
+        public async Task fgodItem6()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002008 
-        public Task fgodItem7()
+        public async Task fgodItem7()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002009 
-        public Task fgodItem8()
+        public async Task fgodItem8()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002010 
-        public Task fgodItem9()
+        public async Task fgodItem9()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002011 
-        public Task fgodItem10()
+        public async Task fgodItem10()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002012 
-        public Task fgodItem11()
+        public async Task fgodItem11()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002013 
-        public Task fgodItem12()
+        public async Task fgodItem12()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002014 
-        public Task fgodItem13()
+        public async Task fgodItem13()
         {
-            dropItems(true, 1, 100, 400, 15);
+            await dropItems(true, 1, 100, 400, 15);
 
             var eim = GetEventInstanceTrust();
             if (eim.getProperty("statusStgBonus") != "1")
             {
-                spawnNpc(2013002, new Point(46, 840));
+                await spawnNpc(2013002, new Point(46, 840));
                 eim.setProperty("statusStgBonus", "1");
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002015 
-        public Task fgodItem14()
+        public async Task fgodItem14()
         {
             // TODO
             // 2002015
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002016 
-        public Task fgodItem15()
+        public async Task fgodItem15()
         {
             // TODO
             // 2002016
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002017 
-        public Task fgodItem16()
+        public async Task fgodItem16()
         {
-            sprayItems(true, 1, 100, 400, 15);
+            await dropItems(true, 1, 100, 400, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2002018 
-        public Task fgodItem17()
+        public async Task fgodItem17()
         {
-            sprayItems(true, 1, 100, 400, 15);
+            await dropItems(true, 1, 100, 400, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2006000 
-        public Task fgodNPC0()
+        public async Task fgodNPC0()
         {
 
-            mapMessage(5, "As the light flickers, someone appears out of the light.");
-            spawnNpc(2013001);
+            await mapMessage(5, "As the light flickers, someone appears out of the light.");
+            await spawnNpc(2013001);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2006001 
-        public Task fgodNPC1()
+        public async Task fgodNPC1()
         {
-            spawnNpc(2013002);
+            await spawnNpc(2013002);
             var eim = GetEventInstanceTrust();
-            eim.clearPQ();
+            await eim.clearPQ();
 
             eim.setProperty("statusStg8", "1");
-            eim.giveEventPlayersExp(3500);
-            eim.showClearEffect(true);
+            await eim.giveEventPlayersExp(3500);
+            await eim.showClearEffect(true);
 
-            eim.startEventTimer(5 * 60000); //bonus time
+            await eim.startEventTimer(5 * 60000); //bonus time
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2092000 
-        public Task snowdrop()
+        public async Task snowdrop()
         {
             // TODO
             // 2092000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2092001 
-        public Task snowdrop1()
+        public async Task snowdrop1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2092002 
-        public Task SEAitem0()
+        public async Task SEAitem0()
         {
             // TODO
             // 2092002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2092003 
-        public Task canedrop()
+        public async Task canedrop()
         {
             // TODO
             // 2092003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2099000 
-        public Task snowScript0()
+        public async Task snowScript0()
         {
             // TODO
             // 2099000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2110000 
-        public Task go280010000()
+        public async Task go280010000()
         {
-            playerMessage(5, "An unknown force has moved you to the starting point.");
-            warp(280010000, 0);
+            await Pink("An unknown force has moved you to the starting point.");
+            await warp(280010000, 0);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2111000 
-        public Task boxMob0()
+        public async Task boxMob0()
         {
-            playerMessage(5, "Oh noes! Monsters in the chest!");
-            spawnMonster(9300004, 3);
+            await Pink("Oh noes! Monsters in the chest!");
+            await spawnMonster(9300004, 3);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2111001 
-        public Task boss()
+        public async Task boss()
         {
             var eim = getEventInstance();
             if (eim != null)
@@ -1355,781 +1348,781 @@ namespace Application.Plugin.Script
                 eim.setProperty("summoned", "true");
                 eim.setProperty("canEnter", "false");
             }
-            changeMusic("Bgm06/FinalFight");
-            SpawnZakum();
+            await changeMusic("Bgm06/FinalFight");
+            await SpawnZakum();
 
-            createMapMonitor(280030000, "ps00");
-            mapMessage(5, "Zakum is summoned by the force of Eye of Fire.");
+            await createMapMonitor(280030000, "ps00");
+            await mapMessage(5, "Zakum is summoned by the force of Eye of Fire.");
 
-            return Task.CompletedTask;
+
         }
 
 
         [ScriptName("boxItem0", "boxItem1", "boxItem2", "boxItem3")]
-        public Task BoxItem()
+        public async Task BoxItem()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112004, 2112011 
-        public Task boxKey0()
+        public async Task boxKey0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112005, 2112012 
-        public Task boxPaper0()
+        public async Task boxPaper0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112006 
-        public Task money10000()
+        public async Task money10000()
         {
-            dropItems(true, 1, 500, 800);
+            await dropItems(true, 1, 500, 800);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112013 
-        public Task money100()
+        public async Task money100()
         {
-            dropItems(true, 1, 125, 175);
+            await dropItems(true, 1, 125, 175);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112014 
-        public Task boxBItem0()
+        public async Task boxBItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112015 
-        public Task s4frameItem0()
+        public async Task s4frameItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112016 
-        public Task s4fireHawkItem0()
+        public async Task s4fireHawkItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2112017 
-        public Task s4iceEagleItem0()
+        public async Task s4iceEagleItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2119000 
-        public Task scaScript1()
+        public async Task scaScript1()
         {
             // TODO
             // 2119000
             // If the chest is destroyed before Riche, killing him should yield no exp
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2119001 
-        public Task scaScript2()
+        public async Task scaScript2()
         {
             // TODO
             // 2119001
             // If the chest is destroyed before Riche, killing him should yield no exp
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2119002 
-        public Task scaScript3()
+        public async Task scaScript3()
         {
             // TODO
             // 2119002
             // If the chest is destroyed before Riche, killing him should yield no exp
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2119003 
-        public Task scaScript4()
+        public async Task scaScript4()
         {
             // TODO
             // 2119003
             // If the chest is destroyed before Riche, killing him should yield no exp
 
-            return Task.CompletedTask;
+
         }
 
 
         [ScriptName("snowscaScript0", "snowscaScript1", "snowscaScript2")]
-        public Task SnowscaScript()
+        public async Task SnowscaScript()
         {
-            weakenAreaBoss(6090001, "The light at the altar appeases the hatred of the Snow Witch. The force of the Witch has weakened.");
+            await weakenAreaBoss(6090001, "The light at the altar appeases the hatred of the Snow Witch. The force of the Witch has weakened.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2200000 
-        public Task go221024400()
+        public async Task go221024400()
         {
-            playerMessage(5, "差一点就成功了！下次再挑战吧！");
-            warp(221024400, 1);
+            await Pink("差一点就成功了！下次再挑战吧！");
+            await warp(221024400, 1);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2200001 
-        public Task ludiPotal0()
+        public async Task ludiPotal0()
         {
-            playerMessage(5, "You have found a secret factory!");
-            warp(Random.Shared.NextDouble() < .5 ? 922000020 : 922000021, 0);
+            await Pink("You have found a secret factory!");
+            await warp(Random.Shared.NextDouble() < .5 ? 922000020 : 922000021, 0);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2200002 
-        public Task go922010201()
+        public async Task go922010201()
         {
-            mapMessage(5, "An unknown force has warped you into a trap.");
+            await mapMessage(5, "An unknown force has warped you into a trap.");
             warpMap(922010201);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2201000 
-        public Task ludiMob0()
+        public async Task ludiMob0()
         {
-            spawnMonster(9300011, 10);
+            await spawnMonster(9300011, 10);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2201001 
-        public Task ludiMob1()
+        public async Task ludiMob1()
         {
             for (var i = 0; i < 3; i++)
             {
-                spawnMonster(9300007);
+                await spawnMonster(9300007);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2201002 
-        public Task ludiMob2()
+        public async Task ludiMob2()
         {
-            mapMessage(5, "Rombard has been summoned somewhere in the map.");
-            spawnMonster(9300010, 1, -211);
+            await mapMessage(5, "Rombard has been summoned somewhere in the map.");
+            await spawnMonster(9300010, 1, -211);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2201003 
-        public Task ludiBoss0()
+        public async Task ludiBoss0()
         {
             if (getPlayer().getMapId() == 922010900)
             {
-                mapMessage(5, "Alishar has been summoned.");
-                spawnMonster(9300012, 941, 184);
+                await mapMessage(5, "Alishar has been summoned.");
+                await spawnMonster(9300012, 941, 184);
             }
             else if (getPlayer().getMapId() == 922010700)
             {
-                mapMessage(5, "Rombard has been summoned somewhere in the map.");
-                spawnMonster(9300010, 1, -211);
+                await mapMessage(5, "Rombard has been summoned somewhere in the map.");
+                await spawnMonster(9300010, 1, -211);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2201004 
-        public Task boss2()
+        public async Task boss2()
         {
-            mapMessage(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>.");
-            changeMusic("Bgm09/TimeAttack");
-            spawnMonster(8500000, -410, -400);
-            createMapMonitor(220080001, "in00");
+            await mapMessage(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>.");
+            await changeMusic("Bgm09/TimeAttack");
+            await spawnMonster(8500000, -410, -400);
+            await createMapMonitor(220080001, "in00");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2202000 
-        public Task ludiquest0()
+        public async Task ludiquest0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2202001 
-        public Task ludiquest1()
+        public async Task ludiquest1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2202002 
-        public Task ludiquest2()
+        public async Task ludiquest2()
         {
             if (isQuestActive(3238))
             {
-                warp(922000020, 0);
+                await warp(922000020, 0);
             }
             else
             {
-                warp(922000009, 0);
+                await warp(922000009, 0);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2202003 
-        public Task ludiquest3()
+        public async Task ludiquest3()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2202004 
-        public Task ludiquest4()
+        public async Task ludiquest4()
         {
-            sprayItems(true, 1, 30, 60, 15);
+            await dropItems(true, 1, 30, 60, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212000 
-        public Task osquest0()
+        public async Task osquest0()
         {
-            dropItems(true, 2, 80, 100);
+            await dropItems(true, 2, 80, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212001 
-        public Task osquest1()
+        public async Task osquest1()
         {
-            dropItems(true, 2, 80, 100);
+            await dropItems(true, 2, 80, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212002 
-        public Task osquest2()
+        public async Task osquest2()
         {
-            dropItems(true, 2, 80, 100);
+            await dropItems(true, 2, 80, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212003 
-        public Task osquest3()
+        public async Task osquest3()
         {
-            dropItems(true, 2, 80, 100);
+            await dropItems(true, 2, 80, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212004 
-        public Task osquest4()
+        public async Task osquest4()
         {
-            dropItems(true, 2, 80, 100);
+            await dropItems(true, 2, 80, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2212005 
-        public Task osquest5()
+        public async Task osquest5()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2221000 
-        public Task fvMob0()
+        public async Task fvMob0()
         {
-            spawnMonster(7130400);
-            mapMessage(5, "Here comes Yellow King Goblin!");
+            await spawnMonster(7130400);
+            await mapMessage(5, "Here comes Yellow King Goblin!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2221001 
-        public Task fvMob1()
+        public async Task fvMob1()
         {
-            spawnMonster(7130401);
-            mapMessage(5, "Here comes Blue King Goblin!");
+            await spawnMonster(7130401);
+            await mapMessage(5, "Here comes Blue King Goblin!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2221002 
-        public Task fvMob2()
+        public async Task fvMob2()
         {
-            spawnMonster(7130402, -340, 100);
-            mapMessage(5, "Here comes Green King Goblin!");
+            await spawnMonster(7130402, -340, 100);
+            await mapMessage(5, "Here comes Green King Goblin!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2221003 
-        public Task fvquest0()
+        public async Task fvquest0()
         {
-            spawnMonster(9500400);
+            await spawnMonster(9500400);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2221004 
-        public Task fvquest1()
+        public async Task fvquest1()
         {
-            spawnMonster(9500400);
+            await spawnMonster(9500400);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2222000 
-        public Task fvquest2()
+        public async Task fvquest2()
         {
-            dropItems(true, 2, 80, 120);
+            await dropItems(true, 2, 80, 120);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2222001 
-        public Task fvevent0()
+        public async Task fvevent0()
         {
             // TODO
             // 2222001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2222002 
-        public Task fvevent1()
+        public async Task fvevent1()
         {
             // TODO
             // 2222002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2229009 
-        public Task fvscaScript0()
+        public async Task fvscaScript0()
         {
 
-            weakenAreaBoss(6090003, "The grieving Scholar Ghost has been slightly appeased. You may be able to defeat the Scholar Ghost.");
+            await weakenAreaBoss(6090003, "The grieving Scholar Ghost has been slightly appeased. You may be able to defeat the Scholar Ghost.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292001 
-        public Task amberItem0()
+        public async Task amberItem0()
         {
             // TODO
             // 2292001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292002 
-        public Task amberItem1()
+        public async Task amberItem1()
         {
             // TODO
             // 2292002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292003 
-        public Task amberItem2()
+        public async Task amberItem2()
         {
             // TODO
             // 2292003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292004 
-        public Task amberItem3()
+        public async Task amberItem3()
         {
             // TODO
             // 2292004
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292005 
-        public Task amberItem4()
+        public async Task amberItem4()
         {
             // TODO
             // 2292005
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2292006 
-        public Task amberItem5()
+        public async Task amberItem5()
         {
             // TODO
             // 2292006
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2298001 
-        public Task hwMob0()
+        public async Task hwMob0()
         {
             // TODO
             // 2298001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2302000 
-        public Task aquaItem0()
+        public async Task aquaItem0()
         {
-            dropItems(true, 2, 75, 90);
+            await dropItems(true, 2, 75, 90);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2302001 
-        public Task aquaItem1()
+        public async Task aquaItem1()
         {
             //dropItems(true, 2, 105, 140);
 
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2302002 
-        public Task aquaItem2()
+        public async Task aquaItem2()
         {
-            dropItems(true, 2, 55, 70);
+            await dropItems(true, 2, 55, 70);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2302003 
-        public Task s4resurItem0()
+        public async Task s4resurItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2302005 
-        public Task tameItem0()
+        public async Task tameItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2401000 
-        public Task hontaleBoss()
+        public async Task hontaleBoss()
         {
-            changeMusic("Bgm14/HonTale");
+            await changeMusic("Bgm14/HonTale");
             if (getReactor().getMap().getMonsterById(8810026) == null)
             {
-                getReactor().getMap().spawnHorntailOnGroundBelow(new Point(71, 260));
+                await getReactor().getMap().spawnHorntailOnGroundBelow(new Point(71, 260));
 
                 var eim = GetEventInstanceTrust();
-                eim.restartEventTimer(60 * 60000);
+                await eim.restartEventTimer(60 * 60000);
             }
-            mapMessage(6, "From the depths of his cave, here comes Horntail!");
+            await mapMessage(6, "From the depths of his cave, here comes Horntail!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2401001 
-        public Task s4fireHawkMob0()
+        public async Task s4fireHawkMob0()
         {
-            spawnMonster(9300089);
+            await spawnMonster(9300089);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2401002 
-        public Task s4iceEagleMob0()
+        public async Task s4iceEagleMob0()
         {
-            spawnMonster(9300090);
+            await spawnMonster(9300090);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402000 
-        public Task leafItem0()
+        public async Task leafItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402001 
-        public Task leafItem1()
+        public async Task leafItem1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402002 
-        public Task hontaleItem0()
+        public async Task hontaleItem0()
         {
             // TODO
             // 2402002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402003 
-        public Task hontaleItem1()
+        public async Task hontaleItem1()
         {
             // TODO
             // 2402003
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402004 
-        public Task hontaleItem2()
+        public async Task hontaleItem2()
         {
             // TODO
             // 2402004
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402005 
-        public Task hontaleItem3()
+        public async Task hontaleItem3()
         {
             // TODO
             // 2402005
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402006 
-        public Task hontaleItem4()
+        public async Task hontaleItem4()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2402007, 2402008 
-        public Task neoCityItem0()
+        public async Task neoCityItem0()
         {
-            dropItems(true, 2, 5, 10, 1);
+            await dropItems(true, 2, 5, 10, 1);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2406000 
-        public Task hontaleNPC0()
+        public async Task hontaleNPC0()
         {
-            spawnNpc(2081008);
-            startQuest(100203);
-            mapMessage(6, "光芒闪烁间，龙蛋破壳而出，一只璀璨的幼龙降临世间！");
+            await spawnNpc(2081008);
+            await startQuest(100203);
+            await mapMessage(6, "光芒闪烁间，龙蛋破壳而出，一只璀璨的幼龙降临世间！");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2502000 
-        public Task muruengItem0()
+        public async Task muruengItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2502001 
-        public Task muruengItem1()
+        public async Task muruengItem1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2502002 
-        public Task muruengItem2()
+        public async Task muruengItem2()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2511000 
-        public Task davyMob0()
+        public async Task davyMob0()
         {
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedBoxes");
             var nextNum = now + 1;
             eim.setIntProperty("openedBoxes", nextNum);
 
-            spawnMonster(9300109, 3);
-            spawnMonster(9300110, 5);
+            await spawnMonster(9300109, 3);
+            await spawnMonster(9300110, 5);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2511001 
-        public Task davyMob1()
+        public async Task davyMob1()
         {
             for (var i = 0; i < 6; i++)
             {
-                spawnMonster(9300124);
-                spawnMonster(9300125);
+                await spawnMonster(9300124);
+                await spawnMonster(9300125);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2512000 
-        public Task davyItem0()
+        public async Task davyItem0()
         {
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedBoxes");
             var nextNum = now + 1;
             eim.setIntProperty("openedBoxes", nextNum);
 
-            dropItems(true, 1, 30, 60, 15);
+            await dropItems(true, 1, 30, 60, 15);
 
             var map = getMap();
             if (map.countMonsters() == 0 && (eim.getIntProperty("grindMode") == 0 || eim.activatedAllReactorsOnMap(map, 2511000, 2517999)))
             {
-                eim.showClearEffect(map.getId());
+                await eim.showClearEffect(map.getId());
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2512001 
-        public Task davyItem1()
+        public async Task davyItem1()
         {
             var eim = GetEventInstanceTrust();
             var now = eim.getIntProperty("openedChests");
             var nextNum = now + 1;
             eim.setIntProperty("openedChests", nextNum);
-            sprayItems(true, 1, 50, 100, 15);
+            await dropItems(true, 1, 50, 100, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2516000 
-        public Task davyNPC0()
+        public async Task davyNPC0()
         {
-            Pink("老海盗已经被打败, 无恙被释放了！");
-            spawnNpc(2094001);
+            await Pink("老海盗已经被打败, 无恙被释放了！");
+            await spawnNpc(2094001);
 
-            return Task.CompletedTask;
+
         }
 
 
@@ -2147,7 +2140,7 @@ namespace Application.Plugin.Script
         public Task davyScript3() => DavyScript();
 
         // Map 925100400
-        Task DavyScript()
+        async Task DavyScript()
         {
             var denyWidth = 320;
             var denyHeight = 150;
@@ -2160,308 +2153,304 @@ namespace Application.Plugin.Script
             if (map.GetRequiredMapObjects<Reactor>(Shared.MapObjects.MapObjectType.REACTOR, r => r.getName().StartsWith("sMob") && r.getState() < 1).Count == 0
                 && map.countMonsters() == 0)
             {
-                GetEventInstanceTrust().showClearEffect(map.getId());
+                await GetEventInstanceTrust().showClearEffect(map.getId());
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2602000 
-        public Task ariantItem0()
+        public async Task ariantItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612000 
-        public Task magatiaItem0()
+        public async Task magatiaItem0()
         {
-            sprayItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612001 
-        public Task rnjItem0()
+        public async Task rnjItem0()
         {
-            sprayItems();
-
-            return Task.CompletedTask;
+            await dropItems();
         }
 
 
         // Reactor: 2612002 
-        public Task rnjItem1()
+        public async Task rnjItem1()
         {
-            sprayItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612003 
-        public Task rnjItem2()
+        public async Task rnjItem2()
         {
-            sprayItems();
-
-            return Task.CompletedTask;
+            await dropItems();
         }
 
 
         // Reactor: 2612004 
-        public Task magatiaItem1()
+        public async Task magatiaItem1()
         {
             // TODO
             // 2612004
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612005 
-        public Task magatiaItem2()
+        public async Task magatiaItem2()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612006 
-        public Task magatiaItem3()
+        public async Task magatiaItem3()
         {
             // TODO
             // 2612006
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2612007 
-        public Task magatiaItem4()
+        public async Task magatiaItem4()
         {
             // TODO
             // 2612007
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619000 
-        public Task magaScript0()
+        public async Task magaScript0()
         {
             // TODO
             // 2619000
             // There's a timeout of 3 seconds to revert back from state 1 to 0.
             // Reactor is destroyed (state 2) and triggers this if dropping two Magic Devices at once, which shouldn't really happen.
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619001 
-        public Task rnjScript0()
+        public async Task rnjScript0()
         {
             // TODO
             // 2619001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619002 
-        public Task rnjScript1()
+        public async Task rnjScript1()
         {
             // TODO
             // 2619002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619003 
-        public Task magascaScript0()
+        public async Task magascaScript0()
         {
-            weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619004 
-        public Task magascaScript1()
+        public async Task magascaScript1()
         {
-            weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2619005 
-        public Task magascaScript2()
+        public async Task magascaScript2()
         {
-            weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2708000 
-        public Task PinkBeenBack0()
+        public async Task PinkBeenBack0()
         {
             // TODO
             // 2708000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 2709000 
-        public Task PinkBeenScript0()
+        public async Task PinkBeenScript0()
         {
             // TODO
             // 2709000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 3001000 
-        public Task pFBoss()
+        public async Task pFBoss()
         {
-            playerMessage(5, "Poison Golem has been spawned.");
-            spawnMonster(9300180, 1);
+            await playerMessage(5, "Poison Golem has been spawned.");
+            await spawnMonster(9300180, 1);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 3002000 
-        public Task pFItem0()
+        public async Task pFItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 3002001 
-        public Task pFItem1()
+        public async Task pFItem1()
         {
-            GetEventInstanceTrust().showClearEffect(getMap().getId());
-            dropItems();
+            await GetEventInstanceTrust().showClearEffect(getMap().getId());
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 3008000 
-        public Task pFBack0()
+        public async Task pFBack0()
         {
             var eim = getEventInstance();
             if (eim != null)
-                eim.giveEventPlayersExp(52000, getMapId());
+                await eim.giveEventPlayersExp(52000, getMapId());
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 5411000 
-        public Task sgboss0()
+        public async Task sgboss0()
         {
-            changeMusic("Bgm09/TimeAttack");
-            spawnMonster(9420513, -146, 225);
+            await changeMusic("Bgm09/TimeAttack");
+            await spawnMonster(9420513, -146, 225);
             GetEventInstanceTrust().setIntProperty("boss", 1);
-            mapMessage(5, "As you wish, here comes Capt Latanica.");
+            await mapMessage(5, "As you wish, here comes Capt Latanica.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 5511000 
-        public Task myboss0()
+        public async Task myboss0()
         {
             var targaMobId = 9420542;
             if (getReactor().getMap().getMonsterById(targaMobId) == null)
             {
-                summonBossDelayed(targaMobId, 3200, -527, 637, "Bgm09/TimeAttack", "Beware! The furious Targa has shown himself!");
+                await summonBossDelayed(targaMobId, 3200, -527, 637, "Bgm09/TimeAttack", "Beware! The furious Targa has shown himself!");
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 5511001 
-        public Task myboss1()
+        public async Task myboss1()
         {
             var scarlionMobId = 9420547;
             if (getReactor().getMap().getMonsterById(scarlionMobId) == null)
             {
-                summonBossDelayed(scarlionMobId, 3200, -238, 636, "Bgm09/TimeAttack", "Beware! The furious Scarlion has shown himself!");
+                await summonBossDelayed(scarlionMobId, 3200, -238, 636, "Bgm09/TimeAttack", "Beware! The furious Scarlion has shown himself!");
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6102001 
-        public Task glpqitem2()
+        public async Task glpqitem2()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6102002 
-        public Task glpqreward1()
+        public async Task glpqreward1()
         {
-            sprayItems(true, 1, 90, 360, 15);
+            await dropItems(true, 1, 90, 360, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6102003 
-        public Task glpqreward2()
+        public async Task glpqreward2()
         {
-            sprayItems(true, 1, 90, 360, 15);
+            await dropItems(true, 1, 90, 360, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6102004 
-        public Task glpqreward3()
+        public async Task glpqreward3()
         {
-            sprayItems(true, 1, 90, 360, 15);
+            await dropItems(true, 1, 90, 360, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6102005 
-        public Task glpqreward4()
+        public async Task glpqreward4()
         {
-            sprayItems(true, 1, 90, 360, 15);
+            await dropItems(true, 1, 90, 360, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109000 
-        public Task glpqskill0()
+        public async Task glpqskill0()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
@@ -2470,37 +2459,37 @@ namespace Application.Plugin.Script
 
                 if (mapId == 610030200)
                 {
-                    eim.dropMessage(6, "The Warrior Sigil has been activated!");
+                    await eim.dropMessage(6, "The Warrior Sigil has been activated!");
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "2pt", 2);
-                        eim.GiveStageClearRewardAll(2);
+                        await eim.showClearEffect(mapId, "2pt", 2);
+                        await eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
                 {
-                    eim.dropMessage(6, "The Warrior Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue("The Warrior Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     getMap().moveEnvironment("menhir0", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "3pt", 2);
-                        eim.GiveStageClearRewardAll(3);
+                        await eim.showClearEffect(mapId, "3pt", 2);
+                        await eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109001 
-        public Task glpqskill1()
+        public async Task glpqskill1()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
@@ -2509,38 +2498,38 @@ namespace Application.Plugin.Script
 
                 if (mapId == 610030200)
                 {
-                    eim.dropMessage(6, "The Archer Sigil has been activated!");
+                    await eim.LightBlue("The Archer Sigil has been activated!");
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "2pt", 2);
-                        eim.GiveStageClearRewardAll(2);
+                        await eim.showClearEffect(mapId, "2pt", 2);
+                        await eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
                 {
-                    eim.dropMessage(6, "The Archer Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue("The Archer Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     getMap().moveEnvironment("menhir1", 1);
                     getMap().moveEnvironment("menhir2", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "3pt", 2);
-                        eim.GiveStageClearRewardAll(3);
+                        await eim.showClearEffect(mapId, "3pt", 2);
+                        await eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109002 
-        public Task glpqskill2()
+        public async Task glpqskill2()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
@@ -2549,37 +2538,37 @@ namespace Application.Plugin.Script
 
                 if (mapId == 610030200)
                 {
-                    eim.dropMessage(6, "The Mage Sigil has been activated!");
+                    await eim.LightBlue("The Mage Sigil has been activated!");
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "2pt", 2);
-                        eim.GiveStageClearRewardAll(2);
+                        await eim.showClearEffect(mapId, "2pt", 2);
+                        await eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
                 {
-                    eim.dropMessage(6, "The Mage Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue("The Mage Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     getMap().moveEnvironment("menhir3", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "3pt", 2);
-                        eim.GiveStageClearRewardAll(3);
+                        await eim.showClearEffect(mapId, "3pt", 2);
+                        await eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109003 
-        public Task glpqskill3()
+        public async Task glpqskill3()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
@@ -2588,37 +2577,37 @@ namespace Application.Plugin.Script
 
                 if (mapId == 610030200)
                 {
-                    eim.dropMessage(6, "The Thief Sigil has been activated!");
+                    await eim.LightBlue("The Thief Sigil has been activated!");
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "2pt", 2);
-                        eim.GiveStageClearRewardAll(2);
+                        await eim.showClearEffect(mapId, "2pt", 2);
+                        await eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
                 {
-                    eim.dropMessage(6, "The Thief Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue("The Thief Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     getMap().moveEnvironment("menhir4", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "3pt", 2);
-                        eim.GiveStageClearRewardAll(3);
+                        await eim.showClearEffect(mapId, "3pt", 2);
+                        await eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109004 
-        public Task glpqskill4()
+        public async Task glpqskill4()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
@@ -2627,916 +2616,898 @@ namespace Application.Plugin.Script
 
                 if (mapId == 610030200)
                 {
-                    eim.dropMessage(6, "The Pirate Sigil has been activated!");
+                    await eim.LightBlue("The Pirate Sigil has been activated!");
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "2pt", 2);
-                        eim.GiveStageClearRewardAll(2);
+                        await eim.showClearEffect(mapId, "2pt", 2);
+                        await eim.GiveStageClearRewardAll(2);
                     }
                 }
                 else if (mapId == 610030300)
                 {
-                    eim.dropMessage(6, "The Pirate Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue("The Pirate Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     getMap().moveEnvironment("menhir5", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                        eim.showClearEffect(mapId, "3pt", 2);
-                        eim.GiveStageClearRewardAll(3);
+                        await eim.showClearEffect(mapId, "3pt", 2);
+                        await eim.GiveStageClearRewardAll(3);
                     }
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109005 
-        public Task glpqweapon0()
+        public async Task glpqweapon0()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030500, "5pt", 2);
-                    eim.GiveStageClearRewardAll(5);
+                    await eim.showClearEffect(610030500, "5pt", 2);
+                    await eim.GiveStageClearRewardAll(5);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109006 
-        public Task glpqweapon1()
+        public async Task glpqweapon1()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030500, "5pt", 2);
-                    eim.GiveStageClearRewardAll(5);
+                    await eim.showClearEffect(610030500, "5pt", 2);
+                    await eim.GiveStageClearRewardAll(5);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109007 
-        public Task glpqweapon2()
+        public async Task glpqweapon2()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030500, "5pt", 2);
-                    eim.GiveStageClearRewardAll(5);
+                    await eim.showClearEffect(610030500, "5pt", 2);
+                    await eim.GiveStageClearRewardAll(5);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109008 
-        public Task glpqweapon3()
+        public async Task glpqweapon3()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030500, "5pt", 2);
-                    eim.GiveStageClearRewardAll(5);
+                    await eim.showClearEffect(610030500, "5pt", 2);
+                    await eim.GiveStageClearRewardAll(5);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109009 
-        public Task glpqweapon4()
+        public async Task glpqweapon4()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030500, "5pt", 2);
-                    eim.GiveStageClearRewardAll(5);
+                    await eim.showClearEffect(610030500, "5pt", 2);
+                    await eim.GiveStageClearRewardAll(5);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109010 
-        public Task glpqmob0()
+        public async Task glpqmob0()
         {
             // TODO
             // 6109010
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109011 
-        public Task glpqmob1()
+        public async Task glpqmob1()
         {
             // TODO
             // 6109011
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109013 
-        public Task glpqstrge()
+        public async Task glpqstrge()
         {
             // TODO
             // 6109013
 
 
-            return Task.CompletedTask;
+
         }
 
 
-        // Reactor: 6109014 
-        public Task glpqflame0()
-        {
-            // TODO
-            // 6109014
 
-
-            return Task.CompletedTask;
-        }
 
 
         // Reactor: 6109016 
-        public Task glpqskill5()
+        public async Task glpqskill5()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "The Warrior Sigil has been activated!");
+                await eim.LightBlue("The Warrior Sigil has been activated!");
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030400, "4pt", 2);
-                    eim.GiveStageClearRewardAll(4);
+                    await eim.showClearEffect(610030400, "4pt", 2);
+                    await eim.GiveStageClearRewardAll(4);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109017 
-        public Task glpqskill6()
+        public async Task glpqskill6()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "The Archer Sigil has been activated!");
+                await eim.LightBlue("The Archer Sigil has been activated!");
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030400, "4pt", 2);
-                    eim.GiveStageClearRewardAll(4);
+                    await eim.showClearEffect(610030400, "4pt", 2);
+                    await eim.GiveStageClearRewardAll(4);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109018 
-        public Task glpqskill7()
+        public async Task glpqskill7()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "The Mage Sigil has been activated!");
+                await eim.LightBlue("The Mage Sigil has been activated!");
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030400, "4pt", 2);
-                    eim.GiveStageClearRewardAll(4);
+                    await eim.showClearEffect(610030400, "4pt", 2);
+                    await eim.GiveStageClearRewardAll(4);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109019 
-        public Task glpqskill8()
+        public async Task glpqskill8()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "The Thief Sigil has been activated!");
+                await eim.LightBlue("The Thief Sigil has been activated!");
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030400, "4pt", 2);
-                    eim.GiveStageClearRewardAll(4);
+                    await eim.showClearEffect(610030400, "4pt", 2);
+                    await eim.GiveStageClearRewardAll(4);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109020 
-        public Task glpqskill9()
+        public async Task glpqskill9()
         {
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                eim.dropMessage(6, "The Pirate Sigil has been activated!");
+                await eim.LightBlue("The Pirate Sigil has been activated!");
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    eim.dropMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
 
-                    eim.showClearEffect(610030400, "4pt", 2);
-                    eim.GiveStageClearRewardAll(4);
+                    await eim.showClearEffect(610030400, "4pt", 2);
+                    await eim.GiveStageClearRewardAll(4);
                 }
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109021 
-        public Task glpqflame1()
+        public async Task glpqflame1()
         {
             // TODO
             // 6109021
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109022 
-        public Task glpqflame2()
+        public async Task glpqflame2()
         {
             // TODO
             // 6109022
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109023 
-        public Task glpqflame3()
+        public async Task glpqflame3()
         {
             // TODO
             // 6109023
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109024 
-        public Task glpqflame4()
+        public async Task glpqflame4()
         {
             // TODO
             // 6109024
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109025 
-        public Task glpqflame5()
+        public async Task glpqflame5()
         {
             // TODO
             // 6109025
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109026 
-        public Task glpqflame6()
+        public async Task glpqflame6()
         {
             // TODO
             // 6109026
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6109027 
-        public Task glpqflame7()
+        public async Task glpqflame7()
         {
             // TODO
             // 6109027
 
 
-            return Task.CompletedTask;
+
         }
 
 
         [ScriptName("amoriaboxMob0", "amoriaboxMob1", "amoriaboxMob2")]
-        public Task AmoriaboxMob()
+        public async Task AmoriaboxMob()
         {
             var startId = 9400523;
             var mapObj = getMap();
             for (var i = 0; i < 7; i++)
             {
                 var mobObj = LifeFactory.Instance.getMonster(startId + Random.Shared.Next(3));
-                mapObj.spawnMonsterOnGroundBelow(mobObj, getReactor().getPosition());
+                await mapObj.spawnMonsterOnGroundBelow(mobObj, getReactor().getPosition());
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6702000 
-        public Task amoriaItem0()
+        public async Task amoriaItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6702001 
-        public Task amoriaItem1()
+        public async Task amoriaItem1()
         {
             // TODO
             // 6702001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6702002 
-        public Task amoriaItem2()
+        public async Task amoriaItem2()
         {
             // TODO
             // 6702002
 
 
-            return Task.CompletedTask;
+
         }
 
         [ScriptName("amoriaItem3", "amoriaItem4", "amoriaItem5", "amoriaItem6", "amoriaItem7", "amoriaItem8",
             "amoriaItem9", "amoriaItem10", "amoriaItem11", "amoriaItem12")]
-        public Task AmoriaItem()
+        public async Task AmoriaItem()
         {
             var count = Math.Max(1, Random.Shared.Next(4));
             //We'll make it drop a lot of crap :D
             for (var i = 0; i < count; i++)
             {
-                sprayItems(true, 1, 30, 60, 15);
+                await dropItems(true, 1, 30, 60, 15);
             }
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6741001 
-        public Task guyfawkesmob0()
+        public async Task guyfawkesmob0()
         {
-            spawnMonster(9400589);
+            await spawnMonster(9400589);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6741015 
-        public Task guyfawkesmob1()
+        public async Task guyfawkesmob1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6741016 
-        public Task guyfawkesmob2()
+        public async Task guyfawkesmob2()
         {
             // TODO
             // 6741016
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6742014 
-        public Task guyfawkesbox0()
+        public async Task guyfawkesbox0()
         {
-            sprayItems(true, 1, 5, 25, 15);
+            await dropItems(true, 1, 5, 25, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6802000 
-        public Task weddingItem0()
+        public async Task weddingItem0()
         {
-            sprayItems(true, 1, 100, 400, 15);
+            await dropItems(true, 1, 100, 400, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6802001 
-        public Task weddingItem1()
+        public async Task weddingItem1()
         {
-            sprayItems(true, 1, 100, 400, 15);
+            await dropItems(true, 1, 100, 400, 15);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6822000 
-        public Task halloweenGLitem()
+        public async Task halloweenGLitem()
         {
             // TODO
             // 6822000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 6829000 
-        public Task halloweenbox()
+        public async Task halloweenbox()
         {
             //wtf is this?
-            playerMessage(5, "Enjoy Halloween!");
-            spawnMonster(9400202, 10);
+            await playerMessage(5, "Enjoy Halloween!");
+            await spawnMonster(9400202, 10);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8001000 
-        public Task shouwaBoss()
+        public async Task shouwaBoss()
         {
-            spawnMonster(9400112, 1, 420, 160);
+            await spawnMonster(9400112, 1, 420, 160);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8091000 
-        public Task JPludiMob0()
+        public async Task JPludiMob0()
         {
-            spawnMonster(9400210, 2);
-            spawnMonster(9400209, 2);
-            mapMessage(5, "Some monsters are summoned.");
+            await spawnMonster(9400210, 2);
+            await spawnMonster(9400209, 2);
+            await mapMessage(5, "Some monsters are summoned.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8091001 
-        public Task JPludiMob1()
+        public async Task JPludiMob1()
         {
-            spawnMonster(9400211, 2);
-            spawnMonster(9400212, 2);
-            mapMessage(5, "Some monsters are summoned.");
+            await spawnMonster(9400211, 2);
+            await spawnMonster(9400212, 2);
+            await mapMessage(5, "Some monsters are summoned.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8091002 
-        public Task JPludiMob2()
+        public async Task JPludiMob2()
         {
-            spawnMonster(9400213, 2);
-            spawnMonster(9400214, 2);
-            mapMessage(5, "Some monsters are summoned.");
+            await spawnMonster(9400213, 2);
+            await spawnMonster(9400214, 2);
+            await mapMessage(5, "Some monsters are summoned.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8091003 
-        public Task JPludiMob3()
+        public async Task JPludiMob3()
         {
-            spawnMonster(9400215, 2);
-            spawnMonster(9400216, 2);
-            mapMessage(5, "Some monsters are summoned.");
+            await spawnMonster(9400215, 2);
+            await spawnMonster(9400216, 2);
+            await mapMessage(5, "Some monsters are summoned.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8091004 
-        public Task JPludiMob4()
+        public async Task JPludiMob4()
         {
-            spawnMonster(9400217, 2);
-            spawnMonster(9400218, 2);
-            mapMessage(5, "Some monsters are summoned.");
+            await spawnMonster(9400217, 2);
+            await spawnMonster(9400218, 2);
+            await mapMessage(5, "Some monsters are summoned.");
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8892000 
         [ScriptName("08_Snowman0")]
-        public Task s_08_Snowman0()
+        public async Task s_08_Snowman0()
         {
             // TODO
             // 8892000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 8892001 
         [ScriptName("08_Cross0")]
-        public Task s_08_Cross0()
+        public async Task s_08_Cross0()
         {
             // TODO
             // 8892001
 
 
-            return Task.CompletedTask;
+
         }
 
 
 
         // Reactor: 9000000 
-        public Task eventMap0()
+        public async Task eventMap0()
         {
             // TODO
             // 9000000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9000001 
-        public Task eventMap1()
+        public async Task eventMap1()
         {
             // TODO
             // 9000001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9000002 
-        public Task eventMap2()
+        public async Task eventMap2()
         {
             // TODO
             // 9000002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9001000 
-        public Task eventMob0()
+        public async Task eventMob0()
         {
             // TODO
             // 9001000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9002000 
-        public Task eventItem0()
+        public async Task eventItem0()
         {
             // TODO
             // 9002000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9002001 
-        public Task eventItem1()
+        public async Task eventItem1()
         {
             // TODO
             // 9002001
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9002002 
-        public Task eventItem2()
+        public async Task eventItem2()
         {
             // TODO
             // 9002002
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9101000 
-        public Task moonMob0()
+        public async Task moonMob0()
         {
             var eim = getEventInstance();
             if (eim != null)
             {
                 eim.ClearedMaps[getMapId()] = Core.scripting.Events.Abstraction.StageStatus.Started;
-                spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
-                getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", ItemId.Weather_HenesysPQ, 7000);
-                getMap().broadcastMessage(MessagePacket.SystemMessage("保护月妙！")); // Protect the Moon Bunny!
+                await spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
+                await getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", ItemId.Weather_HenesysPQ, 7000);
+                await getMap().broadcastMessage(MessagePacket.SystemMessage("保护月妙！")); // Protect the Moon Bunny!
                 getMap().allowSummonState(true);
             }
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9102000 
-        public Task sBoxItem0()
+        public async Task sBoxItem0()
         {
-            dropItems(true, 2, 25, 100);
+            await dropItems(true, 2, 25, 100);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9102001 
-        public Task sBoxItem1()
+        public async Task sBoxItem1()
         {
-            dropItems(true, 2, 25, 100);
-
-            return Task.CompletedTask;
+            await dropItems(true, 2, 25, 100);
         }
 
         [ScriptName("moonItem0", "moonItem1", "moonItem2", "moonItem3", "moonItem4", "moonItem5")]
-        public Task MoonItem0()
+        public async Task MoonItem0()
         {
-            dropItems();
-
-            return Task.CompletedTask;
+            await dropItems();
         }
 
 
         // Reactor: 9102008 
-        public Task dropTreasureBox()
+        public async Task dropTreasureBox()
         {
             // TODO
             // 9102008
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9201000 
-        public Task syarenMob0()
+        public async Task syarenMob0()
         {
-            spawnMonster(9300033, 8, -100, 50);
-
-            return Task.CompletedTask;
+            await spawnMonster(9300033, 8, -100, 50);
         }
 
 
         // Reactor: 9201001 
-        public Task syarenNPC0()
+        public async Task syarenNPC0()
         {
-            mapMessage(5, "A bright flash of light, then someone familiar appears in front of the blocked gate.");
-            spawnNpc(9040003);
-
-            return Task.CompletedTask;
+            await mapMessage(5, "A bright flash of light, then someone familiar appears in front of the blocked gate.");
+            await spawnNpc(9040003);
         }
 
 
         // Reactor: 9201002 
-        public Task syarenMob1()
+        public async Task syarenMob1()
         {
-            changeMusic("Bgm10/Eregos");
-            spawnMonster(9300028);
-            spawnMonster(9300031, 130, 90);
-            spawnMonster(9300032, 540, 90);
-            spawnMonster(9300029, 130, 150);
-            spawnMonster(9300030, 540, 150);
-
-            return Task.CompletedTask;
+            await changeMusic("Bgm10/Eregos");
+            await spawnMonster(9300028);
+            await spawnMonster(9300031, 130, 90);
+            await spawnMonster(9300032, 540, 90);
+            await spawnMonster(9300029, 130, 150);
+            await spawnMonster(9300030, 540, 150);
         }
 
 
         // Reactor: 9202000 
-        public Task syarenItem0()
+        public async Task syarenItem0()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202001 
-        public Task syarenItem1()
+        public async Task syarenItem1()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202002 
-        public Task syarenItem2()
+        public async Task syarenItem2()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202003 
-        public Task syarenItem3()
+        public async Task syarenItem3()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202004 
-        public Task syarenItem4()
+        public async Task syarenItem4()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202005 
-        public Task syarenItem5()
+        public async Task syarenItem5()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202006 
-        public Task syarenItem6()
+        public async Task syarenItem6()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202007 
-        public Task syarenItem7()
+        public async Task syarenItem7()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202008 
-        public Task syarenItem8()
+        public async Task syarenItem8()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202009 
-        public Task syarenItem9()
+        public async Task syarenItem9()
         {
-            dropItems();
+            await dropItems();
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202010 
-        public Task syarenItem10()
+        public async Task syarenItem10()
         {
             // TODO
             // 9202010
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202011 
-        public Task syarenItem11()
+        public async Task syarenItem11()
         {
             // TODO
             // 9202011
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9202012 
-        public Task syarenItem12()
+        public async Task syarenItem12()
         {
-            sprayItems(true, 1, 30, 60, 10);
+            await dropItems(true, 1, 30, 60, 10);
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9222000 
         [ScriptName("6th_item0")]
-        public Task s_6th_item0()
+        public async Task s_6th_item0()
         {
             // TODO
             // 9222000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9702000 
         [ScriptName("5thItem0")]
-        public Task s_5thItem0()
+        public async Task s_5thItem0()
         {
             // TODO
             // 9702000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9802000 
-        public Task goldRichbox0()
+        public async Task goldRichbox0()
         {
             // TODO
             // 9802000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9802002, 9802003, 9802004, 9802008 
-        public Task goldRichItem0()
+        public async Task goldRichItem0()
         {
             // TODO
             // 9802002
@@ -3548,48 +3519,47 @@ namespace Application.Plugin.Script
             // 9802008
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9802005 
-        public Task goldRichItem1()
+        public async Task goldRichItem1()
         {
             // TODO
             // 9802005
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9802006 
-        public Task goldRichItem2()
+        public async Task goldRichItem2()
         {
             // TODO
             // 9802006
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9902000 
-        public Task PB_boxCount()
+        public async Task PB_boxCount()
         {
             // TODO
             // 9902000
 
 
-            return Task.CompletedTask;
+
         }
 
 
         // Reactor: 9980000, 9980001 
-        public Task mcGuardian0()
+        public async Task mcGuardian0()
         {
-            dispelAllMonsters(int.Parse(getReactor().getName().Substring(1, 2)), int.Parse(getReactor().getName().Substring(0, 1)));
-            return Task.CompletedTask;
+            await dispelAllMonsters(int.Parse(getReactor().getName().Substring(1, 2)), int.Parse(getReactor().getName().Substring(0, 1)));
         }
     }
 }

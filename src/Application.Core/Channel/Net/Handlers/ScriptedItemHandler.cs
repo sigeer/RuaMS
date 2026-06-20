@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class ScriptedItemHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); // trash stamp, thanks RMZero213
         short itemSlot = p.readShort(); // item slot, thanks RMZero213
@@ -49,6 +49,6 @@ public class ScriptedItemHandler : ChannelHandlerBase
             return;
         }
 
-        ItemScriptManager.getInstance().runItemScript(c, info);
+        await ItemScriptManager.getInstance().runItemScript(c, info);
     }
 }

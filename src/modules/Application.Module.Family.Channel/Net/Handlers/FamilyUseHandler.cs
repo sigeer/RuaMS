@@ -57,7 +57,7 @@ public class FamilyUseHandler : ChannelHandlerBase
         {
             return; // shouldn't even be able to request it
         }
-        c.sendPacket(FamilyPacketCreator.getFamilyInfo(entry));
+        await c.SendPacket(FamilyPacketCreator.getFamilyInfo(entry));
         var toName = p.readString();
         Player? victim;
         if (type == FamilyEntitlement.FAMILY_REUINION || type == FamilyEntitlement.SUMMON_FAMILY)
@@ -82,7 +82,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                             }
                             else
                             {
-                                c.sendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0)); // wrong message, but close enough. (client should check this first anyway)
+                                await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0)); // wrong message, but close enough. (client should check this first anyway)
                                 return;
                             }
                         }
@@ -96,7 +96,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                             }
                             else
                             {
-                                c.sendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0));
+                                await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(75, 0));
                                 return;
                             }
                         }
@@ -104,7 +104,7 @@ public class FamilyUseHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    c.sendPacket(FamilyPacketCreator.sendFamilyMessage(67, 0));
+                    await c.SendPacket(FamilyPacketCreator.sendFamilyMessage(67, 0));
                 }
             }
         }

@@ -306,49 +306,12 @@ namespace Application.Core.Gameplay.Plugins
         }
 
         /// <summary>
-        /// 同步调用服务（返回 bool）
-        /// </summary>
-        bool InvokeServices<TService>(Func<TService, bool> invoke, Action<Exception>? onError = null) 
-            where TService : class, IPluginServiceBase
-        {
-            var containers = _pluginContainers.Values.ToArray();
-            foreach (var container in containers)
-            {
-                foreach (var service in container.PluginServices)
-                {
-                    if (service is not TService typed)
-                        continue;
-                    
-                    try
-                    {
-                        using (container.Tracker.EnterRequest())
-                        {
-                            if (invoke(typed))
-                                return true;
-                        }
-                    }
-                    catch (InvalidOperationException) { } // Plugin is being disposed
-                    catch (Exception ex) when (ex is not BusinessException)
-                    {
-                        onError?.Invoke(ex);
-                    }
-                    catch (BusinessException be)
-                    {
-                        // BusinessException 由调用方处理
-                        throw;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// 异步调用服务（返回 bool）
         /// </summary>
-        async Task<bool> InvokeServicesAsync<TService>(
-            Func<TService, Task<bool>> invoke, 
+        async Task<bool> InvokeBooleanServicesAsync<TService>(
+            Func<TService, Task<bool>> invoke,
             IChannelClient? client = null,
-            Action<Exception>? onError = null) 
+            Action<Exception>? onError = null)
             where TService : class, IPluginServiceBase
         {
             var containers = _pluginContainers.Values.ToArray();
@@ -358,7 +321,7 @@ namespace Application.Core.Gameplay.Plugins
                 {
                     if (service is not TService typed)
                         continue;
-                    
+
                     try
                     {
                         using (container.Tracker.EnterRequest())
@@ -368,6 +331,10 @@ namespace Application.Core.Gameplay.Plugins
                         }
                     }
                     catch (InvalidOperationException) { } // Plugin is being disposed
+                    catch (BusinessScriptNotFoundException)
+                    {
+                        // container中未声明这个脚本
+                    }
                     catch (BusinessException be)
                     {
                         client?.OnlinedCharacter.Pink(be.Message);
@@ -397,7 +364,7 @@ namespace Application.Core.Gameplay.Plugins
                 {
                     if (service is not TService typed)
                         continue;
-                    
+
                     try
                     {
                         using (container.Tracker.EnterRequest())
@@ -407,6 +374,10 @@ namespace Application.Core.Gameplay.Plugins
                         }
                     }
                     catch (InvalidOperationException) { } // Plugin is being disposed
+                    catch (BusinessScriptNotFoundException) 
+                    {
+                        // container中未声明这个脚本
+                    }
                     catch (Exception ex)
                     {
                         onError?.Invoke(ex);
@@ -430,7 +401,7 @@ namespace Application.Core.Gameplay.Plugins
                 {
                     if (service is not TService typed)
                         continue;
-                    
+
                     try
                     {
                         using (container.Tracker.EnterRequest())
@@ -471,7 +442,7 @@ namespace Application.Core.Gameplay.Plugins
                     catch (InvalidOperationException) { } // Plugin is being disposed
                     catch (BusinessException be)
                     {
-                        c.OnlinedCharacter.Debug(5, be.Message);
+                        await c.OnlinedCharacter.Debug(5, be.Message);
                         Log.Logger.Error(be, "Npc script error in: {ScriptName}", scriptName);
                     }
                     catch (Exception ex)
@@ -481,7 +452,7 @@ namespace Application.Core.Gameplay.Plugins
                 }
             }
 
-            c.sendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
+            await c.SendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
             return false;
 
         }
@@ -490,14 +461,14 @@ namespace Application.Core.Gameplay.Plugins
         {
             if (isStart)
             {
-                return InvokeServicesAsync<IScriptQuestService>(
+                return InvokeBooleanServicesAsync<IScriptQuestService>(
                     s => s.StartQuest(c, questObj, npcId),
                     c,
                     e => Log.Logger.Error(e, "Quest script error in: QuestId={QuestId}", questObj.getId()));
             }
             else
             {
-                return InvokeServicesAsync<IScriptQuestService>(
+                return InvokeBooleanServicesAsync<IScriptQuestService>(
                     s => s.CompleteQuest(c, questObj, npcId),
                     c,
                     e => Log.Logger.Error(e, "Quest script error in: QuestId={QuestId}", questObj.getId()));
@@ -511,11 +482,31 @@ namespace Application.Core.Gameplay.Plugins
                 e => Log.Logger.Error(e, "Npc script error more talk"));
         }
 
-        public bool EnterPortal(IChannelClient c, Portal p)
+        public async Task<bool> EnterPortal(IChannelClient c, Portal p)
         {
-            return InvokeServices<IScriptPortalService>(
-                s => s.Enter(c, p),
-                e => Log.Logger.Error(e, "Portal script error in: {ScriptName}", p.getScriptName()));
+            var containers = _pluginContainers.Values.ToArray();
+            foreach (var container in containers)
+            {
+                foreach (var service in container.PluginServices)
+                {
+                    if (service is not IScriptPortalService typed)
+                        continue;
+
+                    try
+                    {
+                        using (container.Tracker.EnterRequest())
+                        {
+                            return await typed.Enter(c, p);
+                        }
+                    }
+                    catch (InvalidOperationException) { } // Plugin is being disposed
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Portal script error in: {ScriptName}", p.getScriptName());
+                    }
+                }
+            }
+            return false;
         }
 
         public Task ItemScript(IChannelClient c, int npcId, string scriptName)
@@ -525,80 +516,46 @@ namespace Application.Core.Gameplay.Plugins
                 e => Log.Logger.Error(e, "Item script error in: {ScriptName}", scriptName));
         }
 
-        public void MapEnterScript(IChannelClient c, IMap map)
+        public async Task MapEnterScript(IChannelClient c, IMap map)
         {
-            InvokeServices<IScriptMapService>(
+            await InvokeServicesAsync<IScriptMapService>(
                 s => s.MapEnter(c, map),
                 e => Log.Logger.Error(e, "Map script error in: {Map}(Enter)", map.Id));
         }
 
-        public void MapFirstEnterScript(IChannelClient c, IMap map)
+        public async Task MapFirstEnterScript(IChannelClient c, IMap map)
         {
-            InvokeServices<IScriptMapService>(
-                s => s.MapFirstEnter(c, map),
-                e => Log.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id));
+            await InvokeServicesAsync<IScriptMapService>(
+                 s => s.MapFirstEnter(c, map),
+                 e => Log.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id));
         }
 
-        internal void ReactorHit(IChannelClient c, Reactor reactor)
+        internal async Task ReactorHit(IChannelClient c, Reactor reactor)
         {
-            foreach (var container in _pluginContainers.Values)
-            {
-                foreach (var service in container.PluginServices)
-                {
-                    if (service is not IScriptReactorService typed)
-                        continue;
-                    
-                    try
-                    {
-                        using (container.Tracker.EnterRequest())
-                        {
-                            // TODO: 日后将所有handler改成async/await后再解决
-                            typed.ReactorHit(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
-                            return;
-                        }
-                    }
-                    catch (InvalidOperationException) { }
-                    catch (BusinessException be)
-                    {
-                        c.OnlinedCharacter.Pink(be.Message);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
-                    }
-                }
-            }
+            await InvokeServicesAsync<IScriptReactorService>(
+                 s => s.ReactorHit(c, reactor),
+                 e => Log.Logger.Error(e, "ReactorHit error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
 
-        internal void ReactorAct(IChannelClient c, Reactor reactor)
+        internal async Task ReactorAct(IChannelClient c, Reactor reactor)
         {
-            foreach (var container in _pluginContainers.Values)
-            {
-                foreach (var service in container.PluginServices)
-                {
-                    if (service is not IScriptReactorService typed)
-                        continue;
-                    
-                    try
-                    {
-                        using (container.Tracker.EnterRequest())
-                        {
-                            // TODO: 日后将所有handler改成async/await后再解决
-                            typed.ReactorAct(c, reactor).ConfigureAwait(false).GetAwaiter().GetResult();
-                            return;
-                        }
-                    }
-                    catch (InvalidOperationException) { }
-                    catch (BusinessException be)
-                    {
-                        c.OnlinedCharacter.Pink(be.Message);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Logger.Error(e, "Reactor script error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId());
-                    }
-                }
-            }
+            await InvokeServicesAsync<IScriptReactorService>(
+                 s => s.ReactorAct(c, reactor),
+                 e => Log.Logger.Error(e, "ReactorAct error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+        }
+
+        internal async Task ReactorTouch(IChannelClient c, Reactor reactor)
+        {
+            await InvokeServicesAsync<IScriptReactorService>(
+                 s => s.ReactorTouch(c, reactor),
+                 e => Log.Logger.Error(e, "ReactorTouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+        }
+
+        internal async Task ReactorUntouch(IChannelClient c, Reactor reactor)
+        {
+            await InvokeServicesAsync<IScriptReactorService>(
+                 s => s.ReactorUntouch(c, reactor),
+                 e => Log.Logger.Error(e, "ReactorUntouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
         #endregion
 
@@ -633,18 +590,32 @@ namespace Application.Core.Gameplay.Plugins
         #endregion
 
         #region Map Listeners
-        public void OnMapObjectEnterField(IMap map, IMapObject mapObject)
+        public async Task OnMapObjectEnterField(IMap map, IMapObject mapObject)
         {
-            InvokeServices<IPluginMapService>(
+            await InvokeServicesAsync<IPluginMapObjectService>(
                 s => s.OnMapObjectEnterField(map, mapObject),
                 e => Log.Logger.Error(e, "MapListener.OnMapObjectEnterField error"));
         }
 
-        public void OnMapObjectLeaveField(IMap map, IMapObject mapObject)
+        public async Task OnMapObjectLeaveField(IMap map, IMapObject mapObject)
         {
-            InvokeServices<IPluginMapService>(
+            await InvokeServicesAsync<IPluginMapObjectService>(
                 s => s.OnMapObjectLeaveField(map, mapObject),
                 e => Log.Logger.Error(e, "MapListener.OnMapObjectLeaveField error"));
+        }
+
+        public async Task OnMapLoad(IMap map)
+        {
+            await InvokeServicesAsync<IPluginMapService>(
+                s => s.OnMapLoad(map),
+                e => Log.Logger.Error(e, "MapListener.OnMapLoad error"));
+        }
+
+        public async Task OnMapUnload(IMap map)
+        {
+            await InvokeServicesAsync<IPluginMapService>(
+                s => s.OnMapUnload(map),
+                e => Log.Logger.Error(e, "MapListener.OnMapUnload error"));
         }
         #endregion
     }

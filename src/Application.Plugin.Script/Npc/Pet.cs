@@ -115,8 +115,8 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            gainMeso(-250000);
-                            gainItem(4160011, 1);
+                            await gainMeso(-250000);
+                            await gainItem(4160011, 1);
                         }
                     }
                     break;
@@ -137,7 +137,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (await AskYesNo("这是你可以带宠物散步的路。你可以和它一起四处走动，或者训练它通过这里的障碍。如果你和宠物还不够亲近，可能会出现问题，它就不会像你想的那样听从你的命令。那么，你觉得呢？想要训练你的宠物吗？"))
                 {
-                    gainItem(4031035, 1);
+                    await gainItem(4031035, 1);
                     await SayNext("好的，这是信。如果你直接去那里，他不会知道我派你去的，所以带着你的宠物通过障碍，到达顶部，然后和弗罗德训练师交谈，把信交给他。如果你在通过障碍时注意你的宠物，这并不难。祝你好运！");
                 }
                 else
@@ -164,8 +164,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainItem(4031035, -1);
-                    gainTameness(2);
+                    await gainItem(4031035, -1);
+                    await gainTameness(2);
                     await SayOK("你觉得呢？你不觉得你和你的宠物已经更亲近了吗？如果你有时间，再次训练你的宠物通过这个障碍课程……当然，要得到我哥哥的许可。");
                 }
             }
@@ -182,8 +182,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(5000028, 1))
                 {
-                    gainItem(5000028, -1);
-                    gainItem(5000029, 1);
+                    await gainItem(5000028, -1);
+                    await gainItem(5000029, 1);
                     await SayOK("我不知道你是怎么得到那个蛋的，但显然它已经孵化了！");
                 }
                 else if (getPlayer().getPet(0) == null)
@@ -209,23 +209,23 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (haveItem(5000029, 2))
                         {
-                            gainItem(5000029, -1);
+                            await gainItem(5000029, -1);
                         }
                         else if (haveItem(5000030, 2))
                         {
-                            gainItem(5000030, -1);
+                            await gainItem(5000030, -1);
                         }
                         else if (haveItem(5000031, 2))
                         {
-                            gainItem(5000031, -1);
+                            await gainItem(5000031, -1);
                         }
                         else if (haveItem(5000032, 2))
                         {
-                            gainItem(5000032, -1);
+                            await gainItem(5000032, -1);
                         }
                         else if (haveItem(5000033, 2))
                         {
-                            gainItem(5000033, -1);
+                            await gainItem(5000033, -1);
                         }
                         await SayOK("你的库存中的第一只龙被移除。");
                     }
@@ -240,10 +240,10 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        var after = evolvePet(petSlot);
+                        var after = await evolvePet(petSlot);
                         if (after != null)
                         {
-                            gainItem(5380000, -1);
+                            await gainItem(5380000, -1);
                             await SayOK($"你的龙现在进化了！它以前是一个 #i{id}# #t{id}#，现在它是一个 #i{after.getItemId()}# #t{after.getItemId()}#！");
                         }
                     }
@@ -382,7 +382,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainItem(4031128, 1);
+                    await gainItem(4031128, 1);
                     await SayOK("好的，这是信。如果你直接去那里，他不会知道我派你去的，所以带着你的宠物通过障碍，到达顶部，然后和#p1012007#交谈，把信交给他。如果你在通过障碍时注意你的宠物，这并不难。祝你好运！");
                 }
             }
@@ -404,8 +404,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainItem(4031128, -1);
-                    gainTameness(4);
+                    await gainItem(4031128, -1);
+                    await gainTameness(4);
                     await SayOK("你觉得呢？你不觉得你和你的宠物已经更亲近了吗？如果你有时间，再次训练你的宠物通过这个障碍课程……当然，要得到我哥哥的许可。");
                 }
             }
@@ -428,7 +428,7 @@ namespace Application.Plugin.Script.Npc
                 else if (await AskYesNo("#b(我看到有东西被草覆盖着。我应该把它拔出来吗？)"))
                 {
                     await SayNext("我找到了宠物训练师巴托斯藏起来的物品……还有这张便条。");
-                    gainItem(4031921, 1);
+                    await gainItem(4031921, 1);
                 }
                 else
                 {
@@ -448,7 +448,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("#b(我看到有东西被草覆盖着。我应该把它拔出来吗？)"))
             {
                 await SayNext("#b(呸... 这是宠物的粪便！)");
-                gainItem(4031922, 1);
+                await gainItem(4031922, 1);
             }
             else
             {

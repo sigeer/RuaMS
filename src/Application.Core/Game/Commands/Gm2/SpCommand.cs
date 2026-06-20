@@ -8,12 +8,12 @@ public class SpCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SpCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.SpCommand_Syntax));
             return;
         }
 
@@ -29,7 +29,7 @@ public class SpCommand : CommandBase
                 newSp = YamlConfig.config.server.MAX_AP;
             }
 
-            player.updateRemainingSp(newSp);
+            await player.updateRemainingSp(newSp);
         }
         else
         {
@@ -46,13 +46,13 @@ public class SpCommand : CommandBase
                     newSp = YamlConfig.config.server.MAX_AP;
                 }
 
-                victim.updateRemainingSp(newSp);
+                await victim.updateRemainingSp(newSp);
 
-                player.MessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+                await player.MessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
             }
             else
             {
-                player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
             }
         }
     }

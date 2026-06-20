@@ -1,11 +1,8 @@
 using Application.Core.Game.Life;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class MonsterPuppetAggroCommand: IWorldChannelCommand
+    internal class MonsterPuppetAggroCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(MonsterPuppetAggroCommand);
         Monster _mob;
@@ -15,9 +12,9 @@ namespace Application.Core.Channel.Commands
             _mob = mob;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
-            _mob.ApplyPuppetAggro();
+            await _mob.ApplyPuppetAggro();
         }
     }
 }

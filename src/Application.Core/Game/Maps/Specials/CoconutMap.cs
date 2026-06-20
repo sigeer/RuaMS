@@ -1,7 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Instances;
 using Application.Templates.Map;
-using scripting.Event;
 using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials
@@ -60,12 +59,12 @@ namespace Application.Core.Game.Maps.Specials
             return DefaultEffectLose;
         }
 
-        public override void startEvent(Player chr)
+        public override async Task startEvent(Player chr)
         {
             if (this.Id == MapId.EVENT_COCONUT_HARVEST && Coconut == null)
             {
                 Coconut = new Coconut(this);
-                Coconut.startEvent();
+                await Coconut.startEvent();
             }
         }
     }

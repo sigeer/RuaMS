@@ -4,6 +4,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using server.life;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace Application.Plugin.Script.Events
 {
@@ -27,20 +28,21 @@ namespace Application.Plugin.Script.Events
         }
 
         int mobId = 3300008;
-        public override void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == mobId)
             {
-                eim.getMapInstance(EntryPortal).getPortal(1)?.setPortalState(true);
+                var map = await eim.getMapInstance(EntryPortal);
+                map.getPortal(1)?.setPortalState(true);
 
-                eim.showClearEffect();
-                eim.clearPQ();
+                await eim.showClearEffect();
+                await eim.clearPQ();
             }
         }
 
-        bool primeMinisterCheck(AbstractEventInstanceManager eim)
+        async Task<bool> primeMinisterCheck(AbstractEventInstanceManager eim)
         {
-            var map = eim.getMapInstance(EntryMap);
+            var map = await eim.getMapInstance(EntryMap);
 
             foreach (var player in map.getAllPlayers())
             {
@@ -53,13 +55,13 @@ namespace Application.Plugin.Script.Events
             return false;
         }
 
-        public override void respawnStages(AbstractEventInstanceManager eim)
+        public override async Task respawnStages(AbstractEventInstanceManager eim)
         {
-            if (primeMinisterCheck(eim))
+            if (await primeMinisterCheck(eim))
             {
-                var weddinghall = eim.getMapInstance(EntryMap);
+                var weddinghall = await eim.getMapInstance(EntryMap);
                 weddinghall.getPortal(1)?.setPortalState(false);
-                weddinghall.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(292, 143));
+                await weddinghall.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(292, 143));
             }
             else
             {

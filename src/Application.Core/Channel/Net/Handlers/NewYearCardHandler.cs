@@ -39,7 +39,7 @@ public class NewYearCardHandler : ChannelHandlerBase
         _manager = manager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         byte reqMode = p.readByte();                 //[00] -> NewYearReq (0 = Send)
@@ -66,17 +66,17 @@ public class NewYearCardHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
+                        await player.SendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
                     }
                 }
                 else
                 {
-                    player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, status));  // item and inventory errors
+                    await player.SendPacket(PacketCreator.onNewYearCardRes(player, null, 5, status));  // item and inventory errors
                 }
             }
             else
             {
-                player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x11));  // have no card to send
+                await player.SendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x11));  // have no card to send
             }
         }
         else
@@ -90,7 +90,7 @@ public class NewYearCardHandler : ChannelHandlerBase
             }
             else
             {
-                player.sendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
+                await player.SendPacket(PacketCreator.onNewYearCardRes(player, null, 5, 0x10));  // inventory full
             }
         }
     }

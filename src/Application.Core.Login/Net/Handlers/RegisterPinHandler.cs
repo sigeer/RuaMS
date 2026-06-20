@@ -41,7 +41,7 @@ public class RegisterPinHandler : LoginHandlerBase
         _sessionCoordinator = sessionCoordinator;
     }
 
-    public override void HandlePacket(InPacket p, ILoginClient c)
+    public override async Task HandlePacket(InPacket p, ILoginClient c)
     {
         byte c2 = p.readByte();
         if (c2 == 0)
@@ -58,7 +58,7 @@ public class RegisterPinHandler : LoginHandlerBase
                 {
                     c.AccountEntity.Pin = pin;
                     c.CurrentServer.CommitAccountEntity(c.AccountEntity);
-                    c.sendPacket(LoginPacketCreator.pinRegistered());
+                    await c.SendPacket(LoginPacketCreator.pinRegistered());
                 }
 
                 _sessionCoordinator.closeSession(c);

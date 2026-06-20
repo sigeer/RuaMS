@@ -1,6 +1,6 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
 using Application.Core.Game.Relation;
+using System.Threading.Tasks;
 
 namespace Application.Core.Gameplay.ChannelEvents
 {
@@ -53,7 +53,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             return dojoParty.GetValueOrDefault(party.GetHashCode(), -1);
         }
 
-        public int IngressDojo(bool isPartyDojo, Team? party, int fromStage)
+        public async Task<int> IngressDojo(bool isPartyDojo, Team? party, int fromStage)
         {
             int dojoList = this.usedDojo;
             int range, slot = 0;
@@ -91,7 +91,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 this.usedDojo |= (1 << dojoSlot);
 
                 this.ResetDojo(slotMapid);
-                this.startDojoSchedule(slotMapid);
+                await this.startDojoSchedule(slotMapid);
                 return slot;
             }
             else
@@ -135,11 +135,11 @@ namespace Application.Core.Gameplay.ChannelEvents
             return (dojoMapId % 100) + ((dojoMapId / 10000 == 92502) ? 5 : 0);
         }
 
-        public void ResetDojoMap(int fromMapId)
+        public async Task ResetDojoMap(int fromMapId)
         {
             for (int i = 0; i < (((fromMapId / 100) % 100 <= 36) ? 5 : 2); i++)
             {
-                this.Channel.getMapFactory().getMap(fromMapId + (100 * i)).resetMapObjects();
+                await (await this.Channel.getMapFactory().getMap(fromMapId + (100 * i))).resetMapObjects();
             }
         }
 
@@ -149,7 +149,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             this.dojoStage[slot] = thisStg;
         }
 
-        public void FreeDojoSectionIfEmpty(int dojoMapId)
+        public async Task FreeDojoSectionIfEmpty(int dojoMapId)
         {
             int slot = GetDojoSlot(dojoMapId);
             int delta = (dojoMapId) % 100;
@@ -162,7 +162,7 @@ namespace Application.Core.Gameplay.ChannelEvents
                 {
                     break;
                 }
-                var dojoMap = this.Channel.getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta);
+                var dojoMap = await this.Channel.getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta);
                 if (dojoMap.getAllPlayers().Count > 0)
                 {
                     return;
@@ -172,7 +172,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             FreeDojoSlot(slot, null);
         }
 
-        private void startDojoSchedule(int dojoMapId)
+        private async Task startDojoSchedule(int dojoMapId)
         {
             int slot = GetDojoSlot(dojoMapId);
             int stage = (dojoMapId / 100) % 100;
@@ -187,7 +187,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             {
                 this.dojoTask[slot]!.cancel(false);
             }
-            this.dojoTask[slot] = Channel.TimerManager.schedule(() =>
+            this.dojoTask[slot] = await Channel.TimerManager.schedule(() =>
             {
                 Channel.Send(c => ProcessTimeout(dojoMapId));
             }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
@@ -195,7 +195,7 @@ namespace Application.Core.Gameplay.ChannelEvents
             dojoFinishTime[slot] = this.Channel.Node.getCurrentTime() + clockTime;
         }
 
-        public void ProcessTimeout(int dojoMapId)
+        public async Task ProcessTimeout(int dojoMapId)
         {
             int slot = GetDojoSlot(dojoMapId);
             int stage = (dojoMapId / 100) % 100;
@@ -211,23 +211,23 @@ namespace Application.Core.Gameplay.ChannelEvents
                 targetMapIds.Add(dojoBaseMap + (100 * (stage + i)) + delta);
             }
 
-            var dojoExit = Channel.getMapFactory().getMap(exitMapId);
+            var dojoExit = await Channel.getMapFactory().getMap(exitMapId);
             foreach (var mapId in targetMapIds)
             {
-                var map = this.Channel.getMapFactory().getMap(mapId);
-                map.Send(m =>
+                var map = await this.Channel.getMapFactory().getMap(mapId);
+                await map.Send(async m =>
                 {
                     foreach (var p in m.getAllPlayers())
                     {
                         if (MapId.isDojo(p.getMap().getId()))
                         {
-                            p.changeMap(dojoExit);
+                            await p.changeMap(dojoExit);
                         }
                     }
                 });
             }
 
-            Channel.TimerManager.schedule(() =>
+            await Channel.TimerManager.schedule(() =>
             {
                 Channel.Send(c => FreeDojoSectionIfEmpty(dojoMapId));
             }, 1000);

@@ -120,14 +120,14 @@ public class GenericPortal : Portal
         this.scriptName = scriptName;
     }
 
-    public void enterPortal(IChannelClient c)
+    public async Task enterPortal(IChannelClient c)
     {
         bool changed = false;
         if (!string.IsNullOrEmpty(getScriptName()))
         {
             try
             {
-                changed = c.CurrentServer.NodeService.PluginManager.EnterPortal(c, this);
+                changed = await c.CurrentServer.NodeService.PluginManager.EnterPortal(c, this);
             }
             catch (NullReferenceException npe)
             {
@@ -139,23 +139,23 @@ public class GenericPortal : Portal
             var chr = c.OnlinedCharacter;
             if (!(chr.getChalkboard() != null && GameConstants.isFreeMarketRoom(getTargetMapId())))
             {
-                var to = chr.getEventInstance() == null ? c.CurrentServer.getMapFactory().getMap(getTargetMapId()) : chr.getEventInstance()!.getMapInstance(getTargetMapId());
+                var to = await chr.getWarpMap(getTargetMapId()); 
                 var pto = to.getPortal(getTarget());
                 if (pto == null)
                 {// fallback for missing portals - no real life case anymore - interesting for not implemented areas
                     pto = to.getPortal(0);
                 }
-                chr.changeMap(to, pto); //late resolving makes this harder but prevents us from loading the whole world at once
+                await chr.changeMap(to, pto); //late resolving makes this harder but prevents us from loading the whole world at once
                 changed = true;
             }
             else
             {
-                chr.dropMessage(5, "You cannot enter this map with the chalkboard opened.");
+                await chr.Pink("You cannot enter this map with the chalkboard opened.");
             }
         }
         if (!changed)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
     }
 

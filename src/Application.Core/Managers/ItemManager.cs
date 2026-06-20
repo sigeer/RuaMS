@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using client.inventory;
-using constants.game;
 using static client.inventory.Equip;
 
 namespace Application.Core.Managers
@@ -8,7 +7,7 @@ namespace Application.Core.Managers
     public class ItemManager
     {
 
-        public static void UpdateEquip(Player player, int newStat, int newSpdJmp)
+        public static async Task UpdateEquip(Player player, int newStat, int newSpdJmp)
         {
             var equip = player.getInventory(InventoryType.EQUIP);
 
@@ -24,7 +23,7 @@ namespace Application.Core.Managers
 
                     SetEquipStat(eq, newStat, newSpdJmp);
 
-                    player.forceUpdateItem(eq);
+                    await player.forceUpdateItem(eq);
                 }
                 catch (Exception e)
                 {

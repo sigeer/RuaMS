@@ -46,7 +46,7 @@ namespace Application.Core.Login.Client
             CurrentServer.Send(new HandleMasterPacketCommand(this, msg));
         }
 
-        public override void ProcessPacket(InPacket packet)
+        public override async Task ProcessPacket(InPacket packet)
         {
             short opcode = packet.readShort();
             var handler = _packetProcessor.GetPacketHandler(opcode);
@@ -58,17 +58,17 @@ namespace Application.Core.Login.Client
 
             if (handler != null && handler.ValidateState(this))
             {
-                handler.HandlePacket(packet, this);
+                _ = handler.HandlePacket(packet, this);
             }
         }
 
-        protected override void CloseSessionInternal()
+        protected override async Task CloseSessionInternal()
         {
             _sessionCoordinator.closeLoginSession(this);
 
             if (!IsServerTransition)
             {
-                Disconnect();
+                await Disconnect();
             }
         }
 
@@ -77,19 +77,19 @@ namespace Application.Core.Login.Client
             updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
-        public void Disconnect()
+        public async Task Disconnect()
         {
             _sessionCoordinator.closeSession(this, false);
 
             updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             CurrentServer.UnregisterLoginState(this);
 
-            Dispose();
+            await DisposeAsync();
         }
 
-        public override void ForceDisconnect()
+        public override async Task ForceDisconnect()
         {
-            Disconnect();
+            await Disconnect();
         }
 
 
@@ -112,9 +112,9 @@ namespace Application.Core.Login.Client
             IsServerTransition = newState == LoginStage.LOGIN_SERVER_TRANSITION;
         }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
-            base.Dispose();
+            await base.DisposeAsync();
             AccountEntity = null;
         }
 
@@ -342,9 +342,9 @@ namespace Application.Core.Login.Client
             return IsOnlined;
         }
 
-        public void SendCharList()
+        public async Task SendCharList()
         {
-            sendPacket(LoginPacketCreator.GetCharListPacket(this));
+            await SendPacket(LoginPacketCreator.GetCharListPacket(this));
         }
 
         /// <summary>

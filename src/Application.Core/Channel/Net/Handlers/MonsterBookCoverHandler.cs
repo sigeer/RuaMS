@@ -27,13 +27,13 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class MonsterBookCoverHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int id = p.readInt();
         if (id == 0 || ItemId.isMonsterCard(id))
         {
             c.OnlinedCharacter.setMonsterBookCover(id);
-            c.sendPacket(PacketCreator.changeCover(id));
+            await c.SendPacket(PacketCreator.changeCover(id));
         }
     }
 }

@@ -1,6 +1,4 @@
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Scripting.Events;
-using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
@@ -15,7 +13,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("这...就是我儿子丢失的那张地契呀！而且你给我收集了盖房子需要的材料！ 真是太感谢你呀。这样我可以和我的亲戚一起住在#m102000000#了…!对了，这是我的一点心意…");
             if (getPlayer().getInventory(InventoryType.USE).getNumFreeSlot() < 1)
             {
-                Popup("背包已满！");
+                await Popup("背包已满！");
                 return;
             }
 
@@ -49,15 +47,15 @@ namespace Application.Plugin.Script.Quest
             }
             var selection = await AskMenu(talkStr);
             var item = vecItem[selection];
-            gainItem(item, 1);
-            gainItem(4000022, -100);
-            gainItem(4003000, -30);
-            gainItem(4003001, -30);
-            gainItem(4001004, -1);
-            gainExp(20000);
-            gainMeso(15000);
-            gainFame(2);
-            completeQuest();
+            await gainItem(item, 1);
+            await gainItem(4000022, -100);
+            await gainItem(4003000, -30);
+            await gainItem(4003001, -30);
+            await gainItem(4001004, -1);
+            await gainExp(20000);
+            await gainMeso(15000);
+            await gainFame(2);
+            await completeQuest();
         }
         // Quest: 2034 
         public async Task q2034e()
@@ -96,10 +94,10 @@ namespace Application.Plugin.Script.Quest
                 item = 1072018;
             }
 
-            gainItem(item, 1);
-            gainItem(4000007, -150);
-            gainExp(2200);
-            completeQuest();
+            await gainItem(item, 1);
+            await gainItem(4000007, -150);
+            await gainExp(2200);
+            await completeQuest();
 
             await SayOK("那么如果有一天你想帮助别人的话，就来找我吧。这里有很多人需要帮助啊~~");
         }
@@ -112,8 +110,8 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                gainItem(4031619, -1);
-                forceCompleteQuest();
+                await gainItem(4031619, -1);
+                await forceCompleteQuest();
 
                 await SayOK("噢，你居然带来了#p2012019#k，谢谢。");
             }
@@ -127,8 +125,8 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                gainItem(4031619, -1);
-                forceCompleteQuest();
+                await gainItem(4031619, -1);
+                await forceCompleteQuest();
 
                 await SayOK("噢，你居然带来了#p2012019#k，谢谢。");
             }
@@ -137,7 +135,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q2127e()
         {
             await SayOK("我看你已经准备好接受任务了。那么，请注意任务的细节。。。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2147 
         public Task q2147s()
@@ -157,32 +155,32 @@ namespace Application.Plugin.Script.Quest
         public async Task q2148s()
         {
             await SayNext("无论这鬼树走到哪里，似乎都有蝙蝠陪伴着它。令人毛骨悚然。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2149 
         public async Task q2149s()
         {
             await SayNext("据说每当有什么邪恶的东西扰乱这片土地时，一棵鬼树就会出现在这里。。。我们需要一个能保护我们村子的英雄！");
             //最近聽說東部岩山時常發生奇怪的襲擊事件，也許你可以留意一下…
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2150 
         public async Task q2150s()
         {
             await SayNext("我告诉你，这棵树的树枝上有一条围巾。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2151 
         public async Task q2151s()
         {
             await SayNext("这棵树有一个奇怪的雕刻，像一张吓人的脸。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2152 
         public async Task q2152s()
         {
             await SayNext("那棵树。。。我以前听说过，我甚至研究过它的行为！如果我没记错，在某些条件下它会复活，开始吸取这些可怕的邪恶力量，这使得它们对附近的人和村子造成非常可怕的影响。");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2186 
         public async Task q2186e()
@@ -193,10 +191,10 @@ namespace Application.Plugin.Script.Quest
                 {
                     if (canHold(2030019))
                     {
-                        gainItem(4031853, -1);
-                        gainExp(1700);
-                        gainItem(2030019, 10);
-                        forceCompleteQuest();
+                        await gainItem(4031853, -1);
+                        await gainExp(1700);
+                        await gainItem(2030019, 10);
+                        await forceCompleteQuest();
 
                         await SayOK("天哪，你找到我的眼镜了！谢谢，非常感谢。现在我又能看到一切了！");
                     }
@@ -212,16 +210,16 @@ namespace Application.Plugin.Script.Quest
                     {
                         if (haveItem(4031854))
                         {
-                            gainItem(4031854, -1);
+                            await gainItem(4031854, -1);
                         }
                         else
                         {
-                            gainItem(4031855, -1);
+                            await gainItem(4031855, -1);
                         }
 
-                        gainExp(1000);
-                        gainItem(2030019, 5);
-                        forceCompleteQuest();
+                        await gainExp(1000);
+                        await gainItem(2030019, 5);
+                        await forceCompleteQuest();
 
                         await SayOK("嗯，那不是我的眼镜。。。不过，谢谢你。");
 
@@ -237,7 +235,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q2197e()
         {
             await SayNext("哦，你已经有怪物书了。祝你旅途好运~!");
-            forceCompleteQuest();
+            await forceCompleteQuest();
         }
         // Quest: 2214 
         public async Task q2214e()
@@ -255,9 +253,9 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            gainItem(4031894, 1);
-            gainExp(20000);
-            forceCompleteQuest();
+            await gainItem(4031894, 1);
+            await gainExp(20000);
+            await forceCompleteQuest();
 
             await SayNext("(啊，这里有张碎纸条。。。嗯，它包含了一些即将发生的计划的细节，#r#p1052002##k一定就是所需要的东西了。)");
 
@@ -284,9 +282,9 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            gainMeso(-2000);
-            forceCompleteQuest();
-            gainItem(4031894, 1);
+            await gainMeso(-2000);
+            await forceCompleteQuest();
+            await gainItem(4031894, 1);
 
             await SayNext("(好吧，现在我把钱存在那里，然后拿到报纸。。。就这样，好了。)");
         }
@@ -307,56 +305,56 @@ namespace Application.Plugin.Script.Quest
         public async Task q2216s()
         {
             await SayNext("我刚刚收到一个有趣的信息，#r多尔看起来就像是正常的鳄鱼#k，但是它块头大而且会使用魔法.…但它竟然还会讲国语？");
-            forceCompleteQuest();
-            gainExp(7000);
+            await forceCompleteQuest();
+            await gainExp(7000);
 
             if (isAllSubquestsDone() && haveItem(4031894))
             {
-                gainItem(4031894, -1);
+                await gainItem(4031894, -1);
             }
         }
         // Quest: 2217 
         public async Task q2217s()
         {
             await SayNext("嘿，你注意到了吗，下水道里好像有臭味。。。");
-            forceCompleteQuest();
-            gainExp(7000);
+            await forceCompleteQuest();
+            await gainExp(7000);
 
             if (isAllSubquestsDone() && haveItem(4031894))
             {
-                gainItem(4031894, -1);
+                await gainItem(4031894, -1);
             }
         }
         // Quest: 2218 
         public async Task q2218s()
         {
             await SayNext("喂，我感觉#r拉克里斯#k这些天的行为很奇怪? 我们应该看看她怎么了。");
-            forceCompleteQuest();
-            gainExp(7000);
+            await forceCompleteQuest();
+            await gainExp(7000);
 
             if (isAllSubquestsDone() && haveItem(4031894))
             {
-                gainItem(4031894, -1);
+                await gainItem(4031894, -1);
             }
         }
         // Quest: 2219 
         public async Task q2219s()
         {
             await SayNext("你知道吗，他们说下水道里有人一直在尝试研发一种神奇的粉末，让我们可以长出来，是不是很好？");
-            forceCompleteQuest();
-            gainExp(7000);
+            await forceCompleteQuest();
+            await gainExp(7000);
 
             if (isAllSubquestsDone() && haveItem(4031894))
             {
-                gainItem(4031894, -1);
+                await gainItem(4031894, -1);
             }
         }
         // Quest: 2228 
         public async Task q2228s()
         {
             await SayNext("谢谢你战胜了#r浮士德#k。我的灵魂终于能安息了。");
-            forceCompleteQuest();
-            gainFame(8);
+            await forceCompleteQuest();
+            await gainFame(8);
         }
         // Quest: 2230 
         public async Task q2230e()
@@ -372,9 +370,9 @@ namespace Application.Plugin.Script.Quest
             {
                 if (canHold(5000054, 1))
                 {
-                    gainItem(4032086, -1); // Mysterious Egg * -1
-                    forceCompleteQuest();
-                    gainItem(5000054, 1, false, true, 5 * 60 * 60 * 1000);  // rune snail (5hrs), missing expiration time detected thanks to cljnilsson
+                    await gainItem(4032086, -1); // Mysterious Egg * -1
+                    await forceCompleteQuest();
+                    await gainItem(5000054, 1, false, true, 5 * 60 * 60 * 1000);  // rune snail (5hrs), missing expiration time detected thanks to cljnilsson
                 }
                 else
                 {
@@ -390,7 +388,7 @@ namespace Application.Plugin.Script.Quest
             //var familyEntry = getPlayer().getFamilyEntry();
             //if (familyEntry != null && familyEntry.getJuniorCount() > 0)
             //{  // script found thanks to kvmba
-            //    forceCompleteQuest();
+            //    await forceCompleteQuest();
             //    gainExp(3000);
             //    await SayNext("做得很好！");
             //}
@@ -416,19 +414,18 @@ namespace Application.Plugin.Script.Quest
             return Task.CompletedTask;
         }
         // Quest: 2238 
-        public Task q2238s()
+        public async Task q2238s()
         {
-            forceStartQuest();
-            return Task.CompletedTask;
+            await forceStartQuest();
         }
         // Quest: 2245 
         public async Task q2245s()
         {
             var em = GetSoloQuestEventManager(2245);
-            var r = em.StartInstance(getPlayer());
+            var r = await em.StartInstance(getPlayer());
             if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
             else
             {
@@ -444,9 +441,9 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                gainItem(4032399, -20);
-                gainExp(8000);
-                forceCompleteQuest();
+                await gainItem(4032399, -20);
+                await gainExp(8000);
+                await forceCompleteQuest();
 
                 await SayOK("噢！你带来了20个#b#t4032399##k!谢谢你.");
             }
@@ -465,21 +462,21 @@ namespace Application.Plugin.Script.Quest
                 await SayNext("你身上有#b#i4032521##k，很好，让我给你带路。");
 
                 var em = GetSoloQuestEventManager(2291);
-                if (em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
+                if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
                     await SayOK("嗯...看起来前面的房间现在有点拥挤。请在这儿等一会，好吗？");
                     return;
                 }
 
-                gainItem(4032521, -10);
-                forceCompleteQuest();
+                await gainItem(4032521, -10);
+                await forceCompleteQuest();
             }
         }
         // Quest: 2293 
         public async Task q2293s()
         {
             await SayNext("你还记得摇滚精神演奏的最后一首歌吗？我能想到他的几首歌，接下来模仿给你，仔细听完后告诉我是哪首歌。#b你只有一次机会#k，所以请谨慎做出选择。");
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 2293 
         public async Task q2293e()
@@ -488,23 +485,23 @@ namespace Application.Plugin.Script.Quest
             switch (option)
             {
                 case 1:
-                    playSound("Party1/Failed");
+                    await playSound("Party1/Failed");
                     await SayOK("令人尴尬的熟悉。。。");
                     break;
                 case 2:
-                    playSound("Coconut/Failed");
+                    await playSound("Coconut/Failed");
                     await SayOK("是这个吗？");
                     break;
                 case 3:
-                    playSound("quest2288/6");
+                    await playSound("quest2288/6");
                     await SayOK("你听到了吗?");
-                    break; 
+                    break;
                 case 4:
                     var answer = await AskNumber("现在，请告诉我答案。你只有#b一次机会#k，所以请明智地选择。请在聊天窗口输入#b1，2，或者3#k。\r\n", 1, 1, 3);
                     if (answer == 3)
                     {
-                        forceCompleteQuest();
-                        gainExp(32500);
+                        await forceCompleteQuest();
+                        await gainExp(32500);
 
                         await SayOK("所以这就是他演奏的那首歌。。。好吧，这毕竟不是我的歌，但我很高兴我现在可以肯定地知道。非常感谢。");
                     }
@@ -531,11 +528,11 @@ namespace Application.Plugin.Script.Quest
                     {
                         if (!haveItem(4032375, 1))
                         {
-                            gainItem(4032375, 1);
+                            await gainItem(4032375, 1);
                         }
 
-                        warp(106020000, 0);
-                        forceStartQuest();
+                        await warp(106020000, 0);
+                        await forceStartQuest();
                     }
                     else
                     {
@@ -572,10 +569,10 @@ namespace Application.Plugin.Script.Quest
                 await SaySpeech([
                     "嗯？那是#b转职官的推荐书#k吗？你是来拯救我们蘑菇王国的人吗？",
                         "好吧，既然你有转职教官的推荐信，我想你是一个很棒的人，很抱歉我没有自我介绍，我是包围蘑菇城堡的卫兵，正如你所看到的，这里是我们暂时的藏身之地，我们的情况很糟糕，尽管如此，欢迎你来到蘑菇王国！"]);
-                gainItem(4032375, -1);
-                gainExp(6000);
-                forceCompleteQuest();
-                forceStartQuest(2312);
+                await gainItem(4032375, -1);
+                await gainExp(6000);
+                await forceCompleteQuest();
+                await forceStartQuest(2312);
             }
         }
         // Quest: 2301 
@@ -623,7 +620,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("要想救出公主，必须对蘑菇森林进行调查。不知道企鹅王用了什么手段，在蘑菇森林设下了强力的结界，阻止外人进入蘑菇城。请你马上去进行调查。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
             else
             {
@@ -635,7 +632,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await AskYesNo("即使穿越了结界，也不能完全放心。我们蘑菇王国的城墙经过特殊设计，绝对无法从外部侵入，想要进去会很困难。嗯……你能先去城墙外部调查一下吗？"))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 2325 
@@ -649,8 +646,8 @@ namespace Application.Plugin.Script.Quest
 
             await SayOK("嗯？是哥哥让你来找我的？啊……终于得救了。真是谢谢你。");
 
-            forceCompleteQuest();
-            gainExp(6000);
+            await forceCompleteQuest();
+            await gainExp(6000);
         }
         // Quest: 2327 
         public async Task q2327s()
@@ -659,19 +656,16 @@ namespace Application.Plugin.Script.Quest
                 "嘿！谢谢你给我带来了#b#t4001317##k.",
                 "我打算穿着#b#t4001317##k回去.给我一分钟穿上它。然后再跟你聊。。。"
                 ]);
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 2332 
-        public Task q2332s()
+        public async Task q2332s()
         {
-            // TODO
             if (hasItem(4032388) && !isQuestStarted(2332))
             {
-                forceStartQuest();
-                getPlayer().showHint("我必须找到碧欧蕾塔公主！ (#b任务开始#k)");
+                await forceStartQuest();
+                await getPlayer().showHint("我必须找到碧欧蕾塔公主！ (#b任务开始#k)");
             }
-
-            return Task.CompletedTask;
         }
         // Quest: 2332 
         public Task q2332e()
@@ -686,7 +680,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("勇士，拜托你了！请你一定要拯救菇菇王国"))
             {
                 await SayNext("#b蘑菇大臣#k是幕后策划的黑手！哦，不！他来了。。。");
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 2333 
@@ -694,8 +688,8 @@ namespace Application.Plugin.Script.Quest
         {
             await SayNext("天哪！ #b#h ##k 你居然打败了 #b蘑菇大臣#k.");
 
-            gainExp(15000);
-            forceCompleteQuest();
+            await gainExp(15000);
+            await forceCompleteQuest();
         }
         // Quest: 2334 
         public async Task q2334s()
@@ -709,9 +703,9 @@ namespace Application.Plugin.Script.Quest
                 new SpeechText("我好害羞，都脸红了。总之，谢谢你，#b#h ##k。", 0),
                 ]);
 
-            forceStartQuest();
-            gainExp(1000);
-            forceCompleteQuest();
+            await forceStartQuest();
+            await gainExp(1000);
+            await forceCompleteQuest();
 
         }
         // Quest: 2335 
@@ -722,8 +716,8 @@ namespace Application.Plugin.Script.Quest
             {
                 if (canHold(4032405))
                 {
-                    gainItem(4032405, 1);
-                    forceStartQuest();
+                    await gainItem(4032405, 1);
+                    await forceStartQuest();
 
                     await SayNext("最后一次，祝你好运。");
                 }
@@ -750,8 +744,8 @@ namespace Application.Plugin.Script.Quest
                 }
                 else
                 {
-                    gainItem(2430014, 1);
-                    forceCompleteQuest();
+                    await gainItem(2430014, 1);
+                    await forceCompleteQuest();
                 }
             }
         }
@@ -764,10 +758,10 @@ namespace Application.Plugin.Script.Quest
                 {
                     if (canHold(4001318))
                     {
-                        forceStartQuest();
-                        gainItem(4001318, 1);
+                        await forceStartQuest();
+                        await gainItem(4001318, 1);
                         await SayOK("看起来你在与蘑菇大臣战斗时忘记拿起#b#t4001318##k了。给你，这对我们王国非常重要，请尽快把它交给我的父亲。");
-                        forceCompleteQuest();
+                        await forceCompleteQuest();
                     }
                     else
                     {
@@ -777,9 +771,9 @@ namespace Application.Plugin.Script.Quest
                 }
                 else
                 {
-                    forceStartQuest();
+                    await forceStartQuest();
                     await SayOK("你手中的#b#t4001318##k对我们王国非常重要，请尽快把它交给我的父亲把。");
-                    forceCompleteQuest();
+                    await forceCompleteQuest();
                 }
             }
             else
@@ -793,7 +787,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("若你真的有心想要学习带领多只宠物的技能的话，就去想办法把宠物点心拿给我吧！"))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
             else
             {
@@ -805,9 +799,9 @@ namespace Application.Plugin.Script.Quest
         {
             if (haveItem(5460000))
             {
-                completeQuest();
-                teachSkill(8, 1, 1, -1);
-                gainItem(5460000, -1, false);
+                await completeQuest();
+                await teachSkill(8, 1, 1, -1);
+                await gainItem(5460000, -1, false);
 
                 await SayOK("你获得了宠物点心！谢谢，现在你可以同时携带多只宠物了！");
             }

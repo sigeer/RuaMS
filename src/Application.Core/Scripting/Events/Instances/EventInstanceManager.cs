@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel;
 using Application.Core.Scripting.Events;
 
 namespace Application.Core.scripting.Events.Instances;

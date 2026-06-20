@@ -12,7 +12,7 @@ namespace Application.Core.Game.Players
             Jailexpire = Client.CurrentServer.Node.getCurrentTime() + time;
         }
 
-        public void addJailExpirationTime(long time)
+        public async Task addJailExpirationTime(long time)
         {
             long timeLeft = getJailExpirationTimeLeft();
 
@@ -28,18 +28,18 @@ namespace Application.Core.Game.Players
             if (getMapId() != MapId.JAIL)
             {
                 saveLocationOnWarp();
-                changeMap(MapId.JAIL);
+                await changeMap(MapId.JAIL);
             }
         }
 
-        public void CheckJail()
+        public async Task CheckJail()
         {
             if (Jailexpire > Client.CurrentServer.Node.getCurrentTime())
             {
                 if (getMapId() != MapId.JAIL)
                 {
                     saveLocationOnWarp();
-                    changeMap(MapId.JAIL);
+                    await changeMap(MapId.JAIL);
                 }
             }
         }

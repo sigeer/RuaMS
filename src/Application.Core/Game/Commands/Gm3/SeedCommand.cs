@@ -9,12 +9,12 @@ public class SeedCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (player.getMapId() != MapId.HENESYS_PQ)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SeedCommand_LimitMessage));
+            await player.Yellow(nameof(ClientMessage.SeedCommand_LimitMessage));
             return;
         }
         Point[] pos = {
@@ -34,7 +34,7 @@ public class SeedCommand : CommandBase
         for (int i = 0; i < pos.Length; i++)
         {
             Item item = new Item(seed[i], 0, 1);
-            player.getMap().spawnItemDrop(player, player, item, pos[i], false, true);
+            await player.getMap().spawnItemDrop(player, player, item, pos[i], false, true);
             try
             {
                 Thread.Sleep(100);

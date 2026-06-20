@@ -40,12 +40,12 @@ public class MesoDropHandler : ChannelHandlerBase
         _fishingService = fishingService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (!player.isAlive())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         p.skip(4);
@@ -53,21 +53,22 @@ public class MesoDropHandler : ChannelHandlerBase
 
         if (player.isGM() && player.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            player.MessageI18N(nameof(ClientMessage.DropMeso_NotAccess));
+            await player.MessageI18N(nameof(ClientMessage.DropMeso_NotAccess));
             return;
         }
 
-        if (c.tryacquireClient())
-        {     // thanks imbee for noticing players not being able to throw mesos too fast
+        {
+            await c.tryacquireClient();
+            // thanks imbee for noticing players not being able to throw mesos too fast
             try
             {
                 if (meso <= player.getMeso() && meso > 9 && meso < 50001)
                 {
-                    player.GainMeso(-meso, enableActions: true);
+                    await player.GainMeso(-meso, enableActions: true);
                 }
                 else
                 {
-                    c.sendPacket(PacketCreator.enableActions());
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
             }
@@ -76,20 +77,15 @@ public class MesoDropHandler : ChannelHandlerBase
                 c.releaseClient();
             }
         }
-        else
-        {
-            c.sendPacket(PacketCreator.enableActions());
-            return;
-        }
 
 
         if (_fishingService.AttemptCatchFish(player, meso))
         {
-            player.getMap().DropItemDestroy(0, player.getPosition());
+            await player.getMap().DropItemDestroy(0, player.getPosition());
         }
         else
         {
-            player.getMap().spawnMesoDrop(meso, player.getPosition(), player, player, true, DropType.FreeForAll);
+            await player.getMap().spawnMesoDrop(meso, player.getPosition(), player, player, true, DropType.FreeForAll);
         }
     }
 }

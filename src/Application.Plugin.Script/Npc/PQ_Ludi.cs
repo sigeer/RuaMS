@@ -18,7 +18,7 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                     break;
                 case 1:
                     await SayOK("#e#b<组队任务：时空裂缝>#k#n\r\n#b#m220000000#!#k出现了时空裂缝！我们迫切需要勇敢的冒险家来击败入侵的怪物。请和一些可靠的盟友组队，拯救#m220000000#! 你必须通过击败怪物和解决谜题来通过各个阶段，最终击败#r#o9300012##k。");
@@ -40,9 +40,9 @@ namespace Application.Plugin.Script.Npc
             {
                 case 2040035:
                     await SayNext("恭喜你成功封印了次元裂缝！为了表彰你的辛勤工作，我有一份礼物送给你！拿去吧，这是你的奖品。");
-                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        WarpOut();
+                        await WarpOut();
                     }
                     else
                     {
@@ -77,9 +77,9 @@ namespace Application.Plugin.Script.Npc
                             if (haveItem(4001022, data.Count))
                             {
                                 await SayOK($"干得好！你已经收集了所有{data.Count}个#b#t4001022#。#k");
-                                gainItem(4001022, -data.Count);
+                                await gainItem(4001022, -data.Count);
 
-                                ClearLudiPQStage(eim, getMapId());
+                                await ClearLudiPQStage(eim, getMapId());
                             }
                             else
                             {
@@ -132,12 +132,12 @@ namespace Application.Plugin.Script.Npc
                     var stgCombos = em.GetStage(eim, getMap());
                     if (passedIndex.SequenceEqual(stgCombos))
                     {
-                        ClearLudiPQStage(eim, getMapId());
+                        await ClearLudiPQStage(eim, getMapId());
                         await SayNext("快点，去下一个阶段，传送门已经打开了！");
                     }
                     else
                     {
-                        eim.showWrongEffect();
+                        await eim.showWrongEffect();
                     }
                     break;
                 case 2040044:
@@ -156,11 +156,11 @@ namespace Application.Plugin.Script.Npc
 
                     if (haveItem(4001023, 1))
                     {
-                        gainItem(4001023, -1);
+                        await gainItem(4001023, -1);
 
-                        ClearLudiPQStage(eim, getMapId());
+                        await ClearLudiPQStage(eim, getMapId());
 
-                        eim.clearPQ();
+                        await eim.clearPQ();
                     }
                     else
                     {
@@ -172,7 +172,7 @@ namespace Application.Plugin.Script.Npc
                     if (await AskYesNo("你想离开奖励阶段吗？"))
                     {
                         // warp(922011100, "st00");
-                        WarpOut();
+                        await WarpOut();
                     }
                     break;
                 default:
@@ -182,12 +182,12 @@ namespace Application.Plugin.Script.Npc
 
         }
 
-        static void ClearLudiPQStage(AbstractEventInstanceManager eim, int curMap)
+        static async Task ClearLudiPQStage(AbstractEventInstanceManager eim, int curMap)
         {
             eim.ClearedMaps[curMap] = StageStatus.Completed;
-            eim.showClearEffect(true);
+            await eim.showClearEffect(true);
 
-            eim.GiveStageClearRewardAll(curMap);
+            await eim.GiveStageClearRewardAll(curMap);
         }
 
         // Npc: 2040047 
@@ -196,7 +196,7 @@ namespace Application.Plugin.Script.Npc
             if (getMapId() == 922010000)
             {
                 await SayNext("要离开这里，请沿着这条路走。");
-                warp(221024500);
+                await warp(221024500);
             }
             else
             {
@@ -206,7 +206,7 @@ namespace Application.Plugin.Script.Npc
                     : "一旦离开地图，若想再次尝试，必须重新开始整个任务。你确定要离开这张地图吗？";
                 if (await AskYesNo(outText))
                 {
-                    WarpOut();
+                    await WarpOut();
                 }
             }
         }

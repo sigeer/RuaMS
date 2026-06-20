@@ -42,7 +42,7 @@ public class ItemRequirement : AbstractQuestRequirement
     {
         RequiredItems = data.ToDictionary(x => x.ItemID, x => x.Count);
     }
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         foreach (int itemId in RequiredItems.Keys)
@@ -76,7 +76,7 @@ public class ItemRequirement : AbstractQuestRequirement
                     {
                         if (chr.getInventory(InventoryType.EQUIPPED).countById(itemId) + count >= countNeeded)
                         {
-                            chr.dropMessage(5, "Unequip the required " + chr.Client.CurrentCulture.GetItemName(itemId) + " before trying this quest operation.");
+                            await chr.dropMessage(5, "Unequip the required " + chr.Client.CurrentCulture.GetItemName(itemId) + " before trying this quest operation.");
                             return false;
                         }
                     }

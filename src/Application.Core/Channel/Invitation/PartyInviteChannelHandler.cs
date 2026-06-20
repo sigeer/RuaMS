@@ -1,9 +1,7 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Resources.Messages;
 using Application.Shared.Invitations;
-using Dto;
 using Microsoft.Extensions.Logging;
-using tools;
 
 namespace Application.Core.Channel.Invitation
 {
@@ -20,18 +18,26 @@ namespace Application.Core.Channel.Invitation
             if (result == InviteResultType.DENIED)
             {
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                senderActor?.Send(m =>
+                senderActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.SenderPlayerId)?.sendPacket(TeamPacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
+                    var chr = m.getCharacterById(data.SenderPlayerId);
+                    if (chr != null)
+                    {
+                        await chr.SendPacket(TeamPacketCreator.partyStatusMessage(23, data.ReceivePlayerName));
+                    }
                 });
             }
 
             if (result == InviteResultType.NOT_FOUND)
             {
                 var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
-                receiverActor?.Send(m =>
+                receiverActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.ReceivePlayerId)?.Pink(nameof(ClientMessage.Team_InvitationExpired));
+                    var chr = m.getCharacterById(data.ReceivePlayerId);
+                    if (chr != null)
+                    {
+                        await chr.Pink(nameof(ClientMessage.Team_InvitationExpired));
+                    }
                 });
             }
         }
@@ -42,15 +48,19 @@ namespace Application.Core.Channel.Invitation
             if (code == InviteResponseCode.Success)
             {
                 var receiverActor = _server.getPlayerStorage().GetCharacterActor(data.ReceivePlayerId);
-                receiverActor?.Send(m =>
+                receiverActor?.Send(async m =>
                 {
-                    m.getCharacterById(data.ReceivePlayerId)?.sendPacket(TeamPacketCreator.partyInvite(data.Key, data.SenderPlayerName));
+                    var chr = m.getCharacterById(data.ReceivePlayerId);
+                    if (chr != null)
+                    {
+                        await chr.SendPacket(TeamPacketCreator.partyInvite(data.Key, data.SenderPlayerName));
+                    }
                 });
             }
             else
             {
                 var senderActor = _server.getPlayerStorage().GetCharacterActor(data.SenderPlayerId);
-                senderActor?.Send(m =>
+                senderActor?.Send(async m =>
                 {
                     var sender = m.getCharacterById(data.SenderPlayerId);
                     if (sender != null)
@@ -58,19 +68,19 @@ namespace Application.Core.Channel.Invitation
                         switch (code)
                         {
                             case InviteResponseCode.MANAGING_INVITE:
-                                sender.sendPacket(TeamPacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
+                                await sender.SendPacket(TeamPacketCreator.partyStatusMessage(22, data.ReceivePlayerName));
                                 break;
                             case InviteResponseCode.InviteesNotFound:
-                                sender.sendPacket(TeamPacketCreator.partyStatusMessage(19));
+                                await sender.SendPacket(TeamPacketCreator.partyStatusMessage(19));
                                 break;
                             case InviteResponseCode.Team_AlreadyInTeam:
-                                sender.sendPacket(TeamPacketCreator.AlreadInTeam());
+                                await sender.SendPacket(TeamPacketCreator.AlreadInTeam());
                                 break;
                             case InviteResponseCode.Team_CapacityFull:
-                                sender.sendPacket(TeamPacketCreator.TeamFullCapacity());
+                                await sender.SendPacket(TeamPacketCreator.TeamFullCapacity());
                                 break;
                             case InviteResponseCode.Team_BeginnerLimit:
-                                sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
+                                await sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
                                 break;
                             default:
                                 _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);

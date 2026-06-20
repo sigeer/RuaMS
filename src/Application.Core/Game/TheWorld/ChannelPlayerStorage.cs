@@ -79,7 +79,7 @@ namespace Application.Core.Game.TheWorld
             {
                 if (mc.IsOnlined && (includeGM || !mc.isGM()))
                 {
-                    mc.Client.ForceDisconnect();
+                    await mc.Client.ForceDisconnect();
                 }
             }
 

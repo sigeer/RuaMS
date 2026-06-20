@@ -9,13 +9,13 @@ public class QuestStartCommand : CommandBase
         Description = "Start a quest.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !startquest <questid>");
+            await player.Yellow("Syntax: !startquest <questid>");
             return;
         }
 
@@ -26,18 +26,18 @@ public class QuestStartCommand : CommandBase
             Quest quest = Quest.getInstance(questid);
             if (quest != null && quest.getNpcRequirement(false) != -1)
             {
-                c.getAbstractPlayerInteraction().forceStartQuest(questid, quest.getNpcRequirement(false));
+                await c.getAbstractPlayerInteraction().forceStartQuest(questid, quest.getNpcRequirement(false));
             }
             else
             {
-                c.getAbstractPlayerInteraction().forceStartQuest(questid);
+                await c.getAbstractPlayerInteraction().forceStartQuest(questid);
             }
 
-            player.dropMessage(5, "QUEST " + questid + " started.");
+            await player.dropMessage(5, "QUEST " + questid + " started.");
         }
         else
         {
-            player.dropMessage(5, "QUESTID " + questid + " already started/completed.");
+            await player.dropMessage(5, "QUESTID " + questid + " already started/completed.");
         }
     }
 }

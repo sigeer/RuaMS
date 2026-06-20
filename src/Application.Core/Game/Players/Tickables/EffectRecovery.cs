@@ -13,14 +13,14 @@ namespace Application.Core.Game.Players.Tickables
             Next = chr.getChannelServer().Node.getCurrentTime() + Period;
         }
 
-        protected override void Process(long now)
+        protected override async Task Process(long now)
         {
-            _chr.UpdateStatsChunk(() =>
-            {
-                _chr.ChangeHP(value);
-            });
-            _chr.sendPacket(PacketCreator.showOwnRecovery((sbyte)value));
-            _chr.BroadcastMap(PacketCreator.showRecovery(_chr.Id, (sbyte)value), _chr.Id);
+            await _chr.UpdateStatsChunk(async () =>
+                {
+                    await _chr.ChangeHP(value);
+                });
+            await _chr.SendPacket(PacketCreator.showOwnRecovery((sbyte)value));
+            await _chr.BroadcastMap(PacketCreator.showRecovery(_chr.Id, (sbyte)value), _chr.Id);
         }
     }
 }

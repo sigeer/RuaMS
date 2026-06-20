@@ -54,15 +54,15 @@ public class UseCashItemHandler : ChannelHandlerBase
         _playerShopService = playerShopService;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
 
         long timeNow = c.CurrentServer.Node.getCurrentTime();
         if (timeNow - player.getLastUsedCashItem() < 3000)
         {
-            player.dropMessage(1, "You have used a cash item recently. Wait a moment, then try again.");
-            c.sendPacket(PacketCreator.enableActions());
+            await player.Popup("You have used a cash item recently. Wait a moment, then try again.");
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         player.setLastUsedCashItem(timeNow);
@@ -82,7 +82,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (toUse == null)
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -91,7 +91,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
         if (toUse.getQuantity() < 1)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -100,7 +100,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         { // vip teleport rock
             string error1 = "Either the player could not be found or you were trying to teleport to an illegal location.";
             bool vip = p.readByte() == 1 && itemId / 1000 >= 5041;
-            remove(c, position, itemId);
+            await remove(c, position, itemId);
             bool success = false;
             if (!vip)
             {
@@ -108,20 +108,20 @@ public class UseCashItemHandler : ChannelHandlerBase
                 if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
                 {
                     //check vip or same continent
-                    var targetMap = c.CurrentServer.getMapFactory().getMap(mapId);
+                    var targetMap = await c.CurrentServer.getMapFactory().getMap(mapId);
                     if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
                     {
-                        player.forceChangeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
+                        await player.forceChangeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
                         success = true;
                     }
                     else
                     {
-                        player.dropMessage(1, error1);
+                        await player.Popup(error1);
                     }
                 }
                 else
                 {
-                    player.dropMessage(1, "You cannot teleport between continents with this teleport rock.");
+                    await player.Popup("You cannot teleport between continents with this teleport rock.");
                 }
             }
             else
@@ -138,29 +138,29 @@ public class UseCashItemHandler : ChannelHandlerBase
                         {
                             // thanks Yoboes for noticing non-GM's being unreachable through rocks
                             // forceChangeMap 可以跨事件传送，岂不是缩地石可以中途参与事件？
-                            player.forceChangeMap(targetMap, targetMap.findClosestPlayerSpawnpoint(victim.getPosition()));
+                            await player.forceChangeMap(targetMap, targetMap.findClosestPlayerSpawnpoint(victim.getPosition()));
                             success = true;
                         }
                         else
                         {
-                            player.dropMessage(1, error1);
+                            await player.Popup(error1);
                         }
                     }
                     else
                     {
-                        player.dropMessage(1, "You cannot teleport to this map.");
+                        await player.Popup("You cannot teleport to this map.");
                     }
                 }
                 else
                 {
-                    player.Popup(nameof(ClientMessage.PlayerNotFoundInChannel), name);
+                    await player.Popup(nameof(ClientMessage.PlayerNotFoundInChannel), name);
                 }
             }
 
             if (!success)
             {
-                player.GainItem(itemId, 1);
-                c.sendPacket(PacketCreator.enableActions());
+                await player.GainItem(itemId, 1);
+                await c.SendPacket(PacketCreator.enableActions());
             }
         }
         else if (itemType == 505)
@@ -168,7 +168,7 @@ public class UseCashItemHandler : ChannelHandlerBase
             // AP/SP reset
             if (!player.isAlive())
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
@@ -177,19 +177,19 @@ public class UseCashItemHandler : ChannelHandlerBase
                 int SPTo = p.readInt();
                 int SPFrom = p.readInt();
 
-                AssignSPProcessor.ResetSkill(player, SPTo, SPFrom);
+                await AssignSPProcessor.ResetSkill(player, SPTo, SPFrom);
             }
             else
             {
                 int APTo = p.readInt();
                 int APFrom = p.readInt();
 
-                if (!AssignAPProcessor.APResetAction(c, APFrom, APTo))
+                if (!await AssignAPProcessor.APResetAction(c, APFrom, APTo))
                 {
                     return;
                 }
             }
-            remove(c, position, itemId);
+            await remove(c, position, itemId);
         }
         else if (itemType == 506)
         {
@@ -255,18 +255,18 @@ public class UseCashItemHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                if (getIncubatedItem(c, itemId))
+                if (await getIncubatedItem(c, itemId))
                 {
-                    InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventory2), slot2, 1, false);
-                    remove(c, position, itemId);
+                    await InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventory2), slot2, 1, false);
+                    await remove(c, position, itemId);
                 }
                 return;
             }
             p.readInt(); // time stamp
             if (eq != null)
             {
-                player.forceUpdateItem(eq);
-                remove(c, position, itemId);
+                await player.forceUpdateItem(eq);
+                await remove(c, position, itemId);
             }
         }
         else if (itemType == 507)
@@ -277,11 +277,11 @@ public class UseCashItemHandler : ChannelHandlerBase
                 case 1: // Megaphone
                     if (player.getLevel() > 9)
                     {
-                        player.getClient().getChannelServer().broadcastPacket(PacketCreator.serverNotice(2, medal + player.getName() + " : " + p.readString()));
+                        await player.getClient().getChannelServer().broadcastPacket(PacketCreator.serverNotice(2, medal + player.getName() + " : " + p.readString()));
                     }
                     else
                     {
-                        player.Popup(nameof(ClientMessage.UseItem_LevelCheck_10));
+                        await player.Popup(nameof(ClientMessage.UseItem_LevelCheck_10));
                         return;
                     }
                     break;
@@ -353,7 +353,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
                     break;
             }
-            remove(c, position, itemId);
+            await remove(c, position, itemId);
         }
         else if (itemType == 508)
         {   // thanks tmskdl12 for graduation banner; thanks ratency for first pointing lack of Kite handling
@@ -361,30 +361,30 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (!GameConstants.isFreeMarketRoom(player.getMapId()))
             {
-                player.getMap().spawnKite(kite);
-                remove(c, position, itemId);
+                await player.getMap().spawnKite(kite);
+                await remove(c, position, itemId);
             }
             else
             {
-                c.sendPacket(PacketCreator.sendCannotSpawnKite());
+                await c.SendPacket(PacketCreator.sendCannotSpawnKite());
             }
         }
         else if (itemType == 509)
         {
             string sendTo = p.readString();
             string msg = p.readString();
-            bool sendSuccess = c.CurrentServer.Node.Transport.SendNormalNoteMessage(player.Id, sendTo, msg);
+            bool sendSuccess = await c.CurrentServer.Node.Transport.SendNormalNoteMessage(player.Id, sendTo, msg);
             if (sendSuccess)
             {
-                remove(c, position, itemId);
-                c.sendPacket(new SendNoteSuccessPacket());
+                await remove(c, position, itemId);
+                await c.SendPacket(new SendNoteSuccessPacket());
             }
         }
         else if (itemType == 510)
         {
-            player.getMap().broadcastMessage(PacketCreator.musicChange("Jukebox/Congratulation"));
-            player.MapModel.broadcastMessage(PacketCreator.PlayerJuke(itemId, player.Name));
-            remove(c, position, itemId);
+            await player.getMap().broadcastMessage(PacketCreator.musicChange("Jukebox/Congratulation"));
+            await player.MapModel.broadcastMessage(PacketCreator.PlayerJuke(itemId, player.Name));
+            await remove(c, position, itemId);
         }
         else if (itemType == 512)
         {
@@ -395,35 +395,35 @@ public class UseCashItemHandler : ChannelHandlerBase
                     ii.getItemEffect(template.StateChangeItem)?.applyTo(mChar);
                 }
             }
-            player.getMap().startMapEffect(c.CurrentCulture.GetItemMessage(itemId).replaceFirst("%s", player.getName()).replaceFirst("%s", p.readString()), itemId);
-            remove(c, position, itemId);
+            await player.getMap().startMapEffect(c.CurrentCulture.GetItemMessage(itemId).replaceFirst("%s", player.getName()).replaceFirst("%s", p.readString()), itemId);
+            await remove(c, position, itemId);
         }
         else if (itemType == 517)
         {
             var pet = player.getPet(0);
             if (pet == null)
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
             string newName = p.readString();
-            pet.UpdateName(newName);
-            c.sendPacket(PacketCreator.enableActions());
-            remove(c, position, itemId);
+            await pet.UpdateName(newName);
+            await c.SendPacket(PacketCreator.enableActions());
+            await remove(c, position, itemId);
         }
         else if (itemType == 520)
         {
-            if (player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, GainItemShow.ShowInChat))
+            if (await player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, GainItemShow.ShowInChat))
             {
-                remove(c, position, itemId);
+                await remove(c, position, itemId);
             }
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 523)
         {
             int itemid = p.readInt();
 
-            _playerShopService.OwlSearch(c.OnlinedCharacter, itemId, itemid);
+            await _playerShopService.OwlSearch(c.OnlinedCharacter, itemId, itemid);
 
         }
         else if (itemType == 524)
@@ -441,36 +441,36 @@ public class UseCashItemHandler : ChannelHandlerBase
                 {
                     if (template.Pet.Contains(pet.getItemId()))
                     {
-                        pet.gainTamenessFullness(template.PetfoodInc, 100, 1, true);
-                        remove(c, position, itemId);
+                        await pet.gainTamenessFullness(template.PetfoodInc, 100, 1, true);
+                        await remove(c, position, itemId);
 
                         return;
                     }
                 }
             }
-            c.sendPacket(PacketCreator.PetEatCashFoodFail());
+            await c.SendPacket(PacketCreator.PetEatCashFoodFail());
         }
         else if (itemType == 530)
         {
             ii.getItemEffect(itemId)?.applyTo(player);
-            remove(c, position, itemId);
+            await remove(c, position, itemId);
         }
         else if (itemType == 533)
         {
-            c.sendPacket(DueyPacketCreator.SendQuickly());
+            await c.SendPacket(DueyPacketCreator.SendQuickly());
         }
         else if (itemType == 537)
         {
             if (GameConstants.isFreeMarketRoom(player.getMapId()))
             {
-                player.dropMessage(5, "You cannot use the chalkboard here.");
-                player.sendPacket(PacketCreator.enableActions());
+                await player.Pink("You cannot use the chalkboard here.");
+                await player.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             player.setChalkboard(p.readString());
-            player.getMap().broadcastMessage(PacketCreator.useChalkboard(player, false));
-            player.sendPacket(PacketCreator.enableActions());
+            await player.getMap().broadcastMessage(PacketCreator.useChalkboard(player, false));
+            await player.SendPacket(PacketCreator.enableActions());
             //remove(c, position, itemId);  thanks Conrad for noticing chalkboards shouldn't be depleted upon use
         }
         else if (itemType == 539)
@@ -482,10 +482,10 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
 
             c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            c.CurrentServer.TimerManager.schedule(
+            await c.CurrentServer.TimerManager.schedule(
                 () => c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
                 TimeSpan.FromSeconds(10));
-            remove(c, position, itemId);
+            await remove(c, position, itemId);
         }
         else if (itemType == 540)
         {
@@ -493,14 +493,14 @@ public class UseCashItemHandler : ChannelHandlerBase
             var unknownInt540 = p.readInt();
             if (itemId == ItemId.NAME_CHANGE)
             {
-                // c.sendPacket(PacketCreator.showNameChangeCancel(player.cancelPendingNameChange()));
+                // await c.SendPacket(PacketCreator.showNameChangeCancel(player.cancelPendingNameChange()));
             }
             else if (itemId == ItemId.WORLD_TRANSFER)
             {
                 throw new BusinessNotsupportException("World Transfer");
             }
-            remove(c, position, itemId);
-            c.sendPacket(PacketCreator.enableActions());
+            await remove(c, position, itemId);
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 543)
         {
@@ -508,8 +508,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             throw new BusinessNotsupportException("Maple Life");
             //if (itemId == ItemId.MAPLE_LIFE_B && !c.GainCharacterSlot())
             //{
-            //    player.dropMessage(1, "You have already used up all 12 extra character slots.");
-            //    c.sendPacket(PacketCreator.enableActions());
+            //    await player.Popup("You have already used up all 12 extra character slots.");
+            //    await c.SendPacket(PacketCreator.enableActions());
             //    return;
             //}
 
@@ -526,7 +526,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             //if (newPlayerId > 0)
             //{
-            //    c.sendPacket(PacketCreator.sendMapleLifeError(0));   // success!
+            //    await c.SendPacket(PacketCreator.sendMapleLifeError(0));   // success!
 
             //    player.showHint("#bSuccess#k on creation of the new character through the Maple Life card.");
             //    remove(c, position, itemId);
@@ -535,11 +535,11 @@ public class UseCashItemHandler : ChannelHandlerBase
             //{
             //    if (newPlayerId == -1)
             //    {    // check name
-            //        c.sendPacket(PacketCreator.sendMapleLifeNameError());
+            //        await c.SendPacket(PacketCreator.sendMapleLifeNameError());
             //    }
             //    else
             //    {
-            //        c.sendPacket(PacketCreator.sendMapleLifeError(-1 * newPlayerId));
+            //        await c.SendPacket(PacketCreator.sendMapleLifeError(-1 * newPlayerId));
             //    }
             //}
         }
@@ -551,19 +551,19 @@ public class UseCashItemHandler : ChannelHandlerBase
                 var shop = _shopManager.getShop(1338);
                 if (shop != null)
                 {
-                    shop.sendShop(c);
-                    remove(c, position, itemId);
+                    await shop.sendShop(c);
+                    await remove(c, position, itemId);
                 }
             }
             else
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
             }
         }
         else if (itemType == 550)
         {
             //Extend item expiration
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 552)
         {
@@ -572,35 +572,38 @@ public class UseCashItemHandler : ChannelHandlerBase
             var item = player.getInventory(type).getItem(slot);
             if (item == null || item.getQuantity() <= 0 || KarmaManipulator.hasKarmaFlag(item) || !ii.isKarmaAble(item.getItemId()))
             {
-                c.sendPacket(PacketCreator.enableActions());
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             KarmaManipulator.setKarmaFlag(item);
-            player.forceUpdateItem(item);
-            remove(c, position, itemId);
-            c.sendPacket(PacketCreator.enableActions());
+            await player.forceUpdateItem(item);
+            await remove(c, position, itemId);
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 553)
         { //DS EGG THING
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 557)
         {
             p.readInt();
             int itemSlot = p.readInt();
             p.readInt();
-            var equip = (Equip)player.getInventory(InventoryType.EQUIP).getItem((short)itemSlot);
+            var equip = (Equip?)player.getInventory(InventoryType.EQUIP).getItem((short)itemSlot);
+            if (equip == null)
+                return;
+
             if (equip.getVicious() >= 2 || player.getInventory(InventoryType.CASH).findById(ItemId.VICIOUS_HAMMER) == null)
             {
                 return;
             }
             equip.setVicious(equip.getVicious() + 1);
             equip.setUpgradeSlots(equip.getUpgradeSlots() + 1);
-            remove(c, position, itemId);
-            c.sendPacket(PacketCreator.enableActions());
-            c.sendPacket(PacketCreator.sendHammerData(equip.getVicious()));
-            player.forceUpdateItem(equip);
+            await remove(c, position, itemId);
+            await c.SendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.sendHammerData(equip.getVicious()));
+            await player.forceUpdateItem(equip);
         }
         else if (itemType == 561)
         {
@@ -627,7 +630,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (toScroll.getUpgradeSlots() < 1)
             {
-                c.sendPacket(PacketCreator.getInventoryFull());
+                await c.SendPacket(PacketCreator.getInventoryFull());
                 return;
             }
 
@@ -640,20 +643,20 @@ public class UseCashItemHandler : ChannelHandlerBase
             player.toggleBlockCashShop();
 
             int curlevel = toScroll.getLevel();
-            c.sendPacket(PacketCreator.sendVegaScroll(0x40));
+            await c.SendPacket(PacketCreator.sendVegaScroll(0x40));
 
             var scrolled = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
-            c.sendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
+            await c.SendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 
-            InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
-            remove(c, position, itemId);
+            await InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
+            await remove(c, position, itemId);
 
             IChannelClient client = c;
-            c.CurrentServer.TimerManager.schedule(() =>
+            await c.CurrentServer.TimerManager.schedule(() =>
             {
                 var mapActor = c.CurrentServer.getPlayerStorage().GetCharacterActor(player.Id);
-                mapActor?.Send(map =>
+                mapActor?.Send(async map =>
                 {
                     var chr = map.getCharacterById(player.Id);
                     if (chr == null)
@@ -663,28 +666,28 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     chr.toggleBlockCashShop();
 
-                    chr.forceUpdateItem(scrolled);
+                    await chr.forceUpdateItem(scrolled);
 
                     var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
-                    chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
+                    await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
                     // 取背包装备栏而不是已装备栏，理论上不会出现eSlot < 0的情况？
                     //if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
                     //{
                     //    _player.equipChanged();
                     //}
 
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.SendPacket(PacketCreator.enableActions());
                 });
             }, TimeSpan.FromSeconds(3));
         }
         else
         {
             _logger.LogWarning("NEW CASH ITEM TYPE: {ItemType}, packet: {Packet}", itemType, p);
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
         }
     }
 
-    private static void remove(IChannelClient c, short position, int itemid)
+    private static async Task remove(IChannelClient c, short position, int itemid)
     {
         var cashInv = c.OnlinedCharacter.getInventory(InventoryType.CASH);
 
@@ -698,10 +701,10 @@ public class UseCashItemHandler : ChannelHandlerBase
             }
         }
 
-        InventoryManipulator.removeFromSlot(c, InventoryType.CASH, position, 1, true, false);
+        await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, position, 1, true, false);
     }
 
-    private static bool getIncubatedItem(IChannelClient c, int id)
+    private static async Task<bool> getIncubatedItem(IChannelClient c, int id)
     {
         int[] ids = { 1012070, 1302049, 1302063, 1322027, 2000004, 2000005, 2020013, 2020015, 2040307, 2040509, 2040519, 2040521, 2040533, 2040715, 2040717, 2040810, 2040811, 2070005, 2070006, 4020009, };
         int[] quantitys = { 1, 1, 1, 1, 240, 200, 200, 200, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3 };
@@ -717,7 +720,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         {
             return false;
         }
-        c.OnlinedCharacter.GainItem(id, (short)amount);
+        await c.OnlinedCharacter.GainItem(id, (short)amount);
         return true;
     }
 }

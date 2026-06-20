@@ -1,4 +1,3 @@
-using Application.Core.Channel;
 using server.maps;
 
 namespace Application.Core.Gameplay.Plugins
@@ -10,5 +9,7 @@ namespace Application.Core.Gameplay.Plugins
     {
         Task ReactorHit(IChannelClient c, Reactor r);
         Task ReactorAct(IChannelClient c, Reactor r);
+        Task ReactorTouch(IChannelClient c, Reactor r);
+        Task ReactorUntouch(IChannelClient c, Reactor r);
     }
 }

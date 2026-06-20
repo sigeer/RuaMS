@@ -1,5 +1,4 @@
 using AllianceProto;
-using Application.Core.Game.Relation;
 using GuildProto;
 
 namespace Application.Core.Game.Players

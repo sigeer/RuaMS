@@ -103,17 +103,17 @@ namespace Application.Core.scripting.Events.Templates
             return [];
         }
         #region Events
-        public virtual void OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        public virtual Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual void AfterSeup(AbstractEventInstanceManager eim)
+        public virtual Task AfterSeup(AbstractEventInstanceManager eim)
         {
-
+            return Task.CompletedTask;
         }
-        public virtual void respawnStages(AbstractEventInstanceManager eim) { }
-        public virtual void setEventRewards(AbstractEventInstanceManager eim) { }
+        public virtual Task respawnStages(AbstractEventInstanceManager eim) { return Task.CompletedTask; }
+        public virtual Task setEventRewards(AbstractEventInstanceManager eim) { return Task.CompletedTask; }
 
         public virtual string GetRequirementDescription(IChannelClient client)
         {
@@ -129,51 +129,52 @@ namespace Application.Core.scripting.Events.Templates
         /// 结束FB
         /// </summary>
         /// <param name="eim"></param>
-        protected virtual void End(AbstractEventInstanceManager eim)
+        protected virtual async Task End(AbstractEventInstanceManager eim)
         {
-            eim.Dispose();
+            await eim.DisposeAsync();
         }
 
 
-        public virtual void OnTimeOut(AbstractEventInstanceManager eim)
+        public virtual async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
-            End(eim);
+            await End(eim);
         }
 
-        public virtual void OnPlayerRegister(AbstractEventInstanceManager eim, Player chr)
+        public virtual async Task OnPlayerRegister(AbstractEventInstanceManager eim, Player chr)
         {
-            OnPlayerEntry(eim, chr);
+            await OnPlayerEntry(eim, chr);
         }
 
-        public virtual void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        public virtual async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
             chr.SaveLocation(SavedLocationType.EVENT);
-            chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
+            await chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
         }
 
-        public virtual void OnPlayerExit(AbstractEventInstanceManager eim, Player player)
+        public virtual async Task OnPlayerExit(AbstractEventInstanceManager eim, Player player)
         {
-            eim.unregisterPlayer(player);
+            await eim.unregisterPlayer(player);
 
             if (player.isLoggedin())
             {
                 if (ExitMap == MapId.NONE)
                 {
-                    if (!player.TryWarpBackSavedLocation(SavedLocationType.EVENT))
+                    if (!await player.TryWarpBackSavedLocation(SavedLocationType.EVENT))
                     {
-                        player.ForcedWarpOut();
+                        await player.ForcedWarpOut();
                     }
                 }
                 else
                 {
-                    player.changeMap(ExitMap, ExitPortal);
+                    await player.changeMap(ExitMap, ExitPortal);
                 }
                 player.clearSavedLocation(SavedLocationType.EVENT);
             }
         }
 
-        public virtual void OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
+        public virtual Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
+            return Task.CompletedTask;
         }
 
 
@@ -183,18 +184,18 @@ namespace Application.Core.scripting.Events.Templates
         /// <param name="eim"></param>
         /// <param name="player"></param>
         /// <param name="mapid"></param>
-        public virtual void OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
+        public virtual async Task OnPlayerMapChanging(AbstractEventInstanceManager eim, Player player, int mapid)
         {
             if (!InInstanceMap(mapid))
             {
                 if (IsEventTeamLackingNow(eim, true, player))
                 {
-                    eim.unregisterPlayer(player);
-                    End(eim);
+                    await eim.unregisterPlayer(player);
+                    await End(eim);
                 }
                 else
                 {
-                    eim.unregisterPlayer(player);
+                    await eim.unregisterPlayer(player);
                 }
             }
         }
@@ -212,66 +213,66 @@ namespace Application.Core.scripting.Events.Templates
 
 
 
-        public virtual void OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
+        public virtual Task OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual void OnPlayerDisconnected(AbstractEventInstanceManager eim, Player player)
+        public virtual async Task OnPlayerDisconnected(AbstractEventInstanceManager eim, Player player)
         {
             if (IsEventTeamLackingNow(eim, true, player))
             {
-                eim.unregisterPlayer(player);
-                End(eim);
+                await eim.unregisterPlayer(player);
+                await End(eim);
             }
             else
             {
-                eim.unregisterPlayer(player);
+                await eim.unregisterPlayer(player);
             }
         }
 
-        public virtual void OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
+        public virtual async Task OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
         {
             var mapid = leader.getMapId();
             if (!eim.isEventCleared() && (!InInstanceMap(mapid)))
             {
-                End(eim);
+                await End(eim);
             }
         }
 
-        public virtual void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
+        public virtual async Task OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
         {
             if (IsEventTeamLackingNow(eim, false, player))
             {
-                End(eim);
+                await End(eim);
             }
             else
             {
                 if (!eim.isEventCleared())
                 {
-                    eim.exitPlayer(player);
+                    await eim.exitPlayer(player);
                 }
             }
         }
 
-        public virtual void OnPartyDisband(AbstractEventInstanceManager eim)
+        public virtual async Task OnPartyDisband(AbstractEventInstanceManager eim)
         {
             if (!eim.isEventCleared())
             {
-                End(eim);
+                await End(eim);
             }
         }
 
-        public virtual bool OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
+        public virtual async Task<bool> OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
         {
             if (IsEventTeamLackingNow(eim, true, player))
             {
-                eim.unregisterPlayer(player);
-                End(eim);
+                await eim.unregisterPlayer(player);
+                await End(eim);
             }
             else
             {
-                eim.unregisterPlayer(player);
+                await eim.unregisterPlayer(player);
             }
             return true;
         }
@@ -298,32 +299,27 @@ namespace Application.Core.scripting.Events.Templates
             }
         }
 
-        public virtual void OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        public virtual Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
+            return Task.CompletedTask;
         }
 
-        public virtual void OnMobRevive(AbstractEventInstanceManager eim, Monster mob)
-        {
-        }
+        public virtual Task OnMobRevive(AbstractEventInstanceManager eim, Monster mob)
+            => Task.CompletedTask;
 
-        public virtual void OnMobClear(AbstractEventInstanceManager eim, IMap map)
-        {
-        }
+        public virtual Task OnMobClear(AbstractEventInstanceManager eim, IMap map)
+            => Task.CompletedTask;
+        public virtual Task OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
+            => Task.CompletedTask;
+        public virtual Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+            => Task.CompletedTask;
+        public virtual Task OnFriendlyMobDrop(AbstractEventInstanceManager eim, Monster mob)
+            => Task.CompletedTask;
 
-        public virtual void OnFriendlyMobDamaged(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? attacker, int damage)
+        public virtual async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-        }
-        public virtual void OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
-        {
-        }
-        public virtual void OnFriendlyMobDrop(AbstractEventInstanceManager eim, Monster mob)
-        {
-        }
-
-        public virtual void ClearPQ(AbstractEventInstanceManager eim)
-        {
-            eim.stopEventTimer();
-            eim.setEventCleared();
+            await eim.stopEventTimer();
+            await eim.setEventCleared();
         }
 
         protected bool InInstanceMap(int mapId)
@@ -345,7 +341,7 @@ namespace Application.Core.scripting.Events.Templates
         /// <param name="points">得分</param>
         /// <param name="eventLevel">难度</param>
         /// <returns>0. 成功，1. 已领取，2. 奖励不存在，3. 背包空间不足</returns>
-        public virtual ClaimRewardResult GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
+        public virtual async Task<ClaimRewardResult> GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
         {
             if (!eim.CanGiveReward(player, -1))
             {
@@ -373,20 +369,20 @@ namespace Application.Core.scripting.Events.Templates
 
                 var item = Randomizer.Select(pool.ItemPool);
 
-                player.GainItem(item.ItemId, (short)item.Quantity, show: GainItemShow.ShowInChat);
+                await player.GainItem(item.ItemId, (short)item.Quantity, show: GainItemShow.ShowInChat);
             }
 
             var option = GetAllClearRewardOptions(player, point);
             if (pool.ExpPool.Length > 0)
             {
                 var baseExp = option.ExpPoolIndex == -1 ? Randomizer.Select(pool.ExpPool) : pool.ExpPool[option.ExpPoolIndex];
-                player.gainExp((int)(baseExp * option.FinalExpRate));
+                await player.gainExp((int)(baseExp * option.FinalExpRate));
             }
 
             if (pool.MesoPool.Length > 0)
             {
                 var baseMeso = option.MesoPoolIndex == -1 ? Randomizer.Select(pool.MesoPool) : pool.MesoPool[option.MesoPoolIndex];
-                player.GainMeso((int)(baseMeso * option.FinalMesoRate), GainItemShow.ShowInChat);
+                await player.GainMeso((int)(baseMeso * option.FinalMesoRate), GainItemShow.ShowInChat);
             }
 
             eim.SetRewardClaimed(player, -1);
@@ -396,7 +392,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             return new RewardOptions();
         }
-        public virtual ClaimRewardResult GiveStageClearReward(AbstractEventInstanceManager eim, Player player, int stageMap)
+        public virtual async Task<ClaimRewardResult> GiveStageClearReward(AbstractEventInstanceManager eim, Player player, int stageMap)
         {
             if (StageClearRewards.TryGetValue(stageMap, out var data))
             {
@@ -405,8 +401,8 @@ namespace Application.Core.scripting.Events.Templates
                 if (eim.CanGiveReward(player, stageMap))
                 {
                     eim.SetRewardClaimed(player, stageMap);
-                    player.gainExp((int)(data.Exp * option.FinalExpRate), true, true);
-                    player.GainMeso((int)(data.Meso * option.FinalMesoRate), GainItemShow.ShowInChat);
+                    await player.gainExp((int)(data.Exp * option.FinalExpRate), true, true);
+                    await player.GainMeso((int)(data.Meso * option.FinalMesoRate), GainItemShow.ShowInChat);
 
                     return ClaimRewardResult.Success;
                 }
@@ -415,7 +411,7 @@ namespace Application.Core.scripting.Events.Templates
             return ClaimRewardResult.Success;
         }
 
-        public virtual void GiveStageClearRewardAll(AbstractEventInstanceManager eim, int stageMap)
+        public virtual async Task GiveStageClearRewardAll(AbstractEventInstanceManager eim, int stageMap)
         {
             if (StageClearRewards.TryGetValue(stageMap, out var data))
             {
@@ -425,8 +421,8 @@ namespace Application.Core.scripting.Events.Templates
                     if (eim.CanGiveReward(player, stageMap))
                     {
                         eim.SetRewardClaimed(player, stageMap);
-                        player.gainExp((int)(data.Exp * option.FinalExpRate), true, true);
-                        player.GainMeso((int)(data.Meso * option.FinalMesoRate), GainItemShow.ShowInChat);
+                        await player.gainExp((int)(data.Exp * option.FinalExpRate), true, true);
+                        await player.GainMeso((int)(data.Meso * option.FinalMesoRate), GainItemShow.ShowInChat);
                     }
                 }
             }

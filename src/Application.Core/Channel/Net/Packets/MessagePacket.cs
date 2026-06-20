@@ -1,8 +1,3 @@
-using client.inventory;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Core.Channel.Net.Packets
 {
     // CWvsContext::OnMessage

@@ -23,7 +23,7 @@ namespace Application.Module.BBS.Channel
             var res = _transport.ListThreads(new BBSProto.ListBBSRequest { MasterId = chr.Id });
             if (res.Code == 0)
             {
-                chr.sendPacket(BBSPacketCreator.BBSThreadList(res.List.ToList(), start));
+                chr.SendPacket(BBSPacketCreator.BBSThreadList(res.List.ToList(), start));
             }
         }
 
@@ -36,7 +36,7 @@ namespace Application.Module.BBS.Channel
         void ProcessThreadResponse(Player chr, BBSProto.ShowBBSMainThreadResponse data)
         {
             if (data.Code == 0)
-                chr.sendPacket(BBSPacketCreator.showThread(data.Data));
+                chr.SendPacket(BBSPacketCreator.showThread(data.Data));
             else
             {
 

@@ -3,18 +3,19 @@ using Application.Resources.Messages;
 using Application.Templates.String;
 
 namespace Application.Core.Game.Commands.Gm1;
+
 public class WhatDropsFromCommand : CommandBase
 {
     public WhatDropsFromCommand() : base(1, "whatdropsfrom")
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.WhatDropsFromCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.WhatDropsFromCommand_Syntax));
             return;
         }
         string monsterName = player.getLastCommandMessage();
@@ -47,6 +48,6 @@ public class WhatDropsFromCommand : CommandBase
 
         }
 
-        c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
+        await c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
     }
 }

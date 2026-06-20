@@ -7,18 +7,18 @@ public class ClosePortalCommand : CommandBase
         Description = "Close a portal.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !closeportal <portalid>");
+            await player.Yellow("Syntax: !closeportal <portalid>");
             return;
         }
         var portal = player.getMap().getPortal(paramsValue[0]);
         if (portal == null)
         {
-            player.yellowMessage("invalid portalid");
+            await player.Yellow("invalid portalid");
             return;
         }
         portal.setPortalState(false);

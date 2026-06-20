@@ -6,12 +6,12 @@ namespace Application.Core.Game.Commands.Gm0
         {
         }
 
-        public override void Execute(IChannelClient client, string[] values)
+        public override async Task Execute(IChannelClient client, string[] values)
         {
             if (client.NPCConversationManager != null)
                 return;
 
-            client.OnlinedCharacter.GachaponStorage.OpenStorage(NpcId.MAPLE_ADMINISTRATOR);
+            await client.OnlinedCharacter.GachaponStorage.OpenStorage(NpcId.MAPLE_ADMINISTRATOR);
         }
     }
 }

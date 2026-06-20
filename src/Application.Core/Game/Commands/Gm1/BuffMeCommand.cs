@@ -9,15 +9,15 @@ public class BuffMeCommand : CommandBase
         Description = "Activate GM buffs on self.";
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
 
-        SkillFactory.GetSkillTrust(4101004).getEffect(SkillFactory.GetSkillTrust(4101004).getMaxLevel()).applyTo(player);
-        SkillFactory.GetSkillTrust(2311003).getEffect(SkillFactory.GetSkillTrust(2311003).getMaxLevel()).applyTo(player);
-        SkillFactory.GetSkillTrust(1301007).getEffect(SkillFactory.GetSkillTrust(1301007).getMaxLevel()).applyTo(player);
-        SkillFactory.GetSkillTrust(2301004).getEffect(SkillFactory.GetSkillTrust(2301004).getMaxLevel()).applyTo(player);
-        SkillFactory.GetSkillTrust(1005).getEffect(SkillFactory.GetSkillTrust(1005).getMaxLevel()).applyTo(player);
-        player.healHpMp();
+        await SkillFactory.GetSkillTrust(4101004).getEffect(SkillFactory.GetSkillTrust(4101004).getMaxLevel()).applyTo(player);
+        await SkillFactory.GetSkillTrust(2311003).getEffect(SkillFactory.GetSkillTrust(2311003).getMaxLevel()).applyTo(player);
+        await SkillFactory.GetSkillTrust(1301007).getEffect(SkillFactory.GetSkillTrust(1301007).getMaxLevel()).applyTo(player);
+        await SkillFactory.GetSkillTrust(2301004).getEffect(SkillFactory.GetSkillTrust(2301004).getMaxLevel()).applyTo(player);
+        await SkillFactory.GetSkillTrust(1005).getEffect(SkillFactory.GetSkillTrust(1005).getMaxLevel()).applyTo(player);
+        await player.healHpMp();
     }
 }

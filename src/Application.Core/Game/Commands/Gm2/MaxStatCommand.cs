@@ -8,9 +8,9 @@ public class MaxStatCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
-        c.OnlinedCharacter.MaxStat();
-        c.OnlinedCharacter.YellowMessageI18N(nameof(ClientMessage.MaxStatCommand_Result));
+        await c.OnlinedCharacter.MaxStat();
+        await c.OnlinedCharacter.Yellow(nameof(ClientMessage.MaxStatCommand_Result));
     }
 }

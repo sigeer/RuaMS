@@ -53,17 +53,17 @@ namespace Application.Core.Channel.ServerData
             _ = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
-        public void AddPoint(AutobanFactory type, Player chr, string reason)
+        public async Task AddPoint(AutobanFactory type, Player chr, string reason)
         {
-            chr.getAutobanManager().addPoint(type, reason);
+            await chr.getAutobanManager().addPoint(type, reason);
         }
 
 
-        public void Autoban(AutobanFactory type, Player chr, string value)
+        public async Task Autoban(AutobanFactory type, Player chr, string value)
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
-                chr.autoban("Autobanned for (" + type.name() + " : " + value + ")");
+                await chr.autoban("Autobanned for (" + type.name() + " : " + value + ")");
                 //chr.sendPolice("You will be disconnected for(" + this.name() + " : " + value + ")");
             }
         }

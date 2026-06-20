@@ -31,64 +31,76 @@ namespace Application.Core.Game.Maps;
  */
 public class DoorObject : AbstractMapObject
 {
-    public int OwnerId { get; }
+    public Door Door { get; }
+    public int OwnerId => Door.ownerId;
     private IMap from;
     private IMap to;
     public bool InTown => TownPortal != null;
     public MysticDoorPortal? TownPortal { get; }
     /// <summary>
-    /// 对应主城的门
+    /// 门的另一边
     /// </summary>
-    public DoorObject LinkDoor { get; }
-    public DoorObject(Player owner, Point currentPosition, IMap toMap, IMap fromMap, MysticDoorPortal townPortal) : base(fromMap, currentPosition)
+    public DoorObject LinkDoor => InTown ? Door.getAreaDoor() : Door.getTownDoor();
+
+    /// <summary>
+    /// Town
+    /// </summary>
+    /// <param name="door"></param>
+    /// <param name="townMap"></param>
+    /// <param name="townPortal"></param>
+    /// <param name="areaMap"></param>
+    public DoorObject(Door door, IMap townMap, MysticDoorPortal townPortal, IMap areaMap) : base(townMap, townPortal.getPosition())
     {
-        OwnerId = owner.Id;
-        from = fromMap;
-        to = toMap;
+        Door = door;
+        from = townMap;
+        to = areaMap;
 
-        LinkDoor = new DoorObject(this, townPortal);
-    }
-
-    public DoorObject(DoorObject areaDoor, MysticDoorPortal townPortal) : base(areaDoor.to, townPortal.getPosition())
-    {
-        OwnerId = areaDoor.OwnerId;
-        from = areaDoor.to;
-        to = areaDoor.from;
-
-        LinkDoor = areaDoor;
         TownPortal = townPortal;
-        TownPortal.Door = this;
     }
 
-    public void warp(Player chr)
+    /// <summary>
+    /// Area
+    /// </summary>
+    /// <param name="door"></param>
+    /// <param name="areaMap"></param>
+    /// <param name="pos"></param>
+    /// <param name="townMap"></param>
+    public DoorObject(Door door, IMap areaMap, Point pos, IMap townMap) : base(areaMap, pos)
+    {
+        Door = door;
+        from = areaMap;
+        to = townMap;
+    }
+
+    public async Task warp(Player chr)
     {
         var party = chr.getParty();
         if (chr.getId() == OwnerId || party != null && party.containsMembers(OwnerId))
         {
-            chr.sendPacket(PacketCreator.playPortalSound());
+            await chr.SendPacket(PacketCreator.playPortalSound());
 
             if (TownPortal != null)
             {
-                chr.changeMap(to, TownPortal.getId());
+                await chr.changeMap(to, TownPortal.getId());
             }
             else
             {
-                chr.changeMap(to, LinkDoor.getPosition());
+                await chr.changeMap(to, LinkDoor.getPosition());
             }
         }
         else
         {
-            chr.sendPacket(PacketCreator.BlockMapMessage(6));
-            chr.sendPacket(PacketCreator.enableActions());
+            await chr.SendPacket(PacketCreator.BlockMapMessage(6));
+            await chr.SendPacket(PacketCreator.enableActions());
         }
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
-        sendSpawnData(client, true);
+        await sendSpawnData(client, true);
     }
 
-    public void sendSpawnData(IChannelClient client, bool launched)
+    public async Task sendSpawnData(IChannelClient client, bool launched)
     {
         var chr = client.OnlinedCharacter;
         if (getFrom().getId() == chr.getMapId())
@@ -96,13 +108,13 @@ public class DoorObject : AbstractMapObject
             var party = chr.getParty();
             if (party != null && (OwnerId == chr.getId() || party.containsMembers(OwnerId)))
             {
-                chr.sendPacket(TeamPacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
+                await chr.SendPacket(TeamPacketCreator.partyPortal(getFrom().getId(), getTo().getId(), toPosition()));
             }
 
-            chr.sendPacket(PacketCreator.spawnPortal(getFrom().getId(), getTo().getId(), toPosition()));
+            await chr.SendPacket(PacketCreator.spawnPortal(getFrom().getId(), getTo().getId(), toPosition()));
             if (!InTown)
             {
-                chr.sendPacket(PacketCreator.spawnDoor(getObjectId(), getPosition(), launched));
+                await chr.SendPacket(PacketCreator.spawnDoor(getObjectId(), getPosition(), launched));
             }
         }
 
@@ -112,7 +124,7 @@ public class DoorObject : AbstractMapObject
         }
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
         var chr = client.OnlinedCharacter;
         if (from.getId() == chr.getMapId())
@@ -120,9 +132,9 @@ public class DoorObject : AbstractMapObject
             var party = chr.getParty();
             if (party != null && (OwnerId == chr.getId() || party.containsMembers(OwnerId)))
             {
-                client.sendPacket(TeamPacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
+                await client.SendPacket(TeamPacketCreator.partyPortal(MapId.NONE, MapId.NONE, new Point(-1, -1)));
             }
-            client.sendPacket(PacketCreator.removeDoor(getObjectId(), InTown));
+            await client.SendPacket(PacketCreator.removeDoor(getObjectId(), InTown));
         }
 
         if (TownPortal != null)

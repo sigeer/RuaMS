@@ -1,4 +1,3 @@
-using DotNetty.Buffers;
 using System.Text.Json;
 
 
@@ -14,7 +13,7 @@ public class PeCommand : CommandBase
     }
 
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         string packet = "";
@@ -26,7 +25,7 @@ public class PeCommand : CommandBase
         catch (IOException ex)
         {
             log.Error(ex.ToString());
-            player.yellowMessage("Failed to load pe.txt");
+            await player.Yellow("Failed to load pe.txt");
             return;
 
         }
@@ -38,8 +37,8 @@ public class PeCommand : CommandBase
         {
             try
             {
-                player.yellowMessage("Receiving: " + packet);
-                packetHandler.HandlePacket(inPacket, c);
+                await player.Yellow("Receiving: " + packet);
+                await packetHandler.HandlePacket(inPacket, c);
             }
             catch (Exception t)
             {

@@ -4,7 +4,6 @@ using Application.Resources.Messages;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
-using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -84,19 +83,19 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return Owner!.Equals(chr);
     }
 
-    private void addVisitor(Player visitor)
+    private async Task addVisitor(Player visitor)
     {
         var freeSlot = GetFreeSlot();
         if (freeSlot != -1)
         {
             visitors[freeSlot] = visitor;
 
-            broadcast(PacketCreator.getPlayerShopNewVisitor(visitor, freeSlot + 1));
-            MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+            await broadcast(PacketCreator.getPlayerShopNewVisitor(visitor, freeSlot + 1));
+            await MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
         }
     }
 
-    public void forceRemoveVisitor(Player visitor)
+    public async Task forceRemoveVisitor(Player visitor)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -105,14 +104,14 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
                 visitors[i]!.VisitingShop = null;
                 visitors[i] = null;
 
-                broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
-                MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                await broadcast(PacketCreator.getPlayerShopRemoveVisitor(i + 1));
+                await MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
                 return;
             }
         }
     }
 
-    public void RemoveVisitor(Player visitor)
+    public async Task RemoveVisitor(Player visitor)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -122,7 +121,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
                 {
                     if (visitors[j] != null)
                     {
-                        Owner.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
+                        await Owner.SendPacket(PacketCreator.getPlayerShopRemoveVisitor(j + 1));
                     }
                     visitors[j] = visitors[j + 1];
                 }
@@ -131,16 +130,16 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
                 {
                     if (visitors[j] != null)
                     {
-                        Owner.sendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
+                        await Owner.SendPacket(PacketCreator.getPlayerShopNewVisitor(visitors[j]!, j + 1));
                     }
                 }
 
-                broadcastRestoreToVisitors();
-                MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+                await broadcastRestoreToVisitors();
+                await MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
                 return;
             }
         }
-        MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
+        await MapModel.broadcastMessage(PacketCreator.updatePlayerShopBox(this));
     }
 
     public bool isVisitor(Player visitor)
@@ -164,7 +163,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Commodity.RemoveAt(slot);
     }
 
-    public void takeItemBack(int slot, Player chr)
+    public async Task takeItemBack(int slot, Player chr)
     {
         var shopItem = Commodity.ElementAt(slot);
         if (shopItem.isExist())
@@ -176,27 +175,27 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
                 if (!Inventory.checkSpot(chr, iitem))
                 {
-                    chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
-                    chr.sendPacket(PacketCreator.enableActions());
+                    await chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    await chr.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
-                InventoryManipulator.addFromDrop(chr.Client, iitem, true);
+                await InventoryManipulator.addFromDrop(chr.Client, iitem, true);
             }
 
             removeFromSlot(slot);
-            chr.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
+            await chr.SendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         }
     }
 
-    public void GainMeso(int meso)
+    public async Task GainMeso(int meso)
     {
         using var activity = GameMetrics.ActivitySource.StartActivity("PlayerShopGainMeso");
         activity?.SetTag("PlayerId", Owner.Id);
         activity?.SetTag("Player", Owner.Name);
         activity?.SetTag("Meso", meso);
 
-        Owner.GainMeso(meso, GainItemShow.ShowInMessage);
+        await Owner.GainMeso(meso, GainItemShow.ShowInMessage);
     }
 
     public string? MesoCheck(int meso)
@@ -208,66 +207,66 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return null;
     }
 
-    public void InsertSoldHistory(int idx, SoldItem soldItem)
+    public async Task InsertSoldHistory(int idx, SoldItem soldItem)
     {
-        Owner.sendPacket(PacketCreator.getPlayerShopOwnerUpdate(soldItem, idx));
+        await Owner.SendPacket(PacketCreator.getPlayerShopOwnerUpdate(soldItem, idx));
 
         SoldHistory.Add(soldItem);
     }
 
-    public void OnCommoditySellout()
+    public async Task OnCommoditySellout()
     {
         if (++boughtnumber == Commodity.Count)
         {
-            Close();
-            Owner.dropMessage(1, "Your items are sold out, and therefore your shop is closed.");
+            await Close();
+            await Owner.dropMessage(1, "Your items are sold out, and therefore your shop is closed.");
         }
     }
 
-    public void broadcastToVisitors(Packet packet)
+    public async Task broadcastToVisitors(Packet packet)
     {
-        InvokeAllVisitor(x => x.sendPacket(packet));
+        await InvokeAllVisitor(x => x.SendPacket(packet));
     }
 
-    public void broadcastRestoreToVisitors()
+    public async Task broadcastRestoreToVisitors()
     {
-        InvokeAllVisitor((visitor, i) => visitor.sendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1)));
-        InvokeAllVisitor(visitor => visitor.sendPacket(PacketCreator.getPlayerShop(this, false)));
+        await InvokeAllVisitor((visitor, i) => visitor.SendPacket(PacketCreator.getPlayerShopRemoveVisitor(i + 1)));
+        await InvokeAllVisitor(visitor => visitor.SendPacket(PacketCreator.getPlayerShop(this, false)));
 
-        recoverChatLog();
+        await recoverChatLog();
     }
 
-    private void InvokeAllVisitor(Action<Player> action)
+    private async Task InvokeAllVisitor(Func<Player, Task> action)
     {
         for (int i = 0; i < 3; i++)
         {
             if (visitors[i] != null)
             {
-                action(visitors[i]!);
+                await action(visitors[i]!);
             }
         }
     }
 
-    private void InvokeAllVisitor(Action<Player, int> action)
+    private async Task InvokeAllVisitor(Func<Player, int, Task> action)
     {
         for (int i = 0; i < 3; i++)
         {
             if (visitors[i] != null)
             {
-                action(visitors[i]!, i);
+                await action(visitors[i]!, i);
             }
         }
     }
 
-    public void removeVisitors()
+    public async Task removeVisitors()
     {
         List<Player> visitorList = new(3);
 
         try
         {
-            InvokeAllVisitor(visitor =>
+            await InvokeAllVisitor(async visitor =>
             {
-                visitor.sendPacket(PacketCreator.shopErrorMessage(10, 1));
+                await visitor.SendPacket(PacketCreator.shopErrorMessage(10, 1));
                 visitorList.Add(visitor);
             });
         }
@@ -278,28 +277,28 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
         foreach (Player mc in visitorList)
         {
-            forceRemoveVisitor(mc);
+            await forceRemoveVisitor(mc);
         }
     }
 
-    public void BroadcastShopItemUpdate()
+    public async Task BroadcastShopItemUpdate()
     {
         var client = Owner.getClient();
         if (client != null)
         {
-            client.sendPacket(PacketCreator.getPlayerShopItemUpdate(this));
+            await client.SendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         }
-        broadcastToVisitors(PacketCreator.getPlayerShopItemUpdate(this));
+        await broadcastToVisitors(PacketCreator.getPlayerShopItemUpdate(this));
     }
 
-    public void broadcast(Packet packet)
+    public async Task broadcast(Packet packet)
     {
         var client = Owner.getClient();
         if (client != null)
         {
-            client.sendPacket(packet);
+            await client.SendPacket(packet);
         }
-        broadcastToVisitors(packet);
+        await broadcastToVisitors(packet);
     }
 
     private byte getVisitorSlot(Player chr)
@@ -307,7 +306,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return (byte)(Array.FindIndex(getVisitors(), x => x?.Id == chr.Id) + 1);
     }
 
-    public void sendMessage(Player fromChar, string chat)
+    public async Task sendMessage(Player fromChar, string chat)
     {
         byte s = getVisitorSlot(fromChar);
 
@@ -318,17 +317,17 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         }
         chatSlot.AddOrUpdate(fromChar.getId(), s);
 
-        broadcast(PacketCreator.getPlayerShopChat(fromChar, chat, s));
+        await broadcast(PacketCreator.getPlayerShopChat(fromChar, chat, s));
     }
 
-    private void recoverChatLog()
+    private async Task recoverChatLog()
     {
         foreach (var it in chatLog)
         {
             Player chr = it.Key;
             var pos = chatSlot.GetValueOrDefault(chr.getId());
 
-            broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
+            await broadcastToVisitors(PacketCreator.getPlayerShopChat(chr, it.Value, pos));
         }
     }
 
@@ -343,26 +342,28 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         Status.Set(PlayerShopStatus.Opening);
     }
 
-    public void SetMaintenance(Player chr)
+    public async Task SetMaintenance(Player chr)
     {
         Status.Set(PlayerShopStatus.Maintenance);
+
+        await removeVisitors();
     }
-    public void Close()
+    public async Task Close()
     {
         clearChatLog();
 
-        MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
+        await MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
-        removeVisitors();
+        await removeVisitors();
 
-        Retrieve(Owner);
+        await Retrieve(Owner);
         Owner.VisitingShop = null;
     }
 
 
-    public void sendShop(IChannelClient c)
+    public async Task sendShop(IChannelClient c)
     {
-        c.sendPacket(PacketCreator.getPlayerShop(this, IsOwner(c.OnlinedCharacter)));
+        await c.SendPacket(PacketCreator.getPlayerShop(this, IsOwner(c.OnlinedCharacter)));
     }
 
     public Player?[] getVisitors()
@@ -390,7 +391,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         this.Title = description;
     }
 
-    public void banPlayer(string name)
+    public async Task banPlayer(string name)
     {
         if (!BlackList.Contains(name))
         {
@@ -403,8 +404,8 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
         if (target != null)
         {
-            target.sendPacket(PacketCreator.shopErrorMessage(5, 1));
-            RemoveVisitor(target);
+            await target.SendPacket(PacketCreator.shopErrorMessage(5, 1));
+            await RemoveVisitor(target);
         }
     }
 
@@ -413,25 +414,25 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return BlackList.Contains(name);
     }
 
-    public bool VisitShop(Player chr)
+    public async Task<bool> VisitShop(Player chr)
     {
         if (BlackList.Contains(chr.getName()))
         {
-            chr.dropMessage(1, "You have been banned from this store.");
+            await chr.dropMessage(1, "You have been banned from this store.");
             return false;
         }
 
         if (Status.Is(PlayerShopStatus.Opening))
         {
-            chr.dropMessage(1, "This store is not yet open.");
+            await chr.dropMessage(1, "This store is not yet open.");
             return false;
         }
 
         if (hasFreeSlot() && !isVisitor(chr))
         {
-            addVisitor(chr);
+            await addVisitor(chr);
             chr.VisitingShop = this;
-            sendShop(chr.getClient());
+            await sendShop(chr.getClient());
 
             return true;
         }
@@ -444,14 +445,14 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
         return Commodity.Where(x => x.getItem().getItemId() == itemid && x.getBundles() > 0 && x.isExist()).ToList();
     }
 
-    public override void sendDestroyData(IChannelClient client)
+    public override async Task sendDestroyData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.removePlayerShopBox(OwnerId));
+        await client.SendPacket(PacketCreator.removePlayerShopBox(OwnerId));
     }
 
-    public override void sendSpawnData(IChannelClient client)
+    public override async Task sendSpawnData(IChannelClient client)
     {
-        client.sendPacket(PacketCreator.updatePlayerShopBox(this));
+        await client.SendPacket(PacketCreator.updatePlayerShopBox(this));
     }
 
     public Packet MakeSpawnPacket() => PacketCreator.updatePlayerShopBox(this);
@@ -472,14 +473,14 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    public void ExpiredInvoke()
+    public async Task ExpiredInvoke()
     {
-        Close();
+        await Close();
         ChannelServer.PlayerShopManager.UnregisterShop(this);
     }
 
 
-    public bool Retrieve(Player owner)
+    public async Task<bool> Retrieve(Player owner)
     {
         if (owner.Id != this.OwnerId)
             return false;
@@ -491,7 +492,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
                 Item iItem = mpsi.getItem().copy();
                 iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
 
-                InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
+                await InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
             }
         }
         return true;

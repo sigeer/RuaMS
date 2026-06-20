@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Templates.Item.Consume;
-using static Application.Core.Channel.DataProviders.ItemInformationProvider;
 
 namespace scripting.item;
 
@@ -36,8 +35,8 @@ public class ItemScriptManager
         return instance;
     }
 
-    public void runItemScript(IChannelClient c, ScriptItemTemplate scriptItem)
+    public async Task runItemScript(IChannelClient c, ScriptItemTemplate scriptItem)
     {
-        c.CurrentServer.NodeService.PluginManager.ItemScript(c, scriptItem.Npc, scriptItem.Script).ConfigureAwait(false).GetAwaiter().GetResult();
+        await c.CurrentServer.NodeService.PluginManager.ItemScript(c, scriptItem.Npc, scriptItem.Script);
     }
 }

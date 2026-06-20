@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-using Application.Resources.Messages;
 using Application.Utility.Performance;
 
 namespace Application.Core.Game.Commands
@@ -48,24 +46,24 @@ namespace Application.Core.Game.Commands
             set => _currentCommand = value;
         }
 
-        public virtual void RunAsync(IChannelClient client, string[] values)
+        public virtual async Task RunAsync(IChannelClient client, string[] values)
         {
             try
             {
                 if (!CheckArguments(values))
                 {
-                    client.OnlinedCharacter.yellowMessage($"命令语法错误：{ValidSytax}");
+                    await client.OnlinedCharacter.Yellow($"命令语法错误：{ValidSytax}");
                     return;
                 }
 
                 using var activity = GameMetrics.ActivitySource.StartActivity("ExecuteCommand");
                 activity?.SetTag("Command", CurrentCommand);
 
-                Execute(client, values);
+                await Execute(client, values);
             }
             catch (CommandArgumentException ex)
             {
-                client.OnlinedCharacter.yellowMessage($"命令语法错误：{ValidSytax}, {ex.Message}");
+                await client.OnlinedCharacter.Yellow($"命令语法错误：{ValidSytax}, {ex.Message}");
                 return;
             }
         }
@@ -73,7 +71,7 @@ namespace Application.Core.Game.Commands
         {
             return true;
         }
-        public abstract void Execute(IChannelClient client, string[] values);
+        public abstract Task Execute(IChannelClient client, string[] values);
         protected string joinStringFrom(string[] arr, int start)
         {
             return string.Join(' ', arr, start, arr.Length - start);

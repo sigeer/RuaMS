@@ -8,18 +8,18 @@ public class FameCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.FameCommand_Syntax));
             return;
         }
 
         if (!int.TryParse(paramsValue[1], out var fame))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.FameCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.FameCommand_Syntax));
             return;
         }
 
@@ -27,12 +27,12 @@ public class FameCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.setFame(fame);
-            victim.updateSingleStat(Stat.FAME, victim.getFame());
-            player.MessageI18N(nameof(ClientMessage.FameCommand_FameGiven));
+            await victim.updateSingleStat(Stat.FAME, victim.getFame());
+            await player.Pink(nameof(ClientMessage.FameCommand_FameGiven));
         }
         else
         {
-            player.YellowMessageI18N(nameof(ClientMessage.PlayerNotFoundInChannel));
+            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel));
         }
     }
 }

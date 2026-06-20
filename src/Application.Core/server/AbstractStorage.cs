@@ -2,7 +2,6 @@ using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 using tools;
 using ZLinq;
 
@@ -59,58 +58,58 @@ namespace Application.Core.Server
             return Items.ToList();
         }
 
-        protected virtual bool BaseCheck()
+        protected virtual Task<bool> BaseCheck()
         {
-            return true;
+            return Task.FromResult(true);
         }
 
 
-        public virtual bool StoreItemCheck(short slot, int itemId, short quantity)
+        public virtual async Task<bool> StoreItemCheck(short slot, int itemId, short quantity)
         {
-            if (!BaseCheck())
+            if (!await BaseCheck())
             {
                 return false;
             }
 
             if (quantity < 1)
             {
-                Owner.sendPacket(PacketCreator.enableActions());
+                await Owner.SendPacket(PacketCreator.enableActions());
                 return false;
             }
 
             if (IsFull())
             {
-                Owner.sendPacket(StoragePacketCreator.getStorageError(0x11));
+                await Owner.SendPacket(StoragePacketCreator.getStorageError(0x11));
                 return false;
             }
 
             return true;
         }
-        public virtual bool TakeOutItemCheck(Item item)
+        public virtual async Task<bool> TakeOutItemCheck(Item item)
         {
-            if (!BaseCheck())
+            if (!await BaseCheck())
             {
                 return false;
             }
 
             if (!Owner.CanHoldUniquesOnly(item.getItemId()))
             {
-                Owner.sendPacket(StoragePacketCreator.getStorageError(0x0C));
+                await Owner.SendPacket(StoragePacketCreator.getStorageError(0x0C));
                 return false;
             }
 
             if (!InventoryManipulator.checkSpace(Owner.Client, item.getItemId(), item.getQuantity(), item.getOwner()))
             {
-                Owner.sendPacket(StoragePacketCreator.getStorageError(0x0A));
+                await Owner.SendPacket(StoragePacketCreator.getStorageError(0x0A));
                 return false;
             }
 
             return true;
         }
 
-        public virtual bool TakeOutMesoCheck(int meso)
+        public virtual async Task<bool> TakeOutMesoCheck(int meso)
         {
-            if (!BaseCheck())
+            if (!await BaseCheck())
             {
                 return false;
             }
@@ -118,9 +117,9 @@ namespace Application.Core.Server
             return meso <= Meso;
         }
 
-        public virtual bool StoreMesoCheck(int meso)
+        public virtual async Task<bool> StoreMesoCheck(int meso)
         {
-            if (!BaseCheck())
+            if (!await BaseCheck())
             {
                 return false;
             }
@@ -128,17 +127,17 @@ namespace Application.Core.Server
             return Owner.getMeso() >= meso;
         }
 
-        public virtual void OnStoreSuccess(short slot, int itemId, short quantity)
+        public virtual Task OnStoreSuccess(short slot, int itemId, short quantity)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual void OnTakeOutSuccess(Item item)
+        public virtual Task OnTakeOutSuccess(Item item)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual void OpenStorage(int npcId)
+        public virtual async Task OpenStorage(int npcId)
         {
             Items.Sort((o1, o2) =>
             {
@@ -150,18 +149,18 @@ namespace Application.Core.Server
                 _typedItems[inv] = Items.ToList();
             }
 
-            Owner.sendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
+            await Owner.SendPacket(StoragePacketCreator.getStorage(npcId, Slots, GetItems(), Meso));
             Owner.CurrentStorage = this;
         }
 
-        public void UpdateMeso()
+        public async Task UpdateMeso()
         {
-            Owner.sendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
+            await Owner.SendPacket(StoragePacketCreator.mesoStorage(Slots, Meso));
         }
 
-        public virtual void ArrangeItems()
+        public virtual async Task ArrangeItems()
         {
-            if (!BaseCheck())
+            if (!await BaseCheck())
             {
                 return;
             }
@@ -169,7 +168,7 @@ namespace Application.Core.Server
             var sorter = new StorageSorter(this);
             sorter.Merge();
             Items = sorter.Sort();
-            Owner.sendPacket(StoragePacketCreator.arrangeStorage(Slots, Items));
+            await Owner.SendPacket(StoragePacketCreator.arrangeStorage(Slots, Items));
         }
 
         public void AddItem(Item item)

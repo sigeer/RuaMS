@@ -18,7 +18,7 @@ public class PlayerNpcRemoveCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.yellowMessage("Syntax: !playernpcremove <playername>");
+            player.Yellow("Syntax: !playernpcremove <playername>");
             return;
         }
         _manager.RemovePlayerNPC(paramsValue[0]);

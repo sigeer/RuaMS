@@ -24,7 +24,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Skills;
 using Application.Templates.Item.Consume;
-using client.inventory;
 using client.inventory.manipulator;
 using tools;
 
@@ -32,11 +31,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class SkillBookHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         if (!c.OnlinedCharacter.isAlive())
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
 
@@ -50,8 +49,8 @@ public class SkillBookHandler : ChannelHandlerBase
         int maxlevel = 0;
 
         var player = c.OnlinedCharacter;
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 var inv = c.OnlinedCharacter.getInventory(InventoryType.USE);
@@ -83,13 +82,13 @@ public class SkillBookHandler : ChannelHandlerBase
                             return;
                         }
 
-                        InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+                        await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
 
                         canuse = true;
                         if (ItemInformationProvider.rollSuccessChance(template.SuccessRate))
                         {
                             success = true;
-                            player.changeSkillLevel(skill2, player.getSkillLevel(skill2), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
+                            await player.changeSkillLevel(skill2, player.getSkillLevel(skill2), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
                         }
                         else
                         {
@@ -110,7 +109,7 @@ public class SkillBookHandler : ChannelHandlerBase
             }
 
             // thanks Vcoc for noting skill book result not showing for all in area
-            player.BroadcastMap(PacketCreator.skillBookResult(player, skill, maxlevel, canuse, success));
+            await player.BroadcastMap(PacketCreator.skillBookResult(player, skill, maxlevel, canuse, success));
         }
     }
 }

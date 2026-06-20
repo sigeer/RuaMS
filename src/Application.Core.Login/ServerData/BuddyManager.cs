@@ -108,7 +108,7 @@ namespace Application.Core.Login.ServerData
 
             var tos = to.Select(x => _server.CharacterManager.FindPlayerById(x))
                 .Where(y => y != null && y.Channel > 0).ToList();
-            await _server.Transport.SendMultiChatAsync(3, fromName, tos, text);
+            await _server.Transport.SendMultiChatAsync(3, fromName, tos!, text);
         }
 
         public async Task BroadcastNoticeMessage(BuddyProto.SendBuddyNoticeMessageDto data)

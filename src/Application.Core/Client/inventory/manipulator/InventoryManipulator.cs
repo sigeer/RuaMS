@@ -23,11 +23,7 @@
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
-using Application.Core.Game.Items;
-using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Models;
 using Application.Resources.Messages;
-using Application.Templates.Item.Pet;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -48,25 +44,25 @@ public class InventoryManipulator
     /// <param name="item"></param>
     /// <param name="show"></param>
     /// <returns></returns>
-    public static bool addFromDrop(IChannelClient c, Item item, bool show = true)
+    public static async Task<bool> addFromDrop(IChannelClient c, Item item, bool show = true)
     {
         var chr = c.OnlinedCharacter;
         InventoryType type = item.getInventoryType();
 
         var inv = chr.GetInventory(type);
 
-        return addFromDropInternal(c, type, inv, item, show);
+        return await addFromDropInternal(c, type, inv, item, show);
     }
 
-    private static bool addFromDropInternal(IChannelClient c, InventoryType type, Inventory inv, Item item, bool show)
+    private static async Task<bool> addFromDropInternal(IChannelClient c, InventoryType type, Inventory inv, Item item, bool show)
     {
         var chr = c.OnlinedCharacter;
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
         int itemid = item.getItemId();
         if (!chr.CanHoldUniquesOnly(itemid))
         {
-            c.sendPacket(PacketCreator.getInventoryFull());
-            c.sendPacket(PacketCreator.showItemUnavailable());
+            await c.SendPacket(PacketCreator.getInventoryFull());
+            await c.SendPacket(PacketCreator.showItemUnavailable());
             return false;
         }
 
@@ -110,11 +106,11 @@ public class InventoryManipulator
                 nItem.setOwner(item.getOwner());
                 nItem.setFlag(item.getFlag());
 
-                var addR = inv.AddItem(nItem);
+                var addR = await inv.AddItem(nItem);
                 if (addR == null)
                 {
-                    c.sendPacket(PacketCreator.getInventoryFull());
-                    c.sendPacket(PacketCreator.getShowInventoryFull());
+                    await c.SendPacket(PacketCreator.getInventoryFull());
+                    await c.SendPacket(PacketCreator.getShowInventoryFull());
                     // 剩余空间不足、回滚
                     item.setQuantity((short)(quantity + newQ));
                     return false;
@@ -132,19 +128,19 @@ public class InventoryManipulator
             if (item is Equip && quantity != 1)
             {
                 Log.Logger.Warning("Tried to pickup Id={ItemId} containing more than 1 quantity --> {ItemQuantity}", itemid, quantity);
-                c.sendPacket(PacketCreator.getInventoryFull());
-                c.sendPacket(PacketCreator.showItemUnavailable());
+                await c.SendPacket(PacketCreator.getInventoryFull());
+                await c.SendPacket(PacketCreator.showItemUnavailable());
                 return false;
             }
 
             item.setExpiration(item.getExpiration());
             item.setFlag(item.getFlag());
             item.setOwner(item.getOwner());
-            var addR = inv.AddItem(item);
+            var addR = await inv.AddItem(item);
             if (addR == null)
             {
-                c.sendPacket(PacketCreator.getInventoryFull());
-                c.sendPacket(PacketCreator.getShowInventoryFull());
+                await c.SendPacket(PacketCreator.getInventoryFull());
+                await c.SendPacket(PacketCreator.getShowInventoryFull());
                 return false;
             }
             ops.Add(addR);
@@ -157,11 +153,11 @@ public class InventoryManipulator
 
         if (ops.Count > 0)
         {
-            chr.SyncClientInventory(ops, true);
+            await chr.SyncClientInventory(ops, true);
         }
         if (show)
         {
-            c.sendPacket(PacketCreator.getShowItemGain(itemid, item.getQuantity()));
+            await c.SendPacket(PacketCreator.getShowItemGain(itemid, item.getQuantity()));
         }
         return true;
     }
@@ -316,23 +312,23 @@ public class InventoryManipulator
     /// <param name="quantity"></param>
     /// <param name="fromDrop">不明</param>
     /// <param name="consume">true：数量0时不会移除</param>
-    public static void removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
+    public static async Task removeFromSlot(IChannelClient c, InventoryType type, short slot, short quantity, bool fromDrop, bool consume = false)
     {
         Player chr = c.OnlinedCharacter;
         var inv = chr.getInventory(type);
         var item = inv.getItem(slot)!;
 
         bool allowZero = consume && ItemConstants.isRechargeable(item.getItemId());
-        var removeRes = inv.removeItem(slot, out _, quantity, allowZero);
+        var (removeRes, _) = await inv.removeItem(slot, quantity, allowZero);
         if (removeRes != null && type != InventoryType.CANHOLD)
         {
-            chr.SyncClientInventory(removeRes, fromDrop);
+            await chr.SyncClientInventory(removeRes, fromDrop);
         }
     }
 
-    public static void removeById(IChannelClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
+    public static async Task removeById(IChannelClient c, InventoryType type, int itemId, int quantity, bool fromDrop, bool consume)
     {
-        c.OnlinedCharacter.Bag.RemoveFromInventory(type, quantity, i => i.getItemId() == itemId || i.getCashId() == itemId, fromDrop, consume);
+        await c.OnlinedCharacter.Bag.RemoveFromInventory(type, quantity, i => i.getItemId() == itemId || i.getCashId() == itemId, fromDrop, consume);
     }
 
     private static bool isSameOwner(Item source, Item target)
@@ -340,7 +336,7 @@ public class InventoryManipulator
         return source.getOwner().Equals(target.getOwner());
     }
 
-    public static void equip(IChannelClient c, short src, short dst)
+    public static async Task equip(IChannelClient c, short src, short dst)
     {
         ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
@@ -349,9 +345,9 @@ public class InventoryManipulator
         var eqpdInv = chr.GetEquipped();
 
         var source = eqpInv.getItem(src) as Equip;
-        if (source == null || !ii.canWearEquipment(chr, source, dst))
+        if (source == null || !await ii.canWearEquipment(chr, source, dst))
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         else if ((ItemId.isExplorerMount(source.getItemId()) && chr.isCygnus()) ||
@@ -378,11 +374,11 @@ public class InventoryManipulator
                 {
                     if (eqpInv.isFull())
                     {
-                        c.sendPacket(PacketCreator.getInventoryFull());
-                        c.sendPacket(PacketCreator.getShowInventoryFull());
+                        await c.SendPacket(PacketCreator.getInventoryFull());
+                        await c.SendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -5, eqpInv.getNextFreeSlot());
+                    await unequip(c, -5, eqpInv.getNextFreeSlot());
                 }
                 break;
             case -5:
@@ -391,11 +387,11 @@ public class InventoryManipulator
                 {
                     if (eqpInv.isFull())
                     {
-                        c.sendPacket(PacketCreator.getInventoryFull());
-                        c.sendPacket(PacketCreator.getShowInventoryFull());
+                        await c.SendPacket(PacketCreator.getInventoryFull());
+                        await c.SendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -6, eqpInv.getNextFreeSlot());
+                    await unequip(c, -6, eqpInv.getNextFreeSlot());
                 }
                 break;
             case EquipSlot.Shield: // check if weapon is two-handed
@@ -404,11 +400,11 @@ public class InventoryManipulator
                 {
                     if (eqpInv.isFull())
                     {
-                        c.sendPacket(PacketCreator.getInventoryFull());
-                        c.sendPacket(PacketCreator.getShowInventoryFull());
+                        await c.SendPacket(PacketCreator.getInventoryFull());
+                        await c.SendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, EquipSlot.Weapon, eqpInv.getNextFreeSlot());
+                    await unequip(c, EquipSlot.Weapon, eqpInv.getNextFreeSlot());
                 }
                 break;
             case EquipSlot.Weapon:
@@ -417,11 +413,11 @@ public class InventoryManipulator
                 {
                     if (eqpInv.isFull())
                     {
-                        c.sendPacket(PacketCreator.getInventoryFull());
-                        c.sendPacket(PacketCreator.getShowInventoryFull());
+                        await c.SendPacket(PacketCreator.getInventoryFull());
+                        await c.SendPacket(PacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, EquipSlot.Shield, eqpInv.getNextFreeSlot());
+                    await unequip(c, EquipSlot.Shield, eqpInv.getNextFreeSlot());
                 }
                 break;
             case -18:
@@ -436,28 +432,28 @@ public class InventoryManipulator
         // source = (Equip?)eqpInv.getItem(src); // 这里为什么又获取一遍？
 
 
-        var originalEqp = eqpdInv.Equip(dst, source);
+        var originalEqp = await eqpdInv.Equip(dst, source);
 
-        eqpInv.removeSlot(src);
+        await eqpInv.removeSlot(src);
         if (originalEqp != null)
-            eqpInv.PutItem(src, originalEqp, false);
+            await eqpInv.PutItem(src, originalEqp, false);
 
         if (chr.getBuffedValue(BuffStat.BOOSTER) != null && ItemConstants.isWeapon(source.getItemId()))
         {
-            chr.cancelBuffStats(BuffStat.BOOSTER);
+            await chr.cancelBuffStats(BuffStat.BOOSTER);
         }
 
         ops.Add(new InventoryMove(InventoryType.EQUIP, src, dst));
-        chr.SyncClientInventory(ops, true);
+        await chr.SyncClientInventory(ops, true);
 
         if (source.getItemId() == ItemId.PENDANT_OF_THE_SPIRIT)
         {
             // 需要在同步到客户端之后再发送
-            chr.CalculateSpiritPendant(chr.Client.CurrentServer.Node.getCurrentTime(), true);
+            await chr.CalculateSpiritPendant(chr.Client.CurrentServer.Node.getCurrentTime(), true);
         }
     }
 
-    public static void unequip(IChannelClient c, short src, short dst)
+    public static async Task unequip(IChannelClient c, short src, short dst)
     {
         Player chr = c.OnlinedCharacter;
         var eqpInv = chr.GetInventory(InventoryType.EQUIP);
@@ -476,14 +472,14 @@ public class InventoryManipulator
         var target = (Equip?)eqpInv.getItem(dst);
         if (target != null && src <= 0)
         {
-            c.sendPacket(PacketCreator.getInventoryFull());
+            await c.SendPacket(PacketCreator.getInventoryFull());
             return;
         }
 
-        eqpdInv.removeSlot(src);
-        eqpInv.PutItem(dst, source, false);
+        await eqpdInv.removeSlot(src);
+        await eqpInv.PutItem(dst, source, false);
 
-        c.OnlinedCharacter.SyncClientInventory(new InventoryMove(InventoryType.EQUIP, src, dst));
+        await c.OnlinedCharacter.SyncClientInventory(new InventoryMove(InventoryType.EQUIP, src, dst));
     }
 
     private static bool isDisappearingItemDrop(Item it)
@@ -514,7 +510,7 @@ public class InventoryManipulator
             return ItemId.isWeddingRing(it.getItemId());
         }
     }
-    public static void drop(IChannelClient c, InventoryType type, short sourceSlot, short quantity)
+    public static async Task drop(IChannelClient c, InventoryType type, short sourceSlot, short quantity)
     {
         if (sourceSlot < 0)
         {
@@ -533,7 +529,7 @@ public class InventoryManipulator
 
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            chr.MessageI18N(nameof(ClientMessage.DropItem_NoAccess));
+            await chr.MessageI18N(nameof(ClientMessage.DropItem_NoAccess));
             LogFactory.GM.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
             return;
         }
@@ -547,7 +543,7 @@ public class InventoryManipulator
             return;
         }
 
-        var op = inv.Take(sourceSlot, quantity, out var newItem);
+        var (op, newItem) = await inv.Take(sourceSlot, quantity);
         if (op != null)
         {
             if (ItemConstants.isNewYearCardEtc(itemId))
@@ -555,26 +551,26 @@ public class InventoryManipulator
                 if (itemId == ItemId.NEW_YEARS_CARD_SEND)
                 {
                     chr.DiscardNewYearRecord(true);
-                    c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
+                    await c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
                 }
                 else
                 {
                     chr.DiscardNewYearRecord(false);
-                    c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
+                    await c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
                 }
             }
 
             Point dropPos = chr.getPosition();
             if (isDisappearingItemDrop(source))
             {
-                map.DropItemDestroy(source.getItemId(), dropPos);
+                await map.DropItemDestroy(source.getItemId(), dropPos);
             }
             else
             {
-                map.spawnItemDrop(chr, chr, newItem!, dropPos, true, true);
+                await map.spawnItemDrop(chr, chr, newItem!, dropPos, true, true);
             }
 
-            chr.SyncClientInventory(op);
+            await chr.SyncClientInventory(op);
         }
 
         int quantityNow = chr.getItemQuantity(itemId);
@@ -583,7 +579,7 @@ public class InventoryManipulator
             if (quantityNow <= 0)
             {
                 chr.setItemEffect(0);
-                map.broadcastMessage(PacketCreator.itemEffect(chr.getId(), 0));
+                await map.broadcastMessage(PacketCreator.itemEffect(chr.getId(), 0));
             }
         }
         else if (itemId == ItemId.CHALKBOARD_1 || itemId == ItemId.CHALKBOARD_2)

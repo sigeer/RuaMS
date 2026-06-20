@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Maps;
 using net.server.services.task.channel;
@@ -34,47 +35,57 @@ namespace server.maps;
  */
 public class Door
 {
-    private int ownerId;
-    private IMap? town;
-    private IMap target;
+    WorldChannel _channelServer;
+    public int ownerId;
+
+
     private KeyValuePair<string, int>? posStatus = null;
     private long deployTime;
     private bool active;
 
-    private DoorObject? townDoor;
-    private DoorObject? areaDoor;
+    private DoorObject townDoor = null!;
+    private DoorObject areaDoor = null!;
 
-    Door(Player owner, Point targetPosition, MysticDoorPortal townDoorPortal)
+    Door(Player owner)
     {
+        _channelServer = owner.Client.CurrentServer;
         this.ownerId = owner.getId();
-        this.target = owner.getMap();
-        this.town = this.target.getReturnMap();
-        this.deployTime = target.ChannelServer.Node.getCurrentTime();
+
+        this.deployTime = _channelServer.Node.getCurrentTime();
         this.active = true;
-        this.areaDoor = new DoorObject(owner, targetPosition, town, target, townDoorPortal);
-        this.townDoor = areaDoor.LinkDoor;
     }
 
-    public static int TryCreateDoor(Player chr, Point targetPosition, out Door? door)
+    public static async Task<(int State, Door? Door)> TryCreateDoor(Player chr, Point areaPos)
     {
-        door = null;
-
-        var toMap = chr.MapModel.getReturnMap();
-        if (!chr.MapModel.canDeployDoor(targetPosition))
+        var townMap = await chr.MapModel.getReturnMap();
+        if (!CanDeployDoor(chr.MapModel, areaPos))
         {
-            return -2;
+            return (-2, null);
         }
 
-        if (!toMap.TryGetEffectiveDoorPortal(out var townPortal) || townPortal == null)
+        if (!townMap.TryGetEffectiveDoorPortal(out var townPortal) || townPortal == null)
         {
-            return -1;
+            return (-1, null);
         }
 
-        door = new Door(chr, targetPosition, townPortal);
-        return 0;
+        var door = new Door(chr);
+        await door.CreateDoorObject(chr.MapModel, areaPos, townMap, townPortal);
+        return (0, door);
     }
 
-    public void Destroy()
+    static bool CanDeployDoor(IMap map, Point pos)
+    {
+        Point? toStep = map.getPointBelow(pos);
+        return toStep != null && toStep.Value.distance(pos) <= 42;
+    }
+
+    public async Task CreateDoorObject(IMap areaMap, Point areaPos, IMap townMap, MysticDoorPortal townDoorPortal)
+    {
+        this.areaDoor = new DoorObject(this, areaMap, areaPos, townMap);
+        this.townDoor = new DoorObject(this, townMap, townDoorPortal, areaMap);
+    }
+
+    public async Task Destroy()
     {
         DoorObject areaDoor = this.getAreaDoor();
         DoorObject townDoor = this.getTownDoor();
@@ -82,14 +93,18 @@ public class Door
         IMap target = this.getTarget();
         IMap town = this.getTown();
 
-        target.RemoveMapObject(areaDoor, chr => areaDoor.sendDestroyData(chr.Client));
-        town.RemoveMapObject(townDoor, chr => townDoor.sendDestroyData(chr.Client));
+        await target.RemoveMapObject(areaDoor, chr => areaDoor.sendDestroyData(chr.Client));
+        await town.RemoveMapObject(townDoor, chr => townDoor.sendDestroyData(chr.Client));
 
         var ownerActor = target.ChannelServer.getPlayerStorage().GetCharacterActor(ownerId);
-        ownerActor?.Send(m =>
+        if (ownerActor != null)
         {
-            m.getCharacterById(ownerId)?.silentPartyUpdate();
-        });
+            await ownerActor.Send(m =>
+            {
+                m.getCharacterById(ownerId)?.silentPartyUpdate();
+            });
+        }
+
 
 
         //// 坐标传送都是0x80，时空门的第1个portal也是0x80，前面移除了这个portal，这里重新生成？--portalFactory让时空门的portalid从0x80+1开始
@@ -132,7 +147,7 @@ public class Door
 
     private Portal? getTownDoorPortal(int doorid)
     {
-        return town?.getDoorPortal(doorid);
+        return townDoor.getTown().getDoorPortal(doorid);
     }
 
     public int getOwnerId()
@@ -152,12 +167,12 @@ public class Door
 
     public IMap getTown()
     {
-        return town;
+        return townDoor.getTown();
     }
 
     public IMap getTarget()
     {
-        return target;
+        return townDoor.getTo();
     }
 
     public KeyValuePair<string, int>? getDoorStatus()
@@ -167,7 +182,7 @@ public class Door
 
     public long getElapsedDeployTime()
     {
-        return target.ChannelServer.Node.getCurrentTime() - deployTime;
+        return _channelServer.Node.getCurrentTime() - deployTime;
     }
 
     private bool dispose()

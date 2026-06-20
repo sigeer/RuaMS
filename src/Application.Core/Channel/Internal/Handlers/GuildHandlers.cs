@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Google.Protobuf;
@@ -62,7 +61,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     if (res.Code != 0)
                     {
                         w.getPlayerStorage().GetCharacterActor(res.Request.LeaderId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var masterChr = m.getCharacterById(res.Request.LeaderId);
                             if (masterChr != null)
@@ -70,9 +69,10 @@ namespace Application.Core.Channel.Internal.Handlers
                                 var msg = GuildHandlers.GetErrorMessage((GuildUpdateResult)res.Code);
                                 if (msg != null)
                                 {
-                                    masterChr.Popup(msg);
+                                    await masterChr.Popup(msg);
+                                    return;
                                 }
-                                masterChr.GainMeso(YamlConfig.config.server.CREATE_GUILD_COST);
+                                await masterChr.GainMeso(YamlConfig.config.server.CREATE_GUILD_COST);
                             }
                         });
                         return;
@@ -81,7 +81,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     foreach (var member in res.GuildDto.Members)
                     {
                         w.getPlayerStorage().GetCharacterActor(member.Id)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var chr = m.getCharacterById(member.Id);
 
@@ -90,17 +90,17 @@ namespace Application.Core.Channel.Internal.Handlers
                                 if (res.GuildDto.Leader == chr.Id)
                                 {
                                     chr.GuildRank = 1;
-                                    chr.Popup("You have successfully created a Guild.");
+                                    await chr.Popup("You have successfully created a Guild.");
                                 }
                                 else
                                 {
                                     chr.GuildRank = 2;
-                                    chr.Popup("You have successfully cofounded a Guild.");
+                                    await chr.Popup("You have successfully cofounded a Guild.");
                                 }
-                                chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
+                                await chr.SendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
 
-                                chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
-                                chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
+                                await chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
+                                await chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
                             }
                         });
                     }
@@ -126,16 +126,16 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         if (guild != res.MemberId)
                         {
-                            w.getPlayerStorage().GetCharacterActor(guild)?.Send(m =>
+                            w.getPlayerStorage().GetCharacterActor(guild)?.Send(async m =>
                                 {
                                     var chr = m.getCharacterById(guild);
                                     if (chr != null)
                                     {
                                         if (chr.GuildId == res.GuildId)
                                         {
-                                            chr.sendPacket(GuildPackets.guildMemberOnline(res.GuildId, res.MemberId, res.MemberChanel > 0));
+                                            await chr.SendPacket(GuildPackets.guildMemberOnline(res.GuildId, res.MemberId, res.MemberChanel > 0));
                                         }
-                                        chr.sendPacket(GuildPackets.allianceMemberOnline(res.AllianceId, res.GuildId, res.MemberId, res.MemberChanel > 0));
+                                        await chr.SendPacket(GuildPackets.allianceMemberOnline(res.AllianceId, res.GuildId, res.MemberId, res.MemberChanel > 0));
                                     }
                                 });
                         }
@@ -171,7 +171,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         var actor = w.getPlayerStorage().GetCharacterActor(guild);
                         if (actor != null)
-                            actor.Send(m =>
+                            actor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(guild);
                                 if (chr != null)
@@ -180,15 +180,15 @@ namespace Application.Core.Channel.Internal.Handlers
                                     {
                                         if (res.Type == 0)
                                         {
-                                            chr.sendPacket(PacketCreator.levelUpMessage(2, res.MemberLevel, res.MemberName));
+                                            await chr.SendPacket(PacketCreator.levelUpMessage(2, res.MemberLevel, res.MemberName));
                                         }
                                         else
                                         {
-                                            chr.sendPacket(PacketCreator.jobMessage(0, res.MemberJob, res.MemberName));
+                                            await chr.SendPacket(PacketCreator.jobMessage(0, res.MemberJob, res.MemberName));
                                         }
-                                        chr.sendPacket(GuildPackets.guildMemberLevelJobUpdate(res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
+                                        await chr.SendPacket(GuildPackets.guildMemberLevelJobUpdate(res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
                                     }
-                                    chr.sendPacket(GuildPackets.updateAllianceJobLevel(res.AllianceId, res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
+                                    await chr.SendPacket(GuildPackets.updateAllianceJobLevel(res.AllianceId, res.GuildId, res.MemberId, res.MemberLevel, res.MemberJob));
                                 }
                             });
                     }
@@ -228,12 +228,12 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         var actor = w.getPlayerStorage().GetCharacterActor(memberId);
                         if (actor != null)
-                            actor.Send(m =>
+                            actor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(memberId);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.guildNotice(res.GuildId, res.Request.Notice));
+                                    await chr.SendPacket(GuildPackets.guildNotice(res.GuildId, res.Request.Notice));
                                 }
                             });
                     }
@@ -264,15 +264,15 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     foreach (var memberId in res.GuildMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                         {
                             var chr = m.getCharacterById(memberId);
                             if (chr != null)
                             {
-                                chr.sendPacket(GuildPackets.updateGP(res.GuildId, res.GuildGP));
+                                await chr.SendPacket(GuildPackets.updateGP(res.GuildId, res.GuildGP));
                                 if (res.Request.Gp > 0)
                                 {
-                                    chr.sendPacket(PacketCreator.getGPMessage(res.Request.Gp));
+                                    await chr.SendPacket(PacketCreator.getGPMessage(res.Request.Gp));
                                 }
                             }
                         });
@@ -300,16 +300,17 @@ namespace Application.Core.Channel.Internal.Handlers
                     var resCode = (GuildUpdateResult)res.Code;
                     if (resCode != GuildUpdateResult.Success)
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?.Send(async m =>
                         {
                             var masterChr = m.getCharacterById(res.Request.MasterId);
                             if (masterChr != null)
                             {
                                 if (resCode == GuildUpdateResult.GuildFull)
                                 {
-                                    masterChr.Popup("Your guild already reached the maximum capacity of players.");
+                                    await masterChr.Popup("Your guild already reached the maximum capacity of players.");
+                                    return;
                                 }
-                                masterChr.GainMeso(res.Request.Cost);
+                                await masterChr.GainMeso(res.Request.Cost);
                             }
                         });
                         return;
@@ -318,12 +319,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     foreach (var memberId in res.GuildMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                         {
                             var chr = m.getCharacterById(memberId);
                             if (chr != null)
                             {
-                                chr.sendPacket(GuildPackets.guildCapacityChange(res.GuildId, res.GuildCapacity));
+                                await chr.SendPacket(GuildPackets.guildCapacityChange(res.GuildId, res.GuildCapacity));
                             }
                         });
                     }
@@ -361,21 +362,21 @@ namespace Application.Core.Channel.Internal.Handlers
                     foreach (var memberId in res.AllMembers)
                     {
                         w.getPlayerStorage().GetCharacterActor(memberId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var chr = m.getCharacterById(memberId);
                             if (chr != null)
                             {
                                 if (chr.GuildId == res.GuildId)
                                 {
-                                    chr.sendPacket(GuildPackets.guildEmblemChange(res.GuildId, (short)res.Request.LogoBg, (byte)res.Request.LogoBgColor, (short)res.Request.Logo, (byte)res.Request.LogoColor));
+                                    await chr.SendPacket(GuildPackets.guildEmblemChange(res.GuildId, (short)res.Request.LogoBg, (byte)res.Request.LogoBgColor, (short)res.Request.Logo, (byte)res.Request.LogoColor));
                                 }
 
                                 if (res.AllianceDto != null)
                                 {
-                                    chr.sendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
                                 }
-                                chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor), chr.Id);
+                                await chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, guildDto.LogoBg, guildDto.LogoBgColor, guildDto.Logo, guildDto.LogoColor), chr.Id);
                             }
                         });
 
@@ -410,12 +411,12 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         var actor = w.getPlayerStorage().GetCharacterActor(memberId);
                         if (actor != null)
-                            actor.Send(m =>
+                            actor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(memberId);
                                 if (chr != null)
                                 {
-                                    chr.sendPacket(GuildPackets.rankTitleChange(res.GuildId, res.Request.RankTitles.ToArray()));
+                                    await chr.SendPacket(GuildPackets.rankTitleChange(res.GuildId, res.Request.RankTitles.ToArray()));
                                 }
                             });
                     }
@@ -448,7 +449,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         var actor = w.getPlayerStorage().GetCharacterActor(memberId);
                         if (actor != null)
-                            actor.Send(m =>
+                            actor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(memberId);
                                 if (chr != null)
@@ -457,7 +458,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                     {
                                         chr.GuildRank = res.Request.NewRank;
                                     }
-                                    chr.sendPacket(GuildPackets.changeRank(res.GuildId, res.Request.TargetPlayerId, res.Request.NewRank));
+                                    await chr.SendPacket(GuildPackets.changeRank(res.GuildId, res.Request.TargetPlayerId, res.Request.NewRank));
                                 }
                             });
                     }
@@ -484,14 +485,14 @@ namespace Application.Core.Channel.Internal.Handlers
                     if (resCode != GuildUpdateResult.Success)
                     {
                         w.getPlayerStorage().GetCharacterActor(res.Request.PlayerId)?
-                           .Send(m =>
+                           .Send(async m =>
                            {
                                var masterChr = m.getCharacterById(res.Request.PlayerId);
                                if (masterChr != null)
                                {
                                    if (resCode == GuildUpdateResult.GuildFull)
                                    {
-                                       masterChr.dropMessage(1, "The guild you are trying to join is already full.");
+                                       await masterChr.dropMessage(1, "The guild you are trying to join is already full.");
                                    }
                                }
                            });
@@ -501,7 +502,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     var newMember = res.GuildDto.Members.FirstOrDefault(x => x.Id == res.Request.PlayerId)!;
                     foreach (var memberId in res.AllMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                             {
                                 var chr = m.getCharacterById(memberId);
                                 if (chr != null)
@@ -509,13 +510,13 @@ namespace Application.Core.Channel.Internal.Handlers
                                     if (chr.Id == newMember.Id)
                                     {
                                         chr.GuildRank = newMember.GuildRank;
-                                        chr.sendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
-                                        chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
-                                        chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
+                                        await chr.SendPacket(GuildPackets.ShowGuildInfo(res.GuildDto));
+                                        await chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, res.GuildDto.Name), chr.Id);
+                                        await chr.BroadcastMap(GuildPackets.guildMarkChanged(chr.Id, res.GuildDto.LogoBg, res.GuildDto.LogoBgColor, res.GuildDto.Logo, res.GuildDto.LogoColor), chr.Id);
                                     }
                                     else if (chr.GuildId == res.Request.GuildId)
                                     {
-                                        chr.sendPacket(GuildPackets.newGuildMember(res.Request.GuildId,
+                                        await chr.SendPacket(GuildPackets.newGuildMember(res.Request.GuildId,
                                             newMember.Id,
                                             newMember.Name,
                                             newMember.Job,
@@ -527,8 +528,8 @@ namespace Application.Core.Channel.Internal.Handlers
                                     {
                                         if (res.AllianceDto != null)
                                         {
-                                            chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                            chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                            await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                            await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
                                         }
                                     }
                                 }
@@ -557,7 +558,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     var resCode = (GuildUpdateResult)res.Code;
                     var masterActor = w.getPlayerStorage().GetCharacterActor(res.Request.PlayerId);
                     if (masterActor != null)
-                        masterActor.Send(m =>
+                        masterActor.Send(async m =>
                         {
                             var masterChr = m.getCharacterById(res.Request.PlayerId);
                             if (resCode != GuildUpdateResult.Success)
@@ -567,16 +568,16 @@ namespace Application.Core.Channel.Internal.Handlers
                                     var msg = GuildHandlers.GetErrorMessage(resCode);
                                     if (msg != null)
                                     {
-                                        masterChr.dropMessage(1, msg);
+                                        await masterChr.dropMessage(1, msg);
                                     }
                                 }
                                 return;
                             }
                             if (masterChr != null)
                             {
-                                masterChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
-                                masterChr.sendPacket(GuildPackets.ShowGuildInfo(null));
-                                masterChr.BroadcastMap(GuildPackets.guildNameChanged(masterChr.Id, ""), masterChr.Id);
+                                await masterChr.SendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                                await masterChr.SendPacket(GuildPackets.ShowGuildInfo(null));
+                                await masterChr.BroadcastMap(GuildPackets.guildNameChanged(masterChr.Id, ""), masterChr.Id);
                             }
                         });
 
@@ -584,21 +585,21 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         var actor = w.getPlayerStorage().GetCharacterActor(memberId);
                         if (actor != null)
-                            actor.Send(m =>
+                            actor.Send(async m =>
                             {
                                 var chr = m.getCharacterById(memberId);
                                 if (chr != null)
                                 {
                                     if (chr.GuildId == res.GuildId)
                                     {
-                                        chr.sendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.PlayerId, res.MasterName, false));
+                                        await chr.SendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.PlayerId, res.MasterName, false));
                                     }
                                     else
                                     {
                                         if (res.AllianceDto != null)
                                         {
-                                            chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                            chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                            await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                            await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
                                         }
                                     }
                                 }
@@ -638,37 +639,37 @@ namespace Application.Core.Channel.Internal.Handlers
                         return;
                     }
 
-                    w.getPlayerStorage().GetCharacterActor(res.Request.TargetPlayerId)?.Send(m =>
+                    w.getPlayerStorage().GetCharacterActor(res.Request.TargetPlayerId)?.Send(async m =>
                     {
                         var targetChr = m.getCharacterById(res.Request.TargetPlayerId);
 
                         if (targetChr != null)
                         {
-                            targetChr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
-                            targetChr.sendPacket(GuildPackets.ShowGuildInfo(null));
+                            await targetChr.SendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                            await targetChr.SendPacket(GuildPackets.ShowGuildInfo(null));
 
-                            targetChr.BroadcastMap(GuildPackets.guildNameChanged(targetChr.Id, ""), targetChr.Id);
+                            await targetChr.BroadcastMap(GuildPackets.guildNameChanged(targetChr.Id, ""), targetChr.Id);
                         }
                     });
 
 
                     foreach (var memberId in res.AllLeftMembers)
                     {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(m =>
+                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
                         {
                             var chr = m.getCharacterById(memberId);
                             if (chr != null)
                             {
                                 if (chr.GuildId == res.GuildId)
                                 {
-                                    chr.sendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.TargetPlayerId, res.TargetName, true));
+                                    await chr.SendPacket(GuildPackets.memberLeft(res.GuildId, res.Request.TargetPlayerId, res.TargetName, true));
                                 }
                                 else
                                 {
                                     if (res.AllianceDto != null)
                                     {
-                                        chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                        chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                        await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                        await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
                                     }
                                 }
 
@@ -704,24 +705,24 @@ namespace Application.Core.Channel.Internal.Handlers
                     foreach (var memberId in res.AllMembers)
                     {
                         w.getPlayerStorage().GetCharacterActor(memberId)?
-                        .Send(m =>
+                        .Send(async m =>
                         {
                             var chr = m.getCharacterById(memberId);
                             if (chr != null)
                             {
                                 if (chr.GuildId == res.GuildId)
                                 {
-                                    chr.sendPacket(GuildPackets.updateGP(res.GuildId, 0));
-                                    chr.sendPacket(GuildPackets.ShowGuildInfo(null));
+                                    await chr.SendPacket(GuildPackets.updateGP(res.GuildId, 0));
+                                    await chr.SendPacket(GuildPackets.ShowGuildInfo(null));
 
-                                    chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, ""), chr.Id);
+                                    await chr.BroadcastMap(GuildPackets.guildNameChanged(chr.Id, ""), chr.Id);
                                 }
                                 else
                                 {
                                     if (res.AllianceDto != null)
                                     {
-                                        chr.sendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                        chr.sendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+                                        await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                                        await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
                                     }
                                 }
                             }

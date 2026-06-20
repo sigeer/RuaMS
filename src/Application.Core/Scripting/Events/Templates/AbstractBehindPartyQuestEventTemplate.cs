@@ -1,7 +1,5 @@
-using Application.Core.Channel;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using tools;
 
@@ -18,7 +16,7 @@ namespace Application.Core.scripting.Events.Templates
         public int RegistrationTime { get; init; }
         public int PrepareTime { get; init; }
 
-        public virtual JoinInstanceResult JoinMember(BehindPartyQuestEventInstanceManager eim, Player player)
+        public virtual async Task<JoinInstanceResult> JoinMember(BehindPartyQuestEventInstanceManager eim, Player player)
         {
             if (eim.InstanceStatus != InstanceStatus.Recruitment)
             {
@@ -41,9 +39,9 @@ namespace Application.Core.scripting.Events.Templates
             }
 
 
-            eim.registerPlayer(player);
+            await eim.registerPlayer(player);
 
-            OnPlayerJoined(eim, player);
+            await OnPlayerJoined(eim, player);
             return JoinInstanceResult.Success;
         }
 
@@ -52,36 +50,37 @@ namespace Application.Core.scripting.Events.Templates
             return [leader];
         }
 
-        public override void AfterSeup(AbstractEventInstanceManager eim)
+        public override Task AfterSeup(AbstractEventInstanceManager eim)
         {
             eim.InstanceStatus = InstanceStatus.Recruitment;
+            return Task.CompletedTask;
         }
 
-        public override void OnPlayerRegister(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerRegister(AbstractEventInstanceManager eim, Player chr)
         {
             chr.SaveLocation(SavedLocationType.EVENT);
-            chr.changeMap(RecruitMap);
-            chr.sendPacket(PacketCreator.getClock((int)(eim.getTimeLeft() / 1000)));
+            await chr.changeMap(RecruitMap);
+            await chr.SendPacket(PacketCreator.getClock((int)(eim.getTimeLeft() / 1000)));
         }
 
-        public override void OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
-            chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
+            await chr.changeMap(EntryMap == MapId.NONE ? chr.MapModel.getForcedReturnId() : EntryMap, EntryPortal);
         }
 
-        public override void OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
+        public override Task OnPlayerLeftParty(AbstractEventInstanceManager eim, Player player)
         {
-
+            return Task.CompletedTask;
         }
 
-        public override void OnPartyDisband(AbstractEventInstanceManager eim)
+        public override Task OnPartyDisband(AbstractEventInstanceManager eim)
         {
-
+            return Task.CompletedTask;
         }
 
-        public override void OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
+        public override Task OnLeaderChanged(AbstractEventInstanceManager eim, Player leader)
         {
-
+            return Task.CompletedTask;
         }
 
 
@@ -120,10 +119,10 @@ namespace Application.Core.scripting.Events.Templates
             }
         }
 
-        public virtual void OnPlayerBanned(AbstractEventInstanceManager eim, Player chr) { }
-        public virtual void OnPlayerJoined(AbstractEventInstanceManager eim, Player chr) { }
-        public virtual void OnBattlePrepare(AbstractEventInstanceManager eim) { }
-        public virtual void OnBattleStarted(AbstractEventInstanceManager eim) { }
+        public virtual Task OnPlayerBanned(AbstractEventInstanceManager eim, Player chr) => Task.CompletedTask;
+        public virtual Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr) => Task.CompletedTask;
+        public virtual Task OnBattlePrepare(AbstractEventInstanceManager eim) => Task.CompletedTask;
+        public virtual Task OnBattleStarted(AbstractEventInstanceManager eim) => Task.CompletedTask;
 
         public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)
         {

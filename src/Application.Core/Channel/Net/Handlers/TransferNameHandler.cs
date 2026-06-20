@@ -38,31 +38,31 @@ public class TransferNameHandler : ChannelHandlerBase
         _logger = logger;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         p.readInt(); //cid
         int birthday = p.readInt();
         var unknown = p.available();
         if (!c.CheckBirthday(birthday))
         {
-            c.sendPacket(PacketCreator.showCashShopMessage(0xC4));
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.showCashShopMessage(0xC4));
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
         if (!YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE)
         {
-            c.sendPacket(PacketCreator.sendNameTransferRules(4));
+            await c.SendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
         var chr = c.OnlinedCharacter;
         if (chr.getLevel() < 10)
         {
-            c.sendPacket(PacketCreator.sendNameTransferRules(4));
+            await c.SendPacket(PacketCreator.sendNameTransferRules(4));
             return;
         }
         //else if (c.AccountEntity?.Tempban != null && c.AccountEntity?.Tempban.Value.AddDays(30) < DateTimeOffset.UtcNow)
         //{
-        //    c.sendPacket(PacketCreator.sendNameTransferRules(2));
+        //    await c.SendPacket(PacketCreator.sendNameTransferRules(2));
         //    return;
         //}
         //sql queries
@@ -75,12 +75,12 @@ public class TransferNameHandler : ChannelHandlerBase
         //    {
         //        if (rs.CompletionTime == null)
         //        { //has pending name request
-        //            c.sendPacket(PacketCreator.sendNameTransferRules(1));
+        //            await c.SendPacket(PacketCreator.sendNameTransferRules(1));
         //            return;
         //        }
         //        else if (rs.CompletionTime.Value.AddMilliseconds(YamlConfig.config.server.NAME_CHANGE_COOLDOWN) > DateTimeOffset.UtcNow)
         //        {
-        //            c.sendPacket(PacketCreator.sendNameTransferRules(3));
+        //            await c.SendPacket(PacketCreator.sendNameTransferRules(3));
         //            return;
         //        }
         //    }
@@ -90,6 +90,6 @@ public class TransferNameHandler : ChannelHandlerBase
         //    _logger.LogError(e.ToString());
         //    return;
         //}
-        c.sendPacket(PacketCreator.sendNameTransferRules(0));
+        await c.SendPacket(PacketCreator.sendNameTransferRules(0));
     }
 }

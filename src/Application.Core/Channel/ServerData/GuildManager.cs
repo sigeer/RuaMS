@@ -1,16 +1,12 @@
 using AllianceProto;
-using Application.Core.Game.Relation;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using AutoMapper;
-using Google.Protobuf;
 using GuildProto;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using net.server.guild;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -21,7 +17,7 @@ namespace Application.Core.Channel.ServerData
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _serverContainer;
         readonly IMemoryCache _cache;
-        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer, 
+        public GuildManager(ILogger<GuildManager> logger, IMapper mapper, IChannelServerTransport transport, WorldChannelServer serverContainer,
             IMemoryCache cache)
         {
             _logger = logger;
@@ -88,32 +84,32 @@ namespace Application.Core.Channel.ServerData
 
         public void AnswerInvitation(Player answer, int guildId, bool operation)
         {
-            _ =  _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            _ = _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
-        public void CreateGuild(Player leader, string name)
+        public async Task CreateGuild(Player leader, string name)
         {
             if (!CheckGuildName(name))
             {
-                leader.dropMessage(1, "The Guild name you have chosen is not accepted.");
+                await leader.dropMessage(1, "The Guild name you have chosen is not accepted.");
                 return;
             }
 
             if (leader.getGuildId() > 0)
             {
-                leader.Popup("You cannot create a new Guild while in one.");
+                await leader.Popup("You cannot create a new Guild while in one.");
                 return;
             }
 
             var party = leader.getParty();
             if (party == null || !leader.isPartyLeader())
             {
-                leader.Popup("You cannot establish the creation of a new Guild without leading a party.");
+                await leader.Popup("You cannot establish the creation of a new Guild without leading a party.");
                 return;
             }
             if (leader.getMapId() != MapId.GUILD_HQ)
             {
-                leader.Popup("You cannot establish the creation of a new Guild outside of the Guild Headquarters.");
+                await leader.Popup("You cannot establish the creation of a new Guild outside of the Guild Headquarters.");
                 return;
             }
 
@@ -123,30 +119,30 @@ namespace Application.Core.Channel.ServerData
                 var mapChr = leader.getMap().getCharacterById(member.Id);
                 if (mapChr == null)
                 {
-                    leader.dropMessage(1, "You cannot establish the creation of a new Guild if one of the members is not present here.");
+                    await leader.dropMessage(1, "You cannot establish the creation of a new Guild if one of the members is not present here.");
                     return;
                 }
 
                 if (mapChr.GuildId > 0)
                 {
-                    leader.dropMessage(1, "Please make sure everyone you are trying to invite is neither on a guild.");
+                    await leader.dropMessage(1, "Please make sure everyone you are trying to invite is neither on a guild.");
                     return;
                 }
             }
 
             if (members.Count < YamlConfig.config.server.CREATE_GUILD_MIN_PARTNERS)
             {
-                leader.dropMessage(1, "Your Guild doesn't have enough cofounders present here and therefore cannot be created at this time.");
+                await leader.dropMessage(1, "Your Guild doesn't have enough cofounders present here and therefore cannot be created at this time.");
                 return;
             }
 
             if (leader.getMeso() < YamlConfig.config.server.CREATE_GUILD_COST)
             {
-                leader.Pink("You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
+                await leader.Pink("You do not have " + leader.Client.CurrentCulture.Number(YamlConfig.config.server.CREATE_GUILD_COST) + " mesos to create a Guild.");
                 return;
             }
 
-            leader.GainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, GainItemShow.ShowInChat);
+            await leader.GainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, GainItemShow.ShowInChat);
 
             var req = new CreateGuildRequest { LeaderId = leader.Id, Name = name };
             req.Members.AddRange(members.Select(x => x.Id));
@@ -188,10 +184,10 @@ namespace Application.Core.Channel.ServerData
             _ = _transport.SendUpdateGuildRankTitle(request);
         }
 
-        public void IncreaseGuildCapacity(Player chr, int cost)
+        public async Task IncreaseGuildCapacity(Player chr, int cost)
         {
-            chr.GainMeso(-cost, GainItemShow.ShowInChat);
-            _ = _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
+            await chr.GainMeso(-cost, GainItemShow.ShowInChat);
+            await _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
         public void SetGuildNotice(Player chr, string notice)
@@ -222,18 +218,18 @@ namespace Application.Core.Channel.ServerData
 
         #region alliance
 
-        public void CreateAlliance(Player leader, string name, int cost)
+        public async Task CreateAlliance(Player leader, string name, int cost)
         {
-            leader.GainMeso(-cost, GainItemShow.ShowInChat);
+            await leader.GainMeso(-cost, GainItemShow.ShowInChat);
             var guilds = leader.getPartyMembersOnSameMap().Select(x => x.Id).ToArray();
 
             var request = new CreateAllianceRequest { Name = name, Cost = cost };
             request.Members.AddRange(guilds);
-            _ = _serverContainer.Transport.CreateAlliance(request);
+            await _serverContainer.Transport.CreateAlliance(request);
         }
-        public void SendAllianceInvitation(IChannelClient c, string targetGuildName)
+        public async Task SendAllianceInvitation(IChannelClient c, string targetGuildName)
         {
-            _ = _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            await _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
                 Type = InviteTypes.Alliance,
                 FromId = c.OnlinedCharacter.Id,
@@ -241,9 +237,9 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void AnswerAllianceInvitation(Player chr, int allianceId, bool answer)
+        public async Task AnswerAllianceInvitation(Player chr, int allianceId, bool answer)
         {
-            _ = _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
+            await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
 
@@ -268,60 +264,60 @@ namespace Application.Core.Channel.ServerData
                 return _transport.GetAlliance(allianceId).Model;
             });
         }
-        public void AllianceBroadcastPlayerInfo(Player chr)
+        public async Task AllianceBroadcastPlayerInfo(Player chr)
         {
-            _ = _transport.AllianceBroadcastPlayerInfo(new AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });
+            await _transport.AllianceBroadcastPlayerInfo(new AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });
         }
-        public void GuildLeaveAlliance(Player player, int guildId)
-        {
-            if (player.GuildRank != 1)
-            {
-                return;
-            }
-            _ = _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
-        }
-
-        public void AllianceExpelGuild(Player player, int allianceId, int guildId)
-        {
-            _ = _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
-        }
-
-        public void ChageLeaderAllianceRank(Player player, int targetPlayerId)
+        public async Task GuildLeaveAlliance(Player player, int guildId)
         {
             if (player.GuildRank != 1)
             {
                 return;
             }
-            _ = _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
-        }
-        public void ChangePlayerAllianceRank(Player player, int targetPlayerId, bool isIncrease)
-        {
-            _ = _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
-        }
-        public void HandleIncreaseAllianceCapacity(Player chr)
-        {
-            _ = _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+            await _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
         }
 
-        internal void UpdateAllianceRank(Player chr, string[] ranks)
+        public async Task AllianceExpelGuild(Player player, int allianceId, int guildId)
+        {
+            await _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
+        }
+
+        public async Task ChageLeaderAllianceRank(Player player, int targetPlayerId)
+        {
+            if (player.GuildRank != 1)
+            {
+                return;
+            }
+            await _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+        }
+        public async Task ChangePlayerAllianceRank(Player player, int targetPlayerId, bool isIncrease)
+        {
+            await _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+        }
+        public async Task HandleIncreaseAllianceCapacity(Player chr)
+        {
+            await _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+        }
+
+        internal async Task UpdateAllianceRank(Player chr, string[] ranks)
         {
             var request = new AllianceProto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
             request.RankTitles.AddRange(ranks);
-            _ = _transport.SendUpdateAllianceRankTitle(request);
+            await _transport.SendUpdateAllianceRankTitle(request);
         }
-        internal void UpdateAllianceNotice(Player chr, string notice)
+        internal async Task UpdateAllianceNotice(Player chr, string notice)
         {
-            _ = _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+            await _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
-        internal void DisbandAlliance(Player player, int allianceId)
+        internal async Task DisbandAlliance(Player player, int allianceId)
         {
-            _ = _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
+            await _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
         }
 
-        internal void ShowRankedGuilds(IChannelClient c, int npc)
+        internal async Task ShowRankedGuilds(IChannelClient c, int npc)
         {
             var data = _transport.RequestRankedGuilds();
-            c.sendPacket(GuildPackets.showGuildRanks(npc, data.Guilds.ToList()));
+            await c.SendPacket(GuildPackets.showGuildRanks(npc, data.Guilds.ToList()));
         }
 
         public void ClearAllianceCache(int allianceId, bool deep = true)

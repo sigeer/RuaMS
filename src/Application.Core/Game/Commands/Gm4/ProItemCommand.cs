@@ -13,19 +13,19 @@ public class ProItemCommand : CommandBase
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
@@ -33,13 +33,13 @@ public class ProItemCommand : CommandBase
         var abTemplate = ii.GetTemplate(itemId);
         if (abTemplate is not EquipTemplate equipTemplate)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
+            await player.Yellow(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
             return;
         }
 
         if (!short.TryParse(paramsValue[1], out short stat))
         {
-            player.YellowMessageI18N(nameof(ClientMessage.ProItemCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.ProItemCommand_Syntax));
             return;
         }
 
@@ -53,6 +53,6 @@ public class ProItemCommand : CommandBase
         it.setOwner(player.getName());
 
         ItemManager.SetEquipStat((Equip)it, stat, spdjmp);
-        InventoryManipulator.addFromDrop(c, it);
+        await InventoryManipulator.addFromDrop(c, it);
     }
 }

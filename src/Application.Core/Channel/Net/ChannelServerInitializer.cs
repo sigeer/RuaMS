@@ -28,6 +28,6 @@ public class ChannelServerInitializer : ServerChannelInitializer
 
         long clientSessionId = sessionId.getAndIncrement();
         var client = ActivatorUtilities.CreateInstance<ChannelClient>(worldChannel.LifeScope.ServiceProvider, clientSessionId, worldChannel, socketChannel);
-        initPipeline(socketChannel, client);
+        _ = initPipeline(socketChannel, client);
     }
 }

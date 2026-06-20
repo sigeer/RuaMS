@@ -32,7 +32,7 @@ public class MesoRequirement : AbstractQuestRequirement
         meso = data;
     }
 
-    public override bool check(Player chr, int? npcid)
+    public override async Task<bool> check(Player chr, int? npcid)
     {
         if (chr.getMeso() >= meso)
         {
@@ -40,7 +40,7 @@ public class MesoRequirement : AbstractQuestRequirement
         }
         else
         {
-            chr.dropMessage(5, "You don't have enough mesos to complete this quest.");
+            await chr.dropMessage(5, "You don't have enough mesos to complete this quest.");
             return false;
         }
     }

@@ -22,7 +22,7 @@ namespace Application.Core.Channel.Commands
         }
     }
 
-    internal record InvokeMultiDropMessageCommand : IWorldChannelCommand
+    internal record InvokeMultiDropMessageCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeMultiDropMessageCommand);
         IEnumerable<int> playerIds;
@@ -38,13 +38,13 @@ namespace Application.Core.Channel.Commands
             this.paramsValue = paramsValue;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (playerIds.Contains(-1))
             {
                 foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
-                    player.TypedMessage(type, message, paramsValue);
+                    await player.TypedMessage(type, message, paramsValue);
                 }
             }
             else
@@ -54,7 +54,7 @@ namespace Application.Core.Channel.Commands
                     var player = ctx.getPlayerStorage().getCharacterById(id);
                     if (player != null)
                     {
-                        player.TypedMessage(type, message, paramsValue);
+                        await player.TypedMessage(type, message, paramsValue);
                     }
                 }
             }
@@ -62,7 +62,7 @@ namespace Application.Core.Channel.Commands
         }
     }
 
-    internal record InvokeMultiDropMessageCommandPlus : IWorldChannelCommand
+    internal record InvokeMultiDropMessageCommandPlus : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeMultiDropMessageCommandPlus);
 
@@ -76,13 +76,13 @@ namespace Application.Core.Channel.Commands
             _getMessage = getMessage;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             if (playerIds.Contains(-1))
             {
                 foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
-                    player.TypedMessage((int)type, _getMessage(player));
+                    await player.TypedMessage((int)type, _getMessage(player));
                 }
             }
             else
@@ -92,7 +92,7 @@ namespace Application.Core.Channel.Commands
                     var player = ctx.getPlayerStorage().getCharacterById(id);
                     if (player != null)
                     {
-                        player.TypedMessage((int)type, _getMessage(player));
+                        await player.TypedMessage((int)type, _getMessage(player));
                     }
                 }
             }

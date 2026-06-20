@@ -11,7 +11,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2257 
         public async Task q2257e()
         {
-            forceCompleteQuest();
+            await forceCompleteQuest();
 
             await SayNext("嘿，你想搭便车去#r#m261000000##k吗？哦，来自#b#p2101013##k？");
         }
@@ -20,7 +20,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("猫鼬像野火一样散布谣言。。。通过勒索我和我的出租车服务，他们日复一日地把顾客从我身边带走。。。嘿，不要告诉任何人，如果你能帮我清理一些狸猫，我会告诉你关于蘑菇城堡的信息。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayNext("太好了，你需要在#r5分钟#k内杀死#b40只狸猫#k。祝你好运！");
             }
@@ -28,13 +28,13 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2258 
         public async Task q2258e()
         {
-            forceCompleteQuest();
+            await forceCompleteQuest();
             await SayNext("你做到了! 嘿......#r狸猫#k在这附近可以听我们的谈话.我现在不想谈这个.");
         }
         // Quest: 2259 
         public async Task q2259s()
         {
-            forceStartQuest();
+            await forceStartQuest();
 
             await SayNext("好的，我们在#b#m260020700##k等你消息。要到达那里，请搭乘#r骆驼中巴#k前往#r玛加提亚#k，我会在那里等你，现在出发吧。");
         }
@@ -47,13 +47,13 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
             await SayNext("哦，你来了。这附近很安全，没有猫鼬在这里窃听。你一定很适合去#r蘑菇城堡#k。等你到了再跟我谈谈。");
         }
         // Quest: 2260 
         public async Task q2260s()
         {
-            forceStartQuest();
+            await forceStartQuest();
             await SayNext("如果你进行了#b第2次转职#k，我会告诉你关于#b蘑菇城堡#k的一些信息。");
         }
         // Quest: 2260 
@@ -65,7 +65,7 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            forceCompleteQuest();
+            await forceCompleteQuest();
             await SayNext("好吧，你准备好去#b蘑菇城#k吗？蘑菇城的入口就在射手村西边的大树上面，沿着这条路很容易就能找到！");
         }
 
@@ -109,8 +109,8 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
 
-                gainItem(oreArray[selection], -2); // Take 2 ores
-                forceCompleteQuest();
+                await gainItem(oreArray[selection], -2); // Take 2 ores
+                await forceCompleteQuest();
 
                 await SayNext("请等一下我去拿个东西，以帮助您更容易通过蒙特鸠协会长的考验。");
             }
@@ -136,8 +136,8 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
 
-                gainItem(oreArray[selection], -2); // Take 2 ores
-                forceCompleteQuest();
+                await gainItem(oreArray[selection], -2); // Take 2 ores
+                await forceCompleteQuest();
 
                 await SayNext("请等一下我去拿个东西，以帮助您更容易通过蒙特鸠协会长的考验.");
 
@@ -153,7 +153,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("你把#b蒙特鸠#k披风弄丢了，我可以再给你做一个，但我需要一些材料。");
             if (await SayAcceptDecline("要制作新披风，我需要你给我带来#b5 #t4021003##k, #b10 #t4000021##k和#b10000 金币#k。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayOK("等你收集到了所有材料再回来找我。");
             }
@@ -164,7 +164,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("你把#b卡帕莱特#k披风弄丢了，我可以再给你做一个，但我需要一些材料。");
             if (await SayAcceptDecline("要制作新披风，我需要你给我带来#b5 #t4021006##k, #b10 #t4000021##k和#b10000 金币#k。"))
             {
-                forceStartQuest();
+                await forceStartQuest();
 
                 await SayOK("等你收集到了所有材料再回来找我。");
             }
@@ -178,13 +178,13 @@ namespace Application.Plugin.Script.Quest
                 {
                     await SayNext("呼呼呼呼.... 看你面色苍白看来真的很有效果啊．这次的实验成功了！呃哈哈哈哈！果然可以用在能打倒洛伊德的坚强的人身上！......很惊讶的表情嘛？不用太担心．不是很危险的药…不，虽然是危险的药但是有解毒药…呼呼呼呼...如此一来，任意改变人体的状态会变得更为容易…这样...搞不好可以帮那家伙达成愿望...");
 
-                    gainExp(12500);
-                    gainItem(2050004, 10);
+                    await gainExp(12500);
+                    await gainItem(2050004, 10);
 
                     var i = Random.Shared.Next(5);
-                    gainItem(2022224 + i, 10);
+                    await gainItem(2022224 + i, 10);
 
-                    forceCompleteQuest();
+                    await forceCompleteQuest();
                 }
                 else
                 {
@@ -201,8 +201,8 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("我可能知道德朗博士的下落。你准备好被传送到那个地区了吗？"))
             {
-                forceStartQuest();
-                warp(926120200, 1);
+                await forceStartQuest();
+                await warp(926120200, 1);
             }
         }
         // Quest: 3321 
@@ -218,7 +218,7 @@ namespace Application.Plugin.Script.Quest
                 await SayNext("哦，如果可以的话，我还有一个私人请求。我担心我的妻子，#b#p2111004##k。自从胡罗伊德事件以来，我没能向她传达消息，这一定对她造成了很大的负担... 如果可以的话，你能去#b家里#k找回#b银色吊坠#k，代我送给她吗？我很后悔没有在她的生日时立刻把这件东西送给她... 也许现在给她，能让她安心一晚上。");
                 await SayNext("#r记住这个顺序！#k 我把吊坠藏在我家里，水管后面的一个容器里。水管必须按顺序打开：上、下、中。然后，输入秘密密码：'#rmy love Phyllia#k'。");
 
-                forceStartQuest();
+                await forceStartQuest();
             }
 
         }
@@ -228,8 +228,8 @@ namespace Application.Plugin.Script.Quest
             await SayNext("“我明白了。德朗想阻止胡洛伊德造成更多的破坏，但社会希望立即将他关进监狱。所以他才躲在那里。”.");
             if (await SayAcceptDecline("那样的话，再去那里听德朗说更多细节，可以吗？"))
             {
-                forceStartQuest();
-                warp(926120200, 1);
+                await forceStartQuest();
+                await warp(926120200, 1);
             }
         }
         // Quest: 3354 
@@ -237,7 +237,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (await SayAcceptDecline("我有个请求。你能不能向 #bMaed#k 要一瓶我设计的药剂？显然，不要提到我让你这样做，那会是个问题。由于与 Huroids 的接触，#bKeeny#k 生病了，这让我非常烦恼，以至于我无法在我的研究上取得进展……请 #r把药剂带给她#k，这样我才能感觉好些，并开始取得进展。我指望你了."))
             {
-                forceStartQuest();
+                await forceStartQuest();
             }
         }
         // Quest: 3360 
@@ -249,8 +249,8 @@ namespace Application.Plugin.Script.Quest
                 var pass = string.Join("", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".OrderBy(x => Guid.NewGuid()).Take(10));
                 await SayOK("钥匙代码是 #b" + pass + "#k。记住了吗？把钥匙插入秘密通道的门上，你就可以自由地走进通道了。");
 
-                forceStartQuest();
-                setQuestProgress(3360, pass);
+                await forceStartQuest();
+                await setQuestProgress(3360, pass);
             }
             else
             {
@@ -264,10 +264,10 @@ namespace Application.Plugin.Script.Quest
             {
                 if (canHold(1122010))
                 {
-                    gainItem(4001159, -25);
-                    gainItem(4001160, -25);
-                    gainItem(1122010, 1);
-                    forceCompleteQuest();
+                    await gainItem(4001159, -25);
+                    await gainItem(4001160, -25);
+                    await gainItem(1122010, 1);
+                    await forceCompleteQuest();
 
                     await SayOK("感谢你找回了这些弹珠。接受这个吊坠作为我的感激之情。");
                 }
@@ -281,10 +281,10 @@ namespace Application.Plugin.Script.Quest
             {
                 if (canHold(2041212))
                 {
-                    gainItem(4001159, -10);
-                    gainItem(4001160, -10);
-                    gainItem(2041212, 1);
-                    forceCompleteQuest();
+                    await gainItem(4001159, -10);
+                    await gainItem(4001160, -10);
+                    await gainItem(2041212, 1);
+                    await forceCompleteQuest();
 
                     await SayOK("感谢你找回了这些弹珠。这块石头，我给你的，可以用来提升 #b#t1122010##k 的属性。拿着它作为我的感激之情，并明智地使用它。");
                 }
@@ -308,44 +308,44 @@ namespace Application.Plugin.Script.Quest
             {
                 if (haveItem(4000294, 1000))
                 {
-                    gainItem(4000294, -1000);
-                    gainItem(2040501, 1);
-                    gainItem(2000005, 50);
-                    gainExp(54000);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -1000);
+                    await gainItem(2040501, 1);
+                    await gainItem(2000005, 50);
+                    await gainExp(54000);
+                    await forceCompleteQuest();
                 }
                 else if (haveItem(4000294, 600))
                 {
-                    gainItem(4000294, -600);
-                    gainItem(2020013, 50);
-                    gainExp(54000);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -600);
+                    await gainItem(2020013, 50);
+                    await gainExp(54000);
+                    await forceCompleteQuest();
                 }
                 else if (haveItem(4000294, 500))
                 {
-                    gainItem(4000294, -500);
-                    gainExp(54000);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -500);
+                    await gainExp(54000);
+                    await forceCompleteQuest();
                 }
                 else if (haveItem(4000294, 100))
                 {
-                    gainItem(4000294, -100);
-                    gainExp(45000);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -100);
+                    await gainExp(45000);
+                    await forceCompleteQuest();
                 }
                 else if (haveItem(4000294, 50))
                 {
-                    gainItem(4000294, -50);
-                    gainItem(2020007, 50);
-                    gainExp(10000);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -50);
+                    await gainItem(2020007, 50);
+                    await gainExp(10000);
+                    await forceCompleteQuest();
                 }
                 else if (haveItem(4000294, 1))
                 {
-                    gainItem(4000294, -1);
-                    gainItem(2000000, 1);
-                    gainExp(10);
-                    forceCompleteQuest();
+                    await gainItem(4000294, -1);
+                    await gainItem(2000000, 1);
+                    await gainExp(10);
+                    await forceCompleteQuest();
                 }
 
             }
@@ -362,15 +362,15 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("很好，我喜欢你的自信。");
                 // TODO
-                if (getWarpMap(926000000).getAllPlayers().Count > 0)
+                if ((await getWarpMap(926000000)).getAllPlayers().Count > 0)
                 {
                     await SayOK("此地图中当前有人，请稍后再试。");
                 }
                 else
                 {
-                    forceStartQuest();
+                    await forceStartQuest();
 
-                    warp(926000000, "st00");
+                    await warp(926000000, "st00");
                 }
             }
         }
@@ -383,7 +383,7 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            forceStartQuest();
+            await forceStartQuest();
         }
         // Quest: 3941 
         public async Task q3941e()
@@ -396,10 +396,10 @@ namespace Application.Plugin.Script.Quest
 
             if (canHold(4031571, 1))
             {
-                gainItem(4031571);
+                await gainItem(4031571);
 
                 await SayNext("拿去吧。请尽快交给女王，提古，如果事情延误她会很生气的。");
-                forceCompleteQuest();
+                await forceCompleteQuest();
             }
             else
             {
@@ -414,9 +414,9 @@ namespace Application.Plugin.Script.Quest
             await AskMenu("没错！都是因为王妃！自从那个女人来了之后……原本很聪明的阿得拉８世全变了, 阿里安特也逐渐变得干旱！绿洲变成了荒漠！这都是因为那个女人！\r\n\r\n#L0##b王妃施行暴政, 不知道沙漠的守护神会怎么做. #l \r\n\r\n#L1##b必须尽快组织军队, 使国家摆脱王妃的压迫！#l");
             await AskMenu("……你说什么？大宇变成了怪物……他可是阿里安特的守护神啊……不过也是……阿里安特已经和过去不同了……\r\n\r\n#L0##b所以说嘛. 阿烈达王妃在吸收沙漠的精气, 大宇也失去了原来的灵性, 变成了怪物……#l");
 
-            forceCompleteQuest();
-            gainItem(4011008, -1);
-            gainExp(20000);
+            await forceCompleteQuest();
+            await gainItem(4011008, -1);
+            await gainExp(20000);
 
             await SayNext("对……也许你的话是对的. 阿里安特变成了这样……这也许是因为大宇变了的缘故. 也许大宇真的已经变成了怪物……就像年轻人说的那样, 到了除掉大宇的时候了……");
         }

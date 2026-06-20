@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CancelChairHandler : ChannelHandlerBase
 {
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int id = p.readShort();
         var mc = c.OnlinedCharacter;
@@ -35,11 +35,11 @@ public class CancelChairHandler : ChannelHandlerBase
             return;
         }
 
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
-                mc.sitChair(id);
+                await mc.sitChair(id);
             }
             finally
             {

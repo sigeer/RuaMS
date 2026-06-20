@@ -21,9 +21,7 @@
  */
 
 using Application.Core.Channel.ServerData;
-using Application.Resources.Messages;
 using client.autoban;
-using client.inventory;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -43,27 +41,25 @@ public class StorageHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        storageAction(p, c);
+        await storageAction(p, c);
     }
 
-    public void storageAction(InPacket p, IChannelClient c)
+    public async Task storageAction(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
 
         byte mode = p.readByte();
 
-
-
         var storage = chr.CurrentStorage;
         if (storage == null)
         {
-            c.sendPacket(PacketCreator.enableActions());
+            await c.SendPacket(PacketCreator.enableActions());
             return;
         }
-        if (c.tryacquireClient())
         {
+            await c.tryacquireClient();
             try
             {
                 switch (mode)
@@ -77,14 +73,14 @@ public class StorageHandler : ChannelHandlerBase
                                 // removal starts at zero
                                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
                                 _logger.LogWarning("Chr {CharacterName} tried to work with storage slot {Slot}", chr.getName(), storageSlot);
-                                c.Disconnect(true, false);
+                                await c.Disconnect(true, false);
                                 return;
                             }
 
                             var item = storage.GetItemByTypedSlot((InventoryType)type, storageSlot);
                             if (item != null)
                             {
-                                StorageProcessor.TakeOut(storage, item);
+                                await StorageProcessor.TakeOut(storage, item);
                             }
                             break;
                         }
@@ -100,29 +96,29 @@ public class StorageHandler : ChannelHandlerBase
                                 // player inv starts at one
                                 _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with storage.");
                                 _logger.LogWarning("Chr {ChracterName} tried to store item at slot {Slot}", c.OnlinedCharacter.getName(), invSlot);
-                                c.Disconnect(true, false);
+                                await c.Disconnect(true, false);
                                 return;
                             }
 
-                            StorageProcessor.Store(storage, invSlot, itemId, quantity);
+                            await StorageProcessor.Store(storage, invSlot, itemId, quantity);
                             break;
                         }
                     case 6: // Arrange items
                         if (YamlConfig.config.server.USE_STORAGE_ITEM_SORT)
                         {
-                            storage.ArrangeItems();
+                            await storage.ArrangeItems();
                         }
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         break;
                     case 7:
                         { // Mesos
                             int meso = p.readInt();
-                            StorageProcessor.SetMeso(storage, meso);
+                            await StorageProcessor.SetMeso(storage, meso);
                             break;
                         }
                     case 8: // Close (unless the player decides to enter cash shop)
                         chr.CurrentStorage = null;
-                        c.sendPacket(PacketCreator.enableActions());
+                        await c.SendPacket(PacketCreator.enableActions());
                         break;
                 }
             }

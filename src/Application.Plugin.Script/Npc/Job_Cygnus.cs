@@ -16,8 +16,8 @@ namespace Application.Plugin.Script.Npc
             var mapobj = getMap();
             var npcpos = mapobj.getMapObject(getNpcObjectId())!.getPosition();
 
-            mapobj.spawnMonsterOnGroundBelow(9001009, npcpos.X, npcpos.Y);
-            mapobj.destroyNPC(getNpc());
+            await mapobj.spawnMonsterOnGroundBelow(9001009, npcpos.X, npcpos.Y);
+            await mapobj.destroyNPC(getNpc());
         }
         // Npc: 1104100 
         public Task desguiseSoul()

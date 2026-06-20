@@ -20,7 +20,6 @@
 
 
 
-using Application.Core.Game.Life;
 using Application.Core.Game.Skills;
 using tools;
 
@@ -31,7 +30,7 @@ namespace Application.Core.Channel.Net.Handlers;
  */
 public class PlayerMapTransitionHandler : ChannelHandlerBase
 {
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var chr = c.OnlinedCharacter;
         chr.setMapTransitionComplete();
@@ -39,34 +38,34 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
         int beaconid = chr.getBuffSource(BuffStat.HOMING_BEACON);
         if (beaconid != -1)
         {
-            chr.cancelBuffStats(BuffStat.HOMING_BEACON);
+            await chr.cancelBuffStats(BuffStat.HOMING_BEACON);
 
-            chr.sendPacket(PacketCreator.giveBuff(1, beaconid, new BuffStatValue(BuffStat.HOMING_BEACON, 0)));
+            await chr.SendPacket(PacketCreator.giveBuff(1, beaconid, new BuffStatValue(BuffStat.HOMING_BEACON, 0)));
         }
 
         if (!chr.isHidden())
         {
             // thanks Lame (Conrad) for noticing hidden characters controlling mobs
-            chr.getMap().ProcessMonster(m =>
-            {
-                // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
-                if (m.getSpawnEffect() == 0 || m.getHp() < m.getMaxHp())
-                {     // avoid effect-spawning mobs
-                    if (m.getController() == chr)
-                    {
-                        c.sendPacket(PacketCreator.stopControllingMonster(m.getObjectId()));
-                        m.sendDestroyData(c);
-                        m.aggroRemoveController();
-                    }
-                    else
-                    {
-                        m.sendDestroyData(c);
-                    }
+            await chr.getMap().ProcessMonster(async m =>
+             {
+                 // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
+                 if (m.getSpawnEffect() == 0 || m.getHp() < m.getMaxHp())
+                 {     // avoid effect-spawning mobs
+                     if (m.getController() == chr)
+                     {
+                         await c.SendPacket(PacketCreator.stopControllingMonster(m.getObjectId()));
+                         await m.sendDestroyData(c);
+                         await m.aggroRemoveController();
+                     }
+                     else
+                     {
+                         await m.sendDestroyData(c);
+                     }
 
-                    m.sendSpawnData(c);
-                    m.aggroSwitchController(chr, false);
-                }
-            });
+                     await m.sendSpawnData(c);
+                     await m.aggroSwitchController(chr, false);
+                 }
+             });
         }
     }
 }

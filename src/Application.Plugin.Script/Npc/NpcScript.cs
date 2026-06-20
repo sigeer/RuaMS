@@ -170,7 +170,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
             {
-                warp(104000000, 0);
+                await warp(104000000, 0);
             }
             else
             {
@@ -183,7 +183,7 @@ namespace Application.Plugin.Script.Npc
         public async Task HL_LADDER()
         {
             await SayNext("好的，那么我们出发吧。冒险旅途开始了！");
-            warp(1);
+            await warp(1);
         }
 
 
@@ -217,8 +217,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        gainItem(4031801, -1);
-                        warp(104000000, 0);
+                        await gainItem(4031801, -1);
+                        await warp(104000000, 0);
                     }
                 }
                 else if (getLevel() > 6)
@@ -231,8 +231,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        gainMeso(-150);
-                        warp(104000000, 0);
+                        await gainMeso(-150);
+                        await warp(104000000, 0);
                     }
                 }
                 else
@@ -288,8 +288,8 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            gainMeso(-realCost);
-                            warp(maps[option]);
+                            await gainMeso(-realCost);
+                            await warp(maps[option]);
                         }
                     }
                     break;
@@ -317,9 +317,9 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        gainMeso(-1500);
+                        await gainMeso(-1500);
                         getPlayer().saveLocation("FLORINA");
-                        warp(110000000, "st00");
+                        await warp(110000000, "st00");
                     }
                     break;
                 case 1:
@@ -331,7 +331,7 @@ namespace Application.Plugin.Script.Npc
                             return;
                         }
                         getPlayer().saveLocation("FLORINA");
-                        warp(110000000, "st00");
+                        await warp(110000000, "st00");
                     }
                     else
                     {
@@ -362,8 +362,8 @@ namespace Application.Plugin.Script.Npc
                     else
                     {
                         var newcapacity = capacity + 5;
-                        gainMeso(-240000);
-                        getPlayer().setBuddyCapacity(newcapacity);
+                        await gainMeso(-240000);
+                        await getPlayer().setBuddyCapacity(newcapacity);
                         await SayOK("好的！你的好友列表现在应该有5个额外的槽位。自己去检查一下。如果你还需要更多的好友列表空间，你知道该找谁。当然，这并不是免费的……好了，再见……");
                     }
                 }
@@ -407,8 +407,8 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (canHold(items[option].item, inputNumber))
                         {
-                            gainMeso(totalCost);
-                            gainItem(items[option].item, inputNumber);
+                            await gainMeso(totalCost);
+                            await gainItem(items[option].item, inputNumber);
                             await SayNext("谢谢你的光临。如果你有什么需要，随时可以再来。");
                         }
                         else
@@ -467,10 +467,10 @@ namespace Application.Plugin.Script.Npc
 
                     if (haveItem(omok1piece[omokType], omokamount) && haveItem(omok2piece[omokType], omokamount) && haveItem(4030009, 1))
                     {
-                        gainItem(omok1piece[omokType], -omokamount);
-                        gainItem(omok2piece[omokType], -omokamount);
-                        gainItem(4030009, -1);
-                        gainItem(omok[omokType], 1);
+                        await gainItem(omok1piece[omokType], -omokamount);
+                        await gainItem(omok2piece[omokType], -omokamount);
+                        await gainItem(4030009, -1);
+                        await gainItem(omok[omokType], 1);
                         await SayOK("制作成功！");
                     }
                     else
@@ -482,8 +482,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(4030012, 15))
                     {
-                        gainItem(4030012, -15);
-                        gainItem(4080100, 1);
+                        await gainItem(4030012, -15);
+                        await gainItem(4080100, 1);
                         await SayOK("制作成功！");
                     }
                     else
@@ -531,7 +531,7 @@ namespace Application.Plugin.Script.Npc
             }
             else if (status == 1)
             {
-                forceCompleteQuest(20706);
+                await forceCompleteQuest(20706);
                 await SayNext("你已经发现了影子！最好向#p1103001#报告。");
             }
             else if (status == 2)
@@ -554,7 +554,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
             {
                 getPlayer().SaveLocation(SavedLocationType.HAPPYVILLE);
-                warp(209000000, 0);
+                await warp(209000000, 0);
             }
         }
 
@@ -586,21 +586,21 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (isQuestStarted(2050))
                         {
-                            warp(101000100, 0);
+                            await warp(101000100, 0);
                         }
                         else if (isQuestStarted(2051))
                         {
-                            warp(101000102, 0);
+                            await warp(101000102, 0);
                         }
                         else if (getLevel() >= 25 && getLevel() < 50)
                         {
-                            warp(101000100, 0);
+                            await warp(101000100, 0);
                         }
                         else if (getLevel() >= 50)
                         {
-                            warp(101000102, 0);
+                            await warp(101000102, 0);
                         }
-                        gainMeso(-5000);
+                        await gainMeso(-5000);
                     }
                 }
                 else
@@ -616,7 +616,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想回到#m101000000#吗？"))
             {
-                warp(101000000, 0);
+                await warp(101000000, 0);
             }
         }
 
@@ -632,7 +632,7 @@ namespace Application.Plugin.Script.Npc
 
                 ContiMoveBase[] list = c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap.Id == getMapId()).ToArray();
                 var option = await AskMenu("您好，我是天空之城售票员，我负责销售开往各地船票。你想购买去那里的船票呢？",
-                    list.Select(x => x.GetDestinationMapName(getPlayer())));
+                    list.Select(x => x.GetDestinationMapName(getPlayer())!));
 
                 currentContiMove = list[option];
             }
@@ -664,8 +664,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getMeso() >= p.Value.TicketPrice && canHold(p.Value.TicketItemId))
                 {
-                    gainItem(p.Value.TicketItemId, 1);
-                    gainMeso(-p.Value.TicketPrice);
+                    await gainItem(p.Value.TicketItemId, 1);
+                    await gainMeso(-p.Value.TicketPrice);
                 }
                 else
                 {
@@ -711,9 +711,9 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo($"你想去{target}吗？"))
                     {
-                        if (currentContiMove.Enter(getPlayer()))
+                        if (await currentContiMove.Enter(getPlayer()))
                         {
-                            gainItem(p.Value.TicketItemId, -1);
+                            await gainItem(p.Value.TicketItemId, -1);
                         }
                         else
                         {
@@ -744,7 +744,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("你想离开吗？"))
             {
                 await SayNext("好的，下次见。保重。");
-                WarpReturn();
+                await WarpReturn();
             }
 
         }
@@ -768,19 +768,19 @@ namespace Application.Plugin.Script.Npc
             var mobId = 2220100;
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(117, 183));
+                await map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(117, 183));
             }
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(4, 183));
+                await map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(4, 183));
             }
             for (var i = 0; i < 10; i++)
             {
-                map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(-109, 183));
+                await map.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(mobId), new Point(-109, 183));
             }
 
-            completeQuest(20718, 1103003);
-            gainExp((int)(4000 * getPlayer().getExpRate()));
+            await completeQuest(20718, 1103003);
+            await gainExp((int)(4000 * getPlayer().getExpRate()));
 
         }
 
@@ -801,7 +801,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (canHold(4032142))
                     {
-                        gainItem(4032142, 1);
+                        await gainItem(4032142, 1);
                         await SayOK("你装瓶了一些清澈的树液。#i4032142#");
                     }
                     else
@@ -828,7 +828,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(4032479))
                 {
-                    gainItem(4032479, 1);
+                    await gainItem(4032479, 1);
                     await SayOK("哼，你在找我吗？是长官派你来的，对吧？但是嘿，我不是你要找的嫌疑人。如果我有证据呢？拿着这个，把它还给 #b#p1012003##k。");
                 }
                 else
@@ -844,7 +844,7 @@ namespace Application.Plugin.Script.Npc
         }
 
         // Npc: 1043000 
-        public Task bush1()
+        public async Task bush1()
         {
             int[] prizes = [1040052, 1040054, 1040130, 1041143, 1042013, 1042022, 1042034, 1042084, 1042098, 1042117, 1702002, 1702015];
             int[] chances = [10, 10, 10, 15, 10, 10, 10, 10, 10, 10, 5, 5];
@@ -874,16 +874,15 @@ namespace Application.Plugin.Script.Npc
             }
             if (isQuestStarted(2050))
             {
-                gainItem(4031020, 1);
+                await gainItem(4031020, 1);
             }
-            gainItem(prizes[choice], 1);
-            warp(101000000, 0);
-            return Task.CompletedTask;
+            await gainItem(prizes[choice], 1);
+            await warp(101000000, 0);
         }
 
 
         // Npc: 1043001 
-        public Task bush2()
+        public async Task bush2()
         {
             int[] prizes = [1060041, 1060048, 1060116, 1061113, 1061130, 1061139, 1062009, 1062017, 1062024, 1062056, 1062061, 1702045, 1702114];
             int[] chances = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 5, 5];
@@ -913,11 +912,10 @@ namespace Application.Plugin.Script.Npc
             }
             if (isQuestStarted(2051))
             {
-                gainItem(4031032, 1);
+                await gainItem(4031032, 1);
             }
-            gainItem(prizes[choice], 1);
-            warp(101000000, 0);
-            return Task.CompletedTask;
+            await gainItem(prizes[choice], 1);
+            await warp(101000000, 0);
         }
 
 
@@ -961,8 +959,8 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                gainMeso(-cost);
-                gainItem(4031036 + option, 1);
+                await gainMeso(-cost);
+                await gainItem(4031036 + option, 1);
             }
         }
 
@@ -975,7 +973,7 @@ namespace Application.Plugin.Script.Npc
             {
                 case 0:
                     var em0 = GetEventManager("KerningTrain");
-                    var r = em0.StartInstance(getPlayer());
+                    var r = await em0.StartInstance(getPlayer());
                     await SayOK(em0.HandleCreateInstanceResult(r, c));
                     break;
                 case 1:
@@ -990,8 +988,8 @@ namespace Application.Plugin.Script.Npc
                             }
                         }
                         var selectTicket = await AskMenu(text);
-                        gainItem(4031035 + selectTicket, -1);
-                        warp(103000897 + (selectTicket * 3), "st00");  // thanks IxianMace for noticing a few scripts having misplaced warp SP's
+                        await gainItem(4031035 + selectTicket, -1);
+                        await warp(103000897 + (selectTicket * 3), "st00");  // thanks IxianMace for noticing a few scripts having misplaced warp SP's
                         return;
                     }
                     else
@@ -1009,53 +1007,50 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 1052008 
-        public Task subway_get1()
+        public async Task subway_get1()
         {
             int[] prizes = [4020000, 4020001, 4020002, 4020003, 4020004];
             if (isQuestStarted(2055))
             {
-                gainItem(4031039, 1);
+                await gainItem(4031039, 1);
             }
             else
             {
-                gainItem(Randomizer.Select(prizes), 1);
+                await gainItem(Randomizer.Select(prizes), 1);
             }
-            warp(103000100, 0);
-            return Task.CompletedTask;
+            await warp(103000100, 0);
         }
 
 
         // Npc: 1052009 
-        public Task subway_get2()
+        public async Task subway_get2()
         {
             int[] prizes = [4020005, 4020006, 4020007, 4020008, 4010000];
             if (isQuestStarted(2056))
             {
-                gainItem(4031040, 1);
+                await gainItem(4031040, 1);
             }
             else
             {
-                gainItem(Randomizer.Select(prizes), 1);
+                await gainItem(Randomizer.Select(prizes), 1);
             }
-            warp(103000100, 0);
-            return Task.CompletedTask;
+            await warp(103000100, 0);
         }
 
 
         // Npc: 1052010 
-        public Task subway_get3()
+        public async Task subway_get3()
         {
             int[] prizes = [4010001, 4010002, 4010003, 4010004, 4010005, 4010006, 4010007];
             if (isQuestStarted(2057))
             {
-                gainItem(4031041, 1);
+                await gainItem(4031041, 1);
             }
             else
             {
-                gainItem(Randomizer.Select(prizes), 1);
+                await gainItem(Randomizer.Select(prizes), 1);
             }
-            warp(103000100, 0);
-            return Task.CompletedTask;
+            await warp(103000100, 0);
         }
 
 
@@ -1065,7 +1060,7 @@ namespace Application.Plugin.Script.Npc
             await SaySpeech(["这个设备连接到外部。", "Are you going to give up and leave this place?"]);
             if (await AskYesNo("下次进来的时候，你将不得不从头开始..."))
             {
-                warp(103000100, 0);
+                await warp(103000100, 0);
             }
 
         }
@@ -1082,8 +1077,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainMeso(-5000);
-                    warp(193000000, "out00");
+                    await gainMeso(-5000);
+                    await warp(193000000, "out00");
                 }
             }
         }
@@ -1107,14 +1102,14 @@ namespace Application.Plugin.Script.Npc
                             if (haveItem(4001007, couponsNeeded))
                             {
                                 await SayNext("你的团队收集了所有需要的优惠券，干得好！");
-                                gainItem(4001007, couponsNeeded);
-                                eim.clearPQ();
+                                await gainItem(4001007, couponsNeeded);
+                                await eim.clearPQ();
                             }
                             else
                             {
                                 if (await AskYesNo($"你的团队必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。当你手头有足够的数量时，和我交谈...或者你想#b现在退出#k？请注意，如果你现在退出，#r你的团队也将被迫退出#k。"))
                                 {
-                                    warp(193000000);
+                                    await warp(193000000);
                                 }
                             }
                         }
@@ -1122,19 +1117,19 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (await AskYesNo($"你的队伍必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。让你的队长带着正确数量的优惠券来找我谈谈……或者你想要#b现在退出#k吗？请注意，如果你现在退出，你的队伍#r可能会人手不足#k以继续进行这个副本。"))
                             {
-                                warp(193000000);
+                                await warp(193000000);
                             }
                         }
                     }
                     else
                     {
-                        if (eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
+                        if (await eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
                         {
                             await SayOK("请在您的ETC库存中腾出一个空间来接收奖品。");
                         }
                         else
                         {
-                            warp(193000000);
+                            await warp(193000000);
                         }
                     }
                 }
@@ -1160,7 +1155,7 @@ namespace Application.Plugin.Script.Npc
 
                 if (pqOption == 0)
                 {
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else
@@ -1224,7 +1219,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await SayAcceptDecline("这是一个带着开关的小路灯。你要打开他吗？"))
             {
-                weakenAreaBoss(5090000, "You have turned the lamp on. Shade's strength will rapidly weaken due to the light.");
+                await weakenAreaBoss(5090000, "You have turned the lamp on. Shade's strength will rapidly weaken due to the light.");
             }
         }
 
@@ -1252,7 +1247,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (canHold(4032136))
                     {
-                        gainItem(4032136, 1);
+                        await gainItem(4032136, 1);
                         await SayNext("你在垃圾桶里找到了一个#b#t4032136##k！ #i4032136#");
                     }
                     else
@@ -1279,7 +1274,7 @@ namespace Application.Plugin.Script.Npc
             await SayOK(GetDefault0());
             //if (getMapId() == 910320001)
             //{
-            //    warp(910320000, 0);
+            //    await warp(910320000, 0);
             //    return;
             //}
             //else if (getMapId() == 910330001)
@@ -1291,8 +1286,8 @@ namespace Application.Plugin.Script.Npc
             //    }
             //    else
             //    {
-            //        gainItem(itemid, 1);
-            //        warp(910320000, 0);
+            //        await gainItem(itemid, 1);
+            //        await warp(910320000, 0);
             //    }
             //    return;
             //}
@@ -1300,7 +1295,7 @@ namespace Application.Plugin.Script.Npc
             //{
             //    if (await SayYesNo("你想要离开这个地方吗？"))
             //    {
-            //        warp(910320000, 0);
+            //        await warp(910320000, 0);
             //        return;
             //    }
             //}
@@ -1342,7 +1337,7 @@ namespace Application.Plugin.Script.Npc
                     if (isQuestStarted(2286) || isQuestStarted(2287) || isQuestStarted(2288))
                     {
                         var em = GetEventManager("RockSpirit");
-                        var r = em.StartInstance(getPlayer());
+                        var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         return;
                     }
@@ -1399,7 +1394,7 @@ namespace Application.Plugin.Script.Npc
             if (zones > 0)
             {
                 var option = await AskMenu("它的力量让你能够深入森林深处。", maps.Take(zones).Select(x => $"#m{x}#"));
-                warp(maps[option], 0);
+                await warp(maps[option], 0);
             }
         }
 
@@ -1409,7 +1404,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想离开吗？"))
             {
-                warp(105040300, 0);
+                await warp(105040300, 0);
             }
         }
 
@@ -1422,7 +1417,7 @@ namespace Application.Plugin.Script.Npc
             if (isQuestStarted(6108))
             {
                 var em = GetSoloQuestEventManager(6108);
-                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
             }
             else
             {
@@ -1447,8 +1442,8 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (getMeso() >= regcost)
                         {
-                            warp(105040401);
-                            gainMeso(-regcost);
+                            await warp(105040401);
+                            await gainMeso(-regcost);
                         }
                         else
                         {
@@ -1462,8 +1457,8 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (getMeso() >= vipcost)
                         {
-                            warp(105040402);
-                            gainMeso(-vipcost);
+                            await warp(105040402);
+                            await gainMeso(-vipcost);
                         }
                         else
                         {
@@ -1491,7 +1486,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                gainItem(4031025, 30);
+                await gainItem(4031025, 30);
             }
             else
             {
@@ -1503,10 +1498,10 @@ namespace Application.Plugin.Script.Npc
 
                 (int item, int count)[] repeatablePrizes = [(4010000, 3), (4010001, 3), (4010002, 3), (4010003, 3), (4010004, 3), (4010005, 3)];
                 var itemPrize = Randomizer.Select(repeatablePrizes);
-                gainItem(itemPrize.item, itemPrize.count);
+                await gainItem(itemPrize.item, itemPrize.count);
             }
 
-            warp(105040300, 0);
+            await warp(105040300, 0);
         }
 
 
@@ -1521,7 +1516,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                gainItem(4031026, 30);
+                await gainItem(4031026, 30);
             }
             else
             {
@@ -1533,10 +1528,10 @@ namespace Application.Plugin.Script.Npc
 
                 (int item, int count)[] repeatablePrizes = [(4020000, 4), (4020002, 4), (4020006, 4)];
                 var itemPrize = Randomizer.Select(repeatablePrizes);
-                gainItem(itemPrize.item, itemPrize.count);
+                await gainItem(itemPrize.item, itemPrize.count);
             }
 
-            warp(105040300, 0);
+            await warp(105040300, 0);
         }
 
 
@@ -1551,7 +1546,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                gainItem(4031028, 30);
+                await gainItem(4031028, 30);
             }
             else
             {
@@ -1563,10 +1558,10 @@ namespace Application.Plugin.Script.Npc
 
                 (int item, int count)[] repeatablePrizes = [(4010006, 4), (4010007, 4), (4020007, 4)];
                 var itemPrize = Randomizer.Select(repeatablePrizes);
-                gainItem(itemPrize.item, itemPrize.count);
+                await gainItem(itemPrize.item, itemPrize.count);
             }
 
-            warp(105040300, 0);
+            await warp(105040300, 0);
         }
 
 
@@ -1614,8 +1609,8 @@ namespace Application.Plugin.Script.Npc
             if (ch == '0')
             {
                 var nextProgress = progress.Substring(0, slot) + '1' + progress.Substring(slot + 1);
-                gainItem(4032263, -1);
-                setQuestProgress(2236, 1, nextProgress);
+                await gainItem(4032263, -1);
+                await setQuestProgress(2236, 1, nextProgress);
                 await SayOK("由于灵符的法力，封印了该地区的邪恶势力。");
             }
         }
@@ -1626,7 +1621,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你要退出这个试炼吗？"))
             {
-                warp(105040201, 2);
+                await warp(105040201, 2);
             }
         }
 
@@ -1637,13 +1632,13 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("欢迎回来，弗朗西斯主人。要进入主人的洞窟吗？"))
             {
                 // 925020010？
-                if (getMap(910510202).getAllPlayers().Count > 0)
+                if ((await getMap(910510202)).getAllPlayers().Count > 0)
                 {
                     await SayOK("有人在里面了。请稍后再进入。");
                 }
                 else
                 {
-                    warp(910510202, 0);
+                    await warp(910510202, 0);
                 }
             }
         }
@@ -1662,7 +1657,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。"))
             {
                 getPlayer().clearSavedLocation(SavedLocationType.FLORINA);
-                warp(returnmap);
+                await warp(returnmap);
             }
             else
             {
@@ -1680,8 +1675,8 @@ namespace Application.Plugin.Script.Npc
                 ]);
             if (canHold(4031847))
             {
-                gainItem(4031847, 1);
-                warp(912000100, 0);
+                await gainItem(4031847, 1);
+                await warp(912000100, 0);
             }
             else
             {
@@ -1695,7 +1690,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想要被传送到黑魔法师的弟子那里吗？"))
             {
-                warp(912000000, 0);
+                await warp(912000000, 0);
             }
             else
             {
@@ -1716,7 +1711,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("让我们去救 #r#p2095000##k 吧？"))
                 {
-                    warp(925010000, 0);
+                    await warp(925010000, 0);
                 }
             }
         }
@@ -1733,7 +1728,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("嘿，你那张不错的#b藏宝图#k是从哪里得到的？如果你不需要了，我可以替诺特勒斯船员保管吗？"))
                 {
-                    gainItem(4220153, -1);
+                    await gainItem(4220153, -1);
                 }
             }
         }
@@ -1745,7 +1740,7 @@ namespace Application.Plugin.Script.Npc
             if (isQuestStarted(2166))
             {
                 await SayNext("这是一块美丽而闪亮的岩石。我能感受到它周围的神秘力量。");
-                completeQuest(2166);
+                await completeQuest(2166);
             }
             else
             {
@@ -1763,7 +1758,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(4031839, 1))
                 {
-                    gainItem(4031839, 1);
+                    await gainItem(4031839, 1);
                     await SayNext("你检索到了一个从垃圾桶中取出的皱巴巴的纸张。它的内容似乎很重要。");
                 }
                 else
@@ -1804,7 +1799,7 @@ namespace Application.Plugin.Script.Npc
                             return;
                         }
                     }
-                    setQuestProgress(6400, 1, 1);
+                    await setQuestProgress(6400, 1, 1);
                     await SayNext("什么！我简直不敢相信你有多聪明！不可思议！在海鸥世界里，这种智慧会让你获得博士学位，甚至更多。你真是太了不起了……我简直不敢相信……我简直不敢相信！");
                     return;
                 }
@@ -1816,7 +1811,7 @@ namespace Application.Plugin.Script.Npc
                         "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
                         ]);
                     var em = GetEventManager("4jaerial");
-                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                 }
                 else
                 {
@@ -1838,28 +1833,28 @@ namespace Application.Plugin.Script.Npc
 
             if (canHold(4031848) && haveItem(4031847))
             {
-                gainItem(4031847, -1);
-                gainItem(4031848, 1);
+                await gainItem(4031847, -1);
+                await gainItem(4031848, 1);
 
-                setQuestProgress(2180, 1, idx);
+                await setQuestProgress(2180, 1, idx);
 
                 await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之一的牛奶。");
             }
             else if (canHold(4031849, 1) && haveItem(4031848))
             {
-                gainItem(4031848, -1);
-                gainItem(4031849, 1);
+                await gainItem(4031848, -1);
+                await gainItem(4031849, 1);
 
-                setQuestProgress(2180, 1, idx);
+                await setQuestProgress(2180, 1, idx);
 
                 await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之二的牛奶。");
             }
             else if (canHold(4031850) && haveItem(4031849))
             {
-                gainItem(4031849, -1);
-                gainItem(4031850, 1);
+                await gainItem(4031849, -1);
+                await gainItem(4031850, 1);
 
-                setQuestProgress(2180, 1, idx);
+                await setQuestProgress(2180, 1, idx);
 
                 await SayNext("现在用牛奶把瓶子装满。瓶子现在完全装满了牛奶。");
             }
@@ -1884,11 +1879,11 @@ namespace Application.Plugin.Script.Npc
             }
             else if (haveItem(4031848) || haveItem(4031849) || haveItem(4031850))
             {
-                gainItem(4031848, -1);
-                gainItem(4031849, -1);
-                gainItem(4031850, -1);
+                await gainItem(4031848, -1);
+                await gainItem(4031849, -1);
+                await gainItem(4031850, -1);
 
-                gainItem(4031847, 1);
+                await gainItem(4031847, 1);
                 await SayNext("小牛很饿，正在喝光所有的牛奶！奶瓶现在空了。");
             }
         }
@@ -1909,15 +1904,15 @@ namespace Application.Plugin.Script.Npc
 
                 if (rolled == 0)
                 {
-                    gainItem(4031853, 1);
+                    await gainItem(4031853, 1);
                 }
                 else if (rolled == 1)
                 {
-                    gainItem(4031854, 1);
+                    await gainItem(4031854, 1);
                 }
                 else
                 {
-                    gainItem(4031855, 1);
+                    await gainItem(4031855, 1);
                 }
             }
             else
@@ -1932,7 +1927,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("#b#p2095000##k一定有办法爬上这个悬崖，根据我们最新的报告... 或者你是想要 #r离开这里#k 吗？"))
             {
-                warp(120000104);
+                await warp(120000104);
             }
         }
 
@@ -1949,10 +1944,10 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        gainMeso(-1000);
+                        await gainMeso(-1000);
                     }
                     else
                     {
@@ -1980,10 +1975,10 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        gainMeso(-1000);
+                        await gainMeso(-1000);
                     }
                     else
                     {
@@ -2025,10 +2020,10 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        gainMeso(-1000);
+                        await gainMeso(-1000);
                     }
                     else
                     {
@@ -2055,10 +2050,10 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        gainMeso(-1000);
+                        await gainMeso(-1000);
                     }
                     else
                     {
@@ -2078,7 +2073,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getPlayer().isCygnus() && GameConstants.getJobBranch(getJob()) > 2)
             {
-                useItem(2022458);
+                await useItem(2022458);
                 await SayOK("让我为你祈福，我的骑士。请保护冒险岛的世界……");
             }
             else
@@ -2113,7 +2108,7 @@ namespace Application.Plugin.Script.Npc
                 case 11:
                 case 12:
                 case 13:
-                    guideHint(option);
+                    await guideHint(option);
                     break;
                 case 14:
                     await SayOK("黑魔法师正试图复活并征服我们和平的枫之世界。作为对这一威胁的回应，女皇希纳斯组建了一个骑士团，现在被称为皇家骑士团。当你达到10级时，你可以成为一名骑士。");
@@ -2129,7 +2124,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想要退出训练大厅吗？"))
             {
-                warp(130020000, 0);
+                await warp(130020000, 0);
             }
         }
 
@@ -2147,11 +2142,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (await SayAcceptDecline("Becoming a Knight of Cygnus requires talent, faith, courage, and will power... and it looks like you are more than qualified to become a Knight of Cygnus. What do you think? If you wish to become one right this minute, I'll take you straight to Erev. Would you like to head over to Erev right now?"))
             {
-                warp(130000000);
+                await warp(130000000);
             }
             else
             {
-                warp(getPlayer().getSavedLocation("CYGNUSINTRO"));
+                await warp(getPlayer().getSavedLocation("CYGNUSINTRO"));
             }
         }
 
@@ -2166,27 +2161,27 @@ namespace Application.Plugin.Script.Npc
                     new SpeechText("切……这笔帐将来再算。", (byte)(NpcTalkSpeaker.ExtraNpc | NpcTalkSpeaker.WithoutEnd), 1204004),
                     new SpeechText("来得正好。上一次因为刚和冒险骑士团的骑士们战斗完，已经没什么余力了，才会让你得逞。这次我可没那么好惹了！碍眼的家伙，消失掉吧！",1)
                     ]);
-                setQuestProgress(21733, 21762, 1);
+                await setQuestProgress(21733, 21762, 1);
 
                 var mapObj = getMap();
                 if (mapObj.countMonster(9300382) > 0)
                 {
-                    mapObj.killMonster(9300382);
+                    await mapObj.killMonster(9300382);
                 }
 
                 var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-                mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300345), new Point(npcPos.X + 50, npcPos.Y), mob =>
+                await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300345), new Point(npcPos.X + 50, npcPos.Y), mob =>
                 {
                     mob.setSpawnEffect(12);
                 });
-                mapObj.destroyNPC(getNpc());
+                await mapObj.destroyNPC(getNpc());
             }
             else
             {
                 // 910510001, 1104000
                 await SayNext("什么……你不属于这里！");
                 var puppet = GetEventManager("Puppeteer");
-                var r = puppet.StartInstance(getPlayer());
+                var r = await puppet.StartInstance(getPlayer());
                 await SayOK(puppet.HandleCreateInstanceResult(r, c));
 
             }
@@ -2202,8 +2197,8 @@ namespace Application.Plugin.Script.Npc
             }
 
             await SayNext("啊……那些家伙全都消灭了？哈哈……真不愧是英雄大人！呃，先整理整理再说。");
-            setQuestProgress(21733, 21762, 2);
-            warp(104000004);
+            await setQuestProgress(21733, 21762, 2);
+            await warp(104000004);
         }
 
         // Npc: 1104002 
@@ -2217,10 +2212,10 @@ namespace Application.Plugin.Script.Npc
 
             if (await SayAcceptDecline("Hahahahaha! This place's Empress is already under my domain, that's surely a great advance on the #bBlack Wings#k' overthrow towards Maple World... And you, there? Still wants to face us? Or, better yet, since you seem strong enough to be quite a supplementary reinforcement at our service, #rwill you meet our expectations and fancy joining us#k since there's nothing more you can do?"))
             {
-                Pink("Eleanor: Oh, lost the Empress and still challenging us? Now you've done it! Prepare yourself!!!");
+                await Pink("Eleanor: Oh, lost the Empress and still challenging us? Now you've done it! Prepare yourself!!!");
 
-                getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9001010), new Point(850, 0));
-                getMap().destroyNPC(1104002);
+                await getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9001010), new Point(850, 0));
+                await getMap().destroyNPC(1104002);
 
             }
             else
@@ -2236,9 +2231,10 @@ namespace Application.Plugin.Script.Npc
             await SayNext("#b#p1104002##k... The black witch... Trapped me here... There's no time now, she's already on her way to #rattack Ereve#k!");
             if (await AskYesNo("Fellow Knight, you must reach to #rEreve#k right now, #rthe Empress is in danger#k!! Even in this condition, I can still Magic Warp you there. When you're ready talk to me. #bAre you ready to face Eleanor?#k"))
             {
-                if (getWarpMap(913030000).countPlayers() == 0)
+                var map = await getWarpMap(913030000);
+                if (map.countPlayers() == 0)
                 {
-                    warp(913030000, 0);
+                    await warp(map.Id, 0);
                 }
                 else
                 {
@@ -2261,7 +2257,7 @@ namespace Application.Plugin.Script.Npc
                         "既然你有推荐信，我不会收你任何的费用。收起來，我们前往金银岛，坐好，旅途中可能会有点动荡！"
                         ], current: 1);
 
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     await SayNext(contiMove.HandleCreateInstanceResult(r, c));
                 }
                 else
@@ -2280,10 +2276,10 @@ namespace Application.Plugin.Script.Npc
                             await SayNext("哇! #e80#n 金币我收到了！ 好，准备触发去明珠港喽！");
 
 
-                            var r = contiMove.StartInstance(getPlayer());
+                            var r = await contiMove.StartInstance(getPlayer());
                             if (r == CreateInstanceResult.Success)
                             {
-                                gainMeso(-80);
+                                await gainMeso(-80);
                             }
                             else
                             {
@@ -2314,10 +2310,10 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                var r = contiMove.StartInstance(getPlayer());
+                var r = await contiMove.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
                 {
-                    gainMeso(-800);
+                    await gainMeso(-800);
                 }
                 else
                 {
@@ -2346,7 +2342,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItemWithId(1902016, true))
             {
-                warp(140010210, 0);
+                await warp(140010210, 0);
             }
             else
             {
@@ -2363,8 +2359,8 @@ namespace Application.Plugin.Script.Npc
                 new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商议商议。）#k", 3)
                 ]);
 
-            completeQuest(21719);
-            warp(105040200, 10);
+            await completeQuest(21719);
+            await warp(105040200, 10);
         }
 
 
@@ -2379,11 +2375,11 @@ namespace Application.Plugin.Script.Npc
 
             var mapObj = getMap();
             var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-            mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300348), new Point(npcPos.X + 50, npcPos.Y), mob =>
+            await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300348), new Point(npcPos.X + 50, npcPos.Y), mob =>
             {
                 mob.setSpawnEffect(12);
             });
-            mapObj.destroyNPC(getNpc());
+            await mapObj.destroyNPC(getNpc());
         }
 
         // Npc: 1300012 
@@ -2408,13 +2404,13 @@ namespace Application.Plugin.Script.Npc
                 if (choice == 0)
                 {
                     var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
-                    var r = pepe.StartInstance(getPlayer());
+                    var r = await pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
                 }
                 else if (choice == 1)
                 {
                     var em = GetEventManager<PartyQuestEventManager>("MK_PrimeMinister2");
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
             }
@@ -2430,7 +2426,7 @@ namespace Application.Plugin.Script.Npc
                 if (sel == 1)
                 {
                     var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
-                    var r = pepe.StartInstance(getPlayer());
+                    var r = await pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
                 }
             }
@@ -2441,13 +2437,13 @@ namespace Application.Plugin.Script.Npc
         public async Task forself()
         {
             var MapId = getMapId();
-            setQuestProgress(2322, 0);
+            await setQuestProgress(2322, 0);
             if (MapId == 106020300)
             {
                 //蘑菇森林深处
                 if (isQuestActive(2314) && getQuestProgressInt(2314) == 0)
                 {
-                    showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
+                    await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
                     await SayNext("这里...似乎有点奇怪...？！", 3);
                     await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", 3);
                     await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", 3);
@@ -2463,7 +2459,7 @@ namespace Application.Plugin.Script.Npc
                 if (isQuestActive(2322) && getQuestProgressInt(2322) == 0)
                 {
                     await SayOK("嗯...城墙爬满了#r长着尖刺得藤蔓#k，确实有点棘手，看来是过不去了。\r\n\r\n还是先回去跟 #e#b#p1300003##k#n 报告一下吧。", 3);
-                    setQuestProgress(2322, 1);
+                    await setQuestProgress(2322, 1);
                 }
             }
         }
@@ -2486,7 +2482,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
-                warp(209000001);
+                await warp(209000001);
             }
         }
 
@@ -2496,7 +2492,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
-                warp(209000002);
+                await warp(209000002);
             }
         }
 
@@ -2506,7 +2502,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
             {
-                warp(209000003);
+                await warp(209000003);
             }
         }
 
@@ -2516,7 +2512,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("那么，你准备好离开这里了吗？"))
             {
-                warp(209000000);
+                await warp(209000000);
             }
         }
 
@@ -2540,7 +2536,7 @@ namespace Application.Plugin.Script.Npc
                     map = 101000000;
                 }
 
-                warp(map, 0);
+                await warp(map, 0);
             }
         }
 
@@ -2562,7 +2558,7 @@ namespace Application.Plugin.Script.Npc
             var option = await AskMenu("天空之城的站台有许多个月台，请按照你的目的地进行选择。你想要前往哪里？", options.Select(x => $"前往{x.map}的{x.transport}站台"));
             var targetMap = 200000110 + (option * 10);
             await SayNext($"好的，我会把你送到 #b#m{targetMap}##k 的月台上。");
-            warp(targetMap, "west00");
+            await warp(targetMap, "west00");
         }
 
 
@@ -2581,8 +2577,8 @@ namespace Application.Plugin.Script.Npc
             if (haveItem(4001019))
             {
                 await SayOK("你可以使用#b#t4001019##k来激活#b#p2012014##k。你要传送到#b#p2012015##k所在的地方吗？");
-                gainItem(4001019, -1);
-                warp(200082100, 0);
+                await gainItem(4001019, -1);
+                await warp(200082100, 0);
             }
             else
             {
@@ -2597,8 +2593,8 @@ namespace Application.Plugin.Script.Npc
             if (haveItem(4001019))
             {
                 await SayOK("你可以使用#b#t4001019##k来激活#b#p2012014##k。你要传送到#b#p2012015##k所在的地方吗？");
-                gainItem(4001019, -1);
-                warp(200080200, 0);
+                await gainItem(4001019, -1);
+                await warp(200080200, 0);
             }
             else
             {
@@ -2608,24 +2604,23 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2012023 
-        public Task s4tornado()
+        public async Task s4tornado()
         {
             if (haveItem(4031476))
             {
                 if (canHold(4031456, 1))
                 {
-                    gainItem(4031476, -1);
-                    gainItem(4031456, 1);
+                    await gainItem(4031476, -1);
+                    await gainItem(4031456, 1);
                 }
             }
-            return Task.CompletedTask;
         }
 
-        Task ElizaHarp(char harpNote)
+        async Task ElizaHarp(char harpNote)
         {
             string[] harpSounds = ["do", "re", "mi", "pa", "sol", "la", "si"];   // musical order detected thanks to Arufonsu
             var harpSong = "CCGGAAGFFEEDDC|GGFFEED|GGFFEED|CCGGAAGFFEEDDC|";
-            getMap().broadcastMessage(PacketCreator.playSound("orbis/" + harpSounds[getNpc() - 2012027]));
+            await getMap().broadcastMessage(PacketCreator.playSound("orbis/" + harpSounds[getNpc() - 2012027]));
 
             if (isQuestStarted(3114))
             {
@@ -2637,12 +2632,12 @@ namespace Application.Plugin.Script.Npc
 
                     if (harpNote != nextNote)
                     {
-                        setQuestProgress(3114, 0);
+                        await setQuestProgress(3114, 0);
 
-                        getPlayer().sendPacket(PacketCreator.showEffect("quest/party/wrong_kor"));
-                        getPlayer().sendPacket(PacketCreator.playSound("Party1/Failed"));
+                        await getPlayer().SendPacket(PacketCreator.showEffect("quest/party/wrong_kor"));
+                        await getPlayer().SendPacket(PacketCreator.playSound("Party1/Failed"));
 
-                        message("You've missed the note... Start over again.");
+                        await Pink("You've missed the note... Start over again.");
                     }
                     else
                     {
@@ -2653,37 +2648,36 @@ namespace Application.Plugin.Script.Npc
                             idx++;
 
                             if (idx == 45)
-                            {     // finished lullaby
-                                message("Twinkle, twinkle, little star, how I wonder what you are.");
-                                setQuestProgress(3114, 42);
+                            {
+                                // finished lullaby
+                                await Pink("Twinkle, twinkle, little star, how I wonder what you are.");
+                                await setQuestProgress(3114, 42);
 
-                                getPlayer().sendPacket(PacketCreator.showEffect("quest/party/clear"));
-                                getPlayer().sendPacket(PacketCreator.playSound("Party1/Clear"));
+                                await getPlayer().SendPacket(PacketCreator.showEffect("quest/party/clear"));
+                                await getPlayer().SendPacket(PacketCreator.playSound("Party1/Clear"));
 
-                                return Task.CompletedTask;
                             }
                             else
                             {
                                 if (idx == 14)
                                 {
-                                    message("Twinkle, twinkle, little star, how I wonder what you are!");
+                                    await Pink("Twinkle, twinkle, little star, how I wonder what you are!");
                                 }
                                 else if (idx == 22)
                                 {
-                                    message("Up above the world so high,");
+                                    await Pink("Up above the world so high,");
                                 }
                                 else if (idx == 30)
                                 {
-                                    message("like a diamond in the sky.");
+                                    await Pink("like a diamond in the sky.");
                                 }
                             }
                         }
 
-                        setQuestProgress(3114, -1 * (idx + 1));
+                        await setQuestProgress(3114, -1 * (idx + 1));
                     }
                 }
             }
-            return Task.CompletedTask;
         }
         // Npc: 2012027 
         public Task elizaHarp1()
@@ -2755,7 +2749,7 @@ namespace Application.Plugin.Script.Npc
                 await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。祝你好运。");
 
                 var em = GetSoloQuestEventManager(questId);
-                var r = em.StartInstance(getPlayer());
+                var r = await em.StartInstance(getPlayer());
                 await SayOK(em.HandleCreateInstanceResult(r, c));
             }
             else
@@ -2774,11 +2768,11 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
                 {
                     var em = GetSoloQuestEventManager(questId);
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        setQuestProgress(questId, 1);
-                        gainItem(letter, -1);
+                        await setQuestProgress(questId, 1);
+                        await gainItem(letter, -1);
                     }
                     else
                     {
@@ -2799,16 +2793,16 @@ namespace Application.Plugin.Script.Npc
             if (haveItem(4031013, 30))
             {
                 await SayOK("哦哦哦.. 你收集了所有30个#t4031013#！！这应该很困难... 简直不可思议！好吧。你通过了测试，为此，我会奖励你 #b#t4031012##k。拿着它回去吧。");
-                removeAll(4031013);
-                gainItem(4031012);
+                await removeAll(4031013);
+                await gainItem(4031012);
 
-                eim.clearPQ();
+                await eim.clearPQ();
             }
             else
             {
                 await AskMenu("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
             }
-            eim.exitPlayer(getPlayer());
+            await eim.exitPlayer(getPlayer());
         }
 
         async Task Job3(int type, string preNpcMap, int preNpc)
@@ -2832,7 +2826,7 @@ namespace Application.Plugin.Script.Npc
                                 $"好的。你将在{baseJobStr}的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的力量部分。还记得在{preNpcMap}的#b#p{preNpc}##k吗？去找他，他会告诉你第一部分测试的细节。请完成任务，并从#p{preNpc}#那里得到#b#t4031057##k。",
                                 $"测试智慧的部分只能在你通过了力量测试之后才能开始。#b#t4031057##k 将证明你确实通过了测试。我会提前告诉#b#p{preNpc}##k你要前往那里，所以做好准备。这不会很容易，但我对你有信心。祝你好运。"
                                 ]);
-                            startQuest(questId);
+                            await startQuest(questId);
                         }
                     }
                     else if (isQuestStarted(questId))
@@ -2845,8 +2839,8 @@ namespace Application.Plugin.Script.Npc
                                 await SayNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
                                 if (haveItem(4031057))
                                 {
-                                    gainItem(4031057, -1);
-                                    setQuestProgress(questId, 1);
+                                    await gainItem(4031057, -1);
+                                    await setQuestProgress(questId, 1);
 
                                     await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
                                     return;
@@ -2870,8 +2864,8 @@ namespace Application.Plugin.Script.Npc
                                 await SayNext("做得好，完成了测试的智力部分。你正确地回答了所有问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
                                 if (haveItem(4031058))
                                 {
-                                    gainItem(4031058, -1);
-                                    setQuestProgress(questId, 2);
+                                    await gainItem(4031058, -1);
+                                    await setQuestProgress(questId, 2);
 
                                     await Apply3rdJobChange();
                                 }
@@ -2903,12 +2897,12 @@ namespace Application.Plugin.Script.Npc
                         await SayOK("长老会授予你#b特许#k，让你成为#r反击扎昆的团队的一部分#k。祝你前程似锦。");
                         if (!(isQuestStarted(100200) || isQuestCompleted(100200)))
                         {
-                            startQuest(100200);
+                            await startQuest(100200);
                         }
 
                         if (!isQuestCompleted(100201))
                         {
-                            completeQuest(100201);
+                            await completeQuest(100201);
                         }
                     }
                     else
@@ -2935,8 +2929,8 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            changeJobById(nextJob);
-            forceCompleteQuest(QuestId.Get3rdJobQuest(getJob()));
+            await changeJobById(nextJob);
+            await forceCompleteQuest(QuestId.Get3rdJobQuest(getJob()));
             if (job == Job.CRUSADER)
             {
                 await SaySpeech([
@@ -3004,7 +2998,7 @@ namespace Application.Plugin.Script.Npc
             {
 
                 var em = GetSoloQuestEventManager(jobId);
-                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
             }
             else
             {
@@ -3019,7 +3013,7 @@ namespace Application.Plugin.Script.Npc
             var eim = GetEventInstanceTrust();
             if (await AskYesNo("你想离开吗？"))
             {
-                eim.exitPlayer(getPlayer());
+                await eim.exitPlayer(getPlayer());
             }
         }
 
@@ -3028,7 +3022,7 @@ namespace Application.Plugin.Script.Npc
         public async Task s4common1_out()
         {
             await SayNext("你在那里做得很好，#h0#，干得漂亮。现在我会把你送回埃尔奈斯。当你准备好学习新技能时，带着护身符和我交谈。");
-            warp(211000000, "in01");
+            await warp(211000000, "in01");
         }
 
 
@@ -3037,7 +3031,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4031450, 1))
             {
-                warp(921100100, 1);
+                await warp(921100100, 1);
                 return;
             }
 
@@ -3047,7 +3041,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你看起来相当强壮。好吧，你想进去吗？"))
                 {
-                    warp(211040300, 5);
+                    await warp(211040300, 5);
                 }
             }
             else
@@ -3124,7 +3118,7 @@ namespace Application.Plugin.Script.Npc
                     else
                     {
                         await SayNext("好的...我将在这里测试你的智慧。所有问题回答正确，你就会通过测试，但是，如果你答错一次，那么你就得重新开始，好吗，我们开始吧。");
-                        gainItem(4005004, -1);
+                        await gainItem(4005004, -1);
                         var questions = questList.OrderBy(x => Guid.NewGuid()).Take(5).ToList();
                         for (int i = 0; i < 5; i++)
                         {
@@ -3136,7 +3130,7 @@ namespace Application.Plugin.Script.Npc
                                 return;
                             }
                         }
-                        gainItem(4031058, 1);
+                        await gainItem(4031058, 1);
                         await SayOK("好的。你所有问题都答对了。你的智慧得到了验证。拿着这条项链回去吧。");
                     }
                 }
@@ -3151,17 +3145,16 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2030014 
-        public Task s4freeze_item()
+        public async Task s4freeze_item()
         {
             if (haveItem(4031450, 1))
             {
                 if (canHold(2280011, 1))
                 {
-                    gainItem(2280011, 1);
-                    gainItem(4031450, -1);
+                    await gainItem(2280011, 1);
+                    await gainItem(4031450, -1);
                 }
             }
-            return Task.CompletedTask;
         }
 
 
@@ -3189,10 +3182,10 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    gainItem(4004004, -10 * inputNumber);
-                    gainMeso(-500000 * inputNumber);
-                    gainItem(4005004, inputNumber);
-                    sendOk("明智地使用它。");
+                    await gainItem(4004004, -10 * inputNumber);
+                    await gainMeso(-500000 * inputNumber);
+                    await gainItem(4005004, inputNumber);
+                    await SayOK("明智地使用它。");
                 }
             }
             else
@@ -3214,7 +3207,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("你准备好进入玩偶屋了吗？"))
             {
                 var em = GetSoloQuestEventManager(3230);
-                await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
             }
         }
 
@@ -3226,7 +3219,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("你准备好离开这个地方了吗？"))
                 {
-                    WarpOut();
+                    await WarpOut();
                 }
             }
             else
@@ -3240,7 +3233,7 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo("你准备好进入#b#m922000000##k了吗？"))
                 {
                     var em = GetSoloQuestEventManager(3239);
-                    await SayOK(em.HandleCreateInstanceResult(em.StartInstance(getPlayer()), c));
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                 }
             }
 
@@ -3256,8 +3249,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(4001020))
                     {
-                        gainItem(4001020, -1);
-                        warp(221022900, 3);
+                        await gainItem(4001020, -1);
+                        await warp(221022900, 3);
                     }
 
                 }
@@ -3281,8 +3274,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(4001020))
                     {
-                        gainItem(4001020, -1);
-                        warp(options[option].map, 3);
+                        await gainItem(4001020, -1);
+                        await warp(options[option].map, 3);
                     }
                 }
             }
@@ -3305,8 +3298,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(4001020))
                     {
-                        gainItem(4001020, -1);
-                        warp(options[option].map, 3);
+                        await gainItem(4001020, -1);
+                        await warp(options[option].map, 3);
                     }
                 }
             }
@@ -3326,8 +3319,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(4001020))
                     {
-                        gainItem(4001020, -1);
-                        warp(221021700, 3);
+                        await gainItem(4001020, -1);
+                        await warp(221021700, 3);
                     }
 
                 }
@@ -3347,8 +3340,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(4031094))
                 {
-                    completeQuest(3230);
-                    gainItem(4031094, -1);
+                    await completeQuest(3230);
+                    await gainItem(4031094, -1);
                 }
                 else
                 {
@@ -3357,7 +3350,7 @@ namespace Application.Plugin.Script.Npc
             }
             if (await AskYesNo(greeting))
             {
-                warp(221024400, 4);
+                await warp(221024400, 4);
             }
         }
 
@@ -3413,7 +3406,7 @@ namespace Application.Plugin.Script.Npc
 
             if (option == 0)
             {
-                var r = em.StartInstance(getPlayer());
+                var r = await em.StartInstance(getPlayer());
                 await SayOK(em.HandleCreateInstanceResult(r, c));
             }
             else
@@ -3428,7 +3421,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("滴滴……滴滴……你可以通过我逃到一个更安全的地方。滴滴……滴滴……你想离开这个地方吗？"))
             {
-                WarpOut();
+                await WarpOut();
             }
         }
 
@@ -3440,7 +3433,7 @@ namespace Application.Plugin.Script.Npc
             {
                 // quest completing here when "forfeiting Timer's Egg", as well as reporting missing quests on M. Shrine are thanks to drmdsr & Thora
                 await SayOK("你想把#r#t4220046##k交给我，对吧？好的，我会替你拿着。");
-                gainItem(4220046, -1);
+                await gainItem(4220046, -1);
             }
             else
             {
@@ -3450,7 +3443,7 @@ namespace Application.Plugin.Script.Npc
 
 
 
-        Task Earth()
+        async Task Earth()
         {
             if (isQuestStarted(3421))
             {
@@ -3463,16 +3456,15 @@ namespace Application.Plugin.Script.Npc
                     {
                         progress |= (1 << meteoriteId);
 
-                        gainItem(4031117, 1);
-                        setQuestProgress(3421, 1, progress);
+                        await gainItem(4031117, 1);
+                        await setQuestProgress(3421, 1, progress);
                     }
                     else
                     {
-                        getPlayer().dropMessage(1, "Have a ETC slot available for this item.");
+                        await Popup("Have a ETC slot available for this item.");
                     }
                 }
             }
-            return Task.CompletedTask;
         }
         // Npc: 2050014 
         public Task earth009()
@@ -3532,11 +3524,11 @@ namespace Application.Plugin.Script.Npc
                 else
                 {
                     var em = GetSoloQuestEventManager(6002);
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        removeAll(4031507);
-                        removeAll(4031508);
+                        await removeAll(4031507);
+                        await removeAll(4031508);
                     }
                     else
                     {
@@ -3596,15 +3588,15 @@ namespace Application.Plugin.Script.Npc
                 case 0:
                     if (haveItem(4031242))
                     {
-                        gainItem(4031242, -1);
-                        warp(230030200);
+                        await gainItem(4031242, -1);
+                        await warp(230030200);
                     }
                     break;
                 default:
                     if (getMeso() > 10000)
                     {
-                        gainMeso(-10000);
-                        warp(dict[option].Destination);
+                        await gainMeso(-10000);
+                        await warp(dict[option].Destination);
                     }
                     break;
             }
@@ -3618,8 +3610,8 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(4000175))
                 {
-                    gainItem(4000175, -1);
-                    warp(923000000, 0);
+                    await gainItem(4000175, -1);
+                    await warp(923000000, 0);
                 }
                 else
                 {
@@ -3652,9 +3644,9 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("嘿... 嗯... 你能帮我找到我在树林里丢失的一块#b柔软而闪亮的银色毛皮#k吗？我需要它，我需要它，我非常非常需要它！... 哦，你找到了它！！！你会把它给我吗？"))
             {
                 await SayNext("嘿嘿嘿~这是你从我这里拿走的报酬，你值得拥有。");
-                gainItem(4031793, -1);
-                gainFame(-5);
-                setQuestProgress(23647, 1, 1);
+                await gainItem(4031793, -1);
+                await gainFame(-5);
+                await setQuestProgress(23647, 1, 1);
             }
         }
 
@@ -3681,8 +3673,8 @@ namespace Application.Plugin.Script.Npc
                         else
                         {
                             await SayOK("再见~");
-                            gainItem(4031346, inputNumber);
-                            gainMeso(-cost);
+                            await gainItem(4031346, inputNumber);
+                            await gainMeso(-cost);
                         }
                     }
                     else
@@ -3709,7 +3701,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getPlayer().haveItemEquipped(1092041))
                     {
-                        warp(924000001, 0);
+                        await warp(924000001, 0);
                     }
                     else
                     {
@@ -3730,7 +3722,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你想要退出这个区域吗？如果你退出，你将需要从头开始这个任务。"))
             {
-                warp(240010400, "st00");
+                await warp(240010400, "st00");
             }
         }
 
@@ -3739,8 +3731,8 @@ namespace Application.Plugin.Script.Npc
         public async Task flyminidraco()
         {
             await AskMenu("如果你有翅膀，我相信你可以去那里。但是，仅仅这样还不够。如果你想穿越比刀锋还锋利的风，你还需要坚硬的鳞片。我是唯一知道回去的半人半龙……如果你想去那里，我可以变你。无论你是什么，此刻，你将成为一只#b龙#k……\r\n#L0##b我想成为一只龙。#k#l");
-            useItem(2210016);
-            warp(200090500, 0);
+            await useItem(2210016);
+            await warp(200090500, 0);
         }
 
 
@@ -3759,8 +3751,8 @@ namespace Application.Plugin.Script.Npc
                 if (hasItem(4031454))
                 {
                     await SayOK("你从喷泉里往杯子里倒了一些水。");
-                    gainItem(4031454, -1);
-                    gainItem(4031455, 1);
+                    await gainItem(4031454, -1);
+                    await gainItem(4031455, 1);
                 }
             }
         }
@@ -3806,7 +3798,7 @@ namespace Application.Plugin.Script.Npc
             int[] mapids = [240070100, 240070200, 240070300, 240070400, 240070500, 240070600];
             if (selection >= 0 && selection < mapids.Length)
             {
-                warp(mapids[selection], 1);
+                await warp(mapids[selection], 1);
             }
             else
             {
@@ -3827,8 +3819,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getMeso() > 1500)
                     {
-                        warp(250000100, 0);
-                        gainMeso(-1500);
+                        await warp(250000100, 0);
+                        await gainMeso(-1500);
                     }
                     else
                     {
@@ -3866,8 +3858,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getMeso() > 1500)
                     {
-                        warp(options[option], 0);
-                        gainMeso(-1500);
+                        await warp(options[option], 0);
+                        await gainMeso(-1500);
                     }
                     else
                     {
@@ -3892,10 +3884,10 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getMeso() > 1500)
                 {
-                    var r = contiMove.StartInstance(getPlayer());
+                    var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        gainMeso(-1500);
+                        await gainMeso(-1500);
                     }
                     else
                     {
@@ -3915,7 +3907,7 @@ namespace Application.Plugin.Script.Npc
                 if (inputText == "道可道非常道")
                 {
                     var em = GetSoloQuestEventManager(21747);
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     if (r != CreateInstanceResult.Success)
                     {
                         await SayNext(em.HandleCreateInstanceResult(r, c));
@@ -3944,11 +3936,11 @@ namespace Application.Plugin.Script.Npc
 
             var mapObj = getMap();
             var npcPos = mapObj.getMapObject(getNpcObjectId())!.getPosition();
-            mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300351), new Point(npcPos.X + 50, npcPos.Y), mob =>
+            await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(9300351), new Point(npcPos.X + 50, npcPos.Y), mob =>
             {
                 mob.setSpawnEffect(12);
             });
-            mapObj.destroyNPC(getNpc());
+            await mapObj.destroyNPC(getNpc());
         }
 
 
@@ -3971,7 +3963,7 @@ namespace Application.Plugin.Script.Npc
 
                 if (option == 0)
                 {
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else
@@ -3983,7 +3975,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("任务成功了，感谢你的护送！我可以带你去#b#m120000104##k，你准备好了吗？"))
                 {
-                    warp(120000104);
+                    await warp(120000104);
                 }
             }
         }
@@ -4013,9 +4005,9 @@ namespace Application.Plugin.Script.Npc
                 await SayNext("好的，准备起飞~");
                 if (getMeso() >= 10000)
                 {
-                    gainMeso(-10000);
+                    await gainMeso(-10000);
                     int[] towns = [100000000, 101000000, 102000000, 103000000, 104000000];
-                    warp(Randomizer.Select(towns));
+                    await warp(Randomizer.Select(towns));
                 }
                 else
                 {
@@ -4050,8 +4042,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    warp(getPlayer().getMapId() == 260020000 ? 261000000 : 260000000, 0);
-                    gainMeso(-1500);
+                    await warp(getPlayer().getMapId() == 260020000 ? 261000000 : 260000000, 0);
+                    await gainMeso(-1500);
                 }
             }
             else
@@ -4066,7 +4058,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3310) && !haveItem(4031709, 1))
             {
-                warp(926120100, "out00");
+                await warp(926120100, "out00");
             }
             else
             {
@@ -4080,7 +4072,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3335) && !haveItem(4031695, 1))
             {
-                warp(926120300, "out00");
+                await warp(926120300, "out00");
             }
             else
             {
@@ -4094,7 +4086,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3320) || isQuestCompleted(3320))
             {
-                warp(926120200, 1);
+                await warp(926120200, 1);
             }
             else
             {
@@ -4110,7 +4102,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(4031708, 1))
                 {
-                    gainItem(4031708, 1);
+                    await gainItem(4031708, 1);
                 }
                 else
                 {
@@ -4126,7 +4118,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("在一片蜘蛛网的拥挤中，有一堵墙后面似乎写着什么东西。也许你应该仔细看看墙？"))
             {
-                setQuestProgress(3311, 5);
+                await setQuestProgress(3311, 5);
                 await SayOK("在一面满是涂鸦的墙上，似乎有一句话格外显眼。#b它是以一种吊坠的形式出现……#k 这是什么意思？");
             }
         }
@@ -4145,7 +4137,7 @@ namespace Application.Plugin.Script.Npc
             await SayOK("挂在画框后面的钩子被解开，揭示了画框内部的一个秘密空间。在那里，发现了一枚银色吊坠。小心地取下吊坠后，画框被合上，放回桌子上。");
             if (canHold(4031697, 1))
             {
-                gainItem(4031697);
+                await gainItem(4031697);
             }
             else
             {
@@ -4171,7 +4163,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(2022198, 1))
                 {
-                    gainItem(2022198, 1);
+                    await gainItem(2022198, 1);
                     await SayOK("你拿了桌子上放着的药丸。");
                 }
                 else
@@ -4194,8 +4186,8 @@ namespace Application.Plugin.Script.Npc
                     var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
-                        setQuestProgress(23339, 1, 4);
-                        warp(261000001, 1);
+                        await setQuestProgress(23339, 1, 4);
+                        await warp(261000001, 1);
                     }
                     else
                     {
@@ -4204,22 +4196,22 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (progress == 0)
                 {
-                    setQuestProgress(23339, 1, 1);
+                    await setQuestProgress(23339, 1, 1);
                 }
                 else if (progress < 3)
                 {
-                    setQuestProgress(23339, 1, 0);
+                    await setQuestProgress(23339, 1, 0);
                 }
                 else
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
             else
             {
                 if (isQuestCompleted(3339))
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
         }
@@ -4237,8 +4229,8 @@ namespace Application.Plugin.Script.Npc
                     var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
-                        setQuestProgress(23339, 1, 4);
-                        warp(261000001, 1);
+                        await setQuestProgress(23339, 1, 4);
+                        await warp(261000001, 1);
                     }
                     else
                     {
@@ -4247,12 +4239,12 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (progress == 2)
                 {
-                    setQuestProgress(23339, 1, 3);
+                    await setQuestProgress(23339, 1, 3);
                     var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
-                        setQuestProgress(23339, 1, 4);
-                        warp(261000001, 1);
+                        await setQuestProgress(23339, 1, 4);
+                        await warp(261000001, 1);
                     }
                     else
                     {
@@ -4261,18 +4253,18 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (progress < 3)
                 {
-                    setQuestProgress(23339, 1, 0);
+                    await setQuestProgress(23339, 1, 0);
                 }
                 else
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
             else
             {
                 if (isQuestCompleted(3339))
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
         }
@@ -4290,8 +4282,8 @@ namespace Application.Plugin.Script.Npc
                     var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
                     if (inputText == "琵丽雅是我的爱")
                     {
-                        setQuestProgress(23339, 1, 4);
-                        warp(261000001, 1);
+                        await setQuestProgress(23339, 1, 4);
+                        await warp(261000001, 1);
                     }
                     else
                     {
@@ -4300,29 +4292,29 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (progress == 1)
                 {
-                    setQuestProgress(23339, 1, 2);
+                    await setQuestProgress(23339, 1, 2);
                 }
                 else if (progress < 3)
                 {
-                    setQuestProgress(23339, 1, 0);
+                    await setQuestProgress(23339, 1, 0);
                 }
                 else
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
             else
             {
                 if (isQuestCompleted(3339))
                 {
-                    warp(261000001, 1);
+                    await warp(261000001, 1);
                 }
             }
         }
 
 
         // Npc: 2111020 
-        public Task alceCircle1()
+        public async Task alceCircle1()
         {
             if (isQuestStarted(3345))
             {
@@ -4330,19 +4322,18 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 0)
                 {
-                    setQuestProgress(3345, 1);
+                    await setQuestProgress(3345, 1);
                 }
                 else if (progress < 4)
                 {
-                    setQuestProgress(3345, 0);
+                    await setQuestProgress(3345, 0);
                 }
             }
-            return Task.CompletedTask;
         }
 
 
         // Npc: 2111021 
-        public Task alceCircle2()
+        public async Task alceCircle2()
         {
             if (isQuestStarted(3345))
             {
@@ -4350,19 +4341,18 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 0)
                 {
-                    setQuestProgress(3345, 2);
+                    await setQuestProgress(3345, 2);
                 }
                 else if (progress < 4)
                 {
-                    setQuestProgress(3345, 0);
+                    await setQuestProgress(3345, 0);
                 }
             }
-            return Task.CompletedTask;
         }
 
 
         // Npc: 2111022 
-        public Task alceCircle3()
+        public async Task alceCircle3()
         {
             if (isQuestStarted(3345))
             {
@@ -4370,14 +4360,13 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 0)
                 {
-                    setQuestProgress(3345, 3);
+                    await setQuestProgress(3345, 3);
                 }
                 else if (progress < 4)
                 {
-                    setQuestProgress(3345, 0);
+                    await setQuestProgress(3345, 0);
                 }
             }
-            return Task.CompletedTask;
         }
 
 
@@ -4390,16 +4379,16 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 3 && haveItem(4031739, 1) && haveItem(4031740, 1) && haveItem(4031741, 1))
                 {
-                    setQuestProgress(3345, 4);
-                    gainItem(4031739, -1);
-                    gainItem(4031740, -1);
-                    gainItem(4031741, -1);
+                    await setQuestProgress(3345, 4);
+                    await gainItem(4031739, -1);
+                    await gainItem(4031740, -1);
+                    await gainItem(4031741, -1);
 
                     await SayOK("当你放置碎片时，一道光芒照耀着圆圈，驱散了这件神器内部酝酿的不祥之兆。");
                 }
                 else if (progress < 4)
                 {
-                    setQuestProgress(3345, 0);
+                    await setQuestProgress(3345, 0);
                 }
             }
         }
@@ -4412,7 +4401,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await SayAcceptDecline("You can operate the automated security system using the control unit. Would you like to deactivate the automated security system?"))
             {
-                weakenAreaBoss(7090000, "The automated security system has been deactivated. The intruder alarm will shut down.");
+                await weakenAreaBoss(7090000, "The automated security system has been deactivated. The intruder alarm will shut down.");
             }
         }
 
@@ -4422,7 +4411,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await SayAcceptDecline("This Magic Pentagram is incomplete. Would you like to finish off the drawing of the Magic Pentagram?"))
             {
-                weakenAreaBoss(8090000, "The Magic Pentagram has been completed. The spell to eliminate Deet and Roi has been summoned.");
+                await weakenAreaBoss(8090000, "The Magic Pentagram has been completed. The spell to eliminate Deet and Roi has been summoned.");
             }
         }
 
@@ -4437,9 +4426,9 @@ namespace Application.Plugin.Script.Npc
             await SayNext("…在我所做的一切之后，你们原谅我了吗？嗯，我想我被那种可以通过这种方式发现的巨大力量冲昏了头脑，也许他们说得对，人类不能简单地理解并运用这些力量，而不在途中腐化自己…我深感抱歉，为了弥补自己对每个人，我愿意在炼金术的进展中再次帮助各个组织。谢谢。");
             if (!isQuestCompleted(7770))
             {
-                completeQuest(7770);
+                await completeQuest(7770);
             }
-            warp(926110600, 0);
+            await warp(926110600, 0);
         }
 
 
@@ -4470,13 +4459,13 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            gainItem(4031797, 1);
-                            setQuestProgress(3367, 31, getQuestProgressInt(3367, 31) + 1);
+                            await gainItem(4031797, 1);
+                            await setQuestProgress(3367, 31, getQuestProgressInt(3367, 31) + 1);
                         }
                     }
 
-                    setQuestProgress(3367, book, 1);
-                    setQuestProgress(3367, 30, c);
+                    await setQuestProgress(3367, book, 1);
+                    await setQuestProgress(3367, 30, c);
                     await SayNext("（整理文件。#r" + (30 - c) + "#k 剩余。）");
                 }
             }
@@ -4496,9 +4485,9 @@ namespace Application.Plugin.Script.Npc
                 await SayNext("谢谢你，因为你，我们得以再次团聚。尤勒特现在将进行康复，因为他的研究对我们镇的发展至关重要，他的所作所为都是出于对权力的贪婪，尽管是为了马加提亚的利益。再次感谢你。");
             }
 
-            if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+            if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
             {
-                warp((eim.getIntProperty("isAlcadno") == 0) ? 261000011 : 261000021);
+                await warp((eim.getIntProperty("isAlcadno") == 0) ? 261000011 : 261000021);
             }
             else
             {
@@ -4525,7 +4514,7 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayOK("非常好。记住，在那里你可以组建一个团队，或者独自进行战斗，这取决于你。祝你好运！");
                 getPlayer().SaveLocation(SavedLocationType.BOSSPQ);
-                warp(970030000, "out00");
+                await warp(970030000, "out00");
             }
         }
 
@@ -4564,7 +4553,7 @@ namespace Application.Plugin.Script.Npc
                 var eim = getEventInstance();
                 if (eim.getProperty("clear") == null)
                 {
-                    eim.clearPQ();
+                    await eim.clearPQ();
                     eim.setProperty("clear", "true");
                 }
 
@@ -4577,25 +4566,26 @@ namespace Application.Plugin.Script.Npc
                     await SayOK("在这个副本中#b打败所有的boss#k，恭喜你！现在你将获得与你在这里表现相匹配的奖品，我会将你传送出去。");
                 }
 
-                if (eim.GiveClearReward(getPlayer(), 6) == ClaimRewardResult.BagFull)
+                if (await eim.GiveClearReward(getPlayer(), 6) == ClaimRewardResult.BagFull)
                 {
                     await SayOK("请提前在你的背包所有标签中安排一个空位。");
                     return;
                 }
 
-                warp(970030000);
+                await warp(970030000);
             }
             else if (state == 2)
             {
                 if (isEventLeader())
                 {
-                    if (getPlayer().getEventInstance().isEventTeamTogether())
+                    var eim = getPlayer().getEventInstance();
+                    if (eim != null && eim.isEventTeamTogether())
                     {
                         if (await AskYesNo("你的队伍准备好继续前进到下一阶段了吗？如果你认为已经完成了，就走过传送门，现在是时候了。现在，你们真的想要继续吗？"))
                         {
                             var restSpot = ((getMapId() - 1) % 5) + 1;
-                            getPlayer().getEventInstance().restartEventTimer(restSpot * 4 * 60000);
-                            getPlayer().getEventInstance().warpEventTeam(970030100 + getEventInstance().getIntProperty("lobby") + (500 * restSpot));
+                            await eim.restartEventTimer(restSpot * 4 * 60000);
+                            await eim.warpEventTeam(970030100 + eim.getIntProperty("lobby") + (500 * restSpot));
                         }
                     }
                     else
@@ -4612,7 +4602,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("你希望放弃这个副本吗？"))
                 {
-                    warp(970030000);
+                    await warp(970030000);
                 }
             }
             else
@@ -4644,7 +4634,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        var r = em.StartInstance(getPlayer());
+                        var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                 }
@@ -4730,9 +4720,9 @@ namespace Application.Plugin.Script.Npc
 
             var name = await AskText("#rWARNING#b: Make sure you have your items ready to merge at the slots #rAFTER#b the item you have selected to merge.#k Any items #bunder#k the item selected will be merged thoroughly.\r\n\r\nNote that equipments receiving bonuses from merge are going to become #rUntradeable#k thereon, and equipments that already received the merge bonus #rcannot be used for merge#k.\r\n\r\nPlease enter the name of the equipment you want to merge:");
 
-            if (getPlayer().mergeAllItemsFromName(name))
+            if (await getPlayer().mergeAllItemsFromName(name))
             {
-                gainMeso(-50000);
+                await gainMeso(-50000);
                 await SayOK("合并完成！感谢您使用本服务，祝您享受新的装备属性。");
             }
             else
@@ -4775,7 +4765,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        warp(980040000 + stage * 1000, 0);
+                        await warp(980040000 + stage * 1000, 0);
                     }
                 }
                 else
@@ -4792,7 +4782,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    warp(980040000 + stage * 1000, 0);
+                    await warp(980040000 + stage * 1000, 0);
                 }
             }
         }
@@ -4813,7 +4803,7 @@ namespace Application.Plugin.Script.Npc
                 if (await AskYesNo("我们现在该怎么办？这只是一个谣言，但是……我听说如果你被外星人绑架，会发生可怕的事情……或许这就是现在发生在Gaga身上的事情！请，请救救Gaga！#bGaga可能有点不确定和迷茫，但#k他的心真的很好。我不能让可怕的事情发生在他身上。对了！月球上的爷爷可能知道如何救他！我会送你去月球，所以请去见爷爷，救出Gaga！！！"))
                 {
                     await SayNext("非常感谢。请救救嘎嘎！月球上的爷爷会帮助你。");
-                    warp(922240200, 0);
+                    await warp(922240200, 0);
                 }
             }
             else
@@ -4843,7 +4833,7 @@ namespace Application.Plugin.Script.Npc
                             return;
                         }
 
-                        var r = em.StartInstance(getPlayer());
+                        var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
                 }
@@ -4852,7 +4842,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("如果你失败了也不要担心。你还有3次机会。你还想放弃吗？"))
                 {
-                    warp(922240200, 0);
+                    await warp(922240200, 0);
                 }
             }
             else if (mapId >= 922240100 && mapId <= 922240119)
@@ -4862,14 +4852,14 @@ namespace Application.Plugin.Script.Npc
                 if (rgaga.getCompleted() > 10)
                 {
                     text += "Please don't give up until Gaga is rescued. To show you my appreciation for what you've accomplished thus far, I've given you a Spaceship. It's rather worn out, but it should still be operational. Check your #bSkill Window#k.";
-                    rgaga.giveSkill(getPlayer());
+                    await rgaga.giveSkill(getPlayer());
                 }
                 else
                 {
                     text += "Let's go back now.";
                 }
                 await SayNext(text);
-                warp(922240200, 0);
+                await warp(922240200, 0);
             }
         }
 
@@ -4898,22 +4888,22 @@ namespace Application.Plugin.Script.Npc
             var menu = "#b";
             if (level >= 20 && level <= 30)
             {
-                menu += "#L0#Ariant Coliseum#l";
+                menu += "#0# Ariant Coliseum#l";
             }
 
             if (level >= 25)
             {
-                menu += "#L1#Mu Lung Dojo#l";
+                menu += "#1# Mu Lung Dojo#l";
             }
 
             if (level >= 30 && level <= 50)
             {
-                menu += "#L2#Monster Carnival 1#l";
+                menu += "#2# Monster Carnival 1#l";
             }
 
             if (level >= 51 && level <= 70)
             {
-                menu += "#L3#Monster Carnival 2#l";
+                menu += "#3# Monster Carnival 2#l";
             }
 
             int selection = await AskDimensionalMirror(menu);
@@ -4922,18 +4912,18 @@ namespace Application.Plugin.Script.Npc
             switch (selection)
             {
                 case 0:
-                    warp(980010000, 3);
+                    await warp(980010000, 3);
                     break;
                 case 1:
-                    warp(925020000, 0);
+                    await warp(925020000, 0);
                     break;
                 case 2:
                     getPlayer().saveLocation("MONSTER_CARNIVAL");
-                    warp(980000000, 3);
+                    await warp(980000000, 3);
                     break;
                 case 3:
                     getPlayer().saveLocation("MONSTER_CARNIVAL");
-                    warp(980030000, 3);
+                    await warp(980030000, 3);
                     break;
             }
         }
@@ -4952,7 +4942,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("你还没有完成要求。你确定要离开吗？"))
                 {
-                    warp(923010100, 0);
+                    await warp(923010100, 0);
                 }
             }
         }
@@ -4966,8 +4956,8 @@ namespace Application.Plugin.Script.Npc
                 "你已经完成了所有的训练。干得好。你似乎已经准备好立刻开始旅程了！很好，我会让你继续前往下一个地方。",
                 "但记住，一旦你离开这里，你将进入一个充满怪物的村庄。那么，再见！"
                 ]);
-            warp(40000, 0);
-            gainExp(3);
+            await warp(40000, 0);
+            await gainExp(3);
 
         }
 
@@ -4989,11 +4979,11 @@ namespace Application.Plugin.Script.Npc
             {
                 if (area > 0)
                 {
-                    warp(getMapId() + 1, 0);
+                    await warp(getMapId() + 1, 0);
                 }
                 else
                 {
-                    warp(209000000);
+                    await warp(209000000);
                 }
             }
         }
@@ -5027,8 +5017,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainMeso(-price);
-                    warp(801000100 + 100 * getPlayer().getGender(), "out00");
+                    await gainMeso(-price);
+                    await warp(801000100 + 100 * getPlayer().getGender(), "out00");
                 }
             }
         }
@@ -5080,8 +5070,8 @@ namespace Application.Plugin.Script.Npc
             }
             else if (haveItem(requiredItem, 100))
             {
-                gainItem(requiredItem, -100);
-                gainItem(prizeItem, prizeQuantity);
+                await gainItem(requiredItem, -100);
+                await gainItem(prizeItem, prizeQuantity);
                 await SayOK("嗯...如果不是这个小小的划痕...唉。恐怕我只能认定这是一个标准品质的物品。好吧，这是给你的#t" + prizeItem + "#。");
             }
             else
@@ -5111,7 +5101,7 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            gainItem(2020001, -300);
+            await gainItem(2020001, -300);
             await SayNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！");
 
             // 问题和答案数据
@@ -5170,7 +5160,7 @@ namespace Application.Plugin.Script.Npc
             }
 
             await SayNext("Dang, you answered all the questions right. I may not like humans in general, but I HATE breaking a promise, so, as promised, here's the Orange Marble.");
-            gainItem(4031064, 1);
+            await gainItem(4031064, 1);
             await SayOK("我们的交易已经结束，非常感谢！你可以离开了！");
         }
 
@@ -5202,7 +5192,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (await AskYesNo("你就在藏身处前面！什么？你想返回#m801000000#？"))
             {
-                warp(801000000);
+                await warp(801000000);
             }
             else
             {
@@ -5227,21 +5217,21 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("如果你现在离开，就无法返回了。你确定要离开吗？"))
                 {
-                    warp(801040004, 1);
+                    await warp(801040004, 1);
                 }
             }
             else
             {
                 await SayNext("你们做到了，干得漂亮！现在我们的城市摆脱了那些暴徒的暴政！作为城市的代表，请接受这份奖励，作为对你们努力的认可，我会把你们带回城里。");
 
-                var result = eim!.GiveClearReward(getPlayer());
+                var result = await eim!.GiveClearReward(getPlayer());
                 if (result != ClaimRewardResult.Success)
                 {
                     await SayNext("请先在您的物品栏腾出空间…");
                 }
                 else
                 {
-                    warp(801040101);
+                    await warp(801040101);
                 }
             }
         }
@@ -5251,7 +5241,7 @@ namespace Application.Plugin.Script.Npc
         public async Task con4()
         {
             await SayNext("啊，Boss已经被打败了。这真是个快乐的日子！恭喜大家。跟着这条路返回城镇。");
-            warp(801000000);
+            await warp(801000000);
         }
 
 
@@ -5266,7 +5256,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("沙龙神殿与快乐村的其他地方都不一样，你想前往 #b沙龙神殿#k 吗？"))
                 {
-                    warp(shalomTemple, 0);
+                    await warp(shalomTemple, 0);
                 }
                 else
                 {
@@ -5277,7 +5267,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("你想回到快乐村吗？"))
                 {
-                    warp(happyville, 0);
+                    await warp(happyville, 0);
                 }
                 else
                 {
@@ -5373,7 +5363,7 @@ namespace Application.Plugin.Script.Npc
                     if (getLevel() >= minlevel)
                     {
                         await SayNext("没问题。如果你回答正确，我会给你一些好东西！");
-                        startQuest(4900);
+                        await startQuest(4900);
                     }
                     else
                     {
@@ -5409,8 +5399,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getMeso() >= fee)
                     {
-                        gainMeso(-fee);
-                        warp(600000000);
+                        await gainMeso(-fee);
+                        await warp(600000000);
                     }
                     else
                     {
@@ -5424,8 +5414,8 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (getMeso() >= fee)
                     {
-                        gainMeso(-fee);
-                        warp(682000000, 0);
+                        await gainMeso(-fee);
+                        await warp(682000000, 0);
                     }
                     else
                     {
@@ -5464,8 +5454,8 @@ namespace Application.Plugin.Script.Npc
                     }
                     else if (getMeso() >= p.Value.TicketPrice)
                     {
-                        gainMeso(-p.Value.TicketPrice);
-                        gainItem(p.Value.TicketItemId, 1);
+                        await gainMeso(-p.Value.TicketPrice);
+                        await gainItem(p.Value.TicketItemId, 1);
                         await SayNext("请收好您的票。");
                     }
                     else
@@ -5478,7 +5468,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("列车启动前你想离开吗？车票将不会退款。"))
                 {
-                    WarpReturn();
+                    await WarpReturn();
                 }
             }
 
@@ -5500,9 +5490,9 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (haveItem(p.Value.TicketItemId))
                     {
-                        if (subway.Enter(getPlayer()))
+                        if (await subway.Enter(getPlayer()))
                         {
-                            gainItem(p.Value.TicketItemId, -1);
+                            await gainItem(p.Value.TicketItemId, -1);
                         }
                         else
                         {
@@ -5590,7 +5580,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getQuestStatus(8224) == 2)
             {
-                openShopNPC(getNpc());
+                await openShopNPC(getNpc());
             }
             else
             {
@@ -5703,7 +5693,7 @@ namespace Application.Plugin.Script.Npc
                     var map = jobMap[job];
                     if (await AskYesNo("你好 #h0#，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
                     {
-                        warp(map, 0);
+                        await warp(map, 0);
                     }
                     ;
                 }
@@ -5762,9 +5752,9 @@ namespace Application.Plugin.Script.Npc
                     {
                         foreach (var item in enterConsumeItems)
                         {
-                            gainItem(item, -1);
+                            await gainItem(item, -1);
                         }
-                        warp(mapId, 0);
+                        await warp(mapId, 0);
                     }
                 }
                 else
@@ -5806,7 +5796,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("你想要移动到 #b#m677000012##k 吗？"))
                     {
-                        warp(677000012, 0);
+                        await warp(677000012, 0);
                     }
     ;
                 }
@@ -5814,7 +5804,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (await AskYesNo("你想要#b离开这个地方#k吗？"))
                     {
-                        warp(105050400, 0);
+                        await warp(105050400, 0);
                     }
 
                 }
@@ -5831,7 +5821,7 @@ namespace Application.Plugin.Script.Npc
 
                     if (await AskYesNo("你想要移动到 #b#m677000010##k 吗？"))
                     {
-                        warp(677000010, 0);
+                        await warp(677000010, 0);
                     }
                 }
                 else
@@ -5860,14 +5850,14 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo($"你想前往 #b#m209080000##k 吗？"))
                 {
-                    warp(209080000, 0);
+                    await warp(209080000, 0);
                 }
             }
             else if (getChar().getMapId() == 209080000)
             {
                 if (await AskYesNo($"你想回到 #b#m209000000##k 吗？"))
                 {
-                    warp(209000000, 0);
+                    await warp(209000000, 0);
                 }
             }
             else
@@ -5904,7 +5894,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
             {
                 await SayNext("机票不可退，希望再次见到你！");
-                WarpReturn();
+                await WarpReturn();
             }
             else
             {
@@ -5933,7 +5923,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
                 {
-                    WarpReturn();
+                    await WarpReturn();
                 }
                 else
                 {
@@ -5976,8 +5966,8 @@ namespace Application.Plugin.Script.Npc
                             return;
                         }
 
-                        gainMeso(-t.Value.TicketPrice);
-                        gainItem(t.Value.TicketItemId);
+                        await gainMeso(-t.Value.TicketPrice);
+                        await gainItem(t.Value.TicketItemId);
                         await SayOK("Thank you for choosing Wizet Airline! Enjoy your flight!");
 
                     }
@@ -5985,9 +5975,9 @@ namespace Application.Plugin.Script.Npc
                 case 1:
                     if (haveItem(t.Value.TicketItemId))
                     {
-                        if (airPlane.Enter(getPlayer()))
+                        if (await airPlane.Enter(getPlayer()))
                         {
-                            gainItem(t.Value.TicketItemId, -1);
+                            await gainItem(t.Value.TicketItemId, -1);
                         }
                         else
                         {
@@ -6035,8 +6025,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainMeso(-fee);
-                    warp(701000000);
+                    await gainMeso(-fee);
+                    await warp(701000000);
                 }
             }
         }
@@ -6053,8 +6043,8 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    gainMeso(-fee);
-                    warp(102000000);
+                    await gainMeso(-fee);
+                    await warp(102000000);
                 }
             }
             else
@@ -6077,7 +6067,7 @@ namespace Application.Plugin.Script.Npc
             var mapID_out = 702070400;
             if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapID_out}##k#n 吗？"))
             {
-                warp(mapID_out);
+                await warp(mapID_out);
             }
         }
 
@@ -6127,7 +6117,7 @@ namespace Application.Plugin.Script.Npc
             var option = await AskMenu("你要进入训练中心吗？",
                 Enumerable.Range(0, 5).Select(i => $"训练中心 {i}")
                 );
-            warp(start + option, 0);
+            await warp(start + option, 0);
         }
 
         // Npc: 9270033 
@@ -6138,16 +6128,16 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("你准备好离开这个地方了吗？"))
                 {
-                    warp(541010110, 0);
+                    await warp(541010110, 0);
                 }
             }
             else
             {
                 if (await AskYesNo("你已经打败了拉塔尼卡船长，干得好！你准备好离开这个地方了吗？"))
                 {
-                    if (eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
+                    if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
                     {
-                        warp(541010110, 0);
+                        await warp(541010110, 0);
                     }
                     else
                     {
@@ -6178,11 +6168,11 @@ namespace Application.Plugin.Script.Npc
             {
                 if (isQuestCompleted(3925))
                 {
-                    warp(260010402, 1);
+                    await warp(260010402, 1);
                 }
                 else
                 {
-                    Pink("尽管你说出了正确的答案，但门依然没有动静！");
+                    await Pink("尽管你说出了正确的答案，但门依然没有动静！");
                 }
             }
             else
@@ -6201,7 +6191,7 @@ namespace Application.Plugin.Script.Npc
             if (isQuestStarted(21728))
             {
                 await SayOK("你寻找着线索，试图找到操纵者的蛛丝马迹，但似乎有一股强大的力量挡住了你的去路……最好返回找 #b#p1061019##k。");
-                setQuestProgress(21728, 21761, 0);
+                await setQuestProgress(21728, 21761, 0);
                 return;
             }
 
@@ -6210,15 +6200,15 @@ namespace Application.Plugin.Script.Npc
             {
                 if (isQuestStarted(20730) && getQuestProgressInt(20730, 9300285) == 0)
                 {
-                    warp(910510001, 1);
+                    await warp(910510001, 1);
                 }
                 else if (isQuestStarted(21731) && getQuestProgressInt(21731, 9300346) == 0)
                 {
-                    warp(910510001, 1);
+                    await warp(910510001, 1);
                 }
                 else
                 {
-                    Pink("尽管你说出了正确的答案，但一些神秘的力量正在阻挡进入的道路。");
+                    await Pink("尽管你说出了正确的答案，但一些神秘的力量正在阻挡进入的道路。");
                 }
             }
             else
@@ -6241,36 +6231,36 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (progress == "10")
                         {
-                            setQuestProgress(3360, 1, "11");
-                            forceCompleteQuest(3360);
-                            message("已完成任务");
+                            await setQuestProgress(3360, 1, "11");
+                            await forceCompleteQuest(3360);
+                            await Pink("已完成任务");
                         }
                         else
                         {
-                            setQuestProgress(3360, 1, "01");
+                            await setQuestProgress(3360, 1, "01");
                         }
                     }
                     else if (getMapId() == 261010000)
                     {
                         if (progress == "01")
                         {
-                            setQuestProgress(3360, 1, "11");
-                            forceCompleteQuest(3360);
-                            message("已完成任务");
+                            await setQuestProgress(3360, 1, "11");
+                            await forceCompleteQuest(3360);
+                            await Pink("已完成任务");
                         }
                         else
                         {
-                            setQuestProgress(3360, 1, "10");
+                            await setQuestProgress(3360, 1, "10");
                         }
                     }
                 }
 
-                getPlayer().sendPacket(PacketCreator.playPortalSound());
-                warp(261030000, "sp_" + (getMapId() == 261010000 ? "jenu" : "alca"));
+                await getPlayer().SendPacket(PacketCreator.playPortalSound());
+                await warp(261030000, "sp_" + (getMapId() == 261010000 ? "jenu" : "alca"));
             }
             else
             {
-                sendOk("#r错误的密码！");
+                await SayOK("#r错误的密码！");
             }
         }
     }

@@ -56,17 +56,17 @@ namespace Application.Plugin.FakeCharacter
 
         public DateTimeOffset LastPacket => throw new NotImplementedException();
 
-        public void announceBossHpBar(Monster mm, int mobHash, Packet packet)
+        public Task announceBossHpBar(Monster mm, int mobHash, Packet packet)
         {
             throw new NotImplementedException();
         }
 
-        public void announceHint(string msg, int length)
+        public Task announceHint(string msg, int length)
         {
             throw new NotImplementedException();
         }
 
-        public void announceServerMessage()
+        public Task announceServerMessage()
         {
             throw new NotImplementedException();
         }
@@ -81,7 +81,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void ChangeChannel(int channel)
+        public Task ChangeChannel(int channel)
         {
             throw new NotImplementedException();
         }
@@ -96,7 +96,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void closePlayerScriptInteractions()
+        public Task closePlayerScriptInteractions()
         {
             throw new NotImplementedException();
         }
@@ -106,7 +106,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void CloseSocket()
+        public Task CloseSocket()
         {
             throw new NotImplementedException();
         }
@@ -116,17 +116,17 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             throw new NotImplementedException();
         }
 
-        public void enableCSActions()
+        public Task enableCSActions()
         {
             throw new NotImplementedException();
         }
 
-        public void ForceDisconnect()
+        public Task ForceDisconnect()
         {
             throw new NotImplementedException();
         }
@@ -161,17 +161,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void LeaveCashShop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void lockClient()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OpenNpc(int npcid, string? script = null)
+        public Task LeaveCashShop()
         {
             throw new NotImplementedException();
         }
@@ -181,7 +171,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void ProcessPacket(InPacket packet)
+        public Task ProcessPacket(InPacket packet)
         {
             throw new NotImplementedException();
         }
@@ -201,8 +191,9 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public void sendPacket(Packet packet)
+        public Task SendPacket(Packet p)
         {
+            return Task.CompletedTask;
         }
 
         public void SetAccount(AccountCtrl accountEntity)
@@ -225,12 +216,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public bool tryacquireClient()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void unlockClient()
+        public Task tryacquireClient()
         {
             throw new NotImplementedException();
         }

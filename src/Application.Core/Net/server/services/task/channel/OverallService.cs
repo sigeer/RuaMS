@@ -19,7 +19,7 @@
 */
 
 using Application.Core.Channel;
-using Application.Core.Channel.Commands;
+using Application.Utility.Pipeline;
 
 namespace net.server.services.task.channel;
 
@@ -51,12 +51,12 @@ public class OverallService : BaseService
         }
     }
 
-    public void registerOverallAction(int mapid, IWorldChannelCommand runAction, long delay)
+    public void registerOverallAction(int mapid, ICommand runAction, long delay)
     {
         channelSchedulers[getChannelSchedulerIndex(mapid)].registerDelayedAction(runAction, delay);
     }
 
-    public void forceRunOverallAction(int mapid, IWorldChannelCommand runAction)
+    public void forceRunOverallAction(int mapid, ICommand runAction)
     {
         channelSchedulers[getChannelSchedulerIndex(mapid)].forceRunDelayedAction(runAction);
     }
@@ -68,12 +68,12 @@ public class OverallService : BaseService
         {
         }
 
-        public void registerDelayedAction(IWorldChannelCommand runAction, long delay)
+        public void registerDelayedAction(ICommand runAction, long delay)
         {
             registerEntry(runAction, runAction, delay);
         }
 
-        public void forceRunDelayedAction(IWorldChannelCommand runAction)
+        public void forceRunDelayedAction(ICommand runAction)
         {
             interruptEntry(runAction);
         }

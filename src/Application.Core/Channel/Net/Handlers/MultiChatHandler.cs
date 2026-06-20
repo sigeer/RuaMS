@@ -21,12 +21,9 @@
 */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.ServerData;
 using client.autoban;
-using Google.Protobuf;
 using Microsoft.Extensions.Logging;
-using static Application.Core.Channel.Internal.Handlers.NoteHandlers;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -45,7 +42,7 @@ public class MultiChatHandler : ChannelHandlerBase
         _buddyManager = buddyManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var player = c.OnlinedCharacter;
         if (player.getAutobanManager().getLastSpam(7) + 200 > c.CurrentServer.Node.getCurrentTime())
@@ -65,7 +62,7 @@ public class MultiChatHandler : ChannelHandlerBase
         {
             _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit chats.");
             _logger.LogWarning("Chr {CharacterName} tried to send text with length of {ChatContent}", c.OnlinedCharacter.getName(), chattext.Length);
-            c.Disconnect(true, false);
+            await c.Disconnect(true, false);
             return;
         }
 

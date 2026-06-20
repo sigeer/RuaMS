@@ -68,11 +68,11 @@ namespace Application.Core.Game.Players
             return getParty()?.containsMembers(cid) ?? false;
         }
 
-        public void updatePartyMemberHP()
+        public async Task updatePartyMemberHP()
         {
             foreach (var player in this.getPartyMembersOnSameMap())
             {
-                player.sendPacket(TeamPacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
+                await player.SendPacket(TeamPacketCreator.updatePartyMemberHP(getId(), HP, ActualMaxHP));
             }
         }
 
@@ -81,7 +81,7 @@ namespace Application.Core.Game.Players
         /// </summary>
         /// <param name="party"></param>
         /// <param name="exPartyMembers">null：新增成员，否则移除成员</param>
-        public void HandleTeamMemberCountChanged(List<Player>? exPartyMembers)
+        public async Task HandleTeamMemberCountChanged(List<Player>? exPartyMembers)
         {
             List<WeakReference<IMap>> mapids;
 
@@ -112,7 +112,7 @@ namespace Application.Core.Game.Players
             {
                 if (mapRef.TryGetTarget(out var mapObj))
                 {
-                    List<MapItem> partyMapItems = mapObj.updatePlayerItemDropsToParty(partyId, Id, partyMembers, partyLeaver);
+                    List<MapItem> partyMapItems = await mapObj.updatePlayerItemDropsToParty(partyId, Id, partyMembers, partyLeaver);
                     if (MapModel.GetHashCode() == mapObj.GetHashCode())
                     {
                         partyItems = partyMapItems;
@@ -122,7 +122,7 @@ namespace Application.Core.Game.Players
 
             if (partyItems != null && exPartyMembers == null)
             {
-                MapModel.updatePartyItemDropsToNewcomer(this, partyItems);
+                await MapModel.updatePartyItemDropsToNewcomer(this, partyItems);
             }
         }
     }

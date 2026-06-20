@@ -5,7 +5,7 @@ using DotNetty.Transport.Channels;
 
 namespace Application.Shared.Client
 {
-    public interface ISocketClient
+    public interface ISocketClient: IAsyncDisposable
     {
         ISocketServer CurrentServerBase { get; }
         long SessionId { get; }
@@ -16,14 +16,14 @@ namespace Application.Shared.Client
 
         DateTimeOffset LastPacket { get; }
         void PongReceived();
-        void ProcessPacket(InPacket packet);
-        void sendPacket(Packet packet);
+        Task ProcessPacket(InPacket packet);
+        Task SendPacket(Packet p);
         void CloseSession();
-        void CloseSocket();
-        void ForceDisconnect();
+        Task CloseSocket();
+        Task ForceDisconnect();
         string GetSessionRemoteHost();
 
-        bool tryacquireClient();
+        Task tryacquireClient();
         void releaseClient();
     }
 }

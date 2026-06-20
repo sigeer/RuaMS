@@ -33,20 +33,42 @@ namespace Application.Core.Login.Session;
 
 /**
  * @author Ronan
+ *
+ * 登录服务器会话协调器 — 管理客户端登录/游戏会话的生命周期及并发冲突检测。
+ *
+ * 核心职责：
+ *   1. 多客户端限制（Anti-Multiclient）：通过 HWID、IP + nibbleHWID、账户尝试频率三重维度
+ *      阻止同一用户重复登录或同一机器多开。
+ *   2. HWID 管理：追踪 HWID 与账户的关联关系，持久化到数据库，并支持定期过期清理。
+ *   3. 会话状态维护：维护在线客户端字典、在线 HWID 集合、正在登录中的远程主机映射，
+ *      确保同一账户/HWID/IP 不会同时建立多个会话。
+ *   4. 从登录态到游戏态的无缝迁移：凭据校验通过后，将 HWID 从 "登录中" 集合迁移到 "游戏中" 集合，
+ *      并记录主机缓存供后续快速校验。
+ *   5. 日志追踪：提供快照方法 printSessionTrace() 输出当前在线客户端/HWID/登录会话明细，
+ *      辅助运维排障。
  */
 public class SessionCoordinator
 {
     readonly ILogger<SessionCoordinator> _logger;
 
+    /// <summary>会话初始化锁（按 remoteHost 粒度），防止同一个远端同时发起多个初始化请求。</summary>
     private SessionInitialization sessionInit;
+    /// <summary>登录尝试频率存储，防止同一账户短时内大量重试。</summary>
     private LoginStorage loginStorage;
-    private Dictionary<int, ILoginClient> onlineClients = new(); // Key: account id
-    private HashSet<Hwid> onlineRemoteHwids = new(); // Hwid/nibblehwid
-    private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new(); // Key: Ip (+ nibblehwid)
+    /// <summary>已登录的在线客户端字典，Key = 账户 Id，Value = 登录客户端。</summary>
+    private Dictionary<int, ILoginClient> onlineClients = new();
+    /// <summary>当前在线（含登录中 + 游戏中）的 HWID 集合，用于去重。</summary>
+    private HashSet<Hwid> onlineRemoteHwids = new();
+    /// <summary>正在登录流程中的远程主机集合，Key = "IP(+nibbleHWID)"，防止同一主机重叠发起登录。</summary>
+    private ConcurrentDictionary<string, ILoginClient> loginRemoteHosts = new();
 
+    /// <summary>主机 → HWID 缓存：登录成功后记录，供后续同 IP 快速恢复 HWID。</summary>
     private HostHwidCache hostHwidCache;
+    /// <summary>会话数据访问层，封装 HWID 关联表的 CRUD。</summary>
     readonly SessionDAO _sessionDAO;
+    /// <summary>EF Core DbContext 工厂，按需创建作用域内上下文。</summary>
     readonly IDbContextFactory<DBContext> _dbContextFactory;
+    /// <summary>HWID-账户关联的过期策略配置。</summary>
     readonly HwidAssociationExpiry _hwidAssociationExpiry;
     public SessionCoordinator(
         ILogger<SessionCoordinator> logger,
@@ -66,6 +88,18 @@ public class SessionCoordinator
         sessionInit = sessionInitialization;
     }
 
+    /// <summary>
+    /// 检查指定账户是否允许使用指定的 HWID 登录。
+    /// 规则：
+    ///   1. 如果该 HWID 已与该账户关联（HwidRelevance 中能查到匹配），则允许访问，
+    ///      且非例行检查时递增关联新鲜度（relevance）。
+    ///   2. 若未关联但关联总数未达上限（MAX_ALLOWED_ACCOUNT_HWID），也允许访问（首次绑定）。
+    ///   3. 超过上限则拒绝。
+    /// </summary>
+    /// <param name="accountId">账户 Id</param>
+    /// <param name="hwid">本次登录的 HWID</param>
+    /// <param name="routineCheck">是否为例行检查（true 时不更新 relevance）</param>
+    /// <returns>true 表示允许访问</returns>
     private bool attemptAccountAccess(int accountId, Hwid hwid, bool routineCheck)
     {
         try
@@ -100,9 +134,10 @@ public class SessionCoordinator
         return false;
     }
 
-    /**
-     * Overwrites any existing online client for the account id, making sure to disconnect it as well.
-     */
+    /// <summary>
+    /// 更新在线客户端记录。如果该账户已有在线客户端，先强制断开旧连接再替换。
+    /// 用于 CMS "Unstuck" 等场景，确保同一账户只有一个活跃会话。
+    /// </summary>
     public void updateOnlineClient(ILoginClient? client)
     {
         if (client != null && client.AccountEntity != null)
@@ -119,6 +154,14 @@ public class SessionCoordinator
         }
     }
 
+    /// <summary>
+    /// 检查并尝试注册一次登录会话的启动。
+    /// 仅在 DETERRED_MULTICLIENT = true 时执行多客户端限制逻辑：
+    ///   - 先通过 sessionInit 获取 remoteHost 粒度的初始化锁；
+    ///   - 检查该 remoteHost 是否已有已知 HWID 且正处于在线状态 → 拒绝；
+    ///   - 检查该 remoteHost 是否已在登录流程中 → 拒绝；
+    ///   - 通过后将客户端注册到 loginRemoteHosts，表示 "正在登录中"。
+    /// </summary>
     public bool canStartLoginSession(ILoginClient client)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
@@ -153,6 +196,10 @@ public class SessionCoordinator
         }
     }
 
+    /// <summary>
+    /// 关闭登录会话：从 loginRemoteHosts 移除记录，清除 HWID 关联的在线状态，
+    /// 并清理 onlineClients（仅当该客户端仍在登录态且未被游戏会话接管时）。
+    /// </summary>
     public void closeLoginSession(ILoginClient client)
     {
         string remoteHost = client.GetSessionRemoteHost();
@@ -179,6 +226,15 @@ public class SessionCoordinator
     }
 
 
+    /// <summary>
+    /// 执行登录会话尝试的完整检查（密码/PIC 验证通过后调用）。
+    /// 检查链路（短路返回）：
+    ///   1. loginStorage 防刷 —— 同一账户短时间内不能发起过多次登录请求。
+    ///   2. 例行检查时校验账户-HWID 关联是否超限。
+    ///   3. 检查该 HWID 是否已在线（不允许同一 HWID 双重登录）。
+    ///   4. 最终校验账户-HWID 关联是否允许。
+    /// 全部通过后记录 HWID => 客户端，并将 HWID 加入 onlineRemoteHwids。
+    /// </summary>
     public AntiMulticlientResult attemptLoginSession(IClientBase client, Hwid hwid, int accountId, bool routineCheck)
     {
         if (!YamlConfig.config.server.DETERRED_MULTICLIENT)
@@ -224,6 +280,16 @@ public class SessionCoordinator
         }
     }
 
+    /// <summary>
+    /// 执行游戏会话尝试 —— 当角色选择完成后，从登录态切换到游戏态时调用。
+    /// 流程：
+    ///   1. 从客户端取出登录阶段记录的 HWID（clientHwid）。
+    ///   2. 将登录阶段的 HWID 从 onlineRemoteHwids 移除（腾出位置）。
+    ///   3. 校验登录 HWID 与新传入的 HWID 是否一致。
+    ///   4. 检查该 HWID 是否已被其他游戏会话占用。
+    ///   5. 通过后将 HWID 重新加入 onlineRemoteHwids（此时角色已进入游戏），
+    ///      同时写入 hostHwidCache 供后续同 IP 快速查询，并持久化 HWID-账户关联。
+    /// </summary>
     public AntiMulticlientResult attemptGameSession(ILoginClient client, int accountId, Hwid hwid)
     {
         string remoteHost = client.GetSessionRemoteHost();
@@ -275,6 +341,10 @@ public class SessionCoordinator
         }
     }
 
+    /// <summary>
+    /// 如果 HWID 尚未与该账户绑定，且绑定数未达上限，则将其持久化到数据库。
+    /// 这在游戏会话启动时调用，确保每个新设备首次进入游戏时都会记录。
+    /// </summary>
     private void associateHwidAccountIfAbsent(Hwid hwid, int accountId)
     {
         try
@@ -301,10 +371,16 @@ public class SessionCoordinator
     }
 
     /// <summary>
-    /// 与closeLoginSession的区别？
+    /// 通用会话关闭方法，同时覆盖登录态和游戏态两种情况。
+    /// 与 closeLoginSession 的区别：
+    ///   - closeLoginSession 只处理登录态关闭（不移除 onlineClients 中的游戏会话）。
+    ///   - closeSession 通过 HWID 是否为 null 来区分当前是登录态还是游戏态：
+    ///     * hwid != null → 游戏态：直接移除 onlineClients 中的条目。
+    ///     * hwid == null → 登录态：仅当 matched SessionId 一致时才移除（避免误杀游戏会话）。
+    ///   - 支持 immediately 参数：在关闭会话后同步关闭底层 Socket。
     /// </summary>
-    /// <param name="client">ChannelClient</param>
-    /// <param name="immediately"></param>
+    /// <param name="client">待关闭的客户端</param>
+    /// <param name="immediately">是否立即关闭 Socket</param>
     public void closeSession(ILoginClient? client, bool immediately = false)
     {
         if (client == null)
@@ -342,6 +418,11 @@ public class SessionCoordinator
         }
     }
 
+    /// <summary>
+    /// 获取并移除缓存的 HWID。在登录会话阶段，客户端尚未携带 HWID，
+    /// 此方法通过 hostHwidCache 从 remoteAddress 反查之前（同一 IP）登录过的 HWID。
+    /// 解决同网络下玩家无法登录的问题（见 BHB, resinate 的反馈）。
+    /// </summary>
     public Hwid pickLoginSessionHwid(ILoginClient client)
     {
         string remoteHost = client.RemoteAddress;
@@ -349,16 +430,29 @@ public class SessionCoordinator
         return hostHwidCache.removeEntryAndGetItsHwid(remoteHost);
     }
 
+    /// <summary>
+    /// 清理过期的 HWID 主机缓存条目，定时由外部调用（如计划任务）。
+    /// </summary>
     public void clearExpiredHwidHistory()
     {
         hostHwidCache.clearExpired();
     }
 
+    /// <summary>
+    /// 清理过期的登录尝试记录，释放 LoginStorage 中的已过期条目。
+    /// </summary>
     public void runUpdateLoginHistory()
     {
         loginStorage.clearExpiredAttempts();
     }
 
+    /// <summary>
+    /// 输出当前会话状态的调试快照，包含：
+    ///   - 所有在线客户端（AccountId 列表）
+    ///   - 所有在线 HWID
+    ///   - 所有正在登录的远程主机
+    /// 用于运维排查多客户端冲突问题。
+    /// </summary>
     public void printSessionTrace()
     {
         if (onlineClients.Count > 0)

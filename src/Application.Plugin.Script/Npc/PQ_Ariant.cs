@@ -65,13 +65,13 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    var r = em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                     {
                         selectedExped = em.GetOnlyEventInstanceManager<AriantEventInstanceManager>();
 
                         selectedExped.MaxCount = inputNumber;
-                        getPlayer().dropMessage("房间创建成功，等待玩家加入。");
+                        await getPlayer().Notice("房间创建成功，等待玩家加入。");
                     }
                     else
                     {
@@ -86,7 +86,7 @@ namespace Application.Plugin.Script.Npc
                         return;
                     }
 
-                    var playerAdd = em.GetTemplate.JoinMember(selectedExped, getPlayer());
+                    var playerAdd = await em.GetTemplate.JoinMember(selectedExped, getPlayer());
                     await SayOK(em.GetTemplate.HandleJoinInstanceResult(playerAdd, c));
                 }
             }
@@ -106,7 +106,7 @@ namespace Application.Plugin.Script.Npc
                         await SayNext("哇，看起来你已经准备好要交易的#b100#k点数了，我们来交易吧！");
 
                         getPlayer().AriantPoints -= 100;
-                        gainItem(3010018, 1);
+                        await gainItem(3010018, 1);
                     }
                     else
                     {
@@ -136,7 +136,7 @@ namespace Application.Plugin.Script.Npc
             var points = eim.getAriantRewardTier(getPlayer());
             await SayNext("好的，让我看看……你做得非常好，而且你带来了我喜欢的#b" + copns + "#k珠宝。由于你完成了比赛，我将奖励你#b" + points + "点#k战斗竞技场分数。如果你想了解更多关于战斗竞技场分数的信息，那就去找#b#p2101015##k谈谈吧。");
 
-            var r = eim.GiveClearReward(getPlayer(), points);
+            var r = await eim.GiveClearReward(getPlayer(), points);
             if (r == ClaimRewardResult.Success)
             {
                 await SayOK("好的！下次再给我更多的宝石！啊哈哈哈哈哈！");
@@ -161,14 +161,14 @@ namespace Application.Plugin.Script.Npc
                         case 1:
                             var members = eim.GetPlayerSortList();
                             var selected = await AskMenu($"以下成员在房间里（点击成员名字可以将其踢出房间）：\r\n1. {members[0].Name}", members.Skip(1).Select((x, idx) => $"{idx + 2}. {x.Name}")) + 1;
-                            eim.ban(members[selected].Id);
+                            await eim.ban(members[selected].Id);
                             await SayOK($"你已经从房间中禁止了 {members[selected].Name}");
                             break;
                         case 2:
-                            eim.StartBattle();
+                            await eim.StartBattle();
                             break;
                         case 4:
-                            WarpReturn();
+                            await WarpReturn();
                             break;
                         default:
                             break;
@@ -189,8 +189,8 @@ namespace Application.Plugin.Script.Npc
                 else if (canHoldAll([2270002, 2100067], [50, 5]))
                 {
                     eim.setProperty("gotBomb" + getChar().getId(), "1");
-                    gainItem(2270002, 50);
-                    gainItem(2100067, 5);
+                    await gainItem(2270002, 50);
+                    await gainItem(2100067, 5);
 
                     await SayOK("我已经给了你(5) #b#e#t2100067##k#n和(50) #b#e#t2270002##k#n。\r\n使用#t2270002#来捕捉蝎子，以获取#r#e灵魂宝石#k#n！");
                 }
@@ -213,7 +213,7 @@ namespace Application.Plugin.Script.Npc
             await AskMenu("如果你是来自#b佩里安#k，在巴尔洛克舞者指导下训练的强大勇士，那么你对参加阿里安竞技场挑战感兴趣吗？！\r\n#b#L0# 我很想参加这场盛大的比赛。#l");
             await SayNext("好的，现在我会把你送到战斗竞技场。我希望看到你取得胜利！");
             getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.MIRROR);
-            warp(MapId.ARPQ_LOBBY, 3);
+            await warp(MapId.ARPQ_LOBBY, 3);
         }
     }
 }

@@ -1,5 +1,3 @@
-using Application.Core.Channel.Commands;
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using Config;
 using Google.Protobuf;
@@ -17,9 +15,9 @@ namespace Application.Core.Channel.Internal.Handlers
         protected override void HandleMessage(WorldConfig res)
         {
             _server.UpdateWorldConfig(res);
-            _server.Broadcast(w =>
+            _server.Broadcast(async w =>
             {
-                w.UpdateWorldConfig(res);
+                await w.UpdateWorldConfig(res);
             });
         }
 

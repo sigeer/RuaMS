@@ -83,14 +83,15 @@ namespace Application.Core.Login.ServerData
             if (chr == null || chr.Channel != -1)
                 return new UseCdkResponse { Code = (int)UseCdkResponseCode.FetalError };
 
-            var data = Query(x => x.Code == request.Cdk).FirstOrDefault();
+            var lockObj = _cdkLocks.GetOrAdd(request.Cdk, new Lock());
 
-            if (data != null)
+            lock (lockObj)
             {
-                var lockObj = _cdkLocks.GetOrAdd(request.Cdk, new Lock());
+                var data = Query(x => x.Code == request.Cdk).FirstOrDefault();
 
-                lock (lockObj)
+                if (data != null)
                 {
+
                     if (data.Expiration < _server.getCurrentTime())
                         return new UseCdkResponse { Code = (int)UseCdkResponseCode.Expired };
 

@@ -1,14 +1,11 @@
 using Application.Core.Channel;
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Items;
 using Application.Templates;
 using Application.Templates.Item.Cash;
 using client.inventory;
-using Humanizer;
 using System.Collections;
 using System.Diagnostics;
-using tools;
 using ZLinq;
 
 namespace Application.Core.Client.inventory
@@ -43,7 +40,7 @@ namespace Application.Core.Client.inventory
         #region Slots
         public abstract bool CanGainSlot(short slots);
         public abstract byte getSlotLimit();
-        public abstract void setSlotLimit(int newLimit);
+        public abstract Task setSlotLimit(int newLimit);
         public abstract short getNextFreeSlot();
 
         public abstract short getNumFreeSlot();
@@ -105,7 +102,7 @@ namespace Application.Core.Client.inventory
         List<Item> _tickToUpdate = [];
         List<IInventoryOperationCommand> _tickToSync = [];
         List<ReplaceItemTemplate> _tickToReplace = [];
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
             if (_timedItems.Count == 0)
             {
@@ -162,7 +159,7 @@ namespace Application.Core.Client.inventory
 
                 }
 
-                OnTickItem(now, item, _tickToUpdate, _tickToRemove);
+                await OnTickItem(now, item, _tickToUpdate, _tickToRemove);
             }
 
             foreach (var item in _tickToUpdate)
@@ -173,14 +170,14 @@ namespace Application.Core.Client.inventory
 
             foreach (var item in _tickToRemove)
             {
-                var op = removeSlot(item.getPosition());
+                var op = await removeSlot(item.getPosition());
                 if (op != null)
                 {
                     _tickToSync.Add(op);
 
                     if (item.SourceTemplate.Cash)
                     {
-                        Owner.sendPacket(MessagePacket.CashItemExpireMessage(item.getItemId()));
+                        await Owner.SendPacket(MessagePacket.CashItemExpireMessage(item.getItemId()));
                     }
 
                     if (item.SourceTemplate.ReplaceItem != null)
@@ -193,10 +190,10 @@ namespace Application.Core.Client.inventory
             var toRemoveGeneral = _tickToRemove.Where(x => !x.SourceTemplate.Cash).Select(x => x.getItemId()).ToArray();
             if (toRemoveGeneral.Length > 0)
             {
-                Owner.sendPacket(MessagePacket.GeneralItemExpireMessage(toRemoveGeneral));
+                await Owner.SendPacket(MessagePacket.GeneralItemExpireMessage(toRemoveGeneral));
             }
 
-            Owner.SyncClientInventory(_tickToSync);
+            await Owner.SyncClientInventory(_tickToSync);
 
             foreach (var item in _tickToReplace)
             {
@@ -204,10 +201,10 @@ namespace Application.Core.Client.inventory
                 {
                     if (!string.IsNullOrEmpty(item.Message))
                     {
-                        Owner.Notice(item.Message);
+                        await Owner.Notice(item.Message);
                     }
-                    Owner.GainItem(item.ItemId, 1,
-                        expires: item.Period.GetExpirationFromMinutes());
+                    await Owner.GainItem(item.ItemId, 1,
+                          expires: item.Period.GetExpirationFromMinutes());
                 }
             }
 
@@ -217,10 +214,7 @@ namespace Application.Core.Client.inventory
             }
         }
 
-        protected virtual void OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove)
-        {
-
-        }
+        protected virtual Task OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove) => Task.CompletedTask;
 
         /// <summary>
         /// 加入背包
@@ -228,7 +222,7 @@ namespace Application.Core.Client.inventory
         /// <param name="position"></param>
         /// <param name="item"></param>
         /// <param name="fromLogin"></param>
-        protected virtual void OnItemEnter(short position, Item item, bool fromLogin)
+        protected virtual Task OnItemEnter(short position, Item item, bool fromLogin)
         {
             if (item.getExpiration() != -1)
             {
@@ -239,17 +233,19 @@ namespace Application.Core.Client.inventory
                 // tick > now的不会触发
                 _timedItems.Add(new TimedItemWrapper(item, 0));
             }
+            return Task.CompletedTask;
         }
         /// <summary>
         /// 从背包移除
         /// </summary>
         /// <param name="item"></param>
-        protected virtual void OnItemLeave(Item item)
+        protected virtual Task OnItemLeave(Item item)
         {
             _timedItems.RemoveWhere(x => x.Item == item);
+            return Task.CompletedTask;
         }
 
-        public abstract void PutItem(short position, Item item, bool fromLogin);
+        public abstract Task PutItem(short position, Item item, bool fromLogin);
 
         public abstract void SwapFromMove(short sSlot, short dSlot);
 
@@ -262,23 +258,23 @@ namespace Application.Core.Client.inventory
         /// <param name="quantity"></param>
         /// <param name="allowZero"></param>
         /// <returns></returns>
-        public IInventoryOperationCommand? removeItem(short slot, out short actualRemoved, short quantity = 1, bool allowZero = false)
+        public async Task<(IInventoryOperationCommand?, short actualRemoved)> removeItem(short slot, short quantity = 1, bool allowZero = false)
         {
-            actualRemoved = 0;
             var item = getItem(slot);
             if (item == null)
             {
                 // TODO is it ok not to throw an exception here?
-                return null;
+                return (null, 0);
             }
 
             if (quantity < 0)
             {
-                return null;
+                return (null, 0);
             }
 
             var original = item.getQuantity();
             var left = original - quantity;
+            short actualRemoved;
 
             if (left <= 0)
             {
@@ -293,7 +289,7 @@ namespace Application.Core.Client.inventory
 
             IInventoryOperationCommand? op = null;
             if (left <= 0 && !allowZero)
-                op = removeSlot(slot);
+                op = await removeSlot(slot);
             else
             {
                 op = new InventoryUpdateQuantity(item.getInventoryType(), slot, item.getQuantity());
@@ -309,9 +305,9 @@ namespace Application.Core.Client.inventory
                             ["RemoveCount"] = quantity,
                             ["ActualRemoved"] = actualRemoved
                         }));
-            return op;
+            return (op, actualRemoved);
         }
-        public abstract IInventoryOperationCommand? removeSlot(short slot);
+        public abstract Task<IInventoryOperationCommand?> removeSlot(short slot);
         #endregion
 
         public abstract void Dispose();

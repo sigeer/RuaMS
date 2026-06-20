@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
 public class QuestActionHandler : ChannelHandlerBase
 {
     // isNpcNearby thanks to GabrielSin
-    private static bool isNpcNearby(InPacket p, Player player, Quest quest, int npcId)
+    private static async Task<bool> isNpcNearby(InPacket p, Player player, Quest quest, int npcId)
     {
         Point playerP;
         Point pos = player.getPosition();
@@ -61,7 +61,7 @@ public class QuestActionHandler : ChannelHandlerBase
             Point npcP = npc.getPosition();
             if (Math.Abs(npcP.X - playerP.X) > 1200 || Math.Abs(npcP.Y - playerP.Y) > 800)
             {
-                player.dropMessage(5, "Approach the NPC to fulfill this quest operation.");
+                await player.dropMessage(5, "Approach the NPC to fulfill this quest operation.");
                 return false;
             }
         }
@@ -69,7 +69,7 @@ public class QuestActionHandler : ChannelHandlerBase
         return true;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         byte action = p.readByte();
         short questid = p.readShort();
@@ -81,54 +81,54 @@ public class QuestActionHandler : ChannelHandlerBase
             case 0: // Restore lost item, Credits Darter ( Rajan )
                 p.readInt();
                 int itemid = p.readInt();
-                quest.restoreLostItem(player, itemid);
+                await quest.restoreLostItem(player, itemid);
                 break;
             case 1:
                 { // Start Quest
                     int npc = p.readInt();
-                    if (!isNpcNearby(p, player, quest, npc))
+                    if (!await isNpcNearby(p, player, quest, npc))
                     {
                         return;
                     }
-                    if (quest.canStart(player, npc))
+                    if (await quest.canStart(player, npc))
                     {
-                        quest.start(player, npc);
+                        await quest.start(player, npc);
                     }
                     break;
                 }
             case 2:
                 { // Complete Quest
                     int npc = p.readInt();
-                    if (!isNpcNearby(p, player, quest, npc))
+                    if (!await isNpcNearby(p, player, quest, npc))
                     {
                         return;
                     }
-                    if (quest.canComplete(player, npc))
+                    if (await quest.canComplete(player, npc))
                     {
                         if (p.available() >= 2)
                         {
                             int selection = p.readShort();
-                            quest.complete(player, npc, selection);
+                            await quest.complete(player, npc, selection);
                         }
                         else
                         {
-                            quest.complete(player, npc);
+                            await quest.complete(player, npc);
                         }
                     }
                     break;
                 }
             case 3: // forfeit quest
-                quest.forfeit(player);
+                await quest.forfeit(player);
                 break;
             case 4:
                 {
                     // scripted start quest
                     int npc = p.readInt();
-                    if (!isNpcNearby(p, player, quest, npc))
+                    if (!await isNpcNearby(p, player, quest, npc))
                     {
                         return;
                     }
-                    if (quest.canStart(player, npc))
+                    if (await quest.canStart(player, npc))
                     {
                         _ = c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, true);
                         // c.CurrentServer.QuestScriptManager.start(c, questid, npc);
@@ -138,18 +138,18 @@ public class QuestActionHandler : ChannelHandlerBase
             case 5:
                 { // scripted end quests
                     int npc = p.readInt();
-                    if (!isNpcNearby(p, player, quest, npc))
+                    if (!await isNpcNearby(p, player, quest, npc))
                     {
                         return;
                     }
-                    if (quest.canComplete(player, npc))
+                    if (await quest.canComplete(player, npc))
                     {
-                        _ = c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, false);
+                        await c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, false);
                         // c.CurrentServer.QuestScriptManager.end(c, questid, npc);
                     }
                     break;
                 }
         }
-        player.sendPacket(PacketCreator.enableActions());
+        await player.SendPacket(PacketCreator.enableActions());
     }
 }

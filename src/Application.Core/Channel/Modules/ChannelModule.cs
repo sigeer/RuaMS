@@ -1,17 +1,8 @@
 using Application.Core.Channel.Commands;
-using Application.Core.Game.Life;
-using Application.Core.Game.Players;
-using Application.Core.Game.Relation;
 using Application.Resources.Messages;
-using Application.Shared.Net;
 using Microsoft.Extensions.Logging;
-using net.server.guild;
 using SyncProto;
-using System.Threading.Channels;
-using System.Xml.Linq;
 using tools;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Channel.Modules
 {

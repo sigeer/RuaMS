@@ -1,5 +1,4 @@
 using Application.Core.Channel.Actor;
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Message;
@@ -10,7 +9,6 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
 using Application.Core.Gameplay.Plugins;
-using Application.Core.Plugins;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Servers;
@@ -194,7 +192,7 @@ namespace Application.Core.Channel
             PluginManager = new(this);
 
             _messageDispatcher = new(() => new(this));
-            CommandLoop = new (this);
+            CommandLoop = new(this);
         }
 
         #region 时间
@@ -367,7 +365,7 @@ namespace Application.Core.Channel
             DataService.LoadAllPLife();
             DataService.LoadAllReactorDrops();
 
-           
+
 
             foreach (var item in ServiceProvider.GetServices<DataBootstrap>())
             {
@@ -387,12 +385,12 @@ namespace Application.Core.Channel
             }, cancellationToken);
 
 
-            NodeTickTask.Register(TimerManager);
-            ServerMessageTask.Register(TimerManager);
-            MapOwnershipTask.Register(TimerManager);
+            await NodeTickTask.Register(TimerManager);
+            await ServerMessageTask.Register(TimerManager);
+            await MapOwnershipTask.Register(TimerManager);
 
-            invitationTask = TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-            playerShopTask = TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            invitationTask = await TimerManager.register(new InvitationTask(this), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            playerShopTask = await TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 
 #if !DEBUG
             timeoutTask = TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
@@ -484,11 +482,6 @@ namespace Application.Core.Channel
             _ = Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
         }
 
-        public void EarnTitleMessage(string message, bool onlyGM)
-        {
-            SendDropMessage(-2, message, onlyGM);
-        }
-
         public void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
             if (updatePatch.MobRate.HasValue)
@@ -545,7 +538,7 @@ namespace Application.Core.Channel
             _ = Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
         }
 
-        public void PushChannelCommand(IWorldChannelCommand command)
+        public void PushChannelCommand(ICommand command)
         {
             foreach (var item in Servers.Values)
             {
@@ -561,6 +554,14 @@ namespace Application.Core.Channel
             }
         }
 
+        public async Task BroadcastAsync(Func<WorldChannel, Task> action)
+        {
+            foreach (var item in Servers.Values)
+            {
+                await item.Send(action);
+            }
+        }
+
         public void Broadcast(Action<WorldChannel> action)
         {
             foreach (var item in Servers.Values)
@@ -568,6 +569,14 @@ namespace Application.Core.Channel
                 item.Send(action);
             }
         }
+        public async Task BroadcastAsync(Action<WorldChannel> action)
+        {
+            foreach (var item in Servers.Values)
+            {
+                await item.Send(action);
+            }
+        }
+
 
         internal DistributeSession<int, PlayerSaveDto> CreateSyncPlayerSession()
         {
@@ -585,9 +594,9 @@ namespace Application.Core.Channel
 
         public Task Send(Action<WorldChannelServer> action) => Send(new NodeDelegateCommand(action));
 
-        public void OnTick(long now)
+        public async Task OnTick(long now)
         {
-            Send(new NodeTickCommand(w =>
+            await Send(new NodeTickCommand(w =>
             {
                 foreach (var item in w.Servers.Values)
                 {

@@ -41,7 +41,7 @@ public class GiveFameHandler : ChannelHandlerBase
         _autoBanManager = autoBanManager;
     }
 
-    public override void HandlePacket(InPacket p, IChannelClient c)
+    public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var target = c.OnlinedCharacter.getMap().getMapObject(p.readInt()) as Player;
         int mode = p.readByte();
@@ -49,7 +49,7 @@ public class GiveFameHandler : ChannelHandlerBase
         var player = c.OnlinedCharacter;
         if (player.Level < 15)
         {
-            player.sendPacket(PacketCreator.giveFameErrorResponse(2));
+            await player.SendPacket(PacketCreator.giveFameErrorResponse(2));
             return;
         }
         if (target == null || target.getId() == player.getId())
@@ -60,14 +60,14 @@ public class GiveFameHandler : ChannelHandlerBase
         {
             _autoBanManager.Alert(AutobanFactory.PACKET_EDIT, c.OnlinedCharacter, c.OnlinedCharacter.getName() + " tried to packet edit fame.");
             _logger.LogWarning("Chr {CharacterName} tried to fame hack with famechange {FameChange}", c.OnlinedCharacter.getName(), famechange);
-            c.Disconnect(true);
+            await c.Disconnect(true);
             return;
         }
 
         var status = player.canGiveFame(target);
         if (status == FameStatus.OK)
         {
-            if (target.gainFame(famechange, player, mode))
+            if (await target.gainFame(famechange, player, mode))
             {
                 if (!player.isGM())
                 {
@@ -76,12 +76,12 @@ public class GiveFameHandler : ChannelHandlerBase
             }
             else
             {
-                player.MessageI18N(nameof(ClientMessage.ChangeFame_OutOfRange));
+                await player.Pink(nameof(ClientMessage.ChangeFame_OutOfRange));
             }
         }
         else
         {
-            c.sendPacket(PacketCreator.giveFameErrorResponse(status == FameStatus.NOT_TODAY ? 3 : 4));
+            await c.SendPacket(PacketCreator.giveFameErrorResponse(status == FameStatus.NOT_TODAY ? 3 : 4));
         }
     }
 }

@@ -422,7 +422,7 @@ namespace Application.Module.Maker.Channel
         }
 
 
-        public short getCreateStatus(IChannelClient c, MakerItemCreateEntry? recipe)
+        public async Task<short> getCreateStatus(IChannelClient c, MakerItemCreateEntry? recipe)
         {
             if (recipe == null || recipe.isInvalid())
             {
@@ -466,7 +466,7 @@ namespace Application.Module.Maker.Channel
                 addQuantity.Add(p.Quantity);
             }
 
-            if (!c.getAbstractPlayerInteraction().canHoldAllAfterRemoving(addItemids, addQuantity, rmvItemids, rmvQuantity))
+            if (!await c.getAbstractPlayerInteraction().canHoldAllAfterRemoving(addItemids, addQuantity, rmvItemids, rmvQuantity))
             {
                 return 5;
             }
@@ -487,7 +487,7 @@ namespace Application.Module.Maker.Channel
             return true;
         }
 
-        public bool addBoostedMakerItem(IChannelClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
+        public async Task<bool> addBoostedMakerItem(IChannelClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
         {
             if (stimulantid != -1 && !ItemInformationProvider.rollSuccessChance(90.0))
             {
@@ -576,7 +576,7 @@ namespace Application.Module.Maker.Channel
                 eqp = ii.randomizeUpgradeStats(eqp);
             }
 
-            InventoryManipulator.addFromDrop(c, eqp, false);
+            await InventoryManipulator.addFromDrop(c, eqp, false);
             return true;
         }
     }

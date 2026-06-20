@@ -1,18 +1,19 @@
 using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm2;
+
 public class SetSlotCommand : CommandBase
 {
     public SetSlotCommand() : base(2, "setslot")
     {
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            player.YellowMessageI18N(nameof(ClientMessage.SetSlotCommand_Syntax));
+            await player.Yellow(nameof(ClientMessage.SetSlotCommand_Syntax));
             return;
         }
 
@@ -25,9 +26,9 @@ public class SetSlotCommand : CommandBase
                 continue;
             }
 
-            player.gainSlots(i, slots - curSlots, true);
+            await player.gainSlots(i, slots - curSlots, true);
         }
 
-        player.YellowMessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+        await player.Yellow(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
     }
 }
