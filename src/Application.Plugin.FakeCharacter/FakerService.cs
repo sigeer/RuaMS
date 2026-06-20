@@ -4,6 +4,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Gameplay.Plugins;
 using Application.Plugin.FakeCharacter.Commands;
+using Application.Shared.MapObjects;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
@@ -61,7 +62,7 @@ namespace Application.Plugin.FakeCharacter
 
         public async Task OnMapObjectEnterField(IMap map, IMapObject mapObject)
         {
-            if (mapObject is Player chr && chr.isLeader())
+            if (mapObject is Player chr && chr is not FakePlayer && chr.isLeader())
             {
                 foreach (var fakeChr in GetPlayerFakePlayers(chr))
                 {
@@ -78,7 +79,7 @@ namespace Application.Plugin.FakeCharacter
 
         public async Task OnMapObjectLeaveField(IMap map, IMapObject mapObject)
         {
-            if (mapObject is Player chr && chr.isLeader())
+            if (mapObject is Player chr && chr is not FakePlayer && chr.isLeader())
             {
                 foreach (var fakeChr in GetPlayerFakePlayers(chr))
                 {

@@ -190,9 +190,12 @@ namespace Application.Plugin.FakeCharacter
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// 假人没有真实客户端，不需要向自身发送数据包
+        /// </summary>
         public Task SendPacket(Packet p)
         {
+            // 可以在这里模拟客户端接收后的处理
             return Task.CompletedTask;
         }
 

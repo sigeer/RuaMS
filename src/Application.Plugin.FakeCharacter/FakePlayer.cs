@@ -129,15 +129,6 @@ namespace Application.Plugin.FakeCharacter
             return Id;
         }
 
-        /// <summary>
-        /// 假人没有真实客户端，不需要向自身发送数据包
-        /// </summary>
-        public override Task SendPacket(Packet packet)
-        {
-            // 不存在客户端，不需要发送
-            return Task.CompletedTask;
-        }
-
         public static int GetFakePlayerId(Player chr, int idx)
         {
             return 500000 + idx * 10000 + chr.Id;
@@ -203,7 +194,7 @@ namespace Application.Plugin.FakeCharacter
         /// </summary>
         /// <param name="targetPos">目标位置</param>
         /// <param name="durationMs">移动持续时间（毫秒），越小速度越快</param>
-        public async Task WalkTo(Point targetPos, int durationMs = 400)
+        public async Task WalkTo(Point targetPos, int durationMs = 400, int finalStance = 4)
         {
             var startPos = getPosition();
 
@@ -227,7 +218,8 @@ namespace Application.Plugin.FakeCharacter
 
             List<LifeMovementFragment> movements =
             [
-                new AbsoluteLifeMovement(0, targetPos, durationMs, newstate)
+                new AbsoluteLifeMovement(0, targetPos, durationMs, newstate),
+                new AbsoluteLifeMovement(0, targetPos, 0, finalStance)
             ];
             ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(velocity);
             ((AbsoluteLifeMovement)movements[0]).setFh(GetFoothold(targetPos));
@@ -248,7 +240,7 @@ namespace Application.Plugin.FakeCharacter
         /// <param name="targetPos">目标位置</param>
         /// <param name="stepPx">每段最大像素</param>
         /// <param name="segmentDurationMs">每段持续时间（毫秒）</param>
-        public async Task WalkToStepped(Point targetPos, int stepPx = 120, int segmentDurationMs = 400)
+        public async Task WalkToStepped(Point targetPos, int stepPx = 120, int segmentDurationMs = 400, int finalStance = 4)
         {
             var startPos = getPosition();
             int dx = targetPos.X - startPos.X;
@@ -275,7 +267,7 @@ namespace Application.Plugin.FakeCharacter
                 ));
             }
 
-            await WalkPath(path, segmentDurationMs);
+            await WalkPath(path, segmentDurationMs, finalStance);
         }
 
         // ================================================================
@@ -295,7 +287,7 @@ namespace Application.Plugin.FakeCharacter
         /// <param name="path">路径点列表（至少一个点）</param>
         /// <param name="segmentDurationMs">每段移动的毫秒数</param>
         /// <param name="finalStance">最后一段终点的姿态，null=自动根据方向决定</param>
-        public async Task WalkPath(List<Point> path, int segmentDurationMs = 400, int? finalStance = null)
+        public async Task WalkPath(List<Point> path, int segmentDurationMs = 400, int finalStance = 4)
         {
             if (path.Count == 0) return;
 
@@ -311,8 +303,8 @@ namespace Application.Plugin.FakeCharacter
 
                 // 如果是最后一段并且有 finalStance，用它覆盖
                 int stance;
-                if (finalStance.HasValue && i == path.Count - 1)
-                    stance = finalStance.Value;
+                if (i == path.Count - 1)
+                    stance = finalStance;
                 else
                     stance = segDx >= 0 ? 2 : 3;
 
@@ -486,7 +478,7 @@ namespace Application.Plugin.FakeCharacter
             {
                 // 第三次——闪现
                 setStance(targetStance);
-                await TeleportTo(targetPos);
+                await TeleportTo(targetPos, targetStance);
                 if (Distance(getPosition(), targetPos) <= closeEnoughPx)
                 {
                     _followFailCount = 0;
@@ -518,7 +510,7 @@ namespace Application.Plugin.FakeCharacter
             // 如果跨越不同平台/在空中的部分，客户端会渲染为行走 + 下落动画，
             // 看起来不太自然，但 Follow 会快速重试 → TeleportTo 兜底。
             setStance(targetStance);
-            await WalkToStepped(targetPos);
+            await WalkToStepped(targetPos, finalStance: targetStance);
 
             return Distance(getPosition(), targetPos) <= closeEnoughPx;
         }

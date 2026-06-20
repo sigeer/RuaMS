@@ -3427,7 +3427,7 @@ public partial class Player
     }
 
 
-    public virtual Task SendPacket(Packet packet) => Client.SendPacket(packet);
+    public Task SendPacket(Packet packet) => Client.SendPacket(packet);
 
     public override int getObjectId()
     {
