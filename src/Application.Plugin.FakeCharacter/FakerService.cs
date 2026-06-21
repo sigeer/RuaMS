@@ -4,9 +4,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Gameplay.Plugins;
 using Application.Plugin.FakeCharacter.Commands;
-using Application.Shared.MapObjects;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
 
 namespace Application.Plugin.FakeCharacter
 {
@@ -30,7 +28,17 @@ namespace Application.Plugin.FakeCharacter
             var fakeId = FakePlayer.GetFakePlayerId(chr, idx);
             if (_dataSource.TryGetValue(fakeId, out var fakeChr))
             {
-                await fakeChr.Follow(chr);
+                var followed = await fakeChr.Follow(chr);
+                if (!followed)
+                {
+                    // 销毁重建
+                    await Remove(chr, idx);
+
+                    fakeChr = new FakePlayer(chr, chr.MapModel, chr.getPosition(), idx);
+                    await chr.MapModel.addPlayer(fakeChr);
+                    await fakeChr.BroadcastIdle();
+                    _dataSource[fakeId] = fakeChr;
+                }
             }
             else
             {

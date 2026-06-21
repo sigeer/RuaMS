@@ -9,9 +9,6 @@ using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using scripting;
 using scripting.npc;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.FakeCharacter
 {

@@ -105,21 +105,19 @@ namespace Application.Plugin.FakeCharacter
                         Sp = "0,0,0,0,0,0",
                         Hp = NumericConfig.MaxHP,
                         Maxhp = NumericConfig.MaxHP,
-                        Mp = NumericConfig.MaxHP,
+                        Mp = NumericConfig.MaxMP,
                         Maxmp = NumericConfig.MaxMP,
                     }
                 }
             )
         {
             Id = GetFakePlayerId(owner, idx);
-            Name = $"假人${idx}号";
-            Face = 20000;
-            Hair = 30030;
-            Party = -1;
+            Name = $"假人{idx}号";
+            Face = owner.Face;
+            Hair = owner.Hair;
+            Gender = owner.Gender;
 
-            // 同步主人的姿态。
-            // stance 编码：bit0=方向(0右/1左), bit1+=动作类型（ID 含义在客户端 WZ 中定义）。
-            // 简单做法：主人是什么姿态假人就设成什么姿态，客户端会渲染为相同动画。
+            Party = -1;
             setStance(owner.getStance());
         }
 
