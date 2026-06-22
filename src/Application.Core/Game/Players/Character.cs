@@ -3686,13 +3686,13 @@ public partial class Player
         this.partyQuest = pq;
     }
 
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         if (extraRecoveryTask != null)
         {
             await extraRecoveryTask.CancelAsync(true);
+            extraRecoveryTask = null;
         }
-        extraRecoveryTask = null;
 
         // already done on unregisterChairBuff
         /* if (chairRecoveryTask != null) { chairRecoveryTask.cancel(true); }

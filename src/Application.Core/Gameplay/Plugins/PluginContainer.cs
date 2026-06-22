@@ -26,8 +26,9 @@ namespace Application.Core.Gameplay.Plugins
             {
                 await item.DisposeAsync();
             }
+            PluginServices.Clear();
             LoadContext.Unload();
-            Log.Logger.Information("插件卸载完成");
+            Log.Logger.Information("插件[{PluginName}] 卸载完成", LoadContext.PluginName);
             // 清理卷影副本目录
             try
             {

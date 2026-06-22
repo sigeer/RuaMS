@@ -252,7 +252,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             return;
         }
 
-        // NodeService.PluginManager.GetPluginContainer("Application.Plugin.Events").
+        // NodeService.PluginManager.GetPluginContainer("Application.Plugin.Script")
     }
     public async Task Initialize(Config.RegisterServerResult config)
     {

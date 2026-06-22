@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -306,6 +307,11 @@ namespace Application.Plugin.Script
             _portalSource.Clear();
             _reactorActSource.Clear();
             _reactorHitSource.Clear();
+        }
+
+        public Task OnMounted(WorldChannelServer node)
+        {
+            return Task.CompletedTask;
         }
     }
 }

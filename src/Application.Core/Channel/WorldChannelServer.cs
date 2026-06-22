@@ -351,8 +351,10 @@ namespace Application.Core.Channel
 
             try
             {
-                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
+                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName };
                 watcher.Changed += OnFileChanged;
+                watcher.Created += OnFileChanged;
+                watcher.Deleted += OnFileDeleted;
                 watcher.EnableRaisingEvents = true;
 
                 await LoadAllPlugins();
@@ -416,8 +418,9 @@ namespace Application.Core.Channel
                 var pluginName = Path.GetFileName(pluginFile);
                 try
                 {
-                    _logger.LogInformation("加载插件: {PluginName}", pluginName);
+                    _logger.LogInformation("加载插件: {PluginName}...", pluginName);
                     await PluginManager.LoadPlugin(pluginName);
+                    _logger.LogInformation("加载插件: {PluginName}...完成", pluginName);
                 }
                 catch (Exception ex)
                 {
@@ -440,6 +443,16 @@ namespace Application.Core.Channel
             _logger.LogInformation("插件更新: {PluginName}", e.Name);
 
             await PluginManager.LoadPlugin(e.Name);
+        }
+
+        private async void OnFileDeleted(object sender, FileSystemEventArgs e)
+        {
+            if (!e.Name.StartsWith("Application.Plugin.")) return;
+
+            _logger.LogInformation("插件删除: {PluginName}", e.Name);
+
+            var pluginName = Path.GetFileNameWithoutExtension(e.Name);
+            await PluginManager.UnloadPlugin(pluginName);
         }
 
 

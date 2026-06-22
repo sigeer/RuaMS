@@ -1,4 +1,4 @@
-namespace Application.Core.server.movement
+namespace server.movement
 {
     public enum StanceConstant
     {

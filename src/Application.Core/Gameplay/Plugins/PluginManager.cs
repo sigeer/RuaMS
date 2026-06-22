@@ -6,6 +6,7 @@ using server.maps;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Threading.Channels;
 using tools;
 
 namespace Application.Core.Gameplay.Plugins
@@ -32,71 +33,42 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task<bool> LoadPlugin(string pluginDllName)
         {
-            if (await LoadPluginInternal(pluginDllName, true))
+            if (await LoadPluginInternal(pluginDllName))
             {
-                OnPluginMounted(pluginDllName);
+                await OnPluginMounted(pluginDllName);
                 return true;
             }
             return false;
         }
 
-        void OnPluginMounted(string pluginDllName)
+        async Task OnPluginMounted(string pluginDllName)
         {
             // 先发现监听器，确保 IPluginChannelLifeService 被注册
             OnPluginContainerChanged();
 
-            // 然后初始化通道
-            foreach (var channel in _server.Servers.Values.OfType<WorldChannel>().ToArray())
-            {
-                Log.Logger.Information("[{ServerName}] 初始化事件...", channel.InstanceName);
-                OnChannelMounted(channel);
-                Log.Logger.Information("[{ServerName}] 初始化事件（{EventCount}项）...完成", channel.InstanceName, channel.EventScriptManager.EventCount);
-            }
 
             // 最后调用 IPluginLifeService 的 OnMounted
             foreach (var container in _pluginContainers.Values.ToList())
             {
-                foreach (var listener in container.PluginServices.OfType<IPluginLifeService>())
+                foreach (var listener in container.PluginServices.ToArray())
                 {
                     try
                     {
-                        listener.OnMounted(_server);
+                        await listener.OnMounted(_server);
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.Error(ex, "插件{PluginName}.OnMounted 失败");
+                        Log.Logger.Error(ex, "插件{PluginName}.OnMounted 失败", pluginDllName);
                     }
                 }
             }
-        }
-
-        void OnPluginUnmounted(string pluginDllName)
-        {
-            // 调用 IPluginLifeService 的 OnUnmounted
-            foreach (var container in _pluginContainers.Values)
-            {
-                foreach (var listener in container.PluginServices.OfType<IPluginLifeService>())
-                {
-                    try
-                    {
-                        listener.OnUnmounted(_server);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "插件{PluginName}.OnUnmounted 初始化失败");
-                    }
-                }
-            }
-
-            OnPluginContainerChanged();
         }
 
         void OnPluginContainerChanged()
         {
-            DiscoverListeners();
         }
 
-        async Task<bool> LoadPluginInternal(string pluginDllName, bool allowMulti)
+        async Task<bool> LoadPluginInternal(string pluginDllName)
         {
             var newContainer = LoadPluginFromSource(pluginDllName);
             if (newContainer == null)
@@ -105,18 +77,7 @@ namespace Application.Core.Gameplay.Plugins
             var pluginBaseKey = Path.GetFileNameWithoutExtension(pluginDllName);
             string pluginKey = pluginBaseKey;
 
-            if (!allowMulti)
-            {
-                var exsitedKeys = _pluginContainers.Keys.ToArray();
-                foreach (var item in exsitedKeys)
-                {
-                    await RemovePluginInternal(item);
-                }
-            }
-            else
-            {
-                await RemovePluginInternal(pluginKey);
-            }
+            await RemovePluginInternal(pluginKey);
 
             _pluginContainers[pluginKey] = newContainer;
             return true;
@@ -128,7 +89,7 @@ namespace Application.Core.Gameplay.Plugins
             {
                 try
                 {
-                    await container.DisposeAsync().ConfigureAwait(false);
+                    await container.DisposeAsync();
                     _pluginContainers.TryRemove(pluginName, out _);
                     return true;
                 }
@@ -144,7 +105,6 @@ namespace Application.Core.Gameplay.Plugins
         {
             if (await RemovePluginInternal(pluginName))
             {
-                OnPluginUnmounted(pluginName);
                 return true;
             }
             return false;
@@ -226,66 +186,13 @@ namespace Application.Core.Gameplay.Plugins
             {
                 try
                 {
-                    await container.DisposeAsync().ConfigureAwait(false);
+                    await container.DisposeAsync();
                 }
                 catch (Exception ex)
                 {
                     Log.Logger.Error($"Failed to dispose plugin container: {ex.Message}");
                 }
             }
-        }
-
-        #region Channel Life Listeners
-        private volatile ImmutableList<IPluginChannelLifeService> _channelLifeListeners = ImmutableList<IPluginChannelLifeService>.Empty;
-
-        void DiscoverListeners()
-        {
-            var p1 = ImmutableList.CreateBuilder<IPluginChannelLifeService>();
-            foreach (var plugin in GetAllPlugins())
-            {
-                if (plugin is IPluginChannelLifeService commandListener)
-                    p1.Add(commandListener);
-            }
-            _channelLifeListeners = p1.ToImmutable();
-        }
-
-        public void OnChannelMounted(WorldChannel worldChannel)
-        {
-            var listeners = _channelLifeListeners;
-            foreach (var listener in listeners)
-            {
-                try
-                {
-                    listener.OnChannelMounted(worldChannel);
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "ChannelLifeListener.OnChannelMounted error");
-                }
-            }
-        }
-
-        public void OnChannelUnmounted(WorldChannel worldChannel)
-        {
-            var listeners = _channelLifeListeners;
-            foreach (var listener in listeners)
-            {
-                try
-                {
-                    listener.OnChannelUnmounted(worldChannel);
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "ChannelLifeListener.OnChannelUnmounted error");
-                }
-            }
-        }
-        #endregion
-
-        internal void ReloadEventTemplate(WorldChannel channel)
-        {
-            OnChannelUnmounted(channel);
-            OnChannelMounted(channel);
         }
 
         #region Service Invocation Helpers

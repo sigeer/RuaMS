@@ -9,6 +9,7 @@ using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using scripting;
 using scripting.npc;
+using System.Numerics;
 
 namespace Application.Plugin.FakeCharacter
 {
@@ -192,7 +193,6 @@ namespace Application.Plugin.FakeCharacter
         /// </summary>
         public Task SendPacket(Packet p)
         {
-            // 可以在这里模拟客户端接收后的处理
             return Task.CompletedTask;
         }
 

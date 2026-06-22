@@ -994,6 +994,11 @@ public class MapleMap : IMap, INamedInstance
         await sp.SpawnMonster();
     }
 
+    public void ClearAreaBoss(string name)
+    {
+        _bossSp.Remove(name);
+    }
+
 
 
     private Point? calcPointBelow(Point initial)
