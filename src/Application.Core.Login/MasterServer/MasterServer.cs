@@ -276,21 +276,21 @@ namespace Application.Core.Login
         {
             if (!IsRunning)
             {
-                _logger.LogInformation(SystemMessage.Server_InActive, InstanceName);
+                _logger.LogInformation(SystemMessage.Server_InActive);
                 return;
             }
 
             if (isShuttingdown)
             {
-                _logger.LogInformation(SystemMessage.Server_Shutingdown, InstanceName);
+                _logger.LogInformation(SystemMessage.Server_Shutingdown);
                 return;
             }
 
             isShuttingdown.Set(true);
-            _logger.LogInformation(SystemMessage.Server_StopListenStart, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_StopListenStart);
 
             await NettyServer.Stop();
-            _logger.LogInformation(SystemMessage.Server_StopListenComplete, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_StopListenComplete);
 
             _shutdownTcs = new TaskCompletionSource();
 
@@ -330,7 +330,7 @@ namespace Application.Core.Login
         {
             await _shutdownTcs.Task;
 
-            _logger.LogInformation(SystemMessage.Server_AllChannelShutdown, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_AllChannelShutdown);
             foreach (var module in Modules)
             {
                 await module.UninstallAsync();
@@ -341,14 +341,14 @@ namespace Application.Core.Login
             await TimerManager.Stop();
             await CommandLoop.DisposeAsync();
 
-            _logger.LogInformation(SystemMessage.Server_SaveUserDataStart, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_SaveUserDataStart);
             await ServerManager.CommitAllImmediately();
-            _logger.LogInformation(SystemMessage.Server_SaveUserDataComplete, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_SaveUserDataComplete);
 
             IsRunning = false;
             isShuttingdown.Set(false);
             _shutdownDelayCtrl?.Dispose();
-            _logger.LogInformation(SystemMessage.Server_ShutdownComplete, InstanceName);
+            _logger.LogInformation(SystemMessage.Server_ShutdownComplete);
         }
 
         public async Task StartServer(CancellationToken cancellationToken)
@@ -356,7 +356,7 @@ namespace Application.Core.Login
             try
             {
                 Modules = ServiceProvider.GetServices<AbstractMasterModule>().ToList();
-                _logger.LogInformation("[{ServerName}] 共安装了{PluginCount}个额外模块", InstanceName, Modules.Count);
+                _logger.LogInformation("共安装了{PluginCount}个额外模块", Modules.Count);
 
                 OpcodeConstants.generateOpcodeNames();
 
@@ -366,9 +366,9 @@ namespace Application.Core.Login
                     await module.InitializeAsync();
                 }
 
-                _logger.LogInformation(SystemMessage.Server_Start, InstanceName);
+                _logger.LogInformation(SystemMessage.Server_Start);
                 await NettyServer.Start();
-                _logger.LogInformation(SystemMessage.Server_StartSuccess, InstanceName, "成功", Port);
+                _logger.LogInformation(SystemMessage.Server_StartSuccess, "成功", Port);
 
                 CommandLoop.Start();
                 StartupTime = DateTimeOffset.UtcNow;
@@ -377,14 +377,13 @@ namespace Application.Core.Login
                 await RegisterTask();
 
                 IsRunning = true;
-                _logger.LogInformation("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-                    InstanceName,
+                _logger.LogInformation("已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
                     DateTimeOffset.FromUnixTimeMilliseconds(getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
                     DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[{ServerName}] 启动{Status}", InstanceName, "失败");
+                _logger.LogError(ex, "启动{Status}", "失败");
                 return;
             }
         }
@@ -404,7 +403,7 @@ namespace Application.Core.Login
                         ServerName = channel.ServerName,
                         MaxSize = item.MaxSize
                     });
-                    _logger.LogInformation("[{ServerName}] 已注册服务器[{ChannelServerName}]：频道{Channel}", InstanceName, channel.ServerName, Channels.Count);
+                    _logger.LogInformation("已注册服务器[{ChannelServerName}]：频道{Channel}", channel.ServerName, Channels.Count);
                 }
                 return started + 1;
             }
@@ -415,7 +414,7 @@ namespace Application.Core.Login
         {
             if (ChannelServerList.Remove(instanceId, out var channelServer))
             {
-                _logger.LogInformation("[{ServerName}] 移除{Type}服务器{ChannelServerName}", InstanceName, channelServer.GetType().Name, instanceId);
+                _logger.LogInformation("移除{Type}服务器{ChannelServerName}", channelServer.GetType().Name, instanceId);
                 return Channels.RemoveAll(x => x.ServerName == channelServer.ServerName) == channelServer.ServerConfigs.Count;
             }
             return false;
@@ -528,7 +527,7 @@ namespace Application.Core.Login
 
         private async Task RegisterTask()
         {
-            _logger.LogInformation("[{ServerName}] 定时任务加载中...", InstanceName);
+            _logger.LogInformation("定时任务加载中...");
             var timeLeft = TimeUtils.GetTimeLeftForNextHour();
             TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
@@ -554,7 +553,7 @@ namespace Application.Core.Login
             {
                 await module.RegisterTask(TimerManager);
             }
-            _logger.LogInformation("[{ServerName}] 定时任务加载完成", InstanceName);
+            _logger.LogInformation("定时任务加载完成");
         }
 
         public bool IsWorldCapacityFull()

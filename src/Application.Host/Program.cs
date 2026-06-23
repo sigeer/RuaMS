@@ -29,6 +29,7 @@ try
     YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
 
     // 日志配置
+    var logTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{Category}] {Message:lj}{NewLine}{Exception}";
     Log.Logger = new LoggerConfiguration()
 #if !DEBUG
     .MinimumLevel.Information()
@@ -41,15 +42,17 @@ try
         .MinimumLevel.Override("Quartz", LogEventLevel.Warning)
         .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
         .Enrich.FromLogContext()
-        .WriteTo.Console()
+        .Enrich.WithProperty("Category", "RuaMS")
+        .WriteTo.Console(outputTemplate: logTemplate)
         .WriteTo.Map(
             keySelector: logEvent =>
                 logEvent.Properties.TryGetValue("Category", out var category) ? category?.ToString()?.Trim('"') : "Default",
                 configure: (category, writeTo) =>
                     writeTo.Logger(
-                        lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error).WriteTo.Async(a => a.File($"logs/AllError/Error-.txt", rollingInterval: RollingInterval.Day))
+                        lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error)
+                        .WriteTo.Async(a => a.File($"logs/AllError/Error-.txt", rollingInterval: RollingInterval.Day, outputTemplate: logTemplate))
                     )
-                    .WriteTo.Logger(lg => lg.WriteTo.Async(a => a.File($"logs/{category}/All-.txt", rollingInterval: RollingInterval.Day)))
+                    .WriteTo.Logger(lg => lg.WriteTo.Async(a => a.File($"logs/{category}/All-.txt", rollingInterval: RollingInterval.Day, outputTemplate: logTemplate)))
     )
     .CreateLogger();
 

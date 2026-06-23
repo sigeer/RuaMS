@@ -138,7 +138,7 @@ namespace Application.Plugin.Script.Events
             await eim.warpEventTeam(922011000);
         }
 
-        public List<int> GetStage(AbstractEventInstanceManager eim, IMap map)
+        public HashSet<int> GetStage(AbstractEventInstanceManager eim, IMap map)
         {
             return eim
                 .Properties.GetOrAdd(
@@ -147,8 +147,7 @@ namespace Application.Plugin.Script.Events
                 )
                 .Split(',')
                 .Select(int.Parse)
-                .OrderBy(x => x)
-                .ToList();
+                .ToHashSet();
         }
 
         public override async Task OnTimeOut(AbstractEventInstanceManager eim)

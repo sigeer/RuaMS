@@ -56,9 +56,8 @@ namespace Application.Shared.Login
         /// </summary>
         public const int LOGIN_LOGGEDIN = 2;
         /// <summary>
-        /// 玩家正在切换服务器：由频道服务器->频道服务器
+        /// 玩家正在切换频道服务器：由频道服务器->频道服务器
         /// </summary>
-
         public const int PlayerServerTransition = 3;
         /// <summary>
         /// 小于0 ：相应的playerid表示正在登录的玩家id

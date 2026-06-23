@@ -7,13 +7,13 @@ namespace Application.Core.Plugins
     {
         private readonly string _pluginPath;
         private readonly AssemblyDependencyResolver _resolver;
-
+        public string PluginName { get; }
 
         public PluginLoadContext(string pluginPath) : base(isCollectible: true)
         {
-
             _pluginPath = pluginPath;
             _resolver = new AssemblyDependencyResolver(_pluginPath);
+            PluginName = Path.GetFileNameWithoutExtension(_pluginPath);
         }
 
         protected override Assembly Load(AssemblyName assemblyName)

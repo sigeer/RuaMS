@@ -63,7 +63,7 @@ namespace Application.Utility.Pipeline
                 }
                 catch (Exception ex)
                 {
-                    item.Tcs.SetResult(false);
+                    item.Tcs.SetException(ex);
 
                     Log.Logger.Error(ex.ToString());
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);

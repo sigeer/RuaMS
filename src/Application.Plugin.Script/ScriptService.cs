@@ -1,3 +1,4 @@
+using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -14,7 +15,7 @@ using tools;
 
 namespace Application.Plugin.Script
 {
-    internal class ScriptService : IScriptPortalService,
+    internal class ScriptService : PluginServiceBase, IScriptPortalService,
         IScriptNpcService,
         IScriptQuestService,
         IScriptItemService,
@@ -32,7 +33,7 @@ namespace Application.Plugin.Script
         Dictionary<string, MethodInfo> _reactorUntouchSource;
         Dictionary<string, MethodInfo> _questSource;
 
-        public ScriptService()
+        public ScriptService(WorldChannelServer node, string pluginName):base(node, pluginName)
         {
             _portalSource = TypeUtils.ExtractMethodsToDictionary(typeof(PortalScript));
             _npcSource = TypeUtils.ExtractMethodsToDictionary(typeof(NpcScript));
@@ -75,7 +76,7 @@ namespace Application.Plugin.Script
                 scriptName = $"n{npcId}";
             }
 
-            if (!c.canClickNPC())
+            if (!c.OnlinedCharacter.canClickNPC())
             {
                 await c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
@@ -96,7 +97,7 @@ namespace Application.Plugin.Script
                     throw new ConversationDiffInstanceException();
                 }
 
-                c.setClickedNPC();
+                c.OnlinedCharacter.setClickedNPC();
                 c.NPCConversationManager = talk;
                 await (Task)methodInfo.Invoke(talk, null)!;
                 return true;
@@ -113,19 +114,19 @@ namespace Application.Plugin.Script
                     await talk.WarpOut();
                 }
 
-                Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (ConversationDiffMapException)
             {
                 await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (NotImplementedException)
             {
                 await talk.SayOK($"NPC {npcObject?.getName() ?? npcId.ToString()} 对话未实现。");
-                Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return false;
             }
             catch (Exception)
@@ -147,7 +148,7 @@ namespace Application.Plugin.Script
                 return false;
             }
 
-            if (!c.canClickNPC())
+            if (!c.OnlinedCharacter.canClickNPC())
             {
                 await c.OnlinedCharacter.Pink("对话太过频繁");
                 return false;
@@ -176,7 +177,7 @@ namespace Application.Plugin.Script
             try
             {
                 c.NPCConversationManager = talk;
-                c.setClickedNPC();
+                c.OnlinedCharacter.setClickedNPC();
 
                 await (Task)methodInfo.Invoke(talk, null)!;
                 return true;
@@ -192,19 +193,19 @@ namespace Application.Plugin.Script
                 {
                     await talk.WarpOut();
                 }
-                Log.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (ConversationDiffMapException)
             {
                 await talk.SayOK(talk.GetDefault0());
-                Log.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return true;
             }
             catch (NotImplementedException)
             {
                 await talk.SayOK($"任务 {c.CurrentCulture.GetQuestName(questObj.getId()) ?? questObj.getId().ToString()} 对话未实现。");
-                Log.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                LogWarning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
                 return false;
             }
             catch (Exception)
@@ -297,7 +298,7 @@ namespace Application.Plugin.Script
             var script = new ReactorUntouchScript(c, r);
             await (Task)methodInfo.Invoke(script, null)!;
         }
-        public async ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             _itemSource.Clear();
             _mapEnterSource.Clear();
@@ -306,6 +307,11 @@ namespace Application.Plugin.Script
             _portalSource.Clear();
             _reactorActSource.Clear();
             _reactorHitSource.Clear();
+        }
+
+        public override Task OnMounted()
+        {
+            return Task.CompletedTask;
         }
     }
 }

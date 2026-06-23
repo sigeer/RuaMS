@@ -15,9 +15,9 @@ namespace ServiceTest.Games.Account
         //}
 
         [Test]
-        public void BaseTest()
+        public async Task BaseTest()
         {
-            var p = GameTestGlobal.TestServer.GetPlayer();
+            var p = await GameTestGlobal.TestServer.GetPlayer();
             Assert.That(p is not null);
         }
 
@@ -36,12 +36,12 @@ namespace ServiceTest.Games.Account
                 dbTran.Commit();
             }
 
-            var player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            var player = await GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
             Assert.That(player, Is.Not.Null);
 
             Assert.That(GameTestGlobal.TestServer.GetMasterServer().CharacterManager.RemoveCharacter(r.Character.Id, r.Character.AccountId));
 
-            player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            player = await GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
             Assert.That(player, Is.Null);
 
             using (var dbTran = dbContext.Database.BeginTransaction())
@@ -50,7 +50,7 @@ namespace ServiceTest.Games.Account
                 dbTran.Commit();
             }
 
-            player = GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
+            player = await GameTestGlobal.TestServer.GetPlayer(r.Character.Id);
             Assert.That(player, Is.Null);
         }
 

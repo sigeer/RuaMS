@@ -252,15 +252,15 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             return;
         }
 
-        // NodeService.PluginManager.GetPluginContainer("Application.Plugin.Events").
+        // NodeService.PluginManager.GetPluginContainer("Application.Plugin.Script")
     }
     public async Task Initialize(Config.RegisterServerResult config)
     {
-        log.Information("[{ServerName}] 初始化...", InstanceName);
+        log.Information("初始化...");
 
         await UpdateWorldConfig(config.Config);
-        log.Information("[{ServerName}] 初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
-            InstanceName, WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
+        log.Information("初始化世界倍率-完成。怪物倍率：x{MobRate}，金币倍率：x{MesoRate}，经验倍率：x{ExpRate}，掉落倍率：x{DropRate}，BOSS掉落倍率：x{BossDropRate}，任务倍率：x{QuestRate}，传送时间倍率：x{TravelRate}，钓鱼倍率：x{FishingRate}。",
+            WorldMobRate, WorldMesoRate, WorldExpRate, WorldDropRate, WorldBossDropRate, WorldQuestRate, WorldTravelRate, WorldFishingRate);
 
         TimerManager = await TimerManagerFactory.InitializeAsync(TaskEngine.Quartz, InstanceName);
 
@@ -280,10 +280,9 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         SubTickables.Add(EventScriptManager); ;
         SubTickables.AddRange(ContiMoves.Values);
 
-        log.Information("[{ServerName}] 初始化完成", InstanceName);
+        log.Information("初始化完成");
 
-        log.Information("[{ServerName}] 已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
-            InstanceName,
+        log.Information("已启动，当前服务器时间{ServerCurrentTime}，本地时间{LocalCurrentTime}",
             DateTimeOffset.FromUnixTimeMilliseconds(Node.getCurrentTime()).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
             DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
@@ -291,7 +290,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public Task StartServer(CancellationToken cancellationToken)
     {
         IsRunning = true;
-        log.Information("[{ServerName}] 启动成功：监听端口{Port}", InstanceName, Port);
+        log.Information("启动成功：监听端口{Port}", Port);
 
         CommandLoop.Start();
 
@@ -312,10 +311,10 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             }
 
             isShuttingDown = true;
-            log.Information("[{ServerName}] 停止中...", InstanceName);
+            log.Information("停止中...");
 
             await NettyServer.Stop();
-            log.Information("[{ServerName}] 停止监听", InstanceName);
+            log.Information("停止监听");
 
             await disconnectAwayPlayers();
             await Players.disconnectAll(true);
@@ -333,11 +332,11 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             LifeScope.Dispose();
 
             IsRunning = false;
-            log.Information("[{ServerName}] 已停止", InstanceName);
+            log.Information("停止中...成功");
         }
         catch (Exception e)
         {
-            log.Error(e, "[{ServerName}] 停止失败", InstanceName);
+            log.Error(e, "停止中...失败");
         }
         finally
         {

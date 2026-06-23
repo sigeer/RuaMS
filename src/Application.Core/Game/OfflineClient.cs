@@ -74,20 +74,14 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool attemptCsCoupon()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public void BanMacs()
         {
             throw new BusinessCharacterOfflineException();
         }
 
-        public bool canClickNPC()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public bool CanGainCharacterSlot()
         {
@@ -109,10 +103,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public Task closePlayerScriptInteractions()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public void CloseSession()
         {
@@ -139,10 +130,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void enableCSActions()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public Task ForceDisconnect()
         {
@@ -154,10 +142,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public AbstractPlayerInteraction getAbstractPlayerInteraction()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public int GetAvailableCharacterSlots()
         {
@@ -209,15 +194,9 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void removeClickedNPC()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
 
-        public void resetCsCoupon()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
+
 
         public void sendPacket(Packet packet)
         {
@@ -234,10 +213,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void setClickedNPC()
-        {
-            throw new BusinessCharacterOfflineException();
-        }
+
 
         public void SetPlayer(Player? player)
         {
@@ -259,30 +235,15 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        Task IChannelClient.announceBossHpBar(Monster mm, int mobHash, Packet packet)
-        {
-            throw new NotImplementedException();
-        }
 
-        Task IChannelClient.announceHint(string msg, int length)
-        {
-            throw new NotImplementedException();
-        }
 
-        Task IChannelClient.announceServerMessage()
-        {
-            throw new NotImplementedException();
-        }
 
-        bool IChannelClient.attemptCsCoupon()
-        {
-            throw new NotImplementedException();
-        }
 
-        bool IChannelClient.canClickNPC()
-        {
-            throw new NotImplementedException();
-        }
+
+
+
+
+
 
         bool IChannelClient.CheckBirthday(DateTime date)
         {
@@ -294,29 +255,20 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        Task IChannelClient.closePlayerScriptInteractions()
-        {
-            throw new NotImplementedException();
-        }
+
         public ValueTask DisposeAsync()
         {
             throw new NotImplementedException();
         }
 
-        Task IChannelClient.enableCSActions()
-        {
-            throw new NotImplementedException();
-        }
+
 
         bool IChannelClient.GainCharacterSlot()
         {
             throw new NotImplementedException();
         }
 
-        AbstractPlayerInteraction IChannelClient.getAbstractPlayerInteraction()
-        {
-            throw new NotImplementedException();
-        }
+
 
         int IChannelClient.getChannel()
         {
@@ -328,10 +280,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        AbstractEventManager? IChannelClient.getEventManager(string @event)
-        {
-            throw new NotImplementedException();
-        }
+
 
         string ISocketClient.GetSessionRemoteHost()
         {
@@ -348,15 +297,9 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.removeClickedNPC()
-        {
-            throw new NotImplementedException();
-        }
 
-        void IChannelClient.resetCsCoupon()
-        {
-            throw new NotImplementedException();
-        }
+
+
 
         public Task SendPacket(Packet p) => throw new NotImplementedException();
 
@@ -370,10 +313,7 @@ namespace Application.Core.Game
             throw new NotImplementedException();
         }
 
-        void IChannelClient.setClickedNPC()
-        {
-            throw new NotImplementedException();
-        }
+
 
         void IChannelClient.SetPlayer(Player? player)
         {

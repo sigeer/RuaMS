@@ -33,16 +33,16 @@ namespace ServiceTest.Games.Inventory
         }
 
         [Test]
-        public void InventorySortTest()
+        public async Task InventorySortTest()
         {
-            var chr = GameTestGlobal.TestServer.GetPlayer();
+            var chr = await GameTestGlobal.TestServer.GetPlayer();
 
             var invType = InventoryType.USE;
             // 加入测试道具
-            chr.GainItem(2000007, 100);
-            chr.GainItem(2000004, (short)(ItemInformationProvider.getInstance().getSlotMax(chr.Client, 2000004) + 1));
-            chr.GainItem(2000005, 100);
-            chr.GainItem(2000006, 100);
+            await chr.GainItem(2000007, 100);
+            await chr.GainItem(2000004, (short)(ItemInformationProvider.getInstance().getSlotMax(chr.Client, 2000004) + 1));
+            await chr.GainItem(2000005, 100);
+            await chr.GainItem(2000006, 100);
 
             var chrInv = chr.GetInventory(invType);
             var sorter = new BagInventorySorter(chrInv);

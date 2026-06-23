@@ -35,7 +35,7 @@ public class DebugCommand : CommandBase
                     msgTypes += ("#L" + i + "#" + debugTypes[i] + "#l\r\n");
                 }
 
-                await c.getAbstractPlayerInteraction().npcTalk(NpcId.STEWARD, msgTypes);
+                await c.OnlinedCharacter.getAbstractPlayerInteraction().npcTalk(NpcId.STEWARD, msgTypes);
                 break;
 
             case "monster":

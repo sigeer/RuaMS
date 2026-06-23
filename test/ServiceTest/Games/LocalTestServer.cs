@@ -88,7 +88,7 @@ namespace ServiceTest.Games
 
         public MasterServer GetMasterServer() => ServiceProvider.GetRequiredService<MasterServer>();
 
-        public Player? GetPlayer(int cid = 1)
+        public async Task<Player?> GetPlayer(int cid = 1)
         {
             var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1] as WorldChannel;
 
@@ -110,8 +110,8 @@ namespace ServiceTest.Games
             //var mockChannel = new Mock<ChannelClient>();
             //mockChannel.Setup(x => x.getChannel())
             //    .Returns(1);
-            var p = charSrv.Serialize(client, obj);
-            channel.addPlayer(p);
+            var p = await charSrv.Serialize(client, obj);
+            await channel.addPlayer(p);
             p.setMapTransitionComplete();
             return p;
         }

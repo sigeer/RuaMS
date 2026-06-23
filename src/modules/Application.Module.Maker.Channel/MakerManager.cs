@@ -466,7 +466,7 @@ namespace Application.Module.Maker.Channel
                 addQuantity.Add(p.Quantity);
             }
 
-            if (!await c.getAbstractPlayerInteraction().canHoldAllAfterRemoving(addItemids, addQuantity, rmvItemids, rmvQuantity))
+            if (!await c.OnlinedCharacter.getAbstractPlayerInteraction().canHoldAllAfterRemoving(addItemids, addQuantity, rmvItemids, rmvQuantity))
             {
                 return 5;
             }

@@ -19,7 +19,7 @@ namespace Application.Resources.Messages {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class SystemMessage {
@@ -70,7 +70,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}]已启动 的本地化字符串。
+        ///   查找类似 已启动 的本地化字符串。
         /// </summary>
         public static string Server_Active {
             get {
@@ -79,7 +79,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 所有频道已停止 的本地化字符串。
+        ///   查找类似 所有频道已停止 的本地化字符串。
         /// </summary>
         public static string Server_AllChannelShutdown {
             get {
@@ -88,7 +88,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}]未启动 的本地化字符串。
+        ///   查找类似 未启动 的本地化字符串。
         /// </summary>
         public static string Server_InActive {
             get {
@@ -97,7 +97,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 正在保存玩家数据...完成 的本地化字符串。
+        ///   查找类似 正在保存玩家数据...完成 的本地化字符串。
         /// </summary>
         public static string Server_SaveUserDataComplete {
             get {
@@ -106,7 +106,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 正在保存玩家数据... 的本地化字符串。
+        ///   查找类似 正在保存玩家数据... 的本地化字符串。
         /// </summary>
         public static string Server_SaveUserDataStart {
             get {
@@ -115,7 +115,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 正在停止...完成 的本地化字符串。
+        ///   查找类似 正在停止...完成 的本地化字符串。
         /// </summary>
         public static string Server_ShutdownComplete {
             get {
@@ -124,7 +124,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 正在停止... 的本地化字符串。
+        ///   查找类似 正在停止... 的本地化字符串。
         /// </summary>
         public static string Server_Shutingdown {
             get {
@@ -133,7 +133,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 启动中... 的本地化字符串。
+        ///   查找类似 启动中... 的本地化字符串。
         /// </summary>
         public static string Server_Start {
             get {
@@ -142,7 +142,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 启动{Status} 的本地化字符串。
+        ///   查找类似 启动{Status} 的本地化字符串。
         /// </summary>
         public static string Server_StartFailed {
             get {
@@ -151,7 +151,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 启动{Status}, 监听端口{Port} 的本地化字符串。
+        ///   查找类似 启动{Status}, 监听端口{Port} 的本地化字符串。
         /// </summary>
         public static string Server_StartSuccess {
             get {
@@ -160,7 +160,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 停止监听...完成 的本地化字符串。
+        ///   查找类似 停止监听...完成 的本地化字符串。
         /// </summary>
         public static string Server_StopListenComplete {
             get {
@@ -169,7 +169,7 @@ namespace Application.Resources.Messages {
         }
         
         /// <summary>
-        ///   查找类似 [{ServerName}] 停止监听... 的本地化字符串。
+        ///   查找类似 停止监听... 的本地化字符串。
         /// </summary>
         public static string Server_StopListenStart {
             get {

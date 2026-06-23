@@ -237,14 +237,14 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public AbstractEventManager? getEventManager(string @event)
     {
-        return getClient().getEventManager(@event);
+        return getPlayer().getEventManager(@event);
     }
 
     public AbstractEventManager GetEventManager(string @event) => getEventManager(@event) ?? throw new BusinessException($"Error: 事件 {@event} 未注册");
 
     public TEventManager GetEventManager<TEventManager>(string @event) where TEventManager : AbstractEventManager
     {
-        var em = getClient().getEventManager(@event);
+        var em = getPlayer().getEventManager(@event);
         if (em == null)
         {
             throw new BusinessNotsupportException($"Event: {@event}");
@@ -256,7 +256,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     public SoloEventManager GetSoloQuestEventManager(int questId)
     {
         var @event = $"q{questId}";
-        var em = getClient().getEventManager(@event);
+        var em = getPlayer().getEventManager(@event);
         if (em == null)
         {
             throw new BusinessNotsupportException($"Event: {@event}");
@@ -842,10 +842,9 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (await c.CurrentServer.getMapFactory().getMap(mapid)).getAllPlayers().Count;
     }
 
-    public async Task showInstruction(string msg, int width, int height)
+    public Task showInstruction(string msg, int width, int height)
     {
-        await c.SendPacket(PacketCreator.sendHint(msg, width, height));
-        await c.SendPacket(PacketCreator.enableActions());
+        return getPlayer().announceHint(msg, width, height);
     }
 
     public async Task disableMinimap()

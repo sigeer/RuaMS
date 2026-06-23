@@ -1,20 +1,25 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using Application.Core.scripting.Events.Templates;
 using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.Quest;
+using Serilog;
 
 namespace Application.Plugin.Events
 {
     internal record AreaBossOption(string Name, int MapId, int BossId, int Period, string Message, List<RandomPoint> Point);
 
-    internal class EventService : IPluginChannelLifeService, IPluginMapService
+    internal class EventService : PluginServiceBase, IPluginMapService
     {
         Dictionary<int, AreaBossOption> _mapBoss = [];
-        public EventService()
+        HashSet<AbstractEventTemplate> _events;
+
+        public EventService(WorldChannelServer node, string pluginName):base(node, pluginName)
         {
+            // 如果一张地图有多个BOSS还需要改造
             List<AreaBossOption> options = [
                 new ("Deo",260010201, 3220001, 10800, "Deo slowly appeared out of the sand dust.", [new(645,645,275)]),
                 new ("Bamboo",800020120, 6090002, 10800, "From amo…ouded by the mists, Bamboo Warrior appears.", [new(560, 560, 50)]),
@@ -39,15 +44,7 @@ namespace Application.Plugin.Events
                 new("Timer3", 220050200, 5220003, 10800, "Tick-Toc…Tick-Tock! Timer makes it's presence known.", [new(-700, 700, 1030)])];
             _mapBoss = options.ToDictionary(x => x.MapId);
 
-        }
-        public ValueTask DisposeAsync()
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        public void OnChannelMounted(WorldChannel channel)
-        {
-            channel.EventScriptManager.ReloadEventScript([
+            _events = [
                 new PQ_Henesys(),
                 new PQ_Kerning(),
                 new PQ_Ellin(),
@@ -110,12 +107,29 @@ namespace Application.Plugin.Events
                 new RockSpirit(),
                 new Puppeteer(),
                 new MK_PrimeMinister(),
-                ]);
+                ];
+
         }
-
-        public void OnChannelUnmounted(WorldChannel node)
+        public override async ValueTask DisposeAsync()
         {
+            foreach (var channel in _node.Servers.Values.OfType<WorldChannel>().ToArray())
+            {
+                LogInfo("{ServerName} 卸载中...", channel.InstanceName);
+                await channel.EventScriptManager.ClearEvents(_events.Select(x => x.Name).ToHashSet());
 
+                var mapManager = channel.getMapFactory();
+                var mapBoss = _mapBoss.Values.Select(x => (x.MapId, x.Name)).ToArray();
+                foreach (var (mapId, name) in mapBoss)
+                {
+                    if (mapManager.TryGetMap(mapId, out var map))
+                    {
+                        map?.ClearAreaBoss(name);
+                    }
+                }
+                LogInfo("{ServerName} 卸载事件...完成", channel.InstanceName);
+            }
+            _events.Clear();
+            _mapBoss.Clear();
         }
 
         public async Task OnMapLoad(IMap map)
@@ -128,6 +142,19 @@ namespace Application.Plugin.Events
 
         public Task OnMapUnload(IMap map)
         {
+            return Task.CompletedTask;
+        }
+
+        public override Task OnMounted()
+        {
+            foreach (var channel in _node.Servers.Values.OfType<WorldChannel>().ToArray())
+            {
+                var oldCount = channel.EventScriptManager.EventCount;
+                LogInfo("{ServerName} 加载事件...", channel.InstanceName);
+                var count = channel.EventScriptManager.ReloadEventScript(_events);
+                LogInfo("{ServerName} 加载事件...完成（{EventCount}项）", channel.InstanceName, count - oldCount);
+            }
+
             return Task.CompletedTask;
         }
     }

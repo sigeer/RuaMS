@@ -16,7 +16,7 @@ namespace Application.Templates.Map
 
         public bool Contains(Point p)
         {
-            return p.X == X && p.Y >= Math.Min(Y1, Y2) && p.Y <= Math.Max(Y2, Y1);
+            return ((p.X > X - 10) && (p.X < X + 10) && (p.Y < Y2 + 12) && (p.Y > Y1 - 12));
         }
     }
 }

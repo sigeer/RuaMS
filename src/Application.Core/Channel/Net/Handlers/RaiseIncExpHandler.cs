@@ -54,8 +54,8 @@ public class RaiseIncExpHandler : ChannelHandlerBase
                 await InventoryManipulator.removeFromSlot(c, InventoryTypeUtils.getByType(inventorytype), slot, 1, false, true);
 
                 int questid = quest.getId();
-                int nextValue = Math.Min(consumables.GetValueOrDefault(consId) + c.getAbstractPlayerInteraction().getQuestProgressInt(questid, infoNumber), consItem.exp * consItem.grade);
-                await c.getAbstractPlayerInteraction().setQuestProgress(questid, infoNumber, nextValue);
+                int nextValue = Math.Min(consumables.GetValueOrDefault(consId) + c.OnlinedCharacter.getAbstractPlayerInteraction().getQuestProgressInt(questid, infoNumber), consItem.exp * consItem.grade);
+                await c.OnlinedCharacter.getAbstractPlayerInteraction().setQuestProgress(questid, infoNumber, nextValue);
 
                 await c.SendPacket(PacketCreator.enableActions());
             }

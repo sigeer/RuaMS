@@ -13,18 +13,18 @@ public class WhereaMiCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        var allMapObjects = player.getMap().getMapObjects().GroupBy(x => x.getType());
+        var allMapObjects = player.getMap().getMapObjects().OrderBy(x => x.getPosition().distanceSq(player.getPosition())).GroupBy(x => x.getType());
 
         var sb = new StringBuilder();
         sb.Append("我在...\r\n");
-        sb.Append("我的事件：").Append(player.getEventInstance()?.getName()).Append("\r\n");
         sb.Append("地图ID：").Append(player.getMap().getId()).Append("\r\n");
         sb.Append("IsLargeMap：").Append(player.getMap().IsLargeMap).Append("\r\n");
+        sb.Append("我的事件：").Append(player.getEventInstance()?.getName()).Append("\r\n");
         sb.Append("地图事件：").Append(player.getMap().getEventInstance()?.getName()).Append("\r\n");
         sb.Append("当前坐标：").Append(player.getPosition()).Append("\r\n");
-        sb.Append("Foothold Id：").Append(player.getMap().Footholds.FindBelowFoothold(player.getPosition())?.getId()).Append("\r\n");
+        sb.Append("Foothold Id：").Append(player.getMap().FindFh(player.getPosition())).Append("\r\n");
         sb.Append("Stance：").Append(player.getStance()).Append("\r\n");
-        sb.Append("LadderRope：").Append(player.MapModel.SourceTemplate.LadderRopes.FirstOrDefault(x => x.Contains(player.getPosition()))?.Index ?? 0).Append("\r\n");
+
         var closetPortal = player.getMap().findClosestPortal(player.getPosition());
         if (closetPortal != null)
         {
@@ -42,7 +42,11 @@ public class WhereaMiCommand : CommandBase
 
             foreach (var obj in group)
             {
-                sb.Append(">> ").Append(obj.GetReadableName(c)).Append(" - Id: ").Append(obj.GetSourceId()).Append(" - Oid: ").Append(obj.getObjectId());
+                sb.Append(">> ")
+                    .Append(obj.GetReadableName(c))
+                    .Append(" - Id: ").Append(obj.GetSourceId())
+                    .Append(" - Oid: ").Append(obj.getObjectId())
+                    .Append(" - Position: ").Append(obj.getPosition());
 
                 if (!player.MapModel.IsMapObjectVisibleForPlayerCached(player, obj))
                 {

@@ -1159,7 +1159,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (hasBossHPBar())
         {
-            await client.announceBossHpBar(this, this.GetHashCode(), makeBossHPBarPacket());
+            await client.OnlinedCharacter.announceBossHpBar(this, this.GetHashCode(), makeBossHPBarPacket());
         }
     }
 

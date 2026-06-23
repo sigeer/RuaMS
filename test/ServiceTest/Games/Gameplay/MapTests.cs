@@ -2,6 +2,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using server.maps;
+using System.Threading.Tasks;
 using tools;
 
 namespace ServiceTest.Games.Gameplay
@@ -10,7 +11,7 @@ namespace ServiceTest.Games.Gameplay
     {
         private async Task<IMap> LoadMap(int mapId)
         {
-            var chr = GameTestGlobal.TestServer.GetPlayer()!;
+            var chr = await GameTestGlobal.TestServer.GetPlayer()!;
             var channel1 = chr.getChannelServer();
             return await MapFactory.Instance.loadMapFromWz(mapId, channel1, null);
         }
@@ -68,13 +69,20 @@ namespace ServiceTest.Games.Gameplay
         [Test]
         [TestCase(107000300)]
         [TestCase(10000)]
-        public void LoadMapFromWZ_Test(int mapId)
+        public async Task LoadMapFromWZ_Test(int mapId)
         {
-            Assert.DoesNotThrow(async () => await LoadMap(mapId));
+            try
+            {
+                await LoadMap(mapId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"LoadMap threw exception: {ex.Message}");
+            }
         }
 
         [Test]
-        public void MonsterCarnivalMap_Test()
+        public async Task MonsterCarnivalMap_Test()
         {
             List<int> cpqMaps = [980000101,
                 980000201,
@@ -88,7 +96,7 @@ namespace ServiceTest.Games.Gameplay
 
             foreach (var mapId in cpqMaps)
             {
-                Assert.That(LoadMap(mapId) is ICPQMap);
+                Assert.That((await LoadMap(mapId)) is ICPQMap);
             }
         }
 
@@ -98,7 +106,7 @@ namespace ServiceTest.Games.Gameplay
             var curMapId = 200082300;
             var nextMapId = 230010000;
 
-            var chr = GameTestGlobal.TestServer.GetPlayer();
+            var chr = await GameTestGlobal.TestServer.GetPlayer();
             var mapManager = chr.getChannelServer().getMapFactory();
 
             var curMap = await mapManager.getMap(curMapId);
@@ -116,7 +124,7 @@ namespace ServiceTest.Games.Gameplay
         {
             var mapId = 103000201;
 
-            var chr = GameTestGlobal.TestServer.GetPlayer()!;
+            var chr = await GameTestGlobal.TestServer.GetPlayer()!;
             var map = await LoadMap(mapId);
 
             await chr.changeMap(map, map.getPortal(0));

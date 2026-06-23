@@ -69,6 +69,12 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 
         await chr.BroadcastMap(packet, chr.Id);
         var effect = await attack.getAttackEffect(chr, null);
+        if (effect == null)
+        {
+            _logger.LogWarning("技能不存在");
+            return;
+        }
+
         var skill = SkillFactory.GetSkillTrust(attack.skill);
         var effect_ = skill.getEffect(chr.getSkillLevel(skill));
         if (effect_.getCooldown() > 0)

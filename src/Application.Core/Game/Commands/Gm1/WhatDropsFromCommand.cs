@@ -48,6 +48,6 @@ public class WhatDropsFromCommand : CommandBase
 
         }
 
-        await c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
+        await c.OnlinedCharacter.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
     }
 }

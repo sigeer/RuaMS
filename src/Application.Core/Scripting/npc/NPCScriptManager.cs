@@ -84,7 +84,7 @@ public class NPCScriptManager : AbstractScriptManager
                 return false;
             }
 
-            if (c.canClickNPC())
+            if (c.OnlinedCharacter.canClickNPC())
             {
                 ScriptMeta? scriptMeta = null;
                 if (!itemScript)
@@ -122,7 +122,7 @@ public class NPCScriptManager : AbstractScriptManager
                 engine.AddHostedObject(engineName, c.NPCConversationManager);
 
                 _scripts[c] = engine;
-                c.setClickedNPC();
+                c.OnlinedCharacter.setClickedNPC();
 
                 engine.CallFunction("start", chr);
             }
@@ -148,7 +148,7 @@ public class NPCScriptManager : AbstractScriptManager
         {
             try
             {
-                c.setClickedNPC();
+                c.OnlinedCharacter.setClickedNPC();
 
                 var nextLevelContext = c.NPCConversationManager?.NextLevelContext;
                 if (nextLevelContext?.LevelType != null)
