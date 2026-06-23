@@ -59,6 +59,7 @@ namespace Application.Core.Game.Maps
         int getFieldLimit();
         int getForcedReturnId();
         Task<IMap> getForcedReturnMap();
+        int FindFh(Point pos);
         Point getGroundBelow(Point pos);
         int getHPDec();
         int getHPDecProtect();
@@ -305,6 +306,7 @@ namespace Application.Core.Game.Maps
         Task BroadcastAll(Func<Player, Task> effectPlayer, int exceptId = -1);
         Task Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Func<Player, Task> effectPlayer);
         Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
+        void ClearAreaBoss(string names);
 
         #region Reactors
         Task spawnReactor(Reactor reactor);

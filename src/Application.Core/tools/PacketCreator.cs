@@ -4189,6 +4189,17 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet MovePet(int cid, sbyte slot, Point startPos, InPacket movementPacket, int movementDataLength)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_PET);
+        p.writeInt(cid);
+        p.writeSByte(slot);
+        p.writePos(startPos);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
+        return p;
+    }
+
+
     public static Packet PetEatCashFoodFail()
     {
         OutPacket p = OutPacket.create(SendOpcode.CASH_PET_FOOD_RESULT);

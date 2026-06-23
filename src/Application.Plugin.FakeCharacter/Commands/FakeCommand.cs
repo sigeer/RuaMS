@@ -16,36 +16,39 @@ namespace Application.Plugin.FakeCharacter.Commands
         {
             var chr = client.OnlinedCharacter;
 
-            //if (!chr.isLeader() || chr.getEventInstance() != null)
-            //{
-            //    // 只有队长在副本中才能使用
-            //    return;
-            //}
+            var eim = chr.getEventInstance();
+            if (!chr.isLeader() || eim == null)
+            {
+                // 只有队长在副本中才能使用
+                await chr.Pink("只有队长在副本中才能使用");
+                return;
+            }
 
             var operation = GetParamByIndex(0);
             var idxStr = GetParam("idx");
             if (operation == "summon")
             {
-
-                if (idxStr.Equals("all", StringComparison.OrdinalIgnoreCase))
+                if (int.TryParse(idxStr, out var idx))
                 {
-                    // 
-                }
-                else if (int.TryParse(idxStr, out var idx))
-                {
+                    if (idx <= 0 || idx > 5)
+                    {
+                        await chr.Pink("指令格式：!fake [summon|remove] [1|2|3|4|5]");
+                        return;
+                    }
                     await _manager.Summon(chr, idx);
+                }
+                else
+                {
+                    await chr.Pink("指令格式：!fake [summon|remove] [1|2|3|4|5]");
+                    return;
                 }
 
             }
             else if (operation == "remove")
             {
-                if (idxStr.Equals("all", StringComparison.OrdinalIgnoreCase))
+                if (int.TryParse(idxStr, out var idx))
                 {
-                    // 
-                }
-                else if (int.TryParse(idxStr, out var idx))
-                {
-                    await _manager.Remove(chr, idx);
+                    await _manager.Remove(eim, idx);
                 }
             }
 

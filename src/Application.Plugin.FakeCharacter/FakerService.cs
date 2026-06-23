@@ -3,74 +3,136 @@ using Application.Core.Game.Commands;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.scripting.Events.Instances;
 using Application.Plugin.FakeCharacter.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Application.Plugin.FakeCharacter
 {
-    internal class FakerService : IPluginLifeService, IPluginMapObjectService
+    internal class FakerService : PluginServiceBase, IPluginMapObjectService
     {
-        Dictionary<int, FakePlayer> _dataSource = new();
+        /// <summary>
+        /// Channel, PlayerId, Idx, FakePlayer
+        /// </summary>
+        ConcurrentDictionary<AbstractEventInstanceManager, Dictionary<int, FakePlayer>> _dataSource = new();
         HashSet<CommandBase> _commands = [];
 
-        public async ValueTask DisposeAsync()
+        public FakerService(WorldChannelServer node, string pluginName) : base(node, pluginName)
         {
-            var ds = _dataSource.Values.ToArray();
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            // 清理所有假人
+            var ds = _dataSource.ToArray();
             _dataSource.Clear();
-            foreach (var item in ds)
+            foreach (var kw in ds)
             {
-                await item.DisposeAsync();
+                foreach (var id in kw.Value.Keys)
+                {
+                    await Remove(kw.Key, id);
+                    kw.Key.OnDispose -= OnEventDisposed;
+                }
             }
+
+
+            // 清理当前插件的命令
+            var commandCenter = _node.ServiceProvider.GetRequiredService<CommandExecutor>();
+            foreach (var item in _commands)
+            {
+                commandCenter.TryRemoveCommand(item);
+            }
+
+            _commands.Clear();
         }
 
         public async Task Summon(Player chr, int idx)
         {
-            var fakeId = FakePlayer.GetFakePlayerId(chr, idx);
-            if (_dataSource.TryGetValue(fakeId, out var fakeChr))
+            var eim = chr.getEventInstance();
+            if (eim == null)
             {
-                await fakeChr.Follow(chr);
+                return;
+            }
+
+            bool shouldCreate = false;
+            FakePlayer? fakeChr = null;
+            if (_dataSource.TryGetValue(eim, out var eimData))
+            {
+                if (eimData.TryGetValue(idx, out fakeChr))
+                {
+                    await fakeChr.Move(chr.getPosition());
+                    //var followed = await fakeChr.Follow(chr);
+                    //if (!followed)
+                    //{
+                    //    // 销毁重建
+                    //    await Remove(eim, idx);
+
+                    //    shouldCreate = true;
+                    //}
+                }
+                else
+                {
+                    shouldCreate = true;
+                }
             }
             else
             {
+                _dataSource[eim] = [];
+                shouldCreate = true;
+            }
+
+            if (shouldCreate)
+            {
                 fakeChr = new FakePlayer(chr, chr.MapModel, chr.getPosition(), idx);
                 await chr.MapModel.addPlayer(fakeChr);
-
                 await fakeChr.BroadcastIdle();
-                _dataSource[fakeId] = fakeChr;
+                _dataSource[eim][idx] = fakeChr;
+            }
+
+            if (fakeChr != null)
+            {
+                await eim.registerPlayer(fakeChr);
+                eim.OnDispose += OnEventDisposed;
             }
         }
 
-        public async Task Remove(Player chr, int idx)
+        void OnEventDisposed(object? sender, EventArgs arg)
         {
-            var fakeId = FakePlayer.GetFakePlayerId(chr, idx);
-            if (_dataSource.Remove(fakeId, out var fakeChr))
+            // eim释放，所有玩家都要离开地图，地图也要释放，不需要再调用MapModel.removePlayer
+            _dataSource.TryRemove(sender as AbstractEventInstanceManager, out _);
+        }
+
+        public async Task Remove(AbstractEventInstanceManager eim, int idx)
+        {
+            if (_dataSource.GetValueOrDefault(eim, []).Remove(idx, out var fakeChr))
             {
-                await chr.MapModel.removePlayer(fakeChr);
+                await fakeChr.MapModel.removePlayer(fakeChr);
+                await eim.unregisterPlayer(fakeChr);
+                await fakeChr.DisposeAsync();
             }
         }
 
-        public IEnumerable<FakePlayer> GetPlayerFakePlayers(Player chr)
+        public IEnumerable<FakePlayer> GetEventFakePlayers(AbstractEventInstanceManager eim)
         {
-            var keys = _dataSource.Keys.Where(x => (x % 10000) == chr.Id).ToArray();
-            foreach (var item in keys)
-            {
-                yield return _dataSource[item];
-            }
+            return _dataSource.GetValueOrDefault(eim, []).Values.ToArray();
         }
 
         public async Task OnMapObjectEnterField(IMap map, IMapObject mapObject)
         {
-            if (mapObject is Player chr && chr.isLeader())
+            if (mapObject is Player chr && chr is not FakePlayer && chr.isLeader())
             {
-                foreach (var fakeChr in GetPlayerFakePlayers(chr))
+                var eim = chr.getEventInstance();
+                if (eim == null)
+                    return;
+
+                foreach (var fakeChr in GetEventFakePlayers(eim))
                 {
                     fakeChr.setPosition(chr.getPosition());
                     await map.addPlayer(fakeChr);
 
                     // addPlayer 使用 enteringField=true，spawn 包会硬编码 stance=6
                     // 这里再广播一次 idle 包，让其他玩家看到正确的姿态
-                    // （尤其当主人在绳子上 stance=6/7，或静止状态 stance=0/1 时）
                     await fakeChr.BroadcastIdle();
                 }
             }
@@ -78,31 +140,28 @@ namespace Application.Plugin.FakeCharacter
 
         public async Task OnMapObjectLeaveField(IMap map, IMapObject mapObject)
         {
-            if (mapObject is Player chr && chr.isLeader())
+            if (mapObject is Player chr && chr is not FakePlayer && chr.isLeader())
             {
-                foreach (var fakeChr in GetPlayerFakePlayers(chr))
+                var eim = chr.getEventInstance();
+                if (eim == null)
+                    return;
+
+                foreach (var fakeChr in GetEventFakePlayers(eim))
                 {
                     await map.removePlayer(fakeChr);
                 }
             }
         }
 
-        public void OnMounted(WorldChannelServer node)
+        public override Task OnMounted()
         {
             _commands.Add(new FakeCommand(this));
+            var commandCenter = _node.ServiceProvider.GetRequiredService<CommandExecutor>();
             foreach (var item in _commands)
             {
-                node.ServiceProvider.GetRequiredService<CommandExecutor>().TryRegisterCommand(item);
+                commandCenter.TryRegisterCommand(item);
             }
-        }
-
-        public void OnUnmounted(WorldChannelServer node)
-        {
-            foreach (var item in _commands)
-            {
-                node.ServiceProvider.GetRequiredService<CommandExecutor>().TryRemoveCommand(item);
-            }
-
+            return Task.CompletedTask;
         }
     }
 }

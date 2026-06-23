@@ -241,10 +241,10 @@ namespace Application.Core.Channel
             {
                 if (!IsRunning)
                 {
-                    _logger.LogInformation("[{ServerName}] 未启动", InstanceName);
+                    _logger.LogInformation("未启动");
                     return;
                 }
-                _logger.LogInformation("[{ServerName}] 正在停止...", InstanceName);
+                _logger.LogInformation("正在停止...");
 
                 watcher.Dispose();
                 await NodeTickTask.StopAsync();
@@ -274,14 +274,14 @@ namespace Application.Core.Channel
                 await TimerManager.Stop();
                 await CommandLoop.DisposeAsync();
 
-                _logger.LogInformation("[{ServerName}] 停止{Status}", InstanceName, "成功");
+                _logger.LogInformation("停止{Status}", "成功");
 
                 await Transport.CompleteChannelShutdown();
                 IsRunning = false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[{ServerName}] 停止{Status}", InstanceName, "失败");
+                _logger.LogError(ex, "停止{Status}", "失败");
             }
             finally
             {
@@ -351,8 +351,10 @@ namespace Application.Core.Channel
 
             try
             {
-                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size };
+                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName };
                 watcher.Changed += OnFileChanged;
+                watcher.Created += OnFileChanged;
+                watcher.Deleted += OnFileDeleted;
                 watcher.EnableRaisingEvents = true;
 
                 await LoadAllPlugins();
@@ -393,7 +395,7 @@ namespace Application.Core.Channel
             playerShopTask = await TimerManager.register(new PlayerShopTask(this), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 
 #if !DEBUG
-            timeoutTask = TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+            timeoutTask = await TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
 
 
@@ -416,8 +418,9 @@ namespace Application.Core.Channel
                 var pluginName = Path.GetFileName(pluginFile);
                 try
                 {
-                    _logger.LogInformation("加载插件: {PluginName}", pluginName);
+                    _logger.LogInformation("加载插件: {PluginName}...", pluginName);
                     await PluginManager.LoadPlugin(pluginName);
+                    _logger.LogInformation("加载插件: {PluginName}...完成", pluginName);
                 }
                 catch (Exception ex)
                 {
@@ -440,6 +443,16 @@ namespace Application.Core.Channel
             _logger.LogInformation("插件更新: {PluginName}", e.Name);
 
             await PluginManager.LoadPlugin(e.Name);
+        }
+
+        private async void OnFileDeleted(object sender, FileSystemEventArgs e)
+        {
+            if (!e.Name.StartsWith("Application.Plugin.")) return;
+
+            _logger.LogInformation("插件删除: {PluginName}", e.Name);
+
+            var pluginName = Path.GetFileNameWithoutExtension(e.Name);
+            await PluginManager.UnloadPlugin(pluginName);
         }
 
 

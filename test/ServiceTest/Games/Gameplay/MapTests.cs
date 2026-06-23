@@ -10,7 +10,7 @@ namespace ServiceTest.Games.Gameplay
     {
         private async Task<IMap> LoadMap(int mapId)
         {
-            var chr = GameTestGlobal.TestServer.GetPlayer()!;
+            var chr = await GameTestGlobal.TestServer.GetPlayer()!;
             var channel1 = chr.getChannelServer();
             return await MapFactory.Instance.loadMapFromWz(mapId, channel1, null);
         }
@@ -98,7 +98,7 @@ namespace ServiceTest.Games.Gameplay
             var curMapId = 200082300;
             var nextMapId = 230010000;
 
-            var chr = GameTestGlobal.TestServer.GetPlayer();
+            var chr = await GameTestGlobal.TestServer.GetPlayer();
             var mapManager = chr.getChannelServer().getMapFactory();
 
             var curMap = await mapManager.getMap(curMapId);
@@ -116,7 +116,7 @@ namespace ServiceTest.Games.Gameplay
         {
             var mapId = 103000201;
 
-            var chr = GameTestGlobal.TestServer.GetPlayer()!;
+            var chr = await GameTestGlobal.TestServer.GetPlayer()!;
             var map = await LoadMap(mapId);
 
             await chr.changeMap(map, map.getPortal(0));

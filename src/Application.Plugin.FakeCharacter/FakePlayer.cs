@@ -1,12 +1,9 @@
-using Application.Core.constants;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Shared.Constants;
-using Application.Shared.Net;
 using server.movement;
 using SyncProto;
 using System.Drawing;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Plugin.FakeCharacter
@@ -95,7 +92,7 @@ namespace Application.Plugin.FakeCharacter
     {
         public FakePlayer(Player owner, IMap map, Point pos, int idx)
             : base(
-                new FakeClient(),
+                new FakeClient(owner.Client.CurrentServer),
                 map,
                 pos,
                 new PlayerGetterDto
@@ -105,22 +102,23 @@ namespace Application.Plugin.FakeCharacter
                         Sp = "0,0,0,0,0,0",
                         Hp = NumericConfig.MaxHP,
                         Maxhp = NumericConfig.MaxHP,
-                        Mp = NumericConfig.MaxHP,
+                        Mp = NumericConfig.MaxMP,
                         Maxmp = NumericConfig.MaxMP,
                     }
                 }
             )
         {
             Id = GetFakePlayerId(owner, idx);
-            Name = $"假人${idx}号";
-            Face = 20000;
-            Hair = 30030;
-            Party = -1;
+            Name = $"$假人{idx}号$";
+            Face = owner.Face;
+            Hair = owner.Hair;
+            Gender = owner.Gender;
+            Level = owner.Level;
+            JobModel = owner.JobModel;
 
-            // 同步主人的姿态。
-            // stance 编码：bit0=方向(0右/1左), bit1+=动作类型（ID 含义在客户端 WZ 中定义）。
-            // 简单做法：主人是什么姿态假人就设成什么姿态，客户端会渲染为相同动画。
+            Party = -1;
             setStance(owner.getStance());
+            Client.SetPlayer(this);
         }
 
         public override Player? Controller => this;
@@ -129,18 +127,9 @@ namespace Application.Plugin.FakeCharacter
             return Id;
         }
 
-        /// <summary>
-        /// 假人没有真实客户端，不需要向自身发送数据包
-        /// </summary>
-        public override Task SendPacket(Packet packet)
+        static int GetFakePlayerId(Player chr, int idx)
         {
-            // 不存在客户端，不需要发送
-            return Task.CompletedTask;
-        }
-
-        public static int GetFakePlayerId(Player chr, int idx)
-        {
-            return 500000 + idx * 10000 + chr.Id;
+            return 500000 + chr.Id * 100 + idx;
         }
 
         protected override bool IsVisibleForPlayerWithoutRange(Player chr)
@@ -154,101 +143,38 @@ namespace Application.Plugin.FakeCharacter
             return Task.CompletedTask;
         }
 
-        // ================================================================
-        //  FH（Foothold）辅助方法
-        // ================================================================
-
-        /// <summary>
-        /// 根据位置查找正确的 Foothold ID。
-        ///
-        /// fh = Foothold ID，是地图上地面线段的编号。客户端收到移动包后
-        /// 用 fh 来确定角色站在哪个平台上，影响角色的 y 轴位置微调（z 排序）、
-        /// 下落物理和交互判定。
-        ///
-        /// 虽然客户端主要靠 (x, y) 渲染位置，但错误的 fh 可能导致：
-        ///   - 角色略微浮空或陷入地面
-        ///   - 层次排序错误（角色显示在平台后面/前面）
-        ///   - 在梯子/绳子附近交互异常
-        ///
-        /// 每个地图的 fh 数据在 WZ/Map.wz/MapHelper 中定义。
-        /// MapModel.Footholds.FindBelowFoothold(pos) 会返回包含该点的
-        /// 最上层脚趾线段；如果该点不在地面线段上（如空中），返回 null。
-        /// </summary>
-        /// <param name="pos">目标位置</param>
-        /// <returns>fh ID，没有对应脚趾时返回 0（兜底）</returns>
-        private int GetFoothold(Point pos)
+        public override ValueTask DisposeAsync()
         {
-            return MapModel.Footholds.FindBelowFoothold(pos)?.getId() ?? 0;
+            return ValueTask.CompletedTask;
         }
 
-        // ================================================================
-        //  行走移动 —— 使用 AbsoluteLifeMovement（Cmd 0）
-        //  兼容性：服务端 AbsoluteLifeMovement.serialize()
-        //         与客户端 CMovePath::Encode 的 case 0/5/17 完全一致 ✓
-        // ================================================================
-
-        /// <summary>
-        /// 行走移动 —— 用 AbsoluteLifeMovement（Cmd 0）模拟正常行走。
-        ///
-        /// 通信格式：[cmd:1B][x:2B][y:2B][vx:2B][vy:2B][fh:2B][newstate:1B][duration:2B] = 14B
-        /// IDA 确认：Decode @68a3be-68a3f1, Encode 对应字段
-        ///
-        /// fh 由目标位置自动查找（通过 MapModel.Footholds.FindBelowFoothold），
-        /// 调用方无需关心——服务端 updatePosition 也直接跳过 fh，仅靠 (x, y) 更新位置。
-        /// 通信线中包含 fh 是 CMovePath 结构的冗余设计，发送端预计算好供接收端缓存使用。
-        ///
-        /// 注意：如果起点到目标点距离很长（如跨屏幕），一条指令走长距离在客户端
-        /// 看起来是"高速平移"而非正常行走。正确的做法是多次调用 WalkTo 步进，
-        /// 或用 WalkToStepped / WalkPath 分段。
-        /// </summary>
-        /// <param name="targetPos">目标位置</param>
-        /// <param name="durationMs">移动持续时间（毫秒），越小速度越快</param>
-        public async Task WalkTo(Point targetPos, int durationMs = 400)
+        AbsoluteLifeMovement GenereateFinalMovements(Point startPos, Point finalPos)
         {
-            var startPos = getPosition();
-
-            int dx = targetPos.X - startPos.X;
-            int dy = targetPos.Y - startPos.Y;
-
-            if (Math.Abs(dx) < 1 && Math.Abs(dy) < 1)
+            var finalFh = MapModel.FindFh(finalPos);
+            var finalStance = (int)(finalFh >= 0 ? StanceConstant.StandR : StanceConstant.ClimbR);
+            if (startPos.X > finalPos.X)
             {
-                await BroadcastIdle();
-                return;
+                // 向左
+                finalStance++;
             }
-
-            // 姿态：2=朝右走，3=朝左走
-            int newstate = dx >= 0 ? 2 : 3;
-
-            // 速度向量 = 距离(像素) / 时间(秒) —— 客户端用它做帧间插值
-            var velocity = new Point(
-                (int)((long)Math.Abs(dx) * 1000 / Math.Max(durationMs, 1)),
-                (int)((long)Math.Abs(dy) * 1000 / Math.Max(durationMs, 1))
-            );
-
-            List<LifeMovementFragment> movements =
-            [
-                new AbsoluteLifeMovement(0, targetPos, durationMs, newstate)
-            ];
-            ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(velocity);
-            ((AbsoluteLifeMovement)movements[0]).setFh(GetFoothold(targetPos));
-
-            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
-            setPosition(targetPos);
+            AbsoluteLifeMovement final = new(0, finalPos, 0, finalStance);
+            final.setFh(finalFh);
+            return final;
         }
 
+        #region Walk
         /// <summary>
         /// 分段行走 —— 将长距离切分成多步，每段用 AbsoluteLifeMovement 连续输出。
         ///
-        /// 这是正确的"走路"模拟方式：每段约 STEP_PX 像素，配合理的持续时间和速度。
-        /// 默认步幅 120px, 每段 400ms → 速度约 300px/s，接近 MapleStory 角色
-        /// 的基础行走速度。
+        /// 每段根据实际段距和 speedPxPerSec 自动计算持续时间，保证客户端
+        /// 不论段距大小都以恒定速度 px/s 插值。
         ///
         /// 每段的 fh 自动从终点坐标推导。
         /// </summary>
         /// <param name="targetPos">目标位置</param>
         /// <param name="stepPx">每段最大像素</param>
-        /// <param name="segmentDurationMs">每段持续时间（毫秒）</param>
-        public async Task WalkToStepped(Point targetPos, int stepPx = 120, int segmentDurationMs = 400)
+        /// <param name="speedPxPerSec">目标移动速度（像素/秒），默认 125 ≈ 基础行走速度</param>
+        public async Task WalkToStepped(Point targetPos, int stepPx = 120, int speedPxPerSec = 125)
         {
             var startPos = getPosition();
             int dx = targetPos.X - startPos.X;
@@ -257,7 +183,7 @@ namespace Application.Plugin.FakeCharacter
 
             if (distance <= stepPx)
             {
-                await WalkTo(targetPos, segmentDurationMs);
+                await WalkPath([targetPos], speedPxPerSec);
                 return;
             }
 
@@ -275,7 +201,7 @@ namespace Application.Plugin.FakeCharacter
                 ));
             }
 
-            await WalkPath(path, segmentDurationMs);
+            await WalkPath(path, speedPxPerSec);
         }
 
         // ================================================================
@@ -287,15 +213,15 @@ namespace Application.Plugin.FakeCharacter
         /// 沿路径行走 —— 把多个 AbsoluteLifeMovement 拼在一个包里一次性广播。
         /// 这是客户端 CMovePath 的典型用法，每条指令依次执行形成连贯行走。
         ///
-        /// 服务端 AbsoluteLifeMovement.serialize() 的输出格式与
-        /// 客户端 CMovePath::Encode 的 case 0 完全一致，没有兼容问题。
+        /// 每段根据实际段距和 speedPxPerSec 自动计算持续时间，让客户端
+        /// 无论段距大小都以恒定速度 px/s 插值。
         ///
         /// 每段的 fh 自动从该段终点坐标推导。
         /// </summary>
         /// <param name="path">路径点列表（至少一个点）</param>
-        /// <param name="segmentDurationMs">每段移动的毫秒数</param>
+        /// <param name="speedPxPerSec">目标移动速度（像素/秒）</param>
         /// <param name="finalStance">最后一段终点的姿态，null=自动根据方向决定</param>
-        public async Task WalkPath(List<Point> path, int segmentDurationMs = 400, int? finalStance = null)
+        async Task WalkPath(List<Point> path, int speedPxPerSec = 125)
         {
             if (path.Count == 0) return;
 
@@ -308,29 +234,204 @@ namespace Application.Plugin.FakeCharacter
                 Point target = path[i];
                 int segDx = target.X - prevPos.X;
                 int segDy = target.Y - prevPos.Y;
+                double segDist = Math.Sqrt(segDx * segDx + segDy * segDy);
+                int segDurationMs = Math.Max(50, (int)(segDist / speedPxPerSec * 1000));
 
-                // 如果是最后一段并且有 finalStance，用它覆盖
-                int stance;
-                if (finalStance.HasValue && i == path.Count - 1)
-                    stance = finalStance.Value;
-                else
-                    stance = segDx >= 0 ? 2 : 3;
+                var fh = MapModel.FindFh(target);
+                int newState = (int)(fh >= 0 ? StanceConstant.WalkR : StanceConstant.ClimbR);
+                if (segDx < 0)
+                    newState += 1;
 
                 var velocity = new Point(
-                    (int)((long)Math.Abs(segDx) * 1000 / Math.Max(segmentDurationMs, 1)),
-                    (int)((long)Math.Abs(segDy) * 1000 / Math.Max(segmentDurationMs, 1))
+                    (int)((long)Math.Abs(segDx) * 1000 / Math.Max(segDurationMs, 1)),
+                    (int)((long)Math.Abs(segDy) * 1000 / Math.Max(segDurationMs, 1))
                 );
 
-                AbsoluteLifeMovement alm = new(0, target, segmentDurationMs, stance);
+                AbsoluteLifeMovement alm = new(0, target, segDurationMs, newState);
                 alm.setPixelsPerSecond(velocity);
-                alm.setFh(GetFoothold(target));
+                alm.setFh(fh);
                 movements.Add(alm);
                 prevPos = target;
             }
+            movements.Add(GenereateFinalMovements(startPos, movements[^1].getPosition()));
 
             await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
             setPosition(path[^1]);
         }
+        #endregion
+
+
+        #region Jump
+        /// <summary>
+        /// 水平跳跃 —— 用 AbsoluteLifeMovement（Cmd 0）+ 姿态 6/7。
+        /// 格式兼容性同 WalkTo，完全一致 ✓
+        ///
+        /// 用于两个平台间水平距离较短的跳越。
+        /// </summary>
+        /// <param name="targetPos">落点位置</param>
+        /// <param name="durationMs">跳跃持续时间（毫秒）</param>
+        public async Task JumpTo(Point targetPos, int durationMs = 250)
+        {
+            var startPos = getPosition();
+            int dx = targetPos.X - startPos.X;
+            int dy = targetPos.Y - startPos.Y;
+
+            if (Math.Abs(dx) < 1 && Math.Abs(dy) < 1)
+            {
+                await BroadcastIdle();
+                return;
+            }
+
+            // 跳跃姿态：6=朝右跳，7=朝左跳
+            int newstate = (int)(dx >= 0 ? StanceConstant.JumpR : StanceConstant.JumpL);
+            var fh = MapModel.FindFh(targetPos);
+
+            var velocity = new Point(
+                (int)((long)Math.Abs(dx) * 1000 / Math.Max(durationMs, 1)),
+                (int)((long)Math.Abs(dy) * 1000 / Math.Max(durationMs, 1))
+            );
+
+            List<LifeMovementFragment> movements =
+            [
+                new AbsoluteLifeMovement(0, targetPos, durationMs, newstate),
+                GenereateFinalMovements(startPos, targetPos)
+            ];
+            ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(velocity);
+            ((AbsoluteLifeMovement)movements[0]).setFh(fh);
+
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            setPosition(targetPos);
+        }
+
+        /// <summary>
+        /// 下落跳跃 —— 用 JumpDownMovement（Cmd 15）。
+        /// 通信格式：[cmd:1B][x:i2][y:i2][vx:i2][vy:i2][fh:i2][fh_origin:i2][newstate:1B][duration:i2] = 16B
+        /// IDA 确认：服务端 JumpDownMovement.serialize() 与客户端 case 15 完全一致 ✓
+        ///
+        /// 用于从高处平台跳到低处平台。
+        /// </summary>
+        /// <param name="targetPos">落点位置</param>
+        /// <param name="durationMs">下落持续时间（毫秒）</param>
+        public async Task JumpDownTo(Point targetPos, int durationMs = 300)
+        {
+            var startPos = getPosition();
+            int dx = targetPos.X - startPos.X;
+            int dy = targetPos.Y - startPos.Y;
+
+            if (Math.Abs(dx) < 1 && Math.Abs(dy) < 1)
+            {
+                await BroadcastIdle();
+                return;
+            }
+
+            // 下落姿态：6=朝右跳，7=朝左跳
+            int newstate = (int)(dx >= 0 ? StanceConstant.JumpR : StanceConstant.JumpL);
+
+            var velocity = new Point(
+                (int)((long)Math.Abs(dx) * 1000 / Math.Max(durationMs, 1)),
+                (int)((long)Math.Abs(dy) * 1000 / Math.Max(durationMs, 1))
+            );
+
+            int fromFh = MapModel.FindFh(startPos);
+            int toFh = MapModel.FindFh(targetPos);
+
+            List<LifeMovementFragment> movements =
+            [
+                new JumpDownMovement(15, targetPos, durationMs, newstate),
+                GenereateFinalMovements(startPos, targetPos)
+            ];
+            ((JumpDownMovement)movements[0]).setPixelsPerSecond(velocity);
+            ((JumpDownMovement)movements[0]).setFh(toFh);
+            ((JumpDownMovement)movements[0]).setOriginFh(fromFh);
+
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            setPosition(targetPos);
+        }
+        #endregion
+
+        #region Climb
+        /// <summary>
+        /// 沿梯子/绳子攀爬到目标位置（调用方应确保目标在同一梯子上）。
+        ///
+        /// 攀爬用 AbsoluteLifeMovement（Cmd 0），姿态 16（面朝右攀爬）。
+        /// 每段根据段距和 speedPxPerSec 自动计算持续时间。
+        ///
+        /// </summary>
+        /// <param name="targetPos">目标位置（应在同一梯子上）</param>
+        /// <param name="speedPxPerSec">攀爬速度（像素/秒），默认 80</param>
+        private async Task ClimbTo(Point targetPos, int speedPxPerSec = 80)
+        {
+            var startPos = getPosition();
+            int dy = targetPos.Y - startPos.Y;
+
+            if (Math.Abs(dy) < 5)
+            {
+                setPosition(targetPos);
+                await BroadcastIdle();
+                return;
+            }
+
+            int absDy = Math.Abs(dy);
+            int stepPx = 80;
+
+            if (absDy <= stepPx)
+            {
+                await ClimbPath([targetPos], speedPxPerSec);
+            }
+            else
+            {
+                int steps = (int)Math.Ceiling((double)absDy / stepPx);
+                var path = new List<Point>(steps);
+                double stepY = (double)dy / steps;
+
+                for (int i = 1; i <= steps; i++)
+                {
+                    path.Add(new Point(
+                        targetPos.X,
+                        startPos.Y + (int)(stepY * i)
+                    ));
+                }
+
+                await ClimbPath(path, speedPxPerSec);
+            }
+        }
+
+        /// <summary>
+        /// 沿路径攀爬 —— 把多个 AbsoluteLifeMovement 拼在一个包里一次性广播。
+        /// </summary>
+        /// <param name="fh">梯子的落脚点是负数</param>
+        /// <param name="path">攀爬路径点列表</param>
+        /// <param name="speedPxPerSec">攀爬速度（像素/秒）</param>
+        private async Task ClimbPath(List<Point> path, int speedPxPerSec = 80)
+        {
+            if (path.Count == 0) return;
+
+            var startPos = getPosition();
+            var movements = new List<LifeMovementFragment>();
+            Point prevPos = startPos;
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                Point target = path[i];
+                int segDy = target.Y - prevPos.Y;
+                int segDurationMs = Math.Max(50, (int)((double)Math.Abs(segDy) / speedPxPerSec * 1000));
+
+                var velocity = new Point(0, (int)((long)Math.Abs(segDy) * 1000 / Math.Max(segDurationMs, 1)));
+
+                AbsoluteLifeMovement alm = new(0, target, segDurationMs, 16);
+                alm.setPixelsPerSecond(velocity);
+                alm.setFh(MapModel.FindFh(target));
+                movements.Add(alm);
+                prevPos = target;
+            }
+
+            movements.Add(GenereateFinalMovements(startPos, movements[^1].getPosition()));
+
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            setPosition(path[^1]);
+        }
+        #endregion
+
 
         // ================================================================
         //  传送移动 —— 注意：不用 TeleportMovement.serialize()
@@ -352,20 +453,10 @@ namespace Application.Plugin.FakeCharacter
         /// fh 自动从坐标推导。
         /// </summary>
         /// <param name="pos">目标位置</param>
-        /// <param name="newstate">到达后的姿态，默认 0（站立朝右）</param>
-        public async Task TeleportTo(Point pos, int newstate = 0)
+        public async Task TeleportTo(Point pos)
         {
             var startPos = getPosition();
-
-            // 用 cmd=0 + 极短 duration 模拟闪现，避免 TeleportMovement 的格式兼容问题
-            List<LifeMovementFragment> movements =
-            [
-                new AbsoluteLifeMovement(0, pos, 10, newstate)
-            ];
-            ((AbsoluteLifeMovement)movements[0]).setPixelsPerSecond(new Point(0, 0));
-            ((AbsoluteLifeMovement)movements[0]).setFh(GetFoothold(pos));
-
-            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
+            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, [GenereateFinalMovements(startPos, pos)]), startPos);
             setPosition(pos);
         }
 
@@ -391,143 +482,81 @@ namespace Application.Plugin.FakeCharacter
             await BroadcastMovement(PacketCreator.MovePlayerIdle(Id, GetIdleMovementBytes()), getPosition());
         }
 
-        // ================================================================
-        //  跳跃 —— 使用 RelativeLifeMovement（Cmd 1）
-        //  兼容性警告：见下方注释
-        // ================================================================
-
         /// <summary>
-        /// 跳跃/短位移 —— 使用 RelativeLifeMovement（Cmd 1）。
+        /// 从当前位置移动到目标位置，支持跨平台、跨梯子的多段导航。
         ///
-        /// 通信格式（IDA 确认 case 1/2/6/12/13/16/18/19/20/22）：
-        ///   [cmd:1B][xoff:i2][yoff:i2][newstate:1B][duration:i2] = 8B
-        ///
-        /// 客户端 Decode 把通信中的 xoff/yoff 写入 ELEM.vx/vy 字段，
-        /// 而位置字段 x/y 从上一个元素复制。客户端 Encode 输出的是 vx/vy。
-        ///
-        /// ⚠️ 服务端 RelativeLifeMovement.serialize() 输出的是位置字段 x/y，
-        ///    而不是 vx/vy。8 字节长度一致，但语义不同：
-        ///      服务端输出：位置 x/y → 客户端读到 vx/vy 中
-        ///      客户端期望：相对偏移到 vx/vy
-        ///    建议优先使用 WalkTo/WalkPath（cmd=0），完全无兼容问题。
+        /// 策略：
+        ///   - 同一梯子 → 直接 ClimbTo
+        ///   - 同一平台（Foothold） → 直接 WalkToStepped
+        ///   - 不同平台/梯子 → 用 MapNavigator 构建导航图，BFS 寻路，
+        ///     自动处理：爬下梯子 → 步行 → 爬上梯子 → 步行 → ... → 到达
+        ///   - 无路径可达 → TeleportTo 兜底
         /// </summary>
-        [Obsolete("优先使用 WalkTo/WalkPath（cmd=0，格式完全兼容），本文的 cmd=1 有字段语义差异")]
-        public async Task Jump(Point relativeDisplacement, int durationMs = 300, int newstate = 4)
+        public async Task Move(Point target)
         {
-            var startPos = getPosition();
-            Point targetPos = new(startPos.X + relativeDisplacement.X, startPos.Y + relativeDisplacement.Y);
-
-            List<LifeMovementFragment> movements =
-            [
-                new RelativeLifeMovement(1, targetPos, durationMs, newstate)
-            ];
-
-            await BroadcastMovement(PacketCreator.MovePlayer(Id, startPos, movements), startPos);
-            setPosition(targetPos);
-        }
-
-
-        // ================================================================
-        //  自动跟随 —— 尝试走到玩家位置，失败则传送
-        // ================================================================
-
-        private int _followFailCount;
-        private Point? _followLastTarget;
-
-        /// <summary>
-        /// 跟随主人到当前所在位置。
-        ///
-        /// 策略（渐进 + 兜底）：
-        ///   第 1 次：WalkToStepped 水平走到主人 X 坐标 → 若主人是攀爬姿态则 ClimbTo
-        ///   第 2 次：再试一次（可能上次走到一半被阻挡）
-        ///   第 3 次：TeleportTo 直接闪现
-        ///   >3 次：返回 false，调用方自行销毁重建
-        ///
-        /// 每次 Follow 成功后计数清零；目标位置变化时计数也清零。
-        /// </summary>
-        /// <param name="closeEnoughPx">认为"到达"的距离阈值（像素）</param>
-        /// <returns>true=到达目标, false=需销毁重建</returns>
-        public async Task<bool> Follow(Player owner, int closeEnoughPx = 60)
-        {
-            Point targetPos = owner.getPosition();
-            int targetStance = owner.getStance();
-
-            // 目标变了 → 重置计数
-            if (_followLastTarget == null || Distance(targetPos, _followLastTarget.Value) > closeEnoughPx)
+            var currentPos = getPosition();
+            // Long-distance warp: 如果目标超出视野范围（≈一个屏幕），直接传送
+            double rangedDistSq = Client.CurrentServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance();
+            int dx = target.X - currentPos.X;
+            int dy = target.Y - currentPos.Y;
+            if (dx * dx + dy * dy > rangedDistSq)
             {
-                _followFailCount = 0;
-                _followLastTarget = targetPos;
+                await TeleportTo(target);
+                return;
             }
 
-            // 尝试移动
-            bool reached = await TryFollowMove(targetPos, targetStance, closeEnoughPx);
-
-            if (reached)
+            var currentFh = MapModel.FindFh(currentPos);
+            var targetFh = MapModel.FindFh(target);
+            if (currentFh == targetFh)
             {
-                _followFailCount = 0;
-                return true;
-            }
-
-            _followFailCount++;
-
-            if (_followFailCount <= 2)
-            {
-                // 再来一次
-                reached = await TryFollowMove(targetPos, targetStance, closeEnoughPx);
-                if (reached)
+                if (currentFh < 0)
                 {
-                    _followFailCount = 0;
-                    return true;
+                    // 同一个梯子/绳子
+                    await ClimbTo(target);
+                    return;
                 }
-                _followFailCount++;
-            }
-
-            if (_followFailCount <= 3)
-            {
-                // 第三次——闪现
-                setStance(targetStance);
-                await TeleportTo(targetPos);
-                if (Distance(getPosition(), targetPos) <= closeEnoughPx)
+                else
                 {
-                    _followFailCount = 0;
-                    return true;
+                    // 同一个落脚点
+                    await WalkToStepped(target);
+                    return;
                 }
-                _followFailCount++;
             }
 
-            // 超过 3 次失败 → 需要调用方销毁重建
-            return false;
-        }
+            // Complex path: use navigation graph (BFS over platform-ladder graph)
+            var navigator = GetOrCreateNavigator();
+            var path = navigator.FindPath(currentPos, target);
 
-        /// <summary>
-        /// 单次跟随尝试。不做寻路——直接走直线，到不了就返回 false，
-        /// 由 Follow 的重试/闪现兜底。
-        /// </summary>
-        private async Task<bool> TryFollowMove(Point targetPos, int targetStance, int closeEnoughPx)
-        {
-            var startPos = getPosition();
-            double dist = Distance(startPos, targetPos);
-
-            if (dist <= closeEnoughPx)
+            if (path == null || path.Count == 0)
             {
-                setStance(targetStance);
-                return true;
+                await TeleportTo(target);
+                return;
             }
 
-            // 直接 WalkToStepped 走直线到目标位置。
-            // 如果跨越不同平台/在空中的部分，客户端会渲染为行走 + 下落动画，
-            // 看起来不太自然，但 Follow 会快速重试 → TeleportTo 兜底。
-            setStance(targetStance);
-            await WalkToStepped(targetPos);
-
-            return Distance(getPosition(), targetPos) <= closeEnoughPx;
+            foreach (var action in path)
+            {
+                switch (action.Type)
+                {
+                    case MoveActionType.Walk:
+                        await WalkToStepped(action.To);
+                        break;
+                    case MoveActionType.Climb:
+                        await ClimbTo(action.To);
+                        break;
+                    case MoveActionType.Jump:
+                        int deltaY = action.To.Y - getPosition().Y;
+                        if (deltaY > 30) // 向下跳 >30px → 用 JumpDownMovement
+                            await JumpDownTo(action.To);
+                        else
+                            await JumpTo(action.To);
+                        break;
+                }
+            }
         }
 
-        private static double Distance(Point a, Point b)
+        private MapNavigator GetOrCreateNavigator()
         {
-            int dx = a.X - b.X;
-            int dy = a.Y - b.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
+            return MapNavigator.GetOrCreate(MapModel.SourceTemplate, MapModel.Id);
         }
     }
 }

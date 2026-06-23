@@ -118,40 +118,40 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Server_InActive" xml:space="preserve">
-    <value>[{ServerName}]未启动</value>
+    <value>未启动</value>
   </data>
   <data name="Server_Active" xml:space="preserve">
-    <value>[{ServerName}]已启动</value>
+    <value>已启动</value>
   </data>
   <data name="Server_Shutingdown" xml:space="preserve">
-    <value>[{ServerName}] 正在停止...</value>
+    <value>正在停止...</value>
   </data>
   <data name="Server_StopListenStart" xml:space="preserve">
-    <value>[{ServerName}] 停止监听...</value>
+    <value>停止监听...</value>
   </data>
   <data name="Server_StopListenComplete" xml:space="preserve">
-    <value>[{ServerName}] 停止监听...完成</value>
+    <value>停止监听...完成</value>
   </data>
   <data name="Server_AllChannelShutdown" xml:space="preserve">
-    <value>[{ServerName}] 所有频道已停止</value>
+    <value>所有频道已停止</value>
   </data>
   <data name="Server_SaveUserDataStart" xml:space="preserve">
-    <value>[{ServerName}] 正在保存玩家数据...</value>
+    <value>正在保存玩家数据...</value>
   </data>
   <data name="Server_SaveUserDataComplete" xml:space="preserve">
-    <value>[{ServerName}] 正在保存玩家数据...完成</value>
+    <value>正在保存玩家数据...完成</value>
   </data>
   <data name="Server_ShutdownComplete" xml:space="preserve">
-    <value>[{ServerName}] 正在停止...完成</value>
+    <value>正在停止...完成</value>
   </data>
   <data name="Server_Start" xml:space="preserve">
-    <value>[{ServerName}] 启动中...</value>
+    <value>启动中...</value>
   </data>
   <data name="Server_StartFailed" xml:space="preserve">
-    <value>[{ServerName}] 启动{Status}</value>
+    <value>启动{Status}</value>
   </data>
   <data name="Server_StartSuccess" xml:space="preserve">
-    <value>[{ServerName}] 启动{Status}, 监听端口{Port}</value>
+    <value>启动{Status}, 监听端口{Port}</value>
   </data>
   <data name="System_GmLoggedin" xml:space="preserve">
     <value>{0} {1} has logged in</value>

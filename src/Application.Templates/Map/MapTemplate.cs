@@ -110,6 +110,7 @@ namespace Application.Templates.Map
             Footholds = Array.Empty<MapFootholdTemplate>();
             Backs = Array.Empty<MapBackTemplate>();
             Areas = Array.Empty<MapAreaTemplate>();
+            LadderRopes = [];
         }
 
         public void CloneLink(MapTemplate sourceTemplate)

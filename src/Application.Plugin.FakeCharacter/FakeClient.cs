@@ -9,26 +9,25 @@ using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using scripting;
 using scripting.npc;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Numerics;
 
 namespace Application.Plugin.FakeCharacter
 {
     internal class FakeClient : IChannelClient
     {
-        public WorldChannel CurrentServer => throw new NotImplementedException();
+        public FakeClient(WorldChannel worldChannel) { CurrentServer = worldChannel; }
+        public WorldChannel CurrentServer { get; }
 
-        public int Channel => throw new NotImplementedException();
+        public int Channel => CurrentServer.Id;
 
-        public Player? Character => throw new NotImplementedException();
+        public Player? Character { get; private set; }
 
-        public Player OnlinedCharacter => throw new NotImplementedException();
+        public Player OnlinedCharacter => Character!;
 
-        public ClientCulture CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ClientCulture CurrentCulture { get; set; } = ClientCulture.SystemCulture;
         public NPCConversationManager? NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public bool IsOnlined => false;
+        public bool IsOnlined => true;
 
         public bool IsActive => throw new NotImplementedException();
 
@@ -146,10 +145,7 @@ namespace Application.Plugin.FakeCharacter
             throw new NotImplementedException();
         }
 
-        public WorldChannel getChannelServer()
-        {
-            throw new NotImplementedException();
-        }
+        public WorldChannel getChannelServer() => CurrentServer;
 
         public AbstractEventManager? getEventManager(string @event)
         {
@@ -190,7 +186,9 @@ namespace Application.Plugin.FakeCharacter
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// 假人没有真实客户端，不需要向自身发送数据包
+        /// </summary>
         public Task SendPacket(Packet p)
         {
             return Task.CompletedTask;
@@ -213,7 +211,7 @@ namespace Application.Plugin.FakeCharacter
 
         public void SetPlayer(Player? player)
         {
-            throw new NotImplementedException();
+            Character = player;
         }
 
         public Task tryacquireClient()

@@ -5,8 +5,8 @@ namespace ServiceTest.Games.Gameplay
         [Test]
         public async Task Npc1012112Test()
         {
-            var chr = GameTestGlobal.TestServer.GetPlayer();
-            var map = chr.getChannelServer().getMapFactory().getMap(100000200);
+            var chr = await GameTestGlobal.TestServer.GetPlayer();
+            var map = await chr.getChannelServer().getMapFactory().getMap(100000200);
             var oldMap = chr.MapModel;
             await chr.changeMap(map);
             chr.setMapTransitionComplete();

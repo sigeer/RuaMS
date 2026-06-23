@@ -42,18 +42,14 @@ public class EventScriptManager : ITickableTree, IAsyncDisposable
         ChannelServer = channel;
     }
 
-    public int ReloadEventScript(List<AbstractEventTemplate> templateList)
+    public int ReloadEventScript(HashSet<AbstractEventTemplate> templateList)
     {
-        Stopwatch sw = new();
-        sw.Start();
         var duplicatedItem = templateList.GroupBy(x => x.Name).FirstOrDefault(x => x.Count() > 1);
         if (duplicatedItem != null)
         {
             throw new BusinessFatalException($"事件名重复，名称：{duplicatedItem.Key}");
         }
-        sw.Stop();
 
-        Console.WriteLine($"duplicatedItem,{sw.Elapsed.TotalMilliseconds} ");
         foreach (var template in templateList)
         {
             try
@@ -96,6 +92,21 @@ public class EventScriptManager : ITickableTree, IAsyncDisposable
     public bool isActive()
     {
         return IsActive;
+    }
+
+    public async ValueTask ClearEvents(HashSet<string> items)
+    {
+        var allItems = events.Keys.ToArray();
+        foreach (var item in allItems)
+        {
+            if (items.Contains(item))
+            {
+                if (events.TryRemove(item, out var em))
+                {
+                     await em.DisposeAsync();
+                }
+            }
+        }
     }
 
 

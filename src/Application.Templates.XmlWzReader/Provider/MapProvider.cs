@@ -193,6 +193,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 else if (areaPropName == "y2")
                                     model.Y2 = areaProp.GetIntValue();
                             }
+                            list.Add(model);
                         }
                         mapTemplate.Areas = list.ToArray();
                     }
