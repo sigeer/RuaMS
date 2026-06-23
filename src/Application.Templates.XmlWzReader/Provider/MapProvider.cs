@@ -152,6 +152,11 @@ namespace Application.Templates.XmlWzReader.Provider
                         ProcessMapReactor(mapTemplate, item);
                     }
 
+                    else if (nodeType == "ladderRope")
+                    {
+                        ProcessLadderRope(mapTemplate, item);
+                    }
+
                     else if (nodeType == "miniMap")
                     {
                         var mini = new MapMiniMapTemplate();
@@ -188,6 +193,7 @@ namespace Application.Templates.XmlWzReader.Provider
                                 else if (areaPropName == "y2")
                                     model.Y2 = areaProp.GetIntValue();
                             }
+                            list.Add(model);
                         }
                         mapTemplate.Areas = list.ToArray();
                     }
@@ -225,6 +231,27 @@ namespace Application.Templates.XmlWzReader.Provider
                 list.Add(model);
             }
             mapTemplate.Backs = list.ToArray();
+        }
+
+        private static void ProcessLadderRope(MapTemplate mapTemplate, XElement item)
+        {
+            var list = new List<MapLadderRopeTemplate>();
+            foreach (var nodeItem in item.Elements())
+            {
+                var model = new MapLadderRopeTemplate(nodeItem.GetIntName());
+                foreach (var prop in nodeItem.Elements())
+                {
+                    var name = prop.GetName();
+                    if (name == "x")
+                        model.X = prop.GetIntValue();
+                    else if (name == "y1")
+                        model.Y1 = prop.GetIntValue();
+                    else if (name == "y2")
+                        model.Y2 = prop.GetIntValue();
+                }
+                list.Add(model);
+            }
+            mapTemplate.LadderRopes = list.ToArray();
         }
 
         private static void ProcessMapFoothold(MapTemplate mapTemplate, XElement item)

@@ -446,9 +446,6 @@ public class MapleMap : IMap, INamedInstance
         return ret.Value;
     }
 
-
-
-
     public bool TryGetEffectiveDoorPortal(out MysticDoorPortal? portal)
     {
         portal = null;
@@ -994,7 +991,24 @@ public class MapleMap : IMap, INamedInstance
         await sp.SpawnMonster();
     }
 
+    public void ClearAreaBoss(string name)
+    {
+        _bossSp.Remove(name);
+    }
 
+    public int FindFh(Point pos)
+    {
+        var ladderRope = SourceTemplate.LadderRopes.FirstOrDefault(x => x.Contains(pos));
+        if (ladderRope != null)
+            return -ladderRope.Index;
+
+        // 基本上必定有值了
+        var fh = Footholds.FindBelowFoothold(pos);
+        if (fh != null)
+            return fh.getId();
+
+        return 0;
+    }
 
     private Point? calcPointBelow(Point initial)
     {
@@ -1173,7 +1187,7 @@ public class MapleMap : IMap, INamedInstance
         Portal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
         if (doorPortal == null)
         {
-            log.Warning("[Door] {MapName} ({MapId}) does not contain door portalid {DoorId}", getMapName(), mapid, doorid);
+            log.Warning("does not contain door portalid {DoorId}", doorid);
             return portals.GetValueOrDefault(0x80);
         }
 
@@ -1296,7 +1310,7 @@ public class MapleMap : IMap, INamedInstance
                     var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount(), true);
                     if (idrop == null)
                     {
-                        log.Warning("{Map}, {Mob}尝试掉落不存在的物品：{ItemId}", InstanceName, dropper.GetName(), de.ItemId);
+                        log.Warning("{Mob}尝试掉落不存在的物品：{ItemId}", dropper.GetName(), de.ItemId);
                         continue;
                     }
 
@@ -1617,7 +1631,7 @@ public class MapleMap : IMap, INamedInstance
     {
         await Broadcast(-1, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), rangedFrom, async chr =>
         {
-            await chr.getClient().announceBossHpBar(mm, bossHash, packet);
+            await chr.announceBossHpBar(mm, bossHash, packet);
         });
     }
 

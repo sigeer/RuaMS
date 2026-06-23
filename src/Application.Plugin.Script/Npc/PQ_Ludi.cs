@@ -113,11 +113,12 @@ namespace Application.Plugin.Script.Npc
 
                     var em = eim.EventManager.Template as PQ_Ludi;
 
-                    List<int> passedIndex = [];
+                    HashSet<int> passedIndex = [];
                     var players = eim.getPlayers();
                     for (int i = 0; i < stgAreas.Count; i++)
                     {
-                        if (players.Any(chr => stgAreas[i].Contains(chr.getPosition())))
+                        var area = stgAreas[i];
+                        if (players.Any(chr => area.Contains(chr.getPosition())))
                         {
                             passedIndex.Add(i);
                         }
@@ -130,7 +131,7 @@ namespace Application.Plugin.Script.Npc
                     }
 
                     var stgCombos = em.GetStage(eim, getMap());
-                    if (passedIndex.SequenceEqual(stgCombos))
+                    if (passedIndex.SetEquals(stgCombos))
                     {
                         await ClearLudiPQStage(eim, getMapId());
                         await SayNext("快点，去下一个阶段，传送门已经打开了！");

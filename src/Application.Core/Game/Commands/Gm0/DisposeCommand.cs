@@ -13,7 +13,7 @@ public class DisposeCommand : CommandBase
     {
         c.NPCConversationManager?.DisposeAsync();
         await c.SendPacket(PacketCreator.enableActions());
-        c.removeClickedNPC();
+        c.OnlinedCharacter.removeClickedNPC();
         await c.OnlinedCharacter.Pink(nameof(ClientMessage.DisposeCommand_Message1));
     }
 }

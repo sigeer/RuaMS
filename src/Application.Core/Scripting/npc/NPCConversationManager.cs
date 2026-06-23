@@ -85,7 +85,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         NextLevelContext.Clear();
         await c.CurrentServer.NPCScriptManager.dispose(this);
         await c.SendPacket(PacketCreator.enableActions());
-        c.removeClickedNPC();
+        c.OnlinedCharacter.removeClickedNPC();
     }
 
     public async Task sendDefault(int checkQuestId = 0)
@@ -1147,14 +1147,14 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public GuildDto? GetGuild() => getPlayer().GetGuild();
     public AllianceDto? GetAlliance() => getPlayer().GetAlliance();
 
-    public void upgradeAlliance()
+    public async Task upgradeAlliance()
     {
-        c.CurrentServer.NodeService.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
+        await c.CurrentServer.NodeService.GuildManager.HandleIncreaseAllianceCapacity(c.OnlinedCharacter);
     }
 
-    public void disbandAlliance(IChannelClient c, int allianceId)
+    public async Task disbandAlliance(IChannelClient c, int allianceId)
     {
-        c.CurrentServer.NodeService.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
+        await c.CurrentServer.NodeService.GuildManager.DisbandAlliance(c.OnlinedCharacter, allianceId);
     }
 
     public bool canBeUsedAllianceName(string name)
@@ -1162,9 +1162,9 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return c.CurrentServer.NodeService.GuildManager.CheckAllianceName(name);
     }
 
-    public void CreateAllianceAysnc(string name, int cost)
+    public async Task CreateAllianceAysnc(string name, int cost)
     {
-        c.CurrentServer.NodeService.GuildManager.CreateAlliance(getPlayer(), name, cost);
+        await c.CurrentServer.NodeService.GuildManager.CreateAlliance(getPlayer(), name, cost);
     }
 
     public int getAllianceCapacity()

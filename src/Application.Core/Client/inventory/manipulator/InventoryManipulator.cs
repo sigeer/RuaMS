@@ -551,12 +551,12 @@ public class InventoryManipulator
                 if (itemId == ItemId.NEW_YEARS_CARD_SEND)
                 {
                     chr.DiscardNewYearRecord(true);
-                    await c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
+                    await chr.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_SEND);
                 }
                 else
                 {
                     chr.DiscardNewYearRecord(false);
-                    await c.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
+                    await chr.getAbstractPlayerInteraction().removeAll(ItemId.NEW_YEARS_CARD_RECEIVED);
                 }
             }
 

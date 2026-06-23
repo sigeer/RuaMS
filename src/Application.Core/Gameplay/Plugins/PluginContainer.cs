@@ -5,18 +5,20 @@ namespace Application.Core.Gameplay.Plugins
     /// <summary>
     /// 插件包装器：包含插件实例、加载上下文、请求跟踪器
     /// </summary>
-    public sealed class PluginContainer<TService> : IAsyncDisposable where TService : class, IPluginServiceBase
+    public sealed class PluginContainer<TService> : IAsyncDisposable where TService : PluginServiceBase
     {
         public List<TService> PluginServices { get; }
         public PluginLoadContext LoadContext { get; }
         public RequestTracker Tracker { get; } = new();
         public string ShadowCopyPath { get; }
+        public ILogger Logger { get; }
 
         public PluginContainer(List<TService> pluginServices, PluginLoadContext context, string shadowCopyPath)
         {
             PluginServices = pluginServices;
             LoadContext = context;
             ShadowCopyPath = shadowCopyPath;
+            Logger = LogFactory.GetLogger($"Plugin/{LoadContext.PluginName}");
         }
 
         public async ValueTask DisposeAsync()
@@ -26,8 +28,9 @@ namespace Application.Core.Gameplay.Plugins
             {
                 await item.DisposeAsync();
             }
+            PluginServices.Clear();
             LoadContext.Unload();
-            Log.Logger.Information("插件卸载完成");
+            Logger.Information("插件卸载...完成");
             // 清理卷影副本目录
             try
             {

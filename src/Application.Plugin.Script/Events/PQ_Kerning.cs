@@ -105,7 +105,7 @@ namespace Application.Plugin.Script.Events
             return (stage1Questions, stage1Answers);
         }
 
-        public List<int> GetStage(AbstractEventInstanceManager eim, IMap map)
+        public HashSet<int> GetStage(AbstractEventInstanceManager eim, IMap map)
         {
             return eim
                 .Properties.GetOrAdd(
@@ -114,8 +114,7 @@ namespace Application.Plugin.Script.Events
                 )
                 .Split(',')
                 .Select(int.Parse)
-                .OrderBy(x => x)
-                .ToList();
+                .ToHashSet();
         }
     }
 }

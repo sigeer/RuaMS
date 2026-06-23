@@ -60,7 +60,7 @@ namespace Application.Module.MTS.Channel
             chr.changeTab(tab);
             chr.changeType(type);
 
-            chr.Client.enableCSActions();
+            chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.transferInventory(_mapper.Map<List<MTSItemInfo>>(res.MyMTSInfo.InTransfer)));
             chr.sendPacket(MTSPacketCreator.notYetSoldInv(_mapper.Map<List<MTSItemInfo>>(res.MyMTSInfo.OnSale)));
         }
@@ -100,7 +100,7 @@ namespace Application.Module.MTS.Channel
             if (res.Code == 0)
             {
                 chr.sendPacket(MTSPacketCreator.MTSConfirmSell());
-                chr.Client.enableCSActions();
+                chr.enableCSActions();
             }
             else
             {
@@ -123,7 +123,7 @@ namespace Application.Module.MTS.Channel
         {
             MTSProto.CancelSaleItemResponse data = _transport.SendCancelSale(new MTSProto.CancelSaleItemRequest { MasterId = chr.Id, ProductId = productId });
 
-            chr.Client.enableCSActions();
+            chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
                 data.PageData.Tab, data.PageData.Type, data.PageData.Page, data.PageData.TotalPages));
             chr.sendPacket(MTSPacketCreator.transferInventory(_mapper.Map<List<MTSItemInfo>>(data.MyMTSInfo.InTransfer)));
@@ -135,7 +135,7 @@ namespace Application.Module.MTS.Channel
         {
             MTSProto.AddItemToCartResponse data = _transport.SendAddCartItem(new AddItemToCartRequest { Query = GetQueryModel(chr), ProductId = productId });
 
-            chr.Client.enableCSActions();
+            chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
                 data.PageData.Tab, data.PageData.Type, data.PageData.Page, data.PageData.TotalPages));
             chr.sendPacket(MTSPacketCreator.transferInventory(_mapper.Map<List<MTSItemInfo>>(data.MyMTSInfo.InTransfer)));
@@ -150,7 +150,7 @@ namespace Application.Module.MTS.Channel
             query.Page = 0;
             MTSProto.RemoveItemFromCartResponse data = _transport.SendRemoveCartItem(new RemoveItemFromCartRequest { Query = GetQueryModel(chr), ProductId = productId });
 
-            chr.Client.enableCSActions();
+            chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
                 data.PageData.Tab, data.PageData.Type, data.PageData.Page, data.PageData.TotalPages));
             chr.sendPacket(MTSPacketCreator.transferInventory(_mapper.Map<List<MTSItemInfo>>(data.MyMTSInfo.InTransfer)));
@@ -163,7 +163,7 @@ namespace Application.Module.MTS.Channel
 
             var item = _mapper.Map<Item>(res.Item);
             InventoryManipulator.addFromDrop(chr.Client, item, false);
-            chr.Client.enableCSActions();
+            chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(res.CartItems.Items),
                 res.CartItems.Tab, res.CartItems.Type, res.CartItems.Page, res.CartItems.TotalPages));
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(res.PageData.Items),
@@ -179,7 +179,7 @@ namespace Application.Module.MTS.Channel
             if (res.Code == 0)
             {
                 chr.CashShopModel.NxPrepaid = res.UpdatedValue;
-                chr.Client.enableCSActions();
+                chr.enableCSActions();
                 if (fromCart)
                     chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(res.CartItems.Items),
                         res.CartItems.Tab, res.CartItems.Type, res.CartItems.Page, res.CartItems.TotalPages));

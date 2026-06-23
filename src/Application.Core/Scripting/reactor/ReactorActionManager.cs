@@ -209,10 +209,6 @@ public class ReactorActionManager : AbstractPlayerInteraction
         await spawnMonster(id, 1, getPosition());
     }
 
-    public async Task createMapMonitor(int mapId, string portal)
-    {
-        await new MapMonitor(await c.CurrentServer.getMapFactory().getMap(mapId), portal).Initialize();
-    }
 
     public async Task spawnMonster(int id, int qty)
     {

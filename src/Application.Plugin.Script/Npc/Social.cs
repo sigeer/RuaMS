@@ -126,7 +126,7 @@ namespace Application.Plugin.Script.Npc
                             await SayNext("此名称不可用，请选择另一个。");
                             return;
                         }
-                        CreateAllianceAysnc(guildName, 2000000);
+                        await CreateAllianceAysnc(guildName, 2000000);
                     }
                     break;
                 case 3:
@@ -149,7 +149,7 @@ namespace Application.Plugin.Script.Npc
                                 await SayOK("你没有足够的金币来完成这个请求。");
                                 return;
                             }
-                            upgradeAlliance();
+                            await upgradeAlliance();
                             await gainMeso(-1000000);
                             await SayOK("你的联盟现在可以接受一个额外的公会。");
                         }
@@ -170,7 +170,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (await AskYesNo("你确定要解散你的家族联盟吗？"))
                         {
-                            disbandAlliance(c, alliance.AllianceId);
+                            await disbandAlliance(c, alliance.AllianceId);
                             await SayOK("你的家族联盟已经解散。");
                         }
                     }

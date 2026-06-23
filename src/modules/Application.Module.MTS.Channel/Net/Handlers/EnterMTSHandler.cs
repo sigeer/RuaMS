@@ -105,7 +105,7 @@ public class EnterMTSHandler : Application.Core.Channel.Net.Handlers.EnterMTSHan
             _logger.LogError(ex.ToString());
         }
         chr.getCashShop().open(true);// xD
-        c.enableCSActions();
+        c.OnlinedCharacter.enableCSActions();
         c.sendPacket(MTSPacketCreator.MTSWantedListingOver(0, 0));
 
         c.sendPacket(MTSPacketCreator.showMTSCash(c.OnlinedCharacter));

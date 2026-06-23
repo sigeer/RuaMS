@@ -317,7 +317,7 @@ namespace Application.Core.Channel.Services
         internal async Task UseCdk(Player chr, string cdk)
         {
             UseCdkResponseCode code = UseCdkResponseCode.Success;
-            if (!chr.Client.attemptCsCoupon())
+            if (!chr.attemptCsCoupon())
             {
                 code = UseCdkResponseCode.TooManyError;
             }
@@ -335,7 +335,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                chr.Client.resetCsCoupon();
+                chr.resetCsCoupon();
                 List<Item> cashItems = new();
                 List<ItemQuantity> items = new();
                 int nxCredit = 0;
@@ -418,7 +418,7 @@ namespace Application.Core.Channel.Services
                 {
                     await chr.SendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
                 }
-                await chr.Client.enableCSActions();
+                await chr.enableCSActions();
             }
         }
     }

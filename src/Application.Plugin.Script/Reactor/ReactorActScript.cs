@@ -1351,7 +1351,6 @@ namespace Application.Plugin.Script
             await changeMusic("Bgm06/FinalFight");
             await SpawnZakum();
 
-            await createMapMonitor(280030000, "ps00");
             await mapMessage(5, "Zakum is summoned by the force of Eye of Fire.");
 
 
@@ -1577,9 +1576,6 @@ namespace Application.Plugin.Script
             await mapMessage(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>.");
             await changeMusic("Bgm09/TimeAttack");
             await spawnMonster(8500000, -410, -400);
-            await createMapMonitor(220080001, "in00");
-
-
         }
 
 

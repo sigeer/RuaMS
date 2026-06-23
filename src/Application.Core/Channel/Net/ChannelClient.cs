@@ -230,84 +230,6 @@ namespace Application.Core.Channel.Net
             }
         }
 
-        public Task enableCSActions()
-        {
-            return SendPacket(PacketCreator.enableCSUse(OnlinedCharacter));
-        }
-
-        AbstractPlayerInteraction? _pi;
-        public AbstractPlayerInteraction getAbstractPlayerInteraction()
-        {
-            return _pi ??= new AbstractPlayerInteraction(this);
-        }
-
-        long lastNpcClick;
-        public bool canClickNPC()
-        {
-            return lastNpcClick + 500 < CurrentServer.Node.getCurrentTime();
-        }
-
-        public void setClickedNPC()
-        {
-            lastNpcClick = CurrentServer.Node.getCurrentTime();
-        }
-
-        public void removeClickedNPC()
-        {
-            lastNpcClick = 0;
-        }
-
-        public Task closePlayerScriptInteractions()
-        {
-            //this.removeClickedNPC();
-            //NPCConversationManager?.dispose();
-            return Task.CompletedTask;
-        }
-
-        private async Task announceDisableServerMessage()
-        {
-            if (!this.getChannelServer().ServerMessageManager.registerDisabledServerMessage(OnlinedCharacter.getId()))
-            {
-                await SendPacket(PacketCreator.serverMessage(""));
-            }
-        }
-        public Task announceServerMessage()
-        {
-            return SendPacket(PacketCreator.serverMessage(this.CurrentServer.WorldServerMessage));
-        }
-
-        public async Task announceHint(string msg, int length)
-        {
-            await SendPacket(PacketCreator.sendHint(msg, length, 10));
-            await SendPacket(PacketCreator.enableActions());
-        }
-
-        public async Task announceBossHpBar(Monster mm, int mobHash, Packet packet)
-        {
-            long timeNow = CurrentServer.Node.getCurrentTime();
-            int targetHash = OnlinedCharacter.getTargetHpBarHash();
-
-            if (mobHash != targetHash)
-            {
-                if (timeNow - OnlinedCharacter.getTargetHpBarTime() >= 5 * 1000)
-                {
-                    // is there a way to INTERRUPT this annoying thread running on the client that drops the boss bar after some time at every attack?
-                    await announceDisableServerMessage();
-                    await SendPacket(packet);
-
-                    OnlinedCharacter.setTargetHpBarHash(mobHash);
-                    OnlinedCharacter.setTargetHpBarTime(timeNow);
-                }
-            }
-            else
-            {
-                await announceDisableServerMessage();
-                await SendPacket(packet);
-
-                OnlinedCharacter.setTargetHpBarTime(timeNow);
-            }
-        }
-
         public bool GainCharacterSlot()
         {
             return CurrentServer.Node.Transport.GainCharacterSlot(AccountId);
@@ -371,31 +293,13 @@ namespace Application.Core.Channel.Net
             var socket = CurrentServer.getIP();
             if (socket == null)
             {
-                await enableCSActions();
+                await OnlinedCharacter.enableCSActions();
                 return;
             }
             Character.getCashShop().open(false);
 
             await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel);
             await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
-        }
-
-        int csattempt = 0;
-        public bool attemptCsCoupon()
-        {
-            if (csattempt > 2)
-            {
-                resetCsCoupon();
-                return false;
-            }
-
-            csattempt++;
-            return true;
-        }
-
-        public void resetCsCoupon()
-        {
-            csattempt = 0;
         }
 
         public void SetPlayer(Player? player)
@@ -412,11 +316,6 @@ namespace Application.Core.Channel.Net
 
         public WorldChannel getChannelServer() => CurrentServer;
         public int getChannel() => Channel;
-
-        public AbstractEventManager? getEventManager(string @event)
-        {
-            return CurrentServer.getEventSM().getEventManager(@event);
-        }
 
         public bool CheckBirthday(DateTime date)
         {

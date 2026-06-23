@@ -171,11 +171,12 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            List<int> passedIndex = [];
+            HashSet<int> passedIndex = [];
             var players = eim.getPlayers();
             for (int i = 0; i < stgAreas.Length; i++)
             {
-                if (players.Any(chr => stgAreas[i].Contains(chr.getPosition())))
+                var area = stgAreas[i];
+                if (players.Any(chr => area.Contains(chr.getPosition())))
                 {
                     passedIndex.Add(i);
                 }
@@ -187,13 +188,13 @@ namespace Application.Plugin.Script.Npc
                 switch (mapId)
                 {
                     case 103000801:
-                        msg = "嗨。欢迎来到第二阶段。在我旁边，你会看到一些绳子，在这些绳子中，有#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3名队伍成员找到正确的绳子然后挂在上面#k\r\n但是，如果你挂得太低，这不算作答案；请确保靠近绳子中间位置才算作正确答案。此外，你的队伍只允许有3名成员挂在绳子上，队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的绳子挂上去吧！";
+                        msg = "嗨。欢迎来到第二阶段。在我旁边，你会看到一些绳子，在这些绳子中，有#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3名队伍找到正确的绳子然后挂在上面#k\r\n但是，如果你挂得太低，这不算作答案；请确保靠近绳子中间位置才算作正确答案。此外，你的队伍只允许有3名成员挂在绳子上，队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的绳子挂上去吧！";
                         break;
                     case 103000802:
-                        msg = "嗨。欢迎来到第三阶段。在我旁边，你会看到一些平台。在这些平台中，#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3个队员找到正确的平台站上去#k\r\n但是，如果你站得太靠边，是不行的；请确保靠近平台的中间位置才算作正确答案。此外，你的队伍只允许有3名成员站在平台上。一旦他们在上面，队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的平台吧！";
+                        msg = "嗨。欢迎来到第三阶段。在我旁边，你会看到一些平台。在这些平台中，有#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3个队员找到正确的平台站上去#k\r\n但是，如果你站得太靠边，是不行的；请确保靠近平台的中间位置才算作正确答案。此外，你的队伍只允许有3名成员站在平台上。一旦他们在上面，队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的平台吧！";
                         break;
                     case 103000803:
-                        msg = "嗨。欢迎来到第四阶段。在我旁边，你会看到一些木桶。在这些木桶中，#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3个队员找到正确的木桶站上去#k\r\n但是，如果你站得太靠边，这不算作答案；请站在木桶的中间才算作正确答案。此外，你的队伍只允许有3名成员站在木桶上。队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的木桶站上去吧！";
+                        msg = "嗨。欢迎来到第四阶段。在我旁边，你会看到一些木桶。在这些木桶中，有#b3个与传送你到下一阶段的传送门相连#k。你只需要让#b3个队员找到正确的木桶站上去#k\r\n但是，如果你站得太靠边，这不算作答案；请站在木桶的中间才算作正确答案。此外，你的队伍只允许有3名成员站在木桶上。队伍的队长必须#b双击我来检查答案是否正确#k。现在，寻找正确的木桶站上去吧！";
                         break;
                     default:
                         throw new ConversationDiffMapException();
@@ -203,7 +204,7 @@ namespace Application.Plugin.Script.Npc
             }
 
             var stgCombos = em.GetStage(eim, getMap());
-            if (passedIndex.SequenceEqual(stgCombos))
+            if (passedIndex.SetEquals(stgCombos))
             {
                 await ClearKPQStage(eim, getMapId());
                 await SayNext("请赶紧前往下一个阶段，传送门已经打开了！");

@@ -2067,6 +2067,15 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet MovePlayer(int chrId, Point startPos, List<LifeMovementFragment> movements)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
+        p.writeInt(chrId);
+        p.writePos(startPos);
+        serializeMovementList(p, movements);
+        return p;
+    }
+
     public static Packet MovePlayerIdle(int chrId, byte[] idleMovmentBytes)
     {
         OutPacket p = OutPacket.create(SendOpcode.MOVE_PLAYER);
@@ -4179,6 +4188,17 @@ public class PacketCreator
         serializeMovementList(p, moves);
         return p;
     }
+
+    public static Packet MovePet(int cid, sbyte slot, Point startPos, InPacket movementPacket, int movementDataLength)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.MOVE_PET);
+        p.writeInt(cid);
+        p.writeSByte(slot);
+        p.writePos(startPos);
+        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
+        return p;
+    }
+
 
     public static Packet PetEatCashFoodFail()
     {

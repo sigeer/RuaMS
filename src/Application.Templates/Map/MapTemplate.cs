@@ -89,7 +89,8 @@ namespace Application.Templates.Map
         public MapBackTemplate[] Backs { get; set; }
         [WZPath("area/-")]
         public MapAreaTemplate[] Areas { get; set; }
-
+        [WZPath("ladderRope/-")]
+        public MapLadderRopeTemplate[] LadderRopes { get; set; }
 
         [WZPath("miniMap")]
         public MapMiniMapTemplate? MiniMap { get; set; }
@@ -109,6 +110,7 @@ namespace Application.Templates.Map
             Footholds = Array.Empty<MapFootholdTemplate>();
             Backs = Array.Empty<MapBackTemplate>();
             Areas = Array.Empty<MapAreaTemplate>();
+            LadderRopes = [];
         }
 
         public void CloneLink(MapTemplate sourceTemplate)

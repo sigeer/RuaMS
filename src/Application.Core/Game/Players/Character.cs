@@ -35,6 +35,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Gameplay;
 using Application.Core.Managers;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Shared.Events;
 using Application.Shared.Login;
@@ -1482,9 +1483,88 @@ public partial class Player
         return Client;
     }
 
+    private long _lastNpcClick;
+    public bool canClickNPC()
+    {
+        return _lastNpcClick + 500 < Client.CurrentServer.Node.getCurrentTime();
+    }
+    public void setClickedNPC()
+    {
+        _lastNpcClick = Client.CurrentServer.Node.getCurrentTime();
+    }
+    public void removeClickedNPC()
+    {
+        _lastNpcClick = 0;
+    }
+
+    private int _csAttempt;
+    public bool attemptCsCoupon()
+    {
+        if (_csAttempt > 2)
+        {
+            resetCsCoupon();
+            return false;
+        }
+        _csAttempt++;
+        return true;
+    }
+    public void resetCsCoupon() => _csAttempt = 0;
+
+    public Task enableCSActions() => Client.SendPacket(PacketCreator.enableCSUse(this));
+
+    public Task closePlayerScriptInteractions() => Task.CompletedTask;
+
+    AbstractPlayerInteraction? _pi;
     public AbstractPlayerInteraction getAbstractPlayerInteraction()
     {
-        return Client.getAbstractPlayerInteraction();
+        return _pi ??= new AbstractPlayerInteraction(Client);
+    }
+
+    public Task announceServerMessage()
+    {
+        return Client.SendPacket(PacketCreator.serverMessage(Client.CurrentServer.WorldServerMessage));
+    }
+
+    public async Task announceHint(string msg, int length, int height = 10)
+    {
+        await Client.SendPacket(PacketCreator.sendHint(msg, length, height));
+        await Client.SendPacket(PacketCreator.enableActions());
+    }
+
+    public async Task announceBossHpBar(Monster mm, int mobHash, Packet packet)
+    {
+        long timeNow = Client.CurrentServer.Node.getCurrentTime();
+        int targetHash = getTargetHpBarHash();
+
+        if (mobHash != targetHash)
+        {
+            if (timeNow - getTargetHpBarTime() >= 5 * 1000)
+            {
+                if (!getChannelServer().ServerMessageManager.registerDisabledServerMessage(Id))
+                {
+                    await Client.SendPacket(PacketCreator.serverMessage(""));
+                }
+                await Client.SendPacket(packet);
+
+                setTargetHpBarHash(mobHash);
+                setTargetHpBarTime(timeNow);
+            }
+        }
+        else
+        {
+            if (!getChannelServer().ServerMessageManager.registerDisabledServerMessage(Id))
+            {
+                await Client.SendPacket(PacketCreator.serverMessage(""));
+            }
+            await Client.SendPacket(packet);
+
+            setTargetHpBarTime(timeNow);
+        }
+    }
+
+    public AbstractEventManager? getEventManager(string @event)
+    {
+        return Client.CurrentServer.getEventSM().getEventManager(@event);
     }
 
 
@@ -1930,7 +2010,7 @@ public partial class Player
     {
         if (getChannelServer().ServerMessageManager.unregisterDisabledServerMessage(Id))
         {
-            await Client.announceServerMessage();
+            await announceServerMessage();
         }
 
         setTargetHpBarHash(0);
@@ -1963,7 +2043,7 @@ public partial class Player
 
         await LeaveVisitingShop();
 
-        await Client.closePlayerScriptInteractions();
+        await closePlayerScriptInteractions();
         await resetPlayerAggro();
     }
 
@@ -3392,7 +3472,7 @@ public partial class Player
 
     public async Task showHint(string msg, int length = 500)
     {
-        await Client.announceHint(msg, length);
+        await announceHint(msg, length);
     }
 
 
@@ -3686,13 +3766,13 @@ public partial class Player
         this.partyQuest = pq;
     }
 
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         if (extraRecoveryTask != null)
         {
             await extraRecoveryTask.CancelAsync(true);
+            extraRecoveryTask = null;
         }
-        extraRecoveryTask = null;
 
         // already done on unregisterChairBuff
         /* if (chairRecoveryTask != null) { chairRecoveryTask.cancel(true); }

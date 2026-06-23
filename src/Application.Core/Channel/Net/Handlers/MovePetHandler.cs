@@ -39,29 +39,31 @@ public class MovePetHandler : AbstractMovementPacketHandler
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         var petId = p.readLong();
-        var pos = p.readPos();
+        var clientStartPos = p.readPos();
 
         var mapPet = c.OnlinedCharacter.GetPetById(petId);
         if (mapPet == null)
         {
             return;
         }
-        var serverStartPos = mapPet.getPosition();
-        List<LifeMovementFragment> res;
 
         try
         {
-            res = parseMovement(p);
-            mapPet.updatePosition(res);
+            var serverStartPos = mapPet.getPosition();
+            int movementDataStart = p.getPosition();
+
+            updatePosition(p, mapPet, 0);
+
+            int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
+            p.seek(movementDataStart);
+
+            await mapPet.BroadcastMovement(PacketCreator.MovePet(c.OnlinedCharacter.Id, mapPet.Index, clientStartPos, p, movementDataLength), serverStartPos);
+            await mapPet.MapModel.MoveMapObject(mapPet);
         }
         catch (EmptyMovementException e)
         {
             _logger.LogError(e.ToString());
             return;
         }
-
-
-        await mapPet.BroadcastMovement(PacketCreator.movePet(c.OnlinedCharacter.Id, mapPet.Index, pos, res), serverStartPos);
-        await mapPet.MapModel.MoveMapObject(mapPet);
     }
 }

@@ -35,7 +35,7 @@ public class WhoDropsCommand : CommandBase
                     output += string.Join(", ", MonsterInformationProvider.getInstance().FindDropperNames(c, data.Id).Take(50));
                     output += "\r\n\r\n";
                 }
-                await c.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
+                await c.OnlinedCharacter.getAbstractPlayerInteraction().npcTalk(NpcId.MAPLE_ADMINISTRATOR, output);
             }
             finally
             {

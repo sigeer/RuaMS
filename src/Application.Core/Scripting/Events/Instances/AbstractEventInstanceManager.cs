@@ -61,6 +61,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public virtual AbstractEventManager EventManager { get; }
     public string EventName => EventManager.Name;
     public WorldChannel ChannelServer => EventManager.ChannelServer;
+    public event EventHandler? OnDispose;
     public AbstractEventInstanceManager(AbstractEventManager em, string instanceName)
     {
         EventManager = em;
@@ -538,7 +539,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
                  await mapManager.DisposeAsync();
              });
          }, TimeSpan.FromMinutes(1));
-
+        OnDispose?.Invoke(this, EventArgs.Empty);
     }
 
     public MapManager getMapFactory()
