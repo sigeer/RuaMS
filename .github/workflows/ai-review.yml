@@ -1,12 +1,6 @@
 name: AI Review
 
 on:
-  pull_request_target:
-    types:
-      - opened # Triggers when a PR is opened
-      - reopened # Triggers when a PR is reopened
-      - synchronize # Triggers when a commit is pushed to the PR
-
   issue_comment:
     types:
       - created # 用于mention触发
