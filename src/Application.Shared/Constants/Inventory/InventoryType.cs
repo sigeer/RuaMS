@@ -24,7 +24,9 @@ namespace Application.Shared.Constants.Inventory;
 /**
  * @author Matze
  */
-public enum InventoryType
+
+[Flags]
+public enum InventoryType: sbyte
 {
     UNDEFINED = 0,
     /// <summary>
@@ -80,9 +82,9 @@ public static class InventoryTypeUtils
         return (sbyte)type;
     }
 
-    public static short getBitfieldEncoding(this InventoryType type)
+    public static int getBitfieldEncoding(this InventoryType type)
     {
-        return (short)(2 << (byte)type);
+        return 2 << (byte)type;
     }
 
 

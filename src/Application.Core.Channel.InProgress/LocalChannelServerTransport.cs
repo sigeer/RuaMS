@@ -562,10 +562,6 @@ namespace Application.Core.Channel.InProgress
             return _server.PlayerShopManager.CommitRetrieve(commitRetrievedRequest);
         }
 
-        public CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest)
-        {
-            return _server.PlayerShopManager.CanHiredMerchant(canHiredMerchantRequest);
-        }
 
         public Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
         {

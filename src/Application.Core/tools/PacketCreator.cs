@@ -430,6 +430,54 @@ public class PacketCreator
 
     }
 
+    /// <summary>
+    /// 写入 SetGetItems / sub_799DA1 格式的标签页物品数据。
+    /// </summary>
+    /// <param name="p"></param>
+    /// <param name="slots"></param>
+    /// <param name="items"></param>
+    /// <param name="mesos"></param>
+    public static void AddSetGetItems(OutPacket p, int slots, IEnumerable<Item> items, int mesos = 0)
+    {
+        var groups = items
+            .GroupBy(x => x.getInventoryType())
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        AddSetGetItems(p, slots, groups, mesos);
+    }
+
+    public static void AddSetGetItems(OutPacket p, int slots, Dictionary<InventoryType, List<Item>> groups, int mesos = 0)
+    {
+        var keys = groups.Keys.OrderBy(x => x).ToArray();
+
+        int mask0 = 2;
+
+        //   this[45] = CInPacket::Decode1(a2);         // slots
+        //   CInPacket::DecodeBuffer(a2, &v23, 8u);     // mask
+        //   if ( (v23 & 2) != 0 )
+        //     this[46] = CInPacket::Decode4(a2);       // meso
+        // 正常应该在需要传金币时才设置标识位2，但是客户端没有清理 this[46] 导致就算没传金币，也有残留的垃圾值
+        // 所以这里强制传金币
+
+        foreach (var type in keys)
+        {
+            mask0 |= type.getBitfieldEncoding();
+        }
+
+        p.writeByte(slots);
+        p.writeLong(mask0);
+
+        p.writeInt(mesos);
+
+        foreach (var type in keys)
+        {
+            var tabItems = groups[type];
+            p.writeByte(tabItems.Count);
+            foreach (var item in tabItems)
+                addItemInfo(p, item, true);
+        }
+    }
+
     private static void addInventoryInfo(OutPacket p, Player chr)
     {
         for (sbyte i = 1; i <= 5; i++)
@@ -4752,31 +4800,8 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet fredrickMessage(byte operation)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FREDRICK_MESSAGE);
-        p.writeByte(operation);
-        return p;
-    }
 
-    public static Packet getFredrick(byte op)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FREDRICK);
-        p.writeByte(op);
-
-        switch (op)
-        {
-            case 0x24:
-                p.skip(8);
-                break;
-            default:
-                p.writeByte(0);
-                break;
-        }
-
-        return p;
-    }
-
+    [Obsolete]
     public static Packet getFredrick(RemoteHiredMerchantData store)
     {
         OutPacket p = OutPacket.create(SendOpcode.FREDRICK);
@@ -4784,7 +4809,7 @@ public class PacketCreator
         p.writeInt(NpcId.FREDRICK);
         p.writeInt(32272); //id
         p.skip(5);
-        p.writeInt(store.Mesos);
+        p.writeInt(store.Meso);
         p.writeByte(0);
         try
         {
@@ -4957,21 +4982,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet retrieveFirstMessage()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ENTRUSTED_SHOP_CHECK_RESULT); // header.
-        p.writeByte(0x09);
-        return p;
-    }
-
-    public static Packet remoteChannelChange(byte ch)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.ENTRUSTED_SHOP_CHECK_RESULT); // header.
-        p.writeByte(0x10);
-        p.writeInt(0);//No idea yet
-        p.writeByte(ch);
-        return p;
-    }
     /*
      * Possible things for ENTRUSTED_SHOP_CHECK_RESULT
      * 0x0E = 00 = Renaming Failed - Can't find the merchant, 01 = Renaming successful
@@ -5092,37 +5102,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet hiredMerchantOwnerLeave()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInterAction.REAL_CLOSE_MERCHANT.getCode());
-        p.writeByte(0);
-        return p;
-    }
 
     public static Packet hiredMerchantOwnerMaintenanceLeave()
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
         p.writeByte(PlayerInterAction.REAL_CLOSE_MERCHANT.getCode());
         p.writeByte(5);
-        return p;
-    }
-
-    public static Packet hiredMerchantMaintenanceMessage()
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInterAction.ROOM.getCode());
-        p.writeByte(0x00);
-        p.writeByte(0x12);
-        return p;
-    }
-
-    public static Packet leaveHiredMerchant(int slot, int status2)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(PlayerInterAction.EXIT.getCode());
-        p.writeByte(slot);
-        p.writeByte(status2);
         return p;
     }
 
@@ -5167,21 +5152,22 @@ public class PacketCreator
         p.writeString(chr.getName());
         return p;
     }
-
+    // sub_510E83
     public static Packet spawnHiredMerchantBox(HiredMerchant hm)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_HIRED_MERCHANT);
-        p.writeInt(hm.OwnerId);
+        p.writeInt(hm.OwnerId); // 使用objectid，维护时没有提示弹窗
         p.writeInt(hm.SourceItemId);
         p.writeShort(hm.getPosition().X);
         p.writeShort(hm.getPosition().Y);
         p.writeShort(0); // fh
         p.writeString(hm.OwnerName);
-        p.writeByte(0x05);
-        p.writeInt(hm.getObjectId());
+        p.writeByte(0x05);              // m_nMiniRoomType
+        p.writeInt(hm.getObjectId());   // m_dwMiniRoomSN 
         p.writeString(hm.Title);
-        p.writeByte(hm.SourceItemId % 100);
-        p.writeBytes(new byte[] { 1, 4 });
+        p.writeByte(hm.SourceItemId % 100); // nSpec
+        p.writeByte(hm.GetVisitorCount() + 1);  // nCurUsers 1  
+        p.writeByte(4);                     // nMaxUsers 4  多1 是不是包含了店主？
         return p;
     }
 
@@ -6179,7 +6165,7 @@ public class PacketCreator
     public static Packet shopErrorMessage(int error, int type)
     {
         OutPacket p = OutPacket.create(SendOpcode.PLAYER_INTERACTION);
-        p.writeByte(0x0A);
+        p.writeByte(PlayerInterAction.EXIT.getCode());
         p.writeByte(type);
         p.writeByte(error);
         return p;

@@ -1,3 +1,4 @@
+using Application.Core.Game.Maps.MiniRoom;
 using Application.Core.Game.Trades;
 using Application.Resources.Messages;
 using AutoMapper;
@@ -26,7 +27,7 @@ namespace Application.Core.Channel
             _worldChannel = worldChannel;
         }
 
-        public List<SyncPlayerShopRequest> CheckExpired()
+        public async Task<List<SyncPlayerShopRequest>> CheckExpired()
         {
             List<SyncPlayerShopRequest> requests = [];
 
@@ -35,7 +36,7 @@ namespace Application.Core.Channel
 
             foreach (var item in allShops)
             {
-                item.Close();
+                await item.Close(PlayerShopCloseReason.Expiration);
 
                 if (item.Type == PlayerShopType.PlayerShop)
                     playerShopData.TryRemove(item.OwnerId, out var _);
@@ -106,7 +107,7 @@ namespace Application.Core.Channel
             return null;
         }
 
-        public bool RemoveCommodity(Player chr, int slotIndex)
+        public async Task<bool> RemoveCommodity(Player chr, int slotIndex)
         {
             var shop = chr.VisitingShop;
             if (shop == null)
@@ -117,7 +118,7 @@ namespace Application.Core.Channel
 
             if (!shop.Status.Is(PlayerShopStatus.Maintenance))
             {
-                chr.Popup(nameof(ClientMessage.PlayerShop_CannotManage));
+                await chr.Popup(nameof(ClientMessage.PlayerShop_CannotManage));
                 return false;
             }
 
@@ -125,11 +126,11 @@ namespace Application.Core.Channel
             {
                 _worldChannel.NodeService.AutoBanManager.Alert(AutobanFactory.PACKET_EDIT, chr, chr.getName() + " tried to packet edit with a player shop.");
                 _logger.LogWarning("Chr {CharacterName} tried to remove item at slot {Slot}", chr.getName(), slotIndex);
-                chr.Client.Disconnect(true, false);
+                await chr.Client.Disconnect(true, false);
                 return false;
             }
 
-            shop.takeItemBack(slotIndex, chr);
+            await shop.takeItemBack(slotIndex, chr);
             return true;
         }
 
@@ -277,7 +278,7 @@ namespace Application.Core.Channel
             if (shop.OwnerId != chr.Id)
                 return false;
 
-            await shop.Close();
+            await shop.Close(PlayerShopCloseReason.Normal);
 
             bool needStore = true;
             if (shop.Type == PlayerShopType.HiredMerchant)
@@ -334,7 +335,7 @@ namespace Application.Core.Channel
 
             foreach (var item in allShops)
             {
-                await item.Close();
+                await item.Close(PlayerShopCloseReason.Admin);
 
                 if (item.Type == PlayerShopType.PlayerShop)
                     playerShopData.TryRemove(item.OwnerId, out var _);

@@ -17,33 +17,44 @@ namespace Application.Core.Login.Models.Items
         public int Meso { get; set; }
     }
 
-    public class FredrickStoreModel: ITrackableEntityKey<int>
+    public class FredrickStoreModel : ITrackableEntityKey<int>
     {
         public int Id { get; set; }
         public int Cid { get; set; }
         public int Daynotes { get; set; }
 
-        public long UpdateTime { get; set; }
+        /// <summary>
+        /// 存放时间（雇佣店铺关闭时间）
+        /// </summary>
+        public long StoreTime { get; init; }
 
         public ItemModel[] Items { get; set; } = [];
-        public int Meso { get; set; }
+
+        /// <summary>
+        /// 交易额
+        /// </summary>
+        public int Meso { set; get; }
         /// <summary>
         /// 所有商品的总价值
         /// <para>按照客户端的描述，每日手续费还包括原价的1%（目前并没有实现，但是增加这个字段记录）</para>
+        /// PS: 经过#r24小时#k便开始征收每日销售金额与物品原价 1%的手续费\r\n5)当手续费超过100%时，便将此充公用作商店街发展委员会的经费
         /// </summary>
-        public long ItemMeso { get; set; }
+        public int ItemMeso { get; set; }
 
-        public int GetMerchantNetMeso(long currentTime)
+        /// <summary>
+        /// 手续费比率
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <returns></returns>
+        public int GetFeePercentage(long currentTime)
         {
-            int elapsedDays = TimeUtils.DayDiff(UpdateTime, currentTime);
-            if (elapsedDays > 100)
+            var elapsedDays = TimeUtils.TotalDayDiff(StoreTime, currentTime);
+            if (elapsedDays <= 1)
             {
-                elapsedDays = 100;
+                return 0;
             }
 
-            long netMeso = Meso; // negative mesos issues found thanks to Flash, Vcoc
-            netMeso = (netMeso * (100 - elapsedDays)) / 100;
-            return (int)netMeso;
+            return Math.Max((int)Math.Ceiling(elapsedDays - 1), 100);
         }
     }
 }

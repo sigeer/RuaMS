@@ -22,9 +22,11 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.MiniRoom;
 using Application.Core.Game.Trades;
 using Application.Resources.Messages;
 using client.autoban;
@@ -344,15 +346,15 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
 
                 IPlayerShop manageShop = chr.VisitingShop;
-                if (chr.VisitingShop.Type == PlayerShopType.PlayerShop)
+                if (manageShop is PlayerShop ps)
                 {
                     if (YamlConfig.config.server.USE_ERASE_PERMIT_ON_OPENSHOP)
                     {
-                        await chr.Bag.TryRemoveFromItem(InventoryType.CASH, (chr.VisitingShop as PlayerShop)!.SourceItem);
+                        await chr.Bag.TryRemoveFromItem(InventoryType.CASH, ps.SourceItem);
                     }
                 }
-                chr.VisitingShop.SetOpen();
-                await chr.MapModel.AddMapObject(chr.VisitingShop, c => chr.VisitingShop.sendSpawnData(c));
+                manageShop.SetOpen();
+                await chr.MapModel.AddMapObject(manageShop, c => manageShop.sendSpawnData(c));
                 c.getChannelServer().PlayerShopManager.NewPlayerShop(manageShop);
             }
             else if (mode == PlayerInterAction.READY.getCode())
@@ -684,7 +686,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 }
 
                 int itemIndex = p.readShort();
-                c.getChannelServer().PlayerShopManager.RemoveCommodity(chr, itemIndex);
+                await c.getChannelServer().PlayerShopManager.RemoveCommodity(chr, itemIndex);
             }
             else if (mode == PlayerInterAction.MERCHANT_MESO.getCode())
             {
@@ -695,6 +697,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 }
 
                 await merchant.withdrawMesos(chr);
+                await chr.SendPacket(FredrickPackets.WithdrawMeso());
 
             }
             else if (mode == PlayerInterAction.VIEW_VISITORS.getCode())
@@ -724,7 +727,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     return;
                 }
                 string chrName = p.readString();
-                merchant.addToBlacklist(chrName);
+                await merchant.addToBlacklist(chrName);
             }
             else if (mode == PlayerInterAction.REMOVE_FROM_BLACKLIST.getCode())
             {
@@ -750,7 +753,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (merchant.getItems().Count == 0)
                 {
-                    await merchant.Close();
+                    await merchant.Close(PlayerShopCloseReason.Normal);
                     return;
                 }
                 await c.SendPacket(PacketCreator.updateHiredMerchant(merchant, chr));

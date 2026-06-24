@@ -251,9 +251,7 @@ namespace Application.Core.Mappers
                 .ReverseMap()
                 .ConstructUsing((src, ctx) => new PlayerShopItem(ctx.Mapper.Map<Item>(src.Item), (short)src.Bundles, src.Price));
 
-            CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>()
-                .ForMember(dest => dest.Mesos, src => src.MapFrom(x => x.Meso))
-                .ForMember(dest => dest.MapName, src => src.MapFrom(x => MapFactory.Instance.loadPlaceName(x.MapId)));
+            CreateMap<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>();
             CreateMap<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
             CreateMap<ItemProto.OwlSearchResponse, OwlSearchResult>();
 

@@ -82,6 +82,12 @@ public class NPCTalkHandler : ChannelHandlerBase
                 return;
             }
 
+            if (npc.SourceTemplate.StoreBank)
+            {
+                await c.CurrentServer.NodeService.PlayerShopService.SendFriankPacket(c.OnlinedCharacter);
+                return;
+            }
+
             if (npc.hasShop(c))
             {
                 if (c.OnlinedCharacter.getShop() != null)

@@ -33,7 +33,6 @@ namespace Application.Core.Channel
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, IChannelServer> Servers { get; set; }
         public DistributeSession<int, SyncProto.PlayerSaveDto>? SyncPlayerSession { get; set; }
-        public DistributeSession<int, ItemProto.SyncPlayerShopRequest>? SyncPlayerShopSession { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
 
         public bool IsRunning { get; private set; }

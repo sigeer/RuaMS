@@ -16,6 +16,7 @@ namespace Application.Shared.Constants
         SET_MESO = 0x10,
         CONFIRM = 0x11,
         TRANSACTION = 0x14,
+
         ADD_ITEM = 0x16,
         BUY = 0x17,
         UPDATE_MERCHANT = 0x19,
@@ -24,6 +25,7 @@ namespace Application.Shared.Constants
         BAN_PLAYER = 0x1C,
         MERCHANT_THING = 0x1D,
         OPEN_THING = 0x1E,
+
         PUT_ITEM = 0x21,
         MERCHANT_BUY = 0x22,
         TAKE_ITEM_BACK = 0x26,
@@ -32,11 +34,13 @@ namespace Application.Shared.Constants
         CLOSE_MERCHANT = 0x29,
         REAL_CLOSE_MERCHANT = 0x2A,
         MERCHANT_MESO = 0x2B,
+        MERCHANT_MESO_RESULT = 0x2C,
         SOMETHING = 0x2D,
         VIEW_VISITORS = 0x2E,
         VIEW_BLACKLIST = 0x2F,
         ADD_TO_BLACKLIST = 0x30,
         REMOVE_FROM_BLACKLIST = 0x31,
+
         REQUEST_TIE = 0x32,
         ANSWER_TIE = 0x33,
         GIVE_UP = 0x34,

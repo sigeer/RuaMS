@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using AutoMapper;
@@ -24,36 +25,54 @@ namespace Application.Core.Channel.Services
             _server = server;
         }
 
-        private byte CanRetrieveFromFredrick(Player chr, int netMeso, List<Item> items)
+        private byte CanRetrieveFromFredrick(Player chr, int netMeso, int fee, List<Item> items)
         {
             if (!Inventory.checkSpot(chr, items))
             {
                 if (chr.canHoldUniques(items.Select(x => x.getItemId()).ToList()))
                 {
-                    return 0x22;
+                    return FredrickPackets.FredrickMessage_InvFull;
                 }
                 else
                 {
-                    return 0x20;
+                    return FredrickPackets.FredrickMessage_Unique;
                 }
             }
 
-            if (netMeso > 0)
+            var leftMeso = netMeso - fee;
+            if (chr.getMeso() + leftMeso < 0)
             {
-                if (!chr.canHoldMeso(netMeso))
-                {
-                    return 0x1F;
-                }
+                return FredrickPackets.FredrickMessage_FeeRequired;
+            }
+
+            if (!chr.canHoldMeso(leftMeso))
+            {
+                return FredrickPackets.FredrickMessage_TooMuchMeso;
+            }
+
+            return FredrickPackets.FredrickMessage_RetrieveSuccess;
+        }
+
+        public async Task SendFriankPacket(Player chr)
+        {
+            var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
+
+            var remoteData =  _mapper.Map<RemoteHiredMerchantData>(res);
+            if (remoteData.MapId > 0)
+            {
+                await chr.SendPacket(FredrickPackets.GetFredrickShopActive(remoteData.MapId, (byte)remoteData.Channel));
             }
             else
             {
-                if (chr.getMeso() < -1 * netMeso)
+                if (remoteData.HasItem)
                 {
-                    return 0x21;
+                    await chr.SendPacket(FredrickPackets.GetFredrick(remoteData));
+                }
+                else
+                {
+                    await chr.SendPacket(FredrickPackets.Nothing());
                 }
             }
-
-            return 0x0;
         }
 
 
@@ -84,10 +103,10 @@ namespace Application.Core.Channel.Services
 
                         var items = _mapper.Map<List<Item>>(res.Items);
 
-                        byte response = CanRetrieveFromFredrick(chr, res.Mesos, items);
-                        if (response != 0)
+                        byte response = CanRetrieveFromFredrick(chr, res.Meso, res.FeeMeso, items);
+                        if (response != FredrickPackets.FredrickMessage_RetrieveSuccess)
                         {
-                            await chr.SendPacket(PacketCreator.fredrickMessage(response));
+                            await chr.SendPacket(FredrickPackets.FredrickMessage(response));
                             return;
                         }
 
@@ -100,7 +119,7 @@ namespace Application.Core.Channel.Services
                             return;
                         }
 
-                        await chr.GainMeso(res.Mesos);
+                        await chr.GainMeso(res.Meso - res.FeeMeso);
 
                         foreach (var it in items)
                         {
@@ -112,7 +131,7 @@ namespace Application.Core.Channel.Services
                                 it.getItemId());
                         }
 
-                        await chr.SendPacket(PacketCreator.fredrickMessage(0x1E));
+                        await chr.SendPacket(FredrickPackets.FredrickMessage(response));
                     }
                     catch (Exception ex)
                     {
@@ -127,16 +146,16 @@ namespace Application.Core.Channel.Services
         }
         public async Task<bool> CanHiredMerchant(Player chr)
         {
-            var status = (PlayerHiredMerchantStatus)_transport.CanHiredMerchant(new ItemProto.CanHiredMerchantRequest { MasterId = chr.Id }).Code;
-            if (status == PlayerHiredMerchantStatus.Unavailable_Opening)
+            var remoteData = LoadPlayerHiredMerchant(chr);
+            if (remoteData.Channel > 0)
             {
-                await chr.dropMessage(1, "You already have a store open.");
+                await chr.SendPacket(FredrickPackets.HasHiredMerchant(remoteData.MapId, (byte)remoteData.Channel));
                 return false;
             }
 
-            if (status == PlayerHiredMerchantStatus.Unavailable_NeedRetrieve)
+            if (remoteData.HasItem)
             {
-                await chr.SendPacket(PacketCreator.retrieveFirstMessage());
+                await chr.SendPacket(FredrickPackets.retrieveFirstMessage());
                 return false;
             }
 

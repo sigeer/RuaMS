@@ -76,6 +76,21 @@ namespace Application.Core.Game.Players
             return Quests.GetOrAdd(questid, new QuestStatus(quest, QuestStatus.Status.NOT_STARTED));
         }
 
+        public async Task SetQuestProgress(int id, string progress)
+        {
+            await setQuestProgress(id, 0, progress);
+        }
+
+        public async Task SetQuestProgress(int id, int progress)
+        {
+            await setQuestProgress(id, 0, progress.ToString());
+        }
+
+        public async Task SetQuestProgress(int id, int infoNumber, int progress)
+        {
+            await setQuestProgress(id, infoNumber, progress.ToString());
+        }
+
         public async Task setQuestProgress(int id, int infoNumber, string progress)
         {
             QuestStatus qs = GetOrAddQuest(id);
@@ -129,13 +144,7 @@ namespace Application.Core.Game.Players
 
         public QuestStatus? getQuestNAdd(Quest quest)
         {
-            if (!Quests.ContainsKey(quest.getId()))
-            {
-                QuestStatus status = new QuestStatus(quest, QuestStatus.Status.NOT_STARTED);
-                Quests.AddOrUpdate(quest.getId(), status);
-                return status;
-            }
-            return Quests.GetValueOrDefault(quest.getId());
+            return Quests.GetOrAdd(quest.getId(), new QuestStatus(quest, QuestStatus.Status.NOT_STARTED));
         }
 
         public QuestStatus? getQuestNoAdd(Quest quest)
@@ -337,6 +346,32 @@ namespace Application.Core.Game.Players
                 {
                     await questTimeLimit2(mqs.getQuest(), mqs.getExpirationTime());
                 }
+            }
+        }
+
+        public async Task<bool> ForceStartQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
+        {
+            try
+            {
+                return await Quest.getInstance(id).forceStart(this, npc);
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> ForceCompleteQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
+        {
+            try
+            {
+                return await Quest.getInstance(id).forceComplete(this, npc);
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
             }
         }
 

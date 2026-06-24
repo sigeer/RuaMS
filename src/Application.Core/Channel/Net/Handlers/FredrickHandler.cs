@@ -21,13 +21,12 @@
  */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Services;
 
 namespace Application.Core.Channel.Net.Handlers;
 
-/**
- * @author kevintjuh93
- */
+
 public class FredrickHandler : ChannelHandlerBase
 {
     readonly PlayerShopService _service;
@@ -44,12 +43,19 @@ public class FredrickHandler : ChannelHandlerBase
         {
             case 0x19: //Will never come...
                 // await c.SendPacket(PacketCreator.getFredrick((byte) 0x24));
+                Log.Logger.Debug("FredrickHandler - 0x19");
                 break;
             case 0x1A:
+                // sub_79B21A
+                var data = _service.LoadPlayerHiredMerchant(c.OnlinedCharacter);
+                await c.OnlinedCharacter.SendPacket(FredrickPackets.GetFredrickFeePrompt(data.FeePercentage, data.FeeMeso));
+                break;
+            case 0x1B:
+                // sub_79B27D
                 await _service.FredrickRetrieveItems(c);
-                c.NPCConversationManager?.DisposeAsync();
                 break;
             case 0x1C: //Exit
+                // sub_79A090
                 break;
             default:
                 break;
