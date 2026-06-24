@@ -123,30 +123,6 @@ namespace Application.Core.Scripting.Events
             return Name;
         }
 
-        public async Task startQuest(Player chr, int id, int npcid)
-        {
-            try
-            {
-                await Quest.getInstance(id).forceStart(chr, npcid);
-            }
-            catch (NullReferenceException ex)
-            {
-                log.Error(ex.ToString());
-            }
-        }
-
-        public async Task completeQuest(Player chr, int id, int npcid)
-        {
-            try
-            {
-                await Quest.getInstance(id).forceComplete(chr, npcid);
-            }
-            catch (NullReferenceException ex)
-            {
-                log.Error(ex.ToString());
-            }
-        }
-
         public virtual async Task OnTick(long now)
         {
             await this.ProcessSubTickables(now);

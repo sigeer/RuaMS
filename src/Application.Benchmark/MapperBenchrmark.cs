@@ -29,7 +29,7 @@ namespace Application.Benchmark
             _mapsterConfig = new TypeAdapterConfig();
             _mapsterConfig.Default.PreserveReference(true);
             _mapsterConfig.NewConfig<FredrickStoreModel, FredstorageEntity>()
-                                    .MapWith(src => new FredstorageEntity(src.Id, src.Cid, src.Daynotes, src.Meso, DateTimeOffset.FromUnixTimeMilliseconds(src.UpdateTime))); ;
+                                    .MapWith(src => new FredstorageEntity(src.Id, src.Cid, src.Daynotes, src.Meso, DateTimeOffset.FromUnixTimeMilliseconds(src.StoreTime))); ;
             _mapsterConfig.NewConfig<FredstorageEntity, FredrickStoreModel>()
                     .MapWith(src => new FredrickStoreModel
                     {
@@ -38,7 +38,7 @@ namespace Application.Benchmark
                         Daynotes = src.Daynotes,
                         Meso = src.Meso,
                         ItemMeso = src.ItemMeso,
-                        UpdateTime = src.Timestamp.ToUnixTimeMilliseconds()
+                        StoreTime = src.Timestamp.ToUnixTimeMilliseconds()
                     }); ;
         }
         [Benchmark()]

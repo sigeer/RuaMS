@@ -549,11 +549,6 @@ namespace Application.Core.ServerTransports
             return _gameClient.CommitRetrievedFromFredrick(commitRetrievedRequest);
         }
 
-        public CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest)
-        {
-            return _gameClient.CanHiredMerchant(canHiredMerchantRequest);
-        }
-
         public async Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request)
         {
             await _syncClient.BatchSyncPlayerShopAsync(request);

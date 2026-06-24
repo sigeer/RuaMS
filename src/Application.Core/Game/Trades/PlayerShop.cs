@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.MiniRoom;
 using Application.Resources.Messages;
 using Application.Utility.Performance;
 using client.inventory;
@@ -218,7 +219,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     {
         if (++boughtnumber == Commodity.Count)
         {
-            await Close();
+            await Close(PlayerShopCloseReason.Normal);
             await Owner.dropMessage(1, "Your items are sold out, and therefore your shop is closed.");
         }
     }
@@ -283,11 +284,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
     public async Task BroadcastShopItemUpdate()
     {
-        var client = Owner.getClient();
-        if (client != null)
-        {
-            await client.SendPacket(PacketCreator.getPlayerShopItemUpdate(this));
-        }
+        await Owner.SendPacket(PacketCreator.getPlayerShopItemUpdate(this));
         await broadcastToVisitors(PacketCreator.getPlayerShopItemUpdate(this));
     }
 
@@ -348,7 +345,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
         await removeVisitors();
     }
-    public async Task Close()
+    public async Task Close(PlayerShopCloseReason reason)
     {
         clearChatLog();
 
@@ -473,11 +470,11 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
     }
 
 
-    public async Task ExpiredInvoke()
-    {
-        await Close();
-        ChannelServer.PlayerShopManager.UnregisterShop(this);
-    }
+    //public async Task ExpiredInvoke()
+    //{
+    //    await Close();
+    //    ChannelServer.PlayerShopManager.UnregisterShop(this);
+    //}
 
 
     public async Task<bool> Retrieve(Player owner)

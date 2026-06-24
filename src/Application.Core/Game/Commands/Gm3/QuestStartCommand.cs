@@ -26,11 +26,11 @@ public class QuestStartCommand : CommandBase
             Quest quest = Quest.getInstance(questid);
             if (quest != null && quest.getNpcRequirement(false) != -1)
             {
-                await c.OnlinedCharacter.getAbstractPlayerInteraction().forceStartQuest(questid, quest.getNpcRequirement(false));
+                await c.OnlinedCharacter.ForceStartQuest(questid, quest.getNpcRequirement(false));
             }
             else
             {
-                await c.OnlinedCharacter.getAbstractPlayerInteraction().forceStartQuest(questid);
+                await c.OnlinedCharacter.ForceStartQuest(questid);
             }
 
             await player.dropMessage(5, "QUEST " + questid + " started.");

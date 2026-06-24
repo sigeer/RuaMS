@@ -54,7 +54,6 @@ service GameService {
 
 	rpc LoadPlayerHiredMerchant(ItemProto.GetPlayerHiredMerchantRequest) returns(ItemProto.RemoteHiredMerchantDto);
 	rpc CommitRetrievedFromFredrick(ItemProto.CommitRetrievedRequest) returns(ItemProto.CommitRetrievedResponse);
-	rpc CanHiredMerchant (ItemProto.CanHiredMerchantRequest) returns(ItemProto.CanHiredMerchantResponse);
 
 	rpc LoadMonitor(google.protobuf.Empty) returns(Config.MonitorDataWrapper);
 

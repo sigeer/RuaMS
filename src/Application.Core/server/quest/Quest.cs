@@ -149,7 +149,7 @@ public class Quest
             int ixSize = ix.Count;
             for (int i = 0; i < ixSize; i++)
             {
-                string progress = chr.getAbstractPlayerInteraction().getQuestProgress(infoNumber, i);
+                string progress = chr.GetQuestProgress(infoNumber, i);
                 string ixProgress = ix.get(i);
 
                 if (progress != (ixProgress))

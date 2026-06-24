@@ -1,11 +1,14 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.MiniRoom;
 using Application.Resources.Messages;
 using Application.Templates.Item.Cash;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
+using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Game.Trades;
@@ -43,7 +46,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public HiredMerchant(Player owner, string desc, Item item) : base(owner.MapModel, owner.getPosition())
     {
         StartTime = owner.Client.CurrentServer.Node.getCurrentTime();
-        ExpirationTime = item.getExpiration();
+        ExpirationTime = item.getExpiration() == -1 ? (long)(StartTime + TimeSpan.FromDays(30).TotalMilliseconds) : item.getExpiration();
         Owner = owner;
         OwnerName = owner.Name;
         OwnerId = owner.getId();
@@ -171,7 +174,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return Array.FindIndex(getVisitorCharacters(), x => x?.Id == visitor.Id);
     }
 
-    private async Task removeAllVisitors()
+    private async Task removeAllVisitors(LeaveMiniRoomReason reason)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -180,25 +183,13 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             {
                 Player visitorChr = visitor.chr;
                 visitorChr.VisitingShop = null;
-                await visitorChr.SendPacket(PacketCreator.leaveHiredMerchant(i + 1, 0x11));
-                await visitorChr.SendPacket(PacketCreator.hiredMerchantMaintenanceMessage());
+                await visitorChr.SendPacket(FredrickPackets.LeaveHiredMerchant(i + 1, reason));
                 visitors[i] = null;
                 addVisitorToHistory(visitor);
             }
         }
 
         await getMap().broadcastMessage(PacketCreator.updateHiredMerchantBox(this));
-    }
-
-    public async Task ProcessVisitingOwner()
-    {
-        if (Owner != null)
-        {
-            await Owner.SendPacket(PacketCreator.hiredMerchantOwnerLeave());
-            await Owner.SendPacket(PacketCreator.leaveHiredMerchant(0x00, 0x03));
-            Owner.VisitingShop = null;
-            Owner = null;
-        }
     }
 
     public async Task withdrawMesos(Player chr)
@@ -291,15 +282,18 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return count;
     }
 
-    public async Task Close()
+    public async Task Close(PlayerShopCloseReason reason)
     {
         await MapModel.RemoveMapObject(this, chr => sendDestroyData(chr.Client));
 
-        await ProcessVisitingOwner();
+        if (Owner != null)
+        {
+            Owner.VisitingShop = null;
+            Owner = null;
+        }
 
-        await removeAllVisitors();
+        await removeAllVisitors(reason == PlayerShopCloseReason.Expiration ? LeaveMiniRoomReason.Expiration : LeaveMiniRoomReason.Maintenance);
     }
-
 
     public void SetOpen()
     {
@@ -318,7 +312,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
             Status.Set(PlayerShopStatus.Maintenance);
             Owner = chr;
 
-            await removeAllVisitors();
+            await removeAllVisitors(LeaveMiniRoomReason.Maintenance);
         }
     }
 
@@ -327,24 +321,49 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         if (owner.Id != this.OwnerId)
             return false;
 
-        if (check(owner, Commodity))
+        if (!await owner.TryGainMeso(Mesos))
         {
-            foreach (PlayerShopItem mpsi in Commodity)
-            {
-                if (mpsi.isExist())
-                {
-                    Item iItem = mpsi.getItem().copy();
-                    iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
-
-                    await InventoryManipulator.addFromDrop(owner.getClient(), mpsi.getItem(), true);
-                }
-            }
-
-            Commodity.Clear();
-            return true;
+            await owner.SendPacket(FredrickPackets.RetrieveFail_TooMuchMoney());
+            return false;
         }
-        return false;
 
+        Mesos = 0;
+
+        var leftItems = Commodity.Where(x => x.isExist()).ToArray();
+        List<ItemInventoryType> li = new();
+        foreach (var item in leftItems)
+        {
+            Item it = item.getItem().copy();
+            it.setQuantity((short)(it.getQuantity() * item.getBundles()));
+
+            li.Add(new(it, it.getInventoryType()));
+        }
+        var itemIds = li.Select(x => x.Item.getItemId()).ToList();
+
+        if (!owner.canHoldUniques(itemIds))
+        {
+            await owner.SendPacket(FredrickPackets.RetrieveFail_Unique());
+            return false;
+        }
+
+        if (!Inventory.checkSpotsAndOwnership(owner, li))
+        {
+            await owner.SendPacket(FredrickPackets.RetrieveFail_InvFull());
+            return false;
+        }
+
+        foreach (PlayerShopItem mpsi in leftItems)
+        {
+            Item iItem = mpsi.getItem().copy();
+            iItem.setQuantity((short)(mpsi.getBundles() * iItem.getQuantity()));
+
+            await InventoryManipulator.addFromDrop(owner.getClient(), iItem, true);
+        }
+
+        Commodity.Clear();
+
+        await owner.SendPacket(FredrickPackets.RetrieveSuccess());
+        return true;
     }
 
     public async Task<bool> VisitShop(Player chr)
@@ -385,6 +404,8 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         return visitors.Select(x => x?.chr).ToArray();
     }
 
+    public int GetVisitorCount() => visitors.Count(x => x != null);
+
     public List<PlayerShopItem> getItems()
     {
         return Commodity;
@@ -405,19 +426,19 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
         Commodity.Add(item);
         return true;
     }
-    /// <summary>
-    /// 整理道具
-    /// </summary>
-    /// <param name="chr"></param>
-    public async Task Restore(Player chr)
-    {
-        if (IsOwner(chr))
-        {
-            Commodity.RemoveAll(x => !x.isExist());
+    ///// <summary>
+    ///// 整理道具
+    ///// </summary>
+    ///// <param name="chr"></param>
+    //public async Task Restore(Player chr)
+    //{
+    //    if (IsOwner(chr))
+    //    {
+    //        Commodity.RemoveAll(x => !x.isExist());
 
-            Mesos = await chr.GainMeso(Mesos);
-        }
-    }
+    //        Mesos = await chr.GainMeso(Mesos);
+    //    }
+    //}
 
     public void clearInexistentItems()
     {
@@ -489,19 +510,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     //    dbTrans.Commit();
     //}
 
-    private static bool check(Player chr, List<PlayerShopItem> items)
-    {
-        List<ItemInventoryType> li = new();
-        foreach (PlayerShopItem item in items)
-        {
-            Item it = item.getItem().copy();
-            it.setQuantity((short)(it.getQuantity() * item.getBundles()));
 
-            li.Add(new(it, it.getInventoryType()));
-        }
-
-        return Inventory.checkSpotsAndOwnership(chr, li);
-    }
 
 
     //public int getTimeOpen()
@@ -537,9 +546,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     }
 
     // 只有店主能够操作 不会并发 不需要加锁
-    public void addToBlacklist(string chrName)
+    public async Task addToBlacklist(string chrName)
     {
-        // 是否需要像PlayerShop.ban一样 踢掉访问者
+        // 是否需要像PlayerShop.ban一样 踢掉访问者：不需要，维护时就已经踢掉所有访问者
         if (BlackList.Count >= Limits.BLACKLIST_LIMIT)
         {
             return;
@@ -570,7 +579,7 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
 
     public override async Task sendDestroyData(IChannelClient client)
     {
-        await client.SendPacket(PacketCreator.removeHiredMerchantBox(getObjectId()));
+        await client.SendPacket(PacketCreator.removeHiredMerchantBox(OwnerId));
     }
 
     public override async Task sendSpawnData(IChannelClient client)
@@ -588,12 +597,6 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public override int GetSourceId()
     {
         return SourceItemId;
-    }
-
-    public async Task ExpiredInvoke()
-    {
-        await Close();
-        ChannelServer.PlayerShopManager.UnregisterShop(this);
     }
 }
 

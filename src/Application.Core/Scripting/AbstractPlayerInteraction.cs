@@ -520,17 +520,17 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task setQuestProgress(int id, string progress)
     {
-        await setQuestProgress(id, 0, progress);
+        await c.OnlinedCharacter.SetQuestProgress(id, progress);
     }
 
     public async Task setQuestProgress(int id, int progress)
     {
-        await setQuestProgress(id, 0, progress.ToString());
+        await c.OnlinedCharacter.SetQuestProgress(id, progress);
     }
 
     public async Task setQuestProgress(int id, int infoNumber, int progress)
     {
-        await setQuestProgress(id, infoNumber, progress.ToString());
+        await c.OnlinedCharacter.SetQuestProgress(id, infoNumber, progress);
     }
 
     public async Task setQuestProgress(int id, int infoNumber, string progress)
@@ -538,18 +538,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         await c.OnlinedCharacter.setQuestProgress(id, infoNumber, progress);
     }
 
-    public string getQuestProgress(int id)
-    {
-        return getQuestProgress(id, 0);
-    }
-
-    public string getQuestProgress(int id, int infoNumber)
+    public string getQuestProgress(int id, int infoNumber = 0)
     {
         return getPlayer().GetQuestProgress(id, infoNumber);
     }
-
-    public int getQuestProgressInt(int id) => getPlayer().GetQuestProgressInt(id);
-    public int getQuestProgressInt(int id, int infoNumber) => getPlayer().GetQuestProgressInt(id, infoNumber);
+    public int getQuestProgressInt(int id, int infoNumber = 0) => getPlayer().GetQuestProgressInt(id, infoNumber);
 
     public async Task resetAllQuestProgress(int id)
     {
@@ -571,80 +564,26 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
-    public virtual async Task<bool> forceStartQuest(int id)
+
+    public Task<bool> forceStartQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
     {
-        return await forceStartQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return getPlayer().ForceStartQuest(id, npc);
     }
 
-    public virtual async Task<bool> forceStartQuest(int id, int npc)
+
+    public Task<bool> forceCompleteQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
     {
-        return await startQuest(id, npc);
+        return getPlayer().ForceCompleteQuest(id, npc);
     }
 
-    public virtual async Task<bool> forceCompleteQuest(int id)
+    public Task<bool> startQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
     {
-        return await forceCompleteQuest(id, NpcId.MAPLE_ADMINISTRATOR);
+        return forceStartQuest(id, npc);
     }
 
-    public virtual async Task<bool> forceCompleteQuest(int id, int npc)
+    public Task<bool> completeQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
     {
-        return await completeQuest(id, npc);
-    }
-
-    public virtual async Task<bool> startQuest(short id)
-    {
-        return await startQuest((int)id);
-    }
-
-    public virtual async Task<bool> completeQuest(short id)
-    {
-        return await completeQuest((int)id);
-    }
-
-    public virtual async Task<bool> startQuest(int id)
-    {
-        return await startQuest(id, NpcId.MAPLE_ADMINISTRATOR);
-    }
-
-    public virtual async Task<bool> completeQuest(int id)
-    {
-        return await completeQuest(id, NpcId.MAPLE_ADMINISTRATOR);
-    }
-
-    public virtual async Task<bool> startQuest(short id, int npc)
-    {
-        return await startQuest((int)id, npc);
-    }
-
-    public virtual async Task<bool> completeQuest(short id, int npc)
-    {
-        return await completeQuest((int)id, npc);
-    }
-
-    public virtual async Task<bool> startQuest(int id, int npc)
-    {
-        try
-        {
-            return await Quest.getInstance(id).forceStart(getPlayer(), npc);
-        }
-        catch (NullReferenceException ex)
-        {
-            Log.Logger.Error(ex.ToString());
-            return false;
-        }
-    }
-
-    public virtual async Task<bool> completeQuest(int id, int npc)
-    {
-        try
-        {
-            return await Quest.getInstance(id).forceComplete(getPlayer(), npc);
-        }
-        catch (NullReferenceException ex)
-        {
-            Log.Logger.Error(ex.ToString());
-            return false;
-        }
+        return forceCompleteQuest(id, npc);
     }
 
     public async Task<Item?> evolvePet(sbyte slot)
@@ -1138,11 +1077,6 @@ public class AbstractPlayerInteraction : IClientMessenger
             5 => "DEX " + 20,
             _ => null,
         };
-    }
-
-    public async Task npcTalk(int npcid, string message)
-    {
-        await c.SendPacket(PacketCreator.getNPCTalk(npcid, 0, message, "00 00", 0));
     }
 
     public long getCurrentTime()

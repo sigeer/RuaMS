@@ -13,11 +13,11 @@ namespace Application.Core.Channel.Tasks
 
         public override void HandleRun()
         {
-            _server.Broadcast(w =>
+            _server.Broadcast(async w =>
             {
-                var r = w.PlayerShopManager.CheckExpired();
+                var r = await w.PlayerShopManager.CheckExpired();
 
-                w.NodeActor.Send(new InvokeSyncPlayerShopCommand(new DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest>(w.Id, r)));
+                await w.NodeActor.Send(new InvokeSyncPlayerShopCommand(new DistributeSessionDataWrapper<int, ItemProto.SyncPlayerShopRequest>(w.Id, r)));
             });
         }
     }

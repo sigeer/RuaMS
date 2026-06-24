@@ -71,13 +71,13 @@ namespace Application.Core.Login.ServerData
                 {
                     Id = Interlocked.Increment(ref _localId),
                     Cid = hm.Id,
+                    StoreTime = _server.getCurrentTime()
                 };
             }
             item.Meso = hm.Meso;
             item.Items = _mapper.Map<ItemModel[]>(hm.Items);
-            item.ItemMeso = hm.Items.Sum(x => (long)x.Price * x.Bundles);
+            item.ItemMeso = hm.Items.Sum(x => x.Price * x.Bundles);
             item.Daynotes = 0;
-            item.UpdateTime = _server.getCurrentTime();
 
             SetDirty(item.Id, new StoreUnit<FredrickStoreModel>(StoreFlag.AddOrUpdate, item));
         }
@@ -158,7 +158,9 @@ namespace Application.Core.Login.ServerData
                 var store = Query(x => x.Cid == request.MasterId).FirstOrDefault();
                 if (store != null)
                 {
-                    res.Meso = store.GetMerchantNetMeso(_server.getCurrentTime());
+                    res.Meso = store.Meso;
+                    res.FeePercentage = store.GetFeePercentage(_server.getCurrentTime());
+                    res.FeeMeso = (store.Meso + store.ItemMeso) * res.FeePercentage;
                     res.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(store.Items));
                 }
             }
@@ -183,7 +185,7 @@ namespace Application.Core.Login.ServerData
                     var obj = item.Value.Data!;
 
                     await InventoryManager.CommitInventoryByTypeAsync(dbContext, item.Key, obj.Items, ItemFactory.MERCHANT);
-                    dbContext.Fredstorages.Add(new FredstorageEntity(obj.Id, obj.Cid, obj.Daynotes, obj.Meso, DateTimeOffset.FromUnixTimeMilliseconds(obj.UpdateTime)));
+                    dbContext.Fredstorages.Add(new FredstorageEntity(obj.Id, obj.Cid, obj.Daynotes, obj.Meso, DateTimeOffset.FromUnixTimeMilliseconds(obj.StoreTime)));
                 }
                 if (item.Value.Flag == StoreFlag.Remove)
                 {
@@ -202,7 +204,7 @@ namespace Application.Core.Login.ServerData
             {
                 int daynotes = Math.Min(dailyReminders.Length - 1, x.Daynotes);
 
-                int elapsedDays = TimeUtils.DayDiff(x.UpdateTime, _server.getCurrentTime());
+                int elapsedDays = TimeUtils.DayDiff(x.StoreTime, _server.getCurrentTime());
                 if (elapsedDays > 100)
                 {
                     SetRemoved(x.Id);
@@ -221,7 +223,7 @@ namespace Application.Core.Login.ServerData
                             notifDay = dailyReminders[daynotes];
                         } while (elapsedDays >= notifDay);
 
-                        int inactivityDays = TimeUtils.DayDiff(x.UpdateTime, _server.getCurrentTime());
+                        int inactivityDays = TimeUtils.DayDiff(x.StoreTime, _server.getCurrentTime());
 
                         if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
                         {
@@ -252,26 +254,6 @@ namespace Application.Core.Login.ServerData
             }
 
             return msg;
-        }
-
-        public CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest request)
-        {
-            PlayerHiredMerchantStatus final = PlayerHiredMerchantStatus.Available;
-
-            if (_hiredMerchantData.TryGetValue(request.MasterId, out var hm))
-            {
-                final = PlayerHiredMerchantStatus.Unavailable_Opening;
-            }
-            else
-            {
-                var store = Query(x => x.Cid == request.MasterId).FirstOrDefault();
-                if (store != null && (store.GetMerchantNetMeso(_server.getCurrentTime()) > 0 || store.Items.Length > 0))
-                {
-                    final = PlayerHiredMerchantStatus.Unavailable_NeedRetrieve;
-                }
-            }
-
-            return new CanHiredMerchantResponse { Code = (int)final };
         }
 
         public OwlSearchResponse OwlSearch(OwlSearchRequest request)

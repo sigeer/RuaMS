@@ -197,34 +197,24 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return this._getText;
     }
 
-    public override async Task<bool> forceStartQuest(int id)
+    public async Task<bool> forceStartQuest(int id)
     {
-        return await forceStartQuest(id, npc);
+        return await base.startQuest((short)id, npc);
     }
 
-    public override async Task<bool> forceCompleteQuest(int id)
+    public async Task<bool> forceCompleteQuest(int id)
     {
-        return await forceCompleteQuest(id, npc);
+        return await base.completeQuest((short)id, npc);
     }
 
-    public override async Task<bool> startQuest(short id)
+    public Task<bool> startQuest(int id)
     {
-        return await startQuest((int)id);
+        return forceStartQuest(id);
     }
 
-    public override async Task<bool> completeQuest(short id)
+    public Task<bool> completeQuest(int id)
     {
-        return await completeQuest((int)id);
-    }
-
-    public override async Task<bool> startQuest(int id)
-    {
-        return await startQuest(id, npc);
-    }
-
-    public override async Task<bool> completeQuest(int id)
-    {
-        return await completeQuest(id, npc);
+        return forceCompleteQuest(id);
     }
 
     public virtual int getMeso()
@@ -494,16 +484,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
         return reward;
-    }
-
-    public RemoteHiredMerchantData LoadFredrickRegistry()
-    {
-        return c.CurrentServer.NodeService.PlayerShopService.LoadPlayerHiredMerchant(getPlayer());
-    }
-
-    public async Task ShowFredrick(RemoteHiredMerchantData store)
-    {
-        await c.SendPacket(PacketCreator.getFredrick(store));
     }
 
     public server.events.gm.Event? getEvent()

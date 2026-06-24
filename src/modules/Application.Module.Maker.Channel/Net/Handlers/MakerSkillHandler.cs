@@ -85,7 +85,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
                             {
                                 // stimulant
                                 stimulantid = _service.getMakerStimulant(toCreate);
-                                if (!c.OnlinedCharacter.getAbstractPlayerInteraction().haveItem(stimulantid))
+                                if (!c.OnlinedCharacter.haveItem(stimulantid))
                                 {
                                     stimulantid = -1;
                                 }
@@ -257,7 +257,7 @@ namespace Application.Module.Maker.Channel.Net.Handlers
 
                             if (toCreate == 4260003 && type == 3 && c.OnlinedCharacter.getQuestStatus(6033) == 1)
                             {
-                                await c.OnlinedCharacter.getAbstractPlayerInteraction().setQuestProgress(6033, 1);
+                                await c.OnlinedCharacter.SetQuestProgress(6033, 1);
                             }
                             break;
                     }

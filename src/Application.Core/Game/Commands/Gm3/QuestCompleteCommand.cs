@@ -25,11 +25,11 @@ public class QuestCompleteCommand : CommandBase
             Quest quest = Quest.getInstance(questId);
             if (quest != null && quest.getNpcRequirement(true) != -1)
             {
-                await c.OnlinedCharacter.getAbstractPlayerInteraction().forceCompleteQuest(questId, quest.getNpcRequirement(true));
+                await c.OnlinedCharacter.ForceCompleteQuest(questId, quest.getNpcRequirement(true));
             }
             else
             {
-                await c.OnlinedCharacter.getAbstractPlayerInteraction().forceCompleteQuest(questId);
+                await c.OnlinedCharacter.ForceCompleteQuest(questId);
             }
 
             await player.Pink("QUEST " + questId + " completed.");

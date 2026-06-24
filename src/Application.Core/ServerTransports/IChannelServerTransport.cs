@@ -159,7 +159,6 @@ namespace Application.Core.ServerTransports
         RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest);
         void SyncPlayerShop(SyncPlayerShopRequest request);
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
-        ItemProto.CanHiredMerchantResponse CanHiredMerchant(CanHiredMerchantRequest canHiredMerchantRequest);
         Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
 
         StoreItemsResponse SaveItems(StoreItemsRequest request);

@@ -25,6 +25,8 @@ message RemoteHiredMerchantDto {
 	int32 mapId = 4;
 	repeated Dto.ItemDto items = 5;
 	int32 meso = 6;
+	int32 feeMeso = 7;
+	int32 feePercentage = 8;
 }
 
 message GetPlayerHiredMerchantRequest {
@@ -59,16 +61,6 @@ message NotifyPlayerHiredMerchantResponse {
 	int32 ownerId = 1;
 	int32 status = 2;
 }
-
-message CanHiredMerchantRequest {
-	int32 masterId = 1;
-}
-
-message CanHiredMerchantResponse {
-	int32 code = 1;
-}
-
-
 
 message SearchHiredMerchantChannelRequest {
 	int32 masterId = 1;

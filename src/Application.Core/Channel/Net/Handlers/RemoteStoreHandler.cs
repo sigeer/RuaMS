@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using client.autoban;
 using tools;
@@ -62,13 +63,13 @@ public class RemoteStoreHandler : ChannelHandlerBase
             }
             else
             {
-                await c.SendPacket(PacketCreator.remoteChannelChange((byte)(res.Channel - 1)));
+                await c.SendPacket(FredrickPackets.remoteChannelChange((byte)(res.Channel - 1)));
             }
             return;
         }
         else
         {
-            await chr.dropMessage(1, "你没有一个正在运营的雇佣商店.");
+            await c.SendPacket(FredrickPackets.RemoteShopNotOpen());
         }
         await c.SendPacket(PacketCreator.enableActions());
     }

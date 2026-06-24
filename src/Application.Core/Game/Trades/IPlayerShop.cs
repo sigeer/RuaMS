@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.MiniRoom;
 
 namespace Application.Core.Game.Trades
 {
@@ -52,7 +53,7 @@ namespace Application.Core.Game.Trades
         /// <param name="chr"></param>
         /// <returns></returns>
         Task<bool> Retrieve(Player owner);
-        Task Close();
+        Task Close(PlayerShopCloseReason resaon);
         void SetOpen();
         Task SetMaintenance(Player chr);
 
