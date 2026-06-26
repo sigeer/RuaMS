@@ -11,6 +11,9 @@ namespace server.movement
         JumpR,
         JumpL,
 
+        AfterBattleR,
+        AfterBattleL,
+
         ClimbR = 16,
         ClimbL = 17
     }

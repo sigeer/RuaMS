@@ -170,6 +170,8 @@ namespace Application.Core.ServerTransports
         MonitorDataWrapper LoadMonitor();
         Task SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest);
         AutoBanIgnoredWrapper LoadAutobanIgnoreData();
+
+        Task AntiMacroNotify(AntiMacroNotifyMessage message);
         Task Ban(BanRequest banRequest);
         Task Unban(UnbanRequest unbanRequest);
         Task SetGmLevel(SetGmLevelRequest setGmLevelRequest);

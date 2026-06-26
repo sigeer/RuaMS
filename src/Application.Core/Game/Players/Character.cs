@@ -1916,11 +1916,7 @@ public partial class Player
 
     public int getFh()
     {
-        Point pos = this.getPosition();
-        pos.Y -= 6;
-
-        // 其他获取Fh都是取id，为什么这里取y1
-        return MapModel.Footholds.FindBelowFoothold(pos)?.getY1() ?? 0;
+        return MapModel.FindFh(getPosition());
     }
 
 

@@ -8,6 +8,7 @@
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
 	  <PackageReference Include="OpenTelemetry" />
+	  <PackageReference Include="SkiaSharp" />
 	</ItemGroup>
 
 	<ItemGroup>

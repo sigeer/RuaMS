@@ -114,6 +114,20 @@ public enum RecvOpcode
     CHANGE_MAP_SPECIAL = 0x64,
     USE_INNER_PORTAL = 0x65,
     TROCK_ADD_MAP = 0x66,
+    /// <summary>
+    /// CWvsContext::SendAntiMacroItemUseRequest
+    /// </summary>
+    AntiMacroItemUseRequest = 103,
+    /// <summary>
+    /// CUserLocal::DoAntiMacroSkill (GM skill 9001009)
+    /// Packet: string (target character name)
+    /// </summary>
+    AntiMacroSkillUseRequest = 104,
+    /// <summary>
+    /// Target's anti-macro dialog answer submission (Opcode 105 = 0x69)
+    /// Packet: string (user's typed answer)
+    /// </summary>
+    AntiMacroResponse = 105,
     REPORT = 0x6A,
     QUEST_ACTION = 0x6B,
     USER_CALC_DAMAGE_STAT_SET_REQUEST=0x6C,

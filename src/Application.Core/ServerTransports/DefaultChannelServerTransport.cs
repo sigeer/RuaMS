@@ -601,6 +601,11 @@ namespace Application.Core.ServerTransports
             return _systemClient.GetAutobanIgnores(new Empty());
         }
 
+        public async Task AntiMacroNotify(AntiMacroNotifyMessage message)
+        {
+            await InternalSession.SendAsync(ChannelSendCode.AntiMacroNotify, message);
+        }
+
         public async Task Ban(BanRequest request)
         {
             await InternalSession.SendAsync(ChannelSendCode.Ban, request);

@@ -210,5 +210,21 @@ namespace Application.Core.Login.Internal.Handlers
             }
             protected override CreateUnjailRequest Parse(ByteString content) => CreateUnjailRequest.Parser.ParseFrom(content);
         }
+
+        internal class AntiMacroNotifyHandler : InternalSessionMasterHandler<AntiMacroNotifyMessage>
+        {
+            public AntiMacroNotifyHandler(MasterServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelSendCode.AntiMacroNotify;
+
+            protected override void HandleMessage(AntiMacroNotifyMessage message)
+            {
+                _ = _server.Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify, message, [message.VictimId, message.ReporterId]);
+            }
+
+            protected override AntiMacroNotifyMessage Parse(ByteString content) => AntiMacroNotifyMessage.Parser.ParseFrom(content);
+        }
     }
 }

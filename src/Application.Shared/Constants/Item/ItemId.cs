@@ -4,6 +4,7 @@ namespace Application.Shared.Constants.Item;
 
 public class ItemId
 {
+    public const int AntiMacroItem = 2190000;
     // Misc
     public const int PENDANT_OF_THE_SPIRIT = 1122017;
     public const int HEART_SHAPED_CHOCOLATE = 5110000;

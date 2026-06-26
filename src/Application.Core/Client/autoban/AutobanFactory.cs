@@ -46,6 +46,7 @@ public class AutobanFactory : EnumClass
     public static readonly AutobanFactory FAST_ITEM_PICKUP = new(5, 30000);
     public static readonly AutobanFactory FAST_ATTACK = new(10, 30000);
     public static readonly AutobanFactory MPCON = new(25, 30000);
+    public static readonly AutobanFactory AntiMacro = new(2);
 
     private int points;
     private long expiretime;
