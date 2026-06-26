@@ -796,5 +796,10 @@ namespace Application.Core.Channel.InProgress
         {
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnDoorRemoved);
         }
+
+        public async Task AntiMacroNotify(AntiMacroNotifyMessage message)
+        {
+            await _server.Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify, message, [message.VictimId, message.ReporterId]);
+        }
     }
 }

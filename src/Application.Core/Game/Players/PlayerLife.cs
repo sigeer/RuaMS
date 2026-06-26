@@ -298,5 +298,10 @@ namespace Application.Core.Game.Players
             await SendPacket(PacketCreator.enableActions());
         }
 
+        public long LastAttackTime { get; set; }
+        public bool IsBattle()
+        {
+            return TimeSpan.FromMilliseconds(Client.CurrentServer.Node.getCurrentTime() - LastAttackTime) < TimeSpan.FromSeconds(5);
+        }
     }
 }

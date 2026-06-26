@@ -1,3 +1,4 @@
+using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
@@ -83,6 +84,9 @@ namespace Application.Core.Channel.HostExtensions
 
             services.AddSingleton<DataBootstrap, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
             services.AddSingleton<GachaponManager>();
+
+            services.AddSingleton<CaptchaService>();
+            services.AddSingleton<AntiMacroService>();
 
             services.AddSingleton<DueyManager>();
 

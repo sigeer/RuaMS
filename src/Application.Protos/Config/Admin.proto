@@ -5,10 +5,12 @@ package SystemProto;
 message BanRequest {
 	int32 operatorId = 1;
 	string victim = 2;
-	int32 banLevel = 3;
-	string reasonDesc = 4;
-	int32 reason = 5;
-	int32 days = 6;
+	int32 victimId = 3;
+	int32 banLevel = 4;
+	string reasonDesc = 5;
+	int32 reason = 6;
+	int32 days = 7;
+	int32 reporterId = 8;
 }
 
 message BanResponse {
@@ -16,6 +18,14 @@ message BanResponse {
 	BanRequest request = 2;
 	string operatorName = 3;
 	int32 victimId = 4;
+}
+
+message AntiMacroNotifyMessage {
+	int32 reporterId = 1;
+	int32 victimId = 2;
+	int32 type = 3;
+	bool passed = 4;
+	string reason = 5;
 }
 
 

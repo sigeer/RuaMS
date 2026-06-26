@@ -1,0 +1,170 @@
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Channel.ServerData;
+using Application.Core.Channel.Services;
+using client.autoban;
+using SystemProto;
+using tools;
+
+namespace Application.Core.Channel.AntiMacro;
+
+/// <summary>
+/// 测谎业务逻辑：协调 CaptchaService、处罚、通知发起者等。
+/// </summary>
+public class AntiMacroService
+{
+    private readonly WorldChannelServer _server;
+    private readonly CaptchaService _captcha;
+    private readonly AutoBanDataManager _autoban;
+
+    public AntiMacroService(WorldChannelServer server, CaptchaService captcha, AutoBanDataManager autoban)
+    {
+        _server = server;
+        _captcha = captcha;
+        _autoban = autoban;
+    }
+
+    /// <summary>
+    /// 发包 + 启动超时检测。
+    /// </summary>
+    public async Task SendAntiMacroAsync(Player sender, Player target, AntiMacroType type, Func<Task>? onSuccess = null)
+    {
+        if (!target.IsBattle())
+        {
+            // 5 秒内没造成输出的视作未战斗 无法处理空挥
+            await sender.SendPacket(AntiMacroPackets.PlayerNotBattle());
+            return;
+        }
+
+        if (type == AntiMacroType.Item)
+        {
+            // ---- 校验冷却 ----
+            if (_captcha.IsOnCooldown(sender.Id, target.Id))
+            {
+                await sender.SendPacket(AntiMacroPackets.AlreadyTested());
+                return;
+            }
+        }
+
+        if (_captcha.HasPending(target.Id))
+        {
+            await sender.SendPacket(AntiMacroPackets.CurrentlyTesting());
+            return;
+        }
+
+        var captcha = _captcha.CreateCaptcha(target.Id, type, sourceId: sender.Id);
+        if (captcha == null)
+        {
+            await sender.SendPacket(PacketCreator.enableActions());
+            return;
+        }
+
+        await target.SendPacket(AntiMacroPackets.ShowAntiMacroCaptcha(captcha.ImageBytes));
+
+        if (onSuccess != null)
+        {
+            await onSuccess();
+        }
+        if (type == AntiMacroType.Item)
+        {
+            _captcha.SetCooldown(sender.Id, target.Id);
+            await target.SendPacket(AntiMacroPackets.LieDetectorUsed(sender.Name));
+        }
+
+        var tId = target.Id;
+        var tName = target.Name;
+        var senderId = sender.Id;
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(60_000);
+
+            if (_captcha.TryRemove(tId))
+            {
+                await _server.Transport.AntiMacroNotify(new SystemProto.AntiMacroNotifyMessage
+                {
+                    ReporterId = senderId,
+                    VictimId = tId,
+                    Reason = "测谎超时",
+                    Passed = false,
+                    Type = (int)type
+                });
+            }
+        });
+    }
+
+    /// <summary>
+    /// 处理答案提交。
+    /// </summary>
+    public async Task HandleAnswerAsync(Player chr, string answer)
+    {
+        var result = _captcha.VerifyAnswer(chr.Id, answer);
+        if (result == null)
+        {
+            return;
+        }
+
+        await _server.Transport.AntiMacroNotify(new SystemProto.AntiMacroNotifyMessage
+        {
+            ReporterId = result.SourceId,
+            VictimId = chr.Id,
+            Reason = "未通过测谎",
+            Passed = result.Passed,
+            Type = (int)result.AntiMacroType
+        });
+    }
+
+    /// <summary>
+    /// 测谎结束回调
+    /// </summary>
+    public async Task PenalizeAsync(AntiMacroNotifyMessage res)
+    {
+        var type = (AntiMacroType)res.Type;
+        _server.Broadcast(ch =>
+        {
+            if (!res.Passed)
+            {
+                var senderActor = ch.getPlayerStorage().GetCharacterActor(res.ReporterId);
+                if (senderActor != null)
+                {
+                    senderActor.Send(async m =>
+                    {
+                        var senderChr = m.getCharacterById(res.ReporterId);
+
+                        if (senderChr != null)
+                        {
+                            await senderChr.SendPacket(AntiMacroPackets.TargetFailedReward());
+                            await senderChr.GainMeso(7000, GainItemShow.ShowInChat);
+                        }
+                    });
+                }
+            }
+
+            var targetActor = ch.getPlayerStorage().GetCharacterActor(res.VictimId);
+            if (targetActor != null)
+            {
+                targetActor.Send(async m =>
+                {
+                    var targetChr = m.getCharacterById(res.VictimId);
+
+                    if (targetChr != null)
+                    {
+                        if (res.Passed)
+                        {
+                            await targetChr.SendPacket(AntiMacroPackets.PassedLieDetector(targetChr.Name));
+                            await targetChr.SendPacket(AntiMacroPackets.PassDialog(type));
+                            if (type == AntiMacroType.Item)
+                                await targetChr.GainMeso(5000);
+                        }
+                        else
+                        {
+                            await targetChr.SendPacket(AntiMacroPackets.SuspectedMacro(targetChr.Name));
+                            await targetChr.SendPacket(AntiMacroPackets.SanctionDialog((AntiMacroType)res.Type));
+
+                            // TODO: 计数、封禁应该由master管理，后期重构autoban时再处理
+                            await _autoban.AddPoint(AutobanFactory.AntiMacro, targetChr, res.Reason);
+                        }
+                    }
+                });
+            }
+        });
+    }
+}

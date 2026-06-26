@@ -161,3 +161,4 @@ Each feature module follows a consistent layered structure:
 - `using` placed outside namespace
 - Prefer `using` statements over braces
 - Suppressed analyzers: IDE1006 (naming), IDE0066 (switch), IDE0290 (primary constructor)
+- **Constants and fields: PascalCase** (`SomeName` not `SOME_NAME`); local variables: camelCase

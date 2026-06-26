@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/docs/">
+    <File Path="CLAUDE.md" />
     <File Path="DevLog.MD" />
     <File Path="docs/CHANGES.MD" />
     <File Path="docs/CodeMigration.MD" />

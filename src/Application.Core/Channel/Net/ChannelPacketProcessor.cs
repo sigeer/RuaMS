@@ -151,6 +151,10 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.CHANGE_QUICKSLOT, sp.GetRequiredService<QuickslotKeyMappedModifiedHandler>()},
 
                 {(short)RecvOpcode.SetHpMpAlert, sp.GetRequiredService<SetHpMpAlertHandler>()},
+
+                {(short)RecvOpcode.AntiMacroItemUseRequest, sp.GetRequiredService<AntiMacroItemUseRequestHandler>()},
+                {(short)RecvOpcode.AntiMacroSkillUseRequest, sp.GetRequiredService<AntiMacroSkillUseRequestHandler>()},
+                {(short)RecvOpcode.AntiMacroResponse, sp.GetRequiredService<AntiMacroResponseHandler>()},
             };
         }
 

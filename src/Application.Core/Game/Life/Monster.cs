@@ -75,7 +75,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// </summary>
     private Dictionary<int, AtomicLong> takenDamage = new();
 
-
+    public long LastAttackTime { get; set; }
     private bool availablePuppetUpdate = true;
     /// <summary>
     /// 有值时，不走默认的drop_data
@@ -486,6 +486,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (!fake)
         {
+            from?.LastAttackTime = MapModel.ChannelServer.Node.getCurrentTime();
             OnDamaged?.Invoke(this, new MonsterDamagedEventArgs(from, trueDamage.Value));
             MapModel.ChannelServer.NodeService.PluginManager.OnMobDamaged(this, trueDamage.Value, from);
         }

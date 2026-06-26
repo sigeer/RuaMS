@@ -87,5 +87,7 @@ namespace Application.Shared.Message
         LoginNotifyDueyPackage ,
         LoadDueyPackage ,
         OnDoorRemoved,
+
+        AntiMacroNotify
     }
 }

@@ -14,5 +14,6 @@ namespace Application.Core.Game.Maps
         /// <param name="stayAlive">true: 不致命</param>
         /// <returns></returns>
         Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false);
+        long LastAttackTime { get; set; }
     }
 }

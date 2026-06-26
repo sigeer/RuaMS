@@ -68,7 +68,11 @@ public enum SendOpcode
     OPEN_FULL_CLIENT_DOWNLOAD_LINK = 0x28,
     MEMO_RESULT = 0x29,
     MAP_TRANSFER_RESULT = 0x2A,
-    WEDDING_PHOTO = 0x2B, //ANTI_MACRO_RESULT=0x2B,
+    /// <summary>
+    /// CWvsContext::OnAntiMacroResult
+    /// </summary>
+    ANTI_MACRO_RESULT = 0x2B,
+    WEDDING_PHOTO = 0x2C, 
     CLAIM_RESULT = 0x2D,
     CLAIM_AVAILABLE_TIME = 0x2E,
     CLAIM_STATUS_CHANGED = 0x2F,

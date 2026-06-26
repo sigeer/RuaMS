@@ -92,5 +92,7 @@ namespace Application.Shared.Message
         TakeDueyPackage,
         TakeDueyPackageCallback,
         RemoveDoor,
+
+        AntiMacroNotify
     }
 }

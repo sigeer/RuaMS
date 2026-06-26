@@ -588,7 +588,6 @@ public class PacketCreator
         return p;
     }
 
-
     /// <summary>
     /// Gets a packet telling the client the IP of the new channel.
     /// </summary>

@@ -55,5 +55,6 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Mapster" Version="7.4.0" />
     <PackageVersion Include="FastExpressionCompiler" Version="5.3.0" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.9" />
   </ItemGroup>
 </Project>

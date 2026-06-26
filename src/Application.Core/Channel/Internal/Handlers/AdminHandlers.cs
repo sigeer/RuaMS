@@ -1,10 +1,14 @@
+using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.Net.Packets;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Config;
 using Dto;
 using Google.Protobuf;
 using JailProto;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using SystemProto;
 using tools;
 
@@ -295,6 +299,24 @@ namespace Application.Core.Channel.Internal.Handlers
             }
 
             protected override CreateUnjailResponse Parse(ByteString data) => CreateUnjailResponse.Parser.ParseFrom(data);
+        }
+
+        public class AntiMacroNotify : InternalSessionChannelHandler<AntiMacroNotifyMessage>
+        {
+            AntiMacroService _service;
+            public AntiMacroNotify(WorldChannelServer server) : base(server)
+            {
+                _service = server.ServiceProvider.GetRequiredService<AntiMacroService>();
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.AntiMacroNotify;
+
+            protected override void HandleMessage(AntiMacroNotifyMessage res)
+            {
+                _ = _service.PenalizeAsync(res);
+            }
+
+            protected override AntiMacroNotifyMessage Parse(ByteString data) => AntiMacroNotifyMessage.Parser.ParseFrom(data);
         }
     }
 }
