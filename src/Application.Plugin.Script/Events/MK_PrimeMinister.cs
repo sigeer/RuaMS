@@ -46,7 +46,7 @@ namespace Application.Plugin.Script.Events
 
             foreach (var player in map.getAllPlayers())
             {
-                if (player.getQuestStatus(2333) == 1 && player.getAbstractPlayerInteraction().getQuestProgressInt(2333, mobId) == 0)
+                if (player.getQuestStatus(2333) == 1 && player.GetQuestProgressInt(2333, mobId) == 0)
                 {
                     return true;
                 }

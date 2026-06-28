@@ -37,7 +37,7 @@ public class InfoAction : AbstractQuestAction
 
     public override async Task run(Player chr, int? extSelection)
     {
-        await chr.getAbstractPlayerInteraction().setQuestProgress(questID, info);
+        await chr.SetQuestProgress(questID, info);
     }
 
 }

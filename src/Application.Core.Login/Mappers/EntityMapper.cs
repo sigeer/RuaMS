@@ -120,9 +120,9 @@ namespace Application.Core.Login.Mappers
             CreateMap<PlifeEntity, PLifeModel>().ReverseMap();
 
             CreateMap<FredstorageEntity, FredrickStoreModel>()
-                .ForMember(dest => dest.UpdateTime, src => src.MapFrom(x => x.Timestamp.ToUnixTimeMilliseconds()))
+                .ForMember(dest => dest.StoreTime, src => src.MapFrom(x => x.Timestamp.ToUnixTimeMilliseconds()))
                 .ReverseMap()
-                .ForMember(dest => dest.Timestamp, src => src.MapFrom(x => DateTimeOffset.FromUnixTimeMilliseconds(x.UpdateTime)));
+                .ForMember(dest => dest.Timestamp, src => src.MapFrom(x => DateTimeOffset.FromUnixTimeMilliseconds(x.StoreTime)));
 
             CreateMap<AccountBindingsEntity, AccountHistoryModel>();
             CreateMap<AccountBanEntity, AccountBanModel>()

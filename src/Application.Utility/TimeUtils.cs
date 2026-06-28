@@ -42,5 +42,10 @@ namespace Application.Utility
         {
             return TimeSpan.FromMilliseconds(to - from).Days;
         }
+
+        public static double TotalDayDiff(long from, long to)
+        {
+            return TimeSpan.FromMilliseconds(to - from).TotalDays;
+        }
     }
 }

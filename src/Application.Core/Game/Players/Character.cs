@@ -68,7 +68,7 @@ public partial class Player
     public AbstractStorage? CurrentStorage { get; set; }
 
     private ILogger? _log;
-    public ILogger Log => _log ?? (_log = LogFactory.GetCharacterLog(AccountId, Id));
+    public ILogger Log => _log ??= LogFactory.GetCharacterLog(AccountId, Id);
 
     public int InitialSpawnPoint { get; set; }
     private int currentPage, currentType = 0, currentTab = 1;

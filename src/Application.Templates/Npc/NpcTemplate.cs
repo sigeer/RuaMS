@@ -1,5 +1,3 @@
-using Application.Templates.Map;
-
 namespace Application.Templates.Npc
 {
     [GenerateTag]
@@ -23,6 +21,8 @@ namespace Application.Templates.Npc
         public bool GuildRank { get; set; }
         [WZPath("info/parcel")]
         public bool Parcel { get; set; }
+        [WZPath("info/storebank")]
+        public bool StoreBank { get; set; }
         public NpcTemplate(int templateId)
             : base(templateId)
         {
@@ -35,6 +35,7 @@ namespace Application.Templates.Npc
             sourceTemplate.MapleTV = MapleTV;
             sourceTemplate.Parcel = Parcel;
             sourceTemplate.GuildRank = GuildRank;
+            sourceTemplate.StoreBank = StoreBank;
         }
     }
 }

@@ -114,7 +114,7 @@ public class GotoCommand : CommandBase
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
 
-            await player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
+            await player.Dialog(sendStr);
             return;
         }
 
@@ -162,7 +162,7 @@ public class GotoCommand : CommandBase
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
 
-            await player.getAbstractPlayerInteraction().npcTalk(NpcId.SPINEL, sendStr);
+            await player.Dialog(sendStr);
         }
     }
 }

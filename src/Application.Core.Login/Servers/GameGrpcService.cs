@@ -32,12 +32,6 @@ namespace Application.Core.Login.Servers
             _rankService = rankService;
         }
 
-
-        public override Task<CanHiredMerchantResponse> CanHiredMerchant(CanHiredMerchantRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.PlayerShopManager.CanHiredMerchant(request));
-        }
-
         public override Task<NameChangeResponse> ChangeName(NameChangeRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.CharacterManager.ChangeName(request));
