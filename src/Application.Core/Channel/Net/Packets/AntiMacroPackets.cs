@@ -73,8 +73,8 @@ public static class AntiMacroPackets
     }
 
     /// <summary>
-    /// type 5, sub=1: "[name] 使用了测谎仪测试"
-    /// 客户端: SP_3167 "[name] have used the lie detector test"
+    /// type 5, sub=1: "对%s玩家使用了测谎仪。"
+    /// 客户端: SP_3167 "%s have used the Lie Detector Test."
     /// </summary>
     public static Packet LieDetectorUsed(string name)
     {
@@ -95,8 +95,6 @@ public static class AntiMacroPackets
     /// 客户端读取并渲染画面，用户输入图片中的字符提交验证。
     /// </summary>
     /// <param name="jpegData">JPEG 图片字节，不可为空。</param>
-    /// <param name="antiMacroType">m_nAntiMacroType: 1=道具, 2=技能(GM)</param>
-    /// <param name="setTimer">是否设置 60 秒超时定时器。</param>
     public static Packet ShowAntiMacroCaptcha(byte[] jpegData)
     {
         var p = OutPacket.create(SendOpcode.ANTI_MACRO_RESULT);

@@ -11,6 +11,7 @@ using Application.Core.Login.Services;
 using Application.Core.Login.Tasks;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
+using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -127,6 +128,9 @@ namespace Application.Core.Login
         readonly Lazy<AccountBanManager> _accountBanManager;
         public AccountBanManager AccountBanManager => _accountBanManager.Value;
 
+        readonly Lazy<AntiMacroAutobanManager> _antiMacroAutobanManager;
+        public AntiMacroAutobanManager AntiMacroAutobanManager => _antiMacroAutobanManager.Value;
+
         readonly Lazy<CrossServerService> _crossServerService;
         public CrossServerService CrossServerService => _crossServerService.Value;
         readonly Lazy<GachaponManager> _gachaponManager;
@@ -209,6 +213,7 @@ namespace Application.Core.Login
             _systemManager = new(() => ServiceProvider.GetRequiredService<SystemManager>());
             _accountHistoryManager = new(() => ServiceProvider.GetRequiredService<AccountHistoryManager>());
             _accountBanManager = new(() => ServiceProvider.GetRequiredService<AccountBanManager>());
+            _antiMacroAutobanManager = new(() => new AntiMacroAutobanManager());
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
@@ -621,5 +626,39 @@ namespace Application.Core.Login
         public Task Send(Func<MasterServer, Task> action) => CommandLoop.Register(new AsyncMasterDelegateCommand(action));
 
         public Task Send(Action<MasterServer> action) => CommandLoop.Register(new MasterDelegateCommand(action));
+
+        /// <summary>
+        /// 处理测谎惩罚。由 AntiMacroNotifyHandler 和 LocalChannelServerTransport 直接调用。
+        /// </summary>
+        public async Task ProcessAntiMacroPenalty(AntiMacroNotifyMessage message)
+        {
+            var victim = CharacterManager.FindPlayerById(message.VictimId);
+            bool isOnline = victim != null && victim.Channel > 0;
+
+            if (!message.Passed)
+            {
+                int failedCount = AntiMacroAutobanManager.AddPoint(message.VictimId);
+
+                if (failedCount >= 2)
+                {
+                    AccountBanManager.BanAccount(
+                        victim!.Character.AccountId,
+                        DateTimeOffset.MaxValue,
+                        (int)BanLevel.All,
+                        (int)BanReason.HACK,
+                        message.Reason);
+
+                    await DropWorldMessage(6, nameof(SystemMessage.Ban_NoticeGM), true);
+                    return;
+                }
+            }
+
+            if (isOnline)
+            {
+                message.ChannelId = victim!.ActualChannel;
+                await Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify,
+                    message, [message.VictimId, message.ReporterId]);
+            }
+        }
     }
 }

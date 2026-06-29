@@ -795,7 +795,7 @@ namespace Application.Core.Channel.InProgress
 
         public async Task AntiMacroNotify(AntiMacroNotifyMessage message)
         {
-            await _server.Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify, message, [message.VictimId, message.ReporterId]);
+            await _server.ProcessAntiMacroPenalty(message);
         }
     }
 }

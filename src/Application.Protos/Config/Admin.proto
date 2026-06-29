@@ -26,6 +26,7 @@ message AntiMacroNotifyMessage {
 	int32 type = 3;
 	bool passed = 4;
 	string reason = 5;
+	int32 channelId = 6;
 }
 
 
