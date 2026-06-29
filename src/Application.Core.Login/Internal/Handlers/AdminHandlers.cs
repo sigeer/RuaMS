@@ -221,7 +221,7 @@ namespace Application.Core.Login.Internal.Handlers
 
             protected override void HandleMessage(AntiMacroNotifyMessage message)
             {
-                _ = _server.Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify, message, [message.VictimId, message.ReporterId]);
+                _ = _server.ProcessAntiMacroPenalty(message);
             }
 
             protected override AntiMacroNotifyMessage Parse(ByteString content) => AntiMacroNotifyMessage.Parser.ParseFrom(content);

@@ -1,7 +1,5 @@
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
-using client.autoban;
 using SystemProto;
 using tools;
 
@@ -14,13 +12,11 @@ public class AntiMacroService
 {
     private readonly WorldChannelServer _server;
     private readonly CaptchaService _captcha;
-    private readonly AutoBanDataManager _autoban;
 
-    public AntiMacroService(WorldChannelServer server, CaptchaService captcha, AutoBanDataManager autoban)
+    public AntiMacroService(WorldChannelServer server, CaptchaService captcha)
     {
         _server = server;
         _captcha = captcha;
-        _autoban = autoban;
     }
 
     /// <summary>
@@ -118,53 +114,55 @@ public class AntiMacroService
     public async Task PenalizeAsync(AntiMacroNotifyMessage res)
     {
         var type = (AntiMacroType)res.Type;
-        _server.Broadcast(ch =>
+
+        // Master 已填入 channelId，直接定位目标频道
+        if (res.ChannelId <= 0 || !_server.Servers.TryGetValue(res.ChannelId, out var s))
+            return;
+
+        if (s is not WorldChannel ch)
+            return;
+
+        if (!res.Passed)
         {
-            if (!res.Passed)
+            var senderActor = ch.getPlayerStorage().GetCharacterActor(res.ReporterId);
+            if (senderActor != null)
             {
-                var senderActor = ch.getPlayerStorage().GetCharacterActor(res.ReporterId);
-                if (senderActor != null)
+                await senderActor.Send(async m =>
                 {
-                    senderActor.Send(async m =>
+                    var senderChr = m.getCharacterById(res.ReporterId);
+
+                    if (senderChr != null)
                     {
-                        var senderChr = m.getCharacterById(res.ReporterId);
-
-                        if (senderChr != null)
-                        {
-                            await senderChr.SendPacket(AntiMacroPackets.TargetFailedReward());
-                            await senderChr.GainMeso(7000, GainItemShow.ShowInChat);
-                        }
-                    });
-                }
-            }
-
-            var targetActor = ch.getPlayerStorage().GetCharacterActor(res.VictimId);
-            if (targetActor != null)
-            {
-                targetActor.Send(async m =>
-                {
-                    var targetChr = m.getCharacterById(res.VictimId);
-
-                    if (targetChr != null)
-                    {
-                        if (res.Passed)
-                        {
-                            await targetChr.SendPacket(AntiMacroPackets.PassedLieDetector(targetChr.Name));
-                            await targetChr.SendPacket(AntiMacroPackets.PassDialog(type));
-                            if (type == AntiMacroType.Item)
-                                await targetChr.GainMeso(5000);
-                        }
-                        else
-                        {
-                            await targetChr.SendPacket(AntiMacroPackets.SuspectedMacro(targetChr.Name));
-                            await targetChr.SendPacket(AntiMacroPackets.SanctionDialog((AntiMacroType)res.Type));
-
-                            // TODO: 计数、封禁应该由master管理，后期重构autoban时再处理
-                            await _autoban.AddPoint(AutobanFactory.AntiMacro, targetChr, res.Reason);
-                        }
+                        await senderChr.SendPacket(AntiMacroPackets.TargetFailedReward());
+                        await senderChr.GainMeso(7000, GainItemShow.ShowInChat);
                     }
                 });
             }
-        });
+        }
+
+        var targetActor = ch.getPlayerStorage().GetCharacterActor(res.VictimId);
+        if (targetActor != null)
+        {
+            await targetActor.Send(async m =>
+            {
+                var targetChr = m.getCharacterById(res.VictimId);
+
+                if (targetChr != null)
+                {
+                    if (res.Passed)
+                    {
+                        await targetChr.SendPacket(AntiMacroPackets.PassedLieDetector(targetChr.Name));
+                        await targetChr.SendPacket(AntiMacroPackets.PassDialog(type));
+                        if (type == AntiMacroType.Item)
+                            await targetChr.GainMeso(5000);
+                    }
+                    else
+                    {
+                        await targetChr.SendPacket(AntiMacroPackets.SuspectedMacro(targetChr.Name));
+                        await targetChr.SendPacket(AntiMacroPackets.SanctionDialog((AntiMacroType)res.Type));
+                    }
+                }
+            });
+        }
     }
 }
