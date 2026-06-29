@@ -237,4 +237,13 @@ public class Item : IComparable<Item>
         var typeTag = id / 10000;
         return typeTag * 10000 + 1000 - bulletItemTemplate.IncPAD;
     }
+
+    public virtual bool CanStack(Item anotherItem)
+    {
+        return getItemId() == anotherItem.getItemId()
+            && !ItemConstants.isRechargeable(getItemId())
+            && getQuantity() < SourceTemplate.SlotMax
+            && getOwner() == anotherItem.getOwner()
+            && getFlag() == anotherItem.getFlag();
+    }
 }

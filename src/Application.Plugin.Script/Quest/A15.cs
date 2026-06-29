@@ -2,6 +2,7 @@ using Acornima.Ast;
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Infrastructure;
+using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Items;
 using scripting.map;
@@ -452,8 +453,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q20405s()
         {
             await SaySpeech([
-                new SpeechText ("墙上有一张纸条：“诅咒的源头仍然不见了，但我想这里发现了一个奇怪的装置，我想是他们用过的。'", 3),
-                new SpeechText ("'这台机器被送到雷夫克进行雪崩，我现在得继续我的任务。愿女皇保佑我.'", 3)
+                new SpeechText ("墙上有一张纸条：“诅咒的源头仍然不见了，但我想这里发现了一个奇怪的装置，我想是他们用过的。'", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                new SpeechText ("这台机器被送到雷夫克进行雪崩，我现在得继续我的任务。愿女皇保佑我.", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd)
                 ]);
             await forceCompleteQuest();
         }

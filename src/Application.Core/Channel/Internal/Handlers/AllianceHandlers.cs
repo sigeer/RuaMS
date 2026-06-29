@@ -52,7 +52,7 @@ namespace Application.Core.Channel.Internal.Handlers
             }
             public override int MessageId => (int)ChannelRecvCode.OnAllianceCreated;
 
-            protected override void HandleMessage(CreateAllianceResponse res)
+            protected override Task HandleMessage(CreateAllianceResponse res)
             {
                 _server.Broadcast(w =>
                 {
@@ -89,6 +89,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     }
                 });
                 _server.GuildManager.StoreAlliance(res.Model);
+                return Task.CompletedTask;
             }
 
             protected override CreateAllianceResponse Parse(ByteString data) => CreateAllianceResponse.Parser.ParseFrom(data);
@@ -102,26 +103,16 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAlliancePlayerInfoBroadcast;
 
-            protected override void HandleMessage(AllianceBroadcastPlayerInfoResponse res)
+            protected override async Task HandleMessage(AllianceBroadcastPlayerInfoResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
+                await _server.SendToPlayersAsync(res.AllMembers, async chr =>
                 {
-                    foreach (var item in res.AllMembers)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(item)?.Send(async m =>
-                            {
-                                var p = m.getCharacterById(item);
-                                if (p != null)
-                                {
-                                    await p.SendPacket(GuildPackets.sendShowInfo(res.AllianceId, res.Request.MasterId));
-                                }
-                            });
-                    }
+                    await chr.SendPacket(GuildPackets.sendShowInfo(res.AllianceId, res.Request.MasterId));
                 });
             }
 
@@ -135,29 +126,20 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceNoticeUpdate;
 
-            protected override void HandleMessage(UpdateAllianceNoticeResponse res)
+            protected override async Task HandleMessage(UpdateAllianceNoticeResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var memberId in res.AllMembers)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
-                            {
-                                var p = m.getCharacterById(memberId);
-                                if (p != null)
-                                {
-                                    await p.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.Request.Notice));
-                                    await p.dropMessage(5, "* Alliance Notice : " + res.Request.Notice);
-                                }
-                            });
-                    }
-                });
                 _server.GuildManager.ClearAllianceCache(res.AllianceId);
+
+                await _server.SendToPlayersAsync(res.AllMembers, async chr =>
+                {
+                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.Request.Notice));
+                    await chr.dropMessage(5, "* Alliance Notice : " + res.Request.Notice);
+                });
             }
 
             protected override UpdateAllianceNoticeResponse Parse(ByteString data) => UpdateAllianceNoticeResponse.Parser.ParseFrom(data);
@@ -171,40 +153,30 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnGuildJoinAlliance;
 
-            protected override void HandleMessage(GuildJoinAllianceResponse res)
+            protected override async Task HandleMessage(GuildJoinAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id);
+
+                await _server.SendToPlayersAsync(allMembers, async chr =>
                 {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
+                    await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
+
+                    if (chr.GuildId == res.GuildId)
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(member.Id);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceDto.AllianceId, res.AllianceDto.Notice));
-
-                                    if (chr.GuildId == res.GuildId)
-                                    {
-                                        await chr.Notice("Your guild has joined the [" + res.AllianceDto.Name + "] union.");
-                                    }
-
-                                    chr.AllianceRank = 5;
-                                    if (chr.GuildRank == 1)
-                                        chr.AllianceRank = 2;
-                                }
-                            });
+                        await chr.Notice("Your guild has joined the [" + res.AllianceDto.Name + "] union.");
                     }
 
+                    chr.AllianceRank = 5;
+                    if (chr.GuildRank == 1)
+                        chr.AllianceRank = 2;
                 });
-
-                _server.GuildManager.StoreAlliance(res.AllianceDto);
             }
 
             protected override GuildJoinAllianceResponse Parse(ByteString data) => GuildJoinAllianceResponse.Parser.ParseFrom(data);
@@ -218,48 +190,33 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnGuildLeaveAlliance;
 
-            protected override void HandleMessage(GuildLeaveAllianceResponse res)
+            protected override async Task HandleMessage(GuildLeaveAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
-                    {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(member.Id);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
-                                    await chr.Notice("[" + res.GuildDto.Name + "] guild has left the union.");
-                                }
-                            });
-                    }
-
-                    foreach (var guildMember in res.GuildDto.Members)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(guildMember.Id);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
-                                }
-                            });
-                    }
-
-                });
-
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
                 _server.GuildManager.StoreGuild(res.GuildDto);
 
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id).ToHashSet();
+                var guildMembers = res.GuildDto.Members.Select(x => x.Id).ToHashSet();
+                await _server.SendToPlayersAsync([.. allMembers, .. guildMembers], async chr =>
+                {
+                    if (allMembers.Contains(chr.Id))
+                    {
+                        await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                        await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                        await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
+                        await chr.Notice("[" + res.GuildDto.Name + "] guild has left the union.");
+                    }
+                    else if (guildMembers.Contains(chr.Id))
+                    {
+                        await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                        await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                    }
+                });
             }
 
 
@@ -274,46 +231,33 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceExpelGuild;
 
-            protected override void HandleMessage(AllianceExpelGuildResponse res)
+            protected override async Task HandleMessage(AllianceExpelGuildResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
-                    {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(member.Id);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
-                                    await chr.Notice("[" + res.GuildDto.Name + "] guild has been expelled from the union.");
-                                }
-                            });
-                    }
-
-                    foreach (var guildMember in res.GuildDto.Members)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(guildMember.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(guildMember.Id);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
-                                    await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
-                                }
-                            });
-                    }
-                });
-
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
                 _server.GuildManager.StoreGuild(res.GuildDto);
+
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id).ToHashSet();
+                var guildMembers = res.GuildDto.Members.Select(x => x.Id).ToHashSet();
+                await _server.SendToPlayersAsync([.. allMembers, .. guildMembers], async chr =>
+                {
+                    if (allMembers.Contains(chr.Id))
+                    {
+                        await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                        await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                        await chr.SendPacket(GuildPackets.allianceNotice(res.AllianceId, res.AllianceDto.Notice));
+                        await chr.Notice("[" + res.GuildDto.Name + "] guild has been expelled from the union.");
+                    }
+                    else if (guildMembers.Contains(chr.Id))
+                    {
+                        await chr.SendPacket(GuildPackets.RemoveGuildFromAlliance(res.AllianceDto, res.GuildDto));
+                        await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                    }
+                });
             }
 
             protected override AllianceExpelGuildResponse Parse(ByteString data) => AllianceExpelGuildResponse.Parser.ParseFrom(data);
@@ -327,31 +271,20 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceCapacityUpdate;
 
-            protected override void HandleMessage(IncreaseAllianceCapacityResponse res)
+            protected override async Task HandleMessage(IncreaseAllianceCapacityResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
-                    {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(member.Id);
-                                if (chr != null)
-                                {
-                                    if (chr.Id == res.Request.MasterId)
-                                    {
-                                        await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
-                                    }
-                                }
-                            });
-                    }
-                });
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
+
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id).ToHashSet();
+                await _server.SendToPlayersAsync(allMembers, async chr =>
+                {
+                    await chr.SendPacket(GuildPackets.UpdateAllianceInfo(res.AllianceDto));
+                });
             }
 
             protected override IncreaseAllianceCapacityResponse Parse(ByteString data) => IncreaseAllianceCapacityResponse.Parser.ParseFrom(data);
@@ -365,29 +298,19 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceDisband;
 
-            protected override void HandleMessage(DisbandAllianceResponse res)
+            protected override async Task HandleMessage(DisbandAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
-
-                _server.Broadcast(w =>
-                {
-                    foreach (var memberId in res.AllMembers)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
-                            {
-                                var p = m.getCharacterById(memberId);
-                                if (p != null)
-                                {
-                                    await p.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
-                                    p.AllianceRank = 5;
-                                }
-                            });
-                    }
-                });
                 _server.GuildManager.ClearAllianceCache(res.AllianceId);
+
+                await _server.SendToPlayersAsync(res.AllMembers, async chr =>
+                {
+                    await chr.SendPacket(GuildPackets.disbandAlliance(res.AllianceId));
+                    chr.AllianceRank = 5;
+                });
             }
 
             protected override DisbandAllianceResponse Parse(ByteString data) => DisbandAllianceResponse.Parser.ParseFrom(data);
@@ -401,30 +324,25 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceMemberRankChanged;
 
-            protected override void HandleMessage(ChangePlayerAllianceRankResponse res)
+            protected override async Task HandleMessage(ChangePlayerAllianceRankResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
+                _server.GuildManager.StoreAlliance(res.AllianceDto);
 
-                _server.Broadcast(w =>
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id);
+                await _server.SendToPlayersAsync(allMembers, async chr =>
                 {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
+                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+
+                    if (chr.Id == res.Request.PlayerId)
                     {
-                        w.getPlayerStorage().GetCharacterActor(member.Id)?.Send(async m =>
-                            {
-                                var p = m.getCharacterById(member.Id);
-                                if (p != null)
-                                {
-                                    await p.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    p.AllianceRank = res.NewRank;
-                                }
-                            });
+                        chr.AllianceRank = res.NewRank;
                     }
                 });
-                _server.GuildManager.StoreAlliance(res.AllianceDto);
             }
 
             protected override ChangePlayerAllianceRankResponse Parse(ByteString data) => ChangePlayerAllianceRankResponse.Parser.ParseFrom(data);
@@ -438,29 +356,18 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceRankTitleUpdate;
 
-            protected override void HandleMessage(UpdateAllianceRankTitleResponse res)
+            protected override async Task HandleMessage(UpdateAllianceRankTitleResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var memberId in res.AllMembers)
-                    {
-                        w.getPlayerStorage().GetCharacterActor(memberId)?.Send(async m =>
-                            {
-                                var p = m.getCharacterById(memberId);
-                                if (p != null)
-                                {
-                                    await p.SendPacket(GuildPackets.changeAllianceRankTitle(res.AllianceId, res.Request.RankTitles.ToArray()));
-                                }
-                            });
-                    }
-                });
-
                 _server.GuildManager.ClearAllianceCache(res.AllianceId, false);
+                await _server.SendToPlayersAsync(res.AllMembers, async chr =>
+                {
+                    await chr.SendPacket(GuildPackets.changeAllianceRankTitle(res.AllianceId, res.Request.RankTitles.ToArray()));
+                });
             }
 
             protected override UpdateAllianceRankTitleResponse Parse(ByteString data) => UpdateAllianceRankTitleResponse.Parser.ParseFrom(data);
@@ -474,41 +381,29 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceLeaderChanged;
 
-            protected override void HandleMessage(AllianceChangeLeaderResponse res)
+            protected override async Task HandleMessage(AllianceChangeLeaderResponse res)
             {
                 if (res.Code != 0)
                 {
                     return;
                 }
 
-                _server.Broadcast(w =>
-                {
-                    foreach (var member in res.AllianceDto.Guilds.SelectMany(x => x.Members))
-                    {
-                        var mapActor = w.getPlayerStorage().GetCharacterActor(member.Id);
-                        if (mapActor != null)
-                        {
-                            mapActor.Send(async m =>
-                            {
-                                var chr = m.getCharacterById(member.Id);
-                                if (chr != null)
-                                {
-                                    if (chr.Id == res.Request.MasterId)
-                                    {
-                                        chr.AllianceRank = 2;
-                                    }
-                                    else if (chr.Id == res.Request.PlayerId)
-                                    {
-                                        chr.AllianceRank = 1;
-                                    }
-                                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
-                                    await chr.Notice("'" + res.NewLeaderName + "' has been appointed as the new head of this Alliance.");
-                                }
-                            });
-                        }
-                    }
-                });
                 _server.GuildManager.StoreAlliance(res.AllianceDto);
+
+                var allMembers = res.AllianceDto.Guilds.SelectMany(x => x.Members).Select(x => x.Id);
+                await _server.SendToPlayersAsync(allMembers, async chr =>
+                {
+                    if (chr.Id == res.Request.MasterId)
+                    {
+                        chr.AllianceRank = 2;
+                    }
+                    else if (chr.Id == res.Request.PlayerId)
+                    {
+                        chr.AllianceRank = 1;
+                    }
+                    await chr.SendPacket(GuildPackets.GetGuildAlliances(res.AllianceDto));
+                    await chr.Notice("'" + res.NewLeaderName + "' has been appointed as the new head of this Alliance.");
+                });
             }
 
             protected override AllianceChangeLeaderResponse Parse(ByteString data) => AllianceChangeLeaderResponse.Parser.ParseFrom(data);

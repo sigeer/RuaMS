@@ -151,7 +151,7 @@ namespace Application.Plugin.FakeCharacter
         AbsoluteLifeMovement GenereateFinalMovements(Point startPos, Point finalPos)
         {
             var finalFh = MapModel.FindFh(finalPos);
-            var finalStance = (int)(finalFh >= 0 ? StanceConstant.StandR : StanceConstant.ClimbR);
+            var finalStance = (int)(finalFh >= 0 ? StanceConstant.StandR : StanceConstant.RopeR);
             if (startPos.X > finalPos.X)
             {
                 // 向左
@@ -238,7 +238,7 @@ namespace Application.Plugin.FakeCharacter
                 int segDurationMs = Math.Max(50, (int)(segDist / speedPxPerSec * 1000));
 
                 // var fh = MapModel.FindFh(target);
-                int newState = (int)(fh >= 0 ? StanceConstant.WalkR : StanceConstant.ClimbR);
+                int newState = (int)(fh >= 0 ? StanceConstant.WalkR : StanceConstant.RopeR);
                 if (segDx < 0)
                     newState += 1;
 

@@ -14,9 +14,9 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.DisconnectAll;
 
-        protected override void HandleMessage(Empty message)
+        protected override Task HandleMessage(Empty message)
         {
-            _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
+            return _server.Transport.BroadcastMessageN(ChannelRecvCode.DisconnectAll);
         }
     }
 
@@ -28,9 +28,9 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.DisconnectOne;
 
-        protected override void HandleMessage(DisconnectPlayerByNameRequest message)
+        protected override Task HandleMessage(DisconnectPlayerByNameRequest message)
         {
-            _ = _server.CrossServerService.DisconnectPlayerByName(message);
+            return _server.CrossServerService.DisconnectPlayerByName(message);
         }
 
         protected override DisconnectPlayerByNameRequest Parse(ByteString data)

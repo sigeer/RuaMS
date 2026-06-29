@@ -19,6 +19,6 @@ public class MesoRateCommand : CommandBase
             return;
 
         int mesorate = Math.Max(d, 1);
-        _ = c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { MesoRate = mesorate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { MesoRate = mesorate });
     }
 }

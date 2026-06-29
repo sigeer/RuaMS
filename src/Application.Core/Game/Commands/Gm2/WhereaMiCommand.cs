@@ -13,7 +13,6 @@ public class WhereaMiCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
 
-        var allMapObjects = player.getMap().getMapObjects().OrderBy(x => x.getPosition().distanceSq(player.getPosition())).GroupBy(x => x.getType());
 
         var sb = new StringBuilder();
         sb.Append("我在...\r\n");
@@ -25,15 +24,24 @@ public class WhereaMiCommand : CommandBase
         sb.Append("Foothold Id：").Append(player.getMap().FindFh(player.getPosition())).Append("\r\n");
         sb.Append("Stance：").Append(player.getStance()).Append("\r\n");
 
-        var closetPortal = player.getMap().findClosestPortal(player.getPosition());
-        if (closetPortal != null)
+        sb.Append("=========Portals=========\r\n");
+        sb.Append("由近到远：\r\n");
+        var allPortals = player.getMap().SourceTemplate.Portals
+            .OrderBy(x => new Point(x.nX, x.nY).distanceSq(player.getPosition())).ToArray();
+        foreach (var portal in allPortals)
         {
-            sb.Append("离我最近的Portal：").Append("\r\n")
-                .Append("Id: ").Append(closetPortal.getId()).Append("\r\n")
-                .Append("Name: ").Append(closetPortal.getName()).Append("\r\n")
-                .Append("Type: ").Append(closetPortal.getType()).Append("\r\n")
-                .Append("Script: ").Append(closetPortal.getScriptName()).Append("\r\n");
+            sb
+                .Append("Id: ").Append(portal.nIndex).Append("\r\n")
+                .Append("PortalType(pt): ").Append(portal.nPortalType).Append("\r\n")
+                .Append("PortalName(pn): ").Append(portal.sPortalName).Append("\r\n")
+                .Append("TargetName(tn): ").Append(portal.sTargetName).Append("\r\n")
+                .Append("TargetMap(tm): ").Append(portal.nTargetMap).Append("\r\n")
+                .Append("Script: ").Append(portal.Script).Append("\r\n");
         }
+
+        var allMapObjects = player.getMap().getMapObjects()
+            .OrderBy(x => x.getPosition().distanceSq(player.getPosition()))
+            .GroupBy(x => x.getType());
         sb.Append("=========MapObject=========\r\n");
         sb.Append("地图上有：\r\n");
         foreach (var group in allMapObjects)

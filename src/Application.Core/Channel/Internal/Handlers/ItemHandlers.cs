@@ -21,9 +21,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleItemMegaphone;
 
-            protected override void HandleMessage(UseItemMegaphoneBroadcast res)
+            protected override Task HandleMessage(UseItemMegaphoneBroadcast res)
             {
-                _server.Broadcast(async w =>
+                return _server.BroadcastAsync(async w =>
                 {
                     var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.Map<Item>(res.Request.Item));
                     await w.broadcastPacket(p);
@@ -41,9 +41,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleTVMessageStart;
 
-            protected override void HandleMessage(CreateTVMessageBroadcast res)
+            protected override Task HandleMessage(CreateTVMessageBroadcast res)
             {
-                _server.PushChannelCommand(new InvokeTVCommand(res));
+                return _server.PushChannelCommandAsync(new InvokeTVCommand(res));
             }
 
             protected override CreateTVMessageBroadcast Parse(ByteString data) => CreateTVMessageBroadcast.Parser.ParseFrom(data);
@@ -57,9 +57,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleTVMessageFinish;
 
-            protected override void HandleMessage(Empty res)
+            protected override Task HandleMessage(Empty res)
             {
-                _server.PushChannelCommand(new InvokeTVFinishCommand());
+                return _server.PushChannelCommandAsync(new InvokeTVFinishCommand());
             }
 
         }

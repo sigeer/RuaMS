@@ -1,6 +1,10 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
+using Application.Core.Managers;
+using Application.Shared.Constants.Inventory;
+using Application.Shared.MapObjects;
+using client.inventory;
 using server.maps;
 using System.Threading.Tasks;
 using tools;
@@ -143,42 +147,6 @@ namespace ServiceTest.Games.Gameplay
             var mapItem = items[0];
             Assert.That(mapItem.MapModel is not null);
         }
-
-        //[Test]
-        //public void PickupItemByAnother()
-        //{
-        //    var mapId = 103000202;
-        //    var mapManager = MockClient.OnlinedCharacter.getChannelServer().getMapFactory();
-        //    var map = mapManager.getMap(mapId);
-
-        //    MockClient.OnlinedCharacter.changeMap(map, map.getPortal(0));
-        //    var monsters = map.getAllMonsters();
-        //    foreach (var monster in monsters)
-        //    {
-        //        // 直接使用killMonster时并没有触发造成伤害，不会掉落
-        //        map.damageMonster(MockClient.OnlinedCharacter, monster, int.MaxValue);
-        //    }
-        //    var items = map.getItems();
-        //    Assert.That(items.Count > 0);
-
-        //    var client2 = GetOnlinedTestClient(2);
-
-        //    client2.OnlinedCharacter.changeMap(map, map.getPortal(0));
-        //    var anotherPicker = new PlayerPickupProcessor(client2.OnlinedCharacter);
-        //    foreach (var item in items)
-        //    {
-        //        anotherPicker.Handle(item as MapItem);
-        //    }
-
-        //    Assert.That(map.getItems().Count == items.Count);
-        //    anotherPicker.Flags = PickupCheckFlags.None;
-
-        //    foreach (var item in items)
-        //    {
-        //        anotherPicker.Handle(item as MapItem);
-        //    }
-        //    Assert.That(map.getItems().Count == 0);
-        //}
 
         //[Test]
         //public void MobRateChange_Test()

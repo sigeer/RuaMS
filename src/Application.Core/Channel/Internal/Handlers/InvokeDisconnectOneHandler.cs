@@ -14,15 +14,15 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeDisconnectPlayer;
 
-        protected override void HandleMessage(DisconnectPlayerByNameResponse res)
+        protected override Task HandleMessage(DisconnectPlayerByNameResponse res)
         {
             if (res.Code != 0)
             {
-                _server.PushChannelCommand(new InvokeDropMessageCommand(res.Request.MasterId, 5, nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim));
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim));
             }
             else
             {
-                _server.PushChannelCommand(new InvokePlayerDisconnectCommand(res.TargetId));
+                return _server.PushChannelCommandAsync(new InvokePlayerDisconnectCommand(res.TargetId));
             }
         }
 

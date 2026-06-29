@@ -5,6 +5,7 @@ using Application.Shared.Message;
 using BuddyProto;
 using Google.Protobuf;
 using MessageProto;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
@@ -19,60 +20,38 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyAdd;
 
-            protected override void HandleMessage(AddBuddyResponse res)
+            protected override async Task HandleMessage(AddBuddyResponse res)
             {
-                _server.Broadcast(worldChannel =>
+                if (res.Code == 0)
                 {
-                    var actor = worldChannel.getPlayerStorage().GetCharacterActor(res.MasterId);
-                    if (actor != null)
+                    await _server.SendToPlayersAsync([res.MasterId, res.TargetId], async chr =>
                     {
-                        if (res.Code == 1)
+                        if (chr.Id == res.MasterId)
                         {
-                            actor.Send(map =>
-                            {
-                                map.getCharacterById(res.MasterId)?.Popup(nameof(ClientMessage.PlayerNotFound), res.TargetName);
-                            });
-                            return;
+                            chr.BuddyList.Set(_server.Mapper.Map<BuddyCharacter>(res.Buddy));
+                            await chr.SendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
                         }
-
-                        if (res.Code == 0)
+                        else if (chr.Id == res.TargetId)
                         {
-                            actor.Send(async map =>
+                            if (chr.BuddyList.Contains(res.Buddy.Id))
                             {
-                                var masterChr = map.getCharacterById(res.MasterId);
-                                if (masterChr != null)
-                                {
-                                    masterChr.BuddyList.Set(worldChannel.Mapper.Map<BuddyCharacter>(res.Buddy));
-                                    await masterChr.SendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
-                                }
-                            });
+                                chr.BuddyList.Set(_server.Mapper.Map<BuddyCharacter>(res.Buddy));
+                                await chr.SendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+                            }
+                            else
+                            {
+                                await chr.SendPacket(PacketCreator.requestBuddylistAdd(res.Buddy.Id, res.MasterId, res.Buddy.Name));
+                            }
                         }
-                    }
-
-                    var toActor = worldChannel.getPlayerStorage().GetCharacterActor(res.TargetId);
-                    if (toActor != null)
+                    });
+                }
+                else
+                {
+                    await _server.SendToPlayerAsync(res.MasterId, async chr =>
                     {
-                        if (res.Code == 0)
-                        {
-                            toActor.Send(async map =>
-                            {
-                                var chr = map.getCharacterById(res.Buddy.Id);
-                                if (chr != null)
-                                {
-                                    if (chr.BuddyList.Contains(res.Buddy.Id))
-                                    {
-                                        chr.BuddyList.Set(worldChannel.Mapper.Map<BuddyCharacter>(res.Buddy));
-                                        await chr.SendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
-                                    }
-                                    else
-                                    {
-                                        await chr.SendPacket(PacketCreator.requestBuddylistAdd(res.Buddy.Id, res.MasterId, res.Buddy.Name));
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
+                        await chr.Popup(nameof(ClientMessage.PlayerNotFound), res.TargetName);
+                    });
+                }
             }
 
             protected override AddBuddyResponse Parse(ByteString data) => AddBuddyResponse.Parser.ParseFrom(data);
@@ -86,34 +65,22 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyRemove;
 
-            protected override void HandleMessage(DeleteBuddyResponse res)
+            protected override async Task HandleMessage(DeleteBuddyResponse res)
             {
-                _server.Broadcast(w =>
+                await _server.SendToPlayersAsync([res.MasterId, res.Buddyid], async chr =>
                 {
-                    var masterChrActor = w.getPlayerStorage().GetCharacterActor(res.MasterId);
-                    masterChrActor?.Send(async m =>
+                    if (res.MasterId == chr.Id)
                     {
-                        var masterChr = m.getCharacterById(res.MasterId);
-                        if (masterChr != null)
-                        {
-                            masterChr.BuddyList.Remove(res.Buddyid);
-                            await masterChr.SendPacket(PacketCreator.updateBuddylist(masterChr.BuddyList.getBuddies()));
-                        }
-                    });
-
-                    var chrActor = w.getPlayerStorage().GetCharacterActor(res.Buddyid);
-                    chrActor?.Send(async m =>
+                        chr.BuddyList.Remove(res.Buddyid);
+                        await chr.SendPacket(PacketCreator.updateBuddylist(chr.BuddyList.getBuddies()));
+                    }
+                    else if (res.Buddyid == chr.Id)
                     {
-                        var chr = m.getCharacterById(res.Buddyid);
-                        if (chr != null)
+                        if (chr.BuddyList.Contains(res.MasterId))
                         {
-                            if (chr.BuddyList.Contains(res.MasterId))
-                            {
-                                await chr.SendPacket(PacketCreator.updateBuddyChannel(res.Buddyid, -1));
-                            }
+                            await chr.SendPacket(PacketCreator.updateBuddyChannel(res.Buddyid, -1));
                         }
-                    });
-
+                    }
                 });
             }
 
@@ -128,34 +95,27 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyLocation;
 
-            protected override void HandleMessage(GetLocationResponse res)
+            protected override async Task HandleMessage(GetLocationResponse res)
             {
-                _server.Broadcast(w =>
+                await _server.SendToPlayerAsync(res.MasterId, async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.MasterId)?.Send(async m =>
+                    var code = (WhisperLocationResponseCode)res.Code;
+                    switch (code)
                     {
-                        var chr = m.getCharacterById(res.MasterId);
-                        if (chr != null)
-                        {
-                            var code = (WhisperLocationResponseCode)res.Code;
-                            switch (code)
-                            {
-                                case WhisperLocationResponseCode.NotFound:
-                                case WhisperLocationResponseCode.NotOnlined:
-                                case WhisperLocationResponseCode.NoAccess:
-                                    await chr.SendPacket(PacketCreator.getWhisperResult(res.TargetName, false));
-                                    break;
-                                case WhisperLocationResponseCode.AwayWorld:
-                                    await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_CASH_SHOP, -1, WhisperFlag.LOCATION));
-                                    break;
-                                case WhisperLocationResponseCode.DiffChannel:
-                                    await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_DIFFERENT_CHANNEL, res.Field, WhisperFlag.LOCATION));
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    });
+                        case WhisperLocationResponseCode.NotFound:
+                        case WhisperLocationResponseCode.NotOnlined:
+                        case WhisperLocationResponseCode.NoAccess:
+                            await chr.SendPacket(PacketCreator.getWhisperResult(res.TargetName, false));
+                            break;
+                        case WhisperLocationResponseCode.AwayWorld:
+                            await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_CASH_SHOP, -1, WhisperFlag.LOCATION));
+                            break;
+                        case WhisperLocationResponseCode.DiffChannel:
+                            await chr.SendPacket(PacketCreator.GetFindResult(res.TargetName, WhisperType.RT_DIFFERENT_CHANNEL, res.Field, WhisperFlag.LOCATION));
+                            break;
+                        default:
+                            break;
+                    }
                 });
             }
 
@@ -170,32 +130,23 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnWhisper;
 
-            protected override void HandleMessage(SendWhisperMessageResponse res)
+            protected override async Task HandleMessage(SendWhisperMessageResponse res)
             {
-                _server.Broadcast(w =>
+                if (res.Code == 0)
                 {
-                    if (res.Code != 0)
+                    await _server.SendToPlayerAsync(res.ReceiverId, async chr =>
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.Request.FromId)?.Send(async m =>
-                        {
-                            var chr = m.getCharacterById(res.Request.FromId);
-                            if (chr != null)
-                                await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, false));
-                        });
-                    }
-                    else
+                        await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, true));
+                        await chr.SendPacket(PacketCreator.getWhisperReceive(res.FromName, res.FromChannel - 1, res.IsFromGM, res.Request.Text));
+                    });
+                }
+                else
+                {
+                    await _server.SendToPlayerAsync(res.Request.FromId, async chr =>
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.ReceiverId)?.Send(async m =>
-                        {
-                            var chr = m.getCharacterById(res.ReceiverId);
-                            if (chr != null)
-                            {
-                                await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, true));
-                                await chr.SendPacket(PacketCreator.getWhisperReceive(res.FromName, res.FromChannel - 1, res.IsFromGM, res.Request.Text));
-                            }
-                        });
-                    }
-                });
+                        await chr.SendPacket(PacketCreator.getWhisperResult(res.Request.TargetName, false));
+                    });
+                }
             }
 
             protected override SendWhisperMessageResponse Parse(ByteString data) => SendWhisperMessageResponse.Parser.ParseFrom(data);

@@ -177,6 +177,10 @@ public enum RecvOpcode
     CASHSHOP_SURPRISE = 0xA1,
     CLICK_GUIDE = 0xA2,
     ARAN_COMBO_COUNTER = 0xA3,
+    /// <summary>
+    /// CMobPool::OnMobCrcKeyChanged
+    /// </summary>
+    ClientMobCrcKeyCheck = 0xA4,
     MOVE_PET = 0xA7,
     PET_CHAT = 0xA8,
     PET_COMMAND = 0xA9,

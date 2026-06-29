@@ -14,9 +14,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveDoor;
 
-            protected override void HandleMessage(RemoveDoorRequest res)
+            protected override Task HandleMessage(RemoveDoorRequest res)
             {
-                _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.OnDoorRemoved, new RemoveDoorResponse { OwnerId = res.OwnerId });
+                return _server.Transport.BroadcastMessageN(ChannelRecvCode.OnDoorRemoved, new RemoveDoorResponse { OwnerId = res.OwnerId });
             }
 
             protected override RemoveDoorRequest Parse(ByteString data) => RemoveDoorRequest.Parser.ParseFrom(data);

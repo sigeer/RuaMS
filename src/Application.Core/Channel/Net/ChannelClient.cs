@@ -82,7 +82,7 @@ namespace Application.Core.Channel.Net
                 }
                 finally
                 {
-                    CurrentServer.RemovePlayerDeep(Character);
+                    await CurrentServer.RemovePlayerDeep(Character);
 
                     if (!IsServerTransition)
                         await Character.logOff();
@@ -147,7 +147,7 @@ namespace Application.Core.Channel.Net
                 await player.getMap().removePlayer(player);
                 if (MapId.isDojo(mapId))
                 {
-                    player.getChannelServer().freeDojoSectionIfEmpty(mapId);
+                    await player.getChannelServer().freeDojoSectionIfEmpty(mapId);
                 }
             }
         }
@@ -186,7 +186,7 @@ namespace Application.Core.Channel.Net
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            if (Character == null)
+            if (Character == null || Character.getCashShop().isOpened())
             {
                 CurrentServer.Send(w =>
                 {

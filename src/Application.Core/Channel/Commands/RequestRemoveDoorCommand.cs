@@ -1,6 +1,6 @@
 namespace Application.Core.Channel.Commands
 {
-    internal class RequestRemoveDoorCommand : IWorldChannelCommand
+    internal class RequestRemoveDoorCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(RequestRemoveDoorCommand);
         int _ownerId;
@@ -9,9 +9,9 @@ namespace Application.Core.Channel.Commands
             _ownerId = ownerId;
         }
 
-        public void Execute(WorldChannel ctx)
+        public Task Execute(WorldChannel ctx)
         {
-            _ = ctx.Node.Transport.SendRemoveDoor(_ownerId);
+            return ctx.Node.Transport.SendRemoveDoor(_ownerId);
         }
     }
 

@@ -63,7 +63,7 @@ public class Door
             return (-2, null);
         }
 
-        if (!townMap.TryGetEffectiveDoorPortal(out var townPortal) || townPortal == null)
+        if (!townMap.TryGetEffectiveDoorPortal(out var townPortal))
         {
             return (-1, null);
         }

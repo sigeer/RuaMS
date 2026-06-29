@@ -12,10 +12,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.OnWorldConfigUpdate;
 
-        protected override void HandleMessage(WorldConfig res)
+        protected override Task HandleMessage(WorldConfig res)
         {
             _server.UpdateWorldConfig(res);
-            _server.Broadcast(async w =>
+            return _server.BroadcastAsync(async w =>
             {
                 await w.UpdateWorldConfig(res);
             });

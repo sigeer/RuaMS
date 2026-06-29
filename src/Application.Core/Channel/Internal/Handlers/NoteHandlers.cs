@@ -1,5 +1,6 @@
 using Application.Core.Models;
 using Application.Shared.Message;
+using AutoMapper;
 using Dto;
 using Google.Protobuf;
 using net.packet.outs;
@@ -16,27 +17,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.InvokeNoteMessage;
 
-            protected override void HandleMessage(SendNoteResponse res)
+            protected override Task HandleMessage(SendNoteResponse res)
             {
-                var channel = _server.GetChannelActor(res.ReceiverChannel);
-                if (channel != null)
+                return _server.SendToPlayerAsync(res.ReceiverChannel, res.ReceiverId, async chr =>
                 {
-                    channel.Send(x =>
-                    {
-                        var actor = x.getPlayerStorage().GetCharacterActor(res.ReceiverId);
-                        if (actor != null)
-                        {
-                            actor.Send(async map =>
-                            {
-                                var chr = map.getCharacterById(res.ReceiverId);
-                                if (chr != null)
-                                {
-                                    await chr.SendPacket(new ShowNotesPacket(chr.Client, x.Mapper.Map<List<NoteObject>>(res.List)));
-                                }
-                            });
-                        }
-                    });
-                }
+                    await chr.SendPacket(new ShowNotesPacket(chr.Client, _server.Mapper.Map<List<NoteObject>>(res.List)));
+                });
             }
 
             protected override SendNoteResponse Parse(ByteString data) => SendNoteResponse.Parser.ParseFrom(data);

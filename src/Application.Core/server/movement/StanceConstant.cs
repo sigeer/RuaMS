@@ -1,6 +1,6 @@
 namespace server.movement
 {
-    public enum StanceConstant
+    public enum StanceConstant: byte
     {
         WalkR = 2,
         WalkL = 3,
@@ -14,7 +14,25 @@ namespace server.movement
         AfterBattleR,
         AfterBattleL,
 
-        ClimbR = 16,
-        ClimbL = 17
+        LadderR = 14,
+        LadderL = 15,
+        RopeR = 16,
+        RopeL = 17
+    }
+
+    public class StanceUtils
+    {
+        public static bool IsBattle(byte stance)
+        {
+            return stance == (byte)StanceConstant.AfterBattleL || stance == (byte)StanceConstant.AfterBattleR;
+        }
+
+        public static bool IsOnLadderOrRope(byte stance)
+        {
+            return stance == (byte)StanceConstant.LadderR
+                  || stance == (byte)StanceConstant.LadderL
+                  || stance == (byte)StanceConstant.RopeR
+                  || stance == (byte)StanceConstant.RopeL;
+        }
     }
 }

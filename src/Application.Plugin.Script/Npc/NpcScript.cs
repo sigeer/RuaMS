@@ -979,7 +979,7 @@ namespace Application.Plugin.Script.Npc
                 case 1:
                     if (haveItem(4031036) || haveItem(4031037) || haveItem(4031038))
                     {
-                        var text = "Here's the ticket reader. You will be brought in immediately. Which ticket you would like to use?#b";
+                        var text = "这是检票口。您将立即被带进去。您想使用哪张票？#b";
                         for (var i = 0; i < 3; i++)
                         {
                             if (haveItem(4031036 + i))
@@ -1057,7 +1057,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1052011 
         public async Task subway_out()
         {
-            await SaySpeech(["这个设备连接到外部。", "Are you going to give up and leave this place?"]);
+            await SaySpeech(["这个设备连接到外部。", "你打算放弃并离开这个地方吗？"]);
             if (await AskYesNo("下次进来的时候，你将不得不从头开始..."))
             {
                 await warp(103000100, 0);
@@ -2157,9 +2157,9 @@ namespace Application.Plugin.Script.Npc
             if (getMapId() == 910400000)
             {
                 await SaySpeech([
-                    new SpeechText("哼……真的找来了，太容易了？看来你的变身术还是有点用处的嘛。巴洛克，我们走。", 1),
-                    new SpeechText("切……这笔帐将来再算。", (byte)(NpcTalkSpeaker.ExtraNpc | NpcTalkSpeaker.WithoutEnd), 1204004),
-                    new SpeechText("来得正好。上一次因为刚和冒险骑士团的骑士们战斗完，已经没什么余力了，才会让你得逞。这次我可没那么好惹了！碍眼的家伙，消失掉吧！",1)
+                    new SpeechText("哼……真的找来了，太容易了？看来你的变身术还是有点用处的嘛。巴洛克，我们走。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("切……这笔帐将来再算。", NpcTalkSpeaker.ExtraNpc | NpcTalkSpeaker.NoEnd, 1204004),
+                    new SpeechText("来得正好。上一次因为刚和冒险骑士团的骑士们战斗完，已经没什么余力了，才会让你得逞。这次我可没那么好惹了！碍眼的家伙，消失掉吧！",NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd)
                     ]);
                 await setQuestProgress(21733, 21762, 1);
 
@@ -2355,8 +2355,8 @@ namespace Application.Plugin.Script.Npc
         public async Task dollMaster00()
         {
             await SaySpeech([
-                new SpeechText("我是黑色之翼的人偶师弗朗西斯。你把我安置的好几个人偶都给找出来了……坏了我的好事。虽然我很恼火，不过这次先放你一马。你要是再敢和我作对………我以黑魔法师大人的名义发誓，绝不放过你。", 9),
-                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商议商议。）#k", 3)
+                new SpeechText("我是黑色之翼的人偶师弗朗西斯。你把我安置的好几个人偶都给找出来了……坏了我的好事。虽然我很恼火，不过这次先放你一马。你要是再敢和我作对………我以黑魔法师大人的名义发誓，绝不放过你。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商议商议。）#k", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd)
                 ]);
 
             await completeQuest(21719);
@@ -2368,9 +2368,9 @@ namespace Application.Plugin.Script.Npc
         public async Task giantDagoth()
         {
             await SaySpeech([
-                new SpeechText("嗯？怎么回事，你？", 1),
-                new SpeechText("前不久倒是听说金银岛上的人偶师被人打倒了，难道是你……", 1),
-                new SpeechText("嘿嘿，那反倒好办了！既拿到了#b天空之城封印石#k，又能顺便打倒你的话，我就能在人偶师之上了！出招吧！", 1)
+                new SpeechText("嗯？怎么回事，你？", NpcTalkSpeaker.NoEnd),
+                new SpeechText("前不久倒是听说金银岛上的人偶师被人打倒了，难道是你……", NpcTalkSpeaker.NoEnd),
+                new SpeechText("嘿嘿，那反倒好办了！既拿到了#b天空之城封印石#k，又能顺便打倒你的话，我就能在人偶师之上了！出招吧！", NpcTalkSpeaker.NoEnd)
                 ]);
 
             var mapObj = getMap();
@@ -2444,13 +2444,13 @@ namespace Application.Plugin.Script.Npc
                 if (isQuestActive(2314) && getQuestProgressInt(2314) == 0)
                 {
                     await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
-                    await SayNext("这里...似乎有点奇怪...？！", 3);
-                    await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", 3);
-                    await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", 3);
+                    await SayNext("这里...似乎有点奇怪...？！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
+                    await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
+                    await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                 }
                 else if (haveItem(2430014))
                 {
-                    await SayNext("在这附近使用#e#b#v2430014##t2430014##n#k应该就能消除魔法结界了吧。", 3);
+                    await SayNext("在这附近使用#e#b#v2430014##t2430014##n#k应该就能消除魔法结界了吧。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                 }
             }
             else if (MapId == 106020500)
@@ -3374,7 +3374,7 @@ namespace Application.Plugin.Script.Npc
             var completed = questList.Where(x => isQuestCompleted(x.quest)).ToArray();
             if (completed.Length == 0)
             {
-                await SayOK("#b#h##k还没有归还一本故事书。");
+                await SayOK("#b#h1##k还没有归还一本故事书。");
                 return;
             }
             await SaySpeech([
@@ -3928,10 +3928,10 @@ namespace Application.Plugin.Script.Npc
         public async Task ShadowWarrier()
         {
             await SaySpeech([
-                new SpeechText("我一直在等你……英雄的后裔啊……", 8),
-                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", 2),
-                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", 8),
-                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", 2)
+                new SpeechText("我一直在等你……英雄的后裔啊……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", NpcTalkSpeaker.PlayerRight),
+                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", NpcTalkSpeaker.PlayerRight)
                 ]);
 
             var mapObj = getMap();
@@ -4993,14 +4993,7 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("Life in Mushroom Shrine...")]
         public async Task s_Life_in_Mushroom_Shrine()
         {
-            if (isQuestCompleted(8074))
-            {
-                await SayOK("欢迎来到蘑菇神社！");
-            }
-            else
-            {
-                await SayOK("蘑菇神殿~~~");
-            }
+            await sendDefault(8074);
         }
 
 
@@ -5084,7 +5077,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9120013 
         public async Task boss_cat()
         {
-            // 检查任务8012是否进行中且没有橙色大理石
+            // 检查任务8012是否进行中且没有4031064
             if (!isQuestStarted(8012) || haveItem(4031064))
             {
                 return;
@@ -5102,7 +5095,7 @@ namespace Application.Plugin.Script.Npc
             }
 
             await gainItem(2020001, -300);
-            await SayNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！");
+            await SayNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd);
 
             // 问题和答案数据
             var questions = new List<string>
@@ -5122,7 +5115,7 @@ namespace Application.Plugin.Script.Npc
 
             var answers = new List<string[]>
             {
-                new[] { "Raccoon Firewood", "Solid Horn", "Red Brick" },
+                new[] { "狸猫柴火", "独角狮硬角", "Red Brick" },
                 new[] { "Peli", "Spinel", "Poli" },
                 new[] { "Takoyaki", "Yakisoba", "Tempura" },
                 new[] { "Extra A's Badge", "Extra B's Corset", "Extra C's Necklace" },
@@ -5154,13 +5147,13 @@ namespace Application.Plugin.Script.Npc
 
                 if (selection != correctAnswer[idx])
                 {
-                    await SayNext("Hmmm...all humans make mistakes anyway! If you want to take another crack at it, then bring me 300 Fried Chicken.");
+                    await SayNext("嗯……反正所有人都会犯错！如果你想再试一次，那就给我拿300只炸鸡来。");
                     return;
                 }
             }
 
-            await SayNext("Dang, you answered all the questions right. I may not like humans in general, but I HATE breaking a promise, so, as promised, here's the Orange Marble.");
             await gainItem(4031064, 1);
+            await SayNext("哎呀，你所有的问题都答对了。总的来说，我可能不喜欢人类，但我讨厌食言，所以，正如我所承诺的，这是#i4031064#。");
             await SayOK("我们的交易已经结束，非常感谢！你可以离开了！");
         }
 

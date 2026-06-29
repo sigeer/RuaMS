@@ -14,6 +14,7 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
+using AutoMapper;
 using Config;
 using Google.Protobuf;
 using ItemProto;
@@ -106,16 +107,7 @@ namespace Application.Core.Channel
         #endregion
 
         #region GameConfig
-        public float WorldMobRate { get; private set; }
-
-        public float WorldMesoRate { get; private set; }
-        public float WorldExpRate { get; private set; }
-        public float WorldDropRate { get; private set; }
-        public float WorldBossDropRate { get; private set; }
-        public float WorldQuestRate { get; private set; }
-        public float WorldTravelRate { get; private set; }
-        public float WorldFishingRate { get; private set; }
-        public string WorldServerMessage { get; private set; }
+        public Config.WorldConfig? WorldConfigBackup { get; private set; }
 
         #endregion
         public List<AbstractChannelModule> Modules { get; private set; }
@@ -137,17 +129,20 @@ namespace Application.Core.Channel
 
         public TickableStatus Status => throw new NotImplementedException();
         public PluginManager PluginManager { get; }
+        public IMapper Mapper { get; }
 
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
             ILogger<WorldChannelServer> logger,
-            CashItemProvider cashItemProvider
+            CashItemProvider cashItemProvider,
+            IMapper mapper
             )
         {
             ServiceProvider = sp;
             Transport = transport;
             _logger = logger;
+            Mapper = mapper;
 
             Modules = new();
             Servers = new();
@@ -245,7 +240,7 @@ namespace Application.Core.Channel
                 }
                 _logger.LogInformation("正在停止...");
 
-                watcher.Dispose();
+                watcher?.Dispose();
                 await NodeTickTask.StopAsync();
                 await MapOwnershipTask.StopAsync();
                 await ServerMessageTask.StopAsync();
@@ -319,7 +314,7 @@ namespace Application.Core.Channel
             await Transport.RegisterServer(effectChannels.Keys.ToList());
         }
 
-        FileSystemWatcher watcher;
+        FileSystemWatcher? watcher;
         public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
         {
             if (configs.StartChannel <= 0)
@@ -427,10 +422,10 @@ namespace Application.Core.Channel
                 }
             }
         }
-
+        const string PluginPrefix = "Application.Plugin.";
         private async void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (!e.Name.StartsWith("Application.Plugin.")) return;
+            if (e.Name == null || !e.Name.StartsWith(PluginPrefix)) return;
 
             var now = DateTime.Now;
             if ((now - _lastLoadTime) < TimeSpan.FromSeconds(1))
@@ -446,7 +441,7 @@ namespace Application.Core.Channel
 
         private async void OnFileDeleted(object sender, FileSystemEventArgs e)
         {
-            if (!e.Name.StartsWith("Application.Plugin.")) return;
+            if (e.Name == null || !e.Name.StartsWith(PluginPrefix)) return;
 
             _logger.LogInformation("插件删除: {PluginName}", e.Name);
 
@@ -454,24 +449,7 @@ namespace Application.Core.Channel
             await PluginManager.UnloadPlugin(pluginName);
         }
 
-
-        public IActorInstance<WorldChannel>? GetChannelActor(int channel)
-        {
-            return Servers.GetValueOrDefault(channel);
-        }
-
-        /// <summary>
-        /// 在本节点的所有频道中查找目标玩家并执行操作。
-        /// 节点内频道数通常很少（1-5），直接遍历即可。
-        /// </summary>
-        public async Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
-        {
-            foreach (var ch in Servers.Values)
-            {
-                await ch.SendToPlayerAsync(playerId, action);
-            }
-        }
-
+        
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
             return Transport.UpdateAccountState(accId, state);
@@ -488,9 +466,9 @@ namespace Application.Core.Channel
             return Transport.HasCharacteridInTransition(clientSession);
         }
 
-        public void SendBroadcastWorldPacket(Packet p, bool onGM = false)
+        public Task SendBroadcastWorldPacket(Packet p, bool onGM = false)
         {
-            _ = Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
+            return Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
         }
 
 
@@ -508,42 +486,7 @@ namespace Application.Core.Channel
 
         public void UpdateWorldConfig(Config.WorldConfig updatePatch)
         {
-            if (updatePatch.MobRate.HasValue)
-            {
-                WorldMobRate = updatePatch.MobRate.Value;
-            }
-            if (updatePatch.MesoRate.HasValue)
-            {
-                WorldMesoRate = updatePatch.MesoRate.Value;
-            }
-            if (updatePatch.ExpRate.HasValue)
-            {
-                WorldExpRate = updatePatch.ExpRate.Value;
-            }
-            if (updatePatch.DropRate.HasValue)
-            {
-                WorldDropRate = updatePatch.DropRate.Value;
-            }
-            if (updatePatch.QuestRate.HasValue)
-            {
-                WorldQuestRate = updatePatch.QuestRate.Value;
-            }
-            if (updatePatch.BossDropRate.HasValue)
-            {
-                WorldBossDropRate = updatePatch.BossDropRate.Value;
-            }
-            if (updatePatch.TravelRate.HasValue)
-            {
-                WorldTravelRate = updatePatch.TravelRate.Value;
-            }
-            if (updatePatch.FishingRate.HasValue)
-            {
-                WorldFishingRate = updatePatch.FishingRate.Value;
-            }
-            if (updatePatch.ServerMessage != null)
-            {
-                WorldServerMessage = updatePatch.ServerMessage;
-            }
+            WorldConfigBackup = updatePatch;
         }
 
 
@@ -557,9 +500,9 @@ namespace Application.Core.Channel
             return Transport.CheckCharacterName(name);
         }
 
-        public void SendReloadEvents(Player chr)
+        public Task SendReloadEvents(Player chr)
         {
-            _ = Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
+            return Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
         }
 
         public void PushChannelCommand(ICommand command)
@@ -570,11 +513,33 @@ namespace Application.Core.Channel
             }
         }
 
+        public async Task PushChannelCommandAsync(ICommand command)
+        {
+            await Task.WhenAll(Servers.Values.Select(item => item.Send(command)));
+        }
+
         public void Broadcast(Func<WorldChannel, Task> action)
         {
             foreach (var item in Servers.Values)
             {
                 item.Send(action);
+            }
+        }
+
+        public void Broadcast(Action<WorldChannel> action)
+        {
+            foreach (var item in Servers.Values)
+            {
+                item.Send(action);
+            }
+        }
+
+
+        public async Task BroadcastAsync(Action<WorldChannel> action)
+        {
+            foreach (var item in Servers.Values)
+            {
+                await item.Send(action);
             }
         }
 
@@ -586,30 +551,10 @@ namespace Application.Core.Channel
             }
         }
 
-        public void Broadcast(Action<WorldChannel> action)
-        {
-            foreach (var item in Servers.Values)
-            {
-                item.Send(action);
-            }
-        }
-        public async Task BroadcastAsync(Action<WorldChannel> action)
-        {
-            foreach (var item in Servers.Values)
-            {
-                await item.Send(action);
-            }
-        }
-
 
         internal DistributeSession<int, PlayerSaveDto> CreateSyncPlayerSession()
         {
             return new DistributeSession<int, PlayerSaveDto>(Servers.Values.Select(x => x.Id));
-        }
-
-        internal DistributeSession<int, SyncPlayerShopRequest> CreateSyncPlayerShopSession()
-        {
-            return new DistributeSession<int, SyncPlayerShopRequest>(Servers.Values.Select(x => x.Id));
         }
 
         public Task Send(ICommand command) => CommandLoop.Register(command);
@@ -629,5 +574,85 @@ namespace Application.Core.Channel
             }));
 
         }
+
+        /// <summary>
+        /// 在本节点的所有频道中查找目标玩家并执行操作。
+        /// 节点内频道数通常很少（1-5），直接遍历即可。
+        /// </summary>
+        public async Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                if (await ch.SendToPlayerAsync(playerId, action))
+                {
+                    return;
+                }
+            }
+        }
+
+        public async Task SendToPlayerAsync(int playerId, Action<Player> action)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                if (await ch.SendToPlayerAsync(playerId, action))
+                {
+                    return;
+                }
+            }
+        }
+
+
+        public async Task SendToPlayerAsync(int channel, int playerId, Func<Player, Task> action)
+        {
+            var ch = Servers.GetValueOrDefault(channel);
+            if (ch != null)
+            {
+                await ch.SendToPlayerAsync(playerId, action);
+            }
+        }
+
+        public async Task SendToPlayersAsync(IEnumerable<int> playerIds, Func<Player, Task> action)
+        {
+            var ids = playerIds.ToList();
+            if (ids.Count == 0)
+                return;
+
+            var count = 0;
+            foreach (var ch in Servers.Values)
+            {
+                count += await ch.SendToPlayersAsync(ids, action);
+                if (count == ids.Count)
+                {
+                    break;
+                }
+            }
+        }
+
+        public async Task SendToPlayersAsync(IEnumerable<int> playerIds, Action<Player> action)
+        {
+
+            var ids = playerIds.ToList();
+            if (ids.Count == 0)
+                return;
+
+            var count = 0;
+            foreach (var ch in Servers.Values)
+            {
+                count += await ch.SendToPlayersAsync(ids, action);
+                if (count == ids.Count)
+                {
+                    break;
+                }
+            }
+        }
+
+        public async Task BroadcastPlayersAsync(Func<Player, Task> action)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                await ch.BroadcastPlayersAsync(action);
+            }
+        }
+
     }
 }

@@ -14,9 +14,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateAllianceCapacity;
 
-            protected override void HandleMessage(IncreaseAllianceCapacityRequest request)
+            protected override Task HandleMessage(IncreaseAllianceCapacityRequest request)
             {
-                _ = _server.GuildManager.IncreaseAllianceCapacity(request);
+                return _server.GuildManager.IncreaseAllianceCapacity(request);
             }
 
             protected override IncreaseAllianceCapacityRequest Parse(ByteString data) => IncreaseAllianceCapacityRequest.Parser.ParseFrom(data);
@@ -30,9 +30,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DisbandAlliance;
 
-            protected override void HandleMessage(DisbandAllianceRequest request)
+            protected override Task HandleMessage(DisbandAllianceRequest request)
             {
-                _ = _server.GuildManager.DisbandAlliance(request);
+                return _server.GuildManager.DisbandAlliance(request);
             }
 
             protected override DisbandAllianceRequest Parse(ByteString data) => DisbandAllianceRequest.Parser.ParseFrom(data);
@@ -62,9 +62,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LeaveAlliance;
 
-            protected override void HandleMessage(GuildLeaveAllianceRequest request)
+            protected override Task HandleMessage(GuildLeaveAllianceRequest request)
             {
-                _ = _server.GuildManager.GuildLeaveAlliance(request);
+                return _server.GuildManager.GuildLeaveAlliance(request);
             }
 
             protected override GuildLeaveAllianceRequest Parse(ByteString data) => GuildLeaveAllianceRequest.Parser.ParseFrom(data);
@@ -78,9 +78,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateAllianceNotice;
 
-            protected override void HandleMessage(UpdateAllianceNoticeRequest request)
+            protected override Task HandleMessage(UpdateAllianceNoticeRequest request)
             {
-                _ = _server.GuildManager.UpdateAllianceNotice(request);
+                return _server.GuildManager.UpdateAllianceNotice(request);
             }
 
             protected override UpdateAllianceNoticeRequest Parse(ByteString data) => UpdateAllianceNoticeRequest.Parser.ParseFrom(data);
@@ -95,9 +95,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateAllianceRankTitle;
 
-            protected override void HandleMessage(UpdateAllianceRankTitleRequest request)
+            protected override Task HandleMessage(UpdateAllianceRankTitleRequest request)
             {
-                _ = _server.GuildManager.UpdateAllianceRankTitle(request);
+                return _server.GuildManager.UpdateAllianceRankTitle(request);
             }
 
             protected override UpdateAllianceRankTitleRequest Parse(ByteString data) => UpdateAllianceRankTitleRequest.Parser.ParseFrom(data);
@@ -112,9 +112,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateAllianceGuildRank;
 
-            protected override void HandleMessage(ChangePlayerAllianceRankRequest request)
+            protected override Task HandleMessage(ChangePlayerAllianceRankRequest request)
             {
-                _ = _server.GuildManager.ChangePlayerAllianceRank(request);
+                return _server.GuildManager.ChangePlayerAllianceRank(request);
             }
 
             protected override ChangePlayerAllianceRankRequest Parse(ByteString data) => ChangePlayerAllianceRankRequest.Parser.ParseFrom(data);
@@ -128,9 +128,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateAllianceLeader;
 
-            protected override void HandleMessage(AllianceChangeLeaderRequest request)
+            protected override Task HandleMessage(AllianceChangeLeaderRequest request)
             {
-                _ = _server.GuildManager.ChangeAllianceLeader(request);
+                return _server.GuildManager.ChangeAllianceLeader(request);
             }
 
             protected override AllianceChangeLeaderRequest Parse(ByteString data) => AllianceChangeLeaderRequest.Parser.ParseFrom(data);
@@ -144,9 +144,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.ExpelAllianceGuild;
 
-            protected override void HandleMessage(AllianceExpelGuildRequest request)
+            protected override Task HandleMessage(AllianceExpelGuildRequest request)
             {
-                _ = _server.GuildManager.AllianceExpelGuild(request);
+                return _server.GuildManager.AllianceExpelGuild(request);
             }
 
             protected override AllianceExpelGuildRequest Parse(ByteString data) => AllianceExpelGuildRequest.Parser.ParseFrom(data);

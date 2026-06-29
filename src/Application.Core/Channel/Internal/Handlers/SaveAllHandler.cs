@@ -12,9 +12,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.SaveAll;
 
-        protected override void HandleMessage(Empty message)
+        protected override async Task HandleMessage(Empty message)
         {
-            _server.PushChannelCommand(new InvokeStartSyncAllPlayerCommand(true));
+            await _server.PushChannelCommandAsync(new InvokeStartSyncAllPlayerCommand(true));
             _server.SendDropMessage(5, "玩家数据已同步", true);
         }
     }

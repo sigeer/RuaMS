@@ -48,28 +48,28 @@ public class PartyOperationHandler : ChannelHandlerBase
                 { // join
                     int partyid = p.readInt();
 
-                    c.CurrentServer.NodeService.TeamManager.AnswerInvite(player, partyid, true);
+                    await c.CurrentServer.NodeService.TeamManager.AnswerInvite(player, partyid, true);
                     break;
                 }
             case 4:
                 {
                     // invite
                     string name = p.readString();
-                    c.CurrentServer.NodeService.TeamManager.CreateInvite(player, name);
+                    await c.CurrentServer.NodeService.TeamManager.CreateInvite(player, name);
                     break;
                 }
             case 5:
                 {
                     // expel
                     int cid = p.readInt();
-                    c.CurrentServer.NodeService.TeamManager.ExpelFromParty(player, cid);
+                    await c.CurrentServer.NodeService.TeamManager.ExpelFromParty(player, cid);
                     break;
                 }
             case 6:
                 {
                     // change leader
                     int newLeader = p.readInt();
-                    c.CurrentServer.NodeService.TeamManager.ChangeLeader(player, newLeader);
+                    await c.CurrentServer.NodeService.TeamManager.ChangeLeader(player, newLeader);
                     break;
                 }
         }

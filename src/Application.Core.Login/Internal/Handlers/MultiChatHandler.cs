@@ -13,16 +13,17 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.MultiChat;
 
-        protected override void HandleMessage(MultiChatMessage data)
+        protected override Task HandleMessage(MultiChatMessage data)
         {
             if (data.Type == 0)
-                _ = _server.BuddyManager.SendBuddyChatAsync(data.FromName, data.Text, data.Receivers.ToArray());
+                return _server.BuddyManager.SendBuddyChatAsync(data.FromName, data.Text, data.Receivers.ToArray());
             else if (data.Type == 1)
-                _ = _server.TeamManager.SendTeamChatAsync(data.FromName, data.Text);
+                return _server.TeamManager.SendTeamChatAsync(data.FromName, data.Text);
             else if (data.Type == 2)
-                _ = _server.GuildManager.SendGuildChatAsync(data.FromName, data.Text);
+                return _server.GuildManager.SendGuildChatAsync(data.FromName, data.Text);
             else if (data.Type == 3)
-                _ = _server.GuildManager.SendAllianceChatAsync(data.FromName, data.Text);
+                return _server.GuildManager.SendAllianceChatAsync(data.FromName, data.Text);
+            return Task.CompletedTask;
         }
 
         protected override MultiChatMessage Parse(ByteString content) => MultiChatMessage.Parser.ParseFrom(content);

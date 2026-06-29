@@ -27,7 +27,7 @@ using Application.Utility.Performance;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace server.maps;
 
@@ -84,7 +84,7 @@ public class MapManager : IAsyncDisposable, INamedInstance, ITickable
         return maps.ContainsKey(mapId);
     }
 
-    public bool TryGetMap(int mapId, out IMap? map)
+    public bool TryGetMap(int mapId, [MaybeNullWhen(false)] out IMap map)
     {
         return maps.TryGetValue(mapId, out map);
     }

@@ -1,5 +1,6 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Services;
+using server.movement;
 using SystemProto;
 using tools;
 
@@ -24,9 +25,8 @@ public class AntiMacroService
     /// </summary>
     public async Task SendAntiMacroAsync(Player sender, Player target, AntiMacroType type, Func<Task>? onSuccess = null)
     {
-        if (!target.IsBattle())
+        if (!StanceUtils.IsBattle((byte)target.getStance()))
         {
-            // 5 秒内没造成输出的视作未战斗 无法处理空挥
             await sender.SendPacket(AntiMacroPackets.PlayerNotBattle());
             return;
         }

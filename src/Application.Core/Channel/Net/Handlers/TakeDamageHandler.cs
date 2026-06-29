@@ -294,7 +294,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 int hdLevel = chr.getSkillLevel(highDef);
                 if (highDef != null && hdLevel > 0)
                 {
-                    damage = (int)(damage * Math.Ceiling(highDef.getEffect(hdLevel).getX() / 1000.0));
+                    damage = (int)(damage * highDef.getEffect(hdLevel).getX() / 1000.0);
                 }
 
                 // element

@@ -210,6 +210,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         }
     }
 
+    public Task TeleportPortal(int portalId)
+    {
+        return c.SendPacket(PacketCreator.TeleportPortal(false, portalId));
+    }
+
     public async Task<IMap> getWarpMap(int map)
     {
         return await getPlayer().getWarpMap(map);
@@ -1172,9 +1177,9 @@ public class AbstractPlayerInteraction : IClientMessenger
     #endregion
 
     #region Guild
-    public void GainGuildGP(int value)
+    public Task GainGuildGP(int value)
     {
-        c.CurrentServer.NodeService.GuildManager.GainGP(getPlayer(), value);
+        return c.CurrentServer.NodeService.GuildManager.GainGP(getPlayer(), value);
     }
     #endregion
 

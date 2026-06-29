@@ -481,7 +481,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         if (reward.Level > 1)
         {
             //Uncommon and Rare
-            c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
+            await c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.gachaponMessage(rewardItem, map, getPlayer()));
         }
         return reward;
     }
@@ -720,13 +720,20 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return action.inputText;
     }
 
-    public async Task SayNext(string? text, byte speaker = 0, int speakerNpc = 0)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="speaker"></param>
+    /// <param name="speakerNpc">在 speaker ==  <see cref="NpcTalkSpeaker.ExtraNpc"/>时有效 </param>
+    /// <returns></returns>
+    public async Task SayNext(string? text, NpcTalkSpeaker speaker = NpcTalkSpeaker.NpcLeft, int speakerNpc = 0)
     {
         if (string.IsNullOrEmpty(text))
         {
             return;
         }
-        await sendNext(text, speaker, speakerNpc);
+        await sendNext(text, (byte)speaker, speakerNpc);
         await WaitingForAnswer();
     }
 
@@ -789,7 +796,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             var text = messages[current];
             if (current == 0)
             {
-                await sendNext(text.Text, text.Speaker, text.SpeakerNpc);
+                await sendNext(text.Text, (byte)text.Speaker, text.SpeakerNpc);
                 if (await WaitingForAnswer())
                 {
                     current++;
@@ -799,12 +806,12 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             {
                 if (finalNext)
                 {
-                    await sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    await sendNextPrev(text.Text, (byte)text.Speaker, text.SpeakerNpc);
                     current += (await WaitingForAnswer()) ? 1 : -1;
                 }
                 else
                 {
-                    await sendPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                    await sendPrev(text.Text, (byte)text.Speaker, text.SpeakerNpc);
                     if (!await WaitingForAnswer())
                     {
                         current--;
@@ -813,7 +820,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             }
             else
             {
-                await sendNextPrev(text.Text, text.Speaker, text.SpeakerNpc);
+                await sendNextPrev(text.Text, (byte)text.Speaker, text.SpeakerNpc);
                 current += (await WaitingForAnswer()) ? 1 : -1;
             }
         }
@@ -1169,7 +1176,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         await c.CurrentServer.NodeService.GuildManager.IncreaseGuildCapacity(getPlayer(), cost);
     }
 
-    public void disbandGuild()
+    public async Task disbandGuild()
     {
         if (getPlayer().GuildId < 1 || getPlayer().GuildRank != 1)
         {
@@ -1177,7 +1184,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         }
         try
         {
-            c.CurrentServer.NodeService.GuildManager.Disband(getPlayer());
+            await c.CurrentServer.NodeService.GuildManager.Disband(getPlayer());
         }
         catch (Exception e)
         {

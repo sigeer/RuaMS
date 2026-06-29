@@ -73,7 +73,7 @@ public static class AntiMacroPackets
     }
 
     /// <summary>
-    /// type 5, sub=1: "对%s玩家使用了测谎仪。"
+    /// type 5, sub=1: "%s使用了测谎仪。"
     /// 客户端: SP_3167 "%s have used the Lie Detector Test."
     /// </summary>
     public static Packet LieDetectorUsed(string name)

@@ -11,9 +11,9 @@ namespace Application.Core.Channel.Internal.Handlers
         {
         }
 
-        protected override void HandleMessage(RegisterServerResult data)
+        protected override Task HandleMessage(RegisterServerResult data)
         {
-            _ = _server.HandleServerRegistered(data);
+            return _server.HandleServerRegistered(data);
         }
 
         protected override RegisterServerResult Parse(ByteString content)

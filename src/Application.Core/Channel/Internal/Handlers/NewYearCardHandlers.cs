@@ -2,9 +2,13 @@ using Application.Core.Models;
 using Application.Shared.Internal;
 using Application.Shared.Message;
 using AutoMapper;
+using client.inventory;
 using Dto;
 using Google.Protobuf;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
 using tools;
+using static Application.Core.Channel.Internal.Handlers.NoteHandlers;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
@@ -18,56 +22,40 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardReceived;
 
-            protected override void HandleMessage(ReceiveNewYearCardResponse res)
+            protected override Task HandleMessage(ReceiveNewYearCardResponse res)
             {
-                _server.Broadcast(w =>
+                if (res.Code == 0)
                 {
-                    if (res.Code == 0)
+                    var newCard = _server.Mapper.Map<NewYearCardObject>(res.Model);
+
+                    return _server.SendToPlayersAsync([res.Request.MasterId, res.Model.SenderId], async chr =>
                     {
-                        var newCard = w.Mapper.Map<NewYearCardObject>(res.Model);
-
-                        w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?.Send(async m =>
+                        if (chr.Id == res.Request.MasterId)
                         {
-                            var receiver = m.getCharacterById(res.Request.MasterId);
-
-                            if (receiver != null)
+                            await chr.GainItem(ItemId.NEW_YEARS_CARD_RECEIVED, 1, show: GainItemShow.ShowInChat);
+                            if (!string.IsNullOrEmpty(newCard.Message))
                             {
-                                await receiver.GainItem(ItemId.NEW_YEARS_CARD_RECEIVED, 1, show: GainItemShow.ShowInChat);
-                                if (!string.IsNullOrEmpty(newCard.Message))
-                                {
-                                    await receiver.dropMessage(6, "[New Year] " + newCard.SenderName + ": " + newCard.Message);
-                                }
-                                receiver.addNewYearRecord(newCard);
-                                await receiver.SendPacket(PacketCreator.onNewYearCardRes(receiver, newCard, 6, 0));    // successfully rcvd
-
-                                await receiver.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(receiver, newCard, 0xD, 0));
+                                await chr.dropMessage(6, "[New Year] " + newCard.SenderName + ": " + newCard.Message);
                             }
-                        });
+                            chr.addNewYearRecord(newCard);
+                            await chr.SendPacket(PacketCreator.onNewYearCardRes(chr, newCard, 6, 0));    // successfully rcvd
 
-
-
-                        w.getPlayerStorage().GetCharacterActor(res.Model.SenderId)?.Send(async m =>
-                        {
-                            var sender = m.getCharacterById(res.Model.SenderId);
-
-                            if (sender != null)
-                            {
-                                await sender.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(sender, newCard, 0xD, 0));
-                                await sender.dropMessage(6, "[New Year] Your addressee successfully received the New Year card.");
-                            }
-                        });
-
-                    }
-
-                    else
-                    {
-                        var receiver = w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId);
-                        if (receiver != null)
-                        {
-                            receiver.LightBlue("[New Year] The sender of the New Year card already dropped it. Nothing to receive.");
+                            await chr.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(chr, newCard, 0xD, 0));
                         }
-                    }
-                });
+                        else if (chr.Id == res.Model.SenderId)
+                        {
+                            await chr.getMap().broadcastMessage(PacketCreator.onNewYearCardRes(chr, newCard, 0xD, 0));
+                            await chr.LightBlue("[New Year] Your addressee successfully received the New Year card.");
+                        }
+                    });
+                }
+                else
+                {
+                    return _server.SendToPlayerAsync(res.Request.MasterId, chr =>
+                    {
+                        return chr.LightBlue("[New Year] The sender of the New Year card already dropped it. Nothing to receive.");
+                    });
+                }
             }
 
             protected override ReceiveNewYearCardResponse Parse(ByteString data) => ReceiveNewYearCardResponse.Parser.ParseFrom(data);
@@ -81,31 +69,23 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardSent;
 
-            protected override void HandleMessage(SendNewYearCardResponse data)
+            protected override Task HandleMessage(SendNewYearCardResponse data)
             {
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(data.Request.FromId, async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.Request.FromId)?.Send(async m =>
+                    if (data.Code == 0)
                     {
-                        var sender = m.getCharacterById(data.Request.FromId);
-                        if (sender != null)
-                        {
-                            if (data.Code == 0)
-                            {
-                                await sender.GainItem(ItemId.NEW_YEARS_CARD, -1, show: GainItemShow.ShowInChat);
-                                await sender.GainItem(ItemId.NEW_YEARS_CARD_SEND, 1, show: GainItemShow.ShowInChat);
+                        await chr.GainItem(ItemId.NEW_YEARS_CARD, -1, show: GainItemShow.ShowInChat);
+                        await chr.GainItem(ItemId.NEW_YEARS_CARD_SEND, 1, show: GainItemShow.ShowInChat);
 
-                                var model = w.Mapper.Map<NewYearCardObject>(data.Model);
-                                sender.addNewYearRecord(model);
-                                await sender.SendPacket(PacketCreator.onNewYearCardRes(sender, model, 4, 0));    // successfully sent
-                            }
-                            else
-                            {
-                                await sender.SendPacket(PacketCreator.onNewYearCardRes(sender, null, 5, data.Code));
-                            }
-
-                        }
-                    });
+                        var model = _server.Mapper.Map<NewYearCardObject>(data.Model);
+                        chr.addNewYearRecord(model);
+                        await chr.SendPacket(PacketCreator.onNewYearCardRes(chr, model, 4, 0));    // successfully sent
+                    }
+                    else
+                    {
+                        await chr.SendPacket(PacketCreator.onNewYearCardRes(chr, null, 5, data.Code));
+                    }
                 });
             }
 
@@ -122,23 +102,15 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardNotify;
 
-            protected override void HandleMessage(NewYearCardNotifyDto res)
+            protected override async Task HandleMessage(NewYearCardNotifyDto res)
             {
-                _server.Broadcast(w =>
+                var allMembers = res.List.Select(x => x.MasterId);
+                await _server.SendToPlayersAsync(allMembers, async chr =>
                 {
-                    foreach (var item in res.List)
+                    var item = res.List.FirstOrDefault(x => x.MasterId == chr.Id)!;
+                    foreach (var obj in item.List)
                     {
-                        w.getPlayerStorage().GetCharacterActor(item.MasterId)?.Send(async m =>
-                        {
-                            var chr = m.getCharacterById(item.MasterId);
-                            if (chr != null)
-                            {
-                                foreach (var obj in item.List)
-                                {
-                                    await chr.SendPacket(PacketCreator.onNewYearCardRes(chr, _mapper.Map<NewYearCardObject>(obj), 0xC, 0));
-                                }
-                            }
-                        });
+                        await chr.SendPacket(PacketCreator.onNewYearCardRes(chr, _mapper.Map<NewYearCardObject>(obj), 0xC, 0));
                     }
                 });
             }
@@ -154,11 +126,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardDiscard;
 
-            protected override void HandleMessage(DiscardNewYearCardResponse res)
+            protected override Task HandleMessage(DiscardNewYearCardResponse res)
             {
                 _server.Broadcast(w =>
                 {
-                    var cardList = w.Mapper.Map<NewYearCardObject[]>(res.UpdateList);
+                    var cardList = _server.Mapper.Map<NewYearCardObject[]>(res.UpdateList);
                     w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?.Send(async m =>
                     {
                         var chr = m.getCharacterById(res.Request.MasterId);
@@ -186,6 +158,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         }
                     });
                 });
+                return Task.CompletedTask;
             }
 
             protected override DiscardNewYearCardResponse Parse(ByteString data) => DiscardNewYearCardResponse.Parser.ParseFrom(data);

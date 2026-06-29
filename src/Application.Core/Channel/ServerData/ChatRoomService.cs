@@ -20,36 +20,36 @@ namespace Application.Core.Channel.ServerData
             _server = server;
         }
 
-        public void CreateChatRoom(Player chr)
+        public Task CreateChatRoom(Player chr)
         {
-            _ = _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
+            return _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
         }
 
 
-        public void JoinChatRoom(Player chr, int roomId)
+        public Task JoinChatRoom(Player chr, int roomId)
         {
-            _ = _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
+            return _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
         }
 
 
-        public void LeftChatRoom(Player chr)
+        public Task LeftChatRoom(Player chr)
         {
-            _ = _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
+            return _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
         }
 
-        public void SendMessage(Player chr, string text)
+        public Task SendMessage(Player chr, string text)
         {
-            _ = _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
+            return _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
 
-        internal void CreateInvite(Player player, string input)
+        internal Task CreateInvite(Player player, string input)
         {
-            _ = _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
+            return _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
-        internal void AnswerInvite(Player player, int roomId, bool v)
+        internal Task AnswerInvite(Player player, int roomId, bool v)
         {
-            _ = _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            return _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

@@ -16,9 +16,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.CreateChatRoom;
 
-            protected override void HandleMessage(CreateChatRoomRequest message)
+            protected override Task HandleMessage(CreateChatRoomRequest message)
             {
-                _ = _server.ChatRoomManager.CreateChatRoom(message);
+                return _server.ChatRoomManager.CreateChatRoom(message);
             }
 
             protected override CreateChatRoomRequest Parse(ByteString content) => CreateChatRoomRequest.Parser.ParseFrom(content);
@@ -32,9 +32,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.JoinChatRoom;
 
-            protected override void HandleMessage(JoinChatRoomRequest message)
+            protected override Task HandleMessage(JoinChatRoomRequest message)
             {
-                _ = _server.ChatRoomManager.JoinChatRoom(message);
+                return _server.ChatRoomManager.JoinChatRoom(message);
             }
 
             protected override JoinChatRoomRequest Parse(ByteString content) => JoinChatRoomRequest.Parser.ParseFrom(content);
@@ -48,9 +48,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LeaveChatRoom;
 
-            protected override void HandleMessage(LeaveChatRoomRequst message)
+            protected override Task HandleMessage(LeaveChatRoomRequst message)
             {
-                _ = _server.ChatRoomManager.LeaveChatRoom(message);
+                return _server.ChatRoomManager.LeaveChatRoom(message);
             }
 
             protected override LeaveChatRoomRequst Parse(ByteString content) => LeaveChatRoomRequst.Parser.ParseFrom(content);
@@ -64,9 +64,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendChatRoomMessage;
 
-            protected override void HandleMessage(SendChatRoomMessageRequest message)
+            protected override Task HandleMessage(SendChatRoomMessageRequest message)
             {
-                _ = _server.ChatRoomManager.SendMessage(message);
+                return _server.ChatRoomManager.SendMessage(message);
             }
 
             protected override SendChatRoomMessageRequest Parse(ByteString content) => SendChatRoomMessageRequest.Parser.ParseFrom(content);

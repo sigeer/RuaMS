@@ -34,7 +34,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     if (await AskYesNo("你确定真的要解散你的家族？当解散后你将不能恢复所有家族相关资料以及GP的数值，是否继续？"))
                     {
-                        disbandGuild();
+                        await disbandGuild();
                     }
                     break;
                 case 2:
@@ -110,9 +110,11 @@ namespace Application.Plugin.Script.Npc
                         await SayOK("当你的公会已经注册在其他家族联盟中时，你无法创建家族联盟。");
                         return;
                     }
-                    if (!await AskYesNo($"哦，你对组建家族联盟感兴趣吗？目前这项操作的费用是 #b2000000 冒险币#k。"))
+
+                    var price = 2000000;
+                    if (!await AskYesNo($"哦，你对组建家族联盟感兴趣吗？目前这项操作的费用是 #b{price.ToString("N0")} 金币#k。"))
                         return;
-                    if (getMeso() < 2000000)
+                    if (getMeso() < price)
                     {
                         await SayOK("你没有足够的金币来完成这个请求。");
                         return;
@@ -126,7 +128,7 @@ namespace Application.Plugin.Script.Npc
                             await SayNext("此名称不可用，请选择另一个。");
                             return;
                         }
-                        await CreateAllianceAysnc(guildName, 2000000);
+                        await CreateAllianceAysnc(guildName, price);
                     }
                     break;
                 case 3:
@@ -142,15 +144,16 @@ namespace Application.Plugin.Script.Npc
                             await SayOK("你的联盟已经达到了公会的最大容量。");
                             return;
                         }
-                        if (await AskYesNo($"你想要增加你的家族联盟 #rone guild#k 的位置吗？这个手续的费用是 #b1000000 冒险币#k。"))
+                        var increaseCapacityPrice = 1000000;
+                        if (await AskYesNo($"你想要增加你的家族联盟 #r1个家族联盟#k 的位置吗？这个手续的费用是 #b{increaseCapacityPrice.ToString("N0")} 金币#k。"))
                         {
-                            if (getMeso() < 1000000)
+                            if (getMeso() < increaseCapacityPrice)
                             {
                                 await SayOK("你没有足够的金币来完成这个请求。");
                                 return;
                             }
                             await upgradeAlliance();
-                            await gainMeso(-1000000);
+                            await gainMeso(-increaseCapacityPrice);
                             await SayOK("你的联盟现在可以接受一个额外的公会。");
                         }
                     }

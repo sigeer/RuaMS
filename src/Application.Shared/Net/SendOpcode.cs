@@ -87,6 +87,9 @@ public enum SendOpcode
     SET_GENDER = 0x3A,
     GUILD_BBS_PACKET = 0x3B,
     CHAR_INFO = 0x3D,
+    /// <summary>
+    /// CWvsContext::OnPartyResult
+    /// </summary>
     PARTY_OPERATION = 0x3E,
     BUDDYLIST = 0x3F,
     GUILD_OPERATION = 0x41,
@@ -106,19 +109,34 @@ public enum SendOpcode
     SET_WEEK_EVENT_MESSAGE = 0x4D,
     SET_POTION_DISCOUNT_RATE = 0x4E,
 
+    /// <summary>
+    /// sub_A0800E
+    /// </summary>
     BRIDLE_MOB_CATCH_FAIL = 0x4F,
     IMITATED_NPC_RESULT = 0x50,
     IMITATED_NPC_DATA = 0x51,
     LIMITED_NPC_DISABLE_INFO = 0x52,
     MONSTER_BOOK_SET_CARD = 0x53,
     MONSTER_BOOK_SET_COVER = 0x54,
+    /// <summary>
+    /// sub_A082F7
+    /// </summary>
     HOUR_CHANGED = 0x55,
     MINIMAP_ON_OFF = 0x56,
     CONSULT_AUTHKEY_UPDATE = 0x57,
     CLASS_COMPETITION_AUTHKEY_UPDATE = 0x58,
     WEB_BOARD_AUTHKEY_UPDATE = 0x59,
+    /// <summary>
+    /// CWvsContext::OnSessionValue
+    /// </summary>
     SESSION_VALUE = 0x5A,
+    /// <summary>
+    /// CWvsContext::OnPartyValue
+    /// </summary>
     PARTY_VALUE = 0x5B,
+    /// <summary>
+    /// CWvsContext::OnFieldSetVariable
+    /// </summary>
     FIELD_SET_VARIABLE = 0x5C,
     BONUS_EXP_CHANGED = 0x5D,//pendant of spirit etc (guess, not sure about the opcode in v83)
 
@@ -181,9 +199,18 @@ public enum SendOpcode
 
     ADMIN_RESULT = 0x90,
     OX_QUIZ = 0x91,//QUIZ
+    /// <summary>
+    ///  CField::OnDesc
+    /// </summary>
     GMEVENT_INSTRUCTIONS = 0x92,//DESC
     CLOCK = 0x93,
+    /// <summary>
+    /// CField_ContiMove::OnContiMove
+    /// </summary>
     CONTI_MOVE = 0x94,
+    /// <summary>
+    /// CField_ContiMove::OnContiState
+    /// </summary>
     CONTI_STATE = 0x95,
     SET_QUEST_CLEAR = 0x96,
     SET_QUEST_TIME = 0x97,
@@ -199,11 +226,24 @@ public enum SendOpcode
     CHATTEXT = 0xA2, //0
     CHATTEXT1 = 0xA3, //1
     CHALKBOARD = 0xA4,
+    /// <summary>
+    /// CUser::OnMiniRoomBalloon
+    /// </summary>
     UPDATE_CHAR_BOX = 0xA5,
+    /// <summary>
+    /// CUser::SetConsumeItemEffect
+    /// </summary>
     SHOW_CONSUME_EFFECT = 0xA6,
+    /// <summary>
+    /// sub_93354D
+    /// </summary>
     SHOW_SCROLL_EFFECT = 0xA7,
 
     SPAWN_PET = 0xA8,
+    /// <summary>
+    /// CUserRemote::OnPetEvol
+    /// </summary>
+    PetEvol = 0xA9,
     MOVE_PET = 0xAA,
     PET_ACTION = 0xAB,
     PET_NAMECHANGE = 0xAC,
@@ -239,7 +279,10 @@ public enum SendOpcode
     THROW_GRENADE = 0xCC,
     CANCEL_CHAIR = 0xCD,
     SHOW_ITEM_GAIN_INCHAT = 0xCE,
-    DOJO_WARP_UP = 0xCF,
+    /// <summary>
+    /// CUserLocal::OnTeleport
+    /// </summary>
+    Teleport = 0xCF,
     LUCKSACK_PASS = 0xD0,
     LUCKSACK_FAIL = 0xD1,
     MESO_BAG_MESSAGE = 0xD2,
@@ -263,13 +306,47 @@ public enum SendOpcode
     APPLY_MONSTER_STATUS = 0xF2,
     CANCEL_MONSTER_STATUS = 0xF3,
     RESET_MONSTER_ANIMATION = 0xF4,//LOL? o.o
-    //Something with mob, but can't figure out00
+    /// <summary>
+    /// sub_66C675 CMob::OnAffected
+    /// </summary>
+    AffectMob = 0xF5,
+    /// <summary>
+    /// CMob::OnDamaged
+    /// </summary>
     DAMAGE_MONSTER = 0xF6,
-    ARIANT_THING = 0xF9,
+    /// <summary>
+    /// sub_66D8E7 CMob::OnSpecialEffectBySkill
+    /// </summary>
+    SpecialEffectBySkill = 0xF7,
+    /// <summary>
+    /// CMobPool::OnMobCrcKeyChanged
+    /// </summary>
+    MobCrcKeyChanged = 0xF9,
+    /// <summary>
+    /// sub_66D639 CMob::OnHPIndicator
+    /// </summary>
     SHOW_MONSTER_HP = 0xFA,
+    /// <summary>
+    /// sub_66D6B9 CMob::OnCatchEffect
+    /// </summary>
     CATCH_MONSTER = 0xFB,
+    /// <summary>
+    /// CMob::OnEffectByItem
+    /// </summary>
     CATCH_MONSTER_WITH_ITEM = 0xFC,
-    SHOW_MAGNET = 0xFD,
+    /// <summary>
+    /// CMob::OnMobSpeaking
+    /// </summary>
+    MobSpeak = 0xFD,
+    /// <summary>
+    /// sub_6710FC
+    /// </summary>
+    IncMobChargeCount = 0xFE,
+    /// <summary>
+    /// sub_670F41
+    /// </summary>
+    MobAttackedByMob = 0xFF,
+
     SPAWN_NPC = 0x101,
     REMOVE_NPC = 0x102,
     SPAWN_NPC_REQUEST_CONTROLLER = 0x103,

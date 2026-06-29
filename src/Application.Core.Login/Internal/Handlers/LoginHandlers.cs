@@ -21,9 +21,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.CompleteLogin;
 
-            protected override void HandleMessage(CompleteLoginRequest message)
+            protected override Task HandleMessage(CompleteLoginRequest message)
             {
-                _ = _loginService.SetPlayerLogedIn(message.CharacterId, message.Channel);
+                return _loginService.SetPlayerLogedIn(message.CharacterId, message.Channel);
             }
             protected override CompleteLoginRequest Parse(ByteString data)
             {

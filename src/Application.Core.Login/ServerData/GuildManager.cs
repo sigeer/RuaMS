@@ -450,7 +450,7 @@ namespace Application.Core.Login.ServerData
 
             if (guild.Capacity > 99)
             {
-                response.Code = (int)GuildUpdateResult.GuildFull;
+                response.Code = (int)GuildUpdateResult.GuildCapacityFull;
                 await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, [request.MasterId]);
                 return;
             }

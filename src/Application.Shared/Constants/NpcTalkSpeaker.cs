@@ -17,6 +17,7 @@ namespace Application.Shared.Constants
 
     //1010. 玩家右边
     //1011. 玩家右边、无结束对话
+
     //1100. NPC右边、脸朝向
     //1101. NPC右边、脸朝向、无结束对话
     public enum NpcTalkSpeaker : byte
@@ -24,17 +25,23 @@ namespace Application.Shared.Constants
         /// <summary>
         /// 对Player无效
         /// </summary>
-        Left = 0,
-        WithoutEnd = 1 << 0,
+        NpcLeft = 0,
+        /// <summary>
+        /// 无左下角的结束对话
+        /// </summary>
+        NoEnd = 1 << 0,
         /// <summary>
         /// 玩家，固定右边
         /// </summary>
-        Player = 1 << 1,
+        PlayerRight = 1 << 1,
         /// <summary>
         /// Npc在右边，另传NPCId
         /// <para>(x &#38; 4) &gt; 0</para>
         /// </summary>
         ExtraNpc = 1 << 2,
+        /// <summary>
+        /// 改变Npc脸朝向，对Player无效
+        /// </summary>
         Face = 1 << 3
 
     }

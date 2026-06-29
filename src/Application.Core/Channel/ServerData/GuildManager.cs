@@ -72,9 +72,9 @@ namespace Application.Core.Channel.ServerData
             return _transport.CreateAllianceCheck(new AllianceProto.CreateAllianceCheckRequest { Name = name }).IsValid;
         }
 
-        public void SendInvitation(IChannelClient c, string targetName)
+        public Task SendInvitation(IChannelClient c, string targetName)
         {
-            _ = _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            return _transport.SendInvitation(new InvitationProto.CreateInviteRequest
             {
                 Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
@@ -82,9 +82,9 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void AnswerInvitation(Player answer, int guildId, bool operation)
+        public Task AnswerInvitation(Player answer, int guildId, bool operation)
         {
-            _ = _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            return  _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public async Task CreateGuild(Player leader, string name)
@@ -146,29 +146,29 @@ namespace Application.Core.Channel.ServerData
 
             var req = new CreateGuildRequest { LeaderId = leader.Id, Name = name };
             req.Members.AddRange(members.Select(x => x.Id));
-            _ = _serverContainer.Transport.CreateGuild(req);
+            await _serverContainer.Transport.CreateGuild(req);
 
         }
 
 
-        public void LeaveMember(Player fromChr)
+        public Task LeaveMember(Player fromChr)
         {
-            _ = _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
+            return _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
         }
 
-        public void ExpelMember(Player fromChr, int toId)
+        public Task ExpelMember(Player fromChr, int toId)
         {
-            _ = _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
+            return _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
         }
 
-        public void ChangeRank(Player fromChr, int toId, int toRank)
+        public Task ChangeRank(Player fromChr, int toId, int toRank)
         {
-            _ = _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
+            return _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
         }
 
-        public void SetGuildEmblem(Player chr, short bg, byte bgcolor, short logo, byte logocolor)
+        public Task SetGuildEmblem(Player chr, short bg, byte bgcolor, short logo, byte logocolor)
         {
-            _ = _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
+            return _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -177,11 +177,11 @@ namespace Application.Core.Channel.ServerData
             });
         }
 
-        public void SetGuildRankTitle(Player chr, string[] titles)
+        public Task SetGuildRankTitle(Player chr, string[] titles)
         {
             var request = new GuildProto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
             request.RankTitles.AddRange(titles);
-            _ = _transport.SendUpdateGuildRankTitle(request);
+            return _transport.SendUpdateGuildRankTitle(request);
         }
 
         public async Task IncreaseGuildCapacity(Player chr, int cost)
@@ -190,14 +190,14 @@ namespace Application.Core.Channel.ServerData
             await _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
-        public void SetGuildNotice(Player chr, string notice)
+        public Task SetGuildNotice(Player chr, string notice)
         {
-            _ = _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
+            return _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
 
-        public void Disband(Player chr)
+        public Task Disband(Player chr)
         {
-            _ = _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
+            return _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
         }
 
 
@@ -206,9 +206,9 @@ namespace Application.Core.Channel.ServerData
             _transport.BroadcastGuildMessage(guildId, v, callout);
         }
 
-        public void GainGP(Player chr, int gp)
+        public Task GainGP(Player chr, int gp)
         {
-            _ = _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
+            return _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
         }
 
         public void ClearGuildCache(int guildId)

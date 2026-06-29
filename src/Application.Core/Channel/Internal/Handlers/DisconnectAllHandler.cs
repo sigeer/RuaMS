@@ -11,9 +11,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.DisconnectAll;
 
-        protected override void HandleMessage(Empty message)
+        protected override Task HandleMessage(Empty message)
         {
-            _server.Broadcast(async w =>
+            return _server.BroadcastAsync(async w =>
             {
                 await w.getPlayerStorage().disconnectAll(false);
             });

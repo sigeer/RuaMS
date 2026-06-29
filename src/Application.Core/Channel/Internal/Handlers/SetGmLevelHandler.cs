@@ -13,39 +13,31 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeSetGmLevel;
 
-        protected override void HandleMessage(SetGmLevelResponse res)
+        protected override async Task HandleMessage(SetGmLevelResponse res)
         {
-            _server.Broadcast(w =>
+            if (res.Code == 0)
             {
-                w.getPlayerStorage().GetCharacterActor(res.Request.OperatorId)?
-                    .Send(m =>
-                    {
-                        var masterChr = m.getCharacterById(res.Request.OperatorId);
-                        if (masterChr != null)
-                        {
-                            if (res.Code != 0)
-                                masterChr.Yellow(nameof(ClientMessage.PlayerNotFound), res.Request.TargetName);
-                            else
-                            {
-                                masterChr.Yellow(nameof(ClientMessage.SetGmLevelCommand_Result), res.Request.TargetName, res.Request.Level.ToString());
-                            }
-                        }
-                    });
-
-                if (res.Code == 0)
+                await _server.SendToPlayersAsync([res.Request.OperatorId, res.TargetId], async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.TargetId)?
-                        .Send(m =>
-                        {
-                            var chr = m.getCharacterById(res.TargetId);
-                            if (chr != null)
-                            {
-                                chr.Client.AccountEntity!.GMLevel = (sbyte)res.Request.Level;
-                                chr.Notice(nameof(ClientMessage.Notice_GmLevelChanged), res.Request.Level.ToString());
-                            }
-                        });
-                }
-            });
+                    if (chr.Id == res.Request.OperatorId)
+                    {
+                        await chr.Yellow(nameof(ClientMessage.SetGmLevelCommand_Result), res.Request.TargetName, res.Request.Level.ToString());
+                    }
+                    else if (chr.Id == res.TargetId)
+                    {
+                        chr.Client.AccountEntity!.GMLevel = (sbyte)res.Request.Level;
+                        await chr.Notice(nameof(ClientMessage.Notice_GmLevelChanged), res.Request.Level.ToString());
+                    }
+                });
+            }
+            else
+            {
+                await _server.SendToPlayerAsync(res.Request.OperatorId,chr =>
+                {
+                    return chr.Yellow(nameof(ClientMessage.PlayerNotFound), res.Request.TargetName);
+                });
+
+            }
         }
 
         protected override SetGmLevelResponse Parse(ByteString content) => SetGmLevelResponse.Parser.ParseFrom(content);

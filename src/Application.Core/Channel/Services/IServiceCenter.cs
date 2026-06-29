@@ -49,14 +49,14 @@ namespace Application.Core.Channel.Services
         /// <param name="onlyGM"></param>
         /// <returns></returns>
         void SendDropMessage(int type, string message, bool onlyGM = false);
-        void SendBroadcastWorldPacket(Packet p, bool onGM = false);
+        Task SendBroadcastWorldPacket(Packet p, bool onGM = false);
         /// <summary>
         /// 昵称是否可用
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         bool CheckCharacterName(string name);
-        void SendReloadEvents(Player chr);
+        Task SendReloadEvents(Player chr);
         IPEndPoint GetChannelEndPoint(int channel);
     }
 }

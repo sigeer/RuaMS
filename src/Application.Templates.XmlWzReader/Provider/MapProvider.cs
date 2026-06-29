@@ -248,6 +248,8 @@ namespace Application.Templates.XmlWzReader.Provider
                         model.Y1 = prop.GetIntValue();
                     else if (name == "y2")
                         model.Y2 = prop.GetIntValue();
+                    else if (name == "l")
+                        model.Type = prop.GetIntValue();
                 }
                 list.Add(model);
             }

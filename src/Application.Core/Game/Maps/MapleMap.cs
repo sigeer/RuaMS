@@ -47,6 +47,7 @@ using server;
 using server.events.gm;
 using server.life;
 using server.maps;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using tools;
 using ZLinq;
@@ -446,7 +447,7 @@ public class MapleMap : IMap, INamedInstance
         return ret.Value;
     }
 
-    public bool TryGetEffectiveDoorPortal(out MysticDoorPortal? portal)
+    public bool TryGetEffectiveDoorPortal([MaybeNullWhen(false)] out MysticDoorPortal portal)
     {
         portal = null;
         foreach (var item in portals.Values)
@@ -560,6 +561,7 @@ public class MapleMap : IMap, INamedInstance
                                 var statEffect = mii.getItemEffect(buff)!;
                                 await character.SendPacket(PacketCreator.showOwnBuffEffect(buff, 1));
                                 await character.BroadcastMap(PacketCreator.showBuffEffect(character.getId(), buff, 1), character.Id);
+                                await broadcastMessage(PacketCreator.ShowConsumeItemEffect(character.Id, buff));
                                 await statEffect.applyTo(character);
                             }
                         }
@@ -2868,11 +2870,13 @@ public class MapleMap : IMap, INamedInstance
             }
         }
 
-        await RemoveMapObject(chr, async mapChr =>
+        if (await RemoveMapObject(chr, async mapChr =>
         {
             await mapChr.SendPacket(PacketCreator.removePlayerFromMap(chr.getId()));
-        });
-        GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
+        }))
+        {
+            GameMetrics.MapPlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
+        }
     }
 
     public Dictionary<int, Player> getMapPlayers()

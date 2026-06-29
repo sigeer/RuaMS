@@ -17,13 +17,14 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 101;
 
-            protected override void HandleMessage(UpdateMapPlayerNPCResponse res)
+            protected override Task HandleMessage(UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRemoveCommand(res));
                 _server.Send(s =>
                 {
                     s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
                 });
+            return Task.CompletedTask;
             }
 
             protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
@@ -37,13 +38,14 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 102;
 
-            protected override void HandleMessage(RemoveAllPlayerNPCResponse res)
+            protected override Task HandleMessage(RemoveAllPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcClearCommand(res));
                 _server.Send(s =>
                 {
                     s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
                 });
+            return Task.CompletedTask;
             }
 
             protected override RemoveAllPlayerNPCResponse Parse(ByteString data) => RemoveAllPlayerNPCResponse.Parser.ParseFrom(data);
@@ -57,13 +59,14 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 103;
 
-            protected override void HandleMessage(UpdateMapPlayerNPCResponse res)
+            protected override Task HandleMessage(UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRefreshCommand(res));
                 _server.Send(s =>
                 {
                     s.ServiceProvider.GetRequiredService<PlayerNPCManager>().LoadAllData();
                 });
+            return Task.CompletedTask;
             }
 
             protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);

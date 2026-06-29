@@ -17,16 +17,16 @@ namespace Application.Core.Channel.Message
         }
 
 
-        public void DispatchAsync(int msgId, ByteString content)
+        public Task DispatchAsync(int msgId, ByteString content)
         {
             if (_handlers.TryGetValue(msgId, out var handler))
             {
-                _server.Send(s =>
+                return _server.Send(s =>
                 {
                     using var activity = GameMetrics.ActivitySource.StartActivity("HandleMasterPacket");
                     activity?.SetTag("Handler", handler.GetType().Name);
 
-                    handler.Handle(content);
+                    _ = handler.Handle(content);
                 });
             }
             else

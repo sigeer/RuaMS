@@ -128,19 +128,12 @@ namespace Application.Core.Game.Players
         //    }
         //}
 
-        /// <summary>
-        /// 同步数据到MasterServer，并没有立即保存数据库
-        /// </summary>
-        /// <param name="trigger">同步原因</param>
-        public void saveCharToDB(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
-        {
-            _ = SyncCharAsync(trigger);
-        }
 
         public async Task SyncCharAsync(SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             if (!IsOnlined)
             {
+                Log.Warning("离线角色无法在频道服务器修改");
                 return;
             }
 

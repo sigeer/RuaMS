@@ -20,9 +20,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetGmLevel;
 
-            protected override void HandleMessage(SetGmLevelRequest message)
+            protected override Task HandleMessage(SetGmLevelRequest message)
             {
-                _ = _server.AccountManager.SetGmLevel(message);
+                return _server.AccountManager.SetGmLevel(message);
             }
 
             protected override SetGmLevelRequest Parse(ByteString content) => SetGmLevelRequest.Parser.ParseFrom(content);
@@ -35,9 +35,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Ban;
 
-            protected override void HandleMessage(BanRequest message)
+            protected override Task HandleMessage(BanRequest message)
             {
-                _ = _server.AccountBanManager.Ban(message);
+                return _server.AccountBanManager.Ban(message);
             }
 
             protected override BanRequest Parse(ByteString content) => BanRequest.Parser.ParseFrom(content);
@@ -51,9 +51,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Unban;
 
-            protected override void HandleMessage(UnbanRequest message)
+            protected override Task HandleMessage(UnbanRequest message)
             {
-                _ = _server.AccountBanManager.Unban(message);
+                return _server.AccountBanManager.Unban(message);
             }
 
             protected override UnbanRequest Parse(ByteString content) => UnbanRequest.Parser.ParseFrom(content);
@@ -67,9 +67,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.WarpPlayer;
 
-            protected override void HandleMessage(WrapPlayerByNameRequest message)
+            protected override Task HandleMessage(WrapPlayerByNameRequest message)
             {
-                _ = _server.CrossServerService.WarpPlayerByName(message);
+                return _server.CrossServerService.WarpPlayerByName(message);
             }
 
             protected override WrapPlayerByNameRequest Parse(ByteString content) => WrapPlayerByNameRequest.Parser.ParseFrom(content);
@@ -83,9 +83,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SummonPlayer;
 
-            protected override void HandleMessage(SummonPlayerByNameRequest message)
+            protected override Task HandleMessage(SummonPlayerByNameRequest message)
             {
-                _ = _server.CrossServerService.SummonPlayerByName(message);
+                return _server.CrossServerService.SummonPlayerByName(message);
             }
 
             protected override SummonPlayerByNameRequest Parse(ByteString content) => SummonPlayerByNameRequest.Parser.ParseFrom(content);
@@ -101,9 +101,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendReport;
 
-            protected override void HandleMessage(SendReportRequest message)
+            protected override Task HandleMessage(SendReportRequest message)
             {
-                _ = _messageService.AddReport(message);
+                return _messageService.AddReport(message);
             }
 
             protected override SendReportRequest Parse(ByteString content) => SendReportRequest.Parser.ParseFrom(content);
@@ -117,9 +117,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetAutobanIgnore;
 
-            protected override void HandleMessage(ToggleAutoBanIgnoreRequest message)
+            protected override Task HandleMessage(ToggleAutoBanIgnoreRequest message)
             {
-                _ = _server.SystemManager.ToggleAutoBanIgnored(message);
+                return _server.SystemManager.ToggleAutoBanIgnored(message);
             }
 
             protected override ToggleAutoBanIgnoreRequest Parse(ByteString content) => ToggleAutoBanIgnoreRequest.Parser.ParseFrom(content);
@@ -132,9 +132,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetMonitor;
 
-            protected override void HandleMessage(ToggleMonitorPlayerRequest message)
+            protected override Task HandleMessage(ToggleMonitorPlayerRequest message)
             {
-                _ = _server.SystemManager.ToggleMonitor(message);
+                return _server.SystemManager.ToggleMonitor(message);
             }
 
             protected override ToggleMonitorPlayerRequest Parse(ByteString content) => ToggleMonitorPlayerRequest.Parser.ParseFrom(content);
@@ -147,9 +147,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.ReloadWorldEvents;
 
-            protected override void HandleMessage(ReloadEventsRequest message)
+            protected override Task HandleMessage(ReloadEventsRequest message)
             {
-                _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, message);
+                return _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, message);
             }
 
             protected override ReloadEventsRequest Parse(ByteString content) => ReloadEventsRequest.Parser.ParseFrom(content);
@@ -162,9 +162,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetTimer;
 
-            protected override void HandleMessage(SetTimer message)
+            protected override Task HandleMessage(SetTimer message)
             {
-                _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleSetTimer, message);
+                return _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleSetTimer, message);
             }
 
             protected override SetTimer Parse(ByteString content) => SetTimer.Parser.ParseFrom(content);
@@ -177,9 +177,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveTimer;
 
-            protected override void HandleMessage(Empty message)
+            protected override Task HandleMessage(Empty message)
             {
-                _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleRemoveTimer);
+                return _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleRemoveTimer);
             }
         }
 
@@ -190,9 +190,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Jail;
 
-            protected override void HandleMessage(CreateJailRequest message)
+            protected override Task HandleMessage(CreateJailRequest message)
             {
-                _ = _server.CharacterManager.JailPlayer(message);
+                return _server.CharacterManager.JailPlayer(message);
             }
             protected override CreateJailRequest Parse(ByteString content) => CreateJailRequest.Parser.ParseFrom(content);
         }
@@ -204,9 +204,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Unjail;
 
-            protected override void HandleMessage(CreateUnjailRequest message)
+            protected override Task HandleMessage(CreateUnjailRequest message)
             {
-                _ = _server.CharacterManager.UnjailPlayer(message);
+                return _server.CharacterManager.UnjailPlayer(message);
             }
             protected override CreateUnjailRequest Parse(ByteString content) => CreateUnjailRequest.Parser.ParseFrom(content);
         }
@@ -219,9 +219,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AntiMacroNotify;
 
-            protected override void HandleMessage(AntiMacroNotifyMessage message)
+            protected override Task HandleMessage(AntiMacroNotifyMessage message)
             {
-                _ = _server.ProcessAntiMacroPenalty(message);
+                return _server.ProcessAntiMacroPenalty(message);
             }
 
             protected override AntiMacroNotifyMessage Parse(ByteString content) => AntiMacroNotifyMessage.Parser.ParseFrom(content);

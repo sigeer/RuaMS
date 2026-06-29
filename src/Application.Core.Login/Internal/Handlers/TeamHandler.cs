@@ -15,9 +15,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateTeam;
 
-            protected override void HandleMessage(UpdateTeamRequest message)
+            protected override Task HandleMessage(UpdateTeamRequest message)
             {
-                _ = _server.TeamManager.UpdateParty(message.TeamId, (PartyOperation)message.Operation, message.FromId, message.TargetId);
+                return _server.TeamManager.UpdateParty(message.TeamId, (PartyOperation)message.Operation, message.FromId, message.TargetId);
             }
 
             protected override UpdateTeamRequest Parse(ByteString content) => UpdateTeamRequest.Parser.ParseFrom(content);

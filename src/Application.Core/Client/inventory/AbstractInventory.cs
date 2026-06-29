@@ -41,6 +41,10 @@ namespace Application.Core.Client.inventory
         public abstract bool CanGainSlot(short slots);
         public abstract byte getSlotLimit();
         public abstract Task setSlotLimit(int newLimit);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>Client Slot</returns>
         public abstract short getNextFreeSlot();
 
         public abstract short getNumFreeSlot();

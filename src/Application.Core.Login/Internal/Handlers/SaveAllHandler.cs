@@ -12,9 +12,9 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.SaveAll;
 
-        protected override void HandleMessage(Empty message)
+        protected override Task HandleMessage(Empty message)
         {
-            _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.SaveAll);
+            return _server.Transport.BroadcastMessageN(ChannelRecvCode.SaveAll);
         }
     }
 }

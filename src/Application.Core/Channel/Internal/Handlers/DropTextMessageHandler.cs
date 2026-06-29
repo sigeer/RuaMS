@@ -13,9 +13,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.DropTextMessage;
 
-        protected override void HandleMessage(DropMessageBroadcast msg)
+        protected override Task HandleMessage(DropMessageBroadcast msg)
         {
             _server.PushChannelCommand(new InvokeMultiDropMessageCommand(msg.Receivers, msg.Type, msg.Message));
+            return Task.CompletedTask;
         }
 
         protected override DropMessageBroadcast Parse(ByteString content) => DropMessageBroadcast.Parser.ParseFrom(content);

@@ -19,17 +19,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.CreateDueyPackage;
 
-            protected override void HandleMessage(CreatePackageBroadcast data)
+            protected override Task HandleMessage(CreatePackageBroadcast data)
             {
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(data.Package.ReceiverId, chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.Package.ReceiverId)?
-                    .Send(async m =>
-                    {
-                        var chr = m.getCharacterById(data.Package.ReceiverId);
-                        if (chr != null)
-                            await chr.SendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
-                    });
+                    return chr.SendPacket(DueyPacketCreator.sendDueyParcelReceived(data.Package.SenderName, data.Package.Type));
                 });
             }
 
@@ -44,18 +38,13 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.DeleteDueyPackage;
 
-            protected override void HandleMessage(RemovePackageResponse data)
+            protected override async Task HandleMessage(RemovePackageResponse data)
             {
                 if (data.Code == 0)
                 {
-                    _server.Broadcast(async w =>
+                     await _server.SendToPlayerAsync(data.Request.MasterId, chr =>
                     {
-                        if (data.Code == 0)
-                        {
-                            var chr = w.getPlayerStorage().GetCharacterClientById(data.Request.MasterId);
-                            if (chr != null)
-                                await chr.SendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
-                        }
+                        return chr.SendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
                     });
                 }
             }
@@ -73,20 +62,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.LoadDueyPackage;
 
-            protected override void HandleMessage(GetPlayerDueyPackageResponse data)
+            protected override Task HandleMessage(GetPlayerDueyPackageResponse data)
             {
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(data.ReceiverId, chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.ReceiverId)?
-                        .Send(async m =>
-                        {
-                            var chr = m.getCharacterById(data.ReceiverId);
-                            if (chr != null)
-                            {
-                                var dataList = w.Mapper.Map<DueyPackageObject[]>(data.List);
-                                await chr.SendPacket(DueyPacketCreator.sendDuey(DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode(), dataList));
-                            }
-                        });
+                    var dataList = _server.Mapper.Map<DueyPackageObject[]>(data.List);
+                    return chr.SendPacket(DueyPacketCreator.sendDuey(DueyProcessorActions.TOCLIENT_OPEN_DUEY.getCode(), dataList));
                 });
             }
 
@@ -107,63 +88,56 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.TakeDueyPackage;
 
-            protected override void HandleMessage(TakeDueyPackageResponse data)
+            protected override Task HandleMessage(TakeDueyPackageResponse data)
             {
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(data.Package.ReceiverId, async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.Package.ReceiverId)?.Send(async m =>
+                    if (data.Code == 0)
                     {
-                        var chr = m.getCharacterById(data.Package.ReceiverId);
-                        if (chr != null)
+                        var dp = _server.Mapper.Map<DueyPackageObject>(data.Package);
+
+                        var dpItem = dp.Item;
+
+                        if (!chr.canHoldMeso(dp.Mesos))
                         {
-                            if (data.Code == 0)
+                            await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
+                            await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                            return;
+                        }
+
+                        if (dpItem != null)
+                        {
+                            if (!chr.CanHoldUniquesOnly(dpItem.getItemId()))
                             {
-                                var dp = w.Mapper.Map<DueyPackageObject>(data.Package);
-
-                                var dpItem = dp.Item;
-
-                                if (!chr.canHoldMeso(dp.Mesos))
-                                {
-                                    await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                                    await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                                    return;
-                                }
-
-                                if (dpItem != null)
-                                {
-                                    if (!chr.CanHoldUniquesOnly(dpItem.getItemId()))
-                                    {
-                                        await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
-                                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                                        return;
-                                    }
-
-                                    if (!chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
-                                    {
-                                        await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
-                                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                                        return;
-                                    }
-                                }
-
-
+                                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
                                 await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                                await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
+                                return;
                             }
-                            else
+
+                            if (!chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
                             {
-                                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                                if (data.Code == 1)
-                                {
-                                    chr.Log.Warning("Chr {CharacterName} tried to receive package from duey with id {PackageId}", chr.Name, data.Request.PackageId);
-                                }
-                                if (data.Code == 2)
-                                {
-                                    chr.Log.Warning("Chr {CharacterName} tried to receive package from duey with receiverId {PackageId}", chr.Name, data.Request.PackageId);
-                                }
+                                await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
+                                await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                return;
                             }
                         }
-                    });
+
+
+                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                        await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
+                    }
+                    else
+                    {
+                        await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
+                        if (data.Code == 1)
+                        {
+                            chr.Log.Warning("Chr {CharacterName} tried to receive package from duey with id {PackageId}", chr.Name, data.Request.PackageId);
+                        }
+                        if (data.Code == 2)
+                        {
+                            chr.Log.Warning("Chr {CharacterName} tried to receive package from duey with receiverId {PackageId}", chr.Name, data.Request.PackageId);
+                        }
+                    }
                 });
             }
 
@@ -178,17 +152,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.LoginNotifyDueyPackage;
 
-            protected override void HandleMessage(DueyNotificationDto data)
+            protected override Task HandleMessage(DueyNotificationDto data)
             {
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(data.ReceiverId, chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.ReceiverId)?
-                    .Send(async m =>
-                    {
-                        var chr = m.getCharacterById(data.ReceiverId);
-                        if (chr != null)
-                            await chr.SendPacket(DueyPacketCreator.sendDueyParcelNotification(data.Type));
-                    });
+                    return chr.SendPacket(DueyPacketCreator.sendDueyParcelNotification(data.Type));
                 });
             }
 

@@ -16,9 +16,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleSetTimer;
 
-            protected override void HandleMessage(SetTimer res)
+            protected override Task HandleMessage(SetTimer res)
             {
-                _server.PushChannelCommand(new InvokeChannelBroadcastCommand([-1], PacketCreator.getClock(res.Seconds)));
+                return _server.PushChannelCommandAsync(new InvokeChannelBroadcastCommand([-1], PacketCreator.getClock(res.Seconds)));
             }
 
             protected override SetTimer Parse(ByteString data) => SetTimer.Parser.ParseFrom(data);
@@ -32,9 +32,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleRemoveTimer;
 
-            protected override void HandleMessage(RemoveTimer res)
+            protected override Task HandleMessage(RemoveTimer res)
             {
-                _server.PushChannelCommand(new InvokeChannelBroadcastCommand([-1], PacketCreator.removeClock()));
+                return _server.PushChannelCommandAsync(new InvokeChannelBroadcastCommand([-1], PacketCreator.removeClock()));
             }
 
             protected override RemoveTimer Parse(ByteString data) => RemoveTimer.Parser.ParseFrom(data);

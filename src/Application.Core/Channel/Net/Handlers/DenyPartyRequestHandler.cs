@@ -24,11 +24,11 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class DenyPartyRequestHandler : ChannelHandlerBase
 {
-    public override async Task HandlePacket(InPacket p, IChannelClient c)
+    public override Task HandlePacket(InPacket p, IChannelClient c)
     {
         var value = p.readByte();
         string[] cname = p.readString().Split("PS: ");
 
-        c.CurrentServer.NodeService.TeamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
+        return c.CurrentServer.NodeService.TeamManager.AnswerInvite(c.OnlinedCharacter, -1, false);
     }
 }
