@@ -655,7 +655,6 @@ namespace Application.Core.Login
 
             if (isOnline)
             {
-                message.ChannelId = victim!.ActualChannel;
                 await Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify,
                     message, [message.VictimId, message.ReporterId]);
             }

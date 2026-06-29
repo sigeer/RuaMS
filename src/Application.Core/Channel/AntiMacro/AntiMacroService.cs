@@ -115,54 +115,29 @@ public class AntiMacroService
     {
         var type = (AntiMacroType)res.Type;
 
-        // Master 已填入 channelId，直接定位目标频道
-        if (res.ChannelId <= 0 || !_server.Servers.TryGetValue(res.ChannelId, out var s))
-            return;
-
-        if (s is not WorldChannel ch)
-            return;
-
         if (!res.Passed)
         {
-            var senderActor = ch.getPlayerStorage().GetCharacterActor(res.ReporterId);
-            if (senderActor != null)
+            await _server.SendToPlayerAsync(res.ReporterId, async chr =>
             {
-                await senderActor.Send(async m =>
-                {
-                    var senderChr = m.getCharacterById(res.ReporterId);
-
-                    if (senderChr != null)
-                    {
-                        await senderChr.SendPacket(AntiMacroPackets.TargetFailedReward());
-                        await senderChr.GainMeso(7000, GainItemShow.ShowInChat);
-                    }
-                });
-            }
-        }
-
-        var targetActor = ch.getPlayerStorage().GetCharacterActor(res.VictimId);
-        if (targetActor != null)
-        {
-            await targetActor.Send(async m =>
-            {
-                var targetChr = m.getCharacterById(res.VictimId);
-
-                if (targetChr != null)
-                {
-                    if (res.Passed)
-                    {
-                        await targetChr.SendPacket(AntiMacroPackets.PassedLieDetector(targetChr.Name));
-                        await targetChr.SendPacket(AntiMacroPackets.PassDialog(type));
-                        if (type == AntiMacroType.Item)
-                            await targetChr.GainMeso(5000);
-                    }
-                    else
-                    {
-                        await targetChr.SendPacket(AntiMacroPackets.SuspectedMacro(targetChr.Name));
-                        await targetChr.SendPacket(AntiMacroPackets.SanctionDialog((AntiMacroType)res.Type));
-                    }
-                }
+                await chr.SendPacket(AntiMacroPackets.TargetFailedReward());
+                await chr.GainMeso(7000, GainItemShow.ShowInChat);
             });
         }
+
+        await _server.SendToPlayerAsync(res.VictimId, async chr =>
+        {
+            if (res.Passed)
+            {
+                await chr.SendPacket(AntiMacroPackets.PassedLieDetector(chr.Name));
+                await chr.SendPacket(AntiMacroPackets.PassDialog(type));
+                if (type == AntiMacroType.Item)
+                    await chr.GainMeso(5000);
+            }
+            else
+            {
+                await chr.SendPacket(AntiMacroPackets.SuspectedMacro(chr.Name));
+                await chr.SendPacket(AntiMacroPackets.SanctionDialog(type));
+            }
+        });
     }
 }

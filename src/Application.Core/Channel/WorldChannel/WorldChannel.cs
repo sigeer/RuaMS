@@ -393,6 +393,23 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return Players;
     }
 
+    /// <summary>
+    /// IChannelServer.SendToPlayerAsync 实现。
+    /// </summary>
+    public Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
+    {
+        var actor = Players.GetCharacterActor(playerId);
+        if (actor == null)
+            return Task.CompletedTask;
+
+        return actor.Send(async map =>
+        {
+            var player = map.getCharacterById(playerId);
+            if (player != null)
+                await action(player);
+        });
+    }
+
     public bool RemovePlayer(int chrId)
     {
         var chr = Players.RemovePlayer(chrId);
