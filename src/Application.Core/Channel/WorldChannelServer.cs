@@ -460,6 +460,18 @@ namespace Application.Core.Channel
             return Servers.GetValueOrDefault(channel);
         }
 
+        /// <summary>
+        /// 在本节点的所有频道中查找目标玩家并执行操作。
+        /// 节点内频道数通常很少（1-5），直接遍历即可。
+        /// </summary>
+        public async Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
+        {
+            foreach (var ch in Servers.Values)
+            {
+                await ch.SendToPlayerAsync(playerId, action);
+            }
+        }
+
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
             return Transport.UpdateAccountState(accId, state);
