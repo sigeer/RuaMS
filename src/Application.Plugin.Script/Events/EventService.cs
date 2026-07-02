@@ -123,7 +123,7 @@ namespace Application.Plugin.Events
                 {
                     if (mapManager.TryGetMap(mapId, out var map))
                     {
-                        map?.ClearAreaBoss(name);
+                        map.ClearAreaBoss(name);
                     }
                 }
                 LogInfo("{ServerName} 卸载事件...完成", channel.InstanceName);

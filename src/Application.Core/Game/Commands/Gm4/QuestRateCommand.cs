@@ -24,6 +24,6 @@ public class QuestRateCommand : CommandBase
         }
 
         int questrate = Math.Max(d, 1);
-        _ = c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { QuestRate = questrate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { QuestRate = questrate });
     }
 }

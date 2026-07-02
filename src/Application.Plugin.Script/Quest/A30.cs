@@ -639,8 +639,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q2325e()
         {
             await SaySpeech([
-                new SpeechText("我好……好害怕……请你一定要救救我……", 0),
-                new SpeechText("别害怕，是#b#p1300005##k让我来找你的。", 2),
+                new SpeechText("我好……好害怕……请你一定要救救我……", NpcTalkSpeaker.NpcLeft),
+                new SpeechText("别害怕，是#b#p1300005##k让我来找你的。", NpcTalkSpeaker.PlayerRight),
             ]);
 
 
@@ -697,9 +697,9 @@ namespace Application.Plugin.Script.Quest
             await SaySpeech([
                 new SpeechText("非常感谢你，#b#h ##k。你就是拯救我们帝国免于危险的英雄。我对你所做的一切感激不尽。我不知道该如何感谢你。请理解我为什么不能让你看到我的面孔。", 0),
                 new SpeechText("说出来真是难为情，但自从我还是个婴儿的时候，我的家人就把我的面容遮掩起来，不让世人看见。他们害怕有人会无法自拔地爱上我。我已经习惯了这种生活，甚至对女性也感到害羞。我知道，把背对着救世主是很失礼的，但在我能够鼓起勇气与你面对面相见之前，我还需要一些时间。", 0),
-                new SpeechText("我明白了...\r\n#b（哇，她究竟有多美？）", (int)NpcTalkSpeaker.Player),
-                new SpeechText("#b（这是什么意思？）", (int)NpcTalkSpeaker.Player),
-                new SpeechText("#b（在蘑菇世界里这也算是漂亮吗？！）", (int)NpcTalkSpeaker.Player),
+                new SpeechText("我明白了...\r\n#b（哇，她究竟有多美？）", NpcTalkSpeaker.PlayerRight),
+                new SpeechText("#b（这是什么意思？）", NpcTalkSpeaker.PlayerRight),
+                new SpeechText("#b（在蘑菇世界里这也算是漂亮吗？！）", NpcTalkSpeaker.PlayerRight),
                 new SpeechText("我好害羞，都脸红了。总之，谢谢你，#b#h ##k。", 0),
                 ]);
 

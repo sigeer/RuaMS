@@ -13,10 +13,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.HandleFullPacket;
 
-        protected override void HandleMessage(PacketBroadcast data)
+        protected override Task HandleMessage(PacketBroadcast data)
         {
             var packet = new ByteBufOutPacket(data.Data.ToByteArray());
-            _server.PushChannelCommand(new InvokeChannelBroadcastCommand(data.Receivers, packet));
+            return _server.PushChannelCommandAsync(new InvokeChannelBroadcastCommand(data.Receivers, packet));
         }
 
         protected override PacketBroadcast Parse(ByteString data) => PacketBroadcast.Parser.ParseFrom(data);

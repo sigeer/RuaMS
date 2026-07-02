@@ -141,8 +141,14 @@ namespace Application.Templates.Item.Consume
         //public bool RepeatEffect { get; set; }
         [WZPath("spec/barrier")]
         public int Barrier { get; set; }
+        /// <summary>
+        /// 攻速加成
+        /// </summary>
         [WZPath("spec/booster")]
         public int Booster { get; set; }
+        /// <summary>
+        /// 伤害加成 （乘法）
+        /// </summary>
         [WZPath("spec/berserk")]
         public int Berserk { get; set; }
 

@@ -43,7 +43,10 @@ namespace Application.Core.Login.Client
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            CurrentServer.Send(new HandleMasterPacketCommand(this, msg));
+            CurrentServer.Send(w =>
+            {
+                _ = ProcessPacket(msg);
+            });
         }
 
         public override async Task ProcessPacket(InPacket packet)
@@ -58,7 +61,7 @@ namespace Application.Core.Login.Client
 
             if (handler != null && handler.ValidateState(this))
             {
-                _ = handler.HandlePacket(packet, this);
+                await handler.HandlePacket(packet, this);
             }
         }
 

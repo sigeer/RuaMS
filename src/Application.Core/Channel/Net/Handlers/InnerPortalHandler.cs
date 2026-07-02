@@ -39,6 +39,7 @@ public class InnerPortalHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
+        // CUserLocal::TryRegisterTeleport
         _logger.LogDebug("触发了 InnerPortalHandler");
     }
 }

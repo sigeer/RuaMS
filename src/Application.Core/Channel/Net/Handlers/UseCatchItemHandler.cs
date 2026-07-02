@@ -70,7 +70,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
                 }
                 if (itemId == ItemId.ARPQ_ELEMENT_ROCK)
                 {
-                    await c.SendPacket(PacketCreator.catchMessage(1));
+                    await c.SendPacket(PacketCreator.CatchFailMessage(itemId, 1));
                 }
                 return;
             }
@@ -80,7 +80,7 @@ public class UseCatchItemHandler : ChannelHandlerBase
 
         if (itemTemplate.MobHP > 0 && mob.getHp() < ((mob.getMaxHp() / 100.0) * itemTemplate.MobHP))
         {
-            await c.SendPacket(PacketCreator.catchMessage(0));
+            await c.SendPacket(PacketCreator.CatchFailMessage(itemId, 0));
             return;
         }
 

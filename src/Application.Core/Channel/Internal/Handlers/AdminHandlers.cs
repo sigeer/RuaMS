@@ -1,6 +1,6 @@
 using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Commands;
-using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Config;
@@ -8,7 +8,6 @@ using Dto;
 using Google.Protobuf;
 using JailProto;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 using SystemProto;
 using tools;
 
@@ -24,9 +23,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleWorldEventReload;
 
-            protected override void HandleMessage(ReloadEventsResponse res)
+            protected override async Task HandleMessage(ReloadEventsResponse res)
             {
-                _server.Broadcast(w =>
+                await _server.BroadcastAsync(w =>
                 {
                     w.reloadEventScriptManager();
                     w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId)?.TypedMessage(5, "Reloaded Events");
@@ -44,32 +43,25 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.SummonPlayer;
 
-            protected override void HandleMessage(SummonPlayerByNameResponse res)
+            protected override async Task HandleMessage(SummonPlayerByNameResponse res)
             {
-                _server.Broadcast(w =>
+                if (res.Code != 0)
                 {
-                    if (res.Code != 0)
+                    await _server.SendToPlayerAsync(res.Request.MasterId, async chr =>
                     {
-                        var chr = w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId);
-                        if (chr != null)
-                        {
-                            chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
-                        }
-                        return;
-                    }
-
-                    w.getPlayerStorage().GetCharacterActor(res.VictimId)?.Send(async m =>
+                        await chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
+                    });
+                }
+                else
+                {
+                    await _server.SendToPlayerAsync(res.VictimId, async chr =>
                     {
-                        var summoned = m.getCharacterById(res.VictimId);
-                        if (summoned != null)
+                        if (chr.getEventInstance() == null)
                         {
-                            if (summoned.getEventInstance() == null)
-                            {
-                                await w.NodeService.AdminService.WarpPlayerByName(summoned, res.WarpToName);
-                            }
+                            await _server.AdminService.WarpPlayerByName(chr, res.WarpToName);
                         }
                     });
-                });
+                }
             }
 
             protected override SummonPlayerByNameResponse Parse(ByteString data) => SummonPlayerByNameResponse.Parser.ParseFrom(data);
@@ -83,21 +75,17 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.WarpPlayer;
 
-            protected override void HandleMessage(WrapPlayerByNameResponse res)
+            protected override async Task HandleMessage(WrapPlayerByNameResponse res)
             {
-                _server.Broadcast(w =>
+                await _server.SendToPlayerAsync(res.Request.MasterId, async chr =>
                 {
-                    var chr = w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId);
-                    if (chr != null)
+                    if (res.Code != 0)
                     {
-                        if (res.Code != 0)
-                        {
-                            chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
-                        }
-                        else
-                        {
-                            chr.Client.ChangeChannel(res.TargetChannel);
-                        }
+                        await chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
+                    }
+                    else
+                    {
+                        await chr.Client.ChangeChannel(res.TargetChannel);
                     }
                 });
             }
@@ -113,16 +101,16 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.InvokeMonitor;
 
-            protected override void HandleMessage(ToggleMonitorPlayerResponse res)
+            protected override async Task HandleMessage(ToggleMonitorPlayerResponse res)
             {
                 if (res.Code == 0)
                 {
-                    _server.PushChannelCommand(
-                        new InvokeDropMessageCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored.")));
+                    await _server.PushChannelCommandAsync(
+                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored.")));
                 }
                 else
-                    _server.PushChannelCommand(
-                        new InvokeDropMessageCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
+                    await _server.PushChannelCommandAsync(
+                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
             }
 
             protected override ToggleMonitorPlayerResponse Parse(ByteString data) => ToggleMonitorPlayerResponse.Parser.ParseFrom(data);
@@ -136,51 +124,42 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.BanPlayer;
 
-            protected override void HandleMessage(BanResponse data)
+            protected override async Task HandleMessage(BanResponse data)
             {
-                _server.Broadcast(w =>
+                if (data.Code != 0)
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.Request.OperatorId)?
-                    .Send(async m =>
+                    await _server.SendToPlayerAsync(data.Request.OperatorId, async chr =>
                     {
-                        var masterChr = m.getCharacterById(data.Request.OperatorId);
-                        if (masterChr != null)
-                        {
-                            if (data.Code != 0)
-                            {
-                                await masterChr.SendPacket(PacketCreator.getGMEffect(6, 1));
-                                return;
-                            }
-                            else
-                            {
-                                await masterChr.SendPacket(PacketCreator.getGMEffect(4, 0));
-                            }
-                        }
+                        await chr.SendPacket(PacketCreator.getGMEffect(6, 1));
                     });
-
-                    w.getPlayerStorage().GetCharacterActor(data.VictimId)?
-                        .Send(async m =>
+                }
+                else
+                {
+                    await _server.SendToPlayersAsync([data.Request.OperatorId, data.VictimId], async chr =>
+                    {
+                        if (chr.Id == data.Request.OperatorId)
                         {
-                            var chr = m.getCharacterById(data.VictimId);
+                            await chr.SendPacket(PacketCreator.getGMEffect(4, 0));
+                        }
+                        else if (chr.Id == data.VictimId)
+                        {
+                            await chr.SendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "RuaMS", data.Request.ReasonDesc)));
+                            await chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
+                            await chr.Yellow(chr.GetMessageByKey(ClientMessage.BanReason) + data.Request.ReasonDesc);
 
-                            if (chr != null)
+                            Timer? timer = null;
+                            timer = new System.Threading.Timer(async _ =>
                             {
-                                await chr.SendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "RuaMS", data.Request.ReasonDesc)));
-                                await chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
-                                await chr.Yellow(chr.GetMessageByKey(ClientMessage.BanReason) + data.Request.ReasonDesc);
-
-                                Timer? timer = null;
-                                timer = new System.Threading.Timer(_ =>
+                                await _server.SendToPlayerAsync(data.VictimId, async nChr =>
                                 {
-                                    m.Send(mm =>
-                                    {
-                                        mm.getCharacterById(data.VictimId)?.Client.Disconnect(false, false);
-                                    });
-                                    timer?.Dispose();
-                                }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
-                            }
-                        });
-                });
+                                    await nChr.Client.Disconnect(false, false);
+                                });
+                                timer?.Dispose();
+                            }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
+                        }
+                        ;
+                    });
+                }
             }
 
             protected override BanResponse Parse(ByteString data) => BanResponse.Parser.ParseFrom(data);
@@ -194,11 +173,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Unban;
 
-            protected override void HandleMessage(UnbanResponse res)
+            protected override async Task HandleMessage(UnbanResponse res)
             {
                 if (res.Code == 0)
                 {
-                    _server.PushChannelCommand(new InvokeDropMessageCommand(res.Request.OperatorId, 5, "Unbanned " + res.Request.Victim));
+                    await _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.OperatorId, 5, "Unbanned " + res.Request.Victim));
                 }
             }
 
@@ -213,35 +192,25 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Jail;
 
-            protected override void HandleMessage(CreateJailResponse res)
+            protected override async Task HandleMessage(CreateJailResponse res)
             {
-                _server.Broadcast(w =>
+                await _server.SendToPlayersAsync([res.Request.MasterId, res.TargetId], async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?
-                        .Send(async m =>
-                        {
-                            var masterChr = m.getCharacterById(res.Request.MasterId);
-                            if (masterChr != null)
-                            {
-                                if (res.Code != 0)
-                                    await masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
-                                else
-                                {
-                                    if (res.IsExtend)
-                                        await masterChr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
-                                    else
-                                        await masterChr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
-                                }
-                            }
-                        });
-
-                    if (res.Code == 0)
+                    if (chr.Id == res.Request.MasterId)
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.TargetId)?
-                            .Send(m =>
-                            {
-                                m.getCharacterById(res.TargetId)?.addJailExpirationTime(res.Request.Minutes * 60000);
-                            });
+                        if (res.Code != 0)
+                            await chr.Pink(nameof(ClientMessage.PlayerNotFound));
+                        else
+                        {
+                            if (res.IsExtend)
+                                await chr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
+                            else
+                                await chr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
+                        }
+                    }
+                    else if (chr.Id == res.TargetId)
+                    {
+                        await chr.addJailExpirationTime(res.Request.Minutes * 60000);
                     }
                 });
             }
@@ -257,45 +226,38 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Unjail;
 
-            protected override void HandleMessage(CreateUnjailResponse res)
+            protected override async Task HandleMessage(CreateUnjailResponse res)
             {
-                _server.Broadcast(w =>
+                if (res.Code == 0)
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.Request.MasterId)?
-                        .Send(m =>
-                        {
-                            var masterChr = m.getCharacterById(res.Request.MasterId);
-                            if (masterChr != null)
-                            {
-                                if (res.Code == 1)
-                                {
-                                    masterChr.Pink(nameof(ClientMessage.PlayerNotFound));
-                                }
-                                else if (res.Code == 2)
-                                {
-                                    masterChr.Pink(nameof(ClientMessage.UnjailCommand_AlreadyFree));
-                                }
-                                else if (res.Code == 0)
-                                {
-                                    masterChr.Yellow(nameof(ClientMessage.Command_Done), masterChr.getLastCommandMessage());
-                                }
-                            }
-                        });
-
-                    if (res.Code == 0)
+                    await _server.SendToPlayersAsync([res.Request.MasterId, res.TargetId], async chr =>
+                     {
+                         if (chr.Id == res.Request.MasterId)
+                         {
+                             await chr.Yellow(nameof(ClientMessage.Command_Done), chr.getLastCommandMessage());
+                         }
+                         else if (chr.Id == res.TargetId)
+                         {
+                             chr.removeJailExpirationTime();
+                             await chr.Pink(nameof(ClientMessage.Unjail_Notify));
+                         }
+                     });
+                }
+                else
+                {
+                    await _server.SendToPlayerAsync(res.Request.MasterId, async chr =>
                     {
-                        w.getPlayerStorage().GetCharacterActor(res.TargetId)?
-                            .Send(m =>
-                            {
-                                var chr = m.getCharacterById(res.TargetId);
-                                if (chr != null)
-                                {
-                                    chr.removeJailExpirationTime();
-                                    chr.Pink(nameof(ClientMessage.Unjail_Notify));
-                                }
-                            });
-                    }
-                });
+                        if (res.Code == 1)
+                        {
+                            await chr.Pink(nameof(ClientMessage.PlayerNotFound));
+                        }
+                        else if (res.Code == 2)
+                        {
+                            await chr.Pink(nameof(ClientMessage.UnjailCommand_AlreadyFree));
+                        }
+                    });
+                }
+
             }
 
             protected override CreateUnjailResponse Parse(ByteString data) => CreateUnjailResponse.Parser.ParseFrom(data);
@@ -311,9 +273,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.AntiMacroNotify;
 
-            protected override void HandleMessage(AntiMacroNotifyMessage res)
+            protected override Task HandleMessage(AntiMacroNotifyMessage res)
             {
-                _ = _service.PenalizeAsync(res);
+                return _service.PenalizeAsync(res);
             }
 
             protected override AntiMacroNotifyMessage Parse(ByteString data) => AntiMacroNotifyMessage.Parser.ParseFrom(data);

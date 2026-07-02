@@ -111,6 +111,6 @@ public class WhisperHandler : ChannelHandlerBase
             return;
         }
 
-        _buddyManager.SendWhisper(user, targetName, message);
+        await _buddyManager.SendWhisper(user, targetName, message);
     }
 }

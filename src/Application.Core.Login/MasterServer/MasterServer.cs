@@ -633,7 +633,8 @@ namespace Application.Core.Login
         public async Task ProcessAntiMacroPenalty(AntiMacroNotifyMessage message)
         {
             var victim = CharacterManager.FindPlayerById(message.VictimId);
-            bool isOnline = victim != null && victim.Channel > 0;
+            if (victim == null)
+                return;
 
             if (!message.Passed)
             {
@@ -648,16 +649,18 @@ namespace Application.Core.Login
                         (int)BanReason.HACK,
                         message.Reason);
 
-                    await DropWorldMessage(6, nameof(SystemMessage.Ban_NoticeGM), true);
+                    await DropWorldMessage((int)NoticeType.LightBlue, nameof(SystemMessage.Ban_NoticeGM), true);
                     return;
+                }
+
+                if (victim.Channel <= 0)
+                {
+                    victim.Character.Meso -= Math.Min(victim.Character.Meso, 5000);
                 }
             }
 
-            if (isOnline)
-            {
-                await Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify,
-                    message, [message.VictimId, message.ReporterId]);
-            }
+            await Transport.SendMessageN(ChannelRecvCode.AntiMacroNotify,
+                message, [message.VictimId, message.ReporterId]);
         }
     }
 }

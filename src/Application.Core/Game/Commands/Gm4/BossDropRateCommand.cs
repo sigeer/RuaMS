@@ -17,7 +17,7 @@ public class BossDropRateCommand : CommandBase
         if (int.TryParse(paramsValue[0], out var d))
         {
             int bossdroprate = Math.Max(d, 1);
-            _ = c.CurrentServer.Node.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
+            await c.CurrentServer.Node.Transport.SendWorldConfig(new Config.WorldConfig() { BossDropRate = bossdroprate });
         }
 
     }

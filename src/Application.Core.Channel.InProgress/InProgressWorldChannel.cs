@@ -21,8 +21,7 @@ namespace Application.Core.Channel.InProgress
 
         public override Task SendMessage<TMessage>(int type, TMessage message)
         {
-            ChannelServer.MessageDispatcherV.DispatchAsync(type, message.ToByteString());
-            return Task.CompletedTask;
+            return ChannelServer.MessageDispatcherV.DispatchAsync(type, message.ToByteString());
         }
 
         public override async Task SendMessage(int type)

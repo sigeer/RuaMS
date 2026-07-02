@@ -2,6 +2,7 @@ using Application.Templates.Exceptions;
 using Application.Templates.Mob;
 using Application.Templates.Providers;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 using static Application.Templates.Mob.MobTemplate;
@@ -217,6 +218,34 @@ namespace Application.Templates.XmlWzReader.Provider
                                     list.Add(model);
                                 }
                                 pEntry.Skill = list.OrderBy(x => x.Index).ToArray();
+                            }
+
+                            else if (infoPropName == "speak")
+                            {
+                                var list = new List<MobSpeakInfoTemplate>();
+                                foreach (var item in infoProp.Elements())
+                                {
+                                    if (int.TryParse(item.GetName(), out var idx))
+                                    {
+                                        var model = new MobSpeakInfoTemplate(idx);
+                                        List<int> msgList = [];
+                                        foreach (var modelProp in item.Elements())
+                                        {
+                                            var n = modelProp.GetName();
+                                            if (n == "hp")
+                                                model.Hp = modelProp.GetIntValue();
+                                            else if (n == "prob")
+                                                model.Prob = modelProp.GetIntValue();
+                                            else if (int.TryParse(n, out var msgId))
+                                            {
+                                                msgList.Add(msgId);
+                                            }
+                                        }
+                                        model.Messages = msgList.OrderBy(x => x).ToArray();
+                                        list.Add(model);
+                                    }
+                                }
+                                pEntry.SpeakInfos = list.OrderBy(x => x.Hp).ToArray();
                             }
                         }
                     }

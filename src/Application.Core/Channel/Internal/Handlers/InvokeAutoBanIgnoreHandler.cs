@@ -13,13 +13,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeAutoBanIgnore;
 
-        protected override void HandleMessage(ToggleAutoBanIgnoreResponse res)
+        protected override Task HandleMessage(ToggleAutoBanIgnoreResponse res)
         {
             if (res.Code == 0)
-                _server.PushChannelCommand(new InvokeDropMessageCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored.")));
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored.")));
             else
-                _server.PushChannelCommand(new InvokeDropMessageCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
-
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
         }
 
         protected override ToggleAutoBanIgnoreResponse Parse(ByteString data) => ToggleAutoBanIgnoreResponse.Parser.ParseFrom(data);

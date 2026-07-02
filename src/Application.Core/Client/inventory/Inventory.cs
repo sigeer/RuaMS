@@ -48,7 +48,17 @@ public class Inventory : AbstractInventory
         this.inventory = new Item?[slotLimit];
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="serverSlot"></param>
+    /// <returns>Client Slot</returns>
     public static short MapClientSlot(short serverSlot) => ++serverSlot;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="clientSlot"></param>
+    /// <returns>Server Slot</returns>
     public static short MapServerSlot(short clientSlot) => --clientSlot;
 
     public override bool CanGainSlot(short slots)
@@ -188,7 +198,11 @@ public class Inventory : AbstractInventory
         return -1;
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="pos">Client Slot</param>
     public void SetItemPosition(Item? item, short pos)
     {
         if (item != null)
@@ -201,8 +215,8 @@ public class Inventory : AbstractInventory
 
     public async Task<InventoryAdd?> AddItem(Item item)
     {
-        var position = getNextFreeSlot();
-        if (position == -1)
+        var clientSlot = getNextFreeSlot();
+        if (clientSlot == -1)
         {
             return null;
         }
@@ -213,16 +227,16 @@ public class Inventory : AbstractInventory
             tags: new ActivityTagsCollection
             {
                 ["Inventory"] = getType(),
-                ["Slot"] = position,
+                ["Slot"] = clientSlot,
                 ["Item.Id"] = item.getItemId(),
                 ["Item.Quantity"] = item.getQuantity()
             }));
 
-        SetItemPosition(item, position);
+        SetItemPosition(item, clientSlot);
 
-        await OnItemEnter(position, item, false);
+        await OnItemEnter(clientSlot, item, false);
 
-        return new InventoryAdd(item.getInventoryType(), item, position);
+        return new InventoryAdd(item.getInventoryType(), item, clientSlot);
     }
     public override async Task PutItem(short position, Item item, bool fromLogin)
     {

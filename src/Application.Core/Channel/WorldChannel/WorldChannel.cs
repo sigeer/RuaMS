@@ -13,7 +13,6 @@ using Application.Shared.Servers;
 using Application.Utility.Performance;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using net.server.services.task.channel;
 using scripting.Event;
@@ -23,7 +22,6 @@ using server.events.gm;
 using server.expeditions;
 using server.maps;
 using System.Net;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.Channel;
@@ -117,7 +115,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public IServerBase<IChannelServerTransport> Node { get; }
     public IActorInstance<WorldChannelServer> NodeActor { get; }
     public IServiceCenter NodeService { get; }
-    public IMapper Mapper { get; }
     public ITimerManager TimerManager { get; private set; } = null!;
 
     public MapOwnershipManager MapOwnershipManager { get; }
@@ -169,7 +166,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
         ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
         NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
-        Mapper = LifeScope.ServiceProvider.GetRequiredService<IMapper>();
 
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);
@@ -396,26 +392,101 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     /// <summary>
     /// IChannelServer.SendToPlayerAsync 实现。
     /// </summary>
-    public Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
+    public async Task<bool> SendToPlayerAsync(int playerId, Func<Player, Task> action)
     {
         var actor = Players.GetCharacterActor(playerId);
         if (actor == null)
-            return Task.CompletedTask;
+            return false;
 
-        return actor.Send(async map =>
+        await actor.Send(async map =>
         {
             var player = map.getCharacterById(playerId);
             if (player != null)
                 await action(player);
         });
+        return true;
+    }
+    public async Task<bool> SendToPlayerAsync(int playerId, Action<Player> action)
+    {
+        var actor = Players.GetCharacterActor(playerId);
+        if (actor == null)
+            return false;
+
+        await actor.Send(map =>
+        {
+            var player = map.getCharacterById(playerId);
+            if (player != null)
+                action(player);
+        });
+
+        return true;
     }
 
-    public bool RemovePlayer(int chrId)
+    public async Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Func<Player, Task> action)
+    {
+        int count = 0;
+        foreach (var id in playerIds)
+        {
+            var actor = Players.GetCharacterActor(id);
+            if (actor == null)
+                continue;
+
+            await actor.Send(async map =>
+            {
+                var player = map.getCharacterById(id);
+                if (player != null)
+                {
+                    count++;
+                    await action(player);
+                }
+            });
+        }
+        return count;
+    }
+
+    public async Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Action<Player> action)
+    {
+        int count = 0;
+        foreach (var id in playerIds)
+        {
+            var actor = Players.GetCharacterActor(id);
+            if (actor == null)
+                continue;
+
+            await actor.Send(map =>
+            {
+                var player = map.getCharacterById(id);
+                if (player != null)
+                {
+                    count++;
+                    action(player);
+                }
+            });
+        }
+        return count;
+    }
+
+    public async Task BroadcastPlayersAsync(Func<Player, Task> action)
+    {
+        var allActor = Players.GetAllActor();
+        foreach (var actor in allActor)
+        {
+            await actor.Send(async map =>
+            {
+                foreach (var player in map.getAllPlayers())
+                {
+                    await action(player);
+                }
+            });
+        }
+    }
+
+    public async Task<bool> RemovePlayer(int chrId)
     {
         var chr = Players.RemovePlayer(chrId);
         if (chr != null)
         {
-            chr.getMap().removePlayer(chr);
+            await chr.getMap().removePlayer(chr);
 
             GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", InstanceName));
             return true;
@@ -472,21 +543,21 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             }
         }
     }
-    public void EnterExtralWorld(Player chr)
+    public async Task EnterExtralWorld(Player chr)
     {
         // either they in CS or MTS
         if (PlayersAway.TryAdd(chr.Id, chr))
             GameMetrics.OnlinePlayerCount.Add(1);
 
-        RemovePlayer(chr.Id);
+        await RemovePlayer(chr.Id);
     }
 
-    public void RemovePlayerDeep(Player chr)
+    public async Task RemovePlayerDeep(Player chr)
     {
         if (PlayersAway.Remove(chr.Id))
             GameMetrics.OnlinePlayerCount.Add(-1);
 
-        RemovePlayer(chr.Id);
+        await RemovePlayer(chr.Id);
     }
 
     public bool IsAwayFromWorld(int id) => PlayersAway.ContainsKey(id);
@@ -568,7 +639,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     public async Task resetDojoMap(int fromMapId)
     {
-         await DojoInstance.ResetDojoMap(fromMapId);
+        await DojoInstance.ResetDojoMap(fromMapId);
     }
 
     public void resetDojo(int dojoMapId)

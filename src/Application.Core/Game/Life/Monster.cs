@@ -24,10 +24,12 @@
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
+using Application.Core.tools.RandomUtils;
 using Application.Resources.Messages;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
@@ -110,7 +112,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public List<Monster> RevivingMonsters { get; }
 
     public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
-
+    public HashSet<int> HasSaid { get; }
     public long Period { get; private set; } = -1;
 
     /// <summary>
@@ -136,6 +138,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         RevivingMonsters = new();
         AttackInfoHolders = mobTemplate.AttackInfos.ToDictionary(x => x.Index);
+        HasSaid = new();
     }
 
     public override async Task OnMounted(IMap map)
@@ -490,6 +493,34 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             OnDamaged?.Invoke(this, new MonsterDamagedEventArgs(from, trueDamage.Value));
             MapModel.ChannelServer.NodeService.PluginManager.OnMobDamaged(this, trueDamage.Value, from);
         }
+
+        if (SourceTemplate.SpeakInfos.Length == 1)
+        {
+            var speakInfo = SourceTemplate.SpeakInfos[0];
+            if (speakInfo.Messages.Length > 0 && !HasSaid.Contains(speakInfo.Index) && getHp() <= speakInfo.Hp)
+            {
+                if (Random.Shared.Next(100) < speakInfo.Prob)
+                {
+                    var msgId = new LotteryMachine<int, int>(speakInfo.Messages, i => i).GetRandomItem();
+                    await MapModel.broadcastMessage(MobPackets.MobSpeak(getObjectId(), speakInfo.Index, msgId));
+                }
+                HasSaid.Add(speakInfo.Index);
+            }
+        }
+        else if (SourceTemplate.SpeakInfos.Length > 1)
+        {
+            var speakInfo = SourceTemplate.SpeakInfos.FirstOrDefault(x => getHp() <= x.Hp);
+            if (speakInfo != null && speakInfo.Messages.Length > 0 && !HasSaid.Contains(speakInfo.Index))
+            {
+                if (Random.Shared.Next(100) < speakInfo.Prob)
+                {
+                    var msgId = new LotteryMachine<int, int>(speakInfo.Messages, i => i).GetRandomItem();
+                    await MapModel.broadcastMessage(MobPackets.MobSpeak(getObjectId(), speakInfo.Index, msgId));
+                }
+                HasSaid.Add(speakInfo.Index);
+            }
+        }
+
 
         if (getStats().isFriendly())
         {

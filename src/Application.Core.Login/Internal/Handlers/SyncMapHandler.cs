@@ -13,9 +13,9 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.SyncMap;
 
-        protected override void HandleMessage(MapBatchSyncDto message)
+        protected override Task HandleMessage(MapBatchSyncDto message)
         {
-            _ = _server.CharacterManager.BatchUpdateMap(message.List.ToList());
+            return _server.CharacterManager.BatchUpdateMap(message.List.ToList());
         }
 
         protected override MapBatchSyncDto Parse(ByteString content) => MapBatchSyncDto.Parser.ParseFrom(content);

@@ -1,5 +1,6 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Shared.Message;
+using AutoMapper.Execution;
 using Dto;
 using Google.Protobuf;
 using tools;
@@ -16,53 +17,35 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnJoinChatRoom;
 
-            protected override void HandleMessage(JoinChatRoomResponse data)
+            protected override async Task HandleMessage(JoinChatRoomResponse data)
             {
-                if (data.Code != 0)
+                var code = (JoinChatRoomResult)data.Code;
+                if (code == JoinChatRoomResult.Success)
                 {
-                    return;
-                }
-                _server.Broadcast(async w =>
-                {
-                    var code = (JoinChatRoomResult)data.Code;
-                    if (code == JoinChatRoomResult.Success)
+                    var newComer = data.Room.Members[data.NewComerPosition];
+                    var allMembers = data.Room.Members.Where(x => x.PlayerInfo != null).Select(x => x.PlayerInfo.Character.Id);
+                    await _server.SendToPlayersAsync(allMembers, async chr =>
                     {
-                        var newComer = data.Room.Members[data.NewComerPosition];
-                        foreach (var member in data.Room.Members)
+                        chr.ChatRoomId = data.Room.RoomId;
+                        if (chr.Id != newComer.PlayerInfo.Character.Id)
                         {
-                            if (member.PlayerInfo == null)
-                                continue;
-                            var chr = w.getPlayerStorage().GetCharacterClientById(member.PlayerInfo.Character.Id);
-                            if (chr != null)
+                            await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
+                        }
+                        else
+                        {
+                            foreach (var member in data.Room.Members)
                             {
-                                if (member.PlayerInfo.Character.Id != newComer.PlayerInfo.Character.Id)
-                                {
-                                    await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
-                                }
+                                if (member.PlayerInfo == null)
+                                    continue;
+
+                                if (chr.Id != member.PlayerInfo.Character.Id)
+                                    await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
+                                else
+                                    await chr.SendPacket(ChatRoomPacket.joinMessenger(member.Position));
                             }
                         }
-
-                        w.getPlayerStorage().GetCharacterActor(newComer.PlayerInfo.Character.Id)?.Send(async m =>
-                        {
-                            var newComerChr = m.getCharacterById(newComer.PlayerInfo.Character.Id);
-                            if (newComerChr != null)
-                            {
-                                newComerChr.ChatRoomId = data.Room.RoomId;
-                                foreach (var member in data.Room.Members)
-                                {
-                                    if (member.PlayerInfo == null)
-                                        continue;
-
-                                    if (newComerChr.Id != member.PlayerInfo.Character.Id)
-                                        await newComerChr.SendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
-                                    else
-                                        await newComerChr.SendPacket(ChatRoomPacket.joinMessenger(member.Position));
-                                }
-                            }
-                        });
-
-                    }
-                });
+                    });
+                }
             }
 
             protected override JoinChatRoomResponse Parse(ByteString data) => JoinChatRoomResponse.Parser.ParseFrom(data);
@@ -76,24 +59,18 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnLeaveChatRoom;
 
-            protected override void HandleMessage(LeaveChatRoomResponse data)
+            protected override async Task HandleMessage(LeaveChatRoomResponse data)
             {
-                _server.Broadcast(async w =>
+                var allMembers = data.Room.Members.Where(x => x.PlayerInfo != null).Select(x => x.PlayerInfo.Character.Id);
+                await _server.SendToPlayersAsync([data.LeftPlayerID, .. allMembers], async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(data.LeftPlayerID)?.Send(m =>
+                    if (data.LeftPlayerID == chr.Id)
                     {
-                        var leftPlayer = m.getCharacterById(data.LeftPlayerID);
-                        leftPlayer?.ChatRoomId = 0;
-                    });
-
-                    foreach (var member in data.Room.Members)
+                        chr.ChatRoomId = 0;
+                    }
+                    else
                     {
-                        if (member.PlayerInfo == null)
-                            continue;
-
-                        var chr = w.getPlayerStorage().GetCharacterClientById(member.PlayerInfo.Character.Id);
-                        if (chr != null)
-                            await chr.SendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
+                        await chr.SendPacket(PacketCreator.removeMessengerPlayer(data.LeftPosition));
                     }
                 });
             }
@@ -109,20 +86,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnChatRoomMessageReceived;
 
-            protected override void HandleMessage(SendChatRoomMessageResponse res)
+            protected override async Task HandleMessage(SendChatRoomMessageResponse res)
             {
-                _server.Broadcast((worldChannel) =>
+                await _server.SendToPlayersAsync(res.Members, async chr =>
                 {
-                    foreach (var member in res.Members)
-                    {
-                        var actor = worldChannel.getPlayerStorage().GetCharacterActor(member);
-                        actor?.Send(async map =>
-                        {
-                            var chr = map.getCharacterById(member);
-                            if (chr != null)
-                                await chr.SendPacket(PacketCreator.messengerChat(res.Text));
-                        });
-                    }
+                    await chr.SendPacket(PacketCreator.messengerChat(res.Text));
                 });
             }
 

@@ -287,7 +287,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     break;
                 case 2:
                     // Super megaphone
-                    c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
+                    await c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.serverNotice(3, player.ActualChannel, medal + player.getName() + " : " + p.readString(), (p.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -350,7 +350,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                         msg2[i] = medal + player.getName() + " : " + p.readString();
                     }
                     whisper = p.readByte() == 1;
-                    c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
+                    await c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getMultiMegaphone(msg2, player.ActualChannel, whisper));
                     break;
             }
             await remove(c, position, itemId);
@@ -481,8 +481,9 @@ public class UseCashItemHandler : ChannelHandlerBase
                 strLines.Add(p.readString());
             }
 
-            c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
-            await c.CurrentServer.TimerManager.schedule(
+            await c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.getAvatarMega(player, medal, player.ActualChannel, itemId, strLines, (p.readByte() != 0)));
+            await c.CurrentServer.TimerManager.ScheduleAsync(
+                $"ByeAvatarMega:{toUse.GetHashCode()}",
                 () => c.CurrentServer.NodeService.SendBroadcastWorldPacket(PacketCreator.byeAvatarMega()),
                 TimeSpan.FromSeconds(10));
             await remove(c, position, itemId);

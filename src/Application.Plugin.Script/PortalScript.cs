@@ -5821,15 +5821,15 @@ namespace Application.Plugin.Script
             var pCol = portalId % 10;
 
             if (pCol == int.Parse(comb.Substring(pRow, pRow + 1)))
-            {    //climb
-                await playPortalSound();
-                await warp(getMapId(), (pRow % 4 != 0) ? getPortal().getId() + 4 : (pRow / 4));
+            {
+                //climb
+                await TeleportPortal((pRow % 4 != 0) ? getPortal().getId() + 4 : (pRow / 4));
             }
             else
-            {    //fail
+            {
+                //fail
                 pRow--;
-                await playPortalSound();
-                await warp(getMapId(), (pRow / 4.0) > 1 ? (int)(pRow / 4.0) : 5);  // thanks Chloek3, seth1 for noticing next plaform issues
+                await TeleportPortal((pRow / 4.0) > 1 ? (int)(pRow / 4.0) : 5);  // thanks Chloek3, seth1 for noticing next plaform issues
             }
 
             return true;
@@ -7213,7 +7213,7 @@ namespace Application.Plugin.Script
                 var map = await getWarpMap(923000100);
                 if (map.getAllPlayers().Count == 0)
                 {
-                    await map.resetMapObjects ();
+                    await map.resetMapObjects();
                     await playPortalSound();
                     await warp(map.Id, 0);
 

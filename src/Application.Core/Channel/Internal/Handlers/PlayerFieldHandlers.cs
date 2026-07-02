@@ -15,12 +15,14 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerJobChanged;
 
-            protected override void HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
                     module.OnPlayerChangeJob(res);
                 }
+
+                return Task.CompletedTask;
             }
 
             protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
@@ -34,12 +36,14 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerLevelChanged;
 
-            protected override void HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
                     module.OnPlayerLevelUp(res);
                 }
+
+                return Task.CompletedTask;
             }
 
             protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
@@ -53,12 +57,14 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerServerChanged;
 
-            protected override void HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
                     module.OnPlayerServerChanged(res);
                 }
+
+                return Task.CompletedTask;
             }
 
             protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
@@ -72,9 +78,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnDoorRemoved;
 
-            protected override void HandleMessage(Dto.RemoveDoorResponse res)
+            protected override Task HandleMessage(Dto.RemoveDoorResponse res)
             {
-                _server.PushChannelCommand(new InvokeRemoveDoorCommand(res.OwnerId));
+                return _server.PushChannelCommandAsync(new InvokeRemoveDoorCommand(res.OwnerId));
             }
 
             protected override Dto.RemoveDoorResponse Parse(ByteString data) => Dto.RemoveDoorResponse.Parser.ParseFrom(data);

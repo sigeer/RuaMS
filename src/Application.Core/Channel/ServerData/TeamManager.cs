@@ -77,14 +77,14 @@ namespace Application.Core.Channel.ServerData
             _ = UpdateTeam(partyid, PartyOperation.JOIN, player, player.Id);
         }
 
-        public void ExpelFromParty(Player player, int expelCid)
+        public Task ExpelFromParty(Player player, int expelCid)
         {
-            _ = UpdateTeam(player.getPartyId(), PartyOperation.EXPEL, player, expelCid);
+            return UpdateTeam(player.getPartyId(), PartyOperation.EXPEL, player, expelCid);
         }
 
-        internal void ChangeLeader(Player player, int newLeader)
+        internal Task ChangeLeader(Player player, int newLeader)
         {
-            _ = UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
+            return UpdateTeam(player.getPartyId(), PartyOperation.CHANGE_LEADER, player, newLeader);
         }
 
         /// <summary>
@@ -177,14 +177,14 @@ namespace Application.Core.Channel.ServerData
             return team.Members.Select(x => channel.getPlayerStorage().getCharacterById(x.Id)).Where(x => x != null && x.isLoggedinWorld()).ToList();
         }
 
-        public void CreateInvite(Player fromChr, string toName)
+        public Task CreateInvite(Player fromChr, string toName)
         {
-            _ = _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
+           return _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
-        public void AnswerInvite(Player chr, int partyId, bool answer)
+        public Task AnswerInvite(Player chr, int partyId, bool answer)
         {
-            _ = _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
+            return _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
         }
     }
 }

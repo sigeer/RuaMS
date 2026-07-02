@@ -15,6 +15,7 @@ using net.server.coordinator.world;
 using server.events.gm;
 using server.life;
 using server.maps;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Core.Game.Maps
 {
@@ -188,7 +189,7 @@ namespace Application.Core.Game.Maps
         WorldChannel getChannelServer();
 
         Portal? getDoorPortal(int doorid);
-        bool TryGetEffectiveDoorPortal(out MysticDoorPortal? portal);
+        bool TryGetEffectiveDoorPortal([MaybeNullWhen(false)] out MysticDoorPortal portal);
 
 
         #region Npc

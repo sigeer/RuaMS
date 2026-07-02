@@ -11,9 +11,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.UnregisterChannel;
 
-        protected override void HandleMessage(Empty message)
+        protected override Task HandleMessage(Empty message)
         {
-            _ = _server.Shutdown();
+            return _server.Shutdown();
         }
 
     }

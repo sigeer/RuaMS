@@ -58,7 +58,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
 
                 string targetName = p.readString();
-                _guildManager.SendInvitation(c, targetName);
+                await _guildManager.SendInvitation(c, targetName);
                 break;
             case 0x06:
                 if (mc.GuildId > 0)
@@ -74,7 +74,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.AnswerInvitation(mc, gid, true);
+                await _guildManager.AnswerInvitation(mc, gid, true);
                 break;
             case 0x07:
                 cid = p.readInt();
@@ -85,13 +85,13 @@ public class GuildOperationHandler : ChannelHandlerBase
                     return;
                 }
 
-                _guildManager.LeaveMember(mc);
+                await _guildManager.LeaveMember(mc);
                 break;
             case 0x08:
                 cid = p.readInt();
                 name = p.readString();
 
-                _guildManager.ExpelMember(mc, cid);
+                await _guildManager.ExpelMember(mc, cid);
                 break;
             case 0x0d:
                 if (mc.GuildRank != 1)
@@ -105,7 +105,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                     ranks[i] = p.readString();
                 }
 
-                _guildManager.SetGuildRankTitle(mc, ranks);
+                await _guildManager.SetGuildRankTitle(mc, ranks);
                 break;
             case 0x0e:
                 cid = p.readInt();
@@ -119,7 +119,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                _guildManager.ChangeRank(c.OnlinedCharacter, cid, newRank);
+                await _guildManager.ChangeRank(c.OnlinedCharacter, cid, newRank);
                 break;
             case 0x0f:
                 if (mc.GuildRank != 1 || mc.getMapId() != MapId.GUILD_HQ)
@@ -138,7 +138,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 byte logocolor = p.readByte();
 
                 await mc.GainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, GainItemShow.ShowInChat);
-                _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
+                await _guildManager.SetGuildEmblem(mc, bg, bgcolor, logo, logocolor);
 
 
                 break;
@@ -148,7 +148,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 {
                     return;
                 }
-                _guildManager.SetGuildNotice(mc, notice);
+                await _guildManager.SetGuildNotice(mc, notice);
                 break;
             case 0x1E:
                 _logger.LogWarning("功能移除：回复家族发起");

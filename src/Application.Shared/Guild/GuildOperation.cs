@@ -8,6 +8,7 @@ namespace Application.Shared.Team
         NoGuild,
         GuildNotExisted ,
         GuildFull,
+        GuildCapacityFull,
 
         MasterRankFail,
 

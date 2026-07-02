@@ -53,13 +53,13 @@ namespace Application.Plugin.Script.Quest
             if (await AskYesNo("呵呵，平安回来了？孩子呢？孩子也带回来了吗？"))
             {
                 await SaySpeech([
-                    new SpeechText("太好了……真是太好了。", 9),
-                    new SpeechText("赶快上船！已经没时间了！", 3),
-                    new SpeechText("啊，没错。现在不是感伤的时候。黑魔法师的气息越来越近！似乎他们已经察觉方舟的位置，得赶紧启航，不然就来不及了！", 9),
-                    new SpeechText("立刻出发！", 3),
-                    new SpeechText("战神！请你也上船吧！我们理解你渴望战斗的心情……不过，现在已经晚了！战斗就交给你的那些同伴吧，和我们一起去金银岛吧！", 9),
-                    new SpeechText("不行！", 3),
-                    new SpeechText("赫丽娜，你先出发去金银岛。一定要活着，我们一定会再见的。我要和同伴们一起同黑魔法师战斗！", 3),
+                    new SpeechText("太好了……真是太好了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("赶快上船！已经没时间了！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("啊，没错。现在不是感伤的时候。黑魔法师的气息越来越近！似乎他们已经察觉方舟的位置，得赶紧启航，不然就来不及了！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("立刻出发！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("战神！请你也上船吧！我们理解你渴望战斗的心情……不过，现在已经晚了！战斗就交给你的那些同伴吧，和我们一起去金银岛吧！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("不行！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("赫丽娜，你先出发去金银岛。一定要活着，我们一定会再见的。我要和同伴们一起同黑魔法师战斗！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
                     ]);
 
                 await gainItem(4001271, -1);
@@ -93,8 +93,8 @@ namespace Application.Plugin.Script.Quest
                 await forceStartQuest();
 
                 await SaySpeech([
-                    new SpeechText("请先喝掉药水，然后再慢慢说！", 9),
-                    new SpeechText("#b（这药水怎么喝？……不记得了……）", 3),
+                    new SpeechText("请先喝掉药水，然后再慢慢说！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（这药水怎么喝？……不记得了……）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
                 ]);
                 await guideHint(14);
             }
@@ -123,8 +123,8 @@ namespace Application.Plugin.Script.Quest
             await gainItem(2000023, 3);
             await forceCompleteQuest();
 
-            await SayNext("你升级了吗？不知道你有没有得到技能点数？在冒险岛世界，每升1级就能获得技能点数3。按#bK键#k，打开技能栏就可确认。", 9);
-            await SayNext("#b（对我这么亲切，我却什么都想不起来。我真的是英雄吗？还是先查看一下技能吧……怎么查看技能呀？）", 3);
+            await SayNext("你升级了吗？不知道你有没有得到技能点数？在冒险岛世界，每升1级就能获得技能点数3。按#bK键#k，打开技能栏就可确认。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face);
+            await SayNext("#b（对我这么亲切，我却什么都想不起来。我真的是英雄吗？还是先查看一下技能吧……怎么查看技能呀？）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
             await guideHint(15);
         }
         // Quest: 21011 
@@ -144,7 +144,7 @@ namespace Application.Plugin.Script.Quest
                     await gainExp(35);
                     await forceCompleteQuest();
 
-                    await SayNext("#b（看自己这技能水平没一点英雄的样子……这把剑感觉也很陌生。以前的我是用剑的吗？这把剑怎么用呢？）", 3);
+                    await SayNext("#b（看自己这技能水平没一点英雄的样子……这把剑感觉也很陌生。以前的我是用剑的吗？这把剑怎么用呢？）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd );
                     await guideHint(16);
                 }
                 else
@@ -204,7 +204,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await forceStartQuest();
 
-                await SayNext("礼物的各个部分都装在附近的一个盒子里。对不起，麻烦你了，你能不能把盒子弄坏，给我拿个 #b#t4032309##k 和 #b#t4032310##k? 我马上给你组装好.", 9);
+                await SayNext("礼物的各个部分都装在附近的一个盒子里。对不起，麻烦你了，你能不能把盒子弄坏，给我拿个 #b#t4032309##k 和 #b#t4032310##k? 我马上给你组装好.", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face);
                 await guideHint(18);
             }
         }
@@ -219,8 +219,8 @@ namespace Application.Plugin.Script.Quest
                 await gainItem(4032310, -1);
                 await gainItem(3010062, 1);
 
-                await SayNext("好了，椅子做好了！嘿嘿！就算是英雄肯定也会有需要歇歇的时候，所以我一直想送你一把椅子。", 9);
-                await SayNext("我想就算是英雄也不能永远活力充沛，肯定也有疲劳、困倦的时候。但真正的英雄是能够克服万难取得最后胜利的。", 9);
+                await SayNext("好了，椅子做好了！嘿嘿！就算是英雄肯定也会有需要歇歇的时候，所以我一直想送你一把椅子。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face);
+                await SayNext("我想就算是英雄也不能永远活力充沛，肯定也有疲劳、困倦的时候。但真正的英雄是能够克服万难取得最后胜利的。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face);
 
                 await guideHint(19);
             }
@@ -263,25 +263,25 @@ namespace Application.Plugin.Script.Quest
         public async Task q21017s()
         {
             await SaySpeech([
-                    new SpeechText("现在，身体筋骨差不多舒展开了吧？这种时候还要进一步加强训练强度才能保证锻炼出过硬的基础体力。来吧，继续基础体力的锻炼吧。", 8),
-                    new SpeechText("这次去#b#m140020200##k消灭#r#o0100133##k试试看。大概消灭#r20只#k就行，将会对你的体力增长大有帮助。快去快去……咦？你有什么要说的吗？", 8),
-                    new SpeechText("……为什么要消灭的怪兽数量越来越多了？", 2),
-                    new SpeechText("是要越来越多。难道说20只还不够吗？要不消灭100只试试？哦，这还不够，索性不如像林中之城的谁那样，一口气消灭999只怪兽试试……", 8),
-                    new SpeechText("不，不用了，这样就够了。", 2),
+                    new SpeechText("现在，身体筋骨差不多舒展开了吧？这种时候还要进一步加强训练强度才能保证锻炼出过硬的基础体力。来吧，继续基础体力的锻炼吧。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("这次去#b#m140020200##k消灭#r#o0100133##k试试看。大概消灭#r20只#k就行，将会对你的体力增长大有帮助。快去快去……咦？你有什么要说的吗？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("……为什么要消灭的怪兽数量越来越多了？", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("是要越来越多。难道说20只还不够吗？要不消灭100只试试？哦，这还不够，索性不如像林中之城的谁那样，一口气消灭999只怪兽试试……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("不，不用了，这样就够了。", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await SayAcceptDecline("哎呦哎呦，用不着这么谦虚。我充★分★理解英雄大人渴望赶紧变得厉害起来的心情。真不愧是英雄大人……"))
             {
                 await forceStartQuest();
                 await SaySpeech([
-                    new SpeechText("#b（再这么说下去，搞不好真得让我去消灭999只怪兽了，赶紧接受任务得了。）", 2),
-                    new SpeechText("那就拜托你消灭20只#o0100133#。", 8),
+                    new SpeechText("#b（再这么说下去，搞不好真得让我去消灭999只怪兽了，赶紧接受任务得了。）", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("那就拜托你消灭20只#o0100133#。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                 ]);
 
                 await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
-                await SayNext("#b（怀着沉重的心情，没有说出拒绝的话。现在临阵脱逃也不可能……镇定一下情绪，再说两句。）", 2);
+                await SayNext("#b（怀着沉重的心情，没有说出拒绝的话。现在临阵脱逃也不可能……镇定一下情绪，再说两句。）", NpcTalkSpeaker.PlayerRight);
             }
         }
         // Quest: 21018 
@@ -303,12 +303,12 @@ namespace Application.Plugin.Script.Quest
         public async Task q21100s()
         {
             await SaySpeech([
-                    new SpeechText("与黑魔法师战斗的英雄们……有关他们的信息几乎什么都没留下。即使在预言书中也只记载了5位英雄，也没有任何有关他们外貌的描述。你还能记起来些什么吗？", 8),
-                    new SpeechText("一点都想不起来了……", 2),
-                    new SpeechText("果然，黑魔法师的沮咒果然很厉害。不过，作为英雄的你肯定和过去应该还会存在某个联系点的。会是什么呢？武器和衣服是不是在战斗中都遗失了呢……啊，对了，应该是#b武器#k！", 8),
-                    new SpeechText("武器？", 2),
-                    new SpeechText("以前，我们在冰窟中挖掘英雄的时候，发现过一个巨大的武器。我们猜测可能是英雄使用的武器，所以就放在了村子中央。你来来去去的时候没看到吗？#b#p1201001##k……\r\r#i4032372#\r\r大概长这样……", 8),
-                    new SpeechText("确实，那个#p1201001#在村子里，看起来是有些奇怪。", 2),
+                    new SpeechText("与黑魔法师战斗的英雄们……有关他们的信息几乎什么都没留下。即使在预言书中也只记载了5位英雄，也没有任何有关他们外貌的描述。你还能记起来些什么吗？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("一点都想不起来了……", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("果然，黑魔法师的沮咒果然很厉害。不过，作为英雄的你肯定和过去应该还会存在某个联系点的。会是什么呢？武器和衣服是不是在战斗中都遗失了呢……啊，对了，应该是#b武器#k！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("武器？", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("以前，我们在冰窟中挖掘英雄的时候，发现过一个巨大的武器。我们猜测可能是英雄使用的武器，所以就放在了村子中央。你来来去去的时候没看到吗？#b#p1201001##k……\r\r#i4032372#\r\r大概长这样……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("确实，那个#p1201001#在村子里，看起来是有些奇怪。", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await SayAcceptDecline("没错，就是那个东西。据说英雄的武器是会挑选主人。如果你就是使用#p1201001#的英雄，那么在抓住#p1201001#的刹那，武器应该会有反应的。快去点击#b#p1201001#试试#k。"))
             {
@@ -318,16 +318,16 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                await SayNext("你还在犹豫什么？就算#p1201001#没有反应，我也没什么好失望的。快去抓住#p1201001#试试吧。需要在武器合适的地方#b点击#k才能。", 8);
+                await SayNext("你还在犹豫什么？就算#p1201001#没有反应，我也没什么好失望的。快去抓住#p1201001#试试吧。需要在武器合适的地方#b点击#k才能。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face);
             }
         }
         // Quest: 21101 
         public async Task q21101s()
         {
             await SaySpeech([
-                    new SpeechText("#b(抚摸着#p1201001#，本来冰凉的战斧上却传来了温暖的感觉，令我似乎想起了些过去的事情。)#k", 1),
-                    new SpeechText("#b(...使用战斧的英雄曾经是一位拥有强劲力量和充沛体力，能够自由使用多种技能进行近身战的战士...)#k", 1),
-                    new SpeechText("#b(...虽然拥有很高的STR，但还有一些DEX，所以并非全靠力气吃饭...)#k", 1),
+                    new SpeechText("#b(抚摸着#p1201001#，本来冰凉的战斧上却传来了温暖的感觉，令我似乎想起了些过去的事情。)#k", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("#b(...使用战斧的英雄曾经是一位拥有强劲力量和充沛体力，能够自由使用多种技能进行近身战的战士...)#k", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("#b(...虽然拥有很高的STR，但还有一些DEX，所以并非全靠力气吃饭...)#k", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
                 ]);
 
             if (await SayAcceptDecline("#b(这是我自己的记忆吗？还是对同伴英雄的记忆呢？...还得再摸一次#p1201001#试试看。)#k"))
@@ -377,22 +377,22 @@ namespace Application.Plugin.Script.Quest
         public async Task q21200e()
         {
             await SaySpeech([
-                    new SpeechText("嗡嗡嗡嗡嗡……", 4, 1201001),
-                    new SpeechText("#b（以前没见过他啊？怎么看起来不太像人类？）", 2),
-                    new SpeechText("喂！战神！还听不见我的声音吗？到底听不听得见？唉，烦死了！", 8),
-                    new SpeechText("#b（咦？这是谁的声音？怎么听起来像个凶巴巴的少年……）", 2),
-                    new SpeechText("唉……哪有这样的主人啊？丢开武器在冰窟里睡了几百年，现在连话都听不懂了……", 8),
-                    new SpeechText("你是谁啊？", 2),
-                    new SpeechText("啊，战神？现在听到我的声音了？是我啊，不记得我了？我就是武器#b长矛 #p1201002##k啊？", 8),
-                    new SpeechText("#b（……#p1201002#？#p1201001#会说话？）", 2),
-                    new SpeechText("不至于吧？这么吃惊？再怎么失忆，总不能连我都忘了吧？太不够意思了！", 8),
-                    new SpeechText("不好意思，真的一点都想不起来。", 2),
+                    new SpeechText("嗡嗡嗡嗡嗡……", NpcTalkSpeaker.ExtraNpc, 1201001),
+                    new SpeechText("#b（以前没见过他啊？怎么看起来不太像人类？）", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("喂！战神！还听不见我的声音吗？到底听不听得见？唉，烦死了！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（咦？这是谁的声音？怎么听起来像个凶巴巴的少年……）", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("唉……哪有这样的主人啊？丢开武器在冰窟里睡了几百年，现在连话都听不懂了……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("你是谁啊？", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("啊，战神？现在听到我的声音了？是我啊，不记得我了？我就是武器#b长矛 #p1201002##k啊？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（……#p1201002#？#p1201001#会说话？）", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("不至于吧？这么吃惊？再怎么失忆，总不能连我都忘了吧？太不够意思了！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("不好意思，真的一点都想不起来。", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await AskYesNo("说声不好意思就能算了？！几百年来就我一个人孤苦伶仃地，有多寂寞你知道吗？不管怎样，你快点给我想起来！"))
             {
                 await completeQuest();
 
-                await SayNext("#b（一口一个自己是#p1201001#、#p1201002#的，还越说越生气了。再这么说下去也不会有啥进展，还是先走到 #p1201000#跟前，好好商量商量。）", 3);
+                await SayNext("#b（一口一个自己是#p1201001#、#p1201002#的，还越说越生气了。再这么说下去也不会有啥进展，还是先走到 #p1201000#跟前，好好商量商量。）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
             }
 
         }
@@ -400,13 +400,13 @@ namespace Application.Plugin.Script.Quest
         public async Task q21201e()
         {
             await SaySpeech([
-                    new SpeechText("曾经是谁说要让我成为击退黑魔法师的传世武器的？结果中了诅咒，自顾自地沉睡了几百年，把我丢在一边不管不顾。……什么？想不起来了？一句想不起来了就想了事？当初苦苦求我，拜托我的时候怎么说的来着……", 8),
-                    new SpeechText("说要向#p1203000#证明自己的实力，请他给我一个机会。", 2),
-                    new SpeechText("没错！当初为了得到我，你低三下四地苦苦哀求。要知道像我这样优秀的武器，你上哪里去找啊？能够和黑魔法师相抗衡的最强的巨大的战斧就是我了！结果你却把我扔在冰窟里，一放就是几百年……", 8),
-                    new SpeechText("倒也没有苦苦哀求。", 2),
-                    new SpeechText("什么？没有苦苦哀求？是谁哭着闹着要得到我，甚至不惜双膝下跪苦苦哀求？要不#p1203000#怎么会答应……等等？战神！你难道……难道已经想起来了？！", 8),
-                    new SpeechText("有一点点……", 2),
-                    new SpeechText("……真不愧是战神啊……呜，呜呜！不，我一点都没有感动！……虽然中了黑魔法师的诅咒，能力尽失，连拿起我的力气都没有了……即便如此，你居然还能想起我，真不愧是我的主人啊！", 8),
+                    new SpeechText("曾经是谁说要让我成为击退黑魔法师的传世武器的？结果中了诅咒，自顾自地沉睡了几百年，把我丢在一边不管不顾。……什么？想不起来了？一句想不起来了就想了事？当初苦苦求我，拜托我的时候怎么说的来着……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("说要向#p1203000#证明自己的实力，请他给我一个机会。", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("没错！当初为了得到我，你低三下四地苦苦哀求。要知道像我这样优秀的武器，你上哪里去找啊？能够和黑魔法师相抗衡的最强的巨大的战斧就是我了！结果你却把我扔在冰窟里，一放就是几百年……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("倒也没有苦苦哀求。", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("什么？没有苦苦哀求？是谁哭着闹着要得到我，甚至不惜双膝下跪苦苦哀求？要不#p1203000#怎么会答应……等等？战神！你难道……难道已经想起来了？！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("有一点点……", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("……真不愧是战神啊……呜，呜呜！不，我一点都没有感动！……虽然中了黑魔法师的诅咒，能力尽失，连拿起我的力气都没有了……即便如此，你居然还能想起我，真不愧是我的主人啊！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                 ]);
             if (await SayAcceptDecline("就算你失去记忆也还是我的主人。那经过极端训练的身体依然能够记得当初的技能，虽然在冰窟中沉睡了数百年，但这一点我还是很清楚的。好吧，我帮你唤醒你的能力！"))
             {
@@ -432,10 +432,10 @@ namespace Application.Plugin.Script.Quest
         public async Task q21202s()
         {
             await SaySpeech([
-                    new SpeechText("呵呵……年轻人来这么偏僻的地方干嘛？", 8),
-                    new SpeechText("我想要最厉害的长矛！", 2),
-                    new SpeechText("最厉害的长矛？那种东西在小村子里怎么有卖的……", 8),
-                    new SpeechText("我知道你就是冒险岛世界里最厉害的铁匠！我想要你做的武器！", 2),
+                    new SpeechText("呵呵……年轻人来这么偏僻的地方干嘛？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("我想要最厉害的长矛！", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("最厉害的长矛？那种东西在小村子里怎么有卖的……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("我知道你就是冒险岛世界里最厉害的铁匠！我想要你做的武器！", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await SayAcceptDecline("我这个老头子太老了，哪还能做什么优秀的武器啊。倒是有一支很久以前做的长矛……不过却不能给你。那个家伙太锋利，弄不好连主人都会被伤到。这种武器你还想要吗？"))
             {
@@ -448,8 +448,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21202e()
         {
             await SaySpeech([
-                    new SpeechText("哎呦～#t4032311#都取回来了？你………比我想象的还要厉害一些嘛。不过，对于随时都可能伤到自己的危险武器，你那种毫不畏惧的爽朗豪放的心态实在是……好吧，#p1201001#就给你了。", 1),
-                    new SpeechText("#b（过了好一会儿，#p1203000#才郑重地将裏在布里的#p1201001#交给我。）", 1),
+                    new SpeechText("哎呦～#t4032311#都取回来了？你………比我想象的还要厉害一些嘛。不过，对于随时都可能伤到自己的危险武器，你那种毫不畏惧的爽朗豪放的心态实在是……好吧，#p1201001#就给你了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("#b（过了好一会儿，#p1203000#才郑重地将裏在布里的#p1201001#交给我。）", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
                 ]);
             if (await AskYesNo("这就是专门为你而做的长矛，名叫#p1201002#……以后就拜托了。"))
             {
@@ -479,12 +479,12 @@ namespace Application.Plugin.Script.Quest
             if (await AskYesNo("抓到#o9001013#了吗？呵呵呵……真不愧是我的主人！很好，把你找到的#t4032312#给我吧……啊……？怎么不说话？难道……你没找到？"))
             {
                 await SaySpeech([
-                    new SpeechText("什么？！没找到#t4032312#？怎么会这样？！你忘了吗？啊，怎么……再怎么被黑魔法师诅咒，再怎么被封冻几百年也不能让你变得这么笨啊……", 1 << 3),
-                    new SpeechText("不行。我不能绝望。主人糊里糊涂，我可不能糊涂……深呼吸……深呼吸……", 1 << 3),
-                    new SpeechText("再去找找，反正小偷已经逃走。看来必须重新做#t4032312#了。以前也做过一次，你知道需要哪些材料吧？快去搜集材料……", 1 << 3),
+                    new SpeechText("什么？！没找到#t4032312#？怎么会这样？！你忘了吗？啊，怎么……再怎么被黑魔法师诅咒，再怎么被封冻几百年也不能让你变得这么笨啊……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("不行。我不能绝望。主人糊里糊涂，我可不能糊涂……深呼吸……深呼吸……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("再去找找，反正小偷已经逃走。看来必须重新做#t4032312#了。以前也做过一次，你知道需要哪些材料吧？快去搜集材料……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                     new SpeechText("   #i4001173#", 0),
-                    new SpeechText("……彻底没希望了。啊啊啊！", 1 << 3),
-                    new SpeechText("#b（#p1201002#正在气头上。先撤再说。说不定#p1201000#能给我什么帮助。）", 1 << 1),
+                    new SpeechText("……彻底没希望了。啊啊啊！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（#p1201002#正在气头上。先撤再说。说不定#p1201000#能给我什么帮助。）", NpcTalkSpeaker.PlayerRight),
                 ]);
 
                 await completeQuest();
@@ -519,10 +519,10 @@ namespace Application.Plugin.Script.Quest
         public async Task q21303s()
         {
             await SaySpeech([
-                    new SpeechText("呜呜～#p1203001#很难过。#p1203001#很生气。#p1203001#很想哭……呜呜呜呜～", 1 << 3),
-                    new SpeechText("怎、怎么了？", 1 << 1),
-                    new SpeechText("#p1203001#做好了宝石。#b像苹果一样的红宝石#k。结果#r小偷#k却把宝石给偷走了。#p1203001#宝石没了。#p1203001#好难过……", 1 << 3),
-                    new SpeechText("你说小偷偷走了红宝石？", 1 << 1),
+                    new SpeechText("呜呜～#p1203001#很难过。#p1203001#很生气。#p1203001#很想哭……呜呜呜呜～", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("怎、怎么了？", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("#p1203001#做好了宝石。#b像苹果一样的红宝石#k。结果#r小偷#k却把宝石给偷走了。#p1203001#宝石没了。#p1203001#好难过……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("你说小偷偷走了红宝石？", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await SayAcceptDecline("对。必须找回#p1203001#宝石。你要是能帮我找回#p1203001#宝石，我会好好答谢你的。要是帮我抓到小偷，我也会答谢你的。"))
             {
@@ -626,8 +626,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21613s()
         {
             await SaySpeech([
-                    new SpeechText("我们是一群狼，在寻找我们丢失的孩子。我听说你在照顾我们的孩子。我们很感激你的好意，但现在是时候把孩子还给我们了.", 9),
-                    new SpeechText("狼人也是我的朋友，我不能就这样放弃一个朋友", 3),
+                    new SpeechText("我们是一群狼，在寻找我们丢失的孩子。我听说你在照顾我们的孩子。我们很感激你的好意，但现在是时候把孩子还给我们了.", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("狼人也是我的朋友，我不能就这样放弃一个朋友", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
                 ]);
             if (await SayAcceptDecline("我们明白，但我们不会丢下我们的小狗离开。这样吧，我们来考验你，看看你是否有资格养一只狼。#r狼的考试#k"))
             {
@@ -648,8 +648,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21618s()
         {
             await SaySpeech([
-                    new SpeechText("哦，这只你的狼朋友。。。你看，我感觉到他皮毛背后隐藏着某种力量。等等，主人，如果我醒来，那是隐藏的力量?", 9),
-                    new SpeechText("等等，你能做到吗?", 3),
+                    new SpeechText("哦，这只你的狼朋友。。。你看，我感觉到他皮毛背后隐藏着某种力量。等等，主人，如果我醒来，那是隐藏的力量?", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("等等，你能做到吗?", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
                 ]);
             if (await SayAcceptDecline("很惊讶吧？冰河中冰冻的时间是否也妨碍了你的感官？当然，为什么！准备好了告诉我!", 9))
             {
@@ -676,10 +676,10 @@ namespace Application.Plugin.Script.Quest
         public async Task q21700s()
         {
             await SaySpeech([
-                    new SpeechText("你似乎在回想什么。这个长矛果然认出了你。那么你肯定就是#b使用长矛的英雄，战神#k了。你想起什么其他的了吗？有关长矛的技能之类……", 8),
-                    new SpeechText("#b（说技能倒是想起来了几个。）#k", 2),
-                    new SpeechText("虽然数量不多，不过也已经很不容易了。现在让我们集中精力来恢复过去的技能吧。虽然你失忆了，但毕竟是以前曾经烂熟于心的东西，要恢复起来应该很快。", 8),
-                    new SpeechText("怎么恢复过去的技能？", 2)
+                    new SpeechText("你似乎在回想什么。这个长矛果然认出了你。那么你肯定就是#b使用长矛的英雄，战神#k了。你想起什么其他的了吗？有关长矛的技能之类……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（说技能倒是想起来了几个。）#k", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("虽然数量不多，不过也已经很不容易了。现在让我们集中精力来恢复过去的技能吧。虽然你失忆了，但毕竟是以前曾经烂熟于心的东西，要恢复起来应该很快。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("怎么恢复过去的技能？", NpcTalkSpeaker.PlayerRight)
                 ]);
             if (await SayAcceptDecline("那个......办法只有一个。就是修炼！修炼！修炼！只有不停地修炼才能找回曾经忘却的身体感觉！"))
             {
@@ -702,11 +702,11 @@ namespace Application.Plugin.Script.Quest
         {
             await SaySpeech([
                     new SpeechText("……现在你的能力是什么程度，我大概了解了……呵呵……没想到我这把老骨头还能有今天……真是感动得要流眼泪……不，是鼻涕……", 0),
-                    new SpeechText("#b（……也没怎么修炼嘛……？）#k", 2),
+                    new SpeechText("#b（……也没怎么修炼嘛……？）#k", NpcTalkSpeaker.PlayerRight),
                     new SpeechText("好，现在让我们开始第三阶段，也是最后一阶段的锻炼。这次修炼的对象是……#r#o9300343##k！猪猪！你了解他们吗?", 0),
-                    new SpeechText("一点点……", 2),
+                    new SpeechText("一点点……", NpcTalkSpeaker.PlayerRight),
                     new SpeechText("他们是天生的战士！从出生的那一刻起，对食物就充满了无穷的愤怒，凡是他们经过的地方都不会留下任何食物。很可怕吧？", 0),
-                    new SpeechText("#b（他不是在开玩笑吧？）#k", 2),
+                    new SpeechText("#b（他不是在开玩笑吧？）#k", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await SayAcceptDecline("来，快点#b再次进入修炼场#k，去和那些天生的战士们——#o9300343#战斗吧，打倒#r30只#k后，你的能力将会有一个质的飞跃。全力以赴地去战斗吧！超越我这个教练！"))
             {
@@ -719,7 +719,7 @@ namespace Application.Plugin.Script.Quest
         {
             await SaySpeech([
                     new SpeechText("啊，你打败了所有30个#o9300343#后又回来了。我知道你有这个能力……尽管你没有记忆，能力也很少，但我还是能看出你与众不同！怎么会这样？因为你显然带着长柄武器！", 0),
-                    new SpeechText("#b（他在开玩笑吗？）#k", 2),
+                    new SpeechText("#b（他在开玩笑吗？）#k", NpcTalkSpeaker.PlayerRight),
                 ]);
             if (await AskYesNo("我没什么可教你的了，因为你的技术已经超越了我。现在就走吧！别回头！老头很高兴能成为你的导师。"))
             {
@@ -731,7 +731,7 @@ namespace Application.Plugin.Script.Quest
                 }
 
                 await SaySpeech([
-                    new SpeechText("（你还记得#b连击#k！一开始你对这项训练持怀疑态度，但是，它非常有效！）", 2),
+                    new SpeechText("（你还记得#b连击#k！一开始你对这项训练持怀疑态度，但是，它非常有效！）", NpcTalkSpeaker.PlayerRight),
                     new ("现在向#p1201000#汇报。我知道当她看到你所取得的进步时，她一定会很高兴！", 0)
                     ]);
             }
@@ -741,7 +741,7 @@ namespace Application.Plugin.Script.Quest
         {
             await SaySpeech([
                     new SpeechText("修炼进行的不错吧？#p1202006#个性很强……他对战神的技能确实很有研究，对你应该能帮上不少忙。", 0),
-                    new ("#b（告诉他自己回想起来连击能力这个技能。）#k", 2),
+                    new ("#b（告诉他自己回想起来连击能力这个技能。）#k", NpcTalkSpeaker.PlayerRight),
                     new ("是吗！看来除了#p1202006#的训练方式之外，你自己仍然记的从前的那些技能也很关键啊……看来只是在这里冰冻的太久，需要时间恢复而已。#b继续加油训练吧，争取早日恢复所有的技能！#k\r\n\r\n#fUI/UIWindow.img/QuestIcon/8/0# 500 exp", 0)
             ]);
 
@@ -756,8 +756,8 @@ namespace Application.Plugin.Script.Quest
             {
                 await forceStartQuest();
                 await SaySpeech([
-                        new SpeechText("怎么会发生这种事情呢......这种人偶不可能是自然形成的，一定是有人故意而为......看来要对#o1210102#的状态观察一段时间了。", 9),
-                        new SpeechText("#b（射手村周边的#o1210102#发生变化的原因找到了。现在把搜集到的信息告诉#p1002104#吧。）#k", 2),
+                        new SpeechText("怎么会发生这种事情呢......这种人偶不可能是自然形成的，一定是有人故意而为......看来要对#o1210102#的状态观察一段时间了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                        new SpeechText("#b（射手村周边的#o1210102#发生变化的原因找到了。现在把搜集到的信息告诉#p1002104#吧。）#k", NpcTalkSpeaker.PlayerRight),
                     ]);
             }
             else
@@ -769,15 +769,15 @@ namespace Application.Plugin.Script.Quest
         public async Task q21716s()
         {
             await SaySpeech([
-                    new SpeechText("#p1032112#说了什么？", 8),
-                    new SpeechText("#b（#p1032112#告诉我，不久前，有个奇怪的孩子来到这里，那个孩子手上好像拿着人偶。好像从那之后魔法森林中就出现了奇怪的怪物......）#k", 2),
+                    new SpeechText("#p1032112#说了什么？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（#p1032112#告诉我，不久前，有个奇怪的孩子来到这里，那个孩子手上好像拿着人偶。好像从那之后魔法森林中就出现了奇怪的怪物......）#k", NpcTalkSpeaker.PlayerRight),
                     ]);
             if (await SayAcceptDecline("吼...抱着人偶的小孩...不得不叫人怀疑。是有人故意把怪物变成为凶暴的证据啊..."))
             {
                 await forceStartQuest();
                 await SaySpeech([
-                    new SpeechText("魔法森林的和平已经被打破......这种恶行绝对不能饶恕......看来我得提醒村民们最近一定要多加小心。", 2),
-                    new SpeechText("#b（不过话说回来，村庄的人们真的有办法应对残暴的绿蘑菇吗？应该会很辛苦的说...既然找出引起绿蘑菇暴走的原因，现在把搜集到的情报告诉#p1002104#吧。）#k", 2),
+                    new SpeechText("魔法森林的和平已经被打破......这种恶行绝对不能饶恕......看来我得提醒村民们最近一定要多加小心。", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("#b（不过话说回来，村庄的人们真的有办法应对残暴的绿蘑菇吗？应该会很辛苦的说...既然找出引起绿蘑菇暴走的原因，现在把搜集到的情报告诉#p1002104#吧。）#k", NpcTalkSpeaker.PlayerRight),
                     ]);
             }
         }
@@ -785,8 +785,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21719s()
         {
             await SaySpeech([
-                    new SpeechText("莫非你是前不久在#m101000000#的那个人？终于找到你了！我找你找得好辛苦，知道吗？", 8),
-                    new SpeechText("你是谁？", 2),
+                    new SpeechText("莫非你是前不久在#m101000000#的那个人？终于找到你了！我找你找得好辛苦，知道吗？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("你是谁？", NpcTalkSpeaker.PlayerRight),
                     ]);
             if (await SayAcceptDecline("我？你想知道的话就来我的洞窟吧。我想好好招待你一番。点击接受按钮就能立刻移动到我家。我在那里等你。"))
             {
@@ -798,12 +798,12 @@ namespace Application.Plugin.Script.Quest
         public async Task q21720e()
         {
             await SaySpeech([
-                    new SpeechText("有什么事吗？你不是一直在金银岛上修炼吗？真相叔叔还带口信说你帮了大忙了。……什么？黑色之翼？", 8),
-                    new SpeechText("#b（讲述有关人偶师、黑色之翼，以及黑色之翼的目的事情。）#k", 2),
-                    new SpeechText("原来是这样……叫黑色之翼啊。居然还有这么一帮人……明知很危险也要在冒险岛世界里复活黑魔法师，太不像话了。", 8),
-                    new SpeechText("是，是啊……\r\r#b（他的语气突然变得很决断，好可怕。）#k", 2),
-                    new SpeechText("预言里只说到英雄会苏醒，与黑魔法师战斗。但我还一直半信半疑，这下我才明白黑魔法师是真的存在的。", 8),
-                    new SpeechText("是不是很可怕？", 2),
+                    new SpeechText("有什么事吗？你不是一直在金银岛上修炼吗？真相叔叔还带口信说你帮了大忙了。……什么？黑色之翼？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（讲述有关人偶师、黑色之翼，以及黑色之翼的目的事情。）#k", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("原来是这样……叫黑色之翼啊。居然还有这么一帮人……明知很危险也要在冒险岛世界里复活黑魔法师，太不像话了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("是，是啊……\r\r#b（他的语气突然变得很决断，好可怕。）#k", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("预言里只说到英雄会苏醒，与黑魔法师战斗。但我还一直半信半疑，这下我才明白黑魔法师是真的存在的。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("是不是很可怕？", NpcTalkSpeaker.PlayerRight),
                     ]);
             if (await AskYesNo("有什么可怕的？管他是什么黑魔法师还是什么别的，你都会将他们一一打倒的，还有什么好担心的呢？我们只会觉得斗志更加高涨。啊，对了，我发现了这个#b技能#k……看一眼吗？"))
             {
@@ -815,10 +815,10 @@ namespace Application.Plugin.Script.Quest
                 }
 
                 await SaySpeech([
-                        new SpeechText("#b（你还记得快速矛的技能！）#k", 2),
-                        new SpeechText("这个技能是在一个古老的神秘书籍中发现的。我有预感这可能是你过去用过的一种技能，我想我是对的。", 8),
-                        new SpeechText("你正在渐渐地变得强大起来。我会让你强大起来而倾尽全力帮助你的。有什么好害怕的呢？千万不能退缩。我们为了打败黑魔法师不是已经等待了数百年了吗？这次一定会取得胜利的！", 8),
-                        new SpeechText("呐，为了这个目标必须继续修炼！修炼明白吗？前往金银岛继续修炼吧。一定要练到能打败黑魔法师的程度才行！", 8),
+                        new SpeechText("#b（你还记得快速矛的技能！）#k", NpcTalkSpeaker.PlayerRight),
+                        new SpeechText("这个技能是在一个古老的神秘书籍中发现的。我有预感这可能是你过去用过的一种技能，我想我是对的。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("你正在渐渐地变得强大起来。我会让你强大起来而倾尽全力帮助你的。有什么好害怕的呢？千万不能退缩。我们为了打败黑魔法师不是已经等待了数百年了吗？这次一定会取得胜利的！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("呐，为了这个目标必须继续修炼！修炼明白吗？前往金银岛继续修炼吧。一定要练到能打败黑魔法师的程度才行！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                     ]);
             }
         }
@@ -846,12 +846,12 @@ namespace Application.Plugin.Script.Quest
         public async Task q21733e()
         {
             await SaySpeech([
-                    new SpeechText("啊……没想到还会碰上这种事情。怎么都没想到人偶师还会潜伏到这里来。平时大概是疏于修炼了，完全被对方给算计了。", 1 << 3),
-                    new SpeechText("对不起，都是因为我……", 1 << 1),
-                    new SpeechText("啊？英雄大人不必内疚。你也不知道那家伙会来啊。不必道歉。不过，这也暴露出了他们的弱点。", 1 << 3),
-                    new SpeechText("弱点？", 1 << 1),
-                    new SpeechText("人偶师讨厌的那个文件。如果那个文件是假的，人偶师是不会这么兴师动众，带着一群人跑来折腾的。那个文件充分证明了黑色之翼的目标其实是金银岛封印石。", 1 << 3),
-                    new SpeechText("话虽这么说，但我的位置也暴露了。", 1 << 1),
+                    new SpeechText("啊……没想到还会碰上这种事情。怎么都没想到人偶师还会潜伏到这里来。平时大概是疏于修炼了，完全被对方给算计了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("对不起，都是因为我……", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("啊？英雄大人不必内疚。你也不知道那家伙会来啊。不必道歉。不过，这也暴露出了他们的弱点。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("弱点？", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("人偶师讨厌的那个文件。如果那个文件是假的，人偶师是不会这么兴师动众，带着一群人跑来折腾的。那个文件充分证明了黑色之翼的目标其实是金银岛封印石。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("话虽这么说，但我的位置也暴露了。", NpcTalkSpeaker.PlayerRight),
                     ]);
             if (await AskYesNo("别担心。这次我为了拿利琳寄过来的文件才出去的，没想到中了敌人的招。平时我不会这么不小心的。好歹也是个情报商人，总会为自己准备一条退路的。现在关键的是#b精准矛#k这个技能你知道吗？"))
             {
@@ -878,9 +878,9 @@ namespace Application.Plugin.Script.Quest
         public async Task q21734e()
         {
             await SaySpeech([
-                new SpeechText("看样子，你应该已经打败人偶师了……怎么不高兴的样子？发生什么事了？", 1 << 3),
-                    new SpeechText("没发现任何有关金银岛封印石的情报。", 1 << 1),
-                    new SpeechText("啊哈！原来是为这事。呵呵呵……完全不用担心。", 1 << 3),
+                new SpeechText("看样子，你应该已经打败人偶师了……怎么不高兴的样子？发生什么事了？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("没发现任何有关金银岛封印石的情报。", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("啊哈！原来是为这事。呵呵呵……完全不用担心。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                     ]);
             await forceCompleteQuest();
 
@@ -891,8 +891,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21735s()
         {
             await SaySpeech([
-                new SpeechText("#t4032323#我已经找到了。你看，呵呵呵。\r\r\r\r#i4032323#", 1 << 3),
-                    new SpeechText("!!\r\r……你怎么找到的？！", 1 << 1),
+                new SpeechText("#t4032323#我已经找到了。你看，呵呵呵。\r\r\r\r#i4032323#", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("!!\r\r……你怎么找到的？！", NpcTalkSpeaker.PlayerRight),
                     ]);
             if (await SayAcceptDecline("上次被人偶师攻击后，我动员了所有的情报网搜遍了整个金银岛。我怎么可能坐以待毙？一定要抢在他们前面找到他们想要的东西……也算是报了上次一箭之仇。"))
             {
@@ -941,22 +941,22 @@ namespace Application.Plugin.Script.Quest
         public async Task q21738s()
         {
             await SaySpeech([
-                 new SpeechText("你有什么事? 虽然我并不欢迎不速之客......但你的身上却散发一种非比寻常的气息......看来我得听听你的事情了。", 1 << 3),
-                    new SpeechText("#b（讲述关于#o9300347#的事情。）", 1 << 1),
-                    new SpeechText("#o9300347#? 虽然这的确是个严峻的问题......不过到目前为止应该对#m200000000#还造不成影响。等等，你刚才说#o9300347#在哪儿?", 1 << 3),
-                    new SpeechText("在#m200060001#。", 1 << 1),
-                    new SpeechText("#m200060001#? #o9300347#居然在那里, 那么你是说有人想要入侵#m920030001#? 到底为什么呢? 是谁? ", 1 << 3),
-                    new SpeechText("#m920030001#?", 1 << 1),
-                    new SpeechText("......你到底是什么人竟然来问这样的问题? 你先稍等会儿。我要先卜一卦看你是不是值得信任。", 1 << 3),
-                    new SpeechText(".............", 1 << 3),
-                    new SpeechText(".........................", 1 << 3),
-                    new SpeechText("你, 你......不, 你......完全不同于普通人类。那悠久的岁月, 那可怕的宇宙, 然而你有着再次战胜它们的伟大命运......你到底是谁?", 1 << 3),
+                 new SpeechText("你有什么事? 虽然我并不欢迎不速之客......但你的身上却散发一种非比寻常的气息......看来我得听听你的事情了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#b（讲述关于#o9300347#的事情。）", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("#o9300347#? 虽然这的确是个严峻的问题......不过到目前为止应该对#m200000000#还造不成影响。等等，你刚才说#o9300347#在哪儿?", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("在#m200060001#。", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("#m200060001#? #o9300347#居然在那里, 那么你是说有人想要入侵#m920030001#? 到底为什么呢? 是谁? ", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("#m920030001#?", NpcTalkSpeaker.PlayerRight),
+                    new SpeechText("......你到底是什么人竟然来问这样的问题? 你先稍等会儿。我要先卜一卦看你是不是值得信任。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText(".............", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText(".........................", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                    new SpeechText("你, 你......不, 你......完全不同于普通人类。那悠久的岁月, 那可怕的宇宙, 然而你有着再次战胜它们的伟大命运......你到底是谁?", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                     ]);
             if (!IsQuestNotStarted(21738))
             {
                 await forceStartQuest();
             }
-            await SayNext("......不管是谁都好。占卦已经让我把一切都告诉你了。关于封印的庭院的一切......", 1 | 1 << 3);
+            await SayNext("......不管是谁都好。占卦已经让我把一切都告诉你了。关于封印的庭院的一切......", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face);
         }
         // Quest: 21739 
         public async Task q21739e()
@@ -976,7 +976,7 @@ namespace Application.Plugin.Script.Quest
         {
             await SaySpeech([
                 new SpeechText("啊，很久不见了。战神。这段事件修炼得还好吧？正好我发现了新的技能想叫你回来呢......你回来的正是时候！", 0),
-                        new SpeechText("#b（对利琳讲述有关天空之城封印石的事情。）#k", 2)
+                        new SpeechText("#b（对利琳讲述有关天空之城封印石的事情。）#k", NpcTalkSpeaker.PlayerRight)
                 ]);
             await forceCompleteQuest();
             await teachSkill(21100004, 0, 20, -1); // combo smash
@@ -996,18 +996,18 @@ namespace Application.Plugin.Script.Quest
         public async Task q21742s()
         {
             await SaySpeech([
-                new SpeechText("虽说也不是什么着急的活儿，不过你这么问总让人觉得有些不爽。我是不是应该让你下次再来找我呢？反正没什么事情，就请让我清净一点行吗？", 9),
-                    new SpeechText("我听说你见过黑色之翼的武士......", 3),
-                    new SpeechText("啊，你是说一身漆黑，眉宇间皱纹很深的那个男人吗？是见过。不但见过而且他有东西放在我这里，让我转交给武公老头子。", 9),
-                    new SpeechText("东西？", 3),
-                    new SpeechText("嗯，好大一个#b画轴#k塞给我，让我一定要转交。他一脸杀气的，好像我不转交的话，他还会来找我似的。哎呦，真是吓死人了。", 9),
-                    new SpeechText("然后呢，画轴转交出去了吗？", 3),
+                new SpeechText("虽说也不是什么着急的活儿，不过你这么问总让人觉得有些不爽。我是不是应该让你下次再来找我呢？反正没什么事情，就请让我清净一点行吗？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("我听说你见过黑色之翼的武士......", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("啊，你是说一身漆黑，眉宇间皱纹很深的那个男人吗？是见过。不但见过而且他有东西放在我这里，让我转交给武公老头子。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("东西？", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
+                    new SpeechText("嗯，好大一个#b画轴#k塞给我，让我一定要转交。他一脸杀气的，好像我不转交的话，他还会来找我似的。哎呦，真是吓死人了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("然后呢，画轴转交出去了吗？", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd),
                     ]);
             if (await SayAcceptDecline("没有，那个......其实出了点问题......你愿意听我说吗？"))
             {
                 await SaySpeech([
-                new SpeechText("是这样的，我正在做一种新药水，当时正好在煮草药，结果没想到画轴一下子掉了进去。我虽然以最快速度把它捞了出来，不过画轴浸水后，上面的字都消失了。", 9),
-                    new SpeechText("于是我就发愁了，这怎么转交给武公老头子啊。于是我决定先把画轴修复好，再转交给他。正好你能帮我一个忙。画轴上面的字是武陵最有名的画师#b津津#k写的，你去的话，他一定会帮你修复画轴的。", 9),
+                new SpeechText("是这样的，我正在做一种新药水，当时正好在煮草药，结果没想到画轴一下子掉了进去。我虽然以最快速度把它捞了出来，不过画轴浸水后，上面的字都消失了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                    new SpeechText("于是我就发愁了，这怎么转交给武公老头子啊。于是我决定先把画轴修复好，再转交给他。正好你能帮我一个忙。画轴上面的字是武陵最有名的画师#b津津#k写的，你去的话，他一定会帮你修复画轴的。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
                     ]);
                 if (!haveItem(4220151, 1))
                 {

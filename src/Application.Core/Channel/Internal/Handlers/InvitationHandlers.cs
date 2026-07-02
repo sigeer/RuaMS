@@ -14,9 +14,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnInvitationSent;
 
-            protected override void HandleMessage(CreateInviteResponse res)
+            protected override Task HandleMessage(CreateInviteResponse res)
             {
-                _server.Broadcast(w =>
+                return _server.BroadcastAsync(w =>
                 {
                     w.InviteChannelHandlerRegistry.GetHandler(res.Type)?.OnInvitationCreated(res);
                 });
@@ -33,9 +33,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnInvitationAnswered;
 
-            protected override void HandleMessage(AnswerInviteResponse res)
+            protected override Task HandleMessage(AnswerInviteResponse res)
             {
-                _server.Broadcast(w =>
+                return _server.BroadcastAsync(w =>
                 {
                     w.InviteChannelHandlerRegistry.GetHandler(res.Type)?.OnInvitationAnswered(res); ;
                 });

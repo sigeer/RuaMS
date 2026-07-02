@@ -162,21 +162,17 @@ namespace Application.Core.Game.Players
 
             this.mapTransitioning.Set(true);
 
-            var from = MapModel;
-            await from.Send(async m =>
-            {
-                await this.unregisterChairBuff();
-                await closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
-                await this.closePlayerInteractions();
+            await this.unregisterChairBuff();
+            await closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
+            await this.closePlayerInteractions();
 
-                await m.removePlayer(this);
-            });
-
+            await MapModel.removePlayer(this);
             if (isLoggedinWorld())
             {
-                setPosition(pos);
                 await to.Send(async t =>
                 {
+                    setPosition(pos);
+
                     await SendPacket(warpPacket);
                     await t.addPlayer(this);
 

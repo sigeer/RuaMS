@@ -33,10 +33,10 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 
                     foreach (var pn in playerNpcs)
                     {
-                        map.RemoveMapObject(pn, mapChr =>
+                        map.RemoveMapObject(pn, async mapChr =>
                         {
-                            mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                            mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                            await mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                            await mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                         });
                     }
                 }

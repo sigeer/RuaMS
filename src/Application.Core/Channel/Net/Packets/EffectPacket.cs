@@ -69,7 +69,10 @@ namespace Application.Core.Channel.Net.Packets
             p.writeInt(itemId);
             return p;
         }
-
+        /// <summary>
+        /// SP_5562_PORTAL
+        /// </summary>
+        /// <returns></returns>
         public static Packet Portal()
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);

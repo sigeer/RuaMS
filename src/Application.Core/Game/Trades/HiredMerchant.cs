@@ -46,7 +46,9 @@ public class HiredMerchant : AbstractMapObject, IPlayerShop
     public HiredMerchant(Player owner, string desc, Item item) : base(owner.MapModel, owner.getPosition())
     {
         StartTime = owner.Client.CurrentServer.Node.getCurrentTime();
-        ExpirationTime = item.getExpiration() == -1 ? (long)(StartTime + TimeSpan.FromDays(30).TotalMilliseconds) : item.getExpiration();
+        var afterOneDay = (long)(StartTime + TimeSpan.FromDays(1).TotalMilliseconds);
+        // 最长1天
+        ExpirationTime = (item.getExpiration() == -1 || item.getExpiration() > afterOneDay) ? afterOneDay : item.getExpiration();
         Owner = owner;
         OwnerName = owner.Name;
         OwnerId = owner.getId();

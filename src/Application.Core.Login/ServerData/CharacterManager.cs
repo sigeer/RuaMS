@@ -224,28 +224,22 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public void BatchUpdateOrSave(List<SyncProto.PlayerSaveDto> list, bool saveDB)
+        public async Task BatchUpdateOrSave(List<SyncProto.PlayerSaveDto> list, bool saveDB)
         {
-            _ = BatchUpdateCore(list)
-                    .ContinueWith(t =>
-                    {
-                        if (saveDB)
-                        {
-                            _masterServer.Send(new CommitDBCommand());
-                        }
-                    });
+            await BatchUpdateCore(list);
+            if (saveDB)
+            {
+               await _masterServer.Send(new CommitDBCommand());
+            }
         }
 
-        public void UpdateOrSave(SyncProto.PlayerSaveDto data, SyncCharacterTrigger trigger, bool saveDB)
+        public async Task UpdateOrSave(SyncProto.PlayerSaveDto data, SyncCharacterTrigger trigger, bool saveDB)
         {
-            _ = Update(data, trigger)
-                    .ContinueWith(t =>
-                    {
-                        if (saveDB)
-                        {
-                            _masterServer.Send(new CommitDBCommand());
-                        }
-                    });
+            await Update(data, trigger);
+            if (saveDB)
+            {
+                await _masterServer.Send(new CommitDBCommand());
+            }
         }
 
         internal async Task<int> CompleteLogin(int playerId, int channel)
@@ -258,15 +252,15 @@ namespace Application.Core.Login.Datas
 
                 if (lastChannel == 0)
                 {
-                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"进入游戏（频道{channel}）");
+                    _logger.LogDebug("玩家{PlayerName} {TriggerDetail}", d.Character.Name, $"进入游戏（频道{channel}）");
                 }
                 else if (lastChannel == -1)
                 {
-                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"离开商城（频道{channel}）");
+                    _logger.LogDebug("玩家{PlayerName} {TriggerDetail}", d.Character.Name, $"离开商城（频道{channel}）");
                 }
                 else
                 {
-                    _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}", d.Character.Name, $"切换频道（从频道{lastChannel}到频道{channel}）");
+                    _logger.LogDebug("玩家{PlayerName} {TriggerDetail}", d.Character.Name, $"切换频道（从频道{lastChannel}到频道{channel}）");
                 }
 
 

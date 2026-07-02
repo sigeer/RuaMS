@@ -13,16 +13,15 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.HandleReportReceived;
 
-        protected override void HandleMessage(SendReportResponse res)
+        protected override async Task HandleMessage(SendReportResponse res)
         {
             if (res.Code != 0)
             {
-                _server.Broadcast(w =>
+                await _server.BroadcastAsync(async w =>
                 {
-                    w.Send(new InvokeDropMessageCommand(res.MasterId, 5, $"玩家 {res.Victime} 不存在"));
+                    await w.Send(new InvokeDropMessageAsyncCommand(res.MasterId, 5, $"玩家 {res.Victime} 不存在"));
                 });
             }
-
         }
 
         protected override SendReportResponse Parse(ByteString data) => SendReportResponse.Parser.ParseFrom(data);

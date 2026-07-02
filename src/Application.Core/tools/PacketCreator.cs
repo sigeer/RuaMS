@@ -2452,6 +2452,14 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet ShowConsumeItemEffect(int chrId, int itemId)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.SHOW_CONSUME_EFFECT);
+        p.writeInt(chrId);
+        p.writeInt(itemId);
+        return p;
+    }
+
     public static Packet getScrollEffect(int chr, ScrollResult scrollSuccess, bool legendarySpirit, bool whiteScroll)
     {
         // thanks to Rien dev team
@@ -2479,12 +2487,12 @@ public class PacketCreator
     /// <para>1. 速成石不能连续使用。</para>
     /// </param>
     /// <returns></returns>
-    public static Packet catchMessage(int message)
+    public static Packet CatchFailMessage(int itemId, int message)
     {
         // not done, I guess
         OutPacket p = OutPacket.create(SendOpcode.BRIDLE_MOB_CATCH_FAIL);
-        p.writeByte(message); // 1 = too strong, 2 = Elemental Rock
-        p.writeInt(0);//Maybe itemid?
+        p.writeByte(message); // 1 = SP_4349_UNABLE_TO_CAPTURE_THE_MONSTER_THE_MONSTER_IS_TOO_STRONG, 2 = SP_4350_ELEMENT_ROCK_CANNOT_BE_USED_RIGHT_AFTER_USAGE
+        p.writeInt(itemId);//Maybe itemid?
         p.writeInt(0);
         return p;
     }
@@ -3555,6 +3563,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.INVENTORY_OPERATION);
         p.writeBool(true);
+        p.writeByte(0);
         return p;
     }
 
@@ -3590,6 +3599,7 @@ public class PacketCreator
         p.writeByte(remhppercentage);
         return p;
     }
+
 
     public static Packet showBossHP(int oid, int currHP, int maxHP, byte tagColor, byte tagBgColor)
     {
@@ -6134,11 +6144,13 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet dojoWarpUp()
+    public static Packet dojoWarpUp() => TeleportPortal(false, 6);
+
+    public static Packet TeleportPortal(bool updateTick, int portalId)
     {
-        OutPacket p = OutPacket.create(SendOpcode.DOJO_WARP_UP);
-        p.writeByte(0);
-        p.writeByte(6);
+        OutPacket p = OutPacket.create(SendOpcode.Teleport);
+        p.writeBool(updateTick);
+        p.writeByte(portalId);
         return p;
     }
 

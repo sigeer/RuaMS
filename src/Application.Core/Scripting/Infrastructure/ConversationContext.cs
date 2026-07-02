@@ -14,5 +14,5 @@ namespace Application.Core.scripting.Infrastructure
     public class ConversationDiffInstanceException() : Exception;
     public class ConversationException() : Exception;
 
-    public record SpeechText(string Text, byte Speaker, int SpeakerNpc = 0);
+    public record SpeechText(string Text, NpcTalkSpeaker Speaker, int SpeakerNpc = 0);
 }

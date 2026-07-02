@@ -16,16 +16,13 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SyncPlayer;
 
-            protected override void HandleMessage(SyncPlayerRequest message)
+            protected override async Task HandleMessage(SyncPlayerRequest message)
             {
-                _ = _server.CharacterManager.Update(message.Data, (SyncCharacterTrigger)message.Trigger)
-                    .ContinueWith(t =>
-                    {
-                        if (message.SaveDb)
-                        {
-                            _server.Send(new CommitDBCommand());
-                        }
-                    });
+                await _server.CharacterManager.Update(message.Data, (SyncCharacterTrigger)message.Trigger);
+                if (message.SaveDb)
+                {
+                    await _server.Send(new CommitDBCommand());
+                }
             }
 
             protected override SyncPlayerRequest Parse(ByteString data)
@@ -42,9 +39,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.BatchSyncPlayer;
 
-            protected override void HandleMessage(BatchSyncPlayerRequest message)
+            protected override Task HandleMessage(BatchSyncPlayerRequest message)
             {
-                _server.CharacterManager.BatchUpdateOrSave(message.List.ToList(), message.SaveDb);
+                return _server.CharacterManager.BatchUpdateOrSave(message.List.ToList(), message.SaveDb);
             }
 
             protected override BatchSyncPlayerRequest Parse(ByteString data)

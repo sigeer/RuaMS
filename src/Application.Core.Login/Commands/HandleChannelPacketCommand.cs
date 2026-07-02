@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Application.Core.Login.Commands
 {
-    internal class HandleChannelPacketCommand : IMasterCommand
+    internal class HandleChannelPacketCommand : IMasterAsyncCommand
     {
         public string? Name => nameof(HandleChannelPacketCommand);
         IInternalSessionMasterHandler _handler;
@@ -18,9 +18,9 @@ namespace Application.Core.Login.Commands
             _content = content;
         }
 
-        public void Execute(MasterServer ctx)
+        public async Task Execute(MasterServer ctx)
         {
-            _handler.Handle(_content);
+            await _handler.Handle(_content);
         }
     }
 }

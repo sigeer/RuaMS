@@ -14,9 +14,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LoadDueyPackage;
 
-            protected override void HandleMessage(GetPlayerDueyPackageRequest message)
+            protected override Task HandleMessage(GetPlayerDueyPackageRequest message)
             {
-                _ = _server.DueyManager.GetPlayerDueyPackages(message);
+                return _server.DueyManager.GetPlayerDueyPackages(message);
             }
 
             protected override GetPlayerDueyPackageRequest Parse(ByteString content) => GetPlayerDueyPackageRequest.Parser.ParseFrom(content);
@@ -31,9 +31,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveDueyPackage;
 
-            protected override void HandleMessage(RemovePackageRequest message)
+            protected override Task HandleMessage(RemovePackageRequest message)
             {
-                _ = _server.DueyManager.RemovePackage(message);
+                return _server.DueyManager.RemovePackage(message);
             }
 
             protected override RemovePackageRequest Parse(ByteString content) => RemovePackageRequest.Parser.ParseFrom(content);
@@ -47,9 +47,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.TakeDueyPackage;
 
-            protected override void HandleMessage(TakeDueyPackageRequest message)
+            protected override Task HandleMessage(TakeDueyPackageRequest message)
             {
-                _ = _server.DueyManager.TakeDueyPackage(message);
+                return _server.DueyManager.TakeDueyPackage(message);
             }
 
             protected override TakeDueyPackageRequest Parse(ByteString content) => TakeDueyPackageRequest.Parser.ParseFrom(content);
@@ -63,9 +63,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.TakeDueyPackageCallback;
 
-            protected override void HandleMessage(TakeDueyPackageCommit message)
+            protected override Task HandleMessage(TakeDueyPackageCommit message)
             {
-                _ = _server.DueyManager.TakeDueyPackageCommit(message);
+                return _server.DueyManager.TakeDueyPackageCommit(message);
             }
 
             protected override TakeDueyPackageCommit Parse(ByteString content) => TakeDueyPackageCommit.Parser.ParseFrom(content);

@@ -51,6 +51,10 @@ namespace Application.Templates.Mob
         public int? Stand0OriginX { get; set; }
         public MobAttackTemplate[] AttackInfos { get; set; } = [];
         public int Link { get; set; }
+        /// <summary>
+        /// info下的speak
+        /// </summary>
+        public MobSpeakInfoTemplate[] SpeakInfos { get; set; }
 
         public MobTemplate(int templateId)
             : base(templateId)
@@ -58,6 +62,7 @@ namespace Application.Templates.Mob
             Skill = Array.Empty<MobDataSkillTemplate>();
             Revive = Array.Empty<int>();
             LosedItems = Array.Empty<MobLosedItem>();
+            SpeakInfos = [];
         }
 
         public sealed class MobDataSkillTemplate
@@ -119,6 +124,23 @@ namespace Application.Templates.Mob
 
             public int Index { get; set; }
             public int Delay { get; set; }
+        }
+
+        public sealed class MobSpeakInfoTemplate
+        {
+            public MobSpeakInfoTemplate(int index)
+            {
+                Index = index;
+                Messages = [];
+            }
+
+            public int Index { get; }
+            /// <summary>
+            /// 低于这个hp才会触发？
+            /// </summary>
+            public int Hp { get; set; } = int.MaxValue;
+            public int Prob { get; set; } = 100;
+            public int[] Messages { get; set; }
         }
 
         public void CloneLink(MobTemplate sourceTemplate)

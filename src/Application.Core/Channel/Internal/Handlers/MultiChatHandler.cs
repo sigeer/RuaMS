@@ -14,9 +14,9 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.MultiChat;
 
-        protected override void HandleMessage(MultiChatMessage data)
+        protected override Task HandleMessage(MultiChatMessage data)
         {
-            _server.PushChannelCommand(new InvokeChannelBroadcastCommand(data.Receivers, PacketCreator.multiChat(data.FromName, data.Text, data.Type)));
+            return _server.PushChannelCommandAsync(new InvokeChannelBroadcastCommand(data.Receivers, PacketCreator.multiChat(data.FromName, data.Text, data.Type)));
         }
 
         protected override MultiChatMessage Parse(ByteString content) => MultiChatMessage.Parser.ParseFrom(content);

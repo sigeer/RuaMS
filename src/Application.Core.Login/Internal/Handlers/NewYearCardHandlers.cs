@@ -19,9 +19,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.ReceiveNewYearCard;
 
-            protected override void HandleMessage(ReceiveNewYearCardRequest message)
+            protected override Task HandleMessage(ReceiveNewYearCardRequest message)
             {
-                _ = _server.NewYearCardManager.ReceiveNewYearCard(message);
+                return _server.NewYearCardManager.ReceiveNewYearCard(message);
             }
 
             protected override ReceiveNewYearCardRequest Parse(ByteString content) => ReceiveNewYearCardRequest.Parser.ParseFrom(content);
@@ -34,9 +34,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DiscardNewYearCard;
 
-            protected override void HandleMessage(DiscardNewYearCardRequest message)
+            protected override Task HandleMessage(DiscardNewYearCardRequest message)
             {
-                _ = _server.NewYearCardManager.DiscardNewYearCard(message);
+                return _server.NewYearCardManager.DiscardNewYearCard(message);
             }
 
             protected override DiscardNewYearCardRequest Parse(ByteString content) => DiscardNewYearCardRequest.Parser.ParseFrom(content);
@@ -48,9 +48,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendNewYearCard;
 
-            protected override void HandleMessage(SendNewYearCardRequest message)
+            protected override Task HandleMessage(SendNewYearCardRequest message)
             {
-                _ = _server.NewYearCardManager.SendNewYearCard(message);
+                return _server.NewYearCardManager.SendNewYearCard(message);
             }
 
             protected override SendNewYearCardRequest Parse(ByteString content) => SendNewYearCardRequest.Parser.ParseFrom(content);

@@ -40,22 +40,22 @@ namespace Application.Module.PlayerNPC.Channel.Commands
 
                 foreach (var pn in playerNpcs)
                 {
-                    map.RemoveMapObject(pn, mapChr =>
+                    map.RemoveMapObject(pn, async mapChr =>
                     {
-                        mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
-                        mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
+                        await mapChr.SendPacket(PlayerNPCPacketCreator.RemoveNPCController(pn.getObjectId()));
+                        await mapChr.SendPacket(PlayerNPCPacketCreator.RemovePlayerNPC(pn.getObjectId()));
                     });
                 }
 
                 foreach (var pn in updatedList)
                 {
-                    map.AddMapObject(pn, c =>
+                    map.AddMapObject(pn, async c =>
                     {
                         await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(pn));
                         await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(pn));
                     }, false);
                 }
-                map.AddMapObject(newData, c =>
+                map.AddMapObject(newData, async c =>
                 {
                     await c.SendPacket(PlayerNPCPacketCreator.SpawnPlayerNPCController(newData));
                     await c.SendPacket(PlayerNPCPacketCreator.GetPlayerNPC(newData));

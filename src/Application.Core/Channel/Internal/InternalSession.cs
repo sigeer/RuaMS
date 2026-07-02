@@ -27,7 +27,7 @@ namespace Application.Core.Channel.Internal
             {
                 await foreach (var msg in _streamingCall.ResponseStream.ReadAllAsync())
                 {
-                    _server.MessageDispatcherV.DispatchAsync(msg.EventId, msg.Data);
+                   await _server.MessageDispatcherV.DispatchAsync(msg.EventId, msg.Data);
                 }
             });
         }

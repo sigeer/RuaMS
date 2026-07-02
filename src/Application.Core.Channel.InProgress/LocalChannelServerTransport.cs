@@ -657,14 +657,12 @@ namespace Application.Core.Channel.InProgress
 
         public Task BatchSyncPlayer(List<SyncProto.PlayerSaveDto> data, bool saveDB = false)
         {
-            _server.CharacterManager.BatchUpdateOrSave(data, saveDB);
-            return Task.CompletedTask;
+            return _server.CharacterManager.BatchUpdateOrSave(data, saveDB);
         }
 
         public Task SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false)
         {
-            _server.CharacterManager.UpdateOrSave(data, trigger, saveDB);
-            return Task.CompletedTask;
+            return _server.CharacterManager.UpdateOrSave(data, trigger, saveDB);
         }
 
         public async Task SendAddBuddyRequest(BuddyProto.AddBuddyRequest request)

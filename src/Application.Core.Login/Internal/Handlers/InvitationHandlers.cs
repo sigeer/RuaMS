@@ -23,9 +23,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendInvitation;
 
-            protected override void HandleMessage(CreateInviteRequest message)
+            protected override Task HandleMessage(CreateInviteRequest message)
             {
-                _ = _invitationService.AddInvitation(message);
+                return _invitationService.AddInvitation(message);
             }
 
             protected override CreateInviteRequest Parse(ByteString content) => CreateInviteRequest.Parser.ParseFrom(content);
@@ -41,9 +41,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AnswerInvitation;
 
-            protected override void HandleMessage(AnswerInviteRequest message)
+            protected override Task HandleMessage(AnswerInviteRequest message)
             {
-                _ = _invitationService.AnswerInvitation(message);
+                return _invitationService.AnswerInvitation(message);
             }
 
             protected override AnswerInviteRequest Parse(ByteString content) => AnswerInviteRequest.Parser.ParseFrom(content);

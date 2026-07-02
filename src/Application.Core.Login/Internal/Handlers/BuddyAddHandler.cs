@@ -17,9 +17,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AddBuddy;
 
-            protected override void HandleMessage(AddBuddyRequest message)
+            protected override Task HandleMessage(AddBuddyRequest message)
             {
-                _ = _server.BuddyManager.AddBuddyByName(message);
+                return _server.BuddyManager.AddBuddyByName(message);
             }
 
             protected override AddBuddyRequest Parse(ByteString content) => AddBuddyRequest.Parser.ParseFrom(content);
@@ -33,9 +33,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AddBuddyById;
 
-            protected override void HandleMessage(AddBuddyByIdRequest message)
+            protected override Task HandleMessage(AddBuddyByIdRequest message)
             {
-                _ = _server.BuddyManager.AddBuddyById(message);
+                return _server.BuddyManager.AddBuddyById(message);
             }
 
             protected override AddBuddyByIdRequest Parse(ByteString content) => AddBuddyByIdRequest.Parser.ParseFrom(content);
@@ -49,9 +49,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveBuddy;
 
-            protected override void HandleMessage(DeleteBuddyRequest message)
+            protected override Task HandleMessage(DeleteBuddyRequest message)
             {
-                _ = _server.BuddyManager.DeleteBuddy(message);
+                return _server.BuddyManager.DeleteBuddy(message);
             }
 
             protected override DeleteBuddyRequest Parse(ByteString content) => DeleteBuddyRequest.Parser.ParseFrom(content);
@@ -65,9 +65,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DropBuddyMessage;
 
-            protected override void HandleMessage(SendBuddyNoticeMessageDto message)
+            protected override Task HandleMessage(SendBuddyNoticeMessageDto message)
             {
-                _ = _server.BuddyManager.BroadcastNoticeMessage(message);
+                return _server.BuddyManager.BroadcastNoticeMessage(message);
             }
 
             protected override SendBuddyNoticeMessageDto Parse(ByteString content) => SendBuddyNoticeMessageDto.Parser.ParseFrom(content);
@@ -81,9 +81,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.GetLocation;
 
-            protected override void HandleMessage(GetLocationRequest message)
+            protected override Task HandleMessage(GetLocationRequest message)
             {
-                _ = _server.BuddyManager.GetLocation(message);
+                return _server.BuddyManager.GetLocation(message);
             }
 
             protected override GetLocationRequest Parse(ByteString content) => GetLocationRequest.Parser.ParseFrom(content);
@@ -97,9 +97,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendWhisper;
 
-            protected override void HandleMessage(SendWhisperMessageRequest message)
+            protected override Task HandleMessage(SendWhisperMessageRequest message)
             {
-                _ = _server.BuddyManager.SendWhisper(message);
+                return _server.BuddyManager.SendWhisper(message);
             }
 
             protected override SendWhisperMessageRequest Parse(ByteString content) => SendWhisperMessageRequest.Parser.ParseFrom(content);

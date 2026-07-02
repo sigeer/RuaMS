@@ -14,6 +14,16 @@ namespace Application.Core.Channel
         /// 封装了 PlayerStorage → MapActor → Player 的 Actor 路由。
         /// 玩家不在线则静默跳过。
         /// </summary>
-        Task SendToPlayerAsync(int playerId, Func<Player, Task> action);
+        Task<bool> SendToPlayerAsync(int playerId, Func<Player, Task> action);
+        Task<bool> SendToPlayerAsync(int playerId, Action<Player> action);
+
+        /// <summary>
+        /// 批量版，在一次频道遍历中处理所有指定玩家。
+        /// 每个玩家独立路由到其 Map Actor，互不阻塞。
+        /// </summary>
+        Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Func<Player, Task> action);
+        Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Action<Player> action);
+
+        Task BroadcastPlayersAsync(Func<Player, Task> action);
     }
 }

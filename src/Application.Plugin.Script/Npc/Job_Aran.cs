@@ -1,4 +1,5 @@
 using Application.Core.scripting.Infrastructure;
+using Application.Shared.Constants;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -24,11 +25,11 @@ namespace Application.Plugin.Script.Npc
                 if (!containsAreaInfo(21019, "helper=clear"))
                 {
                     await SaySpeech([
-                        new SpeechText("你终于醒来了！", 8),
-                        new SpeechText("……你是？", 2),
-                        new SpeechText("我一直在等你，等着你这个和黑魔法师战斗的英雄醒来！", 8),
-                        new SpeechText("……你在说什么？你到底是谁？", 2),
-                        new SpeechText("等等……我是谁？我怎么什么都想不起来……啊……！头好疼！", 2),
+                        new SpeechText("你终于醒来了！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("……你是？", NpcTalkSpeaker.PlayerRight),
+                        new SpeechText("我一直在等你，等着你这个和黑魔法师战斗的英雄醒来！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("……你在说什么？你到底是谁？", NpcTalkSpeaker.PlayerRight),
+                        new SpeechText("等等……我是谁？我怎么什么都想不起来……啊……！头好疼！", NpcTalkSpeaker.PlayerRight),
                         ]);
                     await showIntro("Effect/Direction1.img/aranTutorial/face");
                     await showIntro("Effect/Direction1.img/aranTutorial/ClickLilin");
@@ -37,13 +38,13 @@ namespace Application.Plugin.Script.Npc
                 else
                 {
                     await SaySpeech([
-                        new SpeechText("还好吗？", 8),
-                        new SpeechText("我……我什么都记不起来……这是哪里？你又是谁？", 2),
-                        new SpeechText("镇静一点。黑魔法师的诅咒让你失去了记忆……不过你用不着担心。你想知道的事情，我都会一一告诉你。", 8),
-                        new SpeechText("你是我们的英雄。数百年前，你勇敢地和黑魔法师战斗，并拯救了冒险岛世界。不过，在最后时刻你中了黑魔法师的诅咒，被封冻在冰块里沉睡了好久好久。所以，记忆也渐渐消失了。", 8),
-                        new SpeechText("这个地方叫做里恩岛。黑魔法师把你封冻在了这里。在黑魔法师的诅咒下，不论四季变化，这里永远都是冰封雪飘。我们是在冰窟的最深处发现你的。", 8),
-                        new SpeechText("我叫#p1201000#，属于里恩一族。里恩一族从很久以前就遵照预言在这里等待着英雄的归来。然后……我们终于发现了你。就在这个地方……", 8),
-                        new SpeechText("我是不是一次说了太多？理解起来有些困难？没关系，慢慢你就会明白……#b咱们赶紧回村子里吧#k。回村子的路上，我再慢慢給你解释。", 8),
+                        new SpeechText("还好吗？", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("我……我什么都记不起来……这是哪里？你又是谁？", NpcTalkSpeaker.PlayerRight),
+                        new SpeechText("镇静一点。黑魔法师的诅咒让你失去了记忆……不过你用不着担心。你想知道的事情，我都会一一告诉你。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("你是我们的英雄。数百年前，你勇敢地和黑魔法师战斗，并拯救了冒险岛世界。不过，在最后时刻你中了黑魔法师的诅咒，被封冻在冰块里沉睡了好久好久。所以，记忆也渐渐消失了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("这个地方叫做里恩岛。黑魔法师把你封冻在了这里。在黑魔法师的诅咒下，不论四季变化，这里永远都是冰封雪飘。我们是在冰窟的最深处发现你的。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("我叫#p1201000#，属于里恩一族。里恩一族从很久以前就遵照预言在这里等待着英雄的归来。然后……我们终于发现了你。就在这个地方……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                        new SpeechText("我是不是一次说了太多？理解起来有些困难？没关系，慢慢你就会明白……#b咱们赶紧回村子里吧#k。回村子的路上，我再慢慢給你解释。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                         ]);
                     await spawnGuide();
                     await warp(140090100, 0);

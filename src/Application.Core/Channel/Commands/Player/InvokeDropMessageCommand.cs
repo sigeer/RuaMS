@@ -1,14 +1,14 @@
 namespace Application.Core.Channel.Commands
 {
-    internal record InvokeDropMessageCommand : IWorldChannelCommand
+    internal record InvokeDropMessageAsyncCommand : IWorldChannelAsyncCommand
     {
-        public string Name => nameof(InvokeDropMessageCommand);
+        public string Name => nameof(InvokeDropMessageAsyncCommand);
         int playerId;
         int type;
         string message;
         string[] paramsValue;
 
-        public InvokeDropMessageCommand(int playerId, int type, string message, params string[] paramsValue)
+        public InvokeDropMessageAsyncCommand(int playerId, int type, string message, params string[] paramsValue)
         {
             this.playerId = playerId;
             this.type = type;
@@ -16,9 +16,13 @@ namespace Application.Core.Channel.Commands
             this.paramsValue = paramsValue;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
-            ctx.getPlayerStorage().GetCharacterClientById(playerId)?.TypedMessage(type, message, paramsValue);
+            var chr = ctx.getPlayerStorage().GetCharacterClientById(playerId);
+            if (chr != null)
+            {
+                await chr.TypedMessage(type, message, paramsValue);
+            }
         }
     }
 

@@ -13,6 +13,11 @@ namespace Application.Templates.Map
         public int X { get; set; }
         public int Y1 { get; set; }
         public int Y2 { get; set; }
+        /// <summary>
+        /// 0. 绳子 1. 梯子
+        /// </summary>
+        [WZPath("~/l")]
+        public int Type { get; set; }
 
         public bool Contains(Point p)
         {

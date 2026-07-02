@@ -75,7 +75,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
             await mc.unregisterChairBuff();
             mc.Client.CurrentServer.NodeService.DataService.SaveBuff(mc);
 
-            mc.Client.CurrentServer.EnterExtralWorld(mc);
+            await mc.Client.CurrentServer.EnterExtralWorld(mc);
 
             await mc.cancelAllBuffs(true);
             mc.cancelAllDebuffs();

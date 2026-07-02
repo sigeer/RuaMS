@@ -18,7 +18,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlifeCreated;
 
-            protected override void HandleMessage(CreatePLifeRequest data)
+            protected override Task HandleMessage(CreatePLifeRequest data)
             {
                 _server.Broadcast(async w =>
                 {
@@ -69,6 +69,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     _server.DataService.LoadAllPLife();
                 });
+            return Task.CompletedTask;
             }
 
             protected override CreatePLifeRequest Parse(ByteString data) => CreatePLifeRequest.Parser.ParseFrom(data);
@@ -82,7 +83,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlifeRemoved;
 
-            protected override void HandleMessage(RemovePLifeResponse res)
+            protected override Task HandleMessage(RemovePLifeResponse res)
             {
                 _server.Broadcast(async w =>
                 {
@@ -120,6 +121,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     _server.DataService.LoadAllPLife();
                 });
+            return Task.CompletedTask;
             }
 
             protected override RemovePLifeResponse Parse(ByteString data) => RemovePLifeResponse.Parser.ParseFrom(data);

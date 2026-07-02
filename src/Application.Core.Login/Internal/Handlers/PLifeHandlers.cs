@@ -19,9 +19,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.CreatePLife;
 
-            protected override void HandleMessage(CreatePLifeRequest message)
+            protected override Task HandleMessage(CreatePLifeRequest message)
             {
-                _ = _server.ResourceDataManager.CreatePLife(message);
+                return _server.ResourceDataManager.CreatePLife(message);
             }
 
             protected override CreatePLifeRequest Parse(ByteString content) => CreatePLifeRequest.Parser.ParseFrom(content);
@@ -34,9 +34,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemovePLife;
 
-            protected override void HandleMessage(RemovePLifeRequest message)
+            protected override Task HandleMessage(RemovePLifeRequest message)
             {
-                _ = _server.ResourceDataManager.RemovePLife(message);
+                return _server.ResourceDataManager.RemovePLife(message);
             }
 
             protected override RemovePLifeRequest Parse(ByteString content) => RemovePLifeRequest.Parser.ParseFrom(content);

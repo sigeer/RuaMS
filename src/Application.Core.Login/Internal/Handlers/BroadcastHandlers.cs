@@ -17,9 +17,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateWorldConfig;
 
-            protected override void HandleMessage(WorldConfig message)
+            protected override Task HandleMessage(WorldConfig message)
             {
-                _ = _server.UpdateWorldConfig(message);
+                return _server.UpdateWorldConfig(message);
             }
 
             protected override WorldConfig Parse(ByteString content) => WorldConfig.Parser.ParseFrom(content);
@@ -33,9 +33,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DropMessage;
 
-            protected override void HandleMessage(DropMessageRequest message)
+            protected override Task HandleMessage(DropMessageRequest message)
             {
-                _ = _server.DropWorldMessage(message.Type, message.Message, message.OnlyGM);
+                return _server.DropWorldMessage(message.Type, message.Message, message.OnlyGM);
             }
 
             protected override DropMessageRequest Parse(ByteString content) => DropMessageRequest.Parser.ParseFrom(content);
@@ -49,9 +49,9 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.BroadcastPacket;
 
-            protected override void HandleMessage(PacketRequest message)
+            protected override Task HandleMessage(PacketRequest message)
             {
-                _ = _server.BroadcastPacket(message);
+                return _server.BroadcastPacket(message);
             }
 
             protected override PacketRequest Parse(ByteString content) => PacketRequest.Parser.ParseFrom(content);

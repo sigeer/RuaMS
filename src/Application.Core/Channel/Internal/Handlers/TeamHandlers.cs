@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnTeamUpdate;
 
-            protected override void HandleMessage(UpdateTeamResponse res)
+            protected override Task HandleMessage(UpdateTeamResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -31,7 +31,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     }
                 }
 
-                _server.PushChannelCommand(new InvokeTeamUpdateCommand(res));
+                return _server.PushChannelCommandAsync(new InvokeTeamUpdateCommand(res));
             }
 
             protected override UpdateTeamResponse Parse(ByteString data) => UpdateTeamResponse.Parser.ParseFrom(data);
@@ -45,33 +45,24 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnTeamCreated;
 
-            protected override void HandleMessage(CreateTeamResponse res)
+            protected override Task HandleMessage(CreateTeamResponse res)
             {
                 if (res.Code != 0)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 _server.TeamManager.SetTeam(res.TeamDto);
 
-                _server.Broadcast(w =>
+                return _server.SendToPlayerAsync(res.Request.LeaderId, async chr =>
                 {
-                    w.getPlayerStorage().GetCharacterActor(res.Request.LeaderId)
-                    ?.Send(async m =>
-                    {
-                        var player = m.getCharacterById(res.Request.LeaderId);
-                        if (player != null)
-                        {
-                            player.Party = res.TeamDto.Id;
+                    chr.Party = res.TeamDto.Id;
 
-                            await player.SendPacket(TeamPacketCreator.UpdateParty(player.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, player.Id, player.Name));
+                    await chr.SendPacket(TeamPacketCreator.UpdateParty(chr.getChannelServer(), res.TeamDto, PartyOperation.SILENT_UPDATE, chr.Id, chr.Name));
 
-                            await player.HandleTeamMemberCountChanged(null);
+                    await chr.HandleTeamMemberCountChanged(null);
 
-                            await player.SendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, player));
-                        }
-                    });
-
+                    await chr.SendPacket(TeamPacketCreator.PartyCreated(res.TeamDto.Id, chr));
                 });
             }
 

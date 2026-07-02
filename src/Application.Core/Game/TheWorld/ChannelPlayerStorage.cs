@@ -49,6 +49,11 @@ namespace Application.Core.Game.TheWorld
             return nameStorage.GetValueOrDefault(name)?.MapModel;
         }
 
+        public List<IActorInstance<IMap>> GetAllActor()
+        {
+            return storage.Values.Select(x => x.MapModel).OfType<IActorInstance<IMap>>().ToList();
+        }
+
         public List<Player> getAllCharacters()
         {
             return new List<Player>(storage.Values);

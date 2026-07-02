@@ -19,6 +19,6 @@ public class FishingRateCommand : CommandBase
             return;
 
         int fishrate = Math.Max(d, 1);
-        _ = c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { FishingRate = fishrate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { FishingRate = fishrate });
     }
 }

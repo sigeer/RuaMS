@@ -53,7 +53,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
                 return; //hax.
             }
 
-            _buddyManager.AddBuddy(player, addName, group);
+           await  _buddyManager.AddBuddy(player, addName, group);
         }
         else if (mode == 2)
         {
@@ -66,7 +66,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
         {
             // delete
             int otherCid = p.readInt();
-            _buddyManager.DeleteBuddy(player, otherCid);
+            await _buddyManager.DeleteBuddy(player, otherCid);
         }
         else
         {
