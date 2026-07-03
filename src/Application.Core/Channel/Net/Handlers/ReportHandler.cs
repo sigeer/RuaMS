@@ -69,7 +69,7 @@ public class ReportHandler : ChannelHandlerBase
                 await c.SendPacket(PacketCreator.reportResponse(2));
                 return;
             }
-            _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
+            await _reportService.SendReport(c.OnlinedCharacter, victim, description, 0, "");
         }
         else if (type == 1)
         {
@@ -91,7 +91,7 @@ public class ReportHandler : ChannelHandlerBase
                     return;
                 }
             }
-            _reportService.SendReport(c.OnlinedCharacter, victim, description, reason, chatlog);
+            await _reportService.SendReport(c.OnlinedCharacter, victim, description, reason, chatlog);
         }
         else
         {

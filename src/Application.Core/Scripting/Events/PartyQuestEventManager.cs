@@ -77,7 +77,6 @@ namespace Application.Core.Scripting.Events
                             {
                                 eim = await CreateInstance(difficulty, (lobbyId > -1) ? lobbyId : leader.Id);
                                 registerEventInstance(eim, lobbyId);
-                                eim.Type = Application.Shared.Events.EventInstanceType.PartyQuest;
                             }
                             catch (EventInstanceInProgressException)
                             {

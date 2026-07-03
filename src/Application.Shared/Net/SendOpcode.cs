@@ -57,6 +57,9 @@ public enum SendOpcode
     INVENTORY_OPERATION = 0x1D,
     INVENTORY_GROW = 0x1E,
     STAT_CHANGED = 0x1F,
+    /// <summary>
+    /// CWvsContext::OnTemporaryStatSet
+    /// </summary>
     GIVE_BUFF = 0x20,
     CANCEL_BUFF = 0x21,
     FORCED_STAT_SET = 0x22,
@@ -72,7 +75,11 @@ public enum SendOpcode
     /// CWvsContext::OnAntiMacroResult
     /// </summary>
     ANTI_MACRO_RESULT = 0x2B,
-    WEDDING_PHOTO = 0x2C, 
+    /// <summary>
+    /// sub_A27891
+    /// </summary>
+    ReportResult = 0x2C,
+    // WEDDING_PHOTO = 0x2C, 
     CLAIM_RESULT = 0x2D,
     CLAIM_AVAILABLE_TIME = 0x2E,
     CLAIM_STATUS_CHANGED = 0x2F,
@@ -174,8 +181,17 @@ public enum SendOpcode
     MACRO_SYS_DATA_INIT = 0x7C,
 
     /*CStage::OnPacket*/
+    /// <summary>
+    /// CStage::OnSetField
+    /// </summary>
     SET_FIELD = 0x7D,
+    /// <summary>
+    /// CStage::OnSetITC
+    /// </summary>
     SET_ITC = 0x7E,
+    /// <summary>
+    /// CStage::OnSetCashShop
+    /// </summary>
     SET_CASH_SHOP = 0x7F,
 
     /*CField::OnPacket*/
@@ -197,6 +213,9 @@ public enum SendOpcode
     BLOW_WEATHER = 0x8E,
     PLAY_JUKEBOX = 0x8F,
 
+    /// <summary>
+    /// CField::OnAdminResult
+    /// </summary>
     ADMIN_RESULT = 0x90,
     OX_QUIZ = 0x91,//QUIZ
     /// <summary>
@@ -297,6 +316,15 @@ public enum SendOpcode
     SPAWN_GUIDE = 0xDF,
     TALK_GUIDE = 0xE0,
     SHOW_COMBO = 0xE1,
+    /// <summary>
+    /// CUser::OnRandomEmotion
+    /// </summary>
+    RandomEmotion = 0xE2,
+    /// <summary>
+    /// CUserLocal::OnResignQuestReturn
+    /// </summary>
+    ResignQuestReturn,
+
     COOLDOWN = 0xEA,
     SPAWN_MONSTER = 0xEC,
     KILL_MONSTER = 0xED,

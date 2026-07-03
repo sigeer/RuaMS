@@ -50,11 +50,8 @@ public class ShowRatesCommand : CommandBase
         sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_PlayerBossDrop))).Append(": #e#b").Append(player.getBossDropRate()).Append("x#k#n");
         sb.Append("\r\n\r\n");
 
-        if (YamlConfig.config.server.USE_QUEST_RATE)
-        {
-            sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Quest))).Append("#n").Append("\r\n");
-            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldQuest))).Append(": #k").Append(c.CurrentServer.WorldQuestRate).Append("x#k").Append("\r\n");
-        }
+        sb.Append("#e").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_Quest))).Append("#n").Append("\r\n");
+        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldQuest))).Append(": #k").Append(c.CurrentServer.WorldQuestRate).Append("x#k").Append("\r\n");
 
         sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Rate_WorldTravel))).Append(": #e#b").Append(c.CurrentServer.WorldTravelRate).Append("x#k#n");
         sb.Append("\r\n");

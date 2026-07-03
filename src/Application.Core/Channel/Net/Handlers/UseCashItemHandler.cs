@@ -413,11 +413,12 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 520)
         {
-            if (await player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, GainItemShow.ShowInChat))
-            {
-                await remove(c, position, itemId);
-            }
-            await c.SendPacket(PacketCreator.enableActions());
+            //if (await player.TryGainMeso(ii.GetMesoBagItemTemplate(itemId)?.Meso ?? 0, GainItemShow.ShowInChat))
+            //{
+            //    await remove(c, position, itemId);
+            //}
+            // await c.SendPacket(PacketCreator.enableActions());
+            throw new BusinessNotsupportException("道具不存在");
         }
         else if (itemType == 523)
         {
@@ -449,6 +450,11 @@ public class UseCashItemHandler : ChannelHandlerBase
                 }
             }
             await c.SendPacket(PacketCreator.PetEatCashFoodFail());
+        }
+        else if (itemType == 528)
+        {
+            await player.MapModel.broadcastMessage(PacketCreator.RandomEmotion(itemId));
+            await remove(c, position, itemId);
         }
         else if (itemType == 530)
         {

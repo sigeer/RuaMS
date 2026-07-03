@@ -21,6 +21,7 @@ namespace Application.Plugin.Script.Events
             MaxMap = 930000800;
 
             EventTime = 30 * 60;
+            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
         int bossId = 9300182;

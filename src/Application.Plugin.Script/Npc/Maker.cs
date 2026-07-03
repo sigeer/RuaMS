@@ -882,7 +882,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好。我是奥尔比斯头号手套制造师。你想让我为你做点什么吗？", categories);
+            await PerformRefine("你好。我是天空之城头号手套制造师。你想让我为你做点什么吗？", categories);
         }
 
         // Npc: 2020000 
@@ -1045,7 +1045,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好。埃尔纳斯的冬天非常寒冷，你需要一双暖和的鞋子才能生存。", categories);
+            await PerformRefine("你好。#m211000000#的冬天非常寒冷，你需要一双暖和的鞋子才能生存。", categories);
         }
 
         // Npc: 2040016 

@@ -24,6 +24,7 @@ namespace Application.Plugin.Script.Events
             MinMap = 103000800;
             MaxMap = 103000805;
             EventTime = 30 * 60;
+            Type = Shared.Events.EventInstanceType.PartyQuest;
 
             AllClearRewards = new()
             {

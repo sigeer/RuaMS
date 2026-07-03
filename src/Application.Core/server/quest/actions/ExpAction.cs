@@ -42,11 +42,7 @@ public class ExpAction : AbstractQuestAction
 
     public static async Task runAction(Player chr, int gain)
     {
-        var expGain = gain * chr.getExpRate();
-        if (YamlConfig.config.server.USE_QUEST_RATE)
-        {
-            expGain = gain * chr.getQuestExpRate();
-        }
+        var expGain = gain * chr.getExpRate() * chr.getQuestExpRate();
         await chr.gainExp((int)expGain, true, true);
     }
 }

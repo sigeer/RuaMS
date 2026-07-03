@@ -86,7 +86,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestStarted(100400))
             {
-                await SayOK($"你好 #b#h0##k，我是爱之仙子 #p{getNpc()}#。");
+                await SayOK($"你好 #b#h ##k，我是爱之仙子 #p{getNpc()}#。");
                 return;
             }
 

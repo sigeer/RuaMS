@@ -132,7 +132,7 @@ namespace Application.Plugin.Script.Npc
         public async Task balog_scroll()
         {
             int[] items = [2040728, 2040729, 2040730, 2040731, 2040732, 2040733, 2040734, 2040735, 2040736, 2040737, 2040738, 2040739];
-            await AskMenu("你好，#h0#。我可以交换你的#t4001261#。\r\n\r\n#r#L1#兑换物品#l#k");
+            await AskMenu("你好，#h #。我可以交换你的#t4001261#。\r\n\r\n#r#L1#兑换物品#l#k");
             var option = await AskMenu("可兑换物品", items.Select(i => $"#i{i}# #z{i}#"));
             if (!canHold(items[option], 1))
             {

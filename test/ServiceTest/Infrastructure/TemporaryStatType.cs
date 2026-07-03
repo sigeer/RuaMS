@@ -285,6 +285,7 @@ namespace ServiceTest.Infrastructure
     //MONSTER_RIDING: Pos: 1, Value: 2097152
     //SPEED_INFUSION: Pos: 1, Value: 4194304
     //HOMING_BEACON: Pos: 1, Value: 8388608
+
     //SLOW: Pos: 2, Value: 1  (From Disease)
     //MORPH: Pos: 2, Value: 2
     //RECOVERY: Pos: 2, Value: 4
@@ -327,6 +328,7 @@ namespace ServiceTest.Infrastructure
     //SPARK: Pos: 2, Value: 536870912
     //MAP_CHAIR: Pos: 2, Value: 1073741824
     //FINALATTACK: Pos: 2, Value: 2147483648
+
     //NULL: Pos: 3, Value: 0  (From Disease)
     //WATK: Pos: 3, Value: 1
     //WDEF: Pos: 3, Value: 2

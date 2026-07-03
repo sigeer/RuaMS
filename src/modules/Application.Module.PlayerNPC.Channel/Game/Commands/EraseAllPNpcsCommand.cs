@@ -13,8 +13,9 @@ public class EraseAllPNpcsCommand : CommandBase
         _manager = manager;
     }
 
-    public override void Execute(IChannelClient c, string[] paramsValue)
+    public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         _manager.RemoveAllPlayerNPC();
+        return Task.CompletedTask;
     }
 }

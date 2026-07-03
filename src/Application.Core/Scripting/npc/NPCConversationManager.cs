@@ -78,7 +78,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return npcOid;
     }
 
-
     public virtual async ValueTask DisposeAsync()
     {
         _talkChannel.Writer.Complete();

@@ -33,7 +33,6 @@ namespace Application.Core.Channel
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
         public Dictionary<int, IChannelServer> Servers { get; set; }
-        public DistributeSession<int, SyncProto.PlayerSaveDto>? SyncPlayerSession { get; set; }
         public Dictionary<ChannelConfig, WorldChannel> ServerConfigMapping { get; private set; }
 
         public bool IsRunning { get; private set; }
@@ -345,7 +344,7 @@ namespace Application.Core.Channel
 
             try
             {
-                watcher = new FileSystemWatcher(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName };
+                watcher = new FileSystemWatcher(PluginManager.PluginDir, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName };
                 watcher.Changed += OnFileChanged;
                 watcher.Created += OnFileChanged;
                 watcher.Deleted += OnFileDeleted;
@@ -406,7 +405,7 @@ namespace Application.Core.Channel
 
         private async Task LoadAllPlugins()
         {
-            var pluginFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "Application.Plugin.*.dll");
+            var pluginFiles = Directory.GetFiles(PluginManager.PluginDir, "Application.Plugin.*.dll");
             foreach (var pluginFile in pluginFiles)
             {
                 var pluginName = Path.GetFileName(pluginFile);

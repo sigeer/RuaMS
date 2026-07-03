@@ -14,9 +14,9 @@ namespace Application.Core.Channel.Services
             _server = server;
         }
 
-        public void SendReport(Player chr, string victim, string text, int reason, string chatLog)
+        public async Task SendReport(Player chr, string victim, string text, int reason, string chatLog)
         {
-            _ = _transport.SendReport(new SendReportRequest { MasterId = chr.Id, Victim = victim, Text = text, Reason = reason, ChatLog = chatLog });
+             await _transport.SendReport(new SendReportRequest { MasterId = chr.Id, Victim = victim, Text = text, Reason = reason, ChatLog = chatLog });
         }
     }
 }
