@@ -22,7 +22,7 @@ namespace Application.Plugin.Script.Quest
             await SayOK("但我不担心这些。我相信你一定能战胜这一切，保护冒险岛世界免受黑魔法师的伤害。当然，你必须变得比现在强一点，对吧?");
 
             // gainItem(1142065, 1); // Noblesse Medal * 1
-            gainExp(20); //gain 20 exp!!
+            await gainExp(20); //gain 20 exp!!
             await forceStartQuest();
             await forceCompleteQuest();
         }
@@ -43,7 +43,7 @@ namespace Application.Plugin.Script.Quest
             {
                 if (isQuestCompleted(20001))
                 {
-                    gainExp(40);
+                    await gainExp(40);
                     await gainItem(1052177, 1); // fancy noblesse robe
                 }
                 await forceStartQuest();
@@ -92,7 +92,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("你想见见我吗？ #b奇赞#k, 谁能告诉你打猎的事？你可以沿着左边的箭头找到奇赞。"))
             {
                 await forceStartQuest();
-                guideHint(2);
+                await guideHint(2);
             }
             else
             {
@@ -110,14 +110,14 @@ namespace Application.Plugin.Script.Quest
                     await gainItem(2000020, 5);
                     await gainItem(2000021, 5);
 
-                    gainExp(15);
+                    await gainExp(15);
                 }
-                guideHint(3);
+                await guideHint(3);
                 await forceCompleteQuest();
             }
             else
             {
-                dropMessage(1, "背包不足");
+                await dropMessage(1, "背包不足");
             }
         }
         // Quest: 20011 
@@ -130,7 +130,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("现在，你已经尝试过了，我们一定要测试它。在这方面，你可以找到最薄弱 #r#o100120##k 在耶雷弗, 这是您的最佳选择。尝试狩猎 #r1只#k. 当你回来我给你的奖励。."))
             {
                 await forceStartQuest();
-                guideHint(4);
+                await guideHint(4);
             }
             else
             {
@@ -147,20 +147,20 @@ namespace Application.Plugin.Script.Quest
             await gainItem(1002869, 1);
             await gainItem(1052177, 1);
             await forceCompleteQuest();
-            gainExp(30);
-            guideHint(6);
+            await gainExp(30);
+            await guideHint(6);
         }
         // Quest: 20012 
         public async Task q20012s()
         {
             await SaySpeech([
-                "我一直在等待你, #h0#. 我的名字是 #p1102006# 为了要让你满足我的兄弟。 所以，你已经学会了如何使用普通攻击了？\r\n 好了接下来你会了解 #b如何使用技能#k, 你会发现这对你很有帮助！",
+                "我一直在等待你, #h #. 我的名字是 #p1102006# 为了要让你满足我的兄弟。 所以，你已经学会了如何使用普通攻击了？\r\n 好了接下来你会了解 #b如何使用技能#k, 你会发现这对你很有帮助！",
                 "当你每次升等你会获得技能点数，这意味这你可以有一些能力了！ 请案 #bK 键#k 看看你的技能. 好好善用你的技能点数在技能上。 #b将技能拉到快捷键上更方便使用。#k."
                 ]);
             if (await SayAcceptDecline("时间过得真快，忘了你是要练习了... 接下来你会发现很多的 #o100121# 在这张地图。你需要打倒 #r3只 #o100121##k 使用你的 #b攻击#b 技能 然后给我 1 #b#t4000483##k 作为证明OK？ 我会在这里等你的。"))
             {
                 await forceStartQuest();
-                guideHint(8);
+                await guideHint(8);
             }
             else
             {
@@ -172,7 +172,7 @@ namespace Application.Plugin.Script.Quest
         {
             await gainItem(4000483, -1);
             await forceCompleteQuest();
-            gainExp(40);
+            await gainExp(40);
 
             await SayNext("你已经成功地打败了 #o100121# 并给我带来了 一个 #t4000483#. 这是非常令人印象深刻! #b你善用了 3 个技能点数 当你每一次升级的时候, 你会获得更多技能点数，接下来请照着箭头走去找我的兄弟 #b#p1102007##k, 他将告诉你下一步怎么做。\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0# \r\n#fUI/UIWindow.img/QuestIcon/8/0# 40 经验值");
         }
@@ -188,7 +188,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("请给我 1个 #b#t4032267##k 和 1个 #b#t4032268##k 在那些箱子里面. 然后我就会做一个最棒的椅子给你， 我会在这里等着你！"))
             {
                 await forceStartQuest();
-                guideHint(9);
+                await guideHint(9);
             }
         }
         // Quest: 20013 
@@ -204,8 +204,8 @@ namespace Application.Plugin.Script.Quest
             await forceCompleteQuest(20001);
             await forceCompleteQuest(20002);
             await forceCompleteQuest(20015);
-            gainExp(95);
-            guideHint(10);
+            await gainExp(95);
+            await guideHint(10);
 
             await SayNext("来这是给你的 #t3010060#. 你怎么看?? 漂亮吧呵呵^^ 你可以 #b把椅子放到快捷键上面并使用它让HP恢复更快。#k. 椅子在 #b装饰栏里面#k 打开你的道具栏, 所以请确认是不是收到椅子了 #b#p1102008##k. 好了，请按照箭头指示走你会看到另一个人。 \r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0# \r\n#i3010060# 1 #t3010060# \r\n#fUI/UIWindow.img/QuestIcon/8/0# 95 经验值");
         }
@@ -227,7 +227,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q20016s()
         {
             await SaySpeech([
-                "嗨, #h0#. 来迎来到 #p1101000# 骑士团. 我的名字是 #p1101002# 而我目前作为年轻慈禧的战术家。哈哈！",
+                "嗨, #h #. 来迎来到 #p1101000# 骑士团. 我的名字是 #p1101002# 而我目前作为年轻慈禧的战术家。哈哈！",
                 "我敢肯定，你有很多的问题，因为一切都发生得太快。我会解释这一切，一个接一个，从那里你是你在这里做什么。",
                 "这个岛叫做耶雷弗。多亏了女皇的魔法，这座岛通常像空中的小船一样漂浮在空中，在冒险岛世界周围巡逻。不过，现在我们停在这里是有原因的。",
                 "这位年轻的女皇是冒险岛世界的统治者。什么？这是你听说过她的第一次？啊，是的。嗯，她是冒险岛世界的统治者，但她不喜欢来控制它。她从远处观看，以确保一切都很好。好吧，至少这是她一贯的作用。",
@@ -241,7 +241,7 @@ namespace Application.Plugin.Script.Quest
                 if (!isQuestStarted(20016))
                 {
                     await forceStartQuest();
-                    gainExp(380);
+                    await gainExp(380);
                 }
 
                 await SaySpeech([
@@ -264,7 +264,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("运好气了吧！那么...看你的实力，你应该可以捕猎比中等稍强一点的绢毛鸟。捕猎在#m130010100#的15只#o0100122#该足够了吧？怎么样？能搞定#o0100122#吗？"))
             {
-                guideHint(12);
+                await guideHint(12);
                 await forceStartQuest(20020);
                 await forceCompleteQuest(20100);
                 await forceStartQuest();
@@ -342,8 +342,8 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
 
-                changeJob(nextJob);
-                getPlayer().resetStats();
+                await changeJob(nextJob);
+                await getPlayer().resetStats();
                 foreach (var item in items)
                 {
                     await gainItem(item.ItemId, item.Quantity, true);
@@ -367,7 +367,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 20200 
         public async Task q20200s()
         {
-            if (await SayAcceptDecline("#h0#? 哇，自从我上次见到你以来，你的水平已经飞涨了。你看起来也完成了很多任务。。。你现在似乎比我上次见到你时更愿意继续前进。你怎么认为？你有兴趣参加夜校考试吗？是时候让你从骑士的训练中成长为一个真正的骑士了，对吧？"))
+            if (await SayAcceptDecline("#h #? 哇，自从我上次见到你以来，你的水平已经飞涨了。你看起来也完成了很多任务。。。你现在似乎比我上次见到你时更愿意继续前进。你怎么认为？你有兴趣参加夜校考试吗？是时候让你从骑士的训练中成长为一个真正的骑士了，对吧？"))
             {
                 await startQuest();
                 await completeQuest();
@@ -400,8 +400,8 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
 
-                changeJob(nextJob);
-                CompleteQuestN();
+                await changeJob(nextJob);
+                await CompleteQuestN();
             }
         }
         // Quest: 20311 
@@ -418,7 +418,7 @@ namespace Application.Plugin.Script.Quest
         public async Task Cygnus3rdJob(Job nextJob)
         {
             await SayNext("你所带回来的宝石是神兽的眼泪，它拥有非常强大的力量。如果被黑魔法师给得手了，那我们全部都可能要倒大楣了...");
-            if (await AskYesNo($"女皇为了报答你的努力，将任命你为皇家骑士团的#b{c.CurrentCulture.GetJobName(nextJob)}#k，你准备好了嘛?"))
+            if (await AskYesNo($"女皇为了表彰你的努力，决定任命你为皇家骑士团的#b{c.CurrentCulture.GetJobName(nextJob)}#k，你准备好了嘛?"))
             {
                 var nPSP = (getPlayer().getLevel() - getJob().MaxLevel) * 3;
                 if (getPlayer().getRemainingSp() > nPSP)
@@ -427,8 +427,9 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
 
-                changeJob(nextJob);  //更改职业
+                await changeJob(nextJob);  //更改职业
                 await forceCompleteQuest();
+                await SayOK("#h #, 从这一刻起，你就是一名皇家骑士团的高级骑士。你将以符合你新头衔的尊严行事，愿你的荣耀继续像这一刻一样闪耀。");
             }
             else
             {
@@ -468,20 +469,20 @@ namespace Application.Plugin.Script.Quest
         public async Task q20408s()
         {
             await SaySpeech([
-                "#h0#... 首先，谢谢你的出色工作。如果不是你，我。。。我不可能免受黑巫婆的诅咒。非常感谢你.",
+                "#h #... 首先，谢谢你的出色工作。如果不是你，我。。。我不可能免受黑巫婆的诅咒。非常感谢你.",
                 "如果没有别的，这一连串的小事故反而让事件更清晰了，那就是你付出了无数小时的努力来改善自己，为皇家骑士做出贡献."
                 ]);
             if (await SayAcceptDecline("为了庆祝你的努力和成就。。。我想授予你一个新的头衔，并再次祝福你。你会吗。。。接受这个?"))
             {
                 if (getJobId() % 10 == 1)
                 {
-                    changeJobById(getJobId() + 1);
+                    await changeJobById(getJobId() + 1);
                 }
 
                 await forceStartQuest();
                 await forceCompleteQuest();
 
-                await SayOK("#h0#. 为了勇敢地与黑魔法师战斗，从现在起，我将任命你为皇家骑士团的新首席骑士。请明智地运用你的权力和权威来帮助保护冒险岛世界的公民.");
+                await SayOK("#h #. 为了勇敢地与黑魔法师战斗，从现在起，我将任命你为皇家骑士团的新首席骑士。请明智地运用你的权力和权威来帮助保护冒险岛世界的公民.");
             }
         }
         //// Quest: 20500 
@@ -573,7 +574,7 @@ namespace Application.Plugin.Script.Quest
 
             await forceCompleteQuest();
             await gainItem(4220137, -1);
-            gainExp(37600);
+            await gainExp(37600);
             await SayOK("哦，你能唤醒米米安娜蛋吗？太神奇了。。。大多数骑士都无法在这么短的时间内唤醒它.");
         }
         // Quest: 20526 
@@ -641,7 +642,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 20600 
         public async Task q20600s()
         {
-            if (await SayAcceptDecline("#h0#，达到100级之后，你是不是就疏于修炼了呢？虽然你确实变强了，但修炼是不能停止的。你必须以骑士团长们作为榜样。他们为了对付黑魔法师，一刻都没有停止修炼。"))
+            if (await SayAcceptDecline("#h #，达到100级之后，你是不是就疏于修炼了呢？虽然你确实变强了，但修炼是不能停止的。你必须以骑士团长们作为榜样。他们为了对付黑魔法师，一刻都没有停止修炼。"))
             {
                 await forceStartQuest();
             }

@@ -133,7 +133,6 @@ public class ServerConfig
     public int MOB_REACTOR_REFRESH_TIME;
     public int PARTY_SEARCH_REENTRY_LIMIT;
     public long NAME_CHANGE_COOLDOWN;
-    public long WORLD_TRANSFER_COOLDOWN;//Cooldown for world tranfers, default is same as name change (30 days).
     public bool INSTANT_NAME_CHANGE;
 
     //Dangling Items/Locks Configuration
@@ -184,9 +183,6 @@ public class ServerConfig
     public bool USE_STACK_COUPON_RATES;
     public bool USE_PERFECT_PITCH;
 
-    //Quest Configuration
-    public bool USE_QUEST_RATE;
-
     //Quest Points Configuration
     public int QUEST_POINT_REPEATABLE_INTERVAL;
     public int QUEST_POINT_REQUIREMENT;
@@ -213,11 +209,6 @@ public class ServerConfig
     public bool USE_CHAIR_EXTRAHEAL;
     public byte CHAIR_EXTRA_HEAL_MULTIPLIER;
     public int CHAIR_EXTRA_HEAL_MAX_DELAY;
-
-    //Pet Auto-Pot Configuration
-    public bool USE_COMPULSORY_AUTOPOT;
-    public double PET_AUTOHP_RATIO;
-    public double PET_AUTOMP_RATIO;
 
     //Pet & Mount Configuration
     public byte PET_EXHAUST_COUNT;

@@ -37,7 +37,7 @@ namespace Application.Plugin.Script.Npc
     // changeName, commands, cpqchallenge2, credits, gachapon, gachaponold, gachaponRemote, MagatiaPassword, mapleTV, MaybeItsGrendel_end,
     // mc_enter, mc_enter1, mc_move, mc_roomout, PupeteerPassword, rank_user, rebirth, scroll_generator, ThiefPassword, unidentifiedNpc, waterOfLife
 
-    internal partial class NpcScript : NPCConversationManager
+    internal partial class NpcScript
     {
         // Npc: 2003 
         public async Task begin5()
@@ -1807,7 +1807,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     await SaySpeech([
                         "现在~让我们继续下一个问题。这个问题真的很难。我要让巴特来帮我。你认识巴特，对吧？",
-                        "我要把你送到尼奥之舟的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
+                        "我要把你送到诺特勒斯号的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
                         "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
                         ]);
                     var em = GetEventManager("4jaerial");
@@ -3021,7 +3021,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2022004 
         public async Task s4common1_out()
         {
-            await SayNext("你在那里做得很好，#h0#，干得漂亮。现在我会把你送回埃尔奈斯。当你准备好学习新技能时，带着护身符和我交谈。");
+            await SayNext("你在那里做得很好，#h #，干得漂亮。现在我会把你送回#m211000000#。当你准备好学习新技能时，带着护身符和我交谈。");
             await warp(211000000, "in01");
         }
 
@@ -3374,7 +3374,7 @@ namespace Application.Plugin.Script.Npc
             var completed = questList.Where(x => isQuestCompleted(x.quest)).ToArray();
             if (completed.Length == 0)
             {
-                await SayOK("#b#h1##k还没有归还一本故事书。");
+                await SayOK("#b#h ##k还没有归还一本故事书。");
                 return;
             }
             await SaySpeech([
@@ -5313,7 +5313,7 @@ namespace Application.Plugin.Script.Npc
             switch (selection)
             {
                 case 0:
-                    await SayNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于埃尔帕姆……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
+                    await SayNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于#n9201055#……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
                     await About_NLC();
                     break;
                 case 1:
@@ -5684,7 +5684,7 @@ namespace Application.Plugin.Script.Npc
                 if (getLevel() >= requiredLevel && canGetFirstJob(jobType))
                 {
                     var map = jobMap[job];
-                    if (await AskYesNo("你好 #h0#，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
+                    if (await AskYesNo("你好 #h #，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
                     {
                         await warp(map, 0);
                     }

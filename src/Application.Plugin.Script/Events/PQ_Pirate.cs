@@ -21,6 +21,7 @@ namespace Application.Plugin.Script.Events
             MaxMap = 925100500;
 
             EventTime = 4 * 60;
+            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
     }
 }

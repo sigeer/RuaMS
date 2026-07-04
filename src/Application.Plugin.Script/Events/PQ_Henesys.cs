@@ -31,6 +31,7 @@ namespace Application.Plugin.Script.Events
             MaxMap = 910010400;
 
             EventTime = 10 * 60;
+            Type = Shared.Events.EventInstanceType.PartyQuest;
 
             StageClearRewards = new()
             {

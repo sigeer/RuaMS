@@ -731,9 +731,16 @@ public class PacketCreator
         p.writeShort(0);
         for (int i = 0; i < 3; i++)
         {
+            //     v110 = CInPacket::Decode4(v4);
+            //     a2 = CInPacket::Decode4(v4);
+            //     v109 = CInPacket::Decode4(v4);
+            //     CalcDamage::SetSeed((v2 + 13360), v110, a2, v109);
+            //     CWvsContext::SetActionRndSeed((v2 + 13620), v110, a2, v109);
+            //     CWvsContext::OnSetLogoutGiftConfig(&v106, v83);
+            // 供客户端使用的随机数种子？
             p.writeInt(Randomizer.nextInt());
         }
-        addCharacterInfo(p, chr);
+        addCharacterInfo(p, chr);            //     CharacterData::Decode(v107, v4, 0);
         p.writeLong(PacketCommon.getTime(chr.Client.CurrentServer.Node.getCurrentTime()));
         return p;
     }
@@ -821,8 +828,12 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
-        p.writeInt(0);//updated
+        p.writeByte(0);     // sNotifierMessage
+        p.writeByte(0);     // bCharacterData
+        p.writeShort(0);    // message count
+
         p.writeByte(0);//updated
+
         p.writeInt(to.getId());
         p.writeByte(spawnPoint);
         p.writeShort(chr.HP);
@@ -841,8 +852,12 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
-        p.writeInt(0);//updated
+        p.writeByte(0);
+        p.writeByte(0);
+        p.writeShort(0);
+
         p.writeByte(0);//updated
+
         p.writeInt(to.getId());
         p.writeByte(spawnPoint);
         p.writeShort(chr.HP);
@@ -1049,6 +1064,13 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.CLEAR_AVATAR_MEGAPHONE);
         p.writeByte(1);
+        return p;
+    }
+
+    public static Packet RandomEmotion(int itemId)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.RandomEmotion);
+        p.writeInt(itemId);
         return p;
     }
 
@@ -2837,14 +2859,17 @@ public class PacketCreator
      * @return
      */
     public static Packet showMonsterRiding(int cid, Mount mount)
-    { //Gtfo with this, this is just giveForeignBuff
+    { 
+        //Gtfo with this, this is just giveForeignBuff
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
         p.writeLong(BuffStat.MONSTER_RIDING.getValue());
         p.writeLong(0);
+
         p.writeShort(0);
         p.writeInt(mount.getItemId());
         p.writeInt(mount.getSkillId());
+
         p.writeInt(0); //Server Tick value.
         p.writeShort(0);
         p.writeByte(0); //Times you have been buffed
@@ -6620,7 +6645,7 @@ public class PacketCreator
             p.writeByte(1);
         }
 
-        p.writeString(c.AccountName);
+        p.writeString(c.AccountName);   // NexonClubID
         if (mts)
         {
             p.writeBytes(new byte[]{ 0x88, 19, 0, 0,

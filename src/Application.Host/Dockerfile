@@ -17,6 +17,10 @@ WORKDIR /src
 COPY . .
 RUN dotnet restore "./src/Application.Host/Application.Host.csproj"
 
+# 构建插件项目
+RUN dotnet publish "./src/Application.Plugin.Script/Application.Plugin.Script.csproj" -c $BUILD_CONFIGURATION -o /app/plugins /p:UseAppHost=false
+RUN dotnet publish "./src/Application.Plugin.FakeCharacter/Application.Plugin.FakeCharacter.csproj" -c $BUILD_CONFIGURATION -o /app/plugins /p:UseAppHost=false
+
 # 此阶段用于发布要复制到最终阶段的服务项目
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
@@ -26,6 +30,8 @@ RUN dotnet publish "./src/Application.Host/Application.Host.csproj" -c $BUILD_CO
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /app/plugins/Application.Plugin.Script.dll /app/Plugins/
+COPY --from=publish /app/plugins/Application.Plugin.FakeCharacter.dll /app/Plugins/
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

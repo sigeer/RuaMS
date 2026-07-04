@@ -8,7 +8,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (!getJob().IsSameJobGroup(baseJob))
             {
-                await SayOK("Hello there, #h0#. Are you helping us finding the intruder? He is not in this area, I've already searched here.");
+                await SayOK("Hello there, #h #. Are you helping us finding the intruder? He is not in this area, I've already searched here.");
                 return;
             }
 

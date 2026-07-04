@@ -330,5 +330,10 @@ namespace Application.Core.Game.Players
         {
             await changeMap(await MapModel.getForcedReturnMap());
         }
+
+        public async Task ChangeMapAndChannel(int channel, int mapId, Point pos)
+        {
+            await Client.ChangeChannel(channel);
+        }
     }
 }

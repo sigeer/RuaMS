@@ -50,12 +50,7 @@ public class MesoAction : AbstractQuestAction
         }
         else
         {
-            var mesoGain = gain * chr.getMesoRate();
-            if (YamlConfig.config.server.USE_QUEST_RATE)
-            {
-                mesoGain = gain * chr.getQuestMesoRate();
-            }
-
+            var mesoGain = gain * chr.getMesoRate() * chr.getQuestMesoRate();
             await chr.GainMeso((int)mesoGain, GainItemShow.ShowInChat);
         }
     }

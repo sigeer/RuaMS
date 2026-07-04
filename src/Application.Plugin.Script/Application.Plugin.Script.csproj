@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <BaseOutputPath>..\Application.Host\bin\</BaseOutputPath>
+    <OutputPath>..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

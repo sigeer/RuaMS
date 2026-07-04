@@ -1,4 +1,3 @@
-using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using Dto;
 using Google.Protobuf;
@@ -17,9 +16,9 @@ namespace Application.Core.Channel.Internal.Handlers
         {
             if (res.Code != 0)
             {
-                await _server.BroadcastAsync(async w =>
+                await _server.SendToPlayerAsync(res.MasterId, async chr =>
                 {
-                    await w.Send(new InvokeDropMessageAsyncCommand(res.MasterId, 5, $"玩家 {res.Victime} 不存在"));
+                    await chr.Pink($"玩家 {res.Victime} 不存在");
                 });
             }
         }

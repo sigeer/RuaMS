@@ -35,7 +35,8 @@ namespace Application.Core.Mappers
             CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
 
-            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>().ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
+            CreateMap<RankProto.RankCharacter, RankedCharacterInfo>()
+                .ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
 
             CreateMap<Dto.CharacterDto, Player>()
                             .ForMember(x => x.RemainingSp, opt => opt.MapFrom(x => TranslateArray(x.Sp)))
@@ -201,12 +202,9 @@ namespace Application.Core.Mappers
                 .ForMember(dest => dest.RingSourceInfo, source => source.MapFrom(x => x.RingSource));
             #endregion 
 
-            CreateMap<Storage, Dto.StorageDto>()
-                .ForMember(dest => dest.Meso, source => source.MapFrom(x => x.Meso))
-                .ForMember(dest => dest.Slots, source => source.MapFrom(x => x.Slots))
-                .ForMember(dest => dest.OwnerId, source => source.MapFrom(x => x.AccountId));
-
-            CreateMap<Dto.SkillMacroDto, SkillMacro>().ReverseMap();
+            CreateMap<Dto.SkillMacroDto, SkillMacro>()
+                .ConstructUsing(x => new SkillMacro(x.Skill1, x.Skill1, x.Skill3, x.Name, x.Shout, x.Position))
+                .ReverseMap();
             CreateMap<Dto.FameLogRecordDto, FameLogObject>().ReverseMap();
             CreateMap<BuddyProto.BuddyDto, BuddyCharacter>().ReverseMap();
 

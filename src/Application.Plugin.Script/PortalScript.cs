@@ -7652,6 +7652,31 @@ namespace Application.Plugin.Script
             return true;
         }
 
+        /// <summary>
+        /// MapId: 106020601
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> TD_MC_faild()
+        {
+            await showIntro("Effect/Direction2.img/mushCatle/nugu");
+            await Pink("你被警卫发现了，现在将被送到悬崖底部。");
+
+            var chrId = getPlayer().Id;
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                await getMap().Send(async m =>
+                {
+                    var chr = m.getCharacterById(chrId);
+                    if (chr?.getMapId() == 106020601)
+                    {
+                        await chr.changeMap(106020403);
+                    }
+                });
+            });
+            return true;
+        }
+
 
         public async Task<bool> TD_Boss_enter()
         {

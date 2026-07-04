@@ -1,6 +1,6 @@
 namespace Application.Core.Channel.Commands
 {
-    internal class InvokeStartSyncAllPlayerCommand : IWorldChannelCommand
+    internal class InvokeStartSyncAllPlayerCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeStartSyncAllPlayerCommand);
 
@@ -11,14 +11,14 @@ namespace Application.Core.Channel.Commands
             _saveDB = saveDB;
         }
 
-        public void Execute(WorldChannel ctx)
+        public async Task Execute(WorldChannel ctx)
         {
             List<SyncProto.PlayerSaveDto> list = [];
             foreach (var player in ctx.getPlayerStorage().getAllCharacters())
             {
                 list.Add(ctx.NodeService.DataService.Deserialize(player));
             }
-            ctx.NodeActor.Send(new InvokeSyncAllPlayerCommand(_saveDB, new DistributeSessionDataWrapper<int, SyncProto.PlayerSaveDto>(ctx.Id, list)));
+            await ctx.Node.Transport.BatchSyncPlayer(list, _saveDB);
         }
     }
 }

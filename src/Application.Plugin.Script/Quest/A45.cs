@@ -141,7 +141,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 8228 
         public async Task q8228s()
         {
-            if (await SayAcceptDecline("嗯，这不太好。我似乎无法让这些超级雕纹起作用，该死。...啊，是外来者！他可能知道这张纸上写的是什么语言。让埃尔帕姆试着读一下，也许他知道些什么。"))
+            if (await SayAcceptDecline("嗯，这不太好。我似乎无法让这些超级雕纹起作用，该死。...啊，是外来者！他可能知道这张纸上写的是什么语言。让#n9201055#试着读一下，也许他知道些什么。"))
             {
                 if (canHold(4032032, 1))
                 {
@@ -248,40 +248,40 @@ namespace Application.Plugin.Script.Quest
             }
         }
 
-        public async Task q8231_8238(string target, int requiredItem, int count)
+        async Task q8231_8238(string target, int requiredItem, int count)
         {
-            if (await SayAcceptDecline("嘿，游客！我需要你的帮助。新叶城的居民面临新的威胁。我正在招募任何人，这次的目标是 #r" + target + "#k。你愿意加入吗？"))
+            if (await SayAcceptDecline("嘿，冒险者！我需要你的帮助。新叶城的居民面临新的威胁。我正在招募愿意出手的人，这次的目标是 #r" + target + "#k。你愿意加入吗？"))
             {
                 await forceStartQuest();
 
                 var reqs = $"#r{count} 个 #t{requiredItem}##k";
-                await SayOK("非常好。尽快给我 #r" + reqs + "#k，新叶城正在指望你。");
+                await SayOK("非常好。尽快给我 #r" + reqs + "#k，新叶城就指望你了。");
 
             }
         }
 
         // Quest: 8231 
-        public Task q8231s() => q8231_8238("小矮人", 4032031, 30);
+        public Task q8231s() => q8231_8238("小妖精", 4032031, 30);
         // Quest: 8232 
-        public Task q8232s() => q8231_8238("小矮人", 4032031, 30);
+        public Task q8232s() => q8231_8238("#o9400583#", 4032031, 30);
 
         // Quest: 8233 
-        public Task q8233s() => q8231_8238("长者幽灵", 4032011, 30);
+        public Task q8233s() => q8231_8238("#o9400580#", 4032011, 30);
 
         // Quest: 8234 
-        public Task q8234s() => q8231_8238("长者幽灵", 4032011, 30);
+        public Task q8234s() => q8231_8238("#o9400580#", 4032011, 30);
 
         // Quest: 8235 
-        public Task q8235s() => q8231_8238("无头骑士", 4031903, 1);
+        public Task q8235s() => q8231_8238("#o9400549#", 4031903, 1);
 
         // Quest: 8236 
-        public Task q8236s() => q8231_8238("无头骑士", 4031903, 1);
+        public Task q8236s() => q8231_8238("#o9400549#", 4031903, 1);
 
         // Quest: 8237 
-        public Task q8237s() => q8231_8238("大脚怪", 4032013, 1);
+        public Task q8237s() => q8231_8238("#o9400575#", 4032013, 1);
 
         // Quest: 8238 
-        public Task q8238s() => q8231_8238("大脚怪", 4032013, 1);
+        public Task q8238s() => q8231_8238("#o9400575#", 4032013, 1);
 
     }
 }

@@ -16,7 +16,7 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public sealed class PluginManager : IAsyncDisposable
     {
-        readonly string _sourcePluginDir;      // 运维放置插件 DLL 的源目录
+        public string PluginDir { get; }      // 运维放置插件 DLL 的源目录
         readonly string _shadowCopyBaseDir;    // 卷影副本根目录（例如 "ShadowCopy"）
 
         /// <summary>
@@ -30,7 +30,8 @@ namespace Application.Core.Gameplay.Plugins
         public PluginManager(WorldChannelServer server)
         {
             _server = server;
-            _sourcePluginDir = AppDomain.CurrentDomain.BaseDirectory;
+            PluginDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+            Directory.CreateDirectory(PluginDir);
             _shadowCopyBaseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PluginShadowCopy");
         }
 
@@ -132,7 +133,7 @@ namespace Application.Core.Gameplay.Plugins
 
         private PluginContainer<PluginServiceBase> LoadPluginFromSource(string pluginDllName)
         {
-            string sourcePath = Path.Combine(_sourcePluginDir, pluginDllName);
+            string sourcePath = Path.Combine(PluginDir, pluginDllName);
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException($"Plugin not found: {sourcePath}");
 

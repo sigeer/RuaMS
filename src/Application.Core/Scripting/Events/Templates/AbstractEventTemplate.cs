@@ -51,6 +51,7 @@ namespace Application.Core.scripting.Events.Templates
         /// 关卡通关奖励。Key: 关卡
         /// </summary>
         public Dictionary<int, (int Exp, int Meso)> StageClearRewards { get; init; }
+        public EventInstanceType Type { get; init; }
         #endregion
 
         public AbstractEventTemplate(string name)
@@ -58,6 +59,7 @@ namespace Application.Core.scripting.Events.Templates
             Name = name;
             AllClearRewards = new();
             StageClearRewards = new();
+            Type = EventInstanceType.Regular;
         }
 
         public virtual void OnMounted(WorldChannel worldChannel)
@@ -329,12 +331,17 @@ namespace Application.Core.scripting.Events.Templates
         #endregion
 
         #region Rewards
+        public virtual double GetExpRate()
+        {
+            return Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PQ_BONUS_EXP_RATE : 1;
+        }
+
         public virtual RewardOptions GetAllClearRewardOptions(Player chr, int point)
         {
-            return new RewardOptions();
+            return new RewardOptions(FinalExpRate: (float)GetExpRate());
         }
         /// <summary>
-        /// 
+        /// 全部通关的最终奖励
         /// </summary>
         /// <param name="eim"></param>
         /// <param name="player"></param>
@@ -390,13 +397,19 @@ namespace Application.Core.scripting.Events.Templates
         }
         public virtual RewardOptions GetStageClearRewardOptions(Player chr, int stageMap)
         {
-            return new RewardOptions();
+            return new RewardOptions(FinalExpRate: (float)GetExpRate());
         }
+        /// <summary>
+        /// 对单个玩家发放关卡通关奖励
+        /// </summary>
+        /// <param name="eim"></param>
+        /// <param name="player"></param>
+        /// <param name="stageMap"></param>
+        /// <returns></returns>
         public virtual async Task<ClaimRewardResult> GiveStageClearReward(AbstractEventInstanceManager eim, Player player, int stageMap)
         {
             if (StageClearRewards.TryGetValue(stageMap, out var data))
             {
-                var expExtraBonus = eim.Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PQ_BONUS_EXP_RATE : 1;
                 var option = GetStageClearRewardOptions(player, stageMap);
                 if (eim.CanGiveReward(player, stageMap))
                 {
@@ -410,7 +423,12 @@ namespace Application.Core.scripting.Events.Templates
             }
             return ClaimRewardResult.Success;
         }
-
+        /// <summary>
+        /// 对所有玩家发放关卡通关奖励
+        /// </summary>
+        /// <param name="eim"></param>
+        /// <param name="stageMap"></param>
+        /// <returns></returns>
         public virtual async Task GiveStageClearRewardAll(AbstractEventInstanceManager eim, int stageMap)
         {
             if (StageClearRewards.TryGetValue(stageMap, out var data))

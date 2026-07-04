@@ -48,9 +48,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     // registers all opened gates on the event. Will help late characters to encounter next stages gates already opened
     private Dictionary<int, KeyValuePair<string, int>?> openedGates = new();
 
-
-    public EventInstanceType Type { get; set; }
-
     public Dictionary<string, string> Properties { get; set; } = new();
 
     /// <summary>
@@ -135,14 +132,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         if (gain <= 0)
             return;
 
-        var bonus = Type == EventInstanceType.PartyQuest ? YamlConfig.config.server.PQ_BONUS_EXP_RATE : 1;
         List<Player> players = getPlayerList();
 
+        var eventExpRate = EventManager.Template.GetExpRate();
         if (mapId == -1)
         {
             foreach (Player mc in players)
             {
-                await mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
+                await mc.gainExp((int)(gain * mc.getExpRate() * eventExpRate), true, true);
             }
         }
         else
@@ -151,7 +148,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
             {
                 if (mc.getMapId() == mapId)
                 {
-                    await mc.gainExp((int)(gain * mc.getExpRate() * bonus), true, true);
+                    await mc.gainExp((int)(gain * mc.getExpRate() * eventExpRate), true, true);
                 }
             }
         }
@@ -949,17 +946,31 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     //        mc.GainMeso((int)(rewardMeso * mc.getMesoRate()), GainItemShow.ShowInChat);
     //    }
     //}
-
+    /// <summary>
+    /// 对单个玩家发放最终奖励
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="point"></param>
+    /// <returns></returns>
     public async Task<ClaimRewardResult> GiveClearReward(Player player, int point = 1)
     {
         return await EventManager.Template.GiveClearReward(this, player, point);
     }
-
+    /// <summary>
+    /// 对单个玩家发放关卡奖励
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="stageMap"></param>
+    /// <returns></returns>
     public async Task<ClaimRewardResult> GiveStageClearReward(Player player, int stageMap)
     {
         return await EventManager.Template.GiveStageClearReward(this, player, stageMap);
     }
-
+    /// <summary>
+    /// 对所有玩家发放关卡奖励
+    /// </summary>
+    /// <param name="stageMap"></param>
+    /// <returns></returns>
     public async Task GiveStageClearRewardAll(int stageMap)
     {
         await EventManager.Template.GiveStageClearRewardAll(this, stageMap);
