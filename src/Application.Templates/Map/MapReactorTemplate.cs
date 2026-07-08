@@ -2,7 +2,7 @@ namespace Application.Templates.Map
 {
     public sealed class MapReactorTemplate
     {
-        [WZPath("reactor/-/$name")]
+        [WZPath("~/$name")]
         public int Index { get; set; }
         public int Id { get; set; }
         public string? Name { get; set; }

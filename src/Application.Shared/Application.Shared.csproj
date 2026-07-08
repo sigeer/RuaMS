@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,18 +9,15 @@
     <ProjectReference Include="..\Application.Protos\Application.Protos.csproj" />
     <ProjectReference Include="..\Application.Templates\Application.Templates.csproj" />
     <ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
+    <ProjectReference Include="..\Application.Templates.Reader\Application.Templates.Reader.csproj" />
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="DotNetty.Buffers" />
-		<PackageReference Include="DotNetty.Codecs" />
-		<PackageReference Include="DotNetty.Common" />
-		<PackageReference Include="DotNetty.Handlers" />
-		<PackageReference Include="DotNetty.Transport" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Plugins\" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DotNetty.Buffers" />
+    <PackageReference Include="DotNetty.Codecs" />
+    <PackageReference Include="DotNetty.Common" />
+    <PackageReference Include="DotNetty.Handlers" />
+    <PackageReference Include="DotNetty.Transport" />
+  </ItemGroup>
 
 </Project>

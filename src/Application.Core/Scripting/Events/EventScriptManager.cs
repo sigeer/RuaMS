@@ -26,7 +26,6 @@ using Application.Core.scripting.Events.Templates;
 using Application.Core.Scripting.Events;
 using Application.Utility.Tickables;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace scripting.Event;
 
@@ -103,7 +102,7 @@ public class EventScriptManager : ITickableTree, IAsyncDisposable
             {
                 if (events.TryRemove(item, out var em))
                 {
-                     await em.DisposeAsync();
+                    await em.DisposeAsync();
                 }
             }
         }

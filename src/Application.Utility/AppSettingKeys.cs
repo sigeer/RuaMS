@@ -16,7 +16,9 @@ namespace Application.Utility
         public const string LongIdSeed = "LongIdSeed";
 
         public const string Section_Script = "ScriptConfig";
+
         public const string Section_WZ = "WZConfig";
+        public const string Section_WZ__Dir = "WZConfig:BaseDir";
 
         public const string Grpc_Master = "http://_grpc.ruams-master";
     }

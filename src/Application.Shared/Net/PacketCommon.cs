@@ -4,7 +4,7 @@ using Application.Shared.Net.Encryption;
 using Application.Templates;
 using Application.Templates.Character;
 using Application.Templates.Item.Pet;
-using Application.Templates.Providers;
+using Application.Templates.Reader;
 using Application.Utility;
 using DotNetty.Buffers;
 using Dto;

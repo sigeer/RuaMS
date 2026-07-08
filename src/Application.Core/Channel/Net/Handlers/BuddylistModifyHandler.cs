@@ -53,7 +53,7 @@ public class BuddylistModifyHandler : ChannelHandlerBase
                 return; //hax.
             }
 
-           await  _buddyManager.AddBuddy(player, addName, group);
+            await _buddyManager.AddBuddy(player, addName, group);
         }
         else if (mode == 2)
         {

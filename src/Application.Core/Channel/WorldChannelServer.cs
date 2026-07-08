@@ -17,7 +17,6 @@ using Application.Utility.Tickables;
 using AutoMapper;
 using Config;
 using Google.Protobuf;
-using ItemProto;
 using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -448,7 +447,7 @@ namespace Application.Core.Channel
             await PluginManager.UnloadPlugin(pluginName);
         }
 
-        
+
         public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
         {
             return Transport.UpdateAccountState(accId, state);

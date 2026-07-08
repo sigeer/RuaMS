@@ -3,7 +3,6 @@ using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.scripting.Events.Instances

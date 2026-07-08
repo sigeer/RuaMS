@@ -20,8 +20,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
+using Application.Templates.Skill;
 
 namespace server.life;
 
@@ -32,7 +32,7 @@ public class MobSkillFactory
 {
     private static Dictionary<string, MobSkill> mobSkills = new();
     private static ReaderWriterLockSlim mainLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-    static MobSkillProvider _provider = ProviderSource.Instance.GetProvider<MobSkillProvider>();
+    static IProvider<MobSkillTemplate> _provider = ProviderSource.Instance.GetProvider<IProvider<MobSkillTemplate>>(ProviderType.MobSkill);
 
     public static MobSkill? GetMobSkill(int type, int level)
     {

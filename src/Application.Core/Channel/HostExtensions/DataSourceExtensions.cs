@@ -1,9 +1,9 @@
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
+using Application.Templates.Reader.Img;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using System.Globalization;
+using System.Xml;
 
 namespace Application.Core.Channel.HostExtensions
 {
@@ -30,25 +30,35 @@ namespace Application.Core.Channel.HostExtensions
         public static void UseDataSource(this WebApplication app)
         {
             ScriptSource.Instance = new ScriptSource(app.Configuration.GetSection(AppSettingKeys.Section_Script));
+            var wzDir = app.Configuration.GetSection(AppSettingKeys.Section_WZ).GetValue("BaseDir", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz"));
+            var file = Directory.EnumerateFiles(wzDir, "*", SearchOption.AllDirectories).FirstOrDefault();
+            if (file == null)
+            {
+                throw new Templates.Exceptions.DataDirNotFoundException();
+            }
 
-            ProviderSource.Instance = new ProviderSource(app.Configuration.GetSection(AppSettingKeys.Section_WZ));
-            ProviderSource.Instance.RegisterProvider<MapProvider>(o => new MapProvider(o))
-                .RegisterProvider<ReactorProvider>(o => { o.UseCache = false; return new ReactorProvider(o); })
-                .RegisterProvider<QuestProvider>(o => new QuestProvider(o))
-                .RegisterProvider<EquipProvider>(o => new EquipProvider(o))
-                .RegisterProvider<ItemProvider>(o => new ItemProvider(o))
-                .RegisterProvider<MobSkillProvider>(o => { o.UseCache = false; return new MobSkillProvider(o); })
-                .RegisterProvider<EtcNpcLocationProvider>(o => new EtcNpcLocationProvider(o))
-                .RegisterProvider<EtcScriptInfoProvider>(o => new EtcScriptInfoProvider(o))
-                .RegisterProvider<NpcProvider>(o => new NpcProvider(o))
-                .RegisterProvider<MobProvider>(o => new MobProvider(o))
-                .RegisterProvider<SkillProvider>(o => { o.UseCache = false; return new SkillProvider(o); })
-                .RegisterProvider<MobWithBossHpBarProvider>(o => { o.UseCache = false; return new MobWithBossHpBarProvider(o); })
+            ProviderSource providerSource;
 
-                .RegisterKeydProvider("zh-CN", o => new StringProvider(o, CultureInfo.GetCultureInfo("zh-CN")))
-                .RegisterKeydProvider("en-US", o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")))
-                .UseLogger(app.Logger);
+            if (file.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+            {
+                var resolver = new Application.Templates.Reader.Xml.ServerXmlResolver(wzDir);
+                providerSource = new ProviderSource(resolver);
+                Application.Templates.Reader.Xml.Registor.Register(providerSource);
+            }
+            else if (file.EndsWith(".img", StringComparison.OrdinalIgnoreCase))
+            {
+                var resolver = new Application.Templates.Reader.Img.ImgPathResolver(wzDir);
+                providerSource = new ProviderSource(resolver);
+                Application.Templates.Reader.Img.Registor.Register(providerSource);
+            }
+            else
+            {
+                throw new Templates.Exceptions.DataDirNotFoundException();
+            }
 
+            ProviderSource.Instance = providerSource;
+
+            ProviderSource.Instance.UseLogger(app.Logger);
             ProviderSource.Instance.Debug();
         }
     }

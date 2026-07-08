@@ -93,7 +93,8 @@ src/
 ├── Application.Utility/                  — 工具类（Serilog 日志、Quartz 调度、AutoMapper 映射、扩展方法）
 ├── Application.Protos/                   — gRPC/Protobuf 定义文件（约 130 个 .proto）
 ├── Application.Templates/                — WZ 数据模板模型（角色、道具、地图、怪物、NPC、技能等）
-├── Application.Templates.XmlWzReader/    — WZ XML → 模板对象数据绑定
+├── Application.Templates.Reader.Xml/     — WZ 读取 XML → 模板对象数据绑定
+├── Application.Templates.Reader.Img/     — WZ 读取 IMG → 模板对象数据绑定
 ├── Application.Resources/                — 静态资源：wz/、scripts/、yaml 配置文件
 ├── XmlWzReader/                          — XML 格式 WZ 数据读取工具
 ├── Application.Scripting/                — 脚本引擎抽象

@@ -14,7 +14,7 @@ namespace Application.Templates.Item.Cash
         }
 
         [WZPath("info/rate")]
-        public float Rate { get; set; }
+        public int Rate { get; set; }
 
         [WZPath("info/time/-")]
         public string[] TimeRange { get; set; }

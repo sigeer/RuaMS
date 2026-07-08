@@ -22,8 +22,7 @@ using Application.Core.Channel.Net.Packets;
 using Application.Core.Server;
 using Application.Resources.Messages;
 using Application.Templates.Npc;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using client.inventory;
 using tools;
 
@@ -123,7 +122,7 @@ public class Storage : AbstractStorage
             return;
         }
 
-        NpcTemplate = ProviderSource.Instance.GetProvider<NpcProvider>().GetItem(npcId);
+        NpcTemplate = ProviderSource.Instance.GetProvider<IProvider<NpcTemplate>>(ProviderType.Npc).GetItem(npcId);
         await base.OpenStorage(npcId);
     }
 }

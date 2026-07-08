@@ -1,5 +1,4 @@
 using Application.Core.Scripting.Events;
-using System.Threading.Tasks;
 using tools;
 
 namespace Application.Core.scripting.Events.Instances

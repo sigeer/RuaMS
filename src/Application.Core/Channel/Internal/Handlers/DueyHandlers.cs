@@ -42,10 +42,10 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 if (data.Code == 0)
                 {
-                     await _server.SendToPlayerAsync(data.Request.MasterId, chr =>
-                    {
-                        return chr.SendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
-                    });
+                    await _server.SendToPlayerAsync(data.Request.MasterId, chr =>
+                   {
+                       return chr.SendPacket(DueyPacketCreator.removeItemFromDuey(!data.Request.ByReceived, data.Request.PackageId));
+                   });
                 }
             }
 

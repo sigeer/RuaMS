@@ -84,7 +84,7 @@ namespace Application.Core.Channel.ServerData
 
         public Task AnswerInvitation(Player answer, int guildId, bool operation)
         {
-            return  _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            return _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public async Task CreateGuild(Player leader, string name)

@@ -139,7 +139,7 @@ public class GenericPortal : Portal
             var chr = c.OnlinedCharacter;
             if (!(chr.getChalkboard() != null && GameConstants.isFreeMarketRoom(getTargetMapId())))
             {
-                var to = await chr.getWarpMap(getTargetMapId()); 
+                var to = await chr.getWarpMap(getTargetMapId());
                 var pto = to.getPortal(getTarget());
                 if (pto == null)
                 {// fallback for missing portals - no real life case anymore - interesting for not implemented areas

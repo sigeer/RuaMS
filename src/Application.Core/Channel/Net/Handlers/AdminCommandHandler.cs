@@ -119,7 +119,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 victim = p.readString();
                 int mapId = p.readInt();
                 var chr = c.getChannelServer().getPlayerStorage().getCharacterByName(victim);
-                if(chr != null)
+                if (chr != null)
                     await chr.changeMap(await c.getChannelServer().getMapFactory().getMap(mapId));
                 break;
             case 0x15: // Kill

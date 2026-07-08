@@ -119,7 +119,7 @@ public class Pet : Item
 
         var nextPet = new LotteryMachine<int>(SourceTemplate.Evols.Select((x, idx) => new LotteryMachinItem<int>(x, SourceTemplate.EvolProbs[idx])))
             .GetRandomItem();
-        var nextPetTemplate = ItemInformationProvider.getInstance().GetTrustTemplate(nextPet) as PetItemTemplate;
+        var nextPetTemplate = ItemInformationProvider.getInstance().GetItemTemplate(nextPet) as PetItemTemplate;
         if (nextPetTemplate == null)
             return null;
 

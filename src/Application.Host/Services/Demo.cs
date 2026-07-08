@@ -1,13 +1,9 @@
-using Application.Core.Game.Life;
 using Application.Scripting;
-using Application.Templates.Etc;
 using Application.Templates.Map;
 using Application.Templates.Npc;
-using Application.Templates.Providers;
 using Application.Templates.Quest;
 using Application.Templates.Reactor;
-using Application.Templates.XmlWzReader.Provider;
-using client.inventory;
+using Application.Templates.Reader;
 using Microsoft.CSharp;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -41,7 +37,7 @@ namespace Application.Host.Services
         }
         public static void ExportReactorAct()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<ReactorProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor)
                 .LoadAll().OfType<ReactorTemplate>().Where(x => !string.IsNullOrEmpty(x.Action)).Select(y => new { ReactorId = y.TemplateId, y.Action })
                 .GroupBy(x => x.Action).ToDictionary(x => x.Key, x => x.ToList());
 
@@ -85,7 +81,7 @@ namespace Application.Host.Services
 
         public static void ExportReactorHit()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<ReactorProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor)
                 .LoadAll().OfType<ReactorTemplate>().Where(x => !string.IsNullOrEmpty(x.Action)).Select(y => new { ReactorId = y.TemplateId, y.Action })
                 .GroupBy(x => x.Action).ToDictionary(x => x.Key, x => x.ToList());
 
@@ -162,7 +158,7 @@ namespace Application.Host.Services
         }
         public static void ExportPortal()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<MapProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider(ProviderType.Map)
                 .LoadAll().OfType<MapTemplate>().SelectMany(x => x.Portals.Where(y => y.Script != null).Select(y => new { MapId = x.TemplateId, y.Script }))
                 .GroupBy(x => x.Script);
 
@@ -203,7 +199,7 @@ namespace Application.Host.Services
 
         public static void ExportMap()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<MapProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider(ProviderType.Map)
                 .LoadAll().OfType<MapTemplate>().Where(x => !string.IsNullOrEmpty(x.OnUserEnter)).Select(y => new { MapId = y.TemplateId, y.OnUserEnter })
                 .GroupBy(x => x.OnUserEnter).ToDictionary(x => x.Key, x => x.ToList());
 
@@ -246,7 +242,7 @@ namespace Application.Host.Services
 
         public static void ExportMapFirstEnter()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<MapProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider(ProviderType.Map)
                 .LoadAll().OfType<MapTemplate>().Where(x => !string.IsNullOrEmpty(x.OnFirstUserEnter)).Select(y => new { MapId = y.TemplateId, y.OnFirstUserEnter })
                 .GroupBy(x => x.OnFirstUserEnter).ToDictionary(x => x.Key, x => x.ToList());
 
@@ -288,8 +284,8 @@ namespace Application.Host.Services
 
         public static void ExportNpc()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<NpcProvider>()
-                .LoadAll().OfType<NpcTemplate>().Where(x => !string.IsNullOrEmpty(x.Script)).Select(y => new { NpcId =y.TemplateId, y.Script })
+            var allWzData = ProviderSource.Instance.GetProvider(ProviderType.Npc)
+                .LoadAll().OfType<NpcTemplate>().Where(x => !string.IsNullOrEmpty(x.Script)).Select(y => new { NpcId = y.TemplateId, y.Script })
                 .GroupBy(x => x.Script).ToDictionary(x => x.Key, x => x.ToList());
 
             var allExsitedScripts = ScriptSource.Instance.GetSubScripts("npc")
@@ -297,10 +293,10 @@ namespace Application.Host.Services
 
 
             var content = allWzData.Select(x => $$"""
-                    // Npc: {{string.Join(", ", x.Value.Select(y => y.NpcId ))}} {{(!IsValidMethodName(x.Key) ? (Environment.NewLine + "[ScriptName(\"" + x.Key + "\")]") : "")}}
+                    // Npc: {{string.Join(", ", x.Value.Select(y => y.NpcId))}} {{(!IsValidMethodName(x.Key) ? (Environment.NewLine + "[ScriptName(\"" + x.Key + "\")]") : "")}}
                     public Task {{(!IsValidMethodName(x.Key) ? "s_" + x.Key : x.Key)}}()
                     {
-                        {{ (allExsitedScripts.Any(z => x.Key == z || x.Value.Any(y => y.NpcId.ToString() == z)) ? "// TODO" : "// NOT USED") }}
+                        {{(allExsitedScripts.Any(z => x.Key == z || x.Value.Any(y => y.NpcId.ToString() == z)) ? "// TODO" : "// NOT USED")}}
                         return Task.CompletedTask;
                     }
                     {{Environment.NewLine}}
@@ -331,7 +327,7 @@ namespace Application.Host.Services
 
         public static void ExportQuest()
         {
-            var allWzData = ProviderSource.Instance.GetProvider<QuestProvider>()
+            var allWzData = ProviderSource.Instance.GetProvider(ProviderType.Quest)
                 .LoadAll().OfType<QuestTemplate>().Where(x => !string.IsNullOrEmpty(x.Check?.StartDemand?.StartScript) || !string.IsNullOrEmpty(x.Check?.EndDemand?.EndScript))
                 .Select(y => new { QuestId = y.TemplateId, Area = y.Info.Area, Start = y.Check?.StartDemand?.StartScript, End = y.Check?.EndDemand?.EndScript })
                 .GroupBy(x => x.Area).ToDictionary(x => x.Key, x => x.ToList());

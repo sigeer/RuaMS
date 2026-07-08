@@ -1,6 +1,6 @@
 using Application.Shared.MapObjects;
 using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader.Xml.Provider;
 using Application.Utility;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Configuration;

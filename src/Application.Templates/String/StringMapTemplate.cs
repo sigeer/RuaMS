@@ -4,8 +4,8 @@ namespace Application.Templates.String
     {
         public StringMapTemplate(int templateId) : base(templateId)
         {
-            StreetName = Defaults.WZ_NoName;
-            MapName = Defaults.WZ_NoName;
+            StreetName = WzDefaults.WZ_NoName;
+            MapName = WzDefaults.WZ_NoName;
         }
 
         [WZPath("streetName")]

@@ -31,6 +31,7 @@ namespace server.life;
 /**
  * @author Danny (Leifde)
  */
+[Obsolete("旧代码用于对比测试")]
 public class MobAttackInfoFactory
 {
     private static Dictionary<string, MobAttackInfo?> mobAttacks = new();

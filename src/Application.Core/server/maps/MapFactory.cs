@@ -27,13 +27,11 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Instances;
 using Application.Templates.Map;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using Microsoft.Extensions.DependencyInjection;
 using server.life;
 using server.partyquest;
 using System.Text;
-using System.Threading.Tasks;
 using tools;
 
 
@@ -53,11 +51,11 @@ public class MapFactory : IStaticService
         _instance = sp.GetService<MapFactory>() ?? throw new BusinessFatalException("MapFactory 未注册");
     }
 
-    private MapProvider mapSource;
+    private IProvider<MapTemplate> mapSource;
 
     public MapFactory()
     {
-        mapSource = ProviderSource.Instance.GetProvider<MapProvider>();
+        mapSource = ProviderSource.Instance.GetProvider<IProvider<MapTemplate>>(ProviderType.Map);
     }
 
     private AbstractLifeObject? loadLife(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide)

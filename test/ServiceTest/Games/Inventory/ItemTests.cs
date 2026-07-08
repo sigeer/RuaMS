@@ -2,8 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.EF;
 using Application.Shared.Constants.Inventory;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -14,7 +13,7 @@ namespace ServiceTest.Games.Inventory
         [Test]
         public void MonsterCardTest()
         {
-            var newProvider = ProviderSource.Instance.GetProvider<ItemProvider>();
+            var newProvider = ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item);
 
             var dict = newProvider.GetAllMonsterCard().OrderBy(x => x.TemplateId).ToDictionary(x => x.TemplateId, x => x.MobId);
             var str1 = JsonConvert.SerializeObject(dict);

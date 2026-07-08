@@ -1,6 +1,6 @@
 namespace server.movement
 {
-    public enum StanceConstant: byte
+    public enum StanceConstant : byte
     {
         WalkR = 2,
         WalkL = 3,

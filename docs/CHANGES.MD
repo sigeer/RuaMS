@@ -28,7 +28,7 @@
 
 ### WZ读取
 
-大部分wz读取不再通过`XMLDomMapleData`读取`Data`，而是使用`Application.Templates.XmlWzReader`读取成确切的对象。保留旧代码用于测试。
+大部分wz读取不再通过`XMLDomMapleData`读取`Data`，而是使用`Application.Templates.Reader.Xml`读取成确切的对象。保留旧代码用于测试。
 
 ### 脚本
 

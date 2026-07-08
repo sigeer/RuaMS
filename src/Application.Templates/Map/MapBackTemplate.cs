@@ -2,7 +2,7 @@ namespace Application.Templates.Map
 {
     public class MapBackTemplate
     {
-        [WZPath("back/-/$name")]
+        [WZPath("~/$name")]
         public int Index { get; set; }
         public int Type { get; set; }
     }

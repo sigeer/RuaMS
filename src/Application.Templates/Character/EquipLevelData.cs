@@ -2,9 +2,9 @@ namespace Application.Templates.Character
 {
     public sealed class EquipLevelData
     {
-        [WZPath("info/level/info/-/$name")]
+        [WZPath("~/$name")]
         public int Level { get; set; }
-        [WZPath("info/level/info/-/$length")]
+        [WZPath("~/$length")]
         public int FieldCount { get; set; }
         public int Exp { get; set; }
         public int IncSTRMin { get; set; }

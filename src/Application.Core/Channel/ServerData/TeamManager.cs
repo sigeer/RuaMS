@@ -179,7 +179,7 @@ namespace Application.Core.Channel.ServerData
 
         public Task CreateInvite(Player fromChr, string toName)
         {
-           return _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
+            return _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
         public Task AnswerInvite(Player chr, int partyId, bool answer)

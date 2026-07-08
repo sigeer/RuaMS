@@ -1,9 +1,8 @@
 using Application.Resources.Messages;
 using Application.Shared.Languages;
 using Application.Templates.Exceptions;
-using Application.Templates.Providers;
+using Application.Templates.Reader;
 using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
 using Humanizer;
 using System.Globalization;
 
@@ -16,12 +15,12 @@ namespace Application.Core.Channel
         {
         }
 
-        public StringProvider StringProvider { get; }
+        public IStringProvider StringProvider { get; }
 
         public ClientCulture(CultureInfo cultureInfo)
         {
             CultureInfo = cultureInfo;
-            StringProvider = ProviderSource.Instance.GetProviderByKey<StringProvider>(CultureInfo.Name)
+            StringProvider = ProviderSource.Instance.GetProviderByKey<IStringProvider>(CultureInfo.Name)
                 ?? throw new ProviderNotFoundException(nameof(StringProvider), $"没有找到{CultureInfo.Name}相应的wz资源");
         }
 
@@ -111,7 +110,7 @@ namespace Application.Core.Channel
 
         public string GetMapName(int mapId)
         {
-            return StringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapId)?.MapName ?? StringConstants.WZ_NoName;
+            return StringProvider.GetSubProvider(StringCategory.Map)?.GetRequiredItem<StringMapTemplate>(mapId)?.MapName ?? StringConstants.WZ_NoName;
         }
 
         public string GetMapStreetName(int mapId)

@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Templates.Etc;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
@@ -387,9 +388,9 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public async Task BuyCashItem(int cashType, CashItem cItem, Func<Task<bool>> condition)
+        public async Task BuyCashItem(int cashType, CashCommodityTemplate cItem, Func<Task<bool>> condition)
         {
-            if (cItem.getPrice() > CashShopModel.getCash(cashType))
+            if (cItem.Price > CashShopModel.getCash(cashType))
                 return;
 
             if (!await condition.Invoke())

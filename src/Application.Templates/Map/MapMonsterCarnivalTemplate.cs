@@ -48,7 +48,7 @@ namespace Application.Templates.Map
 
     public sealed class MonsterCarnivalGuardianData
     {
-        [WZPath("monsterCarnival/guardianGenPos/-/$name")]
+        [WZPath("~/$name")]
         public int Index { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
@@ -58,7 +58,7 @@ namespace Application.Templates.Map
 
     public sealed class MonsterCarnivalMobData
     {
-        [WZPath("monsterCarnival/mob/-/$name")]
+        [WZPath("~/$name")]
         public int Index { get; set; }
         public int Id { get; set; }
         public int SpendCP { get; set; }

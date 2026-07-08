@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\tools\XmlWzReader.SouceGenerator\XmlWzReader.SouceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Application.Templates\Application.Templates.csproj" />
+    <ProjectReference Include="..\Application.Templates.Reader\Application.Templates.Reader.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -69,7 +69,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     _server.DataService.LoadAllPLife();
                 });
-            return Task.CompletedTask;
+                return Task.CompletedTask;
             }
 
             protected override CreatePLifeRequest Parse(ByteString data) => CreatePLifeRequest.Parser.ParseFrom(data);
@@ -121,7 +121,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
                     _server.DataService.LoadAllPLife();
                 });
-            return Task.CompletedTask;
+                return Task.CompletedTask;
             }
 
             protected override RemovePLifeResponse Parse(ByteString data) => RemovePLifeResponse.Parser.ParseFrom(data);

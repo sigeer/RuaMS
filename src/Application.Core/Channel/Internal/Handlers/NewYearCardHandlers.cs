@@ -2,13 +2,9 @@ using Application.Core.Models;
 using Application.Shared.Internal;
 using Application.Shared.Message;
 using AutoMapper;
-using client.inventory;
 using Dto;
 using Google.Protobuf;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
 using tools;
-using static Application.Core.Channel.Internal.Handlers.NoteHandlers;
 
 namespace Application.Core.Channel.Internal.Handlers
 {

@@ -1,8 +1,8 @@
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
-using Application.Templates.Providers;
+using Application.Templates.Etc;
+using Application.Templates.Reader;
 using Application.Templates.String;
-using Application.Templates.XmlWzReader.Provider;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2
@@ -53,7 +53,7 @@ namespace Application.Core.Game.Commands.Gm2
 
         async Task HandleNpcId(IChannelClient client, int npcId, string npcName, TempConversation? conversation = null)
         {
-            var template = ProviderSource.Instance.GetProvider<EtcNpcLocationProvider>().GetItem(npcId);
+            var template = ProviderSource.Instance.GetProvider<IProvider<NpcLocationTemplate>>(ProviderType.EtcNpcLocation).GetItem(npcId);
             if (template == null)
             {
                 await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), npcName);

@@ -25,8 +25,8 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life.Monsters;
 using Application.Shared.WzEntity;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Npc;
+using Application.Templates.Reader;
 using System.Collections.Concurrent;
 using tools;
 
@@ -38,7 +38,7 @@ public class OldLifeFactory
 {
     private static ILogger log = LogFactory.GetLogger(LogType.LifeData);
     private static DataProvider data = DataProviderFactory.getDataProvider(WZFiles.MOB);
-    NpcProvider _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
+    IProvider<NpcTemplate> _npcProvider = ProviderSource.Instance.GetProvider<IProvider<NpcTemplate>>(ProviderType.Npc);
 
     private static ConcurrentDictionary<int, MonsterStats> monsterStats = new();
 

@@ -4,7 +4,6 @@ using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
-using scripting;
 using scripting.npc;
 
 namespace Application.Core.Game

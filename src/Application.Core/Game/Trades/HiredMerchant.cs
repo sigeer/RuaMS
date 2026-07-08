@@ -8,7 +8,6 @@ using Application.Templates.Item.Cash;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
-using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Game.Trades;

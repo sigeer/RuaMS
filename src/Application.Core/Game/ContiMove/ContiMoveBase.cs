@@ -71,7 +71,7 @@ namespace Application.Core.Game.ContiMove
         {
             ChannelServer = channelServer;
 
-            _stationAMapId = stationAMap; 
+            _stationAMapId = stationAMap;
             _stationBMapId = stationBMap;
             StationAPortal = stationAPortal;
             StationBPortal = stationBPortal;

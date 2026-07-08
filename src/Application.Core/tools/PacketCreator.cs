@@ -38,6 +38,7 @@ using Application.Core.model;
 using Application.Core.Models;
 using Application.Shared.Battle;
 using Application.Shared.Constants.Buddy;
+using Application.Templates.Etc;
 using client;
 using client.inventory;
 using client.keybind;
@@ -2859,7 +2860,7 @@ public class PacketCreator
      * @return
      */
     public static Packet showMonsterRiding(int cid, Mount mount)
-    { 
+    {
         //Gtfo with this, this is just giveForeignBuff
         OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
         p.writeInt(cid);
@@ -4968,7 +4969,7 @@ public class PacketCreator
             p.writeByte(itemType);
             if (itemType == InventoryType.EQUIP.getType())
             {
-                PacketCommon.EncodeItem(p, item.Item.Item, ii.GetTrustTemplate(item.Item.Item.Itemid), true);
+                PacketCommon.EncodeItem(p, item.Item.Item, ii.GetItemTemplate(item.Item.Item.Itemid), true);
             }
         }
         return p;
@@ -6552,15 +6553,15 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showGiftSucceed(string to, CashItem item)
+    public static Packet showGiftSucceed(string to, CashCommodityTemplate item)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
         p.writeByte(0x5E); //0x5D, Couldn't be sent
         p.writeString(to);
-        p.writeInt(item.getItemId());
-        p.writeShort(item.getCount());
-        p.writeInt(item.getPrice());
+        p.writeInt(item.ItemID);
+        p.writeShort(item.Count);
+        p.writeInt(item.Price);
 
         return p;
     }

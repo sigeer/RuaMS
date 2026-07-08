@@ -1,6 +1,5 @@
-using Application.Templates.Providers;
 using Application.Templates.Quest;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server.quest;
@@ -13,7 +12,7 @@ namespace Application.Core.Channel.DataProviders
         private static QuestFactory? _instance;
 
         public static QuestFactory Instance => _instance ?? throw new BusinessFatalException("QuestFactory 未注册");
-        QuestProvider provider = ProviderSource.Instance.GetProvider<QuestProvider>();
+        IProvider<QuestTemplate> provider = ProviderSource.Instance.GetProvider<IProvider<QuestTemplate>>(ProviderType.Quest);
         public QuestFactory(ILogger<DataBootstrap> logger) : base(logger)
         {
             Name = "任务";
@@ -69,7 +68,7 @@ namespace Application.Core.Channel.DataProviders
             if (quests.TryGetValue(id, out var q))
                 return q;
 
-            return quests[id] = new Quest(ProviderSource.Instance.GetProvider<QuestProvider>().GetItem(id) ?? new QuestTemplate(new QuestInfoTemplate(id)));
+            return quests[id] = new Quest(ProviderSource.Instance.GetProvider<IProvider<QuestTemplate>>(ProviderType.Quest).GetItem(id) ?? new QuestTemplate(new QuestInfoTemplate(id)));
         }
 
         public Quest GetInstanceFromInfoNumber(int infoNumber)
