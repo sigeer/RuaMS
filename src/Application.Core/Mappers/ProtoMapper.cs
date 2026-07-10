@@ -11,7 +11,6 @@ using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
 using server;
-using server.maps;
 
 namespace Application.Core.Mappers
 {

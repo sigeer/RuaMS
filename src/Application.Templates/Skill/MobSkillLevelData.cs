@@ -8,12 +8,12 @@ namespace Application.Templates.Skill
         {
             SummonIDs = Array.Empty<int>();
         }
-        [WZPath("level/-/$name")]
+        [WZPath("~/$name")]
         public int nSLV { get; set; }
         /// <summary>
         /// Skill cooldown (interval between casts) in seconds.
         /// </summary>
-        [WZPath("level/-/interval")]
+        [WZPath("~/interval")]
         public int Interval { get; set; }
         public int MpCon { get; set; }
         /// <summary>
@@ -22,10 +22,10 @@ namespace Application.Templates.Skill
         public int Time { get; set; }
         public int X { get; set; } = 1;
         public int Y { get; set; } = 1;
-        [WZPath("level/-/hp")]
+        [WZPath("~/hp")]
         public int HP { get; set; } = 100;
         public int Prop { get; set; }
-        [WZPath("level/-/-")]
+        [WZPath("~/-")]
         public int[] SummonIDs { get; set; }
         public int SummonEffect { get; set; }
         public int Limit { get; set; }

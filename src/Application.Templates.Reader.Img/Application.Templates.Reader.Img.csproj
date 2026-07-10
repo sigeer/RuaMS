@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DueyContinued.Provider.WZ" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\tools\DueyReader.SouceGenerator\DueyReader.SouceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Application.Templates\Application.Templates.csproj" />
+    <ProjectReference Include="..\Application.Templates.Reader\Application.Templates.Reader.csproj" />
+  </ItemGroup>
+
+</Project>

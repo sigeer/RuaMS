@@ -1,6 +1,5 @@
 using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Commands;
-using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Config;

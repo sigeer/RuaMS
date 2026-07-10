@@ -57,7 +57,7 @@ namespace Application.Core.Channel.Services
         {
             var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
-            var remoteData =  _mapper.Map<RemoteHiredMerchantData>(res);
+            var remoteData = _mapper.Map<RemoteHiredMerchantData>(res);
             if (remoteData.MapId > 0)
             {
                 await chr.SendPacket(FredrickPackets.GetFredrickShopActive(remoteData.MapId, (byte)remoteData.Channel));

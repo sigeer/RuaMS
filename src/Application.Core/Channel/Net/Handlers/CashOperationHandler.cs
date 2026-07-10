@@ -26,6 +26,7 @@ using Application.Core.Channel.Services;
 using Application.Core.Game.Items;
 using Application.Core.Managers;
 using Application.Resources.Messages;
+using Application.Templates.Etc;
 using client.inventory;
 using Microsoft.Extensions.Logging;
 using server;
@@ -79,18 +80,18 @@ public class CashOperationHandler : ChannelHandlerBase
                     if (action == 0x03)
                     {
                         // Item
-                        if (ItemConstants.isCashStore(cItem!.getItemId()) && chr.getLevel() < 16)
+                        if (ItemConstants.isCashStore(cItem!.ItemID) && chr.getLevel() < 16)
                         {
                             await c.OnlinedCharacter.enableCSActions();
                             return;
                         }
-                        else if (ItemConstants.isRateCoupon(cItem.getItemId()) && !YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS)
+                        else if (ItemConstants.isRateCoupon(cItem.ItemID) && !YamlConfig.config.server.USE_SUPPLY_RATE_COUPONS)
                         {
                             await chr.dropMessage(1, "Rate coupons are currently unavailable to purchase.");
                             await c.OnlinedCharacter.enableCSActions();
                             return;
                         }
-                        else if (ItemConstants.isMapleLife(cItem.getItemId()) && chr.getLevel() < 30)
+                        else if (ItemConstants.isMapleLife(cItem.ItemID) && chr.getLevel() < 30)
                         {
                             await c.OnlinedCharacter.enableCSActions();
                             return;
@@ -126,7 +127,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         int sn = p.readInt();
                         var cItem = _cashItemProvider.getItem(sn);
-                        if (cItem != null && cItem.isOnSale() && sn != 0)
+                        if (cItem != null && cItem.OnSale && sn != 0)
                         {
                             cs.addToWishList(sn);
                         }
@@ -172,7 +173,7 @@ public class CashOperationHandler : ChannelHandlerBase
                             await c.OnlinedCharacter.enableCSActions();
                             return;
                         }
-                        int type = (cItem!.getItemId() - 9110000) / 1000;
+                        int type = (cItem!.ItemID - 9110000) / 1000;
                         int qty = 8;
                         if (!chr.canGainSlots(type, qty))
                         {
@@ -365,14 +366,14 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
 
                     var item = _cashItemProvider.getItem(serialNumber);
-                    if (item == null || !item.isOnSale())
+                    if (item == null || !item.OnSale)
                     {
                         await c.SendPacket(PacketCreator.showCashShopMessage(0xC0));
                         return;
                     }
 
-                    int itemId = item.getItemId();
-                    int itemPrice = item.getPrice();
+                    int itemId = item.ItemID;
+                    int itemPrice = item.Price;
                     if (itemPrice <= 0)
                     {
                         await c.SendPacket(PacketCreator.showCashShopMessage(0xC0));
@@ -419,7 +420,7 @@ public class CashOperationHandler : ChannelHandlerBase
                         await c.OnlinedCharacter.enableCSActions();
                         return;
                     }
-                    if (cItem.getSN() == 50600000 && YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE)
+                    if (cItem.CashItemSN == 50600000 && YamlConfig.config.server.ALLOW_CASHSHOP_NAME_CHANGE)
                     {
                         p.readString(); //old name
                         string newName = p.readString();
@@ -466,15 +467,15 @@ public class CashOperationHandler : ChannelHandlerBase
         }
     }
 
-    private bool canBuy(Player chr, CashItem? item, int cash)
+    private bool canBuy(Player chr, CashCommodityTemplate? item, int cash)
     {
-        if (item != null && item.isOnSale() && item.getPrice() <= cash)
+        if (item != null && item.OnSale && item.Price <= cash)
         {
             _logger.LogDebug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
                 chr,
-                ClientCulture.SystemCulture.GetItemName(item.getItemId()),
-                item.getSN(),
-                item.getPrice());
+                ClientCulture.SystemCulture.GetItemName(item.ItemID),
+                item.CashItemSN,
+                item.Price);
             return true;
         }
         else

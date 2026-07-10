@@ -29,8 +29,6 @@
     <Project Path="src/Application.Scripting.Lua/Application.Scripting.Lua.csproj" />
     <Project Path="src/Application.Scripting/Application.Scripting.csproj" />
     <Project Path="src/Application.Shared/Application.Shared.csproj" />
-    <Project Path="src/Application.Templates.XmlWzReader/Application.Templates.XmlWzReader.csproj" />
-    <Project Path="src/Application.Templates/Application.Templates.csproj" />
     <Project Path="src/Application.Utility/Application.Utility.csproj" />
     <Project Path="src/XmlWzReader/XmlWzReader.csproj" />
   </Folder>
@@ -82,11 +80,18 @@
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
   </Folder>
+  <Folder Name="/src/Wz/">
+    <Project Path="src/Application.Templates.Reader.Img/Application.Templates.Reader.Img.csproj" Id="211e2c2e-3872-4dbc-a56b-5b6f482752c1" />
+    <Project Path="src/Application.Templates.Reader/Application.Templates.Reader.csproj" />
+    <Project Path="src/Application.Templates.Reader.Xml/Application.Templates.Reader.Xml.csproj" />
+    <Project Path="src/Application.Templates/Application.Templates.csproj" />
+  </Folder>
   <Folder Name="/test/">
     <Project Path="test/ServiceTest/ServiceTest.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/CodeMigration/CodeMigration.csproj" />
+    <Project Path="tools/DueyReader.SouceGenerator/DueyReader.SouceGenerator.csproj" />
     <Project Path="tools/XmlWzReader.SouceGenerator/XmlWzReader.SouceGenerator.csproj" />
   </Folder>
   <Folder Name="/workflow/">

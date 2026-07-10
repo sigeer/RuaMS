@@ -58,7 +58,7 @@ namespace ServiceTest.Games
 
             var debugConfig = new Dictionary<string, string?>
             {
-                [$"{AppSettingKeys.Section_WZ}:BaseDir"] = TestVariable.WzPath,
+                [$"{AppSettingKeys.Section_WZ}:BaseDir"] = TestVariable.XmlWzPath,
             };
             builder.Configuration.AddInMemoryCollection(debugConfig);
 

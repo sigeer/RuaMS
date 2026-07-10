@@ -6,9 +6,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Utility.Performance;
 using Application.Utility.Tickables;
-using server.quest;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using tools.exceptions;
 
 namespace Application.Core.Scripting.Events

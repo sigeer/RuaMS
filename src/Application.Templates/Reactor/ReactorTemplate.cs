@@ -11,6 +11,7 @@ namespace Application.Templates.Reactor
         [WZPath("info/activateByTouch")]
         public bool ActivateByTouch { get; set; }
 
+        [WZPath("-")]
         public StateInfo[] StateInfoList { get; set; }
         [WZPath("action")]
         public string? Action { get; set; }
@@ -30,18 +31,19 @@ namespace Application.Templates.Reactor
             }
 
             public int State { get; set; }
-            [WZPath("x/event/timeOut")]
+            [WZPath("~/event/timeOut")]
             public int TimeOut { get; set; } = -1;
+            [WZPath("~/event/-")]
             public EventInfo[] EventInfos { get; set; }
 
 
             public sealed class EventInfo
             {
-                [WZPath("x/event/x/type")]
+                [WZPath("~/type")]
                 public int EventType { get; set; }
-                [WZPath("x/event/x/state")]
+                [WZPath("~/state")]
                 public int NextState { get; set; }
-                [WZPath("x/event/x/activeSkillID")]
+                [WZPath("~/activeSkillID/-")]
                 public int[]? ActiveSkillId { get; set; }
 
                 public int Int0Value { get; set; }

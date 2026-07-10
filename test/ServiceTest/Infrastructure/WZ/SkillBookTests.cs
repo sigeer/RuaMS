@@ -1,20 +1,16 @@
 using Application.Core.Channel.DataProviders;
-using Application.Templates;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader.Img.Provider;
+using Application.Templates.Quest;
+using Application.Templates.Reader;
 using Newtonsoft.Json;
-using ServiceTest.TestUtilities;
 using System.Diagnostics;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class SkillBookTests: WzTestBase
+    [TestFixture("Duey")]
+    [TestFixture("Xml")]
+    internal class SkillBookTests(string readerType) : WzTestBase(readerType)
     {
-        protected override void OnProviderRegistering()
-        {
-            _providerSource.TryRegisterProvider<QuestProvider>(o => new QuestProvider(o));
-            ProviderSource.Instance = _providerSource;
-        }
         [Test]
         public void LoadFromQuestTest()
         {
@@ -33,7 +29,7 @@ namespace ServiceTest.Infrastructure.WZ
             sw.Stop();
             Console.WriteLine("new " + sw.Elapsed.TotalSeconds);
 
-            var provider = _providerSource.GetProvider<QuestProvider>();
+            var provider = _providerSource.GetProvider<IProvider<QuestTemplate>>(ProviderType.Quest);
             var newStr = JsonConvert.SerializeObject(newData);
 
             Assert.That(newStr, Is.EqualTo(oldStr));

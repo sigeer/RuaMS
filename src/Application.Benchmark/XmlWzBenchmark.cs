@@ -1,4 +1,5 @@
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader.Img;
+using Application.Templates.Reader.Img.Provider;
 using BenchmarkDotNet.Attributes;
 using System.Text;
 using XmlWzReader.wz;
@@ -21,7 +22,7 @@ namespace Application.Benchmark
         [Benchmark]
         public void NewProvider_Load()
         {
-            var provider = new MapProvider(new Application.Templates.ProviderOption());
+            var provider = new MapProvider(new ImgPathResolver(""));
             var fullData = provider.GetItem(mapId);
         }
 

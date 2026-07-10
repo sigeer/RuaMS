@@ -1,3 +1,5 @@
+using Application.Templates.PartyQuest;
+using Application.Templates.Reader;
 using server.life;
 
 namespace server.partyquest;
@@ -11,7 +13,6 @@ public class CarnivalFactory
     private static CarnivalFactory instance = new CarnivalFactory();
     private Dictionary<int, MCSkill> skills = new();
     private Dictionary<int, MCSkill> guardians = new();
-    private DataProvider dataRoot = DataProviderFactory.getDataProvider(WZFiles.SKILL);
 
     private List<int> singleTargetedSkills = new();
     private List<int> multiTargetedSkills = new();
@@ -33,31 +34,24 @@ public class CarnivalFactory
         {
             return;
         }
-        foreach (Data z in dataRoot.getData("MCSkill.img"))
+        var skillProvider = ProviderSource.Instance.GetProvider<IProvider<CarnivalSkillTemplate>>(ProviderType.CarnivalSkill);
+        foreach (var template in skillProvider.LoadAll())
         {
-            int id = int.Parse(z.getName());
-            int spendCp = DataTool.getInt("spendCP", z, 0);
-            int mobSkillId = DataTool.getInt("mobSkillID", z, 0);
-            int level = DataTool.getInt("level", z, 0);
-            bool isMultiTarget = DataTool.getInt("target", z, 1) > 1;
-            MCSkill ms = new MCSkill(spendCp, mobSkillId, level, isMultiTarget);
-
-            skills.AddOrUpdate(id, ms);
+            var ms = new MCSkill(template.SpendCP, template.MobSkillId, template.Level, template.TargetsAll);
+            skills.AddOrUpdate(template.TemplateId, ms);
             if (ms.targetsAll)
             {
-                multiTargetedSkills.Add(id);
+                multiTargetedSkills.Add(template.TemplateId);
             }
             else
             {
-                singleTargetedSkills.Add(id);
+                singleTargetedSkills.Add(template.TemplateId);
             }
         }
-        foreach (Data z in dataRoot.getData("MCGuardian.img"))
+        var guardianProvider = ProviderSource.Instance.GetProvider<IProvider<CarnivalGuardianTemplate>>(ProviderType.CarnivalGuardian);
+        foreach (var template in guardianProvider.LoadAll())
         {
-            int spendCp = DataTool.getInt("spendCP", z, 0);
-            int mobSkillId = DataTool.getInt("mobSkillID", z, 0);
-            int level = DataTool.getInt("level", z, 0);
-            guardians.AddOrUpdate(int.Parse(z.getName()), new MCSkill(spendCp, mobSkillId, level, true));
+            guardians.AddOrUpdate(template.TemplateId, new MCSkill(template.SpendCP, template.MobSkillId, template.Level, true));
         }
     }
 

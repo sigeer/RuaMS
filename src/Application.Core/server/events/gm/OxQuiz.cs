@@ -23,6 +23,8 @@
 
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
+using Application.Templates.Etc;
+using Application.Templates.Reader;
 using tools;
 
 namespace server.events.gm;
@@ -36,7 +38,18 @@ public class OxQuiz
     private int question = 1;
     private IMap map;
     private int expGain = 200;
-    private static DataProvider stringData = DataProviderFactory.getDataProvider(WZFiles.ETC);
+    private static IProvider<OxQuizTemplate> _provider = ProviderSource.Instance.GetProvider<IProvider<OxQuizTemplate>>(ProviderType.OxQuiz);
+    private static Dictionary<int, Dictionary<int, int>>? _answers;
+
+    private static Dictionary<int, Dictionary<int, int>> GetAnswers()
+    {
+        if (_answers == null)
+        {
+            _answers = [];
+            _provider.LoadAll().ToDictionary(x => x.TemplateId, x => x.Questions.ToDictionary(y => y.QuestionId, y => y.Answer));
+        }
+        return _answers;
+    }
 
     public OxQuiz(IMap map)
     {
@@ -122,6 +135,8 @@ public class OxQuiz
 
     private static int getOXAnswer(int imgdir, int id)
     {
-        return DataTool.getInt(stringData.getData("OXQuiz.img")?.getChildByPath($"{imgdir}/{id}/a"));
+        if (!GetAnswers().TryGetValue(imgdir, out var qMap))
+            return 0;
+        return qMap.GetValueOrDefault(id);
     }
 }

@@ -29,7 +29,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application.Host\Application.Host.csproj" />
     <ProjectReference Include="..\..\src\Application.Plugin.Script\Application.Plugin.Script.csproj" />
-    <ProjectReference Include="..\..\src\Application.Templates.XmlWzReader\Application.Templates.XmlWzReader.csproj" />
+    <ProjectReference Include="..\..\src\Application.Templates.Reader.Img\Application.Templates.Reader.Img.csproj" />
+    <ProjectReference Include="..\..\src\Application.Templates.Reader.Xml\Application.Templates.Reader.Xml.csproj" />
   </ItemGroup>
 
 </Project>

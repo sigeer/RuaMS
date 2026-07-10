@@ -63,7 +63,7 @@ namespace XmlWzReader.SouceGenerator
             sb.AppendLine("using Application.Templates;");
             sb.AppendLine($"using {classSymbol.ContainingNamespace.ToString()};");
             sb.AppendLine("using System.Linq;");
-            sb.AppendLine("using Application.Templates.XmlWzReader;");
+            sb.AppendLine("using Application.Templates.Reader.Xml;");
             sb.AppendLine("using System.Xml.Linq;");
             sb.AppendLine($"public static partial class {classSymbol.Name}Generated");
             sb.AppendLine("{");

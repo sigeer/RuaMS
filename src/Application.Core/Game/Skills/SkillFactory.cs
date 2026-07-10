@@ -21,9 +21,8 @@
 */
 
 
-using Application.Templates.Providers;
+using Application.Templates.Reader;
 using Application.Templates.Skill;
-using Application.Templates.XmlWzReader.Provider;
 using server;
 
 namespace Application.Core.Game.Skills;
@@ -33,7 +32,7 @@ public class SkillFactory
 {
     private static volatile Dictionary<int, Skill> skills = [];
 
-    public static SkillProvider SkillProvider = ProviderSource.Instance.GetProvider<SkillProvider>();
+    public static IProvider<SkillTemplate> SkillProvider = ProviderSource.Instance.GetProvider<IProvider<SkillTemplate>>(ProviderType.Skill);
     public static Skill? getSkill(int id)
     {
         return skills.GetValueOrDefault(id);

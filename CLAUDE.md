@@ -69,7 +69,7 @@ src/
 ├── Application.Utility/           — Logging (Serilog), config, Quartz scheduler, AutoMapper, extensions
 ├── Application.Protos/            — gRPC/protobuf definitions (~130 .proto files)
 ├── Application.Templates/         — WZ data template models (character, item, map, mob, NPC, skill, etc.)
-├── Application.Templates.XmlWzReader/ — Data binding: WZ XML → template objects
+├── Application.Templates.Reader.Xml/ — Data binding: WZ XML → template objects
 ├── Application.Resources/         — Static resources: wz/, scripts/, yaml configs
 ├── XmlWzReader/                   — XML WZ data file reader
 ├── Application.Scripting/         — Script engine abstraction

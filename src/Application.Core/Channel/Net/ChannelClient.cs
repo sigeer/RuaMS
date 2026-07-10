@@ -1,12 +1,9 @@
 using Application.Core.Channel.Commands;
-using Application.Core.Game.Life;
-using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Net.Logging;
 using Application.Utility.Performance;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
-using scripting;
 using scripting.npc;
 using tools;
 

@@ -1,6 +1,5 @@
 using Application.Core.Channel;
 using Application.Core.Game.Maps;
-using System.Threading.Tasks;
 
 namespace Application.Core.Game.ContiMove
 {

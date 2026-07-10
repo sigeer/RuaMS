@@ -46,7 +46,7 @@ public class OwlWarpHandler : ChannelHandlerBase
         // TODO: 如果一个玩家同时有雇佣商店+个人商店 应该找哪个？找找有没有其他参数
         var unknown = p.available();
 
-        var map =await c.CurrentServer.getMapFactory().getMap(mapid);
+        var map = await c.CurrentServer.getMapFactory().getMap(mapid);
         var shop = map.getMapObject(mapObjectId) as IPlayerShop;
         if (shop == null)
         {

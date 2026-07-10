@@ -104,7 +104,7 @@ namespace Application.Module.PlayerNPC.Channel
                 {
                     if (!usedScriptIds.Contains(i))
                     {
-                        if (PlayerNPCFactory.isExistentScriptid(i))
+                        if (LifeFactory.Instance.getNPC(i) != null)
                         {  // thanks Ark, Zein, geno, Ariel, JrCl0wn for noticing client crashes due to use of missing scriptids
                             availables.Add(i);
                             j++;

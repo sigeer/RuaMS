@@ -32,9 +32,8 @@ using Application.Templates.Item.Cash;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Etc;
 using Application.Templates.Item.Pet;
-using Application.Templates.Providers;
+using Application.Templates.Reader;
 using Application.Templates.StatEffectProps;
-using Application.Templates.XmlWzReader.Provider;
 using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,8 +59,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     readonly AutoBanDataManager _autoBanDataManager;
 
-    readonly EquipProvider _equipProvider = ProviderSource.Instance.GetProvider<EquipProvider>();
-    readonly ItemProvider _itemProvider = ProviderSource.Instance.GetProvider<ItemProvider>();
+    readonly IProvider<AbstractItemTemplate> _equipProvider = ProviderSource.Instance.GetProvider<IProvider<AbstractItemTemplate>>(ProviderType.Equip);
+    readonly IItemProvider _itemProvider = ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item);
     public ItemInformationProvider(
         ILogger<DataBootstrap> logger,
         AutoBanDataManager autoBanDataManager) : base(logger)
@@ -109,17 +108,13 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     //    etcItemCache = itemPairs;
     //    return itemPairs;
     //}
-    AbstractGroupProvider<AbstractItemTemplate> GetProvider(int itemId)
+    IProvider<AbstractItemTemplate> GetProvider(int itemId)
     {
         return itemId < 2000000 ? _equipProvider : _itemProvider;
     }
 
-    public AbstractItemTemplate? GetTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
-    public AbstractItemTemplate GetTrustTemplate(int itemId)
-    {
-        var provider = GetProvider(itemId);
-        return provider.GetItem(itemId) ?? throw new TemplateNotFoundException(provider.ProviderName, itemId);
-    }
+    public AbstractTemplate? GetTemplate(int itemId) => GetItemTemplate(itemId);
+    public AbstractItemTemplate GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
     public EquipTemplate? GetEquipTemplate(int equipId) => _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
     public bool noCancelMouse(int itemId)
     {
@@ -152,7 +147,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public short getSlotMax(IChannelClient c, int itemId)
     {
-        return (short)((GetProvider(itemId).GetItem(itemId)?.SlotMax ?? 1) + getExtraSlotMaxFromPlayer(c, itemId));
+        return (short)((GetItemTemplate(itemId)?.SlotMax ?? 1) + getExtraSlotMaxFromPlayer(c, itemId));
     }
 
     public MesoBagItemTemplate? GetMesoBagItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<MesoBagItemTemplate>(itemId);
@@ -244,7 +239,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public int getWholePrice(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.Price ?? -1;
+        return GetItemTemplate(itemId)?.Price ?? -1;
     }
 
     public double getUnitPrice(int itemId)
@@ -272,7 +267,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return retPrice;
     }
 
-    public ReplaceItemTemplate? GetReplaceItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId)?.ReplaceItem;
+    public ReplaceItemTemplate? GetReplaceItemTemplate(int itemId) => GetItemTemplate(itemId)?.ReplaceItem;
 
     public int getEquipLevelReq(int itemId)
     {
@@ -892,7 +887,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public Equip getEquipById(int equipId, short position = 0)
     {
-        return GetEquipByTemplate(GetEquipTemplate(equipId) ?? throw new TemplateNotFoundException(_equipProvider.ProviderName, equipId), position);
+        return GetEquipByTemplate(GetEquipTemplate(equipId) ?? throw new TemplateNotFoundException("Equip.wz", equipId), position);
     }
 
     /// <summary>
@@ -969,7 +964,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (itemEffects.TryGetValue(itemId, out var data))
             return data;
 
-        var item = GetProvider(itemId).GetItem(itemId) as IItemStatEffectProp;
+        var item = GetItemTemplate(itemId) as IItemStatEffectProp;
         if (item == null)
             return null;
         return itemEffects[itemId] = new StatEffect(item, item, false);
@@ -986,7 +981,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool HasTemplate(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId) != null;
+        return GetItemTemplate(itemId) != null;
     }
     public string? getName(int itemId)
     {
@@ -1012,12 +1007,12 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isUntradeableRestricted(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.TradeBlock ?? false;
+        return GetItemTemplate(itemId)?.TradeBlock ?? false;
     }
 
     public bool isAccountRestricted(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.AccountSharable ?? false;
+        return GetItemTemplate(itemId)?.AccountSharable ?? false;
     }
 
     /// <summary>
@@ -1027,7 +1022,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     private bool isLootRestricted(int itemId)
     {
-        var item = GetProvider(itemId).GetItem(itemId);
+        var item = GetItemTemplate(itemId);
         if (item == null)
             return false;
         return item.TradeBlock || item.AccountSharable;
@@ -1049,7 +1044,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <returns></returns>
     public bool isPickupRestricted(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.Only ?? false;
+        return GetItemTemplate(itemId)?.Only ?? false;
     }
 
     public MasteryItemTemplate? GetMasteryItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<MasteryItemTemplate>(itemId);
@@ -1065,7 +1060,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     {
         if (itemId <= 0)
             return false;
-        return GetProvider(itemId).GetItem(itemId)?.Quest ?? false;
+        return GetItemTemplate(itemId)?.Quest ?? false;
     }
 
     public bool isPartyQuestItem(int itemId)
@@ -1092,7 +1087,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public bool isKarmaAble(int itemId)
     {
-        return GetProvider(itemId).GetItem(itemId)?.TradeAvailable ?? false;
+        return GetItemTemplate(itemId)?.TradeAvailable ?? false;
     }
 
     public ConsumeItemTemplate? GetConsumeItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId);
@@ -1106,7 +1101,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public RewardData[] GetItemRewardData(int itemId)
     {
-        var data = GetProvider(itemId).GetItem(itemId) as IStatEffectReward;
+        var data = GetItemTemplate(itemId) as IStatEffectReward;
         if (data == null)
             return [];
 
@@ -1114,7 +1109,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
     public KeyValuePair<int, List<RewardItem>> getItemReward(int itemId)
     {
-        var data = GetProvider(itemId).GetItem(itemId) as IStatEffectReward;
+        var data = GetItemTemplate(itemId) as IStatEffectReward;
         if (data == null)
             return new KeyValuePair<int, List<RewardItem>>(0, []);
 
@@ -1176,7 +1171,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return false;
         }
 
-        return GetProvider(itemId).GetItem(itemId)?.Cash ?? false;
+        return GetItemTemplate(itemId)?.Cash ?? false;
     }
 
     public bool isUnmerchable(int itemId)

@@ -21,8 +21,8 @@
 */
 
 
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reactor;
+using Application.Templates.Reader;
 using static server.maps.ReactorStats;
 
 namespace server.maps;
@@ -30,7 +30,7 @@ namespace server.maps;
 
 public class ReactorFactory
 {
-    private static ReactorProvider data = ProviderSource.Instance.GetProvider<ReactorProvider>();
+    private static IProvider<ReactorTemplate> data = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor);
     private static Dictionary<int, ReactorStats> reactorStats = new();
 
     public static ReactorStats getReactorS(int rid)

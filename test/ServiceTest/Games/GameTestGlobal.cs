@@ -1,8 +1,3 @@
-using Application.Core.Channel.DataProviders;
-using Application.Templates.Providers;
-using Google.Protobuf.WellKnownTypes;
-using ServiceTest.TestUtilities;
-
 namespace ServiceTest.Games
 {
     [SetUpFixture]

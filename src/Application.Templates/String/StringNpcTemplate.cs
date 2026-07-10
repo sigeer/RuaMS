@@ -17,7 +17,7 @@ namespace Application.Templates.String
 
         public StringNpcTemplate(int templateId) : base(templateId)
         {
-            Name = Defaults.WZ_MissingNo;
+            Name = WzDefaults.WZ_MissingNo;
             DefaultTalk0 = "(...)";
         }
     }

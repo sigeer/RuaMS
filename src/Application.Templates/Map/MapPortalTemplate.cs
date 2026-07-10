@@ -2,24 +2,24 @@ namespace Application.Templates.Map
 {
     public sealed class MapPortalTemplate
     {
-        [WZPath("portal/-/tn")]
+        [WZPath("~/tn")]
         public string? sTargetName { get; set; }
 
-        [WZPath("portal/-/pt")]
+        [WZPath("~/pt")]
         public int nPortalType { get; set; }
-        [WZPath("portal/-/tm")]
+        [WZPath("~/tm")]
         public int nTargetMap { get; set; }
 
-        [WZPath("portal/-/pn")]
+        [WZPath("~/pn")]
         public string? sPortalName { get; set; }
-        [WZPath("portal/-/x")]
+        [WZPath("~/x")]
         public int nX { get; set; }
-        [WZPath("portal/-/y")]
+        [WZPath("~/y")]
         public int nY { get; set; }
-        [WZPath("portal/-/script")]
+        [WZPath("~/script")]
         public string? Script { get; set; }
 
-        [WZPath("portal/-/$name")]
+        [WZPath("~/$name")]
         public int nIndex { get; set; }
     }
 }

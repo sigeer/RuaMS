@@ -21,9 +21,8 @@
 
 using Application.Core.ServerTransports;
 using Application.Core.Tools;
-using Application.Templates.Providers;
 using Application.Templates.Quest;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
@@ -43,7 +42,7 @@ public class SkillbookInformationProvider : DataBootstrap
     private Dictionary<int, SkillBookEntry> foundSkillbooks = new();
 
     readonly IChannelServerTransport _transport;
-    QuestProvider questProvider = ProviderSource.Instance.GetProvider<QuestProvider>();
+    IProvider<QuestTemplate> questProvider = ProviderSource.Instance.GetProvider<IProvider<QuestTemplate>>(ProviderType.Quest);
 
     public SkillbookInformationProvider(IChannelServerTransport transport, ILogger<DataBootstrap> logger) : base(logger)
     {

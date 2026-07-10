@@ -1,20 +1,12 @@
-using Application.Core.Game.Maps;
 using Application.Shared.MapObjects;
 using Application.Templates.Map;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
 using System.Drawing;
-using System.Globalization;
 
 namespace ServiceTest.Infrastructure.WZ
 {
-    internal class MapFootholdTests : WzTestBase
+    internal class MapFootholdTests(string readerType) : WzTestBase(readerType)
     {
-        protected override void OnProviderRegistering()
-        {
-            _providerSource.TryRegisterProvider<MapProvider>(o => new MapProvider(o));
-            _providerSource.TryRegisterProvider<StringProvider>(o => new StringProvider(o, CultureInfo.GetCultureInfo("en-US")));
-        }
         private Point[] GetRandomPoint(Rectangle rectangle, int count = 100)
         {
             Point[] points = new Point[count];
@@ -32,12 +24,12 @@ namespace ServiceTest.Infrastructure.WZ
 
         private MapTemplate[] GetRandomMapTemplates(int count = 100)
         {
-            var allMapIds = _providerSource.GetProvider<StringProvider>().GetSubProvider(Application.Templates.String.StringCategory.Map).LoadAll()
+            var allMapIds = _providerSource.GetProviderByKey<IKeyedProvider>("zh-CN").GetSubProvider(Application.Templates.String.StringCategory.Map).LoadAll()
                 .Select(x => x.TemplateId)
                 .OrderBy(x => Guid.NewGuid())
                 .Take(count)
                 .ToArray();
-            return allMapIds.Select(x => _providerSource.GetProvider<MapProvider>().GetItem(x)).Where(x => x != null).ToArray();
+            return allMapIds.Select(x => _providerSource.GetProvider<IProvider<MapTemplate>>(ProviderType.Map).GetItem(x)).OfType<MapTemplate>().ToArray();
         }
 
         // [Test]
@@ -69,7 +61,7 @@ namespace ServiceTest.Infrastructure.WZ
                 {926020001, [new Point(-52, -77)] },
                 {220000400, [new Point(-2650, -138), new Point(-2330, -18)] }
             };
-            var mapProvider = _providerSource.GetProvider<MapProvider>();
+            var mapProvider = _providerSource.GetProvider<IProvider<MapTemplate>>(ProviderType.Map);
             foreach (var item in testCases)
             {
                 var template = mapProvider.GetItem(item.Key)!;

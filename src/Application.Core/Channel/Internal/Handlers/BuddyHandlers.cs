@@ -5,7 +5,6 @@ using Application.Shared.Message;
 using BuddyProto;
 using Google.Protobuf;
 using MessageProto;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers

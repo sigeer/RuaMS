@@ -13,7 +13,6 @@ using client.autoban;
 using server;
 using server.events;
 using server.life;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Players

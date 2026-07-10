@@ -1,6 +1,5 @@
 using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Net;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

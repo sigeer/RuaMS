@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Internal.Handlers
             }
             else
             {
-                await _server.SendToPlayerAsync(res.Request.OperatorId,chr =>
+                await _server.SendToPlayerAsync(res.Request.OperatorId, chr =>
                 {
                     return chr.Yellow(nameof(ClientMessage.PlayerNotFound), res.Request.TargetName);
                 });

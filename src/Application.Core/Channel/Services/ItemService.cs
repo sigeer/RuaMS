@@ -3,6 +3,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
+using Application.Templates.Etc;
 using Application.Templates.Exceptions;
 using AutoMapper;
 using client.inventory;
@@ -36,20 +37,28 @@ namespace Application.Core.Channel.Services
 
         public Item GenerateCouponItem(int itemId, short quantity)
         {
-            CashItem it = new CashItem(77777777, itemId, 7777, ItemConstants.isPet(itemId) ? 30 : 0, quantity, true);
+            var it = new CashCommodityTemplate(77777777)
+            {
+                CashItemSN = 77777777,
+                ItemID = itemId,
+                Price = 7777,
+                Period = ItemConstants.isPet(itemId) ? 30 : 0,
+                Count = quantity,
+                OnSale = true
+            };
             return CashItem2Item(it);
         }
-        public Item CashItem2Item(CashItem cashItem)
+        public Item CashItem2Item(CashCommodityTemplate cashItem)
         {
-            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.getItemId(), cashItem.getCount());
+            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.ItemID, cashItem.Count);
             if (item == null)
             {
-                throw new TemplateNotFoundException("Item", cashItem.getItemId());
+                throw new TemplateNotFoundException("Item", cashItem.ItemID);
             }
 
             if (cashItem.Period == 1)
             {
-                switch (cashItem.getItemId())
+                switch (cashItem.ItemID)
                 {
                     case ItemId.DROP_COUPON_2X_4H:
                     case ItemId.EXP_COUPON_2X_4H: // 4 Hour 2X coupons, the period is 1, but we don't want them to last a day.
@@ -75,7 +84,7 @@ namespace Application.Core.Channel.Services
                     item.setExpiration(_server.getCurrentTime() + (long)TimeSpan.FromDays(cashItem.Period).TotalMilliseconds);
             }
 
-            item.setSN(cashItem.getSN());
+            item.setSN(cashItem.CashItemSN);
             return item;
         }
 
@@ -116,9 +125,9 @@ namespace Application.Core.Channel.Services
                         gifts.Add(new(item, rs.Message));
                     }
 
-                    if (_cashItemProvider.isPackage(cItem.getItemId()))
+                    if (_cashItemProvider.isPackage(cItem.ItemID))
                     {
-                        var packages = _cashItemProvider.GetPackage(cItem.getItemId()).Select(x => CashItem2Item(_cashItemProvider.GetItemTrust(x)));
+                        var packages = _cashItemProvider.GetPackage(cItem.ItemID).Select(x => CashItem2Item(_cashItemProvider.GetItemTrust(x)));
                         //Packages never contains a ring
                         foreach (Item packageItem in packages)
                         {
@@ -211,15 +220,15 @@ namespace Application.Core.Channel.Services
             return r.Code == 0;
         }
 
-        public async Task BuyCashItem(Player chr, int cashType, CashItem cItem)
+        public async Task BuyCashItem(Player chr, int cashType, CashCommodityTemplate cItem)
         {
             await chr.BuyCashItem(cashType, cItem, async () =>
             {
                 var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
-                    CashItemId = cItem.getItemId(),
-                    CashItemSn = cItem.getSN(),
+                    CashItemId = cItem.ItemID,
+                    CashItemSn = cItem.CashItemSN,
                 });
                 if (data.Code != 0)
                 {
@@ -232,7 +241,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        async Task BuyCashItemCallback(Player chr, CashItem cItem, CashProto.BuyCashItemResponse data)
+        async Task BuyCashItemCallback(Player chr, CashCommodityTemplate cItem, CashProto.BuyCashItemResponse data)
         {
             if (data.GiftInfo != null)
             {
@@ -252,9 +261,9 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                if (_cashItemProvider.isPackage(cItem.getItemId()))
+                if (_cashItemProvider.isPackage(cItem.ItemID))
                 {
-                    var cashPackage = getPackage(cItem.getItemId());
+                    var cashPackage = getPackage(cItem.ItemID);
                     foreach (var item in cashPackage)
                     {
                         chr.getCashShop().addToInventory(item);
@@ -275,15 +284,15 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public async Task BuyCashItemForGift(Player chr, int cashType, CashItem cItem, string toName, string message, bool createRing = false)
+        public async Task BuyCashItemForGift(Player chr, int cashType, CashCommodityTemplate cItem, string toName, string message, bool createRing = false)
         {
             await chr.BuyCashItem(cashType, cItem, async () =>
             {
                 var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
-                    CashItemId = cItem.getItemId(),
-                    CashItemSn = cItem.getSN(),
+                    CashItemId = cItem.ItemID,
+                    CashItemSn = cItem.CashItemSN,
                     GiftInfo = new CashProto.GiftInfo
                     {
                         Message = message,

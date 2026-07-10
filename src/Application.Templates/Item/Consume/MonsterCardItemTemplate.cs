@@ -41,13 +41,13 @@ namespace Application.Templates.Item.Consume
 
     public sealed class ConData
     {
-        [WZPath("spec/con/-/sMap")]
+        [WZPath("~/sMap")]
         public int StartMap { get; set; }
-        [WZPath("spec/con/-/eMap")]
+        [WZPath("~/eMap")]
         public int EndMap { get; set; }
-        [WZPath("spec/con/-/type")]
+        [WZPath("~/type")]
         public int Type { get; set; } = -1;
-        [WZPath("spec/con/-/inParty")]
+        [WZPath("~/inParty")]
         public bool InParty { get; set; }
     }
 }

@@ -19,8 +19,7 @@ namespace Application.Core.Game.Commands.Gm2
 
             if (!int.TryParse(questInput, out var questId))
             {
-                var matchedQuestList = client.CurrentCulture.StringProvider.GetSubProvider(Templates.String.StringCategory.Quest)
-                    .Search(questInput).OfType<StringQuestTemplate>().ToList();
+                var matchedQuestList = client.CurrentCulture.StringProvider.Search(StringCategory.Quest, questInput).OfType<StringQuestTemplate>().ToList();
                 if (matchedQuestList.Count == 0)
                 {
                     await client.OnlinedCharacter.Yellow(nameof(ClientMessage.QuestNotFound), questInput);

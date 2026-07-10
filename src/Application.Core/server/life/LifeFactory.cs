@@ -2,8 +2,8 @@ using Application.Core.Channel;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
 using Application.Templates.Npc;
-using Application.Templates.Providers;
-using Application.Templates.XmlWzReader.Provider;
+using Application.Templates.Reader;
+using Application.Templates.UI;
 
 namespace server.life;
 
@@ -12,14 +12,14 @@ public class LifeFactory
 {
     public static LifeFactory Instance = new();
 
-    MobProvider _mobProvider;
-    NpcProvider _npcProvider;
+    IProvider<MobTemplate> _mobProvider;
+    IProvider<NpcTemplate> _npcProvider;
     private HashSet<int> hpbarBosses;
     public LifeFactory()
     {
-        hpbarBosses = ProviderSource.Instance.GetProvider<MobWithBossHpBarProvider>().LoadAll().Select(x => x.TemplateId).ToHashSet();
-        _mobProvider = ProviderSource.Instance.GetProvider<MobProvider>();
-        _npcProvider = ProviderSource.Instance.GetProvider<NpcProvider>();
+        hpbarBosses = ProviderSource.Instance.GetProvider<IProvider<MobWithBossHpBarTemplate>>(ProviderType.UIMobWithBossHpBar).LoadAll().Select(x => x.TemplateId).ToHashSet();
+        _mobProvider = ProviderSource.Instance.GetProvider<IProvider<MobTemplate>>(ProviderType.Mob);
+        _npcProvider = ProviderSource.Instance.GetProvider<IProvider<NpcTemplate>>(ProviderType.Npc);
     }
 
     public MonsterStats GetMonsterStats(MobTemplate mobTemplate)

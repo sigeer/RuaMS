@@ -14,7 +14,7 @@ namespace Application.Templates.String
         public StringTemplate(int templateId)
             : base(templateId)
         {
-            Name = Defaults.WZ_NoName;
+            Name = WzDefaults.WZ_NoName;
         }
     }
 }

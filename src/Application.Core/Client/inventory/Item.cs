@@ -53,7 +53,7 @@ public class Item : IComparable<Item>
         get
         {
             if (_sourceTemplate == null)
-                _sourceTemplate = ItemInformationProvider.getInstance().GetTemplate(id) ?? throw new BusinessResException($"ItemId = {id}");
+                _sourceTemplate = ItemInformationProvider.getInstance().GetItemTemplate(id) ?? throw new BusinessResException($"ItemId = {id}");
             return _sourceTemplate;
         }
     }

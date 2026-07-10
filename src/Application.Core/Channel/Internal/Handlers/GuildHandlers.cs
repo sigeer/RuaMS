@@ -3,7 +3,6 @@ using Application.Shared.Team;
 using Google.Protobuf;
 using GuildProto;
 using net.server.guild;
-using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
@@ -286,7 +285,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     _server.GuildManager.StoreAlliance(res.AllianceDto);
 
                     var guildDto = res.AllianceDto.Guilds.FirstOrDefault(x => x.GuildId == res.GuildId)!;
-                    await _server.SendToPlayersAsync([res.Request.MasterId, ..res.AllMembers], async chr =>
+                    await _server.SendToPlayersAsync([res.Request.MasterId, .. res.AllMembers], async chr =>
                     {
                         if (chr.Id == res.Request.MasterId)
                         {
@@ -512,7 +511,7 @@ namespace Application.Core.Channel.Internal.Handlers
                     _server.GuildManager.ClearGuildCache(res.GuildId);
                     _server.GuildManager.StoreAlliance(res.AllianceDto);
 
-                    await _server.SendToPlayersAsync([res.Request.TargetPlayerId, ..res.AllLeftMembers], async chr =>
+                    await _server.SendToPlayersAsync([res.Request.TargetPlayerId, .. res.AllLeftMembers], async chr =>
                     {
                         if (res.Request.TargetPlayerId == chr.Id)
                         {

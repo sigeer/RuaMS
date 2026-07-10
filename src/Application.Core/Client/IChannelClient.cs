@@ -1,7 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Game.Life;
-using Application.Core.Scripting.Events;
-using scripting;
 using scripting.npc;
 
 namespace Application.Core.Client

@@ -1,6 +1,5 @@
 using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Net;
 using client.inventory.manipulator;
 using tools;
 
@@ -57,7 +56,7 @@ public class AntiMacroItemUseRequestHandler : ChannelHandlerBase
         }
 
         // ---- 发包 + 超时检测 ----
-        await _antiMacro.SendAntiMacroAsync(chr, target, AntiMacroType.Item, onSuccess:async () =>
+        await _antiMacro.SendAntiMacroAsync(chr, target, AntiMacroType.Item, onSuccess: async () =>
         {
             await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
         });

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel;
+using Application.Templates.Etc;
 using client.inventory;
 using System.Diagnostics;
 
@@ -165,20 +166,20 @@ public class CashShop
         }
     }
 
-    public bool BuyCashItem(int type, CashItem? buyItem)
+    public bool BuyCashItem(int type, CashCommodityTemplate? buyItem)
     {
-        if (buyItem == null || !buyItem.isOnSale())
+        if (buyItem == null || !buyItem.OnSale)
             return false;
 
 
-        if (!TryGainCash(type, -buyItem.getPrice()))
+        if (!TryGainCash(type, -buyItem.Price))
             return false;
 
         Log.Logger.Debug("Chr {CharacterName} bought cash item {ItemName} (SN {ItemSN}) for {ItemPrice}",
                 Owner,
-                ClientCulture.SystemCulture.GetItemName(buyItem.getItemId()),
-                buyItem.getSN(),
-                buyItem.getPrice());
+                ClientCulture.SystemCulture.GetItemName(buyItem.ItemID),
+                buyItem.CashItemSN,
+                buyItem.Price);
         return true;
     }
 
@@ -187,12 +188,12 @@ public class CashShop
         TryGainCash(type, cash);
     }
 
-    public void Buy(int type, CashItem? buyItem)
+    public void Buy(int type, CashCommodityTemplate? buyItem)
     {
         if (buyItem == null)
             return;
 
-        gainCash(type, -buyItem.getPrice());
+        gainCash(type, -buyItem.Price);
     }
 
     public bool isOpened()
