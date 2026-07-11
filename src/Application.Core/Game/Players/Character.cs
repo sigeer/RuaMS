@@ -972,17 +972,17 @@ public partial class Player
 
         foreach (var mbs in ActiveEffects)
         {
-            if (mbs.Key == BuffStat.MAP_PROTECTION)
+            if (mbs.Key == BuffStat.THAW)
             {
-                byte value = (byte)mbs.Value.value;
+                var value = mbs.Value.value;
 
-                if (value == 1 && ((returnMapid == MapId.EL_NATH && thisMapid != MapId.ORBIS_TOWER_BOTTOM) || returnMapid == MapId.INTERNET_CAFE))
+                if (value == 10 && ((returnMapid == MapId.EL_NATH && thisMapid != MapId.ORBIS_TOWER_BOTTOM) || returnMapid == MapId.INTERNET_CAFE))
                 {
                     return true;        //protection from cold
                 }
                 else
                 {
-                    return value == 2 && (returnMapid == MapId.AQUARIUM || thisMapid == MapId.ORBIS_TOWER_BOTTOM);        //breathing underwater
+                    return value == -6 && (returnMapid == MapId.AQUARIUM || thisMapid == MapId.ORBIS_TOWER_BOTTOM);        //breathing underwater
                 }
             }
         }
@@ -3701,8 +3701,8 @@ public partial class Player
 
         if (allActiveCoupons.Count > 0)
         {
-            expCoupon = Math.Max(allActiveCoupons.Where(x => x.IsExp).Max(x => x.Rate), 1);
-            dropCoupon = Math.Max(allActiveCoupons.Where(x => x.IsDrop).Max(x => x.Rate), 1);
+            expCoupon = Math.Max(allActiveCoupons.Where(x => x.IsExp).Select(x => x.Rate).DefaultIfEmpty().Max(), 1);
+            dropCoupon = Math.Max(allActiveCoupons.Where(x => x.IsDrop).Select(x => x.Rate).DefaultIfEmpty().Max(), 1);
 
             // YamlConfig.config.server.USE_STACK_COUPON_RATES
             // TODO: 叠加逻辑
