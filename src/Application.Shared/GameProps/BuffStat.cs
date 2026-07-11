@@ -92,9 +92,8 @@ namespace Application.Shared.GameProps
         public static readonly BuffStat SHADOWPARTNER = new BuffStat(0x400000000000000L);
         public static readonly BuffStat PICKPOCKET = new BuffStat(0x800000000000000L);
         public static readonly BuffStat MESOGUARD = new BuffStat(0x1000000000000000L);
-        public static readonly BuffStat EXP_INCREASE = new BuffStat(0x2000000000000000L);
+        public static readonly BuffStat THAW = new BuffStat(0x2000000000000000L);
         public static readonly BuffStat WEAKEN = new BuffStat(0x4000000000000000L);
-        public static readonly BuffStat MAP_PROTECTION = new BuffStat(long.MinValue);
 
         //all incorrect buffstats
         public static readonly BuffStat SLOW = new BuffStat(0x200000000L, true);

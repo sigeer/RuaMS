@@ -858,12 +858,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 personalExp = 0.0f;
             }
 
-            var expBonus = attacker.getBuffedValue(BuffStat.EXP_INCREASE);
-            if (expBonus != null)
-            {     // exp increase player buff found thanks to HighKey21
-                personalExp += expBonus.Value;
-            }
-
             var expBuff = attacker.getBuffedValue(BuffStat.EXP_BUFF);
             if (expBuff != null)
             {

@@ -246,11 +246,6 @@ public class StatEffect
             addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_BUFF, exp.ExpBuffRate);
         }
 
-        if (template is IStatEffectExpInc expInc && expInc.ExpInc > 0)
-        {
-            // 不像buff  更像一次性获得经验
-            addBuffStatPairToListIfNotZero(statups, BuffStat.EXP_INCREASE, expInc.ExpInc);
-        }
 
         if (template is IStatEffectMorphGhost morphGhost)
         {
@@ -322,10 +317,7 @@ public class StatEffect
         if (template is IStatEffectMapProtection mapProtect && mapProtect.Thaw != 0)
         {
             // 10. 水下保护，-6. 寒冷保护，直接把Thaw的值写进value是否会有问题？
-            if (mapProtect.Thaw == 10)
-                addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, 1);
-            else if (mapProtect.Thaw == -6)
-                addBuffStatPairToListIfNotZero(statups, BuffStat.MAP_PROTECTION, 2);
+            addBuffStatPairToListIfNotZero(statups, BuffStat.THAW, mapProtect.Thaw);
         }
 
         monsterStatus = new();
