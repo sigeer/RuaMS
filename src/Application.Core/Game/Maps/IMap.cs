@@ -330,6 +330,7 @@ namespace Application.Core.Game.Maps
         #endregion
 
         #region Drop
+        Task<bool> makeDisappearItemFromMap(MapItem? mapitem);
         Task updatePartyItemDropsToNewcomer(Player newcomer, List<MapItem> partyItems);
         Task<List<MapItem>> updatePlayerItemDropsToParty(int partyid, int charid, List<Player> partyMembers, Player? partyLeaver);
         Task DropItemDestroy(int itemId, Point dropperPos);

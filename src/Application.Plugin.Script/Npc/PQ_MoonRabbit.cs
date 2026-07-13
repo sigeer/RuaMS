@@ -79,10 +79,36 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 1012113 
-        public Task moonrabbit_bonus()
+        public async Task moonrabbit_bonus()
         {
-            // TODO
-            return Task.CompletedTask;
+            if (getMapId() == 910010100)
+            {
+                await SayNext("你好！我是汤米。我们站的附近有一个猪镇。那里的猪很吵闹，无法控制，甚至偷了许多旅行者的武器。它们被赶出了自己的城镇，目前躲藏在猪镇里。");
+
+                if (isEventLeader())
+                {
+                    await SayNext("你觉得和你的队员一起去那里，给那些吵闹的猪一个教训怎么样？");
+                    var eim = GetEventInstanceTrust();
+                    await eim.startEventTimer(5 * 60000);
+                    await eim.warpEventTeam(910010200);
+                }
+                else
+                {
+                    await SayOK("感兴趣吗？告诉你的队长和我联系，前往那里！");
+                }
+            }
+            else if (getMapId() == 910010200)
+            {
+                if (await AskYesNo("你想现在退出奖励吗？"))
+                {
+                    await warp(910010400);
+                }
+            }
+            else if (getMapId() == 910010300)
+            {
+                await SayOK("你现在将被传送出去，谢谢你的帮助！");
+                await warp(100000200);
+            }
         }
 
 

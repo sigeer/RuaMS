@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-	<OutputPath>..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
   </ItemGroup>
+
+	<Target Name="CopyToPlugins" AfterTargets="Build">
+		<Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+			  DestinationFolder="$(MSBuildProjectDirectory)\..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\" />
+	</Target>
 
 </Project>

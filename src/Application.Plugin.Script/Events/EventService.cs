@@ -50,6 +50,7 @@ namespace Application.Plugin.Events
                 new PQ_Ellin(),
                 new PQ_Ludi(),
                 new PQ_WuGong(),
+                new PQ_Orbis(),
 
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "1", 980000100),
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "2", 980000200),
@@ -63,6 +64,8 @@ namespace Application.Plugin.Events
                 new Battle_Zakum(),
 
                 new Battle_Balrog(),
+
+                new Battle_Horntail(),
 
                 new PrivateContiMove( "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
                 // 天空之城 - 圣地

@@ -43,6 +43,8 @@ public async Task<bool> advice00() { ... } // 方法名 advice00 就是键
 - C# 中没有 `var` 定义 `status` 变量和 `action` 回调的概念，直接使用 `await` 等待用户交互
 - JS 中的 `cm.xxx()` / `qm.xxx()` / `pi.xxx()` / `rm.xxx()` / `im.xxx()` 调用在 C# 中直接对应 `await Xxx()` 或 `Xxx()` 实例方法，无需前缀
 - 生成代码要符合C#语法规范，使用帕斯卡命名法，提高可读性
+- **提取公共方法**：当多个方法共享相同模式，只有参数不同时，提取私有辅助方法，用 expression-bodied 简化。差异较大的方法不强行合并
+- **文件对应一定要准确**
 
 ---
 
@@ -188,7 +190,7 @@ public async Task example()
 ### 特殊情况处理
 
 - 未注册的NPC：在 `NpcScript.cs` 中用 `n{npc_id}` 作为方法名创建新方法，并添加 `// Npc: {npc_id}` 注释
-- 同一个方法映射多个NPC：注释行写 `// Npc: id1, id2, id3`
+- 同一个方法映射多个NPC：注释行写 `// Npc: id1, id2, id3`，如果同时存在这多个NPC脚本，观察他们是否相同，如果相同，则取其中任意一份；如果不同，则不修改并注释说明；如果只有其中一个存在脚本，则正好使用这个NPC脚本重写
 - 如果找不到匹配的JS文件，方法体内写 `// TODO` + 简单注释（记录NPC ID和原始功能描述）
 
 ---
@@ -371,6 +373,129 @@ JS `rm` 上下文 → C# `this`（`ReactorActionManager` 基类）：
 | `rm.warp(map, portal)` | `await warp(map, portal)` |
 | `rm.getMap()` | `getMap()` |
 | `rm.getReactor()` | `getReactor()` |
+| `rm.getEventInstance()` | `getEventInstance()` → 返回 `AbstractEventInstanceManager?` |
+| `rm.GetEventInstanceTrust()` | `GetEventInstanceTrust()` → 非null或抛异常 |
+| `eim.getIntProperty(key)` | `eim.getIntProperty(key)` |
+| `eim.setIntProperty(key, value)` | `eim.setIntProperty(key, value)` |
+| `rm.mapMessage(c, msg)` | `await mapMessage(c, msg)` |
+| `rm.getMap().killAllMonsters(bool)` | `await getMap().killAllMonsters()` (C#无参数) |
+| `rm.getMap().toggleEnvironment(name)` | `await getMap().toggleEnvironment(name)` |
+
+### ⚠️ 关键：Touch/Untouch 的计数器模式（勿简化！）
+
+Touch 和 Untouch 脚本**必须配对**，通过事件实例属性计数器跟踪玩家触碰数量：
+
+**火焰/机关开关模式**：仅在第一个玩家触碰时触发（ON），最后一个玩家离开时恢复（OFF）：
+
+```javascript
+// JS: 火焰切换（完整模式）
+var fid = "glpq_f0";
+
+function touch() {
+    var eim = rm.getEventInstance();
+    if (eim.getIntProperty(fid) == 0) {  // 没人碰 → 开火
+        action();
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) + 1);  // 计数器+1
+}
+
+function untouch() {
+    var eim = rm.getEventInstance();
+    if (eim.getIntProperty(fid) == 1) {  // 最后一人离开 → 关火
+        action();
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) - 1);  // 计数器-1
+}
+
+function action() {
+    var flames = Array("a1", "a2", "b1", "b2", "c1", "c2");
+    for (var i = 0; i < flames.length; i++) {
+        rm.getMap().toggleEnvironment(flames[i]);
+    }
+}
+```
+
+```csharp
+// Touch: 在 ReactorTouchScript 中
+public async Task glpqflame0()
+{
+    var eim = getEventInstance();
+    if (eim == null) return;
+
+    var fid = "glpq_f0";
+    if (eim.getIntProperty(fid) == 0)
+    {
+        string[] flames = ["a1", "a2", "b1", "b2", "c1", "c2"];
+        for (var i = 0; i < flames.Length; i++)
+        {
+            await getMap().toggleEnvironment(flames[i]);
+        }
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) + 1);
+}
+
+// Untouch: 在 ReactorUntouchScript 中
+public async Task glpqflame0()
+{
+    var eim = getEventInstance();
+    if (eim == null) return;
+
+    var fid = "glpq_f0";
+    if (eim.getIntProperty(fid) == 1)
+    {
+        string[] flames = ["a1", "a2", "b1", "b2", "c1", "c2"];
+        for (var i = 0; i < flames.Length; i++)
+        {
+            await getMap().toggleEnvironment(flames[i]);
+        }
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) - 1);
+}
+```
+
+**阈值模式**：计数器达到指定值时触发：
+
+```javascript
+var fid = "glpq_s";
+
+function touch() {
+    var eim = rm.getEventInstance();
+    if (eim.getIntProperty(fid) == 5) {
+        action();  // 5人触碰 → 激活
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) + 1);
+}
+
+function action() {
+    rm.mapMessage(6, "All stirges have disappeared.");
+    rm.getMap().killAllMonsters(true);
+    eim.setIntProperty(fid, 777);
+}
+```
+
+```csharp
+public async Task glpqstrge()
+{
+    var eim = getEventInstance();
+    if (eim == null) return;
+
+    var fid = "glpq_s";
+    if (eim.getIntProperty(fid) == 5)
+    {
+        await mapMessage(6, "All stirges have disappeared.");
+        await getMap().killAllMonsters();
+        eim.setIntProperty(fid, 777);
+    }
+    eim.setIntProperty(fid, eim.getIntProperty(fid) + 1);
+}
+```
+
+### ❗ 常见错误
+
+1. **遗漏事件实例属性**：JS 中 `rm.getEventInstance()` 获取的事件实例用于存储跨触碰的计数器状态，C# 必须对应调用 `getEventInstance()`，不能省略。
+2. **简化计数器逻辑**：touch 和 untouch 的 `getIntProperty` / `setIntProperty` 计数器是核心行为，不能去掉。简单的 `await toggleEnvironment()` 会导致多人同时触碰时火焰来回闪烁。
+3. **Touch 和 Untouch 不配对**：JS 中 touch/untouch 共用同一个 `fid` 属性名和计数器，C# 中需要在 `ReactorTouchScript` 和 `ReactorUntouchScript` 各自实现对应的加减逻辑。
+4. **事件实例可能为 null**：`getEventInstance()` 返回 nullable，必须判空。部分现有代码使用 `GetEventInstanceTrust()`（直接抛异常），但 touch/untouch 推荐使用 `getEventInstance()` + null check。
 
 ### 案例
 
@@ -394,6 +519,7 @@ public async Task boxItem0()
 - 批量reactor映射同一方法：注释写 `// Reactor: id1, id2, id3`
 - 有些reactor可能同时有多个阶段的JS脚本，需要分别映射到不同阶段的C#类
 - 如果没有找到对应C#方法，用reactor ID作为方法名创建新方法，放在对应的C#类中
+- **如果一个 JS 文件同时有 `touch()` 和 `untouch()` 但没有 `act()` / `hit()`**：说明该 reactor 只响应触碰事件，`ReactorActScript.cs` 和 `ReactorHitScript.cs` 中对应的空方法应保留（防止 "不支持的脚本" 异常），但要将 `// TODO` 改为说明注释
 
 ---
 

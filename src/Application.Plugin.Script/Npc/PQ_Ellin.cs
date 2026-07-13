@@ -62,6 +62,7 @@ namespace Application.Plugin.Script.Npc
 
                         if (haveItem(4001169, 20) && isEventLeader())
                         {
+                            eim.ClearedMaps[getMapId()] = StageStatus.Completed;
                             await gainItem(4001169, -20);
                             await eim.warpEventTeam(930000500);
                         }

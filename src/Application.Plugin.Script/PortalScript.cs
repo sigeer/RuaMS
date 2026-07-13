@@ -2811,7 +2811,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 240050100
         public async Task<bool> hontale_BtoB1()
         {
 
@@ -2824,7 +2824,7 @@ namespace Application.Plugin.Script
             {
                 if (haveItem(4001087))
                 {
-                    await LightBlue("You cannot pass to the next map holding the 1st Crystal Key in your inventory.");
+                    await LightBlue("背包中持有#t4001087#时无法进入下一地图！");
                     return false;
                 }
                 await playPortalSound();

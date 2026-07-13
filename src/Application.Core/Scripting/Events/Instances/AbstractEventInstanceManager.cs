@@ -28,7 +28,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     protected MapManager mapManager;
     private string name;
-    private Dictionary<string, object> props = new();
+    public Dictionary<string, object> Props { get; } = new();
 
     private long timeStarted = 0;
     private long eventTime = 0;
@@ -45,8 +45,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     // registers all opened gates on the event. Will help late characters to encounter next stages gates already opened
     private Dictionary<int, KeyValuePair<string, int>?> openedGates = new();
-
-    public Dictionary<string, string> Properties { get; set; } = new();
 
     /// <summary>
     /// 已通过关卡
@@ -523,7 +521,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         // ess = null;
 
         killCount.Clear();
-        props.Clear();
+        Props.Clear();
 
         EventManager.DisposeInstance(name);
 
@@ -584,26 +582,26 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public void setProperty(string key, string value)
     {
 
-        props.AddOrUpdate(key, value);
+        Props.AddOrUpdate(key, value);
     }
 
     public object? setProperty(string key, string value, bool prev)
     {
 
-        return props.AddOrUpdateReturnOldValue(key, value);
+        return Props.AddOrUpdateReturnOldValue(key, value);
     }
 
 
     public string? getProperty(string key)
     {
-        var d = props.GetValueOrDefault(key);
+        var d = Props.GetValueOrDefault(key);
         return d?.ToString();
     }
 
     public int getIntProperty(string key)
     {
 
-        var d = props.GetValueOrDefault(key);
+        var d = Props.GetValueOrDefault(key);
         return Convert.ToInt32(d);
     }
 

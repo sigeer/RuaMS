@@ -3,6 +3,7 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
+using System.Runtime.ConstrainedExecution;
 
 namespace Application.Core.scripting.Events.Templates
 {
@@ -61,16 +62,34 @@ namespace Application.Core.scripting.Events.Templates
                     return "在开始远征时发生了意外错误，请稍后重试。";
             }
         }
+
+        protected override Task End(AbstractEventInstanceManager eim, TerminationReason reason)
+        {
+            if (reason == TerminationReason.MemberCount)
+            {
+                eim.Pink(nameof(ClientMessage.Expedition_MemberCountChanged_Abort));
+            }
+            return base.End(eim, reason);
+        }
+
         public override async Task OnPlayerBanned(AbstractEventInstanceManager eim, Player chr)
         {
             await chr.Notice("[Expedition] You have been banned from this expedition.");
 
             await eim.Notice("[Expedition] " + chr.Name + " has been banned from the expedition.");
+
+            await base.OnPlayerBanned(eim, chr);
         }
 
         public override async Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
         {
             await eim.LightBlue(nameof(ClientMessage.Expedition_Join), chr.Name);
+        }
+
+        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        {
+            await eim.LightBlue(nameof(ClientMessage.Expedition_EnterMap), chr.Name);
+            await base.OnPlayerEntry(eim, chr);
         }
 
 
@@ -82,6 +101,7 @@ namespace Application.Core.scripting.Events.Templates
                 {
                     s.SendDropMessage(6, "[Expedition] " + Name + " Expedition started with leader: " + eim.getLeader().getName(), true);
                 });
+            await base.OnBattleStarted(eim);
         }
 
         public override async Task OnPlayerExit(AbstractEventInstanceManager eim, Player player)

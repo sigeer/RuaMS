@@ -107,7 +107,7 @@ namespace Application.Plugin.Script.Events
             if (mob.getId() == MobId.MOON_BUNNY)
             {
                 await eim.Pink(nameof(ClientMessage.Event_HenesysPQ_Fail));
-                await End(eim);
+                await End(eim, TerminationReason.Failure);
             }
 
         }

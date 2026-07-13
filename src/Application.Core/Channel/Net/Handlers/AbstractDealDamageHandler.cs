@@ -153,7 +153,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
             if (attack.skill == ChiefBandit.MESO_EXPLOSION)
             {
-                removeExplodedMesos(map, attack);
+                await removeExplodedMesos(map, attack);
             }
             foreach (var target in attack.targets)
             {
@@ -1148,7 +1148,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         return attackInfo;
     }
 
-    private void removeExplodedMesos(IMap map, AttackInfo attack)
+    private async Task removeExplodedMesos(IMap map, AttackInfo attack)
     {
         int index = 0;
         foreach (var mesoId in attack.explodedMesos)
@@ -1168,7 +1168,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             }
             int delay = attack.attackDelay + (index++ % 5) * EXPLODED_MESO_SPREAD_DELAY;
             delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
-            map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
+            await map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
         }
     }
 }

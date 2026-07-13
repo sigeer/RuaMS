@@ -1564,15 +1564,13 @@ namespace Application.Plugin.Script
         // Reactor: 6109013
         public async Task glpqstrge()
         {
-            // TODO
-            // 6109013
+            // Intentionally empty — act/touch/untouch handlers do the work
         }
 
         // Reactor: 6109014
         public async Task glpqflame0()
         {
-            // TODO
-            // 6109014
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109016
@@ -1613,50 +1611,43 @@ namespace Application.Plugin.Script
         // Reactor: 6109021
         public async Task glpqflame1()
         {
-            // TODO
-            // 6109021
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109022
         public async Task glpqflame2()
         {
-            // TODO
-            // 6109022
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109023
         public async Task glpqflame3()
         {
-            // TODO
-            // 6109023
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109024
         public async Task glpqflame4()
         {
-            // TODO
-            // 6109024
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109025
         public async Task glpqflame5()
         {
-            // TODO
-            // 6109025
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109026
         public async Task glpqflame6()
         {
-            // TODO
-            // 6109026
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6109027
         public async Task glpqflame7()
         {
-            // TODO
-            // 6109027
+            // Intentionally empty — touch/untouch handlers do the work
         }
 
         // Reactor: 6701000
