@@ -230,6 +230,7 @@ namespace Application.Core.Channel.Services
                     CashItemId = cItem.ItemID,
                     CashItemSn = cItem.CashItemSN,
                 });
+
                 if (data.Code != 0)
                 {
                     await chr.SendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
@@ -393,7 +394,7 @@ namespace Application.Core.Channel.Services
                             }
                             else if (quantity < short.MinValue)
                             {
-                                qty = short.MinValue;
+                                qty = 1;
                             }
                             else
                             {

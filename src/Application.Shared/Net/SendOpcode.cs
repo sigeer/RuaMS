@@ -306,6 +306,9 @@ public enum SendOpcode
     LUCKSACK_FAIL = 0xD1,
     MESO_BAG_MESSAGE = 0xD2,
     UPDATE_QUEST_INFO = 0xD3,
+    /// <summary>
+    /// CUserLocal::OnNotifyHPDecByField
+    /// </summary>
     ON_NOTIFY_HP_DEC_BY_FIELD = 0xD4,
     PLAYER_HINT = 0xD6,
     MAKER_RESULT = 0xD9,

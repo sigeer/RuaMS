@@ -364,7 +364,7 @@ namespace ServiceTest.Infrastructure
     //SHADOWPARTNER: Pos: 3, Value: 67108864
     //PICKPOCKET: Pos: 3, Value: 134217728
     //MESOGUARD: Pos: 3, Value: 268435456
-    //EXP_INCREASE: Pos: 3, Value: 536870912
+    //THAW: Pos: 3, Value: 536870912
     //WEAKEN: Pos: 3, Value: 1073741824
     //WEAKEN: Pos: 3, Value: 1073741824  (From Disease)
     //MAP_PROTECTION: Pos: 3, Value: 2147483648
