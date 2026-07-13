@@ -279,9 +279,77 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9201135 
-        public Task Malay_Warp2()
+        public async Task Malay_Warp2()
         {
-            throw new NotImplementedException();
+            var currentMap = getMapId();
+            var startedTravel = currentMap == 540000000;
+
+            var inMap = new[] { 540000000, 550000000, 551000000 };
+            int[][] toMap = [[550000000], [551000000, 541000000], [550000000]];
+            int[][] cost = [[42000], [10000, 0], [10000]];
+            int[][] toMapSp = [[0], [2, 4], [4]];
+
+            var location = Array.IndexOf(inMap, currentMap);
+            if (location < 0)
+            {
+                await SayOK("我好像不是和你在一个合适的地点见面……如果你想体验马来西亚之旅，可以到马来西亚去找我。");
+                return;
+            }
+
+            if (currentMap == 550000000)
+            {
+                var savedLoc = getPlayer().PeekSavedLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
+                toMap[1][1] = savedLoc != -1 ? savedLoc : 541000000;
+            }
+
+            var text = startedTravel
+                ? "嘿，我是#p9201135#，是#r马来西亚#k的导游。因为你没有在我们合作伙伴#b枫叶旅行社#k注册我们的特别旅行套餐，所以乘车的价格会贵很多。那么，你现在想乘车吗？\n\n"
+                : "嘿，我是#p9201135#，是你#r马来西亚#k的导游。你想去哪里旅行？\n\n";
+
+            var destinations = toMap[location];
+            var costs = cost[location];
+            var portals = toMapSp[location];
+
+            var options = new Dictionary<int, string>();
+            for (int i = 0; i < destinations.Length; i++)
+            {
+                var costStr = costs[i] > 0 ? $"({costs[i]} 金币)" : "";
+                options.Add(i, $"#m{destinations[i]}# {costStr}");
+            }
+
+            var sel = await AskMenu(text, options);
+            var travelCost = costs[sel];
+            var travelMap = destinations[sel];
+            var travelSp = portals[sel];
+
+            if (travelCost > 0)
+            {
+                if (await AskYesNo($"您想前往#b#m{travelMap}##k吗？前往#b#m{travelMap}##k需要花费#r{numberWithCommas(travelCost)}金币#k。您现在要前往吗？"))
+                {
+                    if (getMeso() < travelCost)
+                    {
+                        await SayNext("你似乎没有足够的金币。");
+                    }
+                    else
+                    {
+                        await gainMeso(-travelCost);
+                        if (startedTravel)
+                        {
+                            getPlayer().SaveLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
+                        }
+                        await warp(travelMap, travelSp);
+                    }
+                }
+                else
+                {
+                    await SayNext("如果你需要搭车，你知道该来找我了！");
+                }
+            }
+            else
+            {
+                var savedLoc = getPlayer().GetSavedLocation(Shared.MapObjects.SavedLocationType.WORLDTOUR);
+                await warp(savedLoc != -1 ? savedLoc : toMap[1][1], travelSp);
+            }
         }
 
     }

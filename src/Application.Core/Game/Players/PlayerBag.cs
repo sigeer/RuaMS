@@ -164,7 +164,7 @@ namespace Application.Core.Game.Players
         {
             var inv = this[invType];
 
-            List<ItemRemovedRecord> modifiedItems = [];
+            List<(int ItemId, int RemovedCount)> modifiedItems = [];
             List<IInventoryOperationCommand> ops = [];
 
             foreach (var p in inv.LoadAllItem())
@@ -181,7 +181,7 @@ namespace Application.Core.Game.Players
                         ops.Add(removeRes);
 
                         toRemoveCount -= removedCount;
-                        modifiedItems.Add(new ItemRemovedRecord(p.Item.getItemId(), removedCount));
+                        modifiedItems.Add(new (p.Item.getItemId(), removedCount));
                     }
                 }
             }

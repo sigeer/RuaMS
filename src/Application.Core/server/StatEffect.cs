@@ -85,7 +85,7 @@ public class StatEffect
 
     public List<ScopedEffect> ScopedEffects { get; } = [];
     public int Prob { get; private set; }
-    public char? DefenseAtt { get; private set; }
+    public char DefenseAttChar { get; private set; }
     public Disease? DefenseState { get; private set; }
     public char DefenseStateChar { get; private set; }
 
@@ -132,22 +132,6 @@ public class StatEffect
         if (val != 0)
         {
             list.Add(new(buffstat, val));
-        }
-    }
-
-    private static byte GetMapProtection(int sourceid)
-    {
-        if (sourceid == ItemId.RED_BEAN_PORRIDGE || sourceid == ItemId.SOFT_WHITE_BUN)
-        {
-            return 1;   //elnath cold
-        }
-        else if (sourceid == ItemId.AIR_BUBBLE || sourceid == 2022187)
-        {
-            return 2;   //aqua road underwater
-        }
-        else
-        {
-            return 0;
         }
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
@@ -281,7 +265,7 @@ public class StatEffect
 
                 if (!string.IsNullOrEmpty(mobCard.DefenseAtt))
                 {
-                    DefenseAtt = mobCard.DefenseAtt[0];
+                    DefenseAttChar = mobCard.DefenseAtt[0];
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_ATT, mobCard.Prob);
                 }
 
@@ -302,7 +286,6 @@ public class StatEffect
             if (template is IItemStatEffectMesoUp mesoUp && mesoUp.MesoUp)
             {
                 Prob = mesoUp.Prob;
-                // 为什么是4？
                 // 改成prob，当存在多个有效buff时，取用倍率最高的
                 addBuffStatPairToListIfNotZero(statups, BuffStat.MESO_UP_BY_ITEM, mesoUp.Prob);
             }
@@ -316,7 +299,7 @@ public class StatEffect
 
         if (template is IStatEffectMapProtection mapProtect && mapProtect.Thaw != 0)
         {
-            // 10. 水下保护，-6. 寒冷保护，直接把Thaw的值写进value是否会有问题？
+            // 直接把Thaw的值写进value是否会有问题？
             addBuffStatPairToListIfNotZero(statups, BuffStat.THAW, mapProtect.Thaw);
         }
 
@@ -874,6 +857,11 @@ public class StatEffect
         {
             await applyto.SendPacket(PacketCreator.enableActions());
             return false;
+        }
+
+        if (EffectTemplate is IStatEffectExpInc expInc && expInc.ExpInc > 0)
+        {
+            await applyto.gainExp(expInc.ExpInc);
         }
 
         if (EffectTemplate is TownScrollItemTemplate townScroll)

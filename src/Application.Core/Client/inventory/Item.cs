@@ -238,11 +238,17 @@ public class Item : IComparable<Item>
         return typeTag * 10000 + 1000 - bulletItemTemplate.IncPAD;
     }
 
-    public virtual bool CanStack(Item anotherItem)
+    /// <summary>
+    /// 可以堆叠
+    /// </summary>
+    /// <param name="anotherItem"></param>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    public virtual bool CanStack(Item anotherItem, Player chr)
     {
         return getItemId() == anotherItem.getItemId()
             && !ItemConstants.isRechargeable(getItemId())
-            && getQuantity() < SourceTemplate.SlotMax
+            && getQuantity() < ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId())
             && getOwner() == anotherItem.getOwner()
             && getFlag() == anotherItem.getFlag();
     }

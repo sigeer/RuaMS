@@ -36,7 +36,7 @@ namespace Application.Plugin.Script.Events
                 return;
             }
 
-            eim.Properties["Current"] = curIdx.ToString();
+            eim.setIntProperty("Current", curIdx);
             await chr.changeMap(Transportings[curIdx], 0);
             // chr.sendPacket(PacketCreator.earnTitleMessage("下一站停靠 " + (myRide == 0 ? "废都广场" : "废弃都市") + " 站。请走左侧门。"));
         }
@@ -45,17 +45,15 @@ namespace Application.Plugin.Script.Events
         {
             if (!Transportings.Contains(mapid))
             {
-                await End(eim);
+                await End(eim, TerminationReason.Failure);
             }
         }
 
         public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
-            if (int.TryParse(eim.Properties.GetValueOrDefault("Current"), out var curIdx))
-            {
-                var map =  await eim.getMapInstance(Transportings[curIdx]);
-                await map.warpEveryone(Stations[1 - curIdx], 0);
-            }
+            var curIdx = eim.getIntProperty("Current");
+            var map = await eim.getMapInstance(Transportings[curIdx]);
+            await map.warpEveryone(Stations[1 - curIdx], 0);
         }
 
         public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)

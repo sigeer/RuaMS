@@ -230,6 +230,7 @@ namespace Application.Core.Channel.Services
                     CashItemId = cItem.ItemID,
                     CashItemSn = cItem.CashItemSN,
                 });
+
                 if (data.Code != 0)
                 {
                     await chr.SendPacket(PacketCreator.showCashShopMessage((byte)data.Code));
@@ -267,8 +268,6 @@ namespace Application.Core.Channel.Services
                     foreach (var item in cashPackage)
                     {
                         chr.getCashShop().addToInventory(item);
-
-                        await chr.SendPacket(PacketCreator.showBoughtCashItem(item, chr.Client.AccountId));
                     }
                     await chr.SendPacket(PacketCreator.showBoughtCashPackage(cashPackage, chr.Client.AccountId));
                 }
@@ -282,6 +281,8 @@ namespace Application.Core.Channel.Services
                 }
 
             }
+
+            await chr.SendPacket(PacketCreator.showCash(chr));
         }
 
         public async Task BuyCashItemForGift(Player chr, int cashType, CashCommodityTemplate cItem, string toName, string message, bool createRing = false)
@@ -393,7 +394,7 @@ namespace Application.Core.Channel.Services
                             }
                             else if (quantity < short.MinValue)
                             {
-                                qty = short.MinValue;
+                                qty = 1;
                             }
                             else
                             {

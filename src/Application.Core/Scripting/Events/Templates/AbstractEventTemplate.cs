@@ -131,7 +131,7 @@ namespace Application.Core.scripting.Events.Templates
         /// 结束FB
         /// </summary>
         /// <param name="eim"></param>
-        protected virtual async Task End(AbstractEventInstanceManager eim)
+        protected virtual async Task End(AbstractEventInstanceManager eim, TerminationReason reason)
         {
             await eim.DisposeAsync();
         }
@@ -139,7 +139,7 @@ namespace Application.Core.scripting.Events.Templates
 
         public virtual async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
-            await End(eim);
+            await End(eim, TerminationReason.Timeout);
         }
 
         public virtual async Task OnPlayerRegister(AbstractEventInstanceManager eim, Player chr)
@@ -193,7 +193,7 @@ namespace Application.Core.scripting.Events.Templates
                 if (IsEventTeamLackingNow(eim, true, player))
                 {
                     await eim.unregisterPlayer(player);
-                    await End(eim);
+                    await End(eim, TerminationReason.MemberCount);
                 }
                 else
                 {
@@ -225,7 +225,7 @@ namespace Application.Core.scripting.Events.Templates
             if (IsEventTeamLackingNow(eim, true, player))
             {
                 await eim.unregisterPlayer(player);
-                await End(eim);
+                await End(eim, TerminationReason.MemberCount);
             }
             else
             {
@@ -238,7 +238,7 @@ namespace Application.Core.scripting.Events.Templates
             var mapid = leader.getMapId();
             if (!eim.isEventCleared() && (!InInstanceMap(mapid)))
             {
-                await End(eim);
+                await End(eim, TerminationReason.MemberCount);
             }
         }
 
@@ -246,7 +246,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             if (IsEventTeamLackingNow(eim, false, player))
             {
-                await End(eim);
+                await End(eim, TerminationReason.MemberCount);
             }
             else
             {
@@ -261,7 +261,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             if (!eim.isEventCleared())
             {
-                await End(eim);
+                await End(eim, TerminationReason.MemberCount);
             }
         }
 
@@ -270,7 +270,7 @@ namespace Application.Core.scripting.Events.Templates
             if (IsEventTeamLackingNow(eim, true, player))
             {
                 await eim.unregisterPlayer(player);
-                await End(eim);
+                await End(eim, TerminationReason.MemberCount);
             }
             else
             {

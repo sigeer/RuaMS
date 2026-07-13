@@ -109,10 +109,10 @@ namespace Application.Plugin.Script.Events
         public HashSet<int> GetStage(AbstractEventInstanceManager eim, IMap map)
         {
             return eim
-                .Properties.GetOrAdd(
+                .Props.GetOrAdd(
                     $"stg{map.Id}Property",
                     () => string.Join(',', Randomizer.Take(3, map.getAreas().Count))
-                )
+                ).ToString()!
                 .Split(',')
                 .Select(int.Parse)
                 .ToHashSet();

@@ -1701,7 +1701,6 @@ namespace Application.Plugin.Script.Quest
         // Quest: 4659 
         public async Task q4659e()
         {
-            // TODO
             if (!await CanCompleteQuest())
             {
                 await SayOK("需要的材料都拿来了吗？需要1个#t5380000#和50个#t4000111#。");

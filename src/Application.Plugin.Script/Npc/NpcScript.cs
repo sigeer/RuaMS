@@ -7,6 +7,7 @@ using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
+using Application.Shared.Events;
 using Application.Shared.GameProps;
 using Application.Shared.MapObjects;
 using Application.Shared.Quest;
@@ -3602,6 +3603,27 @@ namespace Application.Plugin.Script.Npc
             }
         }
 
+        // Npc: 2093004 — Cabin Assistant (Herb Town)
+        public async Task aqua_taxi2()
+        {
+            if (await AskYesNo("你现在要移动到 #b#m230000000##k 吗？价格是 10000 金币。"))
+            {
+                if (getMeso() < 10000)
+                {
+                    await SayOK("我认为你没有足够的钱……");
+                }
+                else
+                {
+                    await gainMeso(-10000);
+                    await warp(230000000);
+                }
+            }
+            else
+            {
+                await SayNext("嗯...现在太忙了？如果你想做的话，回来找我吧。");
+            }
+        }
+
 
         // Npc: 2060100 
         public async Task s4common2()
@@ -4022,9 +4044,9 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 2103013 
-        public Task dooat()
+        public async Task dooat()
         {
-            throw new NotImplementedException();
+            await SayOK("Pyramid PQ is currently unavailable.");
         }
 
 
@@ -5195,10 +5217,152 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9120201 
-        public Task s_dungeon()
+        public async Task s_dungeon()
         {
-            // TODO
-            return Task.CompletedTask;
+            var exped = ExpeditionType.SHOWA;
+            var expedName = "Showa Gang";
+            var expedBoss = "The Boss";
+            var expedMap = "Nightmarish Last Days";
+            var expedItem = 4000138;
+
+            var player = getPlayer();
+            var expedition = getExpedition(exped);
+            var em = getEventManager("ShowaBattle");
+
+            if (player.getLevel() < exped.getMinLevel() || player.getLevel() > exped.getMaxLevel())
+            {
+                await SayOK("您不符合与" + expedBoss + "战斗的条件！");
+                return;
+            }
+
+            if (expedition == null)
+            {
+                var sel = await AskMenu("#e#b<远征：" + expedName + ">\r\n#k#n" + (em?.Template?.GetRequirementDescription(c) ?? "") + "\r\n\r\n你想组建一个队伍来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                if (sel == 1)
+                {
+                    expedition = getExpedition(exped);
+                    if (expedition != null)
+                    {
+                        await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
+                        return;
+                    }
+
+                    var res = await createExpedition(exped);
+                    if (res == 0)
+                        await SayOK("#r" + expedBoss + " 远征#k 已经创建。\r\n\r\n再次与我交谈，查看当前队伍，或开始战斗！");
+                    else if (res > 0)
+                        await SayOK("抱歉，您已经达到了此次远征的尝试配额！请另选他日再试……");
+                    else
+                        await SayOK("在开始远征时发生了意外错误，请稍后重试。");
+                }
+                else
+                {
+                    await SayOK("当然，并非每个人都能挑战" + expedBoss + "。");
+                }
+            }
+            else if (expedition.isLeader(player))
+            {
+                if (expedition.isInProgress())
+                {
+                    await SayOK("你的探险已经在进行中，对于那些仍在战斗中的人，让我们为那些勇敢的灵魂祈祷吧。");
+                }
+                else
+                {
+                    var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
+                    var sel = await AskMenu(list);
+
+                    if (sel == 1)
+                    {
+                        var expedMembers = expedition.getMemberList();
+                        var size = expedMembers.Count;
+                        if (size == 1)
+                        {
+                            await SayOK("你是探险队中唯一的成员。");
+                            return;
+                        }
+
+                        var text = "以下成员组成了你的探险队（点击成员名字可以将其踢出探险队）：\r\n";
+                        text += "\r\n\t\t1." + expedition.getLeader().getName();
+                        for (var i = 1; i < size; i++)
+                        {
+                            text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
+                        }
+
+                        var kickSel = await AskMenu(text);
+                        if (kickSel > 0)
+                        {
+                            var banned = expedMembers[kickSel - 1];
+                            await expedition.ban(banned);
+                            await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
+                        }
+                    }
+                    else if (sel == 2)
+                    {
+                        if (!haveItem(expedItem))
+                        {
+                            await SayOK("作为远征队领袖，你必须在你的物品栏中拥有一件#b#t" + expedItem + "##k，以对抗" + expedBoss + "！");
+                            return;
+                        }
+
+                        var min = exped.getMinSize();
+                        var size = expedition.getMemberList().Count;
+                        if (size < min)
+                        {
+                            await SayOK("你的远征队至少需要有" + min + "名玩家注册。");
+                            return;
+                        }
+
+                        await SayOK("探险队将开始，现在将由护送你前往 #b" + expedMap + "#k。");
+
+                        // TODO: Start the Showa battle using C# expedition API
+                        // JS uses: em.StartExpeditionInstance(expedition) - not available in C#
+                    }
+                    else if (sel == 3)
+                    {
+                        await player.getMap().LightBlue(expedition.getLeader().getName() + "探险结束了。");
+                        await expedition.dispose(true);
+                        await SayOK("这次探险已经结束。有时候最好的策略就是逃跑。");
+                    }
+                }
+            }
+            else if (expedition.isRegistering())
+            {
+                if (expedition.contains(player))
+                {
+                    await SayOK("你已经注册了这次远征。请等待 #r" + expedition.getLeader().getName() + "#k 开始。");
+                }
+                else
+                {
+                    var result = await expedition.addMember(player);
+                    await SayOK(result);
+                }
+            }
+            else if (expedition.isInProgress())
+            {
+                if (expedition.contains(player))
+                {
+                    if (em != null)
+                    {
+                        var eim = em.getInstance(expedName + player.getClient().getChannel());
+                        if (eim != null && eim.getIntProperty("canJoin") == 1)
+                        {
+                            await eim.registerPlayer(player);
+                        }
+                        else
+                        {
+                            await SayOK("你的远征队已经开始对抗" + expedBoss + "的战斗。让我们为这些勇敢的灵魂祈祷。");
+                        }
+                    }
+                    else
+                    {
+                        await SayOK("无法找到战斗实例。");
+                    }
+                }
+                else
+                {
+                    await SayOK("另一支探险队已经主动挑战了" + expedBoss + "，让我们为这些勇敢的灵魂祈祷吧。");
+                }
+            }
         }
 
 
@@ -5868,16 +6032,55 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9220019 
-        public Task guyfawkes_milla2()
+        public async Task guyfawkes_milla2()
         {
-            throw new NotImplementedException();
+            var mapId = getMapId();
+            if (mapId == 674030100)
+            {
+                await SayNext("嗨，我是 #p9220019#。");
+            }
+            else if (mapId == 674030300)
+            {
+                await SayNext("嗨，#h0#。这里是MV的宝藏房间。利用你在这里的时间做任何你想做的事情，实际上这里有很多东西等着你去发现。或者你可以使用这里的传送门 #rgo back#k 返回入口处。");
+            }
+            else
+            {
+                if (await AskYesNo("你确定要返回吗？现在返回意味着你要把你的伙伴们留在这里，你真的想这样做吗？"))
+                {
+                    await warp(674030100);
+                }
+            }
         }
 
 
         // Npc: 9220020 
-        public Task guyfawkes_ch2()
+        public async Task guyfawkes_ch2()
         {
-            throw new NotImplementedException();
+            if (!isEventLeader())
+            {
+                await SayNext("请让你们的队长和我交谈，以便得到进入下一阶段的进一步指示。");
+                return;
+            }
+
+            var eim = getEventInstance()!;
+            if (eim.getIntProperty("statusStg1") == 1)
+            {
+                await SayNext("穿过这条隧道进行Boss战。");
+            }
+            else
+            {
+                if (haveItem(4032118, 15))
+                {
+                    await gainItem(4032118, -15);
+                    eim.setIntProperty("statusStg1", 1);
+                    await eim.showClearEffect();
+                    await SayNext("你得到了这些信件，太棒了！现在，你可以通过这条隧道前往MV所在的房间。做好准备！");
+                }
+                else
+                {
+                    await SayNext("请把 #r15封秘密信#k 交给我。");
+                }
+            }
         }
 
 
@@ -6070,19 +6273,6 @@ namespace Application.Plugin.Script.Npc
             await SayOK("欢迎来到#b快乐小镇#k，年轻的旅行者。你有什么愿望吗？");
         }
 
-        // Npc: 9900000 
-        public Task levelUP()
-        {
-            throw new NotImplementedException();
-        }
-
-
-        // Npc: 9900001 
-        public Task levelUP2()
-        {
-            throw new NotImplementedException();
-        }
-
 
         // Npc: 9901000, 9901001, 9901002, 9901003, 9901004, 9901005, 9901006, 9901007, 9901008, 9901009, 9901010, 9901011 ...
         public Task rank_user()
@@ -6091,15 +6281,7 @@ namespace Application.Plugin.Script.Npc
             return Task.CompletedTask;
         }
 
-
-        // Npc: 9977777 
-        public Task rank_developer()
-        {
-            throw new NotImplementedException();
-        }
-
-        // Npc: 1012119 
-        public async Task EnterTranningMap(int start)
+        async Task EnterTranningMap(int start)
         {
             if (getLevel() >= 20)
             {
@@ -6255,6 +6437,13 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayOK("#r错误的密码！");
             }
+        }
+
+        // Npc: 2043000 — Papulatus Time Leap
+        public async Task s4time()
+        {
+            await SayNext("You don't belong to this world... Return now.");
+            await warp(220080000);
         }
     }
 }

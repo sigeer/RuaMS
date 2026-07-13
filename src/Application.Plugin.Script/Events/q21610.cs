@@ -18,7 +18,7 @@ namespace Application.Plugin.Script.Events
 
         public override async Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            await End(eim);
+            await End(eim, Core.scripting.Events.Abstraction.TerminationReason.Failure);
         }
     }
 }

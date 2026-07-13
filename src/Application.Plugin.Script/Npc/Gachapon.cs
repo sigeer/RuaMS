@@ -125,64 +125,57 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9050000, 9100107, 9110017, 9310023 
         public Task gachapon8()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050001, 9100108, 9100111, 9310024 
         public Task gachapon9()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050002, 9100109, 9310025 
         public Task gachapon10()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050003, 9100110, 9310026 
         public Task gachapon11()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050004, 9310027 
         public Task gachapon12()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050005, 9100112, 9270043, 9310028 
         public Task gachapon13()
         {
-            // TODO
-            return Task.CompletedTask;
+            // 9270043 (Pink Bean) uses 5451000 ticket; standard GachaponNormal uses 5220000
+            return GachaponNormal();
         }
 
 
         // Npc: 9050006, 9310029 
         public Task gachapon14()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
 
 
         // Npc: 9050007, 9310061 
         public Task gachapon15()
         {
-            // TODO
-            return Task.CompletedTask;
+            return GachaponNormal();
         }
         #endregion
     }
