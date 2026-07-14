@@ -77,6 +77,12 @@ public class LoginPasswordHandler : LoginHandlerBase
             }
         }
 
+        if (loginok == LoginResultCode.Fail_Count)
+        {
+            await c.SendPacket(LoginPacketCreator.GetTempBan(99, 0));
+            return;
+        }
+
         var banInfo = _server.AccountBanManager.GetAccountBanInfo(c.AccountId);
         if (banInfo != null)
         {

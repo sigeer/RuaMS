@@ -12,7 +12,7 @@ namespace Application.Shared.Login
         /// <summary>
         /// 使用外挂、修改器、作弊程序
         /// </summary>
-        HACK,
+        HACK = 1,
         /// <summary>
         /// 脚本
         /// </summary>

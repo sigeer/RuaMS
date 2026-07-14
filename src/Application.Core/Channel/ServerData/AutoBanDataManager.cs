@@ -63,7 +63,7 @@ namespace Application.Core.Channel.ServerData
         {
             if (YamlConfig.config.server.USE_AUTOBAN)
             {
-                await chr.autoban("Autobanned for (" + type.name() + " : " + value + ")");
+                await chr.Autoban("Autobanned for (" + type.name() + " : " + value + ")");
                 //chr.sendPolice("You will be disconnected for(" + this.name() + " : " + value + ")");
             }
         }
