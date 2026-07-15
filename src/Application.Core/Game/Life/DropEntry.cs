@@ -87,14 +87,15 @@ namespace Application.Core.Game.Life
             return mobPos + ((index % 2 == 0) ? (step * ((index + 1) / 2)) : -(step * (index / 2)));
         }
 
+        public const int MaxChance = 1000000;
         public bool CanDrop(int chance)
         {
-            return Randomizer.nextInt(1000000) < chance;
+            return Randomizer.nextInt(MaxChance) < chance;
         }
 
         public bool CanDrop()
         {
-            return Randomizer.nextInt(1000000) < Chance;
+            return Randomizer.nextInt(MaxChance) < Chance;
         }
 
         public static void ClassifyDropEntries(List<DropEntry> allData, out List<DropEntry> item, out List<DropEntry> visibleQuest, out List<DropEntry> otherQuest, Player chr)

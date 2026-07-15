@@ -48,6 +48,10 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
             // thanks Lame (Conrad) for noticing hidden characters controlling mobs
             await chr.getMap().ProcessMonster(async m =>
              {
+                 if (!m.IsVisibleForPlayer(chr))
+                 {
+                     return;
+                 }
                  // thanks BHB, IxianMace, Jefe for noticing several issues regarding mob statuses (such as freeze)
                  if (m.getSpawnEffect() == 0 || m.getHp() < m.getMaxHp())
                  {     // avoid effect-spawning mobs

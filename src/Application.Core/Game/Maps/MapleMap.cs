@@ -2794,7 +2794,7 @@ public class MapleMap : IMap, INamedInstance
             else
             {
                 // 没必要
-                // SetPlayerInvisibleObject(chr, o);
+                // await SetPlayerInvisibleObject(chr, o);
             }
         }
     }

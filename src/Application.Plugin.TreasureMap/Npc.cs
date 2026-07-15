@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Shared.Constants.Map;
 using Application.Utility;
 using Application.Utility.Extensions;
 using Application.Utility.Tasks;
@@ -15,27 +16,9 @@ namespace Application.Plugin.TreasureMap
         {
         }
 
-        static int[] Maps = [
-            100010000,
-            100020000,
+        static ConcurrentDictionary<int, int> _quests = [];
 
-            101010000,
-
-            101030000,
-            102010000,
-
-            102050000,
-            103010000,
-            ];
-        /// <summary>
-        /// level.45
-        /// </summary>
-        static int[] Mobs = [9400100];
-        const int TreasureMapItemId = 1;
-
-        ConcurrentDictionary<int, int> _quests = [];
-
-        public async Task getTreasureMap()
+        public async Task n1052103()
         {
             if (getLevel() < 30)
             {
@@ -43,14 +26,14 @@ namespace Application.Plugin.TreasureMap
                 return;
             }
 
-            if (c.CurrentServer.Id != 2)
+            if (c.CurrentServer.Id != Settings.ActiveChannel)
             {
-                await SayOK("只有频道2才有这个活动");
+                await SayOK($"只有#r频道{Settings.ActiveChannel}#k才有这个活动");
                 return;
             }
 
-            await AskMenu("", [
-                "打听消息",
+            await AskMenu($"最近有村民提到有流氓的消息，想不想听听？不过你要给我好处费哦，{Settings.QuestPrice}金币一条消息。", [
+                "听听无妨",
                 ]);
 
             if (_quests.TryGetValue(getPlayer().Id, out var map))
@@ -60,27 +43,29 @@ namespace Application.Plugin.TreasureMap
             }
             else
             {
-                if (getMeso() < 20000)
+                if (getMeso() < Settings.QuestPrice)
                 {
-                    await SayOK("");
+                    await SayOK("金币不足");
                     return;
                 }
 
-                await gainMeso(-20000);
+                await gainMeso(-Settings.QuestPrice);
 
-                var mapId = Randomizer.Select(Maps);
+                var mapId = Randomizer.Select(Settings.MobMaps);
                 var targetMap = await getMap(mapId);
 
                 var rndPos = targetMap.getMapArea().GetRandomPoint();
                 var pos = targetMap.getGroundBelow(rndPos);
 
-                var mobId = Randomizer.Select(Mobs);
+                var mobId = Randomizer.Select(Settings.Mobs);
                 var mobTemplate = LifeFactory.Instance.GetMonsterTrust(mobId);
 
                 var mob = await targetMap.spawnMonsterOnGroundBelow(mobTemplate, pos, m =>
                 {
-                    m.setOverrideStats(new OverrideMonsterStats());
-                    m.CustomeDrops = [DropEntry.MobDrop(m.getId(), TreasureMapItemId, 400_000, 1, 1, 0), DropEntry.MobDrop(m.getId(), 0, 1_000_000, 10000, 20000, 0)];
+                    m.CustomeDrops = [
+                        DropEntry.MobDrop(m.getId(), Settings.TreasureMapItemId, 300_000, 1, 1, 0), 
+                        DropEntry.MobDrop(m.getId(), 0, DropEntry.MaxChance, 2000, 8000, 0)
+                        ];
                     m.AllowedAttacker = [getPlayer().getObjectId()];
 
                     ScheduledFuture? scheduledFuture = null;

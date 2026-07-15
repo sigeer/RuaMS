@@ -10,6 +10,7 @@ namespace Application.Plugin.TreasureMap
 {
     public class TreasureMapService : PluginServiceBase , IScriptItemService, IScriptNpcService, IPluginMapObjectService
     {
+
         Dictionary<string, (Type ObjType, MethodInfo Method)> _itemScripts;
         Dictionary<string, (Type ObjType, MethodInfo Method)> _npcScripts;
         public Dictionary<string, (Type ObjType, MethodInfo Method)> ItemScripts => _itemScripts;
@@ -24,7 +25,7 @@ namespace Application.Plugin.TreasureMap
 
         public async Task OnMapObjectEnterField(IMap map, IMapObject mapObject)
         {
-            if (map.Id == MapId.KERNING_CITY && map.ChannelServer.Id == 2 && mapObject is Player chr)
+            if (map.Id == MapId.KERNING_CITY && map.ChannelServer.Id == Settings.ActiveChannel && mapObject is Player chr)
             {
                 await chr.SendPacket(PacketCreator.SetNPCScriptable([(1052103, "getTreasureMap")]));
             }
@@ -40,7 +41,7 @@ namespace Application.Plugin.TreasureMap
             _itemScripts.Clear();
             _npcScripts.Clear();
 
-            if (_node.Servers.TryGetValue(2, out var effectChannel))
+            if (_node.Servers.TryGetValue(Settings.ActiveChannel, out var effectChannel))
             {
                 await effectChannel.Send(async c =>
                 {
@@ -55,7 +56,7 @@ namespace Application.Plugin.TreasureMap
 
         public override async Task OnMounted()
         {
-            if (_node.Servers.TryGetValue(2, out  var effectChannel))
+            if (_node.Servers.TryGetValue(Settings.ActiveChannel, out  var effectChannel))
             {
                 await effectChannel.Send(async c =>
                 {

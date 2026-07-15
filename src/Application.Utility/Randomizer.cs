@@ -76,8 +76,19 @@ public class Randomizer
 
     public static TItem Select<TItem>(IEnumerable<TItem> list)
     {
-        var len = list.Count();
-        return list.ElementAt(nextInt(len));
+        if (list == null) throw new ArgumentNullException(nameof(list));
+
+        if (list is IList<TItem> listT)
+        {
+            if (listT.Count == 0)
+                throw new InvalidOperationException("集合不能为空");
+            return listT[Random.Shared.Next(listT.Count)];
+        }
+
+        var array = list.ToArray();
+        if (array.Length == 0)
+            throw new InvalidOperationException("集合不能为空");
+        return array[Random.Shared.Next(array.Length)];
     }
 
     /// <summary>
