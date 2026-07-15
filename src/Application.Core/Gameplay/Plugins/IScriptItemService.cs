@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Application.Core.Gameplay.Plugins
 {
     /// <summary>
@@ -5,6 +7,6 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptItemService : IPluginServiceBase
     {
-        Task ItemScript(IChannelClient c, int npcId, string scriptName);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> ItemScripts { get; }
     }
 }

@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Application.Core.Gameplay.Plugins
 {
     /// <summary>
@@ -5,7 +7,6 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptQuestService : IPluginServiceBase
     {
-        Task<bool> StartQuest(IChannelClient c, server.quest.Quest questObj, int npcId);
-        Task<bool> CompleteQuest(IChannelClient c, server.quest.Quest questObj, int npcId);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> QuestScripts { get; }
     }
 }

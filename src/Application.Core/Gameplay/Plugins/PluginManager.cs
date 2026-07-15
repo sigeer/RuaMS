@@ -2,7 +2,18 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Plugins;
+using Application.Core.scripting.Infrastructure;
+using Application.Core.scripting.item;
+using Application.Core.scripting.npc;
+using Application.Core.scripting.quest;
+using scripting.map;
+using scripting.portal;
+using scripting.reactor;
+using client.inventory;
+using scripting.npc;
+using scripting.quest;
 using server.maps;
+using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
@@ -219,7 +230,7 @@ namespace Application.Core.Gameplay.Plugins
         /// 异步调用服务（返回 bool）
         /// </summary>
         async Task<bool> InvokeBooleanServicesAsync<TService>(
-            Func<TService, Task<bool>> invoke,
+            Func<PluginContainer<PluginServiceBase>, TService, Task<bool>> invoke,
             IChannelClient client,
             Action<PluginContainer<PluginServiceBase>, Exception>? onError = null)
             where TService : class, IPluginServiceBase
@@ -236,7 +247,7 @@ namespace Application.Core.Gameplay.Plugins
                     {
                         using (container.Tracker.EnterRequest())
                         {
-                            if (await invoke(typed))
+                            if (await invoke(container, typed))
                                 return true;
                         }
                     }
@@ -359,10 +370,81 @@ namespace Application.Core.Gameplay.Plugins
         #endregion
 
         #region Script Service Methods
+
         public async Task<bool> StartNpcConversation(IChannelClient c, int npcId, NPC? npcObject, string? scriptName)
         {
             if (await InvokeBooleanServicesAsync<IScriptNpcService>(
-                    s => s.Start(c, npcId, npcObject, scriptName),
+                    async (container, s) =>
+                    {
+                        if (c.NPCConversationManager != null)
+                        {
+                            await c.OnlinedCharacter.Pink("卡对话了");
+                            return false;
+                        }
+
+                        if (string.IsNullOrEmpty(scriptName))
+                        {
+                            scriptName = $"n{npcId}";
+                        }
+
+                        if (!c.OnlinedCharacter.canClickNPC())
+                        {
+                            await c.OnlinedCharacter.Pink("对话太过频繁");
+                            return false;
+                        }
+
+                        if (!s.NpcScripts.TryGetValue(scriptName, out var p))
+                        {
+                            await c.OnlinedCharacter.Debug(5, $"不支持的脚本 {scriptName}");
+                            return false;
+                        }
+
+                        await using var talk = (NpcScriptBase)DynamicObjectFactory.Create<IChannelClient, int, NPC?>(p.ObjType, c, npcId, npcObject)!;
+                        try
+                        {
+                            if (npcObject != null && c.OnlinedCharacter.getEventInstance() != npcObject.getMap().getEventInstance())
+                            {
+                                throw new ConversationDiffInstanceException();
+                            }
+
+                            c.OnlinedCharacter.setClickedNPC();
+                            c.NPCConversationManager = talk;
+                            await (Task)p.Method.Invoke(talk, null)!;
+                            return true;
+                        }
+                        catch (ConversationInterruptException)
+                        {
+                            // 对话中断
+                            return true;
+                        }
+                        catch (ConversationDiffInstanceException)
+                        {
+                            if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                            {
+                                await talk.WarpOut();
+                            }
+
+                            container.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                            return true;
+                        }
+                        catch (ConversationDiffMapException)
+                        {
+                            await talk.SayOK(talk.GetDefault0());
+                            container.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                            return true;
+                        }
+                        catch (NotImplementedException)
+                        {
+                            await talk.SayOK($"NPC {npcObject?.getName() ?? npcId.ToString()} 对话未实现。");
+                            container.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                            return false;
+                        }
+                        catch (Exception)
+                        {
+
+                            throw;
+                        }
+                    },
                     c,
                     (cd, e) =>
                     {
@@ -374,65 +456,125 @@ namespace Application.Core.Gameplay.Plugins
 
             await c.SendPacket(PacketCreator.getNPCTalk(npcId, 0, c.CurrentCulture.GetNpcDefaultTalk(npcId, -1), "00 00", 0, 0));
             return false;
-
         }
 
-        public Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
+        public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
         {
-            if (isStart)
+            if (c.NPCConversationManager != null)
             {
-                return InvokeBooleanServicesAsync<IScriptQuestService>(
-                    s => s.StartQuest(c, questObj, npcId),
-                    c,
-                    (cd, e) => cd.Logger.Error(e, "Quest startscript error in: QuestId={QuestId}", questObj.getId()));
-            }
-            else
-            {
-                return InvokeBooleanServicesAsync<IScriptQuestService>(
-                    s => s.CompleteQuest(c, questObj, npcId),
-                    c,
-                    (cd, e) => cd.Logger.Error(e, "Quest endscript error in: QuestId={QuestId}", questObj.getId()));
+                await c.NPCConversationManager.Response(mode, type, selection, inputText);
             }
         }
 
-        public Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
+        public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
         {
-            return InvokePlayerServicesAsync<IScriptNpcService>(
-                s => s.Action(c, mode, type, selection, inputText),
+            return await InvokeBooleanServicesAsync<IScriptQuestService>(
+                async (container, s) =>
+                {
+                    if (c.NPCConversationManager != null)
+                    {
+                        await c.OnlinedCharacter.Pink("卡对话了");
+                        return false;
+                    }
+
+                    if (!c.OnlinedCharacter.canClickNPC())
+                    {
+                        await c.OnlinedCharacter.Pink("对话太过频繁");
+                        return false;
+                    }
+
+                    var scriptName = isStart ? questObj.GetStartScript() : questObj.GetEndScript();
+                    if (string.IsNullOrEmpty(scriptName))
+                    {
+                        throw new BusinessResException($"QuestId={questObj.getId()}客户端wz中包含了startScript/endScript节点，但是服务端没有");
+                    }
+
+                    if (!s.QuestScripts.TryGetValue(scriptName, out var p))
+                    {
+                        // 
+                        await c.OnlinedCharacter.Pink($"不支持的脚本 {scriptName}");
+                        return false;
+                    }
+
+                    await using var talk = (QuestScriptBase)DynamicObjectFactory.Create<IChannelClient, server.quest.Quest, int>(p.ObjType, c, questObj, npcId)!;
+                    try
+                    {
+                        c.OnlinedCharacter.setClickedNPC();
+                        c.NPCConversationManager = talk;
+                        await (Task)p.Method.Invoke(talk, null)!;
+                        return true;
+                    }
+                    catch (ConversationInterruptException)
+                    {
+                        // 对话中断
+                        return true;
+                    }
+                    catch (ConversationDiffInstanceException)
+                    {
+                        if (await talk.AskYesNo("你是怎么到这里来的？让我带你离开这里。"))
+                        {
+                            await talk.WarpOut();
+                        }
+
+                        container.Logger.Warning("不合法的对话（EIM不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                        return true;
+                    }
+                    catch (ConversationDiffMapException)
+                    {
+                        await talk.SayOK(talk.GetDefault0());
+                        container.Logger.Warning("不合法的对话（地图不同）：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                        return true;
+                    }
+                    catch (NotImplementedException)
+                    {
+                        await talk.SayOK($"任务 {c.CurrentCulture.GetQuestName(questObj.getId()) ?? questObj.getId().ToString()} 对话未实现。");
+                        container.Logger.Warning("不支持的脚本：NpcId = {NPCId}, Script = {ScriptName}", npcId, scriptName);
+                        return false;
+                    }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
+                },
                 c,
-                (cd, e) => cd.Logger.Error(e, "Npc script error more talk"));
+                (cd, e) =>
+                {
+                    cd.Logger.Error(e, "Quest endscript error in: QuestId={QuestId}", questObj.getId());
+                });
         }
 
         public async Task<bool> EnterPortal(IChannelClient c, Portal p)
         {
-            var containers = _pluginContainers.Values.ToArray();
-            foreach (var container in containers)
-            {
-                foreach (var service in container.PluginServices)
+            return await InvokeBooleanServicesAsync<IScriptPortalService>(
+                async (container, s) =>
                 {
-                    if (service is not IScriptPortalService typed)
-                        continue;
+                    if (!s.PortalScripts.TryGetValue(p.getScriptName()!, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"PortalScript: {p.getScriptName()}");
+                    }
 
-                    try
-                    {
-                        using (container.Tracker.EnterRequest())
-                        {
-                            return await typed.Enter(c, p);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        container.Logger.Error(ex, "Portal script error in: {ScriptName}", p.getScriptName());
-                    }
-                }
-            }
-            return false;
+                    var script = (PortalPlayerInteraction)DynamicObjectFactory.Create(entry.ObjType, c, p);
+                    return await (Task<bool>)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "Portal script error in: {ScriptName}", p.getScriptName()));
         }
 
-        public Task ItemScript(IChannelClient c, int npcId, string scriptName)
+        public Task ItemScript(IChannelClient c, Item item, int npcId, string scriptName)
         {
             return InvokePlayerServicesAsync<IScriptItemService>(
-                s => s.ItemScript(c, npcId, scriptName),
+                async s =>
+                {
+                    if (!s.ItemScripts.TryGetValue(scriptName, out var p))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {scriptName}");
+                    }
+
+                    await using var talk = (ItemScriptBase)DynamicObjectFactory.Create(p.ObjType, c, item, npcId);
+                    c.NPCConversationManager = talk;
+                    await(Task)p.Method.Invoke(talk, null)!;
+                },
                 c,
                 (cd, e) => cd.Logger.Error(e, "Item script error in: {ScriptName}", scriptName));
         }
@@ -440,7 +582,16 @@ namespace Application.Core.Gameplay.Plugins
         public async Task MapEnterScript(IChannelClient c, IMap map)
         {
             await InvokePlayerServicesAsync<IScriptMapService>(
-                s => s.MapEnter(c, map),
+                async s =>
+                {
+                    if (!s.MapEnterScripts.TryGetValue(map.SourceTemplate.OnUserEnter, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {map.SourceTemplate.OnUserEnter}");
+                    }
+
+                    var script = (MapScriptMethods)DynamicObjectFactory.Create(entry.ObjType, c, map);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
                 c,
                 (cd, e) => cd.Logger.Error(e, "Map script error in: {Map}(Enter)", map.Id));
         }
@@ -448,41 +599,86 @@ namespace Application.Core.Gameplay.Plugins
         public async Task MapFirstEnterScript(IChannelClient c, IMap map)
         {
             await InvokePlayerServicesAsync<IScriptMapService>(
-                 s => s.MapFirstEnter(c, map),
-                 c,
-                 (cd, e) => cd.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id));
+                async s =>
+                {
+                    if (!s.MapFirstEnterScripts.TryGetValue(map.SourceTemplate.OnFirstUserEnter, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {map.SourceTemplate.OnFirstUserEnter}");
+                    }
+
+                    var script = (MapScriptMethods)DynamicObjectFactory.Create(entry.ObjType, c, map);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "Map script error in: {Map}(FirstEnter)", map.Id));
         }
 
         internal async Task ReactorHit(IChannelClient c, Reactor reactor)
         {
             await InvokePlayerServicesAsync<IScriptReactorService>(
-                 s => s.ReactorHit(c, reactor),
-                 c,
-                 (cd, e) => cd.Logger.Error(e, "ReactorHit error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+                async s =>
+                {
+                    if (!s.ReactorHitScripts.TryGetValue(reactor.getStats().Action, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {reactor.getStats().Action}");
+                    }
+
+                    var script = (ReactorActionManager)DynamicObjectFactory.Create(entry.ObjType, c, reactor);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "ReactorHit error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
 
         internal async Task ReactorAct(IChannelClient c, Reactor reactor)
         {
             await InvokePlayerServicesAsync<IScriptReactorService>(
-                 s => s.ReactorAct(c, reactor),
-                 c,
-                 (cd, e) => cd.Logger.Error(e, "ReactorAct error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+                async s =>
+                {
+                    if (!s.ReactorActScripts.TryGetValue(reactor.getStats().Action, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {reactor.getStats().Action}");
+                    }
+
+                    var script = (ReactorActionManager)DynamicObjectFactory.Create(entry.ObjType, c, reactor);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "ReactorAct error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
 
         internal async Task ReactorTouch(IChannelClient c, Reactor reactor)
         {
             await InvokePlayerServicesAsync<IScriptReactorService>(
-                 s => s.ReactorTouch(c, reactor),
-                 c,
-                 (cd, e) => cd.Logger.Error(e, "ReactorTouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+                async s =>
+                {
+                    if (!s.ReactorTouchScripts.TryGetValue(reactor.getStats()!.Action, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {reactor.getStats().Action}");
+                    }
+
+                    var script = (ReactorActionManager)DynamicObjectFactory.Create(entry.ObjType, c, reactor);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "ReactorTouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
 
         internal async Task ReactorUntouch(IChannelClient c, Reactor reactor)
         {
             await InvokePlayerServicesAsync<IScriptReactorService>(
-                 s => s.ReactorUntouch(c, reactor),
-                 c,
-                 (cd, e) => cd.Logger.Error(e, "ReactorUntouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
+                async s =>
+                {
+                    if (!s.ReactorUntouchScripts.TryGetValue(reactor.getStats().Action, out var entry))
+                    {
+                        throw new BusinessScriptNotFoundException($"不支持的脚本 {reactor.getStats().Action}");
+                    }
+
+                    var script = (ReactorActionManager)DynamicObjectFactory.Create(entry.ObjType, c, reactor);
+                    await (Task)entry.Method.Invoke(script, null)!;
+                },
+                c,
+                (cd, e) => cd.Logger.Error(e, "ReactorUntouch error in: Map={Map}.Reactor={Reactor}", reactor.getMap().Id, reactor.getId()));
         }
         #endregion
 

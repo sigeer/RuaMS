@@ -62,7 +62,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         this.ScriptMeta = scriptName;
     }
 
-    public NPCConversationManager(IChannelClient c, int npc, ScriptMeta scriptName) : this(c, npc, -1, scriptName)
+    public NPCConversationManager(IChannelClient c, int npc) : this(c, npc, -1, null)
     {
 
     }

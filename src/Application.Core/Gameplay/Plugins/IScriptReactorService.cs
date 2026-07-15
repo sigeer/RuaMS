@@ -1,4 +1,4 @@
-using server.maps;
+using System.Reflection;
 
 namespace Application.Core.Gameplay.Plugins
 {
@@ -7,9 +7,9 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptReactorService : IPluginServiceBase
     {
-        Task ReactorHit(IChannelClient c, Reactor r);
-        Task ReactorAct(IChannelClient c, Reactor r);
-        Task ReactorTouch(IChannelClient c, Reactor r);
-        Task ReactorUntouch(IChannelClient c, Reactor r);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> ReactorHitScripts { get; }
+        Dictionary<string, (Type ObjType, MethodInfo Method)> ReactorActScripts { get; }
+        Dictionary<string, (Type ObjType, MethodInfo Method)> ReactorTouchScripts { get; }
+        Dictionary<string, (Type ObjType, MethodInfo Method)> ReactorUntouchScripts { get; }
     }
 }

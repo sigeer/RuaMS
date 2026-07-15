@@ -13,7 +13,7 @@ namespace Application.Core.scripting.npc
     }
     public class TempConversation : NPCConversationManager
     {
-        private TempConversation(IChannelClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc, null)
+        private TempConversation(IChannelClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc)
         {
         }
 

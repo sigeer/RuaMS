@@ -1,12 +1,13 @@
 using Application.Core.Client;
+using Application.Core.scripting.item;
 using Application.Utility.Extensions;
-using scripting.npc;
+using client.inventory;
 
 namespace Application.Plugin.Script
 {
-    internal class ItemScript : NPCConversationManager
+    internal class ItemScript : ItemScriptBase
     {
-        public ItemScript(IChannelClient c, int npcId) : base(c, npcId, -1, null)
+        public ItemScript(IChannelClient c, Item item, int npcId) : base(c, item, npcId)
         {
         }
 

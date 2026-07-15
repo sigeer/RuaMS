@@ -1,16 +1,15 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
+using Application.Core.scripting.npc;
 using Application.Shared.GameProps;
 using scripting.npc;
 
 namespace Application.Plugin.Script.Npc
 {
-    internal partial class NpcScript: NPCConversationManager
+    internal partial class NpcScript: NpcScriptBase
     {
-        NPC? _npcObj;
-        public NpcScript(IChannelClient c, int npc, NPC? npcObj) : base(c, npc, npcObj?.getObjectId() ?? -1, null)
+        public NpcScript(IChannelClient c, int npc, NPC? npcObj) : base(c, npc, npcObj)
         {
-            _npcObj = npcObj;
         }
 
         // Npc: 2103000
