@@ -36,12 +36,6 @@ public class ItemDropCommand : CommandBase
         }
 
         var item = ii.GenerateVirtualItemById(itemId, quantity);
-        if (item == null)
-        {
-            await player.Yellow(nameof(ClientMessage.ItemNotFound), itemId.ToString());
-            return;
-        }
-
         if (item is Pet pet)
         {
             pet.setExpiration(c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(quantity).ToUnixTimeMilliseconds());

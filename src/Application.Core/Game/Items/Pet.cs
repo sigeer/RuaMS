@@ -39,7 +39,7 @@ public class Pet : Item
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
     public bool Summoned => MapPet != null;
-    public MapPet? MapPet => PlayerInventory?.Owner?.GetPetById(PetId);
+    public MapPet? MapPet => PlayerInventory?.Owner?.GetPetById(UniqueId);
     public int PetAttribute { get; set; }
 
     public const int MaxFullness = 100;
@@ -48,17 +48,16 @@ public class Pet : Item
 
     public override PetItemTemplate SourceTemplate { get; }
 
-    public Pet(PetItemTemplate template, short position, long uniqueid) : base(template.TemplateId, position, 1)
+    public Pet(PetItemTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Pet);
-        this.PetId = uniqueid;
         Name = ItemInformationProvider.getInstance().getName(id) ?? "";
     }
 
     public override Item copy()
     {
-        var copyPet = new Pet(SourceTemplate, getPosition(), PetId);
+        var copyPet = new Pet(SourceTemplate, getPosition(), UniqueId);
         copyPet.Name = Name;
         copyPet.PetAttribute = PetAttribute;
         copyPet.Fullness = Fullness;
@@ -72,12 +71,12 @@ public class Pet : Item
 
     public long getUniqueId()
     {
-        return PetId;
+        return UniqueId;
     }
 
     public override long getCashId()
     {
-        return PetId;
+        return UniqueId;
     }
 
     public override sbyte getItemType()

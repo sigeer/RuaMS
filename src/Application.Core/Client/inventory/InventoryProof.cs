@@ -37,7 +37,7 @@ public class InventoryProof : Inventory
 
         foreach (Item it in inv.list())
         {
-            Item item = new Item(it.getItemId(), it.getPosition(), it.getQuantity());
+            Item item = it.copy();
             inventory[MapServerSlot(item.getPosition())] = item;
         }
     }

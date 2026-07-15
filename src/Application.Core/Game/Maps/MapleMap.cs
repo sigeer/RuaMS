@@ -1211,9 +1211,9 @@ public class MapleMap : IMap, INamedInstance
     }
 
     #region Objects:MapItem
-    public Task spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
+    public async Task spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, bool ffaDrop, bool playerDrop)
     {
-        return spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
+        await spawnItemDrop(dropper, owner, item, pos, (DropType)(ffaDrop ? 2 : 0), playerDrop);
     }
 
     private async Task spawnItemDrop(IMapObject dropper, Player owner, Item item, Point pos, DropType dropType, bool playerDrop)
@@ -1309,12 +1309,6 @@ public class MapleMap : IMap, INamedInstance
                 else
                 {
                     var idrop = ii.GenerateVirtualItemById(de.ItemId, (short)de.GetRandomCount(), true);
-                    if (idrop == null)
-                    {
-                        log.Warning("{Mob}尝试掉落不存在的物品：{ItemId}", dropper.GetName(), de.ItemId);
-                        continue;
-                    }
-
                     await spawnDrop(idrop, itemPos, dropper, chr, false, droptype, de.QuestId, dropDelay);
                     dIndex++;
                 }

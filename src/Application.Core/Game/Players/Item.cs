@@ -89,7 +89,7 @@ namespace Application.Core.Game.Players
 
         public bool canHold(int itemid, int quantity = 1)
         {
-            return Inventory.checkSpot(this, Item.CreateVirtualItem(itemid, (short)quantity));
+            return Inventory.checkSpot(this, ItemInformationProvider.getInstance().GenerateVirtualItemById(itemid, (short)quantity));
         }
 
         public bool canHoldUniques(List<int> itemids)
@@ -320,8 +320,6 @@ namespace Application.Core.Game.Players
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
 
                 item = ii.GenerateVirtualItemById(itemId, quantity);
-                if (item == null)
-                    return null;
 
                 if (item is Equip it)
                 {

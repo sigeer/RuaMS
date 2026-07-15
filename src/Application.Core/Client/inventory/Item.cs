@@ -36,7 +36,6 @@ public class Item : IComparable<Item>
     protected int sn;
     protected short position;
     protected short quantity;
-    public long PetId { get; set; } = -1;
 
     protected string owner = "";
     protected List<string> itemLog;
@@ -44,8 +43,14 @@ public class Item : IComparable<Item>
     protected long expiration = -1;
     protected string giftFrom = "";
 
+    public long UniqueId { get; private set; }
+    public string? Properties { get; set; }
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
+    /// <summary>
+    /// 不可叠放
+    /// </summary>
+    public bool CannotStack => SourceTemplate.SlotMax <= 1 || ItemConstants.isRechargeable(getItemId());
 
     AbstractItemTemplate? _sourceTemplate;
     public virtual AbstractItemTemplate SourceTemplate
@@ -58,7 +63,7 @@ public class Item : IComparable<Item>
         }
     }
     public AbstractInventory? PlayerInventory { get; set; }
-    public Item(int id, short position, short quantity)
+    public Item(int id, short position, short quantity, long uniqueId)
     {
         log = LogFactory.GetLogger(LogType.Item);
         this.id = id;
@@ -66,11 +71,12 @@ public class Item : IComparable<Item>
         this.quantity = quantity;
         this.itemLog = new();
         this.flag = 0;
+        UniqueId = uniqueId <= 0 ? Yitter.IdGenerator.YitIdHelper.NextId() : uniqueId;
     }
 
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity);
+        Item ret = new Item(id, position, quantity, CannotStack ? UniqueId : Yitter.IdGenerator.YitIdHelper.NextId());
         CopyItemProps(ret);
         return ret;
     }
@@ -87,17 +93,7 @@ public class Item : IComparable<Item>
         input.giftFrom = giftFrom;
         input.sn = sn;
         input.itemLog = new(itemLog);
-    }
-
-    /// <summary>
-    /// 创建一个还不存在的道具
-    /// </summary>
-    /// <param name="itemId"></param>
-    /// <param name="quantity"></param>
-    /// <returns></returns>
-    public static Item CreateVirtualItem(int itemId, short quantity)
-    {
-        return new Item(itemId, 0, quantity);
+        input.Properties = Properties;
     }
 
     public void setPosition(short position)
@@ -115,12 +111,12 @@ public class Item : IComparable<Item>
     {
         return id;
     }
-    long? tempCashId;
+
     public virtual long getCashId()
     {
         // 非Pet、Ring的一些普通现金道具需要cashid？数据库并没有存放，只是临时使用？
         //log.Debug("getCashId, PetId: {PetId}, RingId: {RingId}, {StactTrace}", PetId, (this as Equip)?.getRingId(), new StackTrace());
-        return tempCashId ??= Yitter.IdGenerator.YitIdHelper.NextId();
+        return UniqueId;
     }
 
     public short getPosition()
@@ -167,6 +163,21 @@ public class Item : IComparable<Item>
             return 1;
         }
         return 0;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Item item)
+        {
+            return false;
+        }
+
+        return UniqueId == item.UniqueId;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(UniqueId);
     }
 
     public override string ToString()

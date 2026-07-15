@@ -79,12 +79,6 @@ public class ItemCommand : CommandBase
 
 
         var item = ii.GenerateVirtualItemById(itemId, quantity);
-        if (item == null)
-        {
-            await player.Yellow(nameof(ClientMessage.ItemNotFound), itemId.ToString());
-            return;
-        }
-
         item.setExpiration(-1);
         if (item is Pet pet)
         {

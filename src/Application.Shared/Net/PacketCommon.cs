@@ -210,7 +210,7 @@ namespace Application.Shared.Net
             p.writeBool(isCash);
             if (isCash)
             {
-                p.writeLong(item.PetInfo != null ? item.PetInfo.Petid : (item.EquipInfo?.RingId ?? 0));
+                p.writeLong(item.UniqueId);
             }
             addExpirationTime(p, item.Expiration);
             if (item.PetInfo != null)

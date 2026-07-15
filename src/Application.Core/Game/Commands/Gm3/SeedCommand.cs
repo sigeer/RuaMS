@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Resources.Messages;
 using client.inventory;
 
@@ -33,7 +34,7 @@ public class SeedCommand : CommandBase
             ItemId.BROWN_PRIMROSE_SEED};
         for (int i = 0; i < pos.Length; i++)
         {
-            Item item = new Item(seed[i], 0, 1);
+            Item item = ItemInformationProvider.getInstance().GenerateVirtualItemById(seed[i],1);
             await player.getMap().spawnItemDrop(player, player, item, pos[i], false, true);
             try
             {

@@ -323,9 +323,10 @@ namespace Application.Core.Login.Datas
 
             var chrModel = _mapper.Map<CharacterModel>(characterEntity);
 
-            var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId && x.Petid > -1)
-                              let excluded = dbContext.Petignores.Where(x => x.Petid == a.Petid).Select(x => x.Itemid).ToArray()
-                              select new PetIgnoreModel { PetId = a.Petid, ExcludedItems = excluded }).ToArray();
+            var petIgnores = (from a in dbContext.Inventoryitems.Where(x => x.Characterid == characterId)
+                              join b in dbContext.Pets on a.UniqueId equals b.Petid
+                              let excluded = dbContext.Petignores.Where(x => x.Petid == b.Petid).Select(x => x.Itemid).ToArray()
+                              select new PetIgnoreModel { PetId = a.UniqueId, ExcludedItems = excluded }).ToArray();
 
             var invItems = _masterServer.InventoryManager.LoadItems(dbContext, false, characterEntity.Id, ItemType.Inventory).ToArray();
 

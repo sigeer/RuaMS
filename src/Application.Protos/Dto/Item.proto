@@ -21,4 +21,6 @@ message ItemDto {
   google.protobuf.StringValue giftFrom = 12;
   EquipDto equipInfo = 13;
   PetDto petInfo = 14;
+  int64 uniqueId = 15;
+  google.protobuf.StringValue properties = 16;
 }
