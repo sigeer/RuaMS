@@ -648,9 +648,6 @@ namespace Application.Core.Login
                         (int)BanLevel.All,
                         (int)BanReason.HACK,
                         message.Reason);
-
-                    await DropWorldMessage((int)NoticeType.LightBlue, nameof(SystemMessage.Ban_NoticeGM), true);
-                    return;
                 }
 
                 if (victim.Channel <= 0)

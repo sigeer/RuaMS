@@ -57,7 +57,7 @@ public class AutobanManager
 
             if (points[fac] >= fac.getMaximum())
             {
-                await chr.autoban(reason);
+                await chr.Autoban(reason);
             }
         }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG)
@@ -80,7 +80,7 @@ public class AutobanManager
         }
         if (samemisscount > 4)
         {
-            await chr.autoban("You will be disconnected for miss godmode.");
+            await chr.Autoban("You will be disconnected for miss godmode.");
         }
         //chr.autoban("Autobanned for : " + misses + " Miss godmode", 1);
         else if (samemisscount > 0)

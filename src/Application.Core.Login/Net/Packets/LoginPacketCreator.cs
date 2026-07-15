@@ -201,31 +201,32 @@ namespace Application.Core.Login.Net.Packets
                 throw new BusinessException("未获取到账户信息");
 
             OutPacket p = OutPacket.create(SendOpcode.LOGIN_STATUS);
-            p.writeInt(0);
-            p.writeShort(0);
-            p.writeInt(c.AccountEntity.Id);
-            p.writeByte(c.AccountEntity.Gender);
+            p.writeInt(0);          // Error code (0 = success)
+            p.writeShort(0);         // Padding
+            p.writeInt(c.AccountEntity.Id);     // Account ID
+            p.writeByte(c.AccountEntity.Gender); // Gender (0=Male, 1=Female)
 
             bool canFly = c.AccountEntity.CanFly;
-            p.writeBool((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.IsGmAccount());    // thanks Steve(kaito1410) for pointing the GM account bool here
-            p.writeByte(((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.IsGmAccount()) ? 0x80 : 0);  // Admin Byte. 0x80,0x40,0x20.. Rubbish.
-            p.writeByte(0); // Country Code.
+            bool isAdmin = (YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.IsGmAccount();
+            p.writeBool(isAdmin);   // Is GM account (offset 11, determines client-side admin access)
+            p.writeByte(isAdmin ? 0x80 : 0);  // Admin privilege byte (offset 12: 0x80=SuperGM, 0x40=GM, 0x20=Tester, 0=Normal)
+            p.writeByte(0);          // Country code (0 = Global)
 
-            p.writeString(c.AccountEntity.Name);
-            p.writeByte(0);
+            p.writeString(c.AccountEntity.Name); // Account name
+            p.writeByte(0);          // Padding/null terminator
 
-            p.writeByte(0); // IsQuietBan
-            p.writeLong(0);//IsQuietBanTimeStamp
-            p.writeLong(0); //CreationTimeStamp
+            p.writeByte(0);          // IsQuietBan (0 = not banned) 能进入游戏，但是禁止使用某些功能（聊天/交易）
+            p.writeLong(0);          // QuietBan timestamp
+            p.writeLong(0);          // Account creation timestamp
 
-            p.writeInt(1); // 1: Remove the "Select the world you want to play in"
+            p.writeInt(1);           // 1 = Remove world select screen
 
-            p.writeByte(YamlConfig.config.server.ENABLE_PIN && !c.CanBypassPin() ? 0 : 1); // 0 = Pin-System Enabled, 1 = Disabled
-            p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.CanBypassPin() ? (string.IsNullOrEmpty(c.AccountEntity.Pin) ? 0 : 1) : 2); // 0 = Register PIC, 1 = Ask for PIC, 2 = Disabled
+            p.writeByte(YamlConfig.config.server.ENABLE_PIN && !c.CanBypassPin() ? 0 : 1); // PIN system: 0=Enabled, 1=Disabled
+            p.writeByte(YamlConfig.config.server.ENABLE_PIC && !c.CanBypassPin()
+                ? (string.IsNullOrEmpty(c.AccountEntity.Pin) ? 0 : 1) : 2); // PIC status: 0=Register, 1=Ask, 2=Disabled
 
             return p;
         }
-
         public static Packet WrongPic()
         {
             OutPacket p = OutPacket.create(SendOpcode.CHECK_SPW_RESULT);

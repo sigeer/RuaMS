@@ -28,7 +28,7 @@ public class BanCommand : CommandBase
             await TempConversation.CreateScope(c, async ctx =>
             {
                 var reason = await ctx.AskText(player.GetMessageByKey(nameof(ClientMessage.BanReason)));
-                await _adminService.Ban(c.OnlinedCharacter.Id, paramsValue[0], (int)BanReason.GM, reason, day);
+                await _adminService.Ban(c.OnlinedCharacter.Id, paramsValue[0], BanReason.GM, reason, day);
             });
         }
         else

@@ -3621,14 +3621,14 @@ public partial class Player
         return AreaInfo;
     }
 
-    public async Task autoban(string reason)
+    public async Task Autoban(string reason)
     {
         if (this.isGM() || this.isBanned())
         {  // thanks RedHat for noticing GM's being able to get banned
             return;
         }
 
-        await Client.CurrentServer.NodeService.AdminService.AutoBan(this, (int)BanReason.HACK, reason, -1);
+        await Client.CurrentServer.NodeService.AdminService.AutoBan(this, BanReason.HACK, reason, -1);
     }
 
 

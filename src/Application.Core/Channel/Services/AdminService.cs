@@ -19,26 +19,18 @@ namespace Application.Core.Channel.Services
             _mapper = mapper;
         }
 
-        public async Task AutoBan(Player chr, int reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
+        public Task AutoBan(Player chr, BanReason reason, string reasonDesc, int days, BanLevel level = BanLevel.All)
         {
-            await _transport.Ban(new SystemProto.BanRequest
-            {
-                OperatorId = ServerConstants.SystemCId,
-                Victim = chr.Name,
-                Reason = reason,
-                ReasonDesc = "[AutoBan] " + reasonDesc,
-                BanLevel = (int)level,
-                Days = days
-            });
+            return Ban(ServerConstants.SystemCId, chr.Name, reason, reasonDesc, days, level);
         }
 
-        public async Task Ban(int operatorId, string victim, int reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
+        public async Task Ban(int operatorId, string victim, BanReason reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
             await _transport.Ban(new SystemProto.BanRequest
             {
                 OperatorId = operatorId,
                 Victim = victim,
-                Reason = reason,
+                Reason = (int)reason,
                 ReasonDesc = reasonDesc,
                 BanLevel = (int)level,
                 Days = days

@@ -25,6 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Shared.Login;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using server.life;
@@ -94,7 +95,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                 int type = p.readByte(); //reason
                 int duration = p.readInt();
                 string description = p.readString();
-                await _adminService.Ban(c.OnlinedCharacter.Id, victim, type, description, duration);
+                await _adminService.Ban(c.OnlinedCharacter.Id, victim, (BanReason)type, description, duration);
                 break;
             case 0x10: // /h, information added by vana -- <and tele mode f1> ... hide ofcourse
                 await c.OnlinedCharacter.Hide(p.readByte() == 1);
