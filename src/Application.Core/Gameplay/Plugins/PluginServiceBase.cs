@@ -6,14 +6,20 @@ namespace Application.Core.Gameplay.Plugins
     {
         readonly ILogger _logger;
         protected WorldChannelServer _node;
+        protected string _pluginName;
 
         public PluginServiceBase(WorldChannelServer node, string pluginName)
         {
             _node = node;
+            _pluginName = pluginName;
             _logger = LogFactory.GetLogger($"Plugin/{pluginName}");
         }
         public abstract ValueTask DisposeAsync();
-        public abstract Task OnMounted();
+        public virtual Task OnMounted()
+        {
+            _logger.Information("{Plugin} 已加载", _pluginName);
+            return Task.CompletedTask;
+        }
 
         protected void LogInfo(string p, params object?[] t)
         {

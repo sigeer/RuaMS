@@ -147,7 +147,7 @@ namespace Application.Core.Game.Maps
         Task spawnMonster(Monster monster, int difficulty = 1, bool isPq = false);
         Task spawnMonsterOnGroundBelow(int id, int x, int y);
         Monster CreateMonster(MobTemplate mobData, Point pos);
-        Task spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
+        Task<Monster> spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null);
         Task spawnDojoMonster(MobTemplate monster);
         Task spawnAllMonsterIdFromMapSpawnList(int id, int difficulty = 1, bool isPq = false);
         Task spawnAllMonstersFromMapSpawnList(int difficulty = 1, bool isPq = false);

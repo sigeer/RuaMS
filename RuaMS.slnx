@@ -75,6 +75,7 @@
   <Folder Name="/src/Plugins/">
     <Project Path="src/Application.Plugin.FakeCharacter/Application.Plugin.FakeCharacter.csproj" Id="8b49a120-0375-414e-ab81-5e427a3414ba" />
     <Project Path="src/Application.Plugin.Script/Application.Plugin.Script.csproj" />
+    <Project Path="src/Application.Plugin.TreasureMap/Application.Plugin.TreasureMap.csproj" Id="db857b2b-1737-42c7-b9f7-8a3aba280868" />
   </Folder>
   <Folder Name="/src/srcItems/">
     <File Path="src/Directory.Build.props" />
@@ -82,8 +83,8 @@
   </Folder>
   <Folder Name="/src/Wz/">
     <Project Path="src/Application.Templates.Reader.Img/Application.Templates.Reader.Img.csproj" Id="211e2c2e-3872-4dbc-a56b-5b6f482752c1" />
-    <Project Path="src/Application.Templates.Reader/Application.Templates.Reader.csproj" />
     <Project Path="src/Application.Templates.Reader.Xml/Application.Templates.Reader.Xml.csproj" />
+    <Project Path="src/Application.Templates.Reader/Application.Templates.Reader.csproj" />
     <Project Path="src/Application.Templates/Application.Templates.csproj" />
   </Folder>
   <Folder Name="/test/">

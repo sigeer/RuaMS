@@ -80,7 +80,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public long LastAttackTime { get; set; }
     private bool availablePuppetUpdate = true;
     /// <summary>
-    /// 有值时，不走默认的drop_data
+    /// 自定义掉落，为null时走默认的drop_data
     /// </summary>
     public List<DropEntry>? CustomeDrops { get; set; }
 
@@ -124,6 +124,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public TickableStatus Status { get; private set; }
 
     public MobTemplate SourceTemplate { get; }
+    /// <summary>
+    /// 只允许被该列表中的玩家攻击， null 表示能被所有玩家攻击
+    /// </summary>
+    public List<int>? AllowedAttacker { get; set; }
 
     public Monster(IMap map, Point pos, MobTemplate mobTemplate) : base(mobTemplate.TemplateId, map, pos, 5)
     {
@@ -446,6 +450,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
 
         if (isFake())
+        {
+            return false;
+        }
+
+        if (AllowedAttacker != null && attacker != null && !AllowedAttacker.Contains(attacker.getObjectId()))
         {
             return false;
         }
@@ -2537,7 +2546,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     protected override bool IsVisibleForPlayerWithoutRange(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
+        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive() && (AllowedAttacker == null || AllowedAttacker.Contains(chr.getObjectId()));
     }
 
     public override async Task OnUnmounted()
