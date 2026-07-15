@@ -39,7 +39,7 @@ namespace Application.Core.Login.ServerData
                 .Where(x => x.Type == itemType)
                             join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                             from bs in bss.DefaultIfEmpty()
-                            join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                            join c in dbContext.Pets.AsNoTracking() on a.UniqueId equals c.Petid into css
                             from cs in css.DefaultIfEmpty()
                             select new ItemEntityPair(a, bs, cs)).ToList();
 

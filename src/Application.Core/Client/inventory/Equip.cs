@@ -63,15 +63,10 @@ public class Equip : Item
     public RingSourceModel? RingSource { get; private set; }
     public override EquipTemplate SourceTemplate { get; }
 
-    public Equip(EquipTemplate template, short position) : this(template, position, 0)
-    {
-    }
-
-    public Equip(EquipTemplate template, short position, int upgradeSlots) : base(template.TemplateId, position, 1)
+    public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Equip);
-        this.upgradeSlots = (sbyte)upgradeSlots;
         this.itemExp = 0;
         this.itemLevel = 1;
         this.quantity = 1;

@@ -60,8 +60,7 @@ namespace Application.Core.Mappers
 
             #region Item
             CreateMap<Dto.ItemDto, Pet>()
-                 .ConstructUsing(source => new Pet(ItemInformationProvider.getInstance().GetPetTemplate(source.Itemid)!, (short)source.Position, source.PetInfo!.Petid
-                 ))
+                 .ConstructUsing(source => new Pet(ItemInformationProvider.getInstance().GetPetTemplate(source.Itemid)!, (short)source.Position, source.PetInfo!.Petid))
                 .ForMember(x => x.Fullness, opt => opt.MapFrom(x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness)))
                 .ForMember(x => x.Level, opt => opt.MapFrom(x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level)))
                 .ForMember(x => x.Tameness, opt => opt.MapFrom(x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness)))
@@ -89,6 +88,7 @@ namespace Application.Core.Mappers
                 }));
 
             CreateMap<Dto.ItemDto, Item>()
+                .ForMember(dest => dest.UniqueId, src => src.Ignore())
                 .ConstructUsing((src, ctx) =>
                 {
                     if (src.EquipInfo != null)
@@ -105,7 +105,7 @@ namespace Application.Core.Mappers
                     if (src.PetInfo != null)
                         return ctx.Mapper.Map<Pet>(src);
 
-                    return new Item(src.Itemid, (short)src.Position, (short)src.Quantity);
+                    return new Item(src.Itemid, (short)src.Position, (short)src.Quantity, src.UniqueId);
                 })
                 .AfterMap((rs, dest, ctx) =>
                 {
@@ -141,7 +141,7 @@ namespace Application.Core.Mappers
             CreateMap<ItemProto.RingDto, RingSourceModel>().ReverseMap();
 
             CreateMap<Dto.ItemDto, Equip>()
-                    .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position))
+                    .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position, source.UniqueId))
                     .AfterMap((rs, dest, ctx) =>
                     {
                         dest.setOwner(rs.Owner);

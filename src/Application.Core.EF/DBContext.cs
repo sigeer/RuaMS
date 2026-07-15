@@ -2382,10 +2382,6 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Owner)
                 .HasColumnType("tinytext")
                 .HasColumnName("owner");
-            entity.Property(e => e.Petid)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint")
-                .HasColumnName("petid");
             entity.Property(e => e.Position)
                 .HasColumnType("int")
                 .HasColumnName("position");
@@ -2395,6 +2391,12 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Type)
                 .HasColumnType("tinyint")
                 .HasColumnName("type");
+            entity.Property(e => e.UniqueId)
+                .HasColumnType("bigint")
+                .HasColumnName("UniqueId");
+            entity.Property(e => e.Properties)
+                .HasColumnType("text")
+                .HasColumnName("Properties");
         });
 
         modelBuilder.Entity<Inventoryequipment>(entity =>

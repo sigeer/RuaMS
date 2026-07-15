@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
@@ -120,7 +121,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                                         for (byte b = 0; b < qty; b++)
                                         {
                                             pos.X = playerpos + ((d % 2 == 0) ? (25 * (d + 1) / 2) : -(25 * (d / 2)));
-                                            await map.spawnItemDrop(chr, chr, new Item(loseItem.Id, 0, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
+                                            await map.spawnItemDrop(chr, chr, ItemInformationProvider.getInstance().GenerateVirtualItemById(loseItem.Id, 1), map.calcDropPos(pos, chr.getPosition()), true, true);
                                             d++;
                                         }
                                     }

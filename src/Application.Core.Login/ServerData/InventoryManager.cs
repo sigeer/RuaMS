@@ -43,7 +43,7 @@ namespace Application.Core.Login.Datas
                 .Where(x => itemType.Contains(x.Type))
                             join b in dbContext.Inventoryequipments on a.Inventoryitemid equals b.Inventoryitemid into bss
                             from bs in bss.DefaultIfEmpty()
-                            join c in dbContext.Pets.AsNoTracking() on a.Petid equals c.Petid into css
+                            join c in dbContext.Pets.AsNoTracking() on a.UniqueId equals c.Petid into css
                             from cs in css.DefaultIfEmpty()
                             select new ItemEntityPair(a, bs, cs)).ToList();
 
@@ -74,8 +74,8 @@ namespace Application.Core.Login.Datas
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
+                var petIds = allItems.Select(x => x.UniqueId).ToArray();
 
-                var petIds = allItems.Select(x => x.Petid).ToArray();
                 dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
                 dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
                 dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
@@ -93,10 +93,10 @@ namespace Application.Core.Login.Datas
                     GiftFrom = item.GiftFrom ?? "",
                     Inventorytype = item.InventoryType,
                     Owner = item.Owner ?? "",
-                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
                     Type = itemType,
+                    UniqueId = item.UniqueId
                 };
                 dbContext.Inventoryitems.AddAsync(model);
                 dbContext.SaveChanges();
@@ -130,7 +130,7 @@ namespace Application.Core.Login.Datas
                 if (item.PetInfo != null)
                 {
                     dbContext.Pets.Add(
-                        new PetEntity(item.PetInfo.Petid, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
+                        new PetEntity(model.UniqueId, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
                 }
             }
 
@@ -145,8 +145,8 @@ namespace Application.Core.Login.Datas
             if (allItems.Count != 0)
             {
                 var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
+                var petIds = allItems.Select(x => x.UniqueId).ToArray();
 
-                var petIds = allItems.Select(x => x.Petid).ToArray();
                 await dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
                 await dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDeleteAsync();
                 await dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDeleteAsync();
@@ -165,10 +165,10 @@ namespace Application.Core.Login.Datas
                     GiftFrom = item.GiftFrom ?? "",
                     Inventorytype = item.InventoryType,
                     Owner = item.Owner ?? "",
-                    Petid = item.PetInfo == null ? -1 : item.PetInfo.Petid,
                     Position = item.Position,
                     Quantity = item.Quantity,
                     Type = itemType,
+                    UniqueId = item.UniqueId
                 };
                 await dbContext.Inventoryitems.AddAsync(model);
                 await dbContext.SaveChangesAsync();
@@ -202,7 +202,7 @@ namespace Application.Core.Login.Datas
                 if (item.PetInfo != null)
                 {
                     await dbContext.Pets.AddAsync(
-                        new PetEntity(item.PetInfo.Petid, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
+                        new PetEntity(model.UniqueId, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
                 }
             }
 

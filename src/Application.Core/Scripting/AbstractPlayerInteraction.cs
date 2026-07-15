@@ -375,7 +375,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         List<TypedItemQuantity> addedItems = new();
         foreach (var p in items)
         {
-            Item it = new Item(p.ItemId, 0, (short)p.Quantity);
+            var it = ItemInformationProvider.getInstance().GenerateVirtualItemById(p.ItemId, (short)p.Quantity);
             addedItems.Add(new((sbyte)InventoryType.CANHOLD, new(p.ItemId, p.Quantity)));
         }
 

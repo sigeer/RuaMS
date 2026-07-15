@@ -101,7 +101,7 @@ public class InventoryManipulator
                 short newQ = Math.Min(quantity, slotMax);
                 quantity -= newQ;
                 // 装备、宠物都不可叠加，这里必定是Item
-                Item nItem = Item.CreateVirtualItem(itemid, newQ);
+                var nItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(itemid, newQ);
                 nItem.setExpiration(item.getExpiration());
                 nItem.setOwner(item.getOwner());
                 nItem.setFlag(item.getFlag());

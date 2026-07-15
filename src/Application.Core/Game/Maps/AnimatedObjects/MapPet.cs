@@ -185,7 +185,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             return PetItem.getItemId();
         }
 
-        public long PetId => PetItem.PetId;
+        public long PetId => PetItem.UniqueId;
 
         public long getUniqueId()
         {
