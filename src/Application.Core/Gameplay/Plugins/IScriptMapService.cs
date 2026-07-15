@@ -1,4 +1,4 @@
-using Application.Core.Game.Maps;
+using System.Reflection;
 
 namespace Application.Core.Gameplay.Plugins
 {
@@ -7,7 +7,7 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptMapService : IPluginServiceBase
     {
-        Task MapFirstEnter(IChannelClient c, IMap map);
-        Task MapEnter(IChannelClient c, IMap map);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> MapEnterScripts { get; }
+        Dictionary<string, (Type ObjType, MethodInfo Method)> MapFirstEnterScripts { get; }
     }
 }

@@ -26,12 +26,13 @@ namespace Application.Core.Gameplay.Plugins
 
     public class TypeUtils
     {
-        public static Dictionary<string, MethodInfo> ExtractMethodsToDictionary(Type type)
+
+        public static Dictionary<string, (Type ObjType, MethodInfo Method)> LoadFromType(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            var dict = new Dictionary<string, MethodInfo>();
+            var dict = new Dictionary<string, (Type ObjType, MethodInfo Method)>();
 
             // 获取当前类声明的所有方法（包括公有、实例），不包含继承的方法
             var methods = type.GetMethods(
@@ -55,12 +56,12 @@ namespace Application.Core.Gameplay.Plugins
                             );
 
                         // 尝试添加，若键已存在则抛出异常
-                        dict.Add(attr, method);
+                        dict.Add(attr, (type, method));
                     }
                 }
                 else
                 {
-                    dict.Add(method.Name, method);
+                    dict.Add(method.Name, (type, method));
                 }
             }
 

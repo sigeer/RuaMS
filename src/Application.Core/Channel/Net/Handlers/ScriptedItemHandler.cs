@@ -37,18 +37,12 @@ public class ScriptedItemHandler : ChannelHandlerBase
         short itemSlot = p.readShort(); // item slot, thanks RMZero213
         int itemId = p.readInt();
 
-        var info = ItemInformationProvider.getInstance().GetScriptItemTemplate(itemId);
-        if (info == null)
-        {
-            return;
-        }
-
         var item = c.OnlinedCharacter.getInventory(ItemConstants.getInventoryType(itemId)).getItem(itemSlot);
         if (item == null || item.getItemId() != itemId || item.getQuantity() < 1)
         {
             return;
         }
 
-        await ItemScriptManager.getInstance().runItemScript(c, info);
+        await ItemScriptManager.getInstance().runItemScript(c, item);
     }
 }

@@ -1,4 +1,4 @@
-using Application.Core.Game.Life;
+using System.Reflection;
 
 namespace Application.Core.Gameplay.Plugins
 {
@@ -7,7 +7,6 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptNpcService : IPluginServiceBase
     {
-        Task<bool> Start(IChannelClient c, int npcId, NPC? npcObjectId, string? scriptName);
-        Task Action(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> NpcScripts { get; }
     }
 }

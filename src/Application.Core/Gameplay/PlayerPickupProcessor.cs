@@ -204,7 +204,7 @@ namespace Application.Core.Gameplay
             {
                 if (scriptItemTemplate.RunOnPickup)
                 {
-                    await ItemScriptManager.getInstance().runItemScript(_player.Client, scriptItemTemplate);
+                    await ItemScriptManager.getInstance().runItemScript(_player.Client, mapItem);
                     return true;
                 }
                 else

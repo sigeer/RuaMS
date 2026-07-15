@@ -1,4 +1,4 @@
-using server.maps;
+using System.Reflection;
 
 namespace Application.Core.Gameplay.Plugins
 {
@@ -7,6 +7,6 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public interface IScriptPortalService : IPluginServiceBase
     {
-        Task<bool> Enter(IChannelClient c, Portal p);
+        Dictionary<string, (Type ObjType, MethodInfo Method)> PortalScripts { get; }
     }
 }
