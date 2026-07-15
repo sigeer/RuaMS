@@ -170,8 +170,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
         else
         {
             var drop = ItemInformationProvider.getInstance().GenerateVirtualItemById(d.ItemId, 1, true);
-            if (drop != null)
-                await reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
+            await reactor.getMap().dropFromReactor(getPlayer(), reactor, drop, dropPos, d.QuestId, delay);
         }
     }
 

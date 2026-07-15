@@ -1602,15 +1602,13 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("tinytext")
                         .HasColumnName("owner");
 
-                    b.Property<long>("Petid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("petid")
-                        .HasDefaultValueSql("'-1'");
-
                     b.Property<short>("Position")
                         .HasColumnType("int")
                         .HasColumnName("position");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("text")
+                        .HasColumnName("Properties");
 
                     b.Property<short>("Quantity")
                         .HasColumnType("int")
@@ -1619,6 +1617,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<byte>("Type")
                         .HasColumnType("tinyint")
                         .HasColumnName("type");
+
+                    b.Property<long>("UniqueId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("UniqueId");
 
                     b.HasKey("Inventoryitemid")
                         .HasName("PRIMARY");

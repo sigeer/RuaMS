@@ -51,10 +51,6 @@ namespace Application.Core.Channel.Services
         public Item CashItem2Item(CashCommodityTemplate cashItem)
         {
             var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.ItemID, cashItem.Count);
-            if (item == null)
-            {
-                throw new TemplateNotFoundException("Item", cashItem.ItemID);
-            }
 
             if (cashItem.Period == 1)
             {

@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using client.inventory;
 using client.inventory.manipulator;
 using tools;
@@ -94,7 +95,8 @@ public class RockPaperScissor
     {
         if (win)
         {
-            await InventoryManipulator.addFromDrop(c, new Item(ItemId.RPS_CERTIFICATE_BASE + round, 0, 1), true);
+            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(ItemId.RPS_CERTIFICATE_BASE + round, 1);
+            await InventoryManipulator.addFromDrop(c, item, true);
         }
         c.OnlinedCharacter.setRPS(null);
     }

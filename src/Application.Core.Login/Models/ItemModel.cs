@@ -25,9 +25,11 @@ namespace Application.Core.Login.Models
         public long Expiration { get; set; }
 
         public string? GiftFrom { get; set; }
+        public long UniqueId { get; set; }
 
         public EquipModel? EquipInfo { get; set; }
         public PetModel? PetInfo { get; set; }
+        public string? Properties { get; set; }
 
         public static ItemModel NewEtcItem(int itemId, short quantity)
         {

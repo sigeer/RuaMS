@@ -3,6 +3,7 @@ namespace Application.EF.Entities;
 public partial class Inventoryitem
 {
     public int Inventoryitemid { get; set; }
+    public long UniqueId { get; set; }
 
     public byte Type { get; set; }
 
@@ -20,11 +21,10 @@ public partial class Inventoryitem
 
     public string Owner { get; set; } = "";
 
-    public long Petid { get; set; } = -1;
-
     public short Flag { get; set; }
 
     public long Expiration { get; set; } = -1;
 
     public string GiftFrom { get; set; } = "";
+    public string? Properties { get; set; }
 }

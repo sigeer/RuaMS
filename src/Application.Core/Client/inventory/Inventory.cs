@@ -229,7 +229,8 @@ public class Inventory : AbstractInventory
                 ["Inventory"] = getType(),
                 ["Slot"] = clientSlot,
                 ["Item.Id"] = item.getItemId(),
-                ["Item.Quantity"] = item.getQuantity()
+                ["Item.Quantity"] = item.getQuantity(),
+                ["Item.UniqueId"] = item.UniqueId
             }));
 
         SetItemPosition(item, clientSlot);

@@ -81,7 +81,7 @@ public class SpawnPetHandler : ChannelHandlerBase
 
         static async Task TogglePet(Player chr, Pet pet, bool lead)
         {
-            var mapPet = chr.GetPetById(pet.PetId);
+            var mapPet = chr.GetPetById(pet.UniqueId);
             if (mapPet != null)
             {
                 await mapPet.Recall();

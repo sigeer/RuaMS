@@ -158,7 +158,7 @@ public class ItemAction : AbstractQuestAction
             InventoryType type = ItemConstants.getInventoryType(item.getId());
             if (item.getProp() != null)
             {
-                Item toItem = new Item(item.getId(), 0, (short)item.getCount());
+                var toItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(item.getId(), (short)item.getCount());
 
                 if (item.getProp() < 0)
                 {
@@ -173,7 +173,7 @@ public class ItemAction : AbstractQuestAction
             else
             {
                 // Make sure they can hold the item.
-                Item toItem = new Item(item.getId(), 0, (short)item.getCount());
+                var toItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(item.getId(), (short)item.getCount());
                 gainList.Add(new(toItem, type));
 
                 if (item.getCount() < 0)
