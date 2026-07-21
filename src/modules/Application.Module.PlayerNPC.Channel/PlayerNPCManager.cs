@@ -10,7 +10,6 @@ using Application.Shared.Constants.Npc;
 using Application.Shared.MapObjects;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using AutoMapper;
 using client.inventory;
 using LifeProto;
 using Microsoft.Extensions.Logging;
@@ -229,8 +228,7 @@ namespace Application.Module.PlayerNPC.Channel
                 createRequest.NewData = newData;
 
                 // 可能会刷新已存在的playernpc坐标
-                var existed = _mapper.Map<PlayerNPCDto[]>(
-                    map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>());
+                var existed = _mapper.Map<PlayerNPCDto[]>(map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>());
                 createRequest.UpdatedList.AddRange(existed);
                 _transport.CreatePlayerNPC(createRequest);
 

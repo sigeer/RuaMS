@@ -11,6 +11,7 @@
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="Mapster" />
 	<PackageReference Include="FastExpressionCompiler" />
+	<PackageReference Include="AutoMapper" />
   </ItemGroup>
 
   <ItemGroup>

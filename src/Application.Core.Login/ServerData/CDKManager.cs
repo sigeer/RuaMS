@@ -3,7 +3,6 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Shared.Items;
 using Application.Utility;
-using AutoMapper.Extensions.ExpressionMapping;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
@@ -46,10 +45,8 @@ namespace Application.Core.Login.ServerData
         public override List<CdkCodeModel> Query(Expression<Func<CdkCodeModel, bool>> expression)
         {
             using var dbContext = _dbContextFactory.CreateDbContext(); ;
-            var entityExpression = _mapper.MapExpression<Expression<Func<CdkCodeEntity, bool>>>(expression);
 
-            var dataFromDB = _mapper.Map<List<CdkCodeModel>>(dbContext.CdkCodes.AsNoTracking().Where(entityExpression).ToList());
-
+           var dataFromDB = dbContext.CdkCodes.AsNoTracking().ProjectToType<CdkCodeModel>().Where(expression).ToList();
             var filteredCodeIds = dataFromDB.Select(x => x.Id).ToArray();
             var allCodeItems = dbContext.CdkItems.AsNoTracking().Where(x => filteredCodeIds.Contains(x.CodeId)).ToList();
             var allHistories = dbContext.CdkRecords.AsNoTracking().Where(x => filteredCodeIds.Contains(x.CodeId)).ToList();

@@ -7,8 +7,9 @@ using ZLinq;
 
 namespace Application.Core.Server
 {
-    public abstract class AbstractStorage
+    public abstract class AbstractStorage: IItemStore
     {
+        public abstract ItemType StoreType { get; }
         protected AbstractStorage(Player owner, byte slots, int meso, IEnumerable<Item> items)
         {
             Meso = meso;
@@ -17,6 +18,10 @@ namespace Application.Core.Server
 
             Items = new List<Item>(slots);
             Items.AddRange(items);
+            foreach (var item in Items)
+            {
+                item.PlayerInventory = this;
+            }
 
             _typedItems = new();
         }
@@ -174,6 +179,7 @@ namespace Application.Core.Server
         public void AddItem(Item item)
         {
             Items.Add(item);
+            item.PlayerInventory = this;
             _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
         }
 
@@ -181,6 +187,7 @@ namespace Application.Core.Server
         {
             if (Items.Remove(item))
             {
+                item.PlayerInventory = null;
                 _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
                 return true;
             }

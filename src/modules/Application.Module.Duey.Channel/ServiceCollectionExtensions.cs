@@ -23,7 +23,7 @@ namespace Application.Module.Duey.Channel
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.TryAddSingleton<IChannelTransport, DefaultChannelTransport>();
 
             services.AddSingleton<DueyManager>();

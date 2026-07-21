@@ -1,12 +1,12 @@
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.Duey.Channel.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<DueyDto.DueyPackageDto, DueyPackageObject>();
+            config.NewConfig<DueyDto.DueyPackageDto, DueyPackageObject>();
         }
     }
 }

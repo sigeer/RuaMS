@@ -3,12 +3,14 @@
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
 	  <PackageReference Include="OpenTelemetry" />
 	  <PackageReference Include="SkiaSharp" />
+	  <PackageReference Include="Mapster.DependencyInjection" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -22,5 +24,19 @@
 		<ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
 		<ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />
 	</ItemGroup>
+	
+	<ItemGroup>
+		<Generated Include="**\*.g.cs" />
+	</ItemGroup>
 
+	<Target Name="CleanGenerated" AfterTargets="Clean">
+		<Delete Files="@(Generated)" />
+	</Target>
+
+	<Target Name="Mapster" AfterTargets="AfterBuild">
+		<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
+		<!--<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model -a &quot;$(TargetDir)$(ProjectName).dll&quot;" />
+		<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension -a &quot;$(TargetDir)$(ProjectName).dll&quot;" />-->
+		<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper -a &quot;$(TargetDir)$(ProjectName).dll&quot;" />
+	</Target>
 </Project>

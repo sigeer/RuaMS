@@ -7,7 +7,6 @@ using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
-using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using SystemProto;
@@ -60,11 +59,9 @@ namespace Application.Core.Login.ServerData
 
         public override List<AccountHistoryModel> Query(Expression<Func<AccountHistoryModel, bool>> expression)
         {
-            var entityExpress = _mapper.MapExpression<Expression<Func<AccountBindingsEntity, bool>>>(expression);
-
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<AccountHistoryModel>>(dbContext.AccountBindings.Where(entityExpress).ToList());
+            var dataFromDB = dbContext.AccountBindings.AsNoTracking().ProjectToType<AccountHistoryModel>().Where(expression).ToList();
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
@@ -252,11 +249,9 @@ namespace Application.Core.Login.ServerData
 
         public override List<AccountBanModel> Query(Expression<Func<AccountBanModel, bool>> expression)
         {
-            var entityExpress = _mapper.MapExpression<Expression<Func<AccountBanEntity, bool>>>(expression);
-
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = _mapper.Map<List<AccountBanModel>>(dbContext.AccountBans.Where(entityExpress).ToList());
+            var dataFromDB = dbContext.AccountBans.ProjectToType<AccountBanModel>().Where(expression).ToList();
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }

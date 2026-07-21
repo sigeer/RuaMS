@@ -10,8 +10,8 @@
 		<PackageReference Include="Quartz" />
 		<PackageReference Include="System.Management" />
 		<PackageReference Include="YamlDotNet" />
-		<PackageReference Include="AutoMapper" />
-		<PackageReference Include="AutoMapper.Extensions.ExpressionMapping" />
+		<PackageReference Include="Mapster" />
+		<PackageReference Include="FastExpressionCompiler" />
 	</ItemGroup>
 
 	<ItemGroup>

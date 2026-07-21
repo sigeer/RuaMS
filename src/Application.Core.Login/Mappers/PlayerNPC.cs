@@ -3,29 +3,31 @@ using Application.EF.Entities;
 
 namespace Application.Core.Login.Mappers
 {
-    internal class PlayerNPCMapper : Profile
+    internal class PlayerNPCMapper : IRegister
     {
-        public PlayerNPCMapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<PlayerNpcEquipModel, LifeProto.PlayerNPCEquip>()
-                .ForMember(dest => dest.ItemId, src => src.MapFrom(x => x.Equipid))
-                .ForMember(dest => dest.Position, src => src.MapFrom(x => x.Equippos))
-                .ReverseMap()
-                .ForMember(dest => dest.Equipid, src => src.MapFrom(x => x.ItemId))
-                .ForMember(dest => dest.Equippos, src => src.MapFrom(x => x.Position));
-            CreateMap<PlayerNpcModel, LifeProto.PlayerNPCDto>()
-                .ForMember(dest => dest.MapId, src => src.MapFrom(x => x.Map))
-                .ForMember(dest => dest.ScriptId, src => src.MapFrom(x => x.NpcId))
-                .ReverseMap()
-                .ForMember(dest => dest.Map, src => src.MapFrom(x => x.MapId))
-                .ForMember(dest => dest.NpcId, src => src.MapFrom(x => x.ScriptId));
+            config.NewConfig<PlayerNpcEquipModel, LifeProto.PlayerNPCEquip>()
+                .Map(dest => dest.ItemId, src => src.Equipid)
+                .Map(dest => dest.Position, src => src.Equippos);
+            config.NewConfig<LifeProto.PlayerNPCEquip, PlayerNpcEquipModel>()
+                .Map(dest => dest.Equipid, src => src.ItemId)
+                .Map(dest => dest.Equippos, src => src.Position);
 
-            CreateMap<PlayerNpcEntity, PlayerNpcModel>()
-                .ForMember(dest => dest.NpcId, src => src.MapFrom(x => x.Scriptid))
-                .ReverseMap()
-                .ForMember(dest => dest.Scriptid, src => src.MapFrom(x => x.NpcId));
-            CreateMap<PlayerNpcsEquipEntity, PlayerNpcEquipModel>()
-                .ReverseMap();
+            config.NewConfig<PlayerNpcModel, LifeProto.PlayerNPCDto>()
+                .Map(dest => dest.MapId, src => src.Map)
+                .Map(dest => dest.ScriptId, src => src.NpcId);
+            config.NewConfig<LifeProto.PlayerNPCDto, PlayerNpcModel>()
+                .Map(dest => dest.Map, src => src.MapId)
+                .Map(dest => dest.NpcId, src => src.ScriptId);
+
+            config.NewConfig<PlayerNpcEntity, PlayerNpcModel>()
+                .Map(dest => dest.NpcId, src => src.Scriptid);
+            config.NewConfig<PlayerNpcModel, PlayerNpcEntity>()
+                .Map(dest => dest.Scriptid, src => src.NpcId);
+
+            config.NewConfig<PlayerNpcsEquipEntity, PlayerNpcEquipModel>();
+            config.NewConfig<PlayerNpcEquipModel, PlayerNpcsEquipEntity>();
         }
     }
 }

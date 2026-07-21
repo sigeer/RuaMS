@@ -4,7 +4,6 @@ using Application.Module.Marriage.Channel.Models;
 using Application.Module.Marriage.Channel.Net;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
-using AutoMapper;
 using client.inventory;
 using MarriageProto;
 using System.Collections.Concurrent;

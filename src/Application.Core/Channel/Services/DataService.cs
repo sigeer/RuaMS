@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
@@ -10,6 +11,7 @@ using Application.Shared.Events;
 using client;
 using client.inventory;
 using client.keybind;
+using Google.Protobuf;
 using net.server.guild;
 using server;
 using server.events;
@@ -22,12 +24,14 @@ namespace Application.Core.Channel.Services
     public class DataService
     {
         readonly IMapper _mapper;
+        readonly IItemMapper _itemMapper;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
         Dictionary<int, List<LifeProto.PLifeDto>> _plifeCache;
-        public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server)
+        public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server, IItemMapper itemMapper)
         {
             _mapper = mapper;
+            _itemMapper = itemMapper;
             _transport = transport;
             _server = server;
             _plifeCache = new();
@@ -324,12 +328,7 @@ namespace Application.Core.Channel.Services
             playerDto.PendantOfSpiritEquippedTime = player.PendantOfSpiritEquippedTime;
 
             #region inventory mapping
-            var itemType = ItemFactory.INVENTORY.getValue();
-            var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<Dto.ItemDto[]>(x.list(), opt =>
-            {
-                opt.Items["InventoryType"] = (int)x.getType();
-                opt.Items["Type"] = itemType;
-            })).ToArray();
+            var d = player.Bag.GetValues().SelectMany(x => x.list().Adapt<Dto.ItemDto[]>()).ToArray();
             #endregion
 
             var data = new SyncProto.PlayerSaveDto()
@@ -371,36 +370,18 @@ namespace Application.Core.Channel.Services
                 },
                 QuickSlot = quickSlotDto,
             };
-            data.AccountGame.Storage.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(player.Storage.GetItems(), opt =>
-            {
-                opt.Items["Type"] = ItemFactory.STORAGE.getValue();
-            }));
+            data.AccountGame.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _itemMapper.MapToDto(x)));
             data.GachaponStorage = new Dto.StorageDto { Meso = player.GachaponStorage.Meso };
-            data.GachaponStorage.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(player.GachaponStorage.GetItems(), opt =>
-            {
-                opt.Items["Type"] = ItemFactory.ExtraStorage_Gachapon.getValue();
-            }));
+            data.GachaponStorage.Items.AddRange(player.GachaponStorage.GetItems().Select(x => _itemMapper.MapToDto(x)));
             var cashFactoryType = player.CashShopModel.Factory;
             if (cashFactoryType == ItemType.CashOverall)
-                data.AccountGame.CashOverallItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_OVERALL.getValue();
-                }));
+                data.AccountGame.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashAran)
-                data.AccountGame.CashAranItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_ARAN.getValue();
-                }));
+                data.AccountGame.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashExplorer)
-                data.AccountGame.CashExplorerItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_EXPLORER.getValue();
-                }));
+                data.AccountGame.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashCygnus)
-                data.AccountGame.CashCygnusItems.AddRange(_mapper.Map<Dto.ItemDto[]>(player.CashShopModel.getInventory(), opt =>
-                {
-                    opt.Items["Type"] = ItemFactory.CASH_CYGNUS.getValue();
-                }));
+                data.AccountGame.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             return data;
         }
 

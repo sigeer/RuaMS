@@ -7,8 +7,8 @@ using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Common.Models;
 using Application.Module.Marriage.Master.Models;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
+using MapsterMapper;
+using Mapster;
 using MarriageProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -129,13 +129,10 @@ namespace Application.Module.Marriage.Master
 
         public override List<MarriageModel> Query(Expression<Func<MarriageModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<MarriageEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dbList = dbContext.Marriages.AsNoTracking().Where(entityExpression).ToList();
-            var dataFromDB = _mapper.Map<List<MarriageModel>>(dbList);
-
-            return QueryWithDirty(dataFromDB, expression.Compile());
+            var dbList = dbContext.Marriages.AsNoTracking().ProjectToType<MarriageModel>().Where(expression).ToList();
+            return QueryWithDirty(dbList, expression.Compile());
         }
 
         public MarriageModel? GetEffectMarriageModel(int chrId)

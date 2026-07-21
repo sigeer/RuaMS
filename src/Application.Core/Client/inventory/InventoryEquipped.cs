@@ -64,7 +64,6 @@ public class InventoryEquipped : AbstractInventory
     {
         item.setPosition(pos);
         inventory[pos] = item;
-        item.PlayerInventory = this;
     }
 
     /// <summary>

@@ -4,7 +4,6 @@ using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Net;
-using AutoMapper;
 using Dto;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;

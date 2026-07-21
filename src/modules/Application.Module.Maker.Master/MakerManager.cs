@@ -1,7 +1,7 @@
 using Application.EF;
 using Application.Shared.Constants.Item;
-using AutoMapper;
 using MakerProto;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,5 @@
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Client.inventory;
 using Application.Resources.Messages;
 using client.inventory;
 
@@ -6,6 +7,7 @@ namespace Application.Core.Server
 {
     public class RewardStorage : AbstractStorage
     {
+        public override ItemType StoreType => ItemType.ExtraStorage_Gachapon;
         public RewardStorage(Player owner, int meso, Item[] items) : base(owner, Limits.MaxStorageSlots, meso, items)
         {
         }

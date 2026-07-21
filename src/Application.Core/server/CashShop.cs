@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel;
+using Application.Core.Client.inventory;
 using Application.Templates.Etc;
 using client.inventory;
 using System.Diagnostics;
@@ -32,7 +33,7 @@ namespace server;
  * @author Flav
  * @author Ponk
  */
-public class CashShop
+public class CashShop: IItemStore
 {
     /// <summary>
     /// 点券
@@ -61,6 +62,7 @@ public class CashShop
     public int NxCredit { get; set; }
     public int MaplePoint { get; set; }
     public int NxPrepaid { get; set; }
+    public ItemType StoreType => Factory;
 
     public CashShop(Player player)
     {
@@ -98,6 +100,11 @@ public class CashShop
 
         inventory = items;
         wishList = characterWishList;
+
+        foreach (var item in inventory)
+        {
+            item.PlayerInventory = this;
+        }
     }
 
     public void UpdateValue(int nxCredit, int maplePoint, int nxPrepaid)
@@ -227,11 +234,13 @@ public class CashShop
     public void addToInventory(Item item)
     {
         inventory.Add(item);
+        item.PlayerInventory = this;
     }
 
     public void removeFromInventory(Item item)
     {
         inventory.Remove(item);
+        item.PlayerInventory = null;
     }
 
     public List<int> getWishList()

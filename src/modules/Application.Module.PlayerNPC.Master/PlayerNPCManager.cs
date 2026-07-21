@@ -5,9 +5,9 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Npc;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using LifeProto;
+using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
@@ -39,9 +39,8 @@ namespace Application.Module.PlayerNPC.Master
 
         public override List<PlayerNpcModel> Query(Expression<Func<PlayerNpcModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<PlayerNpcEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbList = dbContext.Playernpcs.Where(entityExpression).ToList();
+            var dbList = dbContext.Playernpcs.ProjectToType<PlayerNpcModel>().Where(expression).ToList();
             var dbIdList = dbList.Select(x => x.Id).ToArray();
 
             var equips = dbContext.PlayernpcsEquips

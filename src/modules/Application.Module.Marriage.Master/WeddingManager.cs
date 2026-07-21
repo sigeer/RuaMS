@@ -3,7 +3,6 @@ using Application.Module.Marriage.Common;
 using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Constants.Item;
-using AutoMapper;
 using MarriageProto;
 using System.Collections.Concurrent;
 using XmlWzReader;

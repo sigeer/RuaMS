@@ -2,7 +2,6 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
-using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -106,7 +105,7 @@ public class NoteManager : StorageBase<int, NoteModel>
         if (liveObject.Channel <= 0)
             return;
 
-        var notes = _mapper.Map<Dto.NoteDto[]>(Query(x => x.ToId == liveObject.Character.Id && !x.IsDeleted));
+        var notes = Query(x => x.ToId == liveObject.Character.Id && !x.IsDeleted).Select(x => MapToDto(x)).ToArray();
         if (notes.Length > 0)
             await _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
     }
@@ -119,7 +118,15 @@ public class NoteManager : StorageBase<int, NoteModel>
 
         model.IsDeleted = true;
         SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
-        return _mapper.Map<Dto.NoteDto>(model);
+        return MapToDto(model);
+    }
+
+    Dto.NoteDto MapToDto(NoteModel? model)
+    {
+        var dto = _mapper.Map<Dto.NoteDto>(model);
+        dto.From = _server.CharacterManager.GetPlayerName(model.FromId);
+        dto.To = _server.CharacterManager.GetPlayerName(model.ToId);
+        return dto;
     }
 
     public void removeFredrickReminders(List<int> expiredCids)
@@ -153,11 +160,6 @@ public class NoteManager : StorageBase<int, NoteModel>
     public override List<NoteModel> Query(Expression<Func<NoteModel, bool>> expression)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
-
-        var entityExpression = _mapper.MapExpression<Expression<Func<NoteEntity, bool>>>(expression);
-
-        var dataFromDB = _mapper.Map<List<NoteModel>>(dbContext.Notes.Where(entityExpression).AsNoTracking().ToList());
-
-        return QueryWithDirty(dataFromDB, expression.Compile());
+        return QueryWithDirty(dbContext.Notes.AsNoTracking().ProjectToType<NoteModel>().Where(expression).AsNoTracking().ToList(), expression.Compile());
     }
 }
