@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package AccountDto;
+
+message AccountInfoProto {
+  int32 id = 1;
+  string name = 2;
+  google.protobuf.Timestamp birthday = 3;
+  int32 gender = 4;
+  int32 gMLevel = 5;
+  bool gmMode = 6;
+  int32 language = 7;
+  string currentHwid = 8;
+  int32 characterslots = 9;
+}

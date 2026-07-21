@@ -44,6 +44,7 @@ namespace Application.Core.Game.Players
             MP = o.Character.Mp;
             MaxMP = o.Character.Maxmp;
             RemainingSp = o.Character.Sp.Split(",").Select(int.Parse).ToArray();
+            JobModel = JobFactory.GetById(Shared.Constants.Job.JobId.BEGINNER);
 
             AutobanManager = new AutobanManager(this);
             Skills = new(this);

@@ -44,8 +44,7 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<QuestStatusEntityPair, QuestStatusModel>()
                 .Map(dest => dest.MedalMap, src => src.Medalmap)
                 .Map(dest => dest.Progress, src => src.Progress)
-                .Map(dest => dest.QuestId, src => src.QuestStatus.Quest)
-                .Map(dest => dest.Id, src => src.QuestStatus.Queststatusid);
+                .Map(dest => dest, src => src.QuestStatus);
 
             config.NewConfig<SkillEntity, SkillModel>();
             config.NewConfig<SkillMacroEntity, SkillMacroModel>();
@@ -67,9 +66,9 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<Inventoryitem, ItemModel>()
                 .Map(dest => dest.InventoryType, src => src.Inventorytype);
             config.NewConfig<ItemEntityPair, ItemModel>()
+                .Map(dest => dest, src => src.Item)
                 .Map(dest => dest.EquipInfo, src => src.Equip)
-                .Map(dest => dest.PetInfo, src => src.Pet)
-                .Map(dest => dest.InventoryType, src => src.Item.Inventorytype);
+                .Map(dest => dest.PetInfo, src => src.Pet);
 
             config.NewConfig<ReactorDropEntity, Dto.DropItemDto>()
                 .Map(dest => dest.ItemId, src => src.Itemid)
@@ -137,6 +136,8 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<CdkItemEntity, CdkItemModel>();
             config.NewConfig<CdkRecordEntity, CdkRecordModel>();
 
+            config.NewConfig<DueyPackageEntity, DueyPackageModel>()
+                .Map(dest => dest.Id, x => x.PackageId);
         }
     }
 }

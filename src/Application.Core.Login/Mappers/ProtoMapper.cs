@@ -53,8 +53,7 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<ItemModel, Dto.ItemDto>();
             config.NewConfig<Dto.ItemDto, ItemModel>();
 
-            config.NewConfig<AccountCtrl, Dto.AccountCtrlDto>();
-            config.NewConfig<Dto.AccountCtrlDto, AccountCtrl>();
+            config.NewConfig<AccountCtrl, AccountDto.AccountInfoProto>();
 
             config.NewConfig<AccountGame, Dto.AccountGameDto>();
             config.NewConfig<Dto.AccountGameDto, AccountGame>();
@@ -143,7 +142,8 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<PlayerShopItemModel, ItemProto.PlayerShopItemDto>();
 
             config.NewConfig<PlayerShopItemModel, ItemModel>()
-                .MapWith(src => MapPlayerShopItem(src));
+                .Map(dest => dest, src => src.Item)
+                .Map(dest => dest.Quantity, src => src.Bundles * src.Item.Quantity) ;
 
             config.NewConfig<NoteModel, Dto.NoteDto>();
 
@@ -156,16 +156,8 @@ namespace Application.Core.Login.Mappers
 
             config.NewConfig<CdkItemModel, ItemProto.CdkRewordPackageDto>();
 
-            config.NewConfig<DueyPackageEntity, DueyPackageModel>()
-                .Map(dest => dest.Id, src => src.PackageId);
-
-            config.NewConfig<DueyPackageModel, DueyDto.DueyPackageDto>();
-        }
-        private static ItemModel MapPlayerShopItem(PlayerShopItemModel src)
-        {
-            var item = src.Item.Adapt<ItemModel>();
-            item.Quantity = (short)(src.Bundles * src.Item.Quantity);
-            return item;
+            config.NewConfig<DueyPackageModel, DueyDto.DueyPackageDto>()
+                .Map(dest => dest.PackageId, x => x.Id);
         }
     }
 }

@@ -12,6 +12,11 @@ using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
 using Application.Core.Channel.HostExtensions;
+using Mapster;
+using Google.Protobuf.Collections;
+
+
+
 
 #if IsStandalone
 using Application.Core.Channel.InProgress;
@@ -66,6 +71,12 @@ try
 #if IsStandalone
     builder.AddChannelServerInProgress();
 #endif
+
+    TypeAdapterConfig.GlobalSettings.Default
+            .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+                                   member.Type.IsGenericType &&
+                                   member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
+    TypeAdapterConfig.GlobalSettings.Compile();
 
     if (builder.Configuration.GetSection(AppSettingKeys.OpenApiEndpoint).Exists())
     {

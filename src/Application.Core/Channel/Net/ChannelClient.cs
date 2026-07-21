@@ -304,7 +304,7 @@ namespace Application.Core.Channel.Net
             Character = player;
         }
 
-        public void SetAccount(AccountCtrl accountEntity)
+        public void SetAccount(AccountInfoModel accountEntity)
         {
             AccountEntity = accountEntity;
 

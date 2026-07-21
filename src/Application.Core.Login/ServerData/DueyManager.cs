@@ -164,7 +164,7 @@ namespace Application.Core.Login.ServerData
                     Type = request.Quick,
                     Checked = true,
                     TimeStamp = time,
-                    Item = _mapper.From(request.Item).AddParameters("Type", (int)ItemType.Duey).AdaptToType<ItemModel>()
+                    Item = _mapper.Map<ItemModel>(request.Item)
                 };
 
                 SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));

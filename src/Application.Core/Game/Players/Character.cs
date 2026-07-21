@@ -105,21 +105,7 @@ public partial class Player
     private AbstractEventInstanceManager? eventInstance = null;
 
 
-    private Job? jobModel = null;
-    public Job JobModel
-    {
-        get
-        {
-            if (jobModel == null)
-                jobModel = JobFactory.GetById(JobId);
-            return jobModel;
-        }
-        set
-        {
-            jobModel = value;
-            JobId = value.getId();
-        }
-    }
+    public Job JobModel { get; set; }
 
     private SkinColor? skinColorModel = null;
     public SkinColor SkinColorModel
@@ -1872,11 +1858,6 @@ public partial class Player
     public Job getJob()
     {
         return JobModel;
-    }
-
-    public int getJobId()
-    {
-        return JobId;
     }
 
     public int getJobRank()

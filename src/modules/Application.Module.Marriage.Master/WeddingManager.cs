@@ -3,6 +3,7 @@ using Application.Module.Marriage.Common;
 using Application.Module.Marriage.Common.ErrorCodes;
 using Application.Module.Marriage.Master.Models;
 using Application.Shared.Constants.Item;
+using MapsterMapper;
 using MarriageProto;
 using System.Collections.Concurrent;
 using XmlWzReader;
@@ -27,6 +28,14 @@ namespace Application.Module.Marriage.Master
             _server = server;
             _mapper = mapper;
             _marriageManager = marriageManager;
+        }
+
+        MarriageProto.WeddingInfoDto MapDto(WeddingInfo model)
+        {
+            var dto = _mapper.Map<MarriageProto.WeddingInfoDto>(model);
+            dto.BrideName = _server.CharacterManager.GetPlayerName(model.BrideId);
+            dto.GroomName = _server.CharacterManager.GetPlayerName(model.GroomId);
+            return dto;
         }
 
         public MarriageProto.ReserveWeddingResponse ReserveWedding(MarriageProto.ReserveWeddingRequest request)
@@ -167,7 +176,7 @@ namespace Application.Module.Marriage.Master
         {
             var data = registeredWedding.Values.Where(x => request.Id.Contains(x.Id)).ToArray();
             var res = new MarriageProto.WeddingInfoListDto();
-            res.List.AddRange(_mapper.Map<MarriageProto.WeddingInfoDto[]>(data));
+            res.List.AddRange(data.Select(x => MapDto(x)));
             return res;
         }
     }

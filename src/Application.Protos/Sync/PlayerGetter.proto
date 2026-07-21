@@ -2,7 +2,7 @@ syntax = "proto3";
 
 
 import "Dto/Character.proto";
-import "Dto/AccountCtrl.proto";
+import "Account/AccountInfo.proto";
 import "Dto/Item.proto";
 import "Dto/Monsterbook.proto";
 import "Dto/PetIgnore.proto";
@@ -36,7 +36,7 @@ message CharacterLinkDto {
 }
 
 message PlayerGetterDto {
-  Dto.AccountCtrlDto account = 1;
+  AccountDto.AccountInfoProto account = 1;
   Dto.CharacterDto character = 2; // CHECK TYPE
   repeated Dto.ItemDto inventoryItems = 3; // CHECK TYPE
   Dto.AccountGameDto accountGame = 4; // CHECK TYPE

@@ -12,7 +12,6 @@ using Application.Core.Mappers;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Servers;
-using FastExpressionCompiler;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -181,12 +180,12 @@ namespace Application.Core.Channel.HostExtensions
 
             builder.Services.AddSingleton<DataService>();
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
             var mapperConfig = TypeAdapterConfig.GlobalSettings;
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             builder.Services.AddSingleton(mapperConfig);
             builder.Services.AddSingleton<IMapper, ServiceMapper>();
             builder.Services.AddSingleton<IItemMapper, ItemMapper>();
+            builder.Services.AddSingleton<IPlayerMapper, PlayerMapper>();
 
             builder.Services.AddHostedService<ChannelHost>();
 

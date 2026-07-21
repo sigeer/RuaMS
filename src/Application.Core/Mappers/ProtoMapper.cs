@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.DueyService;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -38,7 +39,10 @@ namespace Application.Core.Mappers
                 .ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
 
             config.NewConfig<Dto.CharacterDto, Player>()
-                            .Map(x => x.RemainingSp, x => TranslateArray(x.Sp));
+                            .ConstructUsing(src => (Player)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(Player)))
+                            .Map(x => x.RemainingSp, x => TranslateArray(x.Sp))
+                            .Map(dest => dest.JobModel, src => JobFactory.GetById(src.JobId))
+                            .Ignore(dest => dest.JobId);
 
             config.NewConfig<Player, Dto.CharacterDto>()
                             .Map(x => x.Sp, x => string.Join(",", x.RemainingSp))
@@ -56,10 +60,10 @@ namespace Application.Core.Mappers
                             .Map(x => x.Hp, x => x.HP)
                             .Map(x => x.Mp, x => x.MP)
                             .Map(x => x.Maxhp, x => x.MaxHP)
-                            .Map(x => x.Maxmp, x => x.MaxMP);
+                            .Map(x => x.Maxmp, x => x.MaxMP)
+                            .Ignore(x => x.Map);
 
-            config.NewConfig<Dto.AccountCtrlDto, AccountCtrl>();
-            config.NewConfig<AccountCtrl, Dto.AccountCtrlDto>();
+            config.NewConfig<AccountDto.AccountInfoProto, AccountInfoModel>();
 
             #region Item
             config.NewConfig<Dto.ItemDto, Pet>()
@@ -80,6 +84,7 @@ namespace Application.Core.Mappers
                 });
 
             config.NewConfig<Pet, Dto.ItemDto>()
+                .Inherits<Item, Dto.ItemDto>()
                 .Map(x => x.PetInfo, x => new Dto.PetDto
                 {
                     Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
@@ -103,16 +108,12 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.GiftFrom, source => source.getGiftFrom())
                 .Map(dest => dest.Position, source => source.getPosition())
                 .Map(dest => dest.InventoryType, src => GetInventoryType(src))
-                .Map(dest => dest.Type, src => src.PlayerInventory == null ? -1 : (int)src.PlayerInventory.StoreType);
+                .Map(dest => dest.Type, src => src.PlayerInventory == null ? -1 : (int)src.PlayerInventory.StoreType)
+                .Include<Pet, Dto.ItemDto>()
+                .Include<Equip, Dto.ItemDto>();
 
-            config.NewConfig<Equip, Dto.ItemDto>()
-                .Inherits<Item, Dto.ItemDto>();
 
-            config.NewConfig<Pet, Dto.ItemDto>()
-                .Inherits<Item, Dto.ItemDto>();
-
-            config.NewConfig<ItemProto.RingDto, RingSourceModel>();
-            config.NewConfig<RingSourceModel, ItemProto.RingDto>();
+            config.NewConfig<ItemProto.RingDto, RingSourceModel>().TwoWays();
 
             config.NewConfig<Dto.ItemDto, Equip>()
                     .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position, source.UniqueId))
@@ -149,6 +150,7 @@ namespace Application.Core.Mappers
                     });
 
             config.NewConfig<Equip, Dto.ItemDto>()
+                .Inherits<Item, Dto.ItemDto>()
                 .Map(dest => dest.EquipInfo, source => source);
 
             config.NewConfig<Equip, Dto.EquipDto>()
@@ -180,8 +182,10 @@ namespace Application.Core.Mappers
                 .ConstructUsing(x => new SkillMacro(x.Skill1, x.Skill1, x.Skill3, x.Name, x.Shout, x.Position));
 
             config.NewConfig<SkillMacro, Dto.SkillMacroDto>();
+
             config.NewConfig<Dto.FameLogRecordDto, FameLogObject>();
             config.NewConfig<FameLogObject, Dto.FameLogRecordDto>();
+
             config.NewConfig<BuddyProto.BuddyDto, BuddyCharacter>();
             config.NewConfig<BuddyCharacter, BuddyProto.BuddyDto>();
 
@@ -194,6 +198,7 @@ namespace Application.Core.Mappers
                 .MapWith(src => MapDrop(src));
 
             config.NewConfig<Dto.NoteDto, NoteObject>();
+
             config.NewConfig<Dto.ShopDto, Shop>()
                 .ConstructUsing(src => new Shop(src.ShopId, src.NpcId, src.Items.Adapt<List<ShopItem>>()));
             config.NewConfig<Dto.ShopItemDto, ShopItem>()
@@ -244,6 +249,8 @@ namespace Application.Core.Mappers
 
             config.NewConfig<PlayerNpc, LifeProto.PlayerNPCDto>()
                 .Map(dest => dest.ScriptId, src => src.NpcId);
+
+            config.NewConfig<DueyDto.DueyPackageDto, DueyPackageObject>();
         }
 
         public static int[] TranslateArray(string str)
@@ -258,8 +265,11 @@ namespace Application.Core.Mappers
                         : (sbyte)src.getInventoryType();
         }
 
-        public static Item MapItem(Dto.ItemDto src)
+        public static Item? MapItem(Dto.ItemDto src)
         {
+            if (src == null)
+                return null;
+
             if (src.EquipInfo != null)
             {
                 return src.Adapt<Equip>();

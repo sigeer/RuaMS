@@ -2,7 +2,6 @@ using Application.Core.Login;
 using Application.Core.Login.Models.Items;
 using Application.EF;
 using Application.EF.Entities;
-using AutoMapper;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,6 @@ namespace ServiceTest.Infrastructure
 {
     internal class MapperTest
     {
-        AutoMapper.IMapper _mapper;
         IDbContextFactory<DBContext> _dbContextFactory;
         private TypeAdapterConfig _mapsterConfig;
         MapsterMapper.IMapper _mapper2;
@@ -25,7 +23,8 @@ namespace ServiceTest.Infrastructure
             services.AddLoginServerDI("Sqlite", "Data Source=benchmark.db");
 
             var provider = services.BuildServiceProvider();
-            _mapper = provider.GetRequiredService<IMapper>();
+
+            _mapper2 = provider.GetRequiredService<MapsterMapper.IMapper>();
 
             _dbContextFactory = provider.GetRequiredService<IDbContextFactory<DBContext>>();
 
@@ -59,7 +58,7 @@ namespace ServiceTest.Infrastructure
         public void UseAutoMapper()
         {
             var model = new FredrickStoreModel { Meso = 1 };
-            Assert.That(_mapper.Map<FredstorageEntity>(model).Meso == model.Meso);
+            Assert.That(_mapper2.Map<FredstorageEntity>(model).Meso == model.Meso);
         }
 
         [Test]
@@ -87,13 +86,13 @@ namespace ServiceTest.Infrastructure
             });
             var localMapper = config.CreateMapper();
 
-            Assert.Throws<AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
+            Assert.Throws<AutoMapper.AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
             Assert.Throws<ArgumentException>(() => localMapper.Map<DiffPropNameRecord>(model));
 
             var applyModel = new DiffPropNameRecord(2);
             Assert.That(localMapper.Map(model, applyModel).IntB, Is.EqualTo(model.IntA));
 
-            Assert.Throws<AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
+            Assert.Throws<AutoMapper.AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
             Assert.That(localMapper.Map<SamePropNameRecord>(model).IntA, Is.EqualTo(model.IntA));
         }
 

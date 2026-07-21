@@ -73,7 +73,7 @@ public class CharacterEntity
 
     public int HpMpUsed { get; set; }
 
-    public int JobId { get; private set; }
+    public int JobId { get; set; }
 
     public int Skincolor { get; set; }
 

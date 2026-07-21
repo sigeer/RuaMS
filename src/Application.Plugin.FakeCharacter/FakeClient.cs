@@ -29,7 +29,7 @@ namespace Application.Plugin.FakeCharacter
 
         public bool IsServerTransition => false;
 
-        public AccountCtrl? AccountEntity { get; set; } = new AccountCtrl
+        public AccountInfoModel? AccountEntity { get; set; } = new AccountInfoModel
         {
             Id = 0,
             Name = "FakeAccount",
@@ -140,7 +140,7 @@ namespace Application.Plugin.FakeCharacter
             return Task.CompletedTask;
         }
 
-        public void SetAccount(AccountCtrl accountEntity)
+        public void SetAccount(AccountInfoModel accountEntity)
         {
             AccountEntity = accountEntity;
         }

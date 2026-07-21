@@ -5,6 +5,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.Mappers;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
@@ -158,7 +159,7 @@ namespace Application.Core.Channel.Services
             player.GachaponStorage = new(player, o.GachaponStorage.Meso, _mapper.Map<Item[]>(o.GachaponStorage.Items));
 
 
-            c.SetAccount(_mapper.Map<AccountCtrl>(o.Account));
+            c.SetAccount(_mapper.Map<AccountInfoModel>(o.Account));
             c.SetPlayer(player);
 
 
@@ -325,7 +326,6 @@ namespace Application.Core.Channel.Services
                     playerDto.Spawnpoint = 0;
                 }
             }
-            playerDto.PendantOfSpiritEquippedTime = player.PendantOfSpiritEquippedTime;
 
             #region inventory mapping
             var d = player.Bag.GetValues().SelectMany(x => x.list().Adapt<Dto.ItemDto[]>()).ToArray();

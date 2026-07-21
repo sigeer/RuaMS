@@ -3,7 +3,6 @@ using Application.Core.Login.Models.Items;
 using Application.EF.Entities;
 using AutoMapper;
 using BenchmarkDotNet.Attributes;
-using FastExpressionCompiler;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +24,6 @@ namespace Application.Benchmark
             var provider = services.BuildServiceProvider();
             _mapper = provider.GetRequiredService<IMapper>();
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
             _mapsterConfig = new TypeAdapterConfig();
             _mapsterConfig.Default.PreserveReference(true);
             _mapsterConfig.NewConfig<FredrickStoreModel, FredstorageEntity>()

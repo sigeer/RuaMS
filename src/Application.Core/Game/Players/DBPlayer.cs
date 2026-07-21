@@ -21,7 +21,7 @@ namespace Application.Core.Game.Players
 
         public int HpMpUsed { get; set; }
 
-        public int JobId { get; private set; }
+        public int JobId => JobModel.Id;
 
         public int Skincolor { get; set; }
 

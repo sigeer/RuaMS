@@ -5,6 +5,7 @@ namespace Application.Core.Login.Client
 {
     public interface ILoginClient : IClientBase
     {
+        new AccountCtrl? AccountEntity { get; set; }
         MasterServer CurrentServer { get; protected set; }
         int SelectedChannel { get; set; }
         int CurrentHistoryId { get; set; }

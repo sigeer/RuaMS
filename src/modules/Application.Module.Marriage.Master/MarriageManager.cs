@@ -73,7 +73,15 @@ namespace Application.Module.Marriage.Master
             };
 
             SetDirty(newModel.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, newModel));
-            return new MarriageProto.CreateMarriageRelationResponse { Data = _mapper.Map<MarriageProto.MarriageDto>(newModel) };
+            return new MarriageProto.CreateMarriageRelationResponse { Data = MapDto(newModel) };
+        }
+
+        MarriageProto.MarriageDto MapDto(MarriageModel model)
+        {
+            var dto = _mapper.Map<MarriageProto.MarriageDto>(model);
+            dto.WifeName = _server.CharacterManager.GetPlayerName(model.Wifeid);
+            dto.HusbandName = _server.CharacterManager.GetPlayerName(model.Husbandid);
+            return dto;
         }
 
         public async Task BreakMarriage(MarriageProto.BreakMarriageRequest request)
@@ -142,7 +150,7 @@ namespace Application.Module.Marriage.Master
 
         public MarriageProto.LoadMarriageInfoResponse GetEffectMarriageModelRemote(MarriageProto.LoadMarriageInfoRequest request)
         {
-            return new LoadMarriageInfoResponse() { Data = _mapper.Map<MarriageProto.MarriageDto>(GetEffectMarriageModel(request.MasterId)) };
+            return new LoadMarriageInfoResponse() { Data = MapDto(GetEffectMarriageModel(request.MasterId)) };
         }
 
         public void CompleteMarriage(MarriageModel model, RingSourceModel ringSource)

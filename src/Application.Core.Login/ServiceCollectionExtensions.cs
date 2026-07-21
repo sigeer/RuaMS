@@ -14,7 +14,6 @@ using Application.EF;
 using Application.Protos;
 using Application.Shared.Servers;
 using Application.Utility;
-using FastExpressionCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -171,11 +170,13 @@ namespace Application.Core.Login
                     o.UseSqlite(connectString, o => o.MigrationsAssembly("Application.Core.EF.Sqlite"));
             });
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
             var mapperConfig = TypeAdapterConfig.GlobalSettings;
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             services.AddSingleton(mapperConfig);
             services.AddSingleton<IMapper, ServiceMapper>();
+            services.AddSingleton<ICharacterMapper, CharacterMapper>();
+            services.AddSingleton<IItemMapper, ItemMapper>();
+            services.AddSingleton<IAccountMapper, AccountMapper>();
 
             services.AddLoginHandlers();
 

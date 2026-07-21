@@ -266,7 +266,7 @@ public class CashOperationHandler : ChannelHandlerBase
                     if (c.GainCharacterSlot())
                     {
                         cs.Buy(cash, cItem);
-                        await c.SendPacket(PacketCreator.showBoughtCharacterSlot(c.AccountEntity!.Characterslots));
+                        await c.SendPacket(PacketCreator.showBoughtCharacterSlot(++c.AccountEntity!.Characterslots));
                         await c.SendPacket(PacketCreator.showCash(chr));
                     }
                     else

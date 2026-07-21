@@ -205,7 +205,7 @@ namespace Application.Core.Login.Net.Packets
             p.writeInt(c.AccountEntity.Id);     // Account ID
             p.writeByte(c.AccountEntity.Gender); // Gender (0=Male, 1=Female)
 
-            bool canFly = c.AccountEntity.CanFly;
+            bool canFly = c.AccountEntity.GmMode;
             bool isAdmin = (YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) && c.AccountEntity.IsGmAccount();
             p.writeBool(isAdmin);   // Is GM account (offset 11, determines client-side admin access)
             p.writeByte(isAdmin ? 0x80 : 0);  // Admin privilege byte (offset 12: 0x80=SuperGM, 0x40=GM, 0x20=Tester, 0=Normal)

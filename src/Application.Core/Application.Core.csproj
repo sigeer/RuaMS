@@ -26,7 +26,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<Generated Include="**\*.g.cs" />
+		<Generated Include="Mappers\*.g.cs" />
 	</ItemGroup>
 
 	<Target Name="CleanGenerated" AfterTargets="Clean">

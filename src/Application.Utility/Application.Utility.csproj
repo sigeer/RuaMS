@@ -11,7 +11,6 @@
 		<PackageReference Include="System.Management" />
 		<PackageReference Include="YamlDotNet" />
 		<PackageReference Include="Mapster" />
-		<PackageReference Include="FastExpressionCompiler" />
 	</ItemGroup>
 
 	<ItemGroup>

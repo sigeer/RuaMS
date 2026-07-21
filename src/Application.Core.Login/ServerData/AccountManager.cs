@@ -151,7 +151,7 @@ namespace Application.Core.Login.Datas
             {
                 if (_accDataSource.TryGetValue(chr.Character.AccountId, out var data))
                 {
-                    data.CanFly = request.SetStatus;
+                    data.GmMode = request.SetStatus;
 
                     return new ConfigProto.SetFlyResponse { Code = 0, Request = request };
                 }
