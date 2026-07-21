@@ -4,6 +4,9 @@ namespace Application.Templates
     {
         [WZPath("info/accountSharable")]
         public bool AccountSharable { get; set; }
+        /// <summary>
+        /// 对于tradeBlock=1 可通过宿命剪刀使其交易？
+        /// </summary>
         [WZPath("info/tradeAvailable")]
         public bool TradeAvailable { get; set; }
         [WZPath("info/slotMax")]

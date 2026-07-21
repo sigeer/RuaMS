@@ -1075,19 +1075,18 @@ public class MapleMap : IMap, INamedInstance
         return new Monster(this, pos, mobData);
     }
 
-    public async Task spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null)
+    public async Task<Monster> spawnMonsterOnGroundBelow(MobTemplate mobData, Point pos, Action<Monster>? handleMob = null)
     {
         Point spos = new Point(pos.X, pos.Y - 1);
-        var calcedPos = calcPointBelow(spos);
-        if (calcedPos != null)
-        {
-            spos = calcedPos.Value;
-            spos.Y--;
+        var calcedPos = calcPointBelow(spos)!;
 
-            var mob = CreateMonster(mobData, pos);
-            handleMob?.Invoke(mob);
-            await spawnMonster(mob);
-        }
+        spos = calcedPos.Value;
+        spos.Y--;
+
+        var mob = CreateMonster(mobData, pos);
+        handleMob?.Invoke(mob);
+        await spawnMonster(mob);
+        return mob;
 
     }
     private List<SpawnPoint> getMonsterSpawn()
@@ -2795,7 +2794,7 @@ public class MapleMap : IMap, INamedInstance
             else
             {
                 // 没必要
-                // SetPlayerInvisibleObject(chr, o);
+                // await SetPlayerInvisibleObject(chr, o);
             }
         }
     }

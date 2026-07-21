@@ -6897,6 +6897,22 @@ public class PacketCreator
         return p;
     }
 
+    public static Packet SetNPCScriptable(IEnumerable<(int NpcId, string Script)> scriptableNpcIds)
+    { 
+        // thanks to GabrielSin
+        OutPacket p = OutPacket.create(SendOpcode.SET_NPC_SCRIPTABLE);
+        p.writeByte(scriptableNpcIds.Count());
+        foreach (var item in scriptableNpcIds)
+        {
+            p.writeInt(item.NpcId);
+            // The client needs a name for the npc conversation, which is displayed under etc when the npc has a quest available.
+            p.writeString(item.Script);
+            p.writeInt(0); // start time
+            p.writeInt(int.MaxValue); // end time
+        }
+        return p;
+    }
+
     private static Packet MassacreResult(byte nRank, int nIncExp)
     {
         //CField_MassacreResult__OnMassacreResult @ 0x005617C5

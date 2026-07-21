@@ -17,5 +17,14 @@ namespace Application.Utility.Extensions
 
         public static int GetX(this Point p) => p.X;
         public static int GetY(this Point p) => p.Y;
+
+
+        public static Point GetRandomPoint(this Rectangle rect)
+        {
+            // 使用 Random.Shared 避免每次新建实例（.NET 6+）
+            int x = Random.Shared.Next(rect.X, rect.X + rect.Width);
+            int y = Random.Shared.Next(rect.Y, rect.Y + rect.Height);
+            return new Point(x, y);
+        }
     }
 }
