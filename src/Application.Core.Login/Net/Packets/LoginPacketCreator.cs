@@ -3,7 +3,6 @@ using Application.Core.Login.Models;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
-using Application.Utility.Extensions;
 using System.Net;
 
 namespace Application.Core.Login.Net.Packets

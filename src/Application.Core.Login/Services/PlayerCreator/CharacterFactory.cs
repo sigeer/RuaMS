@@ -1,4 +1,3 @@
-using Application.Core.Login.Models;
 using Application.Core.Login.Services.PlayerCreator.Novice;
 using Application.Utility.Exceptions;
 

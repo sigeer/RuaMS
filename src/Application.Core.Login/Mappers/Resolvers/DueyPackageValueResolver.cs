@@ -1,7 +1,5 @@
-using Application.Core.Login;
 using Application.Core.Login.Models;
 using Application.Shared.Constants;
-using AutoMapper;
 using DueyDto;
 
 namespace Application.Core.Login.Mappers.Resolvers

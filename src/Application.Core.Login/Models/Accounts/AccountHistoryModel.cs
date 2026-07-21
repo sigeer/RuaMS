@@ -1,13 +1,8 @@
 using Application.Core.Login.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Models.Accounts
 {
-    public class AccountHistoryModel: ITrackableEntityKey<int>
+    public class AccountHistoryModel : ITrackableEntityKey<int>
     {
         public int Id { get; set; }
         public int AccountId { get; set; }

@@ -1,12 +1,9 @@
-using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;

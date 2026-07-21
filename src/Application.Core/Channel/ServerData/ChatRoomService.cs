@@ -1,6 +1,5 @@
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.ServerData

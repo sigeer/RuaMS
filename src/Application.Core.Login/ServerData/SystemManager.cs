@@ -1,8 +1,5 @@
 using Application.Shared.Message;
 using Config;
-using System.Threading.Tasks;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login.ServerData
 {
@@ -66,13 +63,13 @@ namespace Application.Core.Login.ServerData
         HashSet<int> _autoBanIgnores = new();
         public async Task ToggleAutoBanIgnored(ToggleAutoBanIgnoreRequest request)
         {
-            var res = new ToggleAutoBanIgnoreResponse() {Request = request };
+            var res = new ToggleAutoBanIgnoreResponse() { Request = request };
             var chr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (chr == null)
             {
                 res.Code = 1;
                 await _server.Transport.SendMessageN(ChannelRecvCode.InvokeAutoBanIgnore, res, [request.MasterId]);
-                    return;
+                return;
             }
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);

@@ -1,7 +1,6 @@
 using Application.Core.Game.Maps.MiniRoom;
 using Application.Core.Game.Trades;
 using Application.Resources.Messages;
-using AutoMapper;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;

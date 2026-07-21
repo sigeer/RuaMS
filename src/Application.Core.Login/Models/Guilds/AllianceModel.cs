@@ -38,7 +38,7 @@ namespace Application.Core.Login.Models.Guilds
                 code = AllianceUpdateResult.AlreadyInAlliance;
                 return false;
             }
-                
+
 
             Guilds.Add(guild);
             return true;

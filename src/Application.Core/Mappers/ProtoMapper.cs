@@ -6,7 +6,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
-using AutoMapper;
 using client.inventory;
 using Google.Protobuf.WellKnownTypes;
 using net.server;

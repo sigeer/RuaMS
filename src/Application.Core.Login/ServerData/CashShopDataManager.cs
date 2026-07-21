@@ -1,7 +1,6 @@
 using Application.Shared.Constants;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using AutoMapper;
 using CashProto;
 using Microsoft.Extensions.Logging;
 

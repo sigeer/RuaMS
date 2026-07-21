@@ -3,7 +3,6 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using CashProto;
 using ItemProto;

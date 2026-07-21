@@ -21,7 +21,6 @@
 */
 
 
-using Application.Core.Channel.DataProviders;
 using scripting.item;
 
 namespace Application.Core.Channel.Net.Handlers;

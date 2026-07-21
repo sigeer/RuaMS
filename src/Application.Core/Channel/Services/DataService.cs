@@ -7,7 +7,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
-using AutoMapper;
 using client;
 using client.inventory;
 using client.keybind;

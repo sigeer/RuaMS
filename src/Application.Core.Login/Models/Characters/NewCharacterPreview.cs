@@ -1,5 +1,3 @@
-using Application.Utility.Extensions;
-
 namespace Application.Core.Login.Models
 {
     public class NewCharacterPreview : CharacterLiveObject

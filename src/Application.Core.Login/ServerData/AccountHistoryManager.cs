@@ -3,15 +3,14 @@ using Application.Core.Login.Models.Accounts;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Resources.Messages;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using SystemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Application.Shared.Message;
-using Application.Resources.Messages;
+using SystemProto;
 
 namespace Application.Core.Login.ServerData
 {

@@ -2,7 +2,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Core.tools.RandomUtils;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.ServerData

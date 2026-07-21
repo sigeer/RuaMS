@@ -8,20 +8,11 @@ using Application.Shared.Guild;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Execution;
-using Dto;
-using Google.Protobuf;
 using GuildProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using XmlWzReader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Core.Login.ServerData
 {

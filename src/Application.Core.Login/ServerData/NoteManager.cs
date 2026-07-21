@@ -2,12 +2,10 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData;
 

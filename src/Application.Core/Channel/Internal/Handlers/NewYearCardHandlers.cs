@@ -1,7 +1,6 @@
 using Application.Core.Models;
 using Application.Shared.Internal;
 using Application.Shared.Message;
-using AutoMapper;
 using Dto;
 using Google.Protobuf;
 using tools;

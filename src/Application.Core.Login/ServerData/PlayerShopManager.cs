@@ -7,7 +7,6 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
 using Application.Utility.Configs;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;

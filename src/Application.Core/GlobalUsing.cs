@@ -27,6 +27,7 @@ global using Application.Utility.Extensions;
 global using Application.Utility.Inject;
 global using Application.Utility.Loggers;
 global using Application.Utility.Tasks;
+global using AutoMapper;
 global using Serilog;
 global using System;
 global using System.Drawing;

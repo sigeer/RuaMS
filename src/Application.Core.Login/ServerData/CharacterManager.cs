@@ -12,7 +12,6 @@ using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
-using AutoMapper;
 using Dto;
 using JailProto;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +66,7 @@ namespace Application.Core.Login.Datas
                     return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(id);
                 }
             }
-            
+
             return GetCharacterFromDB(id);
         }
         public CharacterLiveObject? FindPlayerByName(string name)
@@ -229,7 +228,7 @@ namespace Application.Core.Login.Datas
             await BatchUpdateCore(list);
             if (saveDB)
             {
-               await _masterServer.Send(new CommitDBCommand());
+                await _masterServer.Send(new CommitDBCommand());
             }
         }
 

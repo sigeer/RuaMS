@@ -1,8 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.ServerData;
 using Application.Shared.Constants;
-using AutoMapper;
-using Dto;
 
 namespace Application.Core.Login.Mappers.Resolvers
 {

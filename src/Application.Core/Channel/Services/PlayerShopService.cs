@@ -1,7 +1,6 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
-using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
 using ItemProto;

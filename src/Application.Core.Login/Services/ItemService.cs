@@ -2,7 +2,6 @@ using Application.EF;
 using Application.Shared.Constants.Item;
 using Application.Shared.Message;
 using Application.Utility.Compatible.Atomics;
-using AutoMapper;
 using BaseProto;
 using Dto;
 using ItemProto;

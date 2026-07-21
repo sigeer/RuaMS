@@ -1,6 +1,5 @@
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
-using AutoMapper;
 using client.inventory;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;

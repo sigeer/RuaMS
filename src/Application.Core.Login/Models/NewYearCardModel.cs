@@ -2,7 +2,7 @@ using Application.Core.Login.Shared;
 
 namespace Application.Core.Login.Models
 {
-    public class NewYearCardModel: ITrackableEntityKey<int>
+    public class NewYearCardModel : ITrackableEntityKey<int>
     {
         public int Id { get; set; }
 

@@ -1,7 +1,6 @@
 using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
-using Application.Utility.Configs;
 using Application.Utility.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

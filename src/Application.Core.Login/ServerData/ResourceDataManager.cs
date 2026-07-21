@@ -3,14 +3,10 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using BaseProto;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using ZLinq;
 
 namespace Application.Core.Login.ServerData

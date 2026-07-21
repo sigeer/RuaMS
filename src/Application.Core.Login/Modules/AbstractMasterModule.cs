@@ -1,7 +1,5 @@
 using Application.Core.Login.Models;
-using Application.EF;
 using Application.Utility.Tasks;
-using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Modules

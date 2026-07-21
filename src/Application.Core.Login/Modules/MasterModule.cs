@@ -4,8 +4,6 @@ using Application.Shared.Message;
 using Application.Shared.Team;
 using GuildProto;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace Application.Core.Login.Modules
 {
@@ -134,7 +132,7 @@ namespace Application.Core.Login.Modules
         public override int DeleteCharacterCheck(int id)
         {
             var chr = _server.CharacterManager.FindPlayerById(id);
-            if (chr  == null)
+            if (chr == null)
             {
                 return 0x9;
             }

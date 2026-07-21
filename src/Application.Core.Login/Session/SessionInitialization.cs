@@ -21,7 +21,7 @@ public class SessionInitialization
         _logger = logger;
         for (int i = 0; i < 100; i++)
         {
-            locks.Add(new ());
+            locks.Add(new());
         }
     }
 

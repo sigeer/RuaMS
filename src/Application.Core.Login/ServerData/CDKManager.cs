@@ -3,13 +3,11 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Shared.Items;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Application.Core.Login.ServerData
 {

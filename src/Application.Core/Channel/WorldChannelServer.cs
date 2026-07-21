@@ -14,7 +14,6 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
-using AutoMapper;
 using Config;
 using Google.Protobuf;
 using MessageProto;

@@ -1,14 +1,7 @@
 using Application.Core.Login.Models;
 using Application.Shared.Constants;
 using Application.Shared.Message;
-using Application.Shared.Models;
-using Application.Shared.Servers;
-using AutoMapper;
-using Dto;
 using System.Collections.Concurrent;
-using System.Security.Cryptography.Xml;
-using System.Threading.Tasks;
-using XmlWzReader;
 
 namespace Application.Core.Login.Services
 {

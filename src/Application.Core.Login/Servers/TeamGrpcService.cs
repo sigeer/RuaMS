@@ -1,4 +1,3 @@
-using Application.Shared.Team;
 using Grpc.Core;
 using TeamProto;
 

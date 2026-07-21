@@ -11,8 +11,6 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Login;
-using Application.Shared.NewYear;
-using AutoMapper;
 
 namespace Application.Core.Login.Mappers
 {

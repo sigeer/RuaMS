@@ -1,7 +1,5 @@
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using BuddyProto;
-using Dto;
 using Google.Protobuf;
 using MessageProto;
 

@@ -2,7 +2,6 @@ using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Login;
-using AutoMapper;
 
 namespace Application.Core.Channel.Services
 {

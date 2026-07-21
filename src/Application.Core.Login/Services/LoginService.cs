@@ -1,9 +1,7 @@
 using Application.EF;
 using Application.Shared.Login;
 using Application.Utility.Configs;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {
@@ -51,8 +49,9 @@ namespace Application.Core.Login.Services
                 return null;
 
             var data = _mapper.Map<SyncProto.PlayerGetterDto>(characterObj);
-            data.LoginInfo = new SyncProto.LoginInfo { 
-                IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION ,
+            data.LoginInfo = new SyncProto.LoginInfo
+            {
+                IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION,
                 Language = accountModel.Language
             };
 

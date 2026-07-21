@@ -1,4 +1,3 @@
-using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
@@ -7,8 +6,6 @@ using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
 using Application.Utility.Exceptions;
-using Application.Utility.Extensions;
-using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,7 +18,7 @@ namespace Application.Core.Login.Datas
         /// <summary>
         /// 账户登录态记录
         /// </summary>
-        ConcurrentDictionary<int, AccountLoginStatus> _accStageCache = new ();
+        ConcurrentDictionary<int, AccountLoginStatus> _accStageCache = new();
 
         ConcurrentDictionary<int, AccountCtrl> _accDataSource = new();
         ConcurrentDictionary<int, StoreFlag> _updated = new();
@@ -223,7 +220,7 @@ namespace Application.Core.Login.Datas
 
         public async Task InitializeAsync(DBContext dbContext)
         {
-            _accPlayerCache = new ((await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
+            _accPlayerCache = new((await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
                 .GroupBy(x => x.AccountId)
                 .ToDictionary(x => x.Key, x => x.Select(y => y.Id).ToHashSet()));
         }

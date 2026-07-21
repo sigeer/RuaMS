@@ -2,9 +2,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Constants.Item;
 using Application.Shared.Items;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Datas

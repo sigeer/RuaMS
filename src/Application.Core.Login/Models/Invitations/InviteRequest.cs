@@ -1,5 +1,3 @@
-using Application.Shared.Invitations;
-
 namespace Application.Core.Login.Models.Invitations
 {
     public class InviteRequest
@@ -14,7 +12,7 @@ namespace Application.Core.Login.Models.Invitations
             Key = key;
             TargetName = targetName;
         }
-        public long CreationTime { get;}
+        public long CreationTime { get; }
         public int FromPlayerId { get; }
         public string FromPlayerName { get; }
         public int ToPlayerId { get; }
@@ -23,6 +21,6 @@ namespace Application.Core.Login.Models.Invitations
         /// 
         /// </summary>
         public int Key { get; }
-        public  string TargetName { get; }
+        public string TargetName { get; }
     }
 }

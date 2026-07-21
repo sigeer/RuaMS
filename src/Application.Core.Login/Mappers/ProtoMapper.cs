@@ -5,7 +5,6 @@ using Application.Core.Login.Models.Gachpons;
 using Application.Core.Login.Models.Items;
 using Application.EF.Entities;
 using Application.Shared.Items;
-using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Mappers

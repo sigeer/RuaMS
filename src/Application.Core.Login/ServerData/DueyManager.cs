@@ -6,13 +6,11 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Message;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {

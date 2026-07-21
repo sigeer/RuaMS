@@ -4,8 +4,6 @@ using Application.Core.Game.Relation;
 using Application.Core.Model;
 using Application.Core.ServerTransports;
 using Application.Templates.Etc;
-using Application.Templates.Exceptions;
-using AutoMapper;
 using client.inventory;
 using Microsoft.Extensions.Logging;
 using server;

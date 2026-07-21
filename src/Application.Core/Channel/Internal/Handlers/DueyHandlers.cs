@@ -2,7 +2,6 @@ using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Services;
 using Application.Shared.Message;
-using AutoMapper;
 using DueyDto;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;

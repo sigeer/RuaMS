@@ -1,7 +1,5 @@
 using Application.Core.Login.Models;
 using Application.EF.Entities;
-using Application.Templates.Item.Consume;
-using AutoMapper;
 
 namespace Application.Core.Login.Mappers
 {

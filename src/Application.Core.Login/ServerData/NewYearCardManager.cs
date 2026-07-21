@@ -1,18 +1,14 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Constants;
 using Application.Shared.Message;
 using Application.Shared.NewYear;
 using Application.Utility;
-using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
 using Dto;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -164,7 +160,7 @@ namespace Application.Core.Login.ServerData
                 response.List.Add(item);
             }
 
-           await  _server.Transport.SendNewYearCardNotify(response);
+            await _server.Transport.SendNewYearCardNotify(response);
         }
 
         public async Task DiscardNewYearCard(Dto.DiscardNewYearCardRequest request)

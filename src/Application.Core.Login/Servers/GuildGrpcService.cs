@@ -1,16 +1,10 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GuildProto;
-using MessageProto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Servers
 {
-    internal class GuildGrpcService: ServiceProto.GuildService.GuildServiceBase
+    internal class GuildGrpcService : ServiceProto.GuildService.GuildServiceBase
     {
         readonly MasterServer _server;
 
@@ -22,7 +16,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<GetGuildResponse> GetGuildModel(GetGuildRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new GetGuildResponse { Model = _server.GuildManager.GetGuildFull(request.Id)});
+            return Task.FromResult(new GetGuildResponse { Model = _server.GuildManager.GetGuildFull(request.Id) });
         }
 
         public override Task<QueryRankedGuildsResponse> GetGuildRank(Empty request, ServerCallContext context)
