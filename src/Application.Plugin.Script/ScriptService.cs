@@ -64,10 +64,5 @@ namespace Application.Plugin.Script
             _reactorTouchSource.Clear();
             _reactorUntouchSource.Clear();
         }
-
-        public override Task OnMounted()
-        {
-            return Task.CompletedTask;
-        }
     }
 }

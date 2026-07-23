@@ -158,7 +158,7 @@ namespace Application.Plugin.Events
                 LogInfo("{ServerName} 加载事件...完成（{EventCount}项）", channel.InstanceName, count - oldCount);
             }
 
-            return Task.CompletedTask;
+            return base.OnMounted();
         }
     }
 }
