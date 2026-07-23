@@ -153,7 +153,7 @@ namespace Application.Plugin.FakeCharacter
             {
                 commandCenter.TryRegisterCommand(item);
             }
-            return Task.CompletedTask;
+            return base.OnMounted();
         }
     }
 }

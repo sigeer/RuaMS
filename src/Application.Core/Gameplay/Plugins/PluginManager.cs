@@ -13,7 +13,9 @@ using scripting.reactor;
 using server.maps;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Reflection;
+using System.Xml.Linq;
 using tools;
 
 namespace Application.Core.Gameplay.Plugins
@@ -46,38 +48,11 @@ namespace Application.Core.Gameplay.Plugins
         {
             if (await LoadPluginInternal(pluginDllName))
             {
-                await OnPluginMounted(pluginDllName);
                 return true;
             }
             return false;
         }
 
-        async Task OnPluginMounted(string pluginDllName)
-        {
-            // 先发现监听器，确保 IPluginChannelLifeService 被注册
-            OnPluginContainerChanged();
-
-
-            // 最后调用 IPluginLifeService 的 OnMounted
-            foreach (var container in _pluginContainers.Values.ToList())
-            {
-                foreach (var listener in container.PluginServices.ToArray())
-                {
-                    try
-                    {
-                        await listener.OnMounted();
-                    }
-                    catch (Exception ex)
-                    {
-                        container.Logger.Error(ex, "OnMounted 失败");
-                    }
-                }
-            }
-        }
-
-        void OnPluginContainerChanged()
-        {
-        }
 
         async Task<bool> LoadPluginInternal(string pluginDllName)
         {
@@ -91,6 +66,17 @@ namespace Application.Core.Gameplay.Plugins
             await RemovePluginInternal(pluginKey);
 
             _pluginContainers[pluginKey] = newContainer;
+            foreach (var listener in newContainer.PluginServices.ToArray())
+            {
+                try
+                {
+                    await listener.OnMounted();
+                }
+                catch (Exception ex)
+                {
+                    newContainer.Logger.Error(ex, "OnMounted 失败");
+                }
+            }
             return true;
         }
 
