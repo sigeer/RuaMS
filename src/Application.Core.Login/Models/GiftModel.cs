@@ -2,7 +2,7 @@ using Application.Core.Login.Shared;
 
 namespace Application.Core.Login.Models
 {
-    public class GiftModel: ITrackableEntityKey<int>
+    public class GiftModel : ITrackableEntityKey<int>
     {
         public int Id { get; set; }
 

@@ -1,30 +1,20 @@
 namespace Application.Shared.Models
 {
-    public class AccountCtrl
+    public class AccountCtrl: AccountInfoModel
     {
-        public int Id { get; set; }
+        public string Password { get; set; } = "";
 
-        public string Name { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public string Pin { get; set; } = "";
 
-        public string Pin { get; set; } = null!;
+        public string Pic { get; set; } = "";
 
-        public string Pic { get; set; } = null!;
-        public sbyte Characterslots { get; set; } = 3;
 
-        public DateTime Birthday { get; set; }
-
-        public sbyte Gender { get; set; }
 
         public bool Tos { get; set; }
 
-        public sbyte GMLevel { get; set; }
+        public string CurrentIP { get; set; } = "";
+        public string CurrentMac { get; set; } = "";
 
-        public bool CanFly { get; set; }
-
-        public string CurrentIP { get; set; } = null!;
-        public string CurrentMac { get; set; } = null!;
-        public string CurrentHwid { get; set; } = null!;
         public string GetSessionRemoteHost()
         {
             return $"{CurrentIP}-{CurrentHwid}";
@@ -34,6 +24,6 @@ namespace Application.Shared.Models
 
     public static class AccountExtensions
     {
-        public static bool IsGmAccount(this AccountCtrl acc) => acc.GMLevel > 1;
+        public static bool IsGmAccount(this AccountInfoModel acc) => acc.GMLevel > 1;
     }
 }

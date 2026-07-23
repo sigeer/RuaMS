@@ -1,5 +1,4 @@
 using Application.Core.Client.inventory;
-using Application.Core.Models;
 using Application.Templates.Item;
 using Application.Utility.Tickables;
 using client.inventory;
@@ -181,7 +180,7 @@ namespace Application.Core.Game.Players
                         ops.Add(removeRes);
 
                         toRemoveCount -= removedCount;
-                        modifiedItems.Add(new (p.Item.getItemId(), removedCount));
+                        modifiedItems.Add(new(p.Item.getItemId(), removedCount));
                     }
                 }
             }

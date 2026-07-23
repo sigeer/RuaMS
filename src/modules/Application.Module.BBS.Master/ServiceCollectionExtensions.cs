@@ -13,7 +13,7 @@ namespace Application.Module.BBS.Master
     {
         public static IServiceCollection AddGuildBBSMaster(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<BBSManager>();
             services.AddSingleton<IStorage, BBSManager>(sp => sp.GetRequiredService<BBSManager>());
             services.AddSingleton<IServerBootstrap, BBSMasterBootstrap>();

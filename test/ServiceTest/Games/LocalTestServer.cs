@@ -11,6 +11,8 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility;
 using DotNetty.Transport.Channels;
+using Google.Protobuf.Collections;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +21,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using ServiceTest.TestUtilities;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
 using Yitter.IdGenerator;
 
@@ -67,6 +68,12 @@ namespace ServiceTest.Games
 
             var idGeneratorOptions = new IdGeneratorOptions(1);
             YitIdHelper.SetIdGenerator(idGeneratorOptions);
+
+            TypeAdapterConfig.GlobalSettings.Default
+             .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+                               member.Type.IsGenericType &&
+                               member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
+            TypeAdapterConfig.GlobalSettings.Compile();
 
             app.UseChannelServer();
 

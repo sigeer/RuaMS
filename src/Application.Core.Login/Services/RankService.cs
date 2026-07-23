@@ -1,6 +1,4 @@
 using Application.EF;
-using AutoMapper;
-using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;

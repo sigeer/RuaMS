@@ -1,5 +1,6 @@
 using SkiaSharp;
 using System.Collections.Concurrent;
+using System.Net.NetworkInformation;
 
 namespace Application.Core.Channel.AntiMacro;
 
@@ -170,11 +171,10 @@ public class CaptchaService
 
         // 逐个字符绘制，旋转随机角度
         using var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Italic);
+        using var font = new SKFont(typeface, 22); // 设置大小
         using var fontPaint = new SKPaint
         {
-            Typeface = typeface,
-            TextSize = 22,
-            IsAntialias = true
+            IsAntialias = true,
         };
 
         canvas.Save();
@@ -190,7 +190,7 @@ public class CaptchaService
                 (byte)Random.Shared.Next(60, 140));
 
             canvas.RotateDegrees(angle, x, y);
-            canvas.DrawText(code[i].ToString(), x, y, fontPaint);
+            canvas.DrawText(code[i].ToString(), x, y, SKTextAlign.Left, font, fontPaint);
             canvas.RotateDegrees(-angle, x, y);
         }
         canvas.Restore();

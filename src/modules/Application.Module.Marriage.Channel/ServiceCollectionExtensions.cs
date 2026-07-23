@@ -24,7 +24,7 @@ namespace Application.Module.Marriage.Channel
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
 
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.TryAddSingleton<IModuleChannelServerTransport, DefaultModuleChannelServerTransport>();
 
             services.AddSingleton<MarriageManager>();

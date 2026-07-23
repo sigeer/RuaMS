@@ -1,4 +1,3 @@
-using AutoMapper;
 using MarriageProto;
 using System.Threading.Tasks;
 

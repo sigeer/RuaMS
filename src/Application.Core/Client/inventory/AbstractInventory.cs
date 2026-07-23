@@ -10,10 +10,11 @@ using ZLinq;
 
 namespace Application.Core.Client.inventory
 {
-    public abstract class AbstractInventory : IEnumerable<Item>, IDisposable
+    public abstract class AbstractInventory : IEnumerable<Item>, IDisposable, IItemStore
     {
         public Player Owner { get; }
         public InventoryType Type { get; }
+        public ItemType StoreType => ItemType.Inventory;
 
         protected readonly SortedSet<TimedItemWrapper> _timedItems;
 
@@ -237,6 +238,8 @@ namespace Application.Core.Client.inventory
                 // tick > now的不会触发
                 _timedItems.Add(new TimedItemWrapper(item, 0));
             }
+
+            item.PlayerInventory = this;
             return Task.CompletedTask;
         }
         /// <summary>
@@ -246,6 +249,7 @@ namespace Application.Core.Client.inventory
         protected virtual Task OnItemLeave(Item item)
         {
             _timedItems.RemoveWhere(x => x.Item == item);
+            item.PlayerInventory = null;
             return Task.CompletedTask;
         }
 

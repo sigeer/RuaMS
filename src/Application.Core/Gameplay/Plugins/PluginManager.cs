@@ -6,14 +6,11 @@ using Application.Core.scripting.Infrastructure;
 using Application.Core.scripting.item;
 using Application.Core.scripting.npc;
 using Application.Core.scripting.quest;
+using client.inventory;
 using scripting.map;
 using scripting.portal;
 using scripting.reactor;
-using client.inventory;
-using scripting.npc;
-using scripting.quest;
 using server.maps;
-using server.quest;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
@@ -573,7 +570,7 @@ namespace Application.Core.Gameplay.Plugins
 
                     await using var talk = (ItemScriptBase)DynamicObjectFactory.Create(p.ObjType, c, item, npcId);
                     c.NPCConversationManager = talk;
-                    await(Task)p.Method.Invoke(talk, null)!;
+                    await (Task)p.Method.Invoke(talk, null)!;
                 },
                 c,
                 (cd, e) => cd.Logger.Error(e, "Item script error in: {ScriptName}", scriptName));

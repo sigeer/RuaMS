@@ -6,6 +6,7 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
 using Application.Core.Servers.Services;
@@ -179,7 +180,13 @@ namespace Application.Core.Channel.HostExtensions
 
             builder.Services.AddSingleton<DataService>();
 
-            builder.Services.AddAutoMapper(typeof(ProtoMapper));
+            var mapperConfig = TypeAdapterConfig.GlobalSettings;
+            mapperConfig.Scan(typeof(ProtoMapper).Assembly);
+            builder.Services.AddSingleton(mapperConfig);
+            builder.Services.AddSingleton<IMapper, ServiceMapper>();
+            builder.Services.AddSingleton<IItemMapper, ItemMapper>();
+            builder.Services.AddSingleton<IPlayerMapper, PlayerMapper>();
+
             builder.Services.AddHostedService<ChannelHost>();
 
             return builder;

@@ -6,7 +6,6 @@ using Application.Module.MTS.Common;
 using Application.Module.MTS.Master.Models;
 using Application.Shared.Items;
 using Application.Utility;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MTSProto;

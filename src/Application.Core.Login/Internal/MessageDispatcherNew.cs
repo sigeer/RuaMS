@@ -1,5 +1,4 @@
 using Application.Core.Login.Commands;
-using Application.Shared.Internal;
 using Google.Protobuf;
 using Microsoft.Extensions.DependencyInjection;
 

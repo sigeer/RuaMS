@@ -4,7 +4,6 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
 using Application.Shared.Team;
-using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

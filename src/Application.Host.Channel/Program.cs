@@ -1,6 +1,8 @@
 using Application.Core.Channel.HostExtensions;
 using Application.Module.Maker.Channel;
 using Application.Utility;
+using Google.Protobuf.Collections;
+using Mapster;
 using Serilog;
 using Serilog.Events;
 using System.Text;
@@ -48,6 +50,12 @@ builder.AddChannelServer();
 builder.Services.AddMakerChannel();
 
 var app = builder.Build();
+
+TypeAdapterConfig.GlobalSettings.Default
+        .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+                               member.Type.IsGenericType &&
+                               member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
+TypeAdapterConfig.GlobalSettings.Compile();
 
 app.UseChannelServer();
 

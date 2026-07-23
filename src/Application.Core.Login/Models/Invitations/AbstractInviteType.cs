@@ -1,7 +1,5 @@
 using Application.Shared.Invitations;
 using Application.Shared.Message;
-using Dto;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Models.Invitations
 {

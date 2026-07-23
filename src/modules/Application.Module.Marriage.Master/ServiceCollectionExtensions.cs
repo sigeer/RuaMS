@@ -14,7 +14,7 @@ namespace Application.Module.Marriage.Master
     {
         public static IServiceCollection AddMarriageMaster(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<MarriageManager>();
             services.AddSingleton<IStorage, MarriageManager>(sp => sp.GetRequiredService<MarriageManager>());
 

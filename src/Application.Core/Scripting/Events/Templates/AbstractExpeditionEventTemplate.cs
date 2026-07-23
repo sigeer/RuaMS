@@ -3,7 +3,6 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
-using System.Runtime.ConstrainedExecution;
 
 namespace Application.Core.scripting.Events.Templates
 {

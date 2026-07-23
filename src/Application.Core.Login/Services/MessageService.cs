@@ -1,11 +1,9 @@
 using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Message;
-using AutoMapper;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Services
 {

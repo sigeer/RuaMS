@@ -1,7 +1,6 @@
 using AllianceProto;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using AutoMapper;
 using GuildProto;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;

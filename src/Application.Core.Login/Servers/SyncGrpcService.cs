@@ -1,18 +1,10 @@
 using Application.Core.Login.Services;
-using Application.Shared.Events;
 using BaseProto;
-using CreatorProto;
 using Dto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using ItemProto;
-using ServiceProto;
 using SyncProto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Servers
 {

@@ -1,4 +1,3 @@
-using AutoMapper.Configuration.Annotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Application.EF.Entities;

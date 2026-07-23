@@ -3,9 +3,6 @@ using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using System.Reflection;
-using System.Security.Principal;
-using System.Xml.Linq;
 
 namespace Application.Core.Login.Services.PlayerCreator;
 
@@ -18,9 +15,9 @@ public class NewCharacterBuilder
     public int Bottom { get; }
     public int Shoes { get; }
     public int Weapon { get; }
-    public int Str  { get; }= 4;
-    public int Dex  { get; }= 4;
-    public int Int  { get; }= 4;
+    public int Str { get; } = 4;
+    public int Dex { get; } = 4;
+    public int Int { get; } = 4;
     public int Luk { get; } = 4;
     public int MaxHP { get; } = 50;
     public int MaxMP { get; } = 5;
@@ -66,7 +63,7 @@ public class NewCharacterBuilder
     }
     public string GetRemainingSp()
     {
-        var arr = new int[10] ;
+        var arr = new int[10];
         arr[GameConstants.getSkillBook(Job.Id)] = SP;
         return arr.AdpteSP();
     }

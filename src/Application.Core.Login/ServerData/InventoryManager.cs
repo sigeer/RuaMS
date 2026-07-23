@@ -2,9 +2,7 @@ using Application.Core.EF.Entities.Items;
 using Application.Core.Login.Models;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Shared.Constants.Item;
 using Application.Shared.Items;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Datas
@@ -66,77 +64,6 @@ namespace Application.Core.Login.Datas
             return items;
         }
 
-        public static void CommitInventoryByType(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
-        {
-            var itemType = (byte)type.getValue();
-
-            var allItems = dbContext.Inventoryitems.Where(x => (type.IsAccount ? x.Accountid == targetId : x.Characterid == targetId) && x.Type == itemType).ToList();
-            if (allItems.Count != 0)
-            {
-                var itemIds = allItems.Select(x => x.Inventoryitemid).ToArray();
-                var petIds = allItems.Select(x => x.UniqueId).ToArray();
-
-                dbContext.Inventoryitems.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-                dbContext.Inventoryequipments.Where(x => itemIds.Contains(x.Inventoryitemid)).ExecuteDelete();
-                dbContext.Pets.Where(x => petIds.Contains(x.Petid)).ExecuteDelete();
-            }
-
-            foreach (var item in items)
-            {
-                var model = new Inventoryitem()
-                {
-                    Itemid = item.Itemid,
-                    Accountid = type.IsAccount ? targetId : null,
-                    Characterid = type.IsAccount ? null : targetId,
-                    Expiration = item.Expiration,
-                    Flag = item.Flag,
-                    GiftFrom = item.GiftFrom ?? "",
-                    Inventorytype = item.InventoryType,
-                    Owner = item.Owner ?? "",
-                    Position = item.Position,
-                    Quantity = item.Quantity,
-                    Type = itemType,
-                    UniqueId = item.UniqueId
-                };
-                dbContext.Inventoryitems.AddAsync(model);
-                dbContext.SaveChanges();
-
-                if (item.EquipInfo != null)
-                {
-                    dbContext.Inventoryequipments.Add(new Inventoryequipment(model.Inventoryitemid,
-                        item.EquipInfo.Upgradeslots,
-                        item.EquipInfo.Level,
-                        item.EquipInfo.Str,
-                        item.EquipInfo.Dex,
-                        item.EquipInfo.Int,
-                        item.EquipInfo.Luk,
-                        item.EquipInfo.Hp,
-                        item.EquipInfo.Mp,
-                        item.EquipInfo.Watk,
-                        item.EquipInfo.Matk,
-                        item.EquipInfo.Wdef,
-                        item.EquipInfo.Mdef,
-                        item.EquipInfo.Acc,
-                        item.EquipInfo.Avoid,
-                        item.EquipInfo.Hands,
-                        item.EquipInfo.Speed,
-                        item.EquipInfo.Jump,
-                        item.EquipInfo.Locked,
-                        item.EquipInfo.Vicious,
-                        item.EquipInfo.Itemlevel,
-                        item.EquipInfo.Itemexp,
-                        item.EquipInfo.RingId));
-                }
-                if (item.PetInfo != null)
-                {
-                    dbContext.Pets.Add(
-                        new PetEntity(model.UniqueId, item.PetInfo.Name, item.PetInfo.Level, item.PetInfo.Closeness, item.PetInfo.Fullness, item.PetInfo.Summoned, item.PetInfo.Flag));
-                }
-            }
-
-            dbContext.SaveChanges();
-        }
-
         public static async Task CommitInventoryByTypeAsync(DBContext dbContext, int targetId, ItemModel[] items, ItemFactory type)
         {
             var itemType = (byte)type.getValue();
@@ -168,7 +95,8 @@ namespace Application.Core.Login.Datas
                     Position = item.Position,
                     Quantity = item.Quantity,
                     Type = itemType,
-                    UniqueId = item.UniqueId
+                    UniqueId = item.UniqueId,
+                    Properties = item.Properties
                 };
                 await dbContext.Inventoryitems.AddAsync(model);
                 await dbContext.SaveChangesAsync();

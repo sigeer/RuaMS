@@ -16,7 +16,7 @@ namespace Application.Core.Client
 
         bool GainCharacterSlot();
         void SetPlayer(Player? player);
-        void SetAccount(AccountCtrl accountEntity);
+        void SetAccount(AccountInfoModel accountEntity);
         WorldChannel getChannelServer();
         int getChannel();
 

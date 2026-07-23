@@ -3,14 +3,9 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
-using BaseProto;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using ZLinq;
 
 namespace Application.Core.Login.ServerData
@@ -40,9 +35,8 @@ namespace Application.Core.Login.ServerData
 
         public override List<PLifeModel> Query(Expression<Func<PLifeModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<PlifeEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dataFromDB = _mapper.Map<List<PLifeModel>>(dbContext.Plives.AsNoTracking().Where(entityExpression).ToList());
+            var dataFromDB = dbContext.Plives.AsNoTracking().ProjectToType<PLifeModel>().Where(expression).ToList();
 
             return QueryWithDirty(dataFromDB, expression.Compile());
         }

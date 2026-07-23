@@ -1,20 +1,21 @@
 using Application.EF.Entities;
-using AutoMapper;
+using Mapster;
 
 namespace Application.Module.Family.Master.Models
 {
-    internal class Mapper : Profile
+    internal class Mapper : IRegister
     {
-        public Mapper()
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<FamilyCharacterEntity, FamilyCharacterModel>()
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Cid))
-                .ReverseMap()
-                .ForMember(dest => dest.Cid, src => src.MapFrom(x => x.Id));
+            config.NewConfig<FamilyCharacterEntity, FamilyCharacterModel>()
+                .Map(dest => dest.Id, src => src.Cid);
 
-            CreateMap<FamilyEntitlementEntity, FamilyEntitlementUseRecord>()
-                .ForMember(dest => dest.Id, src => src.MapFrom(x => x.Entitlementid))
-                .ForMember(dest => dest.Time, src => src.MapFrom(x => x.Timestamp));
+            config.NewConfig<FamilyCharacterModel, FamilyCharacterEntity>()
+                .Map(dest => dest.Cid, src => src.Id);
+
+            config.NewConfig<FamilyEntitlementEntity, FamilyEntitlementUseRecord>()
+                .Map(dest => dest.Id, src => src.Entitlementid)
+                .Map(dest => dest.Time, src => src.Timestamp);
         }
     }
 }

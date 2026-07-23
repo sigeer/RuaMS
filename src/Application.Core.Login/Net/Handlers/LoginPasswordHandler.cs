@@ -23,7 +23,6 @@
 
 using Application.Core.Login.Client;
 using Application.Core.Login.Net.Packets;
-using Application.Core.Login.ServerData;
 using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Configs;

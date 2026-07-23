@@ -1,9 +1,7 @@
 using Application.Core.Login.Servers;
 using Application.Shared.ServerExtensions;
 using Application.Shared.Servers;
-using Application.Utility;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 
 namespace Application.Core.Login.Modules
 {

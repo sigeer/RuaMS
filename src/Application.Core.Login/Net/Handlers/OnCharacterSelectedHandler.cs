@@ -4,7 +4,6 @@ using Application.Core.Login.Session;
 using Application.Shared.Sessions;
 using Application.Utility;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Net.Handlers
 {
@@ -36,8 +35,8 @@ namespace Application.Core.Login.Net.Handlers
             }
 
 
-            if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress) 
-                || _server.AccountBanManager.IsMACBlocked(macs) 
+            if (_server.AccountBanManager.IsIPBlocked(c.RemoteAddress)
+                || _server.AccountBanManager.IsMACBlocked(macs)
                 || _server.AccountBanManager.IsHWIDBlocked(hwid.hwid))
             {
                 _sessionCoordinator.closeSession(c, true);

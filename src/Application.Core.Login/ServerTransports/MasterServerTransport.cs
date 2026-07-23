@@ -2,13 +2,8 @@ using Application.Core.Login.Models;
 using Application.Core.Login.ServerTransports;
 using Application.Shared.Message;
 using Application.Shared.Servers;
-using CashProto;
-using Config;
 using Dto;
-using Google.Protobuf;
-using Humanizer;
 using MessageProto;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login
 {

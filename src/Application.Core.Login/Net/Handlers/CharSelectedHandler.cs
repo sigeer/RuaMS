@@ -1,7 +1,5 @@
 using Application.Core.Login.Client;
-using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
-using Application.Shared.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Net.Handlers;

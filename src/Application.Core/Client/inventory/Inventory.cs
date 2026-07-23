@@ -208,7 +208,6 @@ public class Inventory : AbstractInventory
         if (item != null)
         {
             item.setPosition(pos);
-            item.PlayerInventory = this;
         }
         inventory[MapServerSlot(pos)] = item;
     }

@@ -11,6 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="Account\AccountInfo.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MessageWarpper.proto" GrpcServices="None" />
 		<Protobuf Include="Base\TimeWrapper.proto">
 		  <GrpcServices>None</GrpcServices>
@@ -183,6 +184,10 @@
 
 	<ItemGroup>
 		<Protobuf Include="Services\System.proto" GrpcServices="Both" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Player\" />
 	</ItemGroup>
 
 

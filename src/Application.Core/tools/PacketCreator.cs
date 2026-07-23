@@ -6898,7 +6898,7 @@ public class PacketCreator
     }
 
     public static Packet SetNPCScriptable(IEnumerable<(int NpcId, string Script)> scriptableNpcIds)
-    { 
+    {
         // thanks to GabrielSin
         OutPacket p = OutPacket.create(SendOpcode.SET_NPC_SCRIPTABLE);
         p.writeByte(scriptableNpcIds.Count());

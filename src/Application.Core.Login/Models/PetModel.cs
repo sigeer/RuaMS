@@ -1,5 +1,3 @@
-using Application.Core.Login.Shared;
-
 namespace Application.Core.Login.Models
 {
 

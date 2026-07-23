@@ -1,18 +1,13 @@
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
-using Application.EF.Entities;
 using Application.Shared.Constants;
 using Application.Shared.Message;
 using Application.Shared.NewYear;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using Dto;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -38,9 +33,8 @@ namespace Application.Core.Login.ServerData
 
         public override List<NewYearCardModel> Query(Expression<Func<NewYearCardModel, bool>> expression)
         {
-            var entityExpression = _mapper.MapExpression<Expression<Func<NewYearCardEntity, bool>>>(expression).Compile();
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dataFromDB = (from a in dbContext.Newyears.Where(entityExpression)
+            var dataFromDB = (from a in dbContext.Newyears.AsNoTracking().ProjectToType<NewYearCardModel>().Where(expression)
                               join b in dbContext.Characters on a.SenderId equals b.Id into bss
                               from bs in bss.DefaultIfEmpty()
                               join c in dbContext.Characters on a.ReceiverId equals c.Id into css
@@ -164,7 +158,7 @@ namespace Application.Core.Login.ServerData
                 response.List.Add(item);
             }
 
-           await  _server.Transport.SendNewYearCardNotify(response);
+            await _server.Transport.SendNewYearCardNotify(response);
         }
 
         public async Task DiscardNewYearCard(Dto.DiscardNewYearCardRequest request)

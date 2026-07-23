@@ -1,6 +1,7 @@
 using Application.Core.EF.Entities.Items;
 using Application.Core.EF.Entities.Quests;
 using Application.Core.Login.Commands;
+using Application.Core.Login.Mappers;
 using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -12,7 +13,6 @@ using Application.Shared.Login;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
-using AutoMapper;
 using Dto;
 using JailProto;
 using Microsoft.EntityFrameworkCore;
@@ -36,13 +36,19 @@ namespace Application.Core.Login.Datas
 
 
         readonly IMapper _mapper;
+        readonly ICharacterMapper _chrMapper;
+        readonly IItemMapper _itemMapper;
+        readonly IAccountMapper _accMapper;
         readonly ILogger<CharacterManager> _logger;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _masterServer;
 
-        public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
+        public CharacterManager(IMapper mapper, ICharacterMapper chrMapper, IItemMapper itemMapper, IAccountMapper accMapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
         {
             _mapper = mapper;
+            _chrMapper = chrMapper;
+            _itemMapper = itemMapper;
+            _accMapper = accMapper;
             _logger = logger;
             _dbContextFactory = dbContextFactory;
             _masterServer = masterServer;
@@ -67,7 +73,7 @@ namespace Application.Core.Login.Datas
                     return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(id);
                 }
             }
-            
+
             return GetCharacterFromDB(id);
         }
         public CharacterLiveObject? FindPlayerByName(string name)
@@ -115,8 +121,8 @@ namespace Application.Core.Login.Datas
                 var oldLevel = origin.Character.Level;
                 var oldJob = origin.Character.JobId;
 
-                _mapper.Map(obj.Character, origin.Character);
-                origin.InventoryItems = _mapper.Map<ItemModel[]>(obj.InventoryItems);
+                _chrMapper.MapToExisting(obj.Character, origin.Character);
+                origin.InventoryItems = obj.InventoryItems.Select(y => _itemMapper.MapToObject(y)).ToArray();
                 origin.KeyMaps = _mapper.Map<KeyMapModel[]>(obj.KeyMaps);
                 origin.SkillMacros = _mapper.Map<SkillMacroModel[]>(obj.SkillMacros);
                 origin.Skills = _mapper.Map<SkillModel[]>(obj.Skills);
@@ -131,7 +137,7 @@ namespace Application.Core.Login.Datas
                 origin.FameLogs = _mapper.Map<FameLogModel[]>(obj.FameLogs);
                 origin.GachaponStorage = _mapper.Map<StorageModel>(obj.GachaponStorage);
 
-                _masterServer.AccountGameManager.UpdateAccountGame(_mapper.Map<AccountGame>(obj.AccountGame));
+                _masterServer.AccountGameManager.UpdateAccountGame(_accMapper.MapToObject(obj.AccountGame));
 
                 _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}",
                     obj.Character.Name, GetTriggerDetail(trigger, origin.Channel, obj.Channel));
@@ -229,7 +235,7 @@ namespace Application.Core.Login.Datas
             await BatchUpdateCore(list);
             if (saveDB)
             {
-               await _masterServer.Send(new CommitDBCommand());
+                await _masterServer.Send(new CommitDBCommand());
             }
         }
 

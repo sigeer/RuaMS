@@ -48,7 +48,7 @@ namespace Application.Core.Game
 
         public int AccountGMLevel => throw new BusinessCharacterOfflineException();
 
-        public AccountCtrl? AccountEntity { get; set; }
+        public AccountInfoModel? AccountEntity { get; set; }
 
 
         NPCConversationManager? IChannelClient.NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -202,7 +202,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetAccount(AccountCtrl accountEntity)
+        public void SetAccount(AccountInfoModel accountEntity)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -301,11 +301,6 @@ namespace Application.Core.Game
 
 
         public Task SendPacket(Packet p) => throw new NotImplementedException();
-
-        void IChannelClient.SetAccount(AccountCtrl accountEntity)
-        {
-            throw new NotImplementedException();
-        }
 
         void IClientBase.SetCharacterOnSessionTransitionState(int cid)
         {

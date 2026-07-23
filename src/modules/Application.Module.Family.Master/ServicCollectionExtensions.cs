@@ -12,7 +12,7 @@ namespace Application.Module.Family.Master
         public static IServiceCollection AddFamilySystem(this IServiceCollection services, IConfigurationSection configuration)
         {
             services.AddOptions<FamilyConfigs>().Bind(configuration);
-            services.AddAutoMapper(typeof(Mapper));
+            TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
 
             services.AddSingleton<FamilyManager>();
             services.AddSingleton<IStorage, FamilyManager>(sp => sp.GetRequiredService<FamilyManager>());

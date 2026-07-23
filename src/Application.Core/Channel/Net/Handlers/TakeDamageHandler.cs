@@ -25,7 +25,6 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
-using client.inventory;
 using client.inventory.manipulator;
 using client.status;
 using Microsoft.Extensions.Logging;

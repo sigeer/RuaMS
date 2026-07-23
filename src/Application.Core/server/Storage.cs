@@ -19,6 +19,7 @@
 
 
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Client.inventory;
 using Application.Core.Server;
 using Application.Resources.Messages;
 using Application.Templates.Npc;
@@ -33,13 +34,14 @@ namespace server;
 /**
  * @author Matze
  */
-public class Storage : AbstractStorage
+public class Storage : AbstractStorage, IItemStore
 {
     private ILogger log;
 
     public int AccountId { get; set; }
 
     NpcTemplate? NpcTemplate { get; set; }
+    public override ItemType StoreType => ItemType.Storage;
     public Storage(Player chr, int id, byte slots, int meso, Item[] items) : base(chr, slots, meso, items)
     {
         log = LogFactory.GetLogger(LogType.Storage);

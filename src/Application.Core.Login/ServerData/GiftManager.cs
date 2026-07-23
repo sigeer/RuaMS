@@ -3,8 +3,6 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using CashProto;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
@@ -66,7 +64,25 @@ namespace Application.Core.Login.ServerData
             else
                 _ = _noteService.SendWithFame(message, sender.Character.Id, receiver.Character.Name);
 
-            return new CreateGiftResponse { Recipient = toName, RingSource = _mapper.Map<ItemProto.RingDto>(ringModel) };
+
+
+            return new CreateGiftResponse { Recipient = toName, RingSource = MapToDto(ringModel) };
+        }
+
+        ItemProto.RingDto MapToDto(RingSourceModel? ringModel)
+        {
+            var dto = _mapper.Map<ItemProto.RingDto>(ringModel);
+            dto.CharacterName1 = _server.CharacterManager.GetPlayerName(ringModel.CharacterId1);
+            dto.CharacterName2 = _server.CharacterManager.GetPlayerName(ringModel.CharacterId2);
+            return dto;
+        }
+
+        ItemProto.GiftDto MapToGiftDto(GiftModel? giftModel)
+        {
+            var dto = _mapper.Map<ItemProto.GiftDto>(giftModel);
+            dto.FromName = _server.CharacterManager.GetPlayerName(giftModel.From);
+            dto.ToName = _server.CharacterManager.GetPlayerName(giftModel.To);
+            return dto;
         }
 
         public GetMyGiftsResponse LoadGifts(GetMyGiftsRequest request)
@@ -78,10 +94,10 @@ namespace Application.Core.Login.ServerData
             var res = new GetMyGiftsResponse();
             foreach (var gift in gifts)
             {
-                var dto = _mapper.Map<ItemProto.GiftDto>(gift);
+                var dto = MapToGiftDto(gift);
 
                 var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
-                dto.Ring = _mapper.Map<ItemProto.RingDto>(ring);
+                dto.Ring = MapToDto(ring);
                 res.List.Add(dto);
             }
             return res;
@@ -117,9 +133,7 @@ namespace Application.Core.Login.ServerData
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<GiftEntity, bool>>>(expression);
-
-            return QueryWithDirty(_mapper.Map<List<GiftModel>>(dbContext.Gifts.Where(entityExpression).ToList()), expression.Compile());
+            return QueryWithDirty(dbContext.Gifts.ProjectToType<GiftModel>().Where(expression).ToList(), expression.Compile());
         }
     }
 }

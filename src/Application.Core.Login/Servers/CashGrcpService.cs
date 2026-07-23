@@ -1,14 +1,8 @@
 using Application.Core.Login.Services;
 using CashProto;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using ItemProto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.Servers
 {
@@ -42,7 +36,7 @@ namespace Application.Core.Login.Servers
         public override Task<MosterSellerInfo> LoadMosterSellItems(Empty request, ServerCallContext context)
         {
             var res = new MosterSellerInfo();
-            var all  = _server.CashShopDataManager.GetMostSellerCashItems();
+            var all = _server.CashShopDataManager.GetMostSellerCashItems();
             foreach (var item in all)
             {
                 var tab = new MonsterSellerTab();

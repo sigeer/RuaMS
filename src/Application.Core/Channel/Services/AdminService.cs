@@ -2,7 +2,6 @@ using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Login;
-using AutoMapper;
 
 namespace Application.Core.Channel.Services
 {
@@ -61,7 +60,7 @@ namespace Application.Core.Channel.Services
                 if (data.Request.SetStatus)
                 {
                     sendStr += "Enabled Fly feature (F1). With fly active, you cannot attack.";
-                    if (!chr.Client.AccountEntity!.CanFly)
+                    if (!chr.Client.AccountEntity!.GmMode)
                     {
                         sendStr += " Re-login to take effect.";
                     }
@@ -69,7 +68,7 @@ namespace Application.Core.Channel.Services
                 else
                 {
                     sendStr += "Disabled Fly feature. You can now attack.";
-                    if (chr.Client.AccountEntity!.CanFly)
+                    if (chr.Client.AccountEntity!.GmMode)
                     {
                         sendStr += " Re-login to take effect.";
                     }

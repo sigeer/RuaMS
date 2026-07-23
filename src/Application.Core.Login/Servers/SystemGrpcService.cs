@@ -7,7 +7,6 @@ using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using MessageProto;
 using Microsoft.Extensions.Logging;
 using ServerProto;
 using SyncProto;

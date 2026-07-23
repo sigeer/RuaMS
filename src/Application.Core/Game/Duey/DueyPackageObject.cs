@@ -8,7 +8,7 @@ namespace Application.Core.Channel.DueyService
 
         public int ReceiverId { get; set; }
 
-        public string SenderName { get; set; } = null!;
+        public string SenderName { get; set; } = "";
 
         public int Mesos { get; set; }
 

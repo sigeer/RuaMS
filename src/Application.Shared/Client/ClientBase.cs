@@ -9,7 +9,7 @@ namespace Application.Shared.Client
 {
     public abstract class ClientBase : SocketClient, IClientBase
     {
-        public AccountCtrl? AccountEntity { get; set; }
+        public AccountInfoModel? AccountEntity { get; set; }
         protected ClientBase(long sessionId, ISocketServer currentServer, IChannel nettyChannel, ILogger<ISocketClient> log) : base(sessionId, nettyChannel, currentServer, log)
         {
         }

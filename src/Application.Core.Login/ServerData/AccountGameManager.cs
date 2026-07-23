@@ -5,7 +5,6 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 

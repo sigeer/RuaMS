@@ -3,7 +3,6 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Shared.MapObjects;
-using AutoMapper;
 using LifeProto;
 using Microsoft.Extensions.DependencyInjection;
 

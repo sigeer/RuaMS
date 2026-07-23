@@ -1,7 +1,6 @@
 using Application.Core.ServerTransports;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Buddy;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using tools;
 

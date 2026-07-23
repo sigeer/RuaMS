@@ -4,12 +4,8 @@ using Application.EF;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Buddy;
 using Application.Shared.Message;
-using AutoMapper;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -61,7 +57,7 @@ namespace Application.Core.Login.ServerData
 
         public async Task AddBuddyByName(BuddyProto.AddBuddyRequest request)
         {
-            var res = new BuddyProto.AddBuddyResponse() { MasterId  = request.MasterId, TargetName = request.TargetName };
+            var res = new BuddyProto.AddBuddyResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
             {
@@ -69,7 +65,7 @@ namespace Application.Core.Login.ServerData
                 await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, res);
                 return;
             }
-            
+
 
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
@@ -136,7 +132,7 @@ namespace Application.Core.Login.ServerData
 
         public async Task SendWhisper(MessageProto.SendWhisperMessageRequest request)
         {
-            var res = new MessageProto.SendWhisperMessageResponse() { Request = request  } ;
+            var res = new MessageProto.SendWhisperMessageResponse() { Request = request };
             var senderChr = _server.CharacterManager.FindPlayerById(request.FromId);
             if (senderChr == null || senderChr.Channel <= 0)
             {

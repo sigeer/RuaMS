@@ -1,20 +1,8 @@
-using Application.EF.Entities;
-using Application.Shared.Message;
 using Application.Shared.Servers;
 using BaseProto;
 using Config;
-using CreatorProto;
-using Dto;
-using ExpeditionProto;
 using Google.Protobuf;
 using Grpc.Core;
-using Grpc.Net.Client;
-using MessageProto;
-using Microsoft.AspNetCore.Hosting.Server;
-using SyncProto;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using SystemProto;
 
 namespace Application.Core.Login.Servers
 {
@@ -42,8 +30,8 @@ namespace Application.Core.Login.Servers
         private readonly IServerStreamWriter<BaseProto.PacketWrapper> _writer;
         readonly MasterServer _server;
         public RemoteChannelServerNode(
-            MasterServer server, 
-            IServerStreamWriter<BaseProto.PacketWrapper> writer, 
+            MasterServer server,
+            IServerStreamWriter<BaseProto.PacketWrapper> writer,
             RegisterServerRequest request)
         {
             _server = server;

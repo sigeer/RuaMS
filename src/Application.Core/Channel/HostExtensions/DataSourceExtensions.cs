@@ -1,9 +1,7 @@
 using Application.Templates.Reader;
-using Application.Templates.Reader.Img;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using System.Xml;
 
 namespace Application.Core.Channel.HostExtensions
 {

@@ -7,8 +7,6 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
 using Application.Utility.Configs;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
@@ -50,8 +48,7 @@ namespace Application.Core.Login.ServerData
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<FredstorageEntity, bool>>>(expression);
-            var dataFromDB = _mapper.Map<List<FredrickStoreModel>>(dbContext.Fredstorages.Where(entityExpression).AsNoTracking().ToList());
+            var dataFromDB = dbContext.Fredstorages.ProjectToType<FredrickStoreModel>().Where(expression).ToList();
 
             foreach (var item in dataFromDB)
             {

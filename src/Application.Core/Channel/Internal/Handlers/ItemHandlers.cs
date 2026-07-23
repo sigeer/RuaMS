@@ -1,6 +1,6 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Mappers;
 using Application.Shared.Message;
-using AutoMapper;
 using client.inventory;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -13,8 +13,8 @@ namespace Application.Core.Channel.Internal.Handlers
     {
         public class Megaphone : InternalSessionChannelHandler<UseItemMegaphoneBroadcast>
         {
-            readonly IMapper _mapper;
-            public Megaphone(WorldChannelServer server, IMapper mapper) : base(server)
+            readonly IItemMapper _mapper;
+            public Megaphone(WorldChannelServer server, IItemMapper mapper) : base(server)
             {
                 _mapper = mapper;
             }
@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 return _server.BroadcastAsync(async w =>
                 {
-                    var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.Map<Item>(res.Request.Item));
+                    var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.MapToObject(res.Request.Item));
                     await w.broadcastPacket(p);
                 });
             }

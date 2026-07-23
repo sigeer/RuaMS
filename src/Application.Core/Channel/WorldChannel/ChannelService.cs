@@ -1,6 +1,5 @@
 using Application.Core.Channel.Services;
 using Application.Core.ServerTransports;
-using AutoMapper;
 
 namespace Application.Core.Channel
 {

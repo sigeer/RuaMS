@@ -6,13 +6,10 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Message;
 using Application.Utility;
-using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using DueyDto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login.ServerData
 {
@@ -43,10 +40,9 @@ namespace Application.Core.Login.ServerData
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var entityExpression = _mapper.MapExpression<Expression<Func<DueyPackageEntity, bool>>>(expression).Compile();
-            var dbList = dbContext.Dueypackages.AsNoTracking().Where(entityExpression).ToList();
+            var dbList = dbContext.Dueypackages.AsNoTracking().ProjectToType<DueyPackageModel>().Where(expression).ToList();
 
-            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.PackageId).ToArray(), ItemType.Duey);
+            var allPackageItems = _server.InventoryManager.LoadItems(dbContext, false, dbList.Select(x => x.Id).ToArray(), ItemType.Duey);
 
             List<DueyPackageModel> dataFromDB = [];
             foreach (var item in dbList)
@@ -96,8 +92,15 @@ namespace Application.Core.Login.ServerData
             }
 
             package.IsFrozen.Set(true);
-            res.Package = _mapper.Map<DueyDto.DueyPackageDto>(package);
+            res.Package = MapToDto(package);
             await _server.Transport.SendMessageN(ChannelRecvCode.TakeDueyPackage, res, [request.MasterId]);
+        }
+
+        DueyDto.DueyPackageDto MapToDto(DueyPackageModel? package)
+        {
+            var dto = _mapper.Map<DueyDto.DueyPackageDto>(package);
+            dto.SenderName = _server.CharacterManager.GetPlayerName(package.SenderId);
+            return dto;
         }
 
         public void PackageUnfreeze(int chrId)
@@ -161,15 +164,12 @@ namespace Application.Core.Login.ServerData
                     Type = request.Quick,
                     Checked = true,
                     TimeStamp = time,
-                    Item = _mapper.Map<ItemModel>(request.Item, ctx =>
-                    {
-                        ctx.Items["Type"] = (int)ItemType.Duey;
-                    })
+                    Item = _mapper.Map<ItemModel>(request.Item)
                 };
 
                 SetDirty(model.Id, new StoreUnit<DueyPackageModel>(StoreFlag.AddOrUpdate, model));
 
-                var data = new CreatePackageBroadcast { Package = _mapper.Map<DueyDto.DueyPackageDto>(model) };
+                var data = new CreatePackageBroadcast { Package = MapToDto(model) };
                 await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, data, [model.ReceiverId]);
                 return res;
             }
@@ -192,7 +192,7 @@ namespace Application.Core.Login.ServerData
         public async Task GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
         {
             var res = new GetPlayerDueyPackageResponse();
-            res.List.AddRange(_mapper.Map<DueyDto.DueyPackageDto[]>(Query(x => x.ReceiverId == request.ReceiverId)));
+            res.List.AddRange(Query(x => x.ReceiverId == request.ReceiverId).Select(x => MapToDto(x)));
             res.ReceiverId = request.ReceiverId;
 
             await _server.Transport.SendMessageN(ChannelRecvCode.LoadDueyPackage, res, [request.ReceiverId]);

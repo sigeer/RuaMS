@@ -1,4 +1,3 @@
-using Application.Core.Login.Commands;
 using Application.Core.Login.Models;
 using Application.Core.Login.Net.Packets;
 using Application.Core.Login.Session;
@@ -35,6 +34,7 @@ namespace Application.Core.Login.Client
         public int SelectedChannel { get; set; }
         public int CurrentHistoryId { get; set; }
 
+        public new AccountCtrl? AccountEntity { get; set; }
         public override int AccountId => AccountEntity?.Id ?? 0;
 
         public override string AccountName => AccountEntity?.Name ?? "-";

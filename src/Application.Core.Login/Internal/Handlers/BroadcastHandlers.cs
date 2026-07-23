@@ -1,9 +1,7 @@
-using Application.Shared.Internal;
 using Application.Shared.Message;
 using Config;
 using Google.Protobuf;
 using MessageProto;
-using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Application.Core.Login.Internal.Handlers
 {

@@ -1,8 +1,6 @@
 using Application.Core.Login.Models;
 using Application.Shared.Message;
 using Application.Shared.Team;
-using AutoMapper;
-using AutoMapper.Execution;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using TeamProto;
@@ -70,14 +68,16 @@ namespace Application.Core.Login.ServerData
         }
         public async Task UpdateParty(int partyid, PartyOperation operation, int fromId, int toId, int reason = 0)
         {
-            var response = new TeamProto.UpdateTeamResponse() { 
-                Request = new UpdateTeamRequest { 
-                    TeamId = partyid, 
+            var response = new TeamProto.UpdateTeamResponse()
+            {
+                Request = new UpdateTeamRequest
+                {
+                    TeamId = partyid,
                     Operation = (int)operation,
-                    FromId = fromId, 
-                    TargetId = toId ,
+                    FromId = fromId,
+                    TargetId = toId,
                     Reason = reason
-                } 
+                }
             };
             UpdateTeamCheckResult errorCode = UpdateTeamCheckResult.Success;
 

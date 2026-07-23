@@ -11,7 +11,6 @@ using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Utility.Compatible;
-using AutoMapper;
 using client.inventory;
 using client.inventory.manipulator;
 using MarriageProto;

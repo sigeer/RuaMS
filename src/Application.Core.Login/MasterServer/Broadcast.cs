@@ -1,7 +1,4 @@
 using Application.Shared.Message;
-using Dto;
-using System;
-using System.Threading.Tasks;
 
 namespace Application.Core.Login
 {
@@ -82,7 +79,7 @@ namespace Application.Core.Login
 
         public void DisconnectChr(int chrId)
         {
-            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new () };
+            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new() };
             _ = Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, data, [chrId]);
         }
     }

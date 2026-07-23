@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Templates.Item.Consume;
 using client.inventory;
-using static Application.Core.Channel.DataProviders.ItemInformationProvider;
 
 namespace scripting.item;
 
