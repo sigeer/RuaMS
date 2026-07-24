@@ -1,7 +1,5 @@
 using Application.Templates.Etc;
-using Application.Templates.Reader;
 using Application.Templates.Reader.Resolvers;
-using Duey.Abstractions;
 using Duey.Provider.WZ.Files;
 using Microsoft.Extensions.Logging;
 

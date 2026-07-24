@@ -25,7 +25,7 @@ namespace Application.Core.Login
             return AccountManager.UpdateAccountState(accId, newState);
         }
 
-        public List<CharacterViewObject> LoadAccountCharactersView(int id)
+        public List<CharacterLiveObject> LoadAccountCharactersView(int id)
         {
             return CharacterManager.GetCharactersView(AccountManager.GetAccountPlayerIds(id).ToArray());
         }

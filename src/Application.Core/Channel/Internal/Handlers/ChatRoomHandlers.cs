@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         chr.ChatRoomId = data.Room.RoomId;
                         if (chr.Id != newComer.PlayerInfo.Character.Id)
                         {
-                            await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition, (byte)(newComer.PlayerInfo.Channel - 1)));
+                            await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(newComer.PlayerInfo.Character.Name, newComer.PlayerInfo, data.NewComerPosition));
                         }
                         else
                         {
@@ -38,7 +38,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                     continue;
 
                                 if (chr.Id != member.PlayerInfo.Character.Id)
-                                    await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position, (byte)(member.PlayerInfo.Channel - 1)));
+                                    await chr.SendPacket(ChatRoomPacket.addMessengerPlayer(member.PlayerInfo.Character.Name, member.PlayerInfo, member.Position));
                                 else
                                     await chr.SendPacket(ChatRoomPacket.joinMessenger(member.Position));
                             }

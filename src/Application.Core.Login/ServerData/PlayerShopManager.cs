@@ -1,5 +1,3 @@
-using Application.Core.Login.Datas;
-using Application.Core.Login.Models;
 using Application.Core.Login.Models.Items;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -24,24 +22,25 @@ namespace Application.Core.Login.ServerData
         /// <summary>
         /// 正在营业的个人商店
         /// </summary>
-        ConcurrentDictionary<int, PlayerShopRegistry> _playerShopData = new();
+        ConcurrentDictionary<int, ItemProto.SyncPlayerShopRequest> _playerShopData = new();
         /// <summary>
         /// 正在营业的雇佣商店
         /// </summary>
 
-        ConcurrentDictionary<int, PlayerShopRegistry> _hiredMerchantData = new();
+        ConcurrentDictionary<int, ItemProto.SyncPlayerShopRequest> _hiredMerchantData = new();
+
 
         int _localId = 0;
-        public PlayerShopManager(IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
+        public PlayerShopManager(IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
         {
             _mapper = mapper;
             _server = server;
             _dbContextFactory = dbContextFactory;
         }
 
-        public override Task InitializeAsync(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
-            return Task.CompletedTask;
+            _localId = (await dbContext.Fredstorages.Select(x => x.Id).DefaultIfEmpty().MaxAsync());
         }
 
         public override List<FredrickStoreModel> Query(Expression<Func<FredrickStoreModel, bool>> expression)
@@ -50,33 +49,28 @@ namespace Application.Core.Login.ServerData
 
             var dataFromDB = dbContext.Fredstorages.ProjectToType<FredrickStoreModel>().Where(expression).ToList();
 
-            foreach (var item in dataFromDB)
-            {
-                item.Items = _server.InventoryManager.LoadItems(dbContext, ItemFactory.MERCHANT.IsAccount, item.Id, ItemType.Merchant).ToArray();
-            }
-
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
 
-        private void Store(PlayerShopRegistry hm)
+        private void Store(ItemProto.SyncPlayerShopRequest hm)
         {
-            var item = Query(x => x.Cid == hm.Id).FirstOrDefault();
+            var item = Query(x => x.Cid == hm.OwnerId).FirstOrDefault();
             if (item == null)
             {
                 item = new FredrickStoreModel
                 {
                     Id = Interlocked.Increment(ref _localId),
-                    Cid = hm.Id,
+                    Cid = hm.OwnerId,
                     StoreTime = _server.getCurrentTime()
                 };
             }
             item.Meso = hm.Meso;
-            item.Items = _mapper.Map<ItemModel[]>(hm.Items);
+            item.Items.Items.AddRange(hm.Items);
             item.ItemMeso = hm.Items.Sum(x => x.Price * x.Bundles);
             item.Daynotes = 0;
 
-            SetDirty(item.Id, new StoreUnit<FredrickStoreModel>(StoreFlag.AddOrUpdate, item));
+            SetDirty(item);
         }
 
         public void SyncPlayerStorage(ItemProto.SyncPlayerShopRequest request)
@@ -111,31 +105,12 @@ namespace Application.Core.Login.ServerData
 
             else if (operation == SyncPlayerShopOperation.Update)
             {
-                var data = new PlayerShopRegistry();
-                data.Channel = request.Channel;
-                data.MapId = request.MapId;
-                data.Id = request.OwnerId;
-                data.Items = _mapper.Map<List<PlayerShopItemModel>>(request.Items);
-                data.Meso = request.Meso;
-                data.Title = request.Title;
-                data.Type = (PlayerShopType)request.Type;
-                data.MapObjectId = request.MapObjectId;
-
                 if (shopType == PlayerShopType.HiredMerchant)
-                    _hiredMerchantData[data.Id] = data;
+                    _hiredMerchantData[request.OwnerId] = request;
                 else
-                    _playerShopData[data.Id] = data;
+                    _playerShopData[request.OwnerId] = request;
             }
 
-        }
-
-        public ItemProto.SearchHiredMerchantChannelResponse FindHiredMerchantChannel(ItemProto.SearchHiredMerchantChannelRequest request)
-        {
-            if (_hiredMerchantData.TryGetValue(request.MasterId, out var hm))
-            {
-                return new SearchHiredMerchantChannelResponse { Channel = hm.Channel };
-            }
-            return new SearchHiredMerchantChannelResponse();
         }
 
         public ItemProto.RemoteHiredMerchantDto GetPlayerHiredMerchant(ItemProto.GetPlayerHiredMerchantRequest request)
@@ -158,7 +133,8 @@ namespace Application.Core.Login.ServerData
                     res.Meso = store.Meso;
                     res.FeePercentage = store.GetFeePercentage(_server.getCurrentTime());
                     res.FeeMeso = (store.Meso + store.ItemMeso) * res.FeePercentage;
-                    res.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(store.Items));
+
+                    res.Items.AddRange(store.Items.Items.Select(x => { var m = x.Item; m.Quantity = m.Quantity * x.Bundles; return m; }));
                 }
             }
             return res;
@@ -174,19 +150,32 @@ namespace Application.Core.Login.ServerData
 
         protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<FredrickStoreModel>> updateData)
         {
-            await dbContext.Fredstorages.Where(x => updateData.Keys.Contains(x.Id)).ExecuteDeleteAsync();
+            var updatePackages = updateData.Keys.ToArray();
+
+            var allDbList = await dbContext.Fredstorages.Where(x => updatePackages.Contains(x.Id)).ToListAsync();
             foreach (var item in updateData)
             {
-                if (item.Value.Flag == StoreFlag.AddOrUpdate)
-                {
-                    var obj = item.Value.Data!;
-
-                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, item.Key, obj.Items, ItemFactory.MERCHANT);
-                    dbContext.Fredstorages.Add(new FredstorageEntity(obj.Id, obj.Cid, obj.Daynotes, obj.Meso, DateTimeOffset.FromUnixTimeMilliseconds(obj.StoreTime)));
-                }
+                var dbModel = allDbList.FirstOrDefault(x => x.Id == item.Key);
                 if (item.Value.Flag == StoreFlag.Remove)
                 {
-                    await InventoryManager.CommitInventoryByTypeAsync(dbContext, item.Key, [], ItemFactory.MERCHANT);
+                    if (dbModel != null)
+                    {
+                        dbContext.Fredstorages.Remove(dbModel);
+                    }
+                    continue;
+                }
+
+                if (item.Value.Data is null)
+                    continue;
+
+                if (dbModel == null)
+                {
+                    dbModel = _mapper.Map<FredstorageEntity>(item.Value.Data);
+                    dbContext.Fredstorages.Add(dbModel);
+                }
+                else
+                {
+                    _mapper.Map(item.Value.Data, dbModel);
                 }
             }
             await dbContext.SaveChangesAsync();
@@ -225,7 +214,7 @@ namespace Application.Core.Login.ServerData
                         if (inactivityDays < 7 || daynotes >= dailyReminders.Length - 1)
                         {
                             x.Daynotes = daynotes;
-                            SetDirty(x.Id, new StoreUnit<FredrickStoreModel>(StoreFlag.AddOrUpdate, x));
+                            SetDirty(x);
 
                             string msg = fredrickReminderMessage(x.Daynotes - 1);
                             await _server.NoteManager.SendNormal(msg, -NpcId.FREDRICK, x.Id);
@@ -262,7 +251,7 @@ namespace Application.Core.Login.ServerData
                     MapObjectId = x.MapObjectId,
                     Channel = x.Channel,
                     MapId = x.MapId,
-                    OwnerName = _server.CharacterManager.GetPlayerName(x.Id),
+                    OwnerName = _server.CharacterManager.GetPlayerName(x.OwnerId),
                     Title = x.Title,
                     Item = _mapper.Map<ItemProto.PlayerShopItemDto>(y)
                 })).OrderBy(x => x.Item.Price).Take(200).ToArray());

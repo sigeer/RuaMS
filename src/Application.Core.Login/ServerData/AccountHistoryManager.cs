@@ -22,6 +22,7 @@ namespace Application.Core.Login.ServerData
         int _localId = 0;
 
         public AccountHistoryManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
+            : base(x => x.Id)
         {
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
@@ -43,7 +44,7 @@ namespace Application.Core.Login.ServerData
                 IP = ip,
                 LastActiveTime = _server.GetCurrentTimeDateTimeOffset()
             };
-            SetDirty(model.Id, new StoreUnit<AccountHistoryModel>(StoreFlag.AddOrUpdate, model));
+            SetDirty(model);
             return model;
         }
 
@@ -53,7 +54,7 @@ namespace Application.Core.Login.ServerData
             if (model != null)
             {
                 model.MAC = mac;
-                SetDirty(model.Id, new StoreUnit<AccountHistoryModel>(StoreFlag.AddOrUpdate, model));
+                SetDirty(model);
             }
         }
 
@@ -99,7 +100,7 @@ namespace Application.Core.Login.ServerData
         List<MacbanEntity> bannedMAC = new();
         List<HwidbanEntity> bannedHWID = new();
 
-        public AccountBanManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
+        public AccountBanManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server) : base(x => x.Id)
         {
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
@@ -153,7 +154,7 @@ namespace Application.Core.Login.ServerData
                 ReasonDescription = reasonDesc
             };
 
-            SetDirty(banModel.Id, new StoreUnit<AccountBanModel>(StoreFlag.AddOrUpdate, banModel));
+            SetDirty(banModel);
 
             bannedIP.RemoveAll(x => x.Aid == accountId);
             bannedHWID.RemoveAll(x => x.AccountId == accountId);
@@ -261,8 +262,9 @@ namespace Application.Core.Login.ServerData
             var updateKeys = updateData.Keys.ToArray();
             await dbContext.AccountBans.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
 
-            foreach (var item in updateData.Values)
+            foreach (var kw in updateData)
             {
+                var item = kw.Value;
                 var obj = item.Data;
                 if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
                 {

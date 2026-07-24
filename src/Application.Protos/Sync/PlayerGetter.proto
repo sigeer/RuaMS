@@ -21,7 +21,7 @@ import "Dto/NewYearCard.proto";
 import "Dto/ServerCrossCallback.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
-import "Dto/Storage.proto";
+import "Item/Ring.proto";
 
 package SyncProto;
 
@@ -38,28 +38,12 @@ message CharacterLinkDto {
 message PlayerGetterDto {
   AccountDto.AccountInfoProto account = 1;
   Dto.CharacterDto character = 2; // CHECK TYPE
-  repeated Dto.ItemDto inventoryItems = 3; // CHECK TYPE
-  Dto.AccountGameDto accountGame = 4; // CHECK TYPE
-  repeated Dto.MonsterbookDto monsterBooks = 5; // CHECK TYPE
-  repeated Dto.PetIgnoreDto petIgnores = 6; // CHECK TYPE
-  repeated Dto.TrockLocationDto trockLocations = 7; // CHECK TYPE
-  repeated Dto.AreaDto areas = 8; // CHECK TYPE
-  repeated Dto.EventDto events = 9; // CHECK TYPE
-  repeated Dto.QuestStatusDto questStatuses = 10; // CHECK TYPE
-  repeated Dto.SkillDto skills = 11; // CHECK TYPE
-  repeated Dto.SkillMacroDto skillMacros = 12; // CHECK TYPE
-  repeated Dto.CoolDownDto coolDowns = 13; // CHECK TYPE
-  repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
-  repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
-  repeated BuddyProto.BuddyDto buddyList = 16; // CHECK TYPE
+  Dto.AccountGameDto accountGame = 3; // 账号共享数据
+  repeated ItemProto.RingDto ringSourceList = 4;
+  repeated Dto.NewYearCardDto newYearCards = 5;	// 新年贺卡
   LoginInfo loginInfo = 17;
   CharacterLinkDto link = 18;
-  repeated Dto.FameLogRecordDto fameLogs = 19;
-  repeated int32 wishItems = 20;
-  repeated Dto.NewYearCardDto newYearCards = 21;
   repeated Dto.RemoteCallDto remoteCallList = 23;
-  repeated PlayerTimerQuestDto runningTimerQuests = 24;
-  Dto.StorageDto gachaponStorage = 25;
 }
 
 message GetPlayerByLoginRequest {

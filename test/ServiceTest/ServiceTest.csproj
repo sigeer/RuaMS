@@ -22,7 +22,6 @@
     </PackageReference>
 
 	  <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" />
-	  <PackageReference Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
 
   <ItemGroup>

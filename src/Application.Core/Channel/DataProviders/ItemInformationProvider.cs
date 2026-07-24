@@ -742,7 +742,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return nEquip;
     }
 
-    public static void improveEquipStats(Equip nEquip, ScrollItemTemplate scrollTemplate)
+    public static void improveEquipStats(Equip nEquip, IEnhanceEquipItem scrollTemplate)
     {
         nEquip.setStr(getShortMaxIfOverflow(nEquip.getStr() + scrollTemplate.IncSTR));
         nEquip.setDex(getShortMaxIfOverflow(nEquip.getDex() + scrollTemplate.IncDEX));
@@ -763,59 +763,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         nEquip.setMp(getShortMaxIfOverflow(nEquip.getMp() + scrollTemplate.IncMMP));
     }
 
-    public static void improveEquipStats(Equip nEquip, Dictionary<string, int> stats)
-    {
-        foreach (var stat in stats)
-        {
-            switch (stat.Key)
-            {
-                case "STR":
-                    nEquip.setStr(getShortMaxIfOverflow(nEquip.getStr() + stat.Value));
-                    break;
-                case "DEX":
-                    nEquip.setDex(getShortMaxIfOverflow(nEquip.getDex() + stat.Value));
-                    break;
-                case "INT":
-                    nEquip.setInt(getShortMaxIfOverflow(nEquip.getInt() + stat.Value));
-                    break;
-                case "LUK":
-                    nEquip.setLuk(getShortMaxIfOverflow(nEquip.getLuk() + stat.Value));
-                    break;
-                case "PAD":
-                    nEquip.setWatk(getShortMaxIfOverflow(nEquip.getWatk() + stat.Value));
-                    break;
-                case "PDD":
-                    nEquip.setWdef(getShortMaxIfOverflow(nEquip.getWdef() + stat.Value));
-                    break;
-                case "MAD":
-                    nEquip.setMatk(getShortMaxIfOverflow(nEquip.getMatk() + stat.Value));
-                    break;
-                case "MDD":
-                    nEquip.setMdef(getShortMaxIfOverflow(nEquip.getMdef() + stat.Value));
-                    break;
-                case "ACC":
-                    nEquip.setAcc(getShortMaxIfOverflow(nEquip.getAcc() + stat.Value));
-                    break;
-                case "EVA":
-                    nEquip.setAvoid(getShortMaxIfOverflow(nEquip.getAvoid() + stat.Value));
-                    break;
-                case "Speed":
-                    nEquip.setSpeed(getShortMaxIfOverflow(nEquip.getSpeed() + stat.Value));
-                    break;
-                case "Jump":
-                    nEquip.setJump(getShortMaxIfOverflow(nEquip.getJump() + stat.Value));
-                    break;
-                case "MHP":
-                    nEquip.setHp(getShortMaxIfOverflow(nEquip.getHp() + stat.Value));
-                    break;
-                case "MMP":
-                    nEquip.setMp(getShortMaxIfOverflow(nEquip.getMp() + stat.Value));
-                    break;
-                case "afterImage":
-                    break;
-            }
-        }
-    }
 
     public Equip GetEquipByTemplate(EquipTemplate equipTemplate, short position = 0)
     {

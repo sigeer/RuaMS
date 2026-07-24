@@ -1,18 +1,18 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
-using Application.Module.Maker.Common;
+using Application.Core.tools.RandomUtils;
 using Application.Shared.Constants.Item;
+using Application.Shared.Items;
+using Application.Templates.Etc;
+using Application.Templates.Item.Etc;
+using Application.Templates.Reader;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using client.inventory;
 using client.inventory.manipulator;
 using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using server.life;
-using tools;
-using XmlWzReader;
-using XmlWzReader.wz;
 
 namespace Application.Module.Maker.Channel
 {
@@ -21,21 +21,20 @@ namespace Application.Module.Maker.Channel
         readonly ILogger<MakerManager> _logger;
         readonly ItemInformationProvider ii;
         readonly IMapper _mapper;
-        readonly IChannelTransport _transport;
+        readonly IProvider<ItemMakeTemplate> _provider;
+        readonly IProvider<EtcMakeItemTemplate> _itemProvider;
 
         #region
 
         Dictionary<int, int> mobCrystalMakerCache = new();
-        Dictionary<int, MakerReagentStatValue?> statUpgradeMakerCache = new();
-        Dictionary<int, MakerItemCreateEntry> makerItemCache = new();
-        Dictionary<int, int> makerCatalystCache = new();
 
-        public MakerManager(ILogger<MakerManager> logger, ItemInformationProvider ii, IMapper mapper, IChannelTransport transport)
+        public MakerManager(ILogger<MakerManager> logger, ItemInformationProvider ii, IMapper mapper)
         {
             _logger = logger;
             this.ii = ii;
             _mapper = mapper;
-            _transport = transport;
+            _provider = ProviderSource.Instance.GetProvider<IProvider<ItemMakeTemplate>>(ProviderType.EtcItemMake);
+            _itemProvider = ProviderSource.Instance.GetProvider<IProvider<EtcMakeItemTemplate>>(ProviderType.Item);
         }
 
         private int getCrystalForLevel(int level)
@@ -65,18 +64,11 @@ namespace Application.Module.Maker.Channel
             }
         }
 
-        public MakerReagentStatValue? GetMakerReagentStatUpgrade(int itemId)
-        {
-            if (statUpgradeMakerCache.TryGetValue(itemId, out var statUpgd) && statUpgd != null)
-                return statUpgd;
-
-            var data = _transport.GetMakerReagentStatUpgrade(new MakerProto.ItemIdRequest { ItemId = itemId });
-            statUpgd = new MakerReagentStatValue(data.Data.Stat, data.Data.Value);
-
-            statUpgradeMakerCache[itemId] = statUpgd;
-            return statUpgd;
-        }
-
+        /// <summary>
+        /// 通过物品找到怪物，再根据怪物等级推断物品的怪物结晶等级
+        /// </summary>
+        /// <param name="leftoverId"></param>
+        /// <returns></returns>
         public int getMakerCrystalFromLeftover(int leftoverId)
         {
             try
@@ -103,27 +95,19 @@ namespace Application.Module.Maker.Channel
 
         public MakerItemCreateEntry? getMakerItemEntry(int toCreate)
         {
-            var makerEntry = makerItemCache.GetValueOrDefault(toCreate);
-
-            if (makerEntry != null)
+            var table = _provider.GetItem(toCreate);
+            if (table != null)
             {
-                return new MakerItemCreateEntry(makerEntry);
-            }
-            else
-            {
-                var data = _transport.GetMakerCraftTable(new MakerProto.ItemIdRequest { ItemId = toCreate });
-                if (data.Data != null)
+                var makerEntry = new MakerItemCreateEntry(table.Meso, table.ReqLevel, table.ReqSkillLevel);
+                foreach (var item in table.Recipes)
                 {
-                    makerEntry = new MakerItemCreateEntry(data.Data.ReqMeso, data.Data.ReqLevel, data.Data.ReqMakerLevel);
-                    foreach (var item in data.Data.ReqItems.List)
-                    {
-                        makerEntry.addReqItem(item.ItemId, item.Count);
-                    }
-                    makerEntry.addGainItem(data.Data.ItemId, data.Data.Quantity);
+                    makerEntry.addReqItem(item.Item, item.Count);
                 }
+                var reward = new LotteryMachine<ItemMakeReward, int>(table.Rewards, x => x.Prob).GetRandomItem();
+                makerEntry.addGainItem(reward.Item, reward.ItemNum);
+                return makerEntry;
             }
-
-            return makerEntry;
+            return null;
         }
 
         public int getMakerCrystalFromEquip(int equipId)
@@ -154,11 +138,6 @@ namespace Application.Module.Maker.Channel
             return -1;
         }
 
-        public List<MakerProto.MakerRequiredItem> getMakerDisassembledItems(int itemId)
-        {
-            return _transport.GetMakerDisassembledItems(new MakerProto.ItemIdRequest { ItemId = itemId }).List.ToList();
-        }
-
         public int getMakerDisassembledFee(int itemId)
         {
             int fee = -1;
@@ -182,22 +161,7 @@ namespace Application.Module.Maker.Channel
 
         public int getMakerStimulant(int itemId)
         {
-            if (makerCatalystCache.TryGetValue(itemId, out var itemid))
-                return itemid;
-
-            itemid = -1;
-            foreach (Data md in DataProviderFactory.getDataProvider(WZFiles.ETC).getData("ItemMake.img").getChildren())
-            {
-                var me = md.getChildByPath(StringUtil.getLeftPaddedStr(itemId.ToString(), '0', 8));
-                if (me != null)
-                {
-                    itemid = DataTool.getInt(me.getChildByPath("catalyst"), -1);
-                    break;
-                }
-            }
-
-            makerCatalystCache.Add(itemId, itemid);
-            return itemid;
+            return _provider.GetItem(itemId)?.Catalyst ?? -1;
         }
         #endregion
 
@@ -235,14 +199,14 @@ namespace Application.Module.Maker.Channel
             return ret;
         }
 
-        public MakerItemCreateEntry generateDisassemblyCrystalEntry(int fromEquipid, int cost, List<MakerProto.MakerRequiredItem> gains)
+        public MakerItemCreateEntry generateDisassemblyCrystalEntry(int fromEquipid, int cost, List<ItemQuantity> gains)
         {
             // equipment at specific position already taken
             MakerItemCreateEntry ret = new MakerItemCreateEntry(cost, 0, 1);
             ret.addReqItem(fromEquipid, 1);
             foreach (var p in gains)
             {
-                ret.addGainItem(p.ItemId, p.Count);
+                ret.addGainItem(p.ItemId, p.Quantity);
             }
             return ret;
         }
@@ -406,16 +370,21 @@ namespace Application.Module.Maker.Channel
             }
         }
 
-        public KeyValuePair<int, List<MakerProto.MakerRequiredItem>>? generateDisassemblyInfo(int itemId)
+        public KeyValuePair<int, List<ItemQuantity>>? generateDisassemblyInfo(int itemId)
         {
-            int recvFee = getMakerDisassembledFee(itemId);
-            if (recvFee > -1)
+            var table = getMakerItemEntry(itemId);
+            if (table == null)
+                return null;
+            int fee = -1;
+
+            // cost is 13.6363~ % of the original value, trim by 1000.
+            float val = (float)(table.getCost() * 0.13636363636364);
+            fee = (int)(val / 1000);
+            fee *= 1000;
+
+            if (fee > -1 && table.getReqItems().Count > 0)
             {
-                var gains = getMakerDisassembledItems(itemId);
-                if (gains.Count > 0)
-                {
-                    return new(recvFee, gains);
-                }
+                return new(fee, table.getReqItems());
             }
 
             return null;
@@ -517,48 +486,25 @@ namespace Application.Module.Maker.Channel
 
                 foreach (var r in reagentids)
                 {
-                    var reagentBuff = GetMakerReagentStatUpgrade(r.Key);
-
-                    if (reagentBuff != null)
+                    var reagent = _itemProvider.GetItem(r.Key);
+                    if (reagent != null)
                     {
-                        string s = reagentBuff.Stat;
-
-                        if (s.Substring(0, 4).Contains("rand"))
+                        if (reagent.RandOption != 0 || reagent.RandStat != 0)
                         {
-                            if (s.Substring(4).Equals("Stat"))
+                            if (reagent.RandStat != 0)
                             {
-                                randStat.Add((short)(reagentBuff.Value * r.Value));
+                                randStat.Add((short)(reagent.RandStat * r.Value));
                             }
                             else
                             {
-                                randOption.Add((short)(reagentBuff.Value * r.Value));
+                                randOption.Add((short)(reagent.RandOption * r.Value));
                             }
                         }
-                        else
-                        {
-                            string stat = s.Substring(3);
 
-                            if (!stat.Equals("ReqLevel"))
-                            {    // improve req level... really?
-                                switch (stat)
-                                {
-                                    case "MaxHP":
-                                        stat = "MHP";
-                                        break;
-
-                                    case "MaxMP":
-                                        stat = "MMP";
-                                        break;
-                                }
-
-                                var d = stats.GetValueOrDefault(stat);
-                                stats.AddOrUpdate(stat, d + (reagentBuff.Value * r.Value));
-                            }
-                        }
+                        ItemInformationProvider.improveEquipStats(eqp, reagent);
                     }
                 }
 
-                ItemInformationProvider.improveEquipStats(eqp, stats);
 
                 foreach (short sh in randStat)
                 {

@@ -16,19 +16,9 @@ namespace Application.Core.Login.Servers
             _itemService = itemService;
         }
 
-        public override Task<LoadItemsFromStoreResponse> LoadItemFromStore(LoadItemsFromStoreRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.ItemFactoryManager.LoadItems(request));
-        }
-
         public override Task<OwlSearchRecordResponse> LoadOwlSearchRecords(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerShopManager.GetOwlSearchedItems());
-        }
-
-        public override Task<StoreItemsResponse> SaveItems(StoreItemsRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(_server.ItemFactoryManager.Store(request));
         }
 
         public override Task<OwlSearchResponse> UseOwlSearch(OwlSearchRequest request, ServerCallContext context)

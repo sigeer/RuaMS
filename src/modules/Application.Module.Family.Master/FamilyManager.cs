@@ -34,6 +34,7 @@ namespace Application.Module.Family.Master
             IMapper mapper,
             IOptions<FamilyConfigs> options,
             MasterFamilyModuleTransport transport)
+            : base(x => x.Id)
         {
             _dbContextFactory = dbContextFactory;
             _server = server;
@@ -119,7 +120,7 @@ namespace Application.Module.Family.Master
                     item.Todaysrep = 0;
                     item.Reptosenior = 0;
                     item.EntitlementUseRecord.RemoveAll(x => x.Time <= resetTime);
-                    SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, item));
+                    SetDirty(item);
                 }
             }
             catch (Exception e)
@@ -162,7 +163,7 @@ namespace Application.Module.Family.Master
                     Id = masterId,
                     Familyid = Interlocked.Increment(ref _currentFamilyId),
                 };
-                SetDirty(family.Id, new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, family));
+                SetDirty(family);
             }
 
 
@@ -181,7 +182,7 @@ namespace Application.Module.Family.Master
                     Familyid = family.Familyid,
                     Seniorid = masterId
                 };
-                SetDirty(theFamily.Id, new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, theFamily));
+                SetDirty(theFamily);
             }
             return new Dto.GetFamilyResponse { Model = _mapper.Map<Dto.FamilyDto>(family) };
         }
@@ -200,13 +201,13 @@ namespace Application.Module.Family.Master
             family.Seniorid = 0;
             family.Reptosenior = 0;
             family.Familyid = newFamilyId;
-            SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, family));
+            SetDirty(family);
 
             foreach (var item in children)
             {
                 item.Familyid = newFamilyId;
 
-                SetDirty(new StoreUnit<FamilyCharacterModel>(StoreFlag.AddOrUpdate, item));
+                SetDirty(item);
             }
             return new Dto.GetFamilyResponse { Model = _mapper.Map<Dto.FamilyDto>(Map(children, newFamilyId)) };
         }

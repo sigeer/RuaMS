@@ -22,7 +22,6 @@
 
 
 using Application.Core.Channel.DataProviders;
-using client.inventory;
 using client.inventory.manipulator;
 using server.quest;
 using tools;
@@ -138,9 +137,9 @@ public class ItemAction : AbstractQuestAction
 
     public override async Task<bool> check(Player chr, int? extSelection)
     {
-        List<ItemInventoryType> gainList = new();
-        List<ItemInventoryType> selectList = new();
-        List<ItemInventoryType> randomList = new();
+        List<ItemQuantity> gainList = new();
+        List<ItemQuantity> selectList = new();
+        List<ItemQuantity> randomList = new();
 
         List<int> allSlotUsed = new(5);
         for (byte i = 0; i < 5; i++)
@@ -158,23 +157,20 @@ public class ItemAction : AbstractQuestAction
             InventoryType type = ItemConstants.getInventoryType(item.getId());
             if (item.getProp() != null)
             {
-                var toItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(item.getId(), (short)item.getCount());
-
                 if (item.getProp() < 0)
                 {
-                    selectList.Add(new(toItem, type));
+                    selectList.Add(new(item.getId(), item.getCount()));
                 }
                 else
                 {
-                    randomList.Add(new(toItem, type));
+                    randomList.Add(new(item.getId(), item.getCount()));
                 }
 
             }
             else
             {
-                // Make sure they can hold the item.
-                var toItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(item.getId(), (short)item.getCount());
-                gainList.Add(new(toItem, type));
+                // Make sure they can hold the item
+                gainList.Add(new(item.getId(), item.getCount()));
 
                 if (item.getCount() < 0)
                 {
@@ -214,12 +210,12 @@ public class ItemAction : AbstractQuestAction
 
             foreach (var it in randomList)
             {
-                int idx = it.Type.getType() - 1;
+                int idx = (sbyte)ItemConstants.getInventoryType(it.ItemId) - 1;
 
-                result = InventoryManipulator.checkSpaceProgressively(c, it.Item.getItemId(), it.Item.getQuantity(), "", rndUsed.get(idx), false);
+                result = InventoryManipulator.checkSpaceProgressively(c, it.ItemId, it.Quantity, "", rndUsed.get(idx), false);
                 if (result % 2 == 0)
                 {
-                    await announceInventoryLimit(Collections.singletonList(it.Item.getItemId()), chr);
+                    await announceInventoryLimit(Collections.singletonList(it.ItemId), chr);
                     return false;
                 }
 
@@ -238,7 +234,7 @@ public class ItemAction : AbstractQuestAction
             List<int> gainItemids = new();
             foreach (var it in gainList)
             {
-                gainItemids.Add(it.Item.getItemId());
+                gainItemids.Add(it.ItemId);
             }
 
             await announceInventoryLimit(gainItemids, chr);
@@ -258,26 +254,24 @@ public class ItemAction : AbstractQuestAction
         await chr.dropMessage(1, "Please check if you have enough space in your inventory.");
     }
 
-    private async Task<bool> canHold(Player chr, List<ItemInventoryType> gainList)
+    private async Task<bool> canHold(Player chr, List<ItemQuantity> gainList)
     {
         List<int> toAddItemids = new();
         List<int> toAddQuantity = new();
         List<int> toRemoveItemids = new();
         List<int> toRemoveQuantity = new();
 
-        foreach (var item in gainList)
+        foreach (var it in gainList)
         {
-            Item it = item.Item;
-
-            if (it.getQuantity() > 0)
+            if (it.Quantity > 0)
             {
-                toAddItemids.Add(it.getItemId());
-                toAddQuantity.Add(it.getQuantity());
+                toAddItemids.Add(it.ItemId);
+                toAddQuantity.Add(it.Quantity);
             }
             else
             {
-                toRemoveItemids.Add(it.getItemId());
-                toRemoveQuantity.Add(-1 * it.getQuantity());
+                toRemoveItemids.Add(it.ItemId);
+                toRemoveQuantity.Add(-1 * it.Quantity);
             }
         }
 

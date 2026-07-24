@@ -175,9 +175,6 @@ public partial class Player
 
     private Dragon? dragon = null;
 
-
-    private List<Ring> crushRings = new();
-    private List<Ring> friendshipRings = new();
     private bool useCS;  //chaos scroll upon crafting item.
     private long npcCd;
 
@@ -241,10 +238,7 @@ public partial class Player
         return Client.CurrentServer.Node.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
     }
 
-    public void addCrushRing(Ring r)
-    {
-        crushRings.Add(r);
-    }
+
 
 
 
@@ -267,13 +261,6 @@ public partial class Player
     {
         this.Fame += famechange;
     }
-
-    public void addFriendshipRing(Ring r)
-    {
-        friendshipRings.Add(r);
-    }
-
-
 
     public void addMesosTraded(int gain)
     {
@@ -1554,11 +1541,13 @@ public partial class Player
     }
 
 
-
-    public List<Ring> getCrushRings()
+    public List<ItemProto.RingDto> getCrushRings()
     {
-        crushRings.Sort();
-        return crushRings;
+        return Rings.Where(x => x.ItemId <= 1112012 && !ItemId.isWeddingRing(x.ItemId)).ToList();
+    }
+    public List<ItemProto.RingDto> getFriendshipRings()
+    {
+        return Rings.Where(x => x.ItemId > 1112012 && !ItemId.isWeddingRing(x.ItemId)).ToList();
     }
 
     public void changeCI(int type)
@@ -1818,11 +1807,7 @@ public partial class Player
         return FinishedDojoTutorial;
     }
 
-    public List<Ring> getFriendshipRings()
-    {
-        friendshipRings.Sort();
-        return friendshipRings;
-    }
+
 
     public int getGender()
     {
@@ -2592,33 +2577,9 @@ public partial class Player
                     .Select(x => x.getItemId()).ToList();
     }
 
-    public void addPlayerRing(Ring? ring)
+    public void addPlayerRing(ItemProto.RingDto ring)
     {
-        if (ring == null)
-            return;
-
-        int ringItemId = ring.getItemId();
-        if (ItemId.isWeddingRing(ringItemId))
-        {
-            this.addMarriageRing(ring);
-        }
-        else if (ringItemId > 1112012)
-        {
-            this.addFriendshipRing(ring);
-        }
-        else
-        {
-            this.addCrushRing(ring);
-        }
-    }
-
-    public void AddPlayerRing(RingSourceModel? ringSource)
-    {
-        if (ringSource == null)
-            return;
-
-        var ring = GetRingFromTotal(ringSource);
-        addPlayerRing(ring);
+        Rings.Add(ring);
     }
 
     public int getRemainingSp()

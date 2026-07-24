@@ -55,10 +55,7 @@
     <Project Path="src/modules/Application.Module.Fishing.Channel/Application.Module.Fishing.Channel.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Maker/">
-    <Project Path="src/modules/Application.Module.Maker.Channel.InProgress/Application.Module.Maker.Channel.InProgress.csproj" />
     <Project Path="src/modules/Application.Module.Maker.Channel/Application.Module.Maker.Channel.csproj" />
-    <Project Path="src/modules/Application.Module.Maker.Common/Application.Module.Maker.Common.csproj" />
-    <Project Path="src/modules/Application.Module.Maker.Master/Application.Module.Maker.Master.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Marriage/">
     <Project Path="src/modules/Application.Module.Marriage.Channel.InProgress/Application.Module.Marriage.Channel.InProgress.csproj" />

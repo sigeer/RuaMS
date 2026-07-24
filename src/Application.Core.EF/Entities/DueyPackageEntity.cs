@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Application.EF.Entities;
 
 public partial class DueyPackageEntity
@@ -11,25 +9,29 @@ public partial class DueyPackageEntity
 
     public int Mesos { get; set; }
 
-    public DateTimeOffset TimeStamp { get; set; }
+    public DateTimeOffset CreateTime { get; set; }
 
     public string? Message { get; set; }
 
-    public bool Checked { get; set; } = true;
+    public bool HasNotified { get; set; } = false;
 
     public bool Type { get; set; } = false;
+    public byte[]? ItemBlob { get; set; }
+    public DateTimeOffset? ClaimTime { get; set; }
 
-    private DueyPackageEntity() { }
+    public DueyPackageEntity()
+    {
+    }
 
-    public DueyPackageEntity(int id, int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime)
+    public DueyPackageEntity(int id, int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime) : this()
     {
         PackageId = id;
         ReceiverId = receiverId;
         SenderId = senderId;
         Mesos = mesos;
-        TimeStamp = createTime;
+        CreateTime = createTime;
         Message = message;
-        Checked = @checked;
+        HasNotified = @checked;
         Type = type;
     }
 

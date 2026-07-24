@@ -1,3 +1,4 @@
+using AccountDto;
 using AllianceProto;
 using Application.Core.Channel;
 using Application.Core.Channel.Internal;
@@ -44,7 +45,7 @@ namespace Application.Core.ServerTransports
         readonly ServiceProto.ItemService.ItemServiceClient _itemClient;
         readonly ServiceProto.CashService.CashServiceClient _cashClient;
         readonly ServiceProto.TeamService.TeamServiceClient _teamClient;
-        readonly ServiceProto.PlayerShopService.PlayerShopServiceClient _playerShopClient;
+
 
         Lazy<InternalSession> _internalSession;
         public InternalSession InternalSession => _internalSession.Value;
@@ -62,8 +63,7 @@ namespace Application.Core.ServerTransports
             DataService.DataServiceClient dataClient,
             ItemService.ItemServiceClient itemClient,
             CashService.CashServiceClient cashClient,
-            TeamService.TeamServiceClient teamClient,
-            PlayerShopService.PlayerShopServiceClient playerShopClient)
+            TeamService.TeamServiceClient teamClient)
         {
             _sp = sp;
             _config = options.Value;
@@ -76,7 +76,6 @@ namespace Application.Core.ServerTransports
             _itemClient = itemClient;
             _cashClient = cashClient;
             _teamClient = teamClient;
-            _playerShopClient = playerShopClient;
 
             _internalSession = new Lazy<InternalSession>(() => new InternalSession(_sp.GetRequiredService<WorldChannelServer>()));
         }
@@ -169,10 +168,6 @@ namespace Application.Core.ServerTransports
         public async Task CreateTeam(CreateTeamRequest request)
         {
             await InternalSession.SendAsync(ChannelSendCode.CreateTeam, request);
-        }
-        public SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request)
-        {
-            return _playerShopClient.FindPlayerShopChannel(request);
         }
 
         public void SendAccountLogout(int accountId)

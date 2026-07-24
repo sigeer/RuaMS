@@ -52,8 +52,8 @@ namespace Application.Module.Marriage.Channel
                 else
                 {
                     var ringInfo = chr.GetRingBySourceId(info.RingSourceId)!;
-                    p.writeInt(ringInfo.getItemId());
-                    p.writeInt(ringInfo.getItemId());
+                    p.writeInt(ringInfo.ItemId);
+                    p.writeInt(ringInfo.ItemId);
                 }
                 p.writeFixedString(info.HusbandName);
                 p.writeFixedString(info.WifeName);

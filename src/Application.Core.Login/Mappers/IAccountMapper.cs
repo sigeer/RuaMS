@@ -1,10 +1,12 @@
-using Application.Core.Login.Models;
+using Application.EF.Entities;
 
 namespace Application.Core.Login.Mappers
 {
     [Mapper]
     public interface IAccountMapper
     {
-        AccountGame MapToObject(Dto.AccountGameDto dto);
+        Dto.AccountGameDto MapToDto(AccountEntity entity);
+        AccountEntity MapToExisting(Dto.AccountGameDto dto, AccountEntity entity);
+
     }
 }

@@ -19,7 +19,7 @@ namespace Application.Core.Login.ServerData
 
         int _localId = 0;
 
-        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteManager noteService)
+        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteManager noteService) : base(x => x.Id)
         {
             _mapper = mapper;
             _dbContextFactory = dbContextFactory;
@@ -57,7 +57,7 @@ namespace Application.Core.Login.ServerData
                 To = receiver.Character.Id,
                 RingSourceId = ringModel?.Id ?? -1
             };
-            SetDirty(newModel.Id, new StoreUnit<GiftModel>(StoreFlag.AddOrUpdate, newModel));
+            SetDirty(newModel);
 
             if (!createRing)
                 _ = _noteService.SendNormal(sender.Character.Name + " has sent you a gift! Go check out the Cash Shop.", sender.Character.Id, receiver.Character.Name);
@@ -66,15 +66,7 @@ namespace Application.Core.Login.ServerData
 
 
 
-            return new CreateGiftResponse { Recipient = toName, RingSource = MapToDto(ringModel) };
-        }
-
-        ItemProto.RingDto MapToDto(RingSourceModel? ringModel)
-        {
-            var dto = _mapper.Map<ItemProto.RingDto>(ringModel);
-            dto.CharacterName1 = _server.CharacterManager.GetPlayerName(ringModel.CharacterId1);
-            dto.CharacterName2 = _server.CharacterManager.GetPlayerName(ringModel.CharacterId2);
-            return dto;
+            return new CreateGiftResponse { Recipient = toName, RingSource = ringModel };
         }
 
         ItemProto.GiftDto MapToGiftDto(GiftModel? giftModel)
@@ -96,8 +88,7 @@ namespace Application.Core.Login.ServerData
             {
                 var dto = MapToGiftDto(gift);
 
-                var ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
-                dto.Ring = MapToDto(ring);
+                dto.Ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
                 res.List.Add(dto);
             }
             return res;
@@ -116,8 +107,9 @@ namespace Application.Core.Login.ServerData
             var updateKeys = updateData.Keys.ToArray();
             await dbContext.Gifts.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
 
-            foreach (var item in updateData.Values)
+            foreach (var kw in updateData)
             {
+                var item = kw.Value;
                 var obj = item.Data;
                 if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
                 {

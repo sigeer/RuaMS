@@ -144,44 +144,44 @@ namespace Application.Module.Marriage.Channel
             return ItemId.GetEngagementItems().Any(x => chr.haveItemWithId(x));
         }
 
-        public List<Item> GetUnclaimedMarriageGifts(Player chr)
-        {
-            return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { 
-                Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
-        }
+        //public List<Item> GetUnclaimedMarriageGifts(Player chr)
+        //{
+        //    return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { 
+        //        Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
+        //}
 
-        public async Task TakeItemFromGifts(Player chr, int itemPos)
-        {
-            {
-                await chr.Client.tryacquireClient();
-                var allItems = _mapper.Map<List<Item>>(_transport.LoadMarriageGifts(new LoadMarriageGiftsRequest { MasterId = chr.Id }));
-                try
-                {
-                    var item = allItems.ElementAtOrDefault(itemPos);
-                    if (item != null && await InventoryManipulator.addFromDrop(chr.Client, item, true))
-                    {
-                        allItems.RemoveAt(itemPos);
-                        StoreGifts(chr.Id, allItems);
-                        await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), allItems));
-                    }
-                    else
-                    {
-                        await chr.dropMessage(1, "Free a slot on your inventory before collecting this item.");
-                        await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                    await chr.dropMessage(1, "You have already collected this item.");
-                    await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
-                }
-                finally
-                {
-                    chr.Client.releaseClient();
-                }
-            }
-        }
+        //public async Task TakeItemFromGifts(Player chr, int itemPos)
+        //{
+        //    {
+        //        await chr.Client.tryacquireClient();
+        //        var allItems = _mapper.Map<List<Item>>(_transport.LoadMarriageGifts(new LoadMarriageGiftsRequest { MasterId = chr.Id }));
+        //        try
+        //        {
+        //            var item = allItems.ElementAtOrDefault(itemPos);
+        //            if (item != null && await InventoryManipulator.addFromDrop(chr.Client, item, true))
+        //            {
+        //                allItems.RemoveAt(itemPos);
+        //                StoreGifts(chr.Id, allItems);
+        //                await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xF, Collections.singletonList(""), allItems));
+        //            }
+        //            else
+        //            {
+        //                await chr.dropMessage(1, "Free a slot on your inventory before collecting this item.");
+        //                await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+        //            }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            _logger.LogError(e.ToString());
+        //            await chr.dropMessage(1, "You have already collected this item.");
+        //            await chr.SendPacket(WeddingPackets.onWeddingGiftResult(0xE, Collections.singletonList(""), allItems));
+        //        }
+        //        finally
+        //        {
+        //            chr.Client.releaseClient();
+        //        }
+        //    }
+        //}
 
         public MarriageInstance? GetMarriageInstance(Player chr)
         {

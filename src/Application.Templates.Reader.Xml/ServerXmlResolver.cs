@@ -39,6 +39,8 @@ namespace Application.Templates.Reader.Xml
                     return [Path.Combine(imgDir, "MakeCharInfo.img.xml")];
                 case ProviderType.EtcScriptInfo:
                     return [Path.Combine(imgDir, "ScriptInfo.img.xml")];
+                case ProviderType.EtcItemMake:
+                    return [Path.Combine(imgDir, "ItemMake.img")];
                 case ProviderType.UIMobWithBossHpBar:
                     return [Path.Combine(imgDir, "UIWindow.img.xml")];
                 case ProviderType.Map:
@@ -149,6 +151,7 @@ namespace Application.Templates.Reader.Xml
             ProviderType.EtcCashCommodity or
             ProviderType.EtcCashPackage or
             ProviderType.EtcScriptInfo or
+            ProviderType.EtcItemMake or
             ProviderType.EtcNpcLocation or
             ProviderType.EtcMakeCharInfo => "Etc.wz",
             _ => type.ToString()

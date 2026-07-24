@@ -8,6 +8,12 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
 	</ItemGroup>
+	
+	<ItemGroup>
+		<Content Include="SeedData\*.sql">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />

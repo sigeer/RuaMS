@@ -131,6 +131,12 @@ namespace Application.Templates.Reader.Xml.Provider
                             IncubatorItemTemplateGenerated.ApplyProperties(m, itemNode);
                             template = m;
                         }
+                        else if (groupId == 425)
+                        {
+                            var p = new EtcMakeItemTemplate(itemId);
+                            EtcItemTemplateGenerated.ApplyProperties(p, itemNode);
+                            template = p;
+                        }
                         else
                         {
                             var m = new EtcItemTemplate(itemId);

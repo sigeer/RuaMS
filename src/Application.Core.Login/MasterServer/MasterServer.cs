@@ -106,8 +106,7 @@ namespace Application.Core.Login
 
         readonly Lazy<BuddyManager> _buddyManager;
         public BuddyManager BuddyManager => _buddyManager.Value;
-        readonly Lazy<InventoryManager> _inventoryManager;
-        public InventoryManager InventoryManager => _inventoryManager.Value;
+
         readonly Lazy<RingManager> _ringManager;
         public RingManager RingManager => _ringManager.Value;
         readonly Lazy<GiftManager> _giftManager;
@@ -119,8 +118,7 @@ namespace Application.Core.Login
         public NewYearCardManager NewYearCardManager => _lazyNewYearCardManager.Value;
         readonly Lazy<PlayerShopManager> _playerShopManager;
         public PlayerShopManager PlayerShopManager => _playerShopManager.Value;
-        readonly Lazy<ItemFactoryManager> _itemFactoryManager;
-        public ItemFactoryManager ItemFactoryManager => _itemFactoryManager.Value;
+
         readonly Lazy<SystemManager> _systemManager;
         public SystemManager SystemManager => _systemManager.Value;
         readonly Lazy<AccountHistoryManager> _accountHistoryManager;
@@ -202,8 +200,6 @@ namespace Application.Core.Login
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _guildManager = new(() => ServiceProvider.GetRequiredService<GuildManager>());
             _chatRoomManager = new(() => ServiceProvider.GetRequiredService<ChatRoomManager>());
-            _itemFactoryManager = new(() => ServiceProvider.GetRequiredService<ItemFactoryManager>());
-            _inventoryManager = new(() => ServiceProvider.GetRequiredService<InventoryManager>());
             _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
             _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());
             _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());

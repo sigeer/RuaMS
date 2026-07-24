@@ -1,9 +1,17 @@
+using Google.Protobuf;
+
 namespace Application.EF.Entities;
 
 public partial class AccountEntity
 {
-    private AccountEntity() { }
-    public AccountEntity(string name, string password)
+    public AccountEntity() 
+    {
+        Blob = (new Dto.AccountGameDataProto
+        {
+            Storage = new Dto.StorageDto { Slots = 4 }
+        }).ToByteArray();
+    }
+    public AccountEntity(string name, string password) : this()
     {
         Name = name;
         Password = password;
@@ -17,22 +25,18 @@ public partial class AccountEntity
 
     public string Password { get; set; } = null!;
 
-    public string Pin { get; set; } = null!;
+    public string Pin { get; set; } = "";
 
-    public string Pic { get; set; } = null!;
-    /// <summary>
-    /// 账户的登录态完全可以由服务器内存控制-- 服务器停止时必定不在线
-    /// </summary>
-    //public sbyte Loggedin { get; set; }
+    public string Pic { get; set; } = "";
     public DateTimeOffset Createdat { get; set; }
 
     public DateTime Birthday { get; set; }
 
-    public int? NxCredit { get; set; }
+    public int NxCredit { get; set; }
 
-    public int? MaplePoint { get; set; }
+    public int MaplePoint { get; set; }
 
-    public int? NxPrepaid { get; set; }
+    public int NxPrepaid { get; set; }
 
     public sbyte Characterslots { get; set; } = 3;
     /// <summary>
@@ -46,5 +50,5 @@ public partial class AccountEntity
     public string? Nick { get; set; }
     public string? Email { get; set; }
 
-    public virtual Quickslotkeymapped? Quickslotkeymapped { get; set; }
+    public byte[] Blob { get; set; }
 }

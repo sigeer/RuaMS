@@ -24,6 +24,7 @@ namespace Application.Module.BBS.Master
         int _threadId;
 
         public BBSManager(ILogger<BBSManager> logger, IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
+            : base(x => x.Id)
         {
             _logger = logger;
             _mapper = mapper;
@@ -166,7 +167,7 @@ namespace Application.Module.BBS.Master
                 Guildid = chr.Character.GuildId,
                 Id = Interlocked.Add(ref _threadId, 1000),
             };
-            SetDirty(newModel.Id, new StoreUnit<BBSThreadModel>(StoreFlag.AddOrUpdate, newModel));
+            SetDirty(newModel);
 
             return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSThreadDto>(newModel) };
         }
@@ -189,7 +190,7 @@ namespace Application.Module.BBS.Master
                 return;
             }
 
-            SetDirty(request.ThreadId, new StoreUnit<BBSThreadModel>(StoreFlag.Remove, null));
+            SetRemoved(request.ThreadId);
         }
 
         public ShowBBSMainThreadResponse DeleteBBSReply(BBSProto.DeleteReplyRequest request)
@@ -208,7 +209,7 @@ namespace Application.Module.BBS.Master
 
             thread.Replies.RemoveAll(x => x.Id == request.ReplyId);
 
-            SetDirty(threadId, new StoreUnit<BBSThreadModel>(StoreFlag.AddOrUpdate, thread));
+            SetDirty(thread);
 
             return new ShowBBSMainThreadResponse() { Data = _mapper.Map<BBSProto.BBSThreadDto>(thread) };
         }

@@ -7,6 +7,7 @@ namespace Application.Templates.Reader
         EtcNpcLocation,
         EtcMakeCharInfo,
         EtcScriptInfo,
+        EtcItemMake,
         UIMobWithBossHpBar,
 
         Equip,

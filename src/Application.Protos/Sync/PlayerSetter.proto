@@ -24,24 +24,7 @@ package SyncProto;
 message PlayerSaveDto {
   int32 channel = 1;
   Dto.CharacterDto character = 2; // CHECK TYPE
-  repeated Dto.ItemDto inventoryItems = 3; // CHECK TYPE
-  Dto.AccountGameDto accountGame = 4; // CHECK TYPE
-  repeated Dto.MonsterbookDto monsterBooks = 5; // CHECK TYPE
-  repeated Dto.PetIgnoreDto petIgnores = 6; // CHECK TYPE
-  repeated Dto.TrockLocationDto trockLocations = 7; // CHECK TYPE
-  repeated Dto.AreaDto areas = 8; // CHECK TYPE
-  repeated Dto.EventDto events = 9; // CHECK TYPE
-  repeated Dto.QuestStatusDto questStatuses = 10; // CHECK TYPE
-  repeated Dto.SkillDto skills = 11; // CHECK TYPE
-  repeated Dto.SkillMacroDto skillMacros = 12; // CHECK TYPE
-  repeated Dto.CoolDownDto coolDowns = 13; // CHECK TYPE
-  repeated Dto.KeyMapDto keyMaps = 14; // CHECK TYPE
-  repeated Dto.SavedLocationDto savedLocations = 15; // CHECK TYPE
-  Dto.QuickSlotDto quickSlot = 16; // CHECK TYPE
-  repeated int32 wishItems = 19;
-  repeated Dto.FameLogRecordDto fameLogs = 20;
-  repeated PlayerTimerQuestDto runningTimerQuests = 21;
-  Dto.StorageDto gachaponStorage = 23;
+  Dto.AccountGameDto accountGame = 3; // 账号共享数据
 }
 
 message SyncPlayerRequest {

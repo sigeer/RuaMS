@@ -1,17 +1,28 @@
 using Application.Shared.Constants;
+using Google.Protobuf;
 
 namespace Application.EF.Entities;
 
 public class CharacterEntity
 {
-    protected CharacterEntity() { }
+    public CharacterEntity() 
+    { 
+        CreateDate = DateTime.UtcNow;
+        LastLogoutTime = DateTime.UtcNow;
+        LastExpGainTime = DateTime.UtcNow;
+        Blob = new Dto.CharacterDataProto() 
+        {
+            GachaponStorage = new Dto.StorageDto(),
+            Bag = new Dto.CharacterBagDataProto()
+        }.ToByteArray();
+    }
 
-    public CharacterEntity(int accountId, string name, int level, int exp, int gachaexp, 
-        int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp, 
-        int meso, int job, 
-        int skincolor, int gender, int hair, int face, 
-        int map, int spawnpoint, 
-        int ap, string sp)
+    public CharacterEntity(int accountId, string name, int level, int exp, int gachaexp,
+        int str, int dex, int luk, int @int, int hp, int mp, int maxhp, int maxmp,
+        int meso, int job,
+        int skincolor, int gender, int hair, int face,
+        int map, int spawnpoint,
+        int ap, string sp) : this()
     {
         AccountId = accountId;
         Name = name;
@@ -130,13 +141,13 @@ public class CharacterEntity
 
     public int Matchcardties { get; set; }
 
-    public int Equipslots { get; set; }
+    public int Equipslots { get; set; } = DefaultConfigs.BagSize;
 
-    public int Useslots { get; set; }
+    public int Useslots { get; set; } = DefaultConfigs.BagSize;
 
-    public int Setupslots { get; set; }
+    public int Setupslots { get; set; } = DefaultConfigs.BagSize;
 
-    public int Etcslots { get; set; }
+    public int Etcslots { get; set; } = DefaultConfigs.BagSize;
 
     public int FamilyId { get; set; } = -1;
 
@@ -157,11 +168,10 @@ public class CharacterEntity
     public int VanquisherKills { get; set; }
 
     public int SummonValue { get; set; }
-    public int Reborns { get; set; }
 
     public int Pqpoints { get; set; }
 
-    public string DataString { get; set; } = null!;
+    public string DataString { get; set; } = "";
 
     public DateTimeOffset LastLogoutTime { get; set; }
 
@@ -174,8 +184,8 @@ public class CharacterEntity
     public int MpAlert { get; set; } = DefaultConfigs.MPAlert;
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<FamelogEntity> Famelogs { get; set; } = new List<FamelogEntity>();
 
     public virtual FamilyCharacterEntity? FamilyCharacter { get; set; }
 
+    public byte[] Blob { get; set; } = [];
 }

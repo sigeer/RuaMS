@@ -11,57 +11,14 @@ namespace Application.Core.Game.Players
             return marriageRing;
         }
 
-        public Ring? GetRingBySourceId(int sourceId)
+        public ItemProto.RingDto? GetRingBySourceId(int sourceId)
         {
-            foreach (Ring ring in getCrushRings())
-            {
-                if (ring.SourceId == sourceId)
-                {
-                    return ring;
-                }
-            }
-            foreach (Ring ring in getFriendshipRings())
-            {
-                if (ring.SourceId == sourceId)
-                {
-                    return ring;
-                }
-            }
-
-            if (marriageRing?.SourceId == sourceId)
-            {
-                return marriageRing;
-            }
-
-            return null;
+            return Rings.FirstOrDefault(x => x.Id == sourceId);
         }
 
-        public Ring? getRingById(long id)
+        public ItemProto.RingDto? getRingById(long id)
         {
-            foreach (Ring ring in getCrushRings())
-            {
-                if (ring.getRingId() == id)
-                {
-                    return ring;
-                }
-            }
-            foreach (Ring ring in getFriendshipRings())
-            {
-                if (ring.getRingId() == id)
-                {
-                    return ring;
-                }
-            }
-
-            if (marriageRing != null)
-            {
-                if (marriageRing.getRingId() == id)
-                {
-                    return marriageRing;
-                }
-            }
-
-            return null;
+            return Rings.FirstOrDefault(x => x.RingId1 == id || x.RingId2 == id);
         }
 
         public void addMarriageRing(Ring? r)

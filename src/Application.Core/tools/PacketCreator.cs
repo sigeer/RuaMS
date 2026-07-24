@@ -1972,7 +1972,7 @@ public class PacketCreator
 
     private static void addRingLook(OutPacket p, Player chr, bool crush)
     {
-        List<Ring> rings;
+        List<ItemProto.RingDto> rings;
         if (crush)
         {
             rings = chr.getCrushRings();
@@ -1981,19 +1981,20 @@ public class PacketCreator
         {
             rings = chr.getFriendshipRings();
         }
+
         bool yes = false;
-        foreach (Ring ring in rings)
+        foreach (var ring in rings)
         {
-            if (ring.equipped())
+            if (chr.haveItemEquipped(ring.ItemId))
             {
                 if (!yes)
                 {
                     yes = true;
                     p.writeByte(1);
                 }
-                p.writeLong(ring.getRingId());
-                p.writeLong(ring.getPartnerRingId());
-                p.writeInt(ring.getItemId());
+                p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId1 : ring.RingId2);
+                p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId2 : ring.RingId1);
+                p.writeInt(ring.ItemId);
             }
         }
         if (!yes)
@@ -6211,21 +6212,21 @@ public class PacketCreator
     private static void addRingInfo(OutPacket p, Player chr)
     {
         p.writeShort(chr.getCrushRings().Count);
-        foreach (Ring ring in chr.getCrushRings())
+        foreach (var ring in chr.getCrushRings())
         {
-            p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(ring.getPartnerName());
-            p.writeLong(ring.getRingId());
-            p.writeLong(ring.getPartnerRingId());
+            p.writeInt(ring.CharacterId1 == chr.Id ? ring.CharacterId2 : ring.CharacterId1);
+            p.writeFixedString(ring.CharacterId1 == chr.Id ? ring.CharacterName2 : ring.CharacterName1);
+            p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId1 : ring.RingId2);
+            p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId2 : ring.RingId1);
         }
         p.writeShort(chr.getFriendshipRings().Count);
-        foreach (Ring ring in chr.getFriendshipRings())
+        foreach (var ring in chr.getFriendshipRings())
         {
-            p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(ring.getPartnerName());
-            p.writeLong(ring.getRingId());
-            p.writeLong(ring.getPartnerRingId());
-            p.writeInt(ring.getItemId());
+            p.writeInt(ring.CharacterId1 == chr.Id ? ring.CharacterId2 : ring.CharacterId1);
+            p.writeFixedString(ring.CharacterId1 == chr.Id ? ring.CharacterName2 : ring.CharacterName1);
+            p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId1 : ring.RingId2);
+            p.writeLong(ring.CharacterId1 == chr.Id ? ring.RingId2 : ring.RingId1);
+            p.writeInt(ring.ItemId);
         }
 
         chr.Client.CurrentServer.NodeService.MarriageService.WriteMarriageRing(p, chr);
@@ -6984,7 +6985,7 @@ public class PacketCreator
         Dictionary<short, int> myEquip = new();
         Dictionary<short, int> maskedEquip = new();
         int weaponItemId = 0;
-        foreach (var item in chr.InventoryItems.Where(x => x.InventoryType == -1))
+        foreach (var item in chr.Character.Data.Bag.EquippedInv)
         {
             short pos = (short)(item.Position * -1);
             if (pos < 100 && !myEquip.ContainsKey(pos))

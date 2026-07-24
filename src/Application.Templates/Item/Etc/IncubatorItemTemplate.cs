@@ -1,5 +1,8 @@
 namespace Application.Templates.Item.Etc
 {
+    /// <summary>
+    /// 422
+    /// </summary>
     [GenerateTag]
     public class IncubatorItemTemplate : EtcItemTemplate
     {

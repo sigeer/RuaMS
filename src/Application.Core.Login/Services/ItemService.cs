@@ -74,9 +74,9 @@ namespace Application.Core.Login.Services
                 Master = _mapper.Map<Dto.PlayerViewDto>(master),
                 Request = request,
             };
-            var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
-            if (masterPartner != null)
-                response.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
+            //var masterPartner = _server.CharacterManager.FindPlayerById(master.Character.PartnerId);
+            //if (masterPartner != null)
+            //    response.MasterPartner = _mapper.Map<Dto.PlayerViewDto>(masterPartner);
 
             _ = _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleTVMessageStart, response);
             isLocked.Set(true);

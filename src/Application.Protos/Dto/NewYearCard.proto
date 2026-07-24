@@ -8,9 +8,9 @@ message NewYearCardDto {
 	int32 receiverId = 3;
 	string message = 4;
 	string senderName = 5;
-	string receiveName = 6;
+	string receiverName = 6;
 	bool senderDiscard = 7;
-	bool receiveDiscard = 8;
+	bool receiverDiscard = 8;
 	bool received = 9;
 	int64 timeSent = 10;
 	int64 timeReceived = 11;

@@ -6,7 +6,6 @@ using Application.Core.Game.Players;
 using Application.Core.Login;
 using Application.Core.Login.Services;
 using Application.Module.ExpeditionBossLog.Master;
-using Application.Module.Maker.Master;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility;
@@ -51,7 +50,6 @@ namespace ServiceTest.Games
             // 需要先启动Master
             builder.Services.AddLoginServer(builder.Configuration);
             builder.Services.AddExpeditionBossLogMaster();
-            builder.Services.AddMakerMaster();
 
             builder.AddChannelServerInProgress();
 

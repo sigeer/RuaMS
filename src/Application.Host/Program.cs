@@ -2,7 +2,6 @@ using Application.Core.Login;
 using Application.Host.Middlewares;
 using Application.Host.Services;
 using Application.Module.ExpeditionBossLog.Master;
-using Application.Module.Maker.Master;
 using Application.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -66,7 +65,6 @@ try
 
     builder.Services.AddLoginServer(builder.Configuration);
     builder.Services.AddExpeditionBossLogMaster();
-    builder.Services.AddMakerMaster();
 
 #if IsStandalone
     builder.AddChannelServerInProgress();

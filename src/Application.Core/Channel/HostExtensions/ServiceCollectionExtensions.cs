@@ -155,10 +155,6 @@ namespace Application.Core.Channel.HostExtensions
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
-            services.AddGrpcClient<ServiceProto.PlayerShopService.PlayerShopServiceClient>((sp, o) =>
-            {
-                o.Address = new(AppSettingKeys.Grpc_Master);
-            }).AddInterceptor<WithServerNameInterceptor>();
             return services;
         }
 

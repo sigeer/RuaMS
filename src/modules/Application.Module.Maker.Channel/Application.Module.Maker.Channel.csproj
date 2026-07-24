@@ -9,8 +9,4 @@
 		<ProjectReference Include="..\..\Application.Core\Application.Core.csproj" />
 		<ProjectReference Include="..\..\Application.Shared\Application.Shared.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Application.Module.Maker.Common\Application.Module.Maker.Common.csproj" />
-	</ItemGroup>
 </Project>

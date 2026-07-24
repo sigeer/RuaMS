@@ -8,11 +8,13 @@ using Application.Core.Game.Skills;
 using Application.Core.Mappers;
 using Application.Core.Models;
 using Application.Core.ServerTransports;
+using Application.Scripting.JS;
 using Application.Shared.Events;
 using client;
 using client.inventory;
 using client.keybind;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using net.server.guild;
 using server;
 using server.events;
@@ -81,29 +83,29 @@ namespace Application.Core.Channel.Services
 
             _mapper.Map(o.Character, player);
 
-            player.Monsterbook.LoadData(o.MonsterBooks);
+            player.Monsterbook.LoadData(o.Character.Data.MonsterBooks);
 
             List<Item> cashItems;
             switch (player.CashShopModel.Factory)
             {
                 case Shared.Items.ItemType.CashExplorer:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashExplorerItems);
+                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashExplorerItems);
                     break;
                 case Shared.Items.ItemType.CashCygnus:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashCygnusItems);
+                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashCygnusItems);
                     break;
                 case Shared.Items.ItemType.CashAran:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashAranItems);
+                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashAranItems);
                     break;
                 default:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.CashOverallItems);
+                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashOverallItems);
                     break;
             }
             player.CashShopModel.LoadData(
                 o.AccountGame.NxCredit,
                 o.AccountGame.MaplePoint,
                 o.AccountGame.NxPrepaid,
-                o.WishItems.ToList(),
+                o.Character.Data.WishItems.ToList(),
                 cashItems
                 );
 
@@ -125,24 +127,35 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            int sandboxCheck = 0x0;
-            foreach (var item in o.InventoryItems)
+            var bagMapping = new Dictionary<InventoryType, RepeatedField<Dto.ItemDto>>()
             {
-                sandboxCheck |= item.Flag;
+                { InventoryType.EQUIP, o.Character.Data.Bag.EquipInv},
+                { InventoryType.USE, o.Character.Data.Bag.UseInv},
+                { InventoryType.SETUP, o.Character.Data.Bag.SetupInv},
+                { InventoryType.ETC, o.Character.Data.Bag.EtcInv},
+                { InventoryType.CASH, o.Character.Data.Bag.CashInv},
+                { InventoryType.EQUIPPED, o.Character.Data.Bag.EquippedInv}
+            };
 
-                var itemObj = _mapper.Map<Item>(item);
-                var type = InventoryTypeUtils.GetByType(item.InventoryType);
-                await player.Bag[type].PutItem((short)item.Position, itemObj, true);
+            int sandboxCheck = 0x0;
+            foreach (var kw in bagMapping)
+            {
+                var invType = kw.Key;
 
-                if (itemObj is Equip equipObj)
+                var chrInv = player.Bag[invType];
+                foreach (var item in kw.Value)
                 {
-                    player.addPlayerRing(equipObj.Ring);
-                }
-                else if (itemObj is Pet petObj)
-                {
-                    if (item.PetInfo.Summoned)
+                    sandboxCheck |= item.Flag;
+
+                    var itemObj = _itemMapper.MapToObject(item);
+                    await chrInv.PutItem((short)item.Position, itemObj, true);
+
+                    if (itemObj is Pet petObj)
                     {
-                        player.addPet(petObj);
+                        if (item.PetInfo.Summoned)
+                        {
+                            player.addPet(petObj);
+                        }
                     }
                 }
             }
@@ -154,9 +167,9 @@ namespace Application.Core.Channel.Services
             player.CheckMarriageData();
 
             player.Storage = new Storage(player,
-                o.AccountGame.Storage.OwnerId, (byte)o.AccountGame.Storage.Slots, o.AccountGame.Storage.Meso,
-                _mapper.Map<Item[]>(o.AccountGame.Storage.Items));
-            player.GachaponStorage = new(player, o.GachaponStorage.Meso, _mapper.Map<Item[]>(o.GachaponStorage.Items));
+                o.AccountGame.Data.Storage.OwnerId, (byte)o.AccountGame.Data.Storage.Slots, o.AccountGame.Data.Storage.Meso,
+                _mapper.Map<Item[]>(o.AccountGame.Data.Storage.Items));
+            player.GachaponStorage = new(player, o.Character.Data.GachaponStorage.Meso, _mapper.Map<Item[]>(o.Character.Data.GachaponStorage.Items));
 
 
             c.SetAccount(_mapper.Map<AccountInfoModel>(o.Account));
@@ -164,7 +177,7 @@ namespace Application.Core.Channel.Services
 
 
 
-            foreach (var item in o.PetIgnores)
+            foreach (var item in o.Character.Data.PetIgnores)
             {
                 var petId = item.PetId;
                 player.resetExcluded(petId);
@@ -176,11 +189,11 @@ namespace Application.Core.Channel.Services
             }
             await player.commitExcludedItems();
 
-            player.PlayerTrockLocation.LoadData(o.TrockLocations);
-            player.AreaInfo = o.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
-            player.Events = o.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
+            player.PlayerTrockLocation.LoadData(o.Character.Data.TrockLocations);
+            player.AreaInfo = o.Character.Data.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
+            player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
 
-            var statusFromDB = o.QuestStatuses;
+            var statusFromDB = o.Character.Data.QuestStatuses;
             foreach (var item in statusFromDB)
             {
                 var q = Quest.getInstance(item.QuestId);
@@ -212,9 +225,9 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            player.Skills.LoadData(o.Skills);
+            player.Skills.LoadData(o.Character.Data.Skills);
 
-            foreach (var item in o.CoolDowns)
+            foreach (var item in o.Character.Data.CoolDowns)
             {
                 int skillid = item.SkillId;
                 long length = item.Length;
@@ -227,15 +240,15 @@ namespace Application.Core.Channel.Services
             }
 
 
-            foreach (var item in o.SkillMacros)
+            foreach (var item in o.Character.Data.SkillMacros)
             {
                 player.SkillMacros[item.Position] = new SkillMacro(item.Skill1, item.Skill2, item.Skill3, item.Name, item.Shout, item.Position);
             }
 
-            player.KeyMap.LoadData(o.KeyMaps);
-            player.SavedLocations.LoadData(o.SavedLocations);
+            player.KeyMap.LoadData(o.Character.Data.KeyMaps);
+            player.SavedLocations.LoadData(o.Character.Data.SavedLocations);
 
-            player.FameLogs = _mapper.Map<List<FameLogObject>>(o.FameLogs);
+            player.FameLogs = _mapper.Map<List<FameLogObject>>(o.Character.Data.FameLogs);
 
             foreach (var card in o.NewYearCards)
             {
@@ -250,14 +263,14 @@ namespace Application.Core.Channel.Services
             }
 
             // Quickslot key config
-            if (o.AccountGame.QuickSlot != null)
+            if (o.AccountGame.Data.QuickSlot != null)
             {
-                var bytes = LongTool.LongToBytes(o.AccountGame.QuickSlot.LongValue);
+                var bytes = LongTool.LongToBytes(o.AccountGame.Data.QuickSlot.LongValue);
                 player.QuickSlotLoaded = bytes;
                 player.QuickSlotKeyMapped = new QuickslotBinding(bytes);
             }
 
-            player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.BuddyList));
+            player.BuddyList.LoadFromRemote(_mapper.Map<BuddyCharacter[]>(o.Character.Data.BuddyList));
             await player.UpdateLocalStats(true);
             return player;
         }
@@ -327,15 +340,14 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            #region inventory mapping
-            var d = player.Bag.GetValues().SelectMany(x => x.list().Adapt<Dto.ItemDto[]>()).ToArray();
-            #endregion
-
-            var data = new SyncProto.PlayerSaveDto()
+            var saveDto = new SyncProto.PlayerSaveDto()
             {
                 Channel = player.Channel,
                 Character = playerDto
             };
+            var data = new Dto.CharacterDataProto() { Bag = new Dto.CharacterBagDataProto(), GachaponStorage = new Dto.StorageDto() };
+            saveDto.Character.Data = data;
+
             data.FameLogs.AddRange(_mapper.Map<Dto.FameLogRecordDto[]>(player.FameLogs));
             data.Areas.AddRange(player.AreaInfo.Select(x => new Dto.AreaDto() { Area = x.Key, Info = x.Value }));
             data.MonsterBooks.AddRange(player.Monsterbook.ToDto());
@@ -355,34 +367,54 @@ namespace Application.Core.Channel.Services
             }));
             data.WishItems.AddRange(player.CashShopModel.getWishList());
             data.CoolDowns.AddRange(_mapper.Map<Dto.CoolDownDto[]>(player.getAllCooldowns()));
-            data.InventoryItems.AddRange(d);
-            data.AccountGame = new Dto.AccountGameDto()
+
+            var bagMapping = new Dictionary<InventoryType, RepeatedField<Dto.ItemDto>>()
+            {
+                { InventoryType.EQUIP, data.Bag.EquipInv},
+                { InventoryType.USE, data.Bag.UseInv},
+                { InventoryType.SETUP, data.Bag.SetupInv},
+                { InventoryType.ETC, data.Bag.EtcInv},
+                { InventoryType.CASH, data.Bag.CashInv},
+                { InventoryType.EQUIPPED, data.Bag.EquippedInv}
+            };
+            foreach (var kw in bagMapping)
+            {
+                foreach (var invItem in player.Bag[kw.Key].list())
+                {
+                    kw.Value.Add(_itemMapper.MapToDto(invItem));
+                }
+            }
+            saveDto.AccountGame = new Dto.AccountGameDto()
             {
                 NxCredit = player.CashShopModel.NxCredit,
                 NxPrepaid = player.CashShopModel.NxPrepaid,
                 MaplePoint = player.CashShopModel.MaplePoint,
                 Id = playerDto.AccountId,
-                Storage = new Dto.StorageDto
+                Data = new Dto.AccountGameDataProto()
                 {
-                    OwnerId = playerDto.AccountId,
-                    Meso = player.Storage.Meso,
-                    Slots = player.Storage.Slots,
-                },
-                QuickSlot = quickSlotDto,
+                    Storage = new Dto.StorageDto
+                    {
+                        OwnerId = playerDto.AccountId,
+                        Meso = player.Storage.Meso,
+                        Slots = player.Storage.Slots,
+                    },
+                    QuickSlot = quickSlotDto,
+                }
+
             };
-            data.AccountGame.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _itemMapper.MapToDto(x)));
-            data.GachaponStorage = new Dto.StorageDto { Meso = player.GachaponStorage.Meso };
+            saveDto.AccountGame.Data.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _itemMapper.MapToDto(x)));
+            data.GachaponStorage.Meso = player.GachaponStorage.Meso;
             data.GachaponStorage.Items.AddRange(player.GachaponStorage.GetItems().Select(x => _itemMapper.MapToDto(x)));
             var cashFactoryType = player.CashShopModel.Factory;
             if (cashFactoryType == ItemType.CashOverall)
-                data.AccountGame.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashAran)
-                data.AccountGame.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashExplorer)
-                data.AccountGame.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
             if (cashFactoryType == ItemType.CashCygnus)
-                data.AccountGame.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
-            return data;
+                saveDto.AccountGame.Data.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+            return saveDto;
         }
 
         public async Task CompleteLogin(WorldChannel server, Player chr, SyncProto.PlayerGetterDto o)

@@ -115,7 +115,6 @@ namespace Application.Core.Channel.Services
                     item.setGiftFrom(rs.FromName);
                     if (item is Equip equip)
                     {
-                        equip.SetRing(rs.Ring?.RingId2 ?? -1, rs.Ring);
                         gifts.Add(new ItemMessagePair(equip, rs.Message));
                     }
                     else
@@ -247,9 +246,8 @@ namespace Application.Core.Channel.Services
                 Item item = CashItem2Item(cItem);
                 if (data.GiftInfo.RingSource != null && CashItem2Item(cItem) is Equip equip)
                 {
-                    var ring = _mapper.Map<RingSourceModel>(data.GiftInfo.RingSource);
-                    equip.SetRing(ring.RingId1, ring);
-                    chr.addPlayerRing(ring.GetRing(ring.RingId1));
+                    // 也许没必要？在现金仓库中没必要更新，回到主世界后会重新加载
+                    chr.addPlayerRing(data.GiftInfo.RingSource);
                     // 原代码中 crush ring 用的是showBoughtCashItem
                     await chr.SendPacket(PacketCreator.showBoughtCashRing(item, data.GiftInfo.Recipient, chr.Client.AccountId));
                     chr.getCashShop().addToInventory(item);

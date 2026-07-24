@@ -1,9 +1,15 @@
+using Google.Protobuf;
+
 namespace Application.EF.Entities;
 
 public partial class FredstorageEntity
 {
-    private FredstorageEntity() { }
+    private FredstorageEntity() 
+    {
+        ItemsBlob = new ItemProto.PlayerShopStoreItems().ToByteArray();
+    }
     public FredstorageEntity(int id, int cid, int daynotes, int meso, DateTimeOffset timestamp)
+        : this()
     {
         Id = id;
         Cid = cid;
@@ -19,6 +25,7 @@ public partial class FredstorageEntity
     public int Daynotes { get; set; }
     public int Meso { get; set; }
     public int ItemMeso { get; set; }
+    public byte[] ItemsBlob { get; set; }
 
     public DateTimeOffset Timestamp { get; set; }
 }

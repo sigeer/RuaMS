@@ -48,6 +48,8 @@ namespace Application.Core.Login.Services
             if (banInfo != null)
                 return null;
 
+            _masterServer.CharacterManager.FlushCharacter(characterObj);
+
             var data = _mapper.Map<SyncProto.PlayerGetterDto>(characterObj);
             data.LoginInfo = new SyncProto.LoginInfo
             {
@@ -59,8 +61,10 @@ namespace Application.Core.Login.Services
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
                 .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
-            data.AccountGame = _mapper.Map<Dto.AccountGameDto>(_masterServer.AccountGameManager.GetAccountGameData(data.Character.AccountId));
+            data.RingSourceList.AddRange(_masterServer.RingManager.Query(x => x.CharacterId1 == data.Character.Id || x.CharacterId2 == data.Character.Id));
+            data.AccountGame = _masterServer.AccountGameManager.GetAccountGameData(data.Character.AccountId);
             data.Account = _mapper.Map<AccountDto.AccountInfoProto>(accountData);
+            data.NewYearCards.AddRange(_masterServer.NewYearCardManager.LoadPlayerNewYearCard(data.Character.Id));
             data.RemoteCallList.AddRange(_masterServer.CrossServerService.GetCallback(characterId));
             return data;
         }

@@ -43,9 +43,9 @@ namespace Application.Core.Login
                 Level = obj.Character.Level,
                 MapId = obj.Character.Map,
                 Name = obj.Character.Name,
-                MedalItemId = obj.InventoryItems.FirstOrDefault(x => x.InventoryType == (int)InventoryType.EQUIPPED && x.Position == EquipSlot.Medal)?.Itemid ?? 0,
+                MedalItemId = obj.Character.Data.Bag.EquippedInv.FirstOrDefault(x => x.Position == EquipSlot.Medal)?.Itemid ?? 0,
             };
-            response.Buddies.AddRange(obj.BuddyList.Keys);
+            response.Buddies.AddRange(obj.Character.Data.BuddyList.Select(x => x.Id));
             await BroadcastMessageN(evt, response);
         }
 

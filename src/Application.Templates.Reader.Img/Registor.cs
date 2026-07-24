@@ -26,6 +26,7 @@ namespace Application.Templates.Reader.Img
                 .RegisterProvider(() => new CarnivalGuardianProvider(ps.Resolver))
                 .RegisterProvider(() => new MapObstacleProvider(ps.Resolver))
                 .RegisterProvider(() => new OxQuizProvider(ps.Resolver))
+                .RegisterProvider(() => new EtcItemMakeProvider(ps.Resolver))
 
                 .RegisterKeydProvider("zh-CN", () => new StringProvider(CultureInfo.GetCultureInfo("zh-CN"), ps.Resolver))
                 .RegisterKeydProvider("en-US", () => new StringProvider(CultureInfo.GetCultureInfo("en-US"), ps.Resolver));

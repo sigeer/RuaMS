@@ -26,7 +26,7 @@ namespace Application.Module.Marriage.Master
 
         int _localMarriageId = 0;
 
-        public MarriageManager(MasterServer server, MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory)
+        public MarriageManager(MasterServer server, MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
         {
             _server = server;
             _transport = transport;
@@ -72,7 +72,7 @@ namespace Application.Module.Marriage.Master
                 EngagementItemId = request.ItemId
             };
 
-            SetDirty(newModel.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, newModel));
+            SetDirty(newModel);
             return new MarriageProto.CreateMarriageRelationResponse { Data = MapDto(newModel) };
         }
 
@@ -116,7 +116,7 @@ namespace Application.Module.Marriage.Master
             wedding.Time2 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
             wedding.RingSourceId = 0;
 
-            SetDirty(wedding.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, wedding));
+            SetDirty(wedding);
             await _transport.SendBreakMarriageCallback(res);
         }
 
@@ -158,7 +158,7 @@ namespace Application.Module.Marriage.Master
             model.RingSourceId = ringSource.Id;
             model.Status = (int)MarriageStatusEnum.Married;
             model.Time1 = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
-            SetDirty(model.Id, new StoreUnit<MarriageModel>(StoreFlag.AddOrUpdate, model));
+            SetDirty(model);
         }
 
         internal async Task NotifyPartner(int to, int chrId, int chrMap)

@@ -355,7 +355,7 @@ namespace Application.Core.Login.Client
         /// </summary>
         /// <param name="worldId"></param>
         /// <returns></returns>
-        public List<CharacterViewObject> LoadCharactersView()
+        public List<CharacterLiveObject> LoadCharactersView()
         {
             return CurrentServer.LoadAccountCharactersView(AccountEntity!.Id);
         }

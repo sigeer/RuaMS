@@ -17,7 +17,7 @@ public class NoteManager : StorageBase<int, NoteModel>
     readonly MasterServer _server;
 
     int _localId = 0;
-    public NoteManager(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteManager> logger, IMapper mapper, MasterServer masterServer)
+    public NoteManager(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteManager> logger, IMapper mapper, MasterServer masterServer) : base(x => x.Id)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
@@ -50,14 +50,15 @@ public class NoteManager : StorageBase<int, NoteModel>
             Timestamp = _server.getCurrentTime()
         };
         await SendNote(chr);
-        return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
+        SetDirty(model);
+        return true;
     }
 
-    public async Task<bool> SendNormal(string message, int sender, int reciverId)
+    public async Task SendNormal(string message, int sender, int reciverId)
     {
         var chr = _server.CharacterManager.FindPlayerById(reciverId);
         if (chr == null)
-            return false;
+            return;
 
         var model = new NoteModel()
         {
@@ -68,7 +69,7 @@ public class NoteManager : StorageBase<int, NoteModel>
             Timestamp = _server.getCurrentTime()
         };
         await SendNote(chr);
-        return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
+        SetDirty(model);
     }
 
     /**
@@ -76,11 +77,11 @@ public class NoteManager : StorageBase<int, NoteModel>
      *
      * @return Send success
      */
-    public async Task<bool> SendWithFame(string message, int sender, string receiverName)
+    public async Task SendWithFame(string message, int sender, string receiverName)
     {
         var chr = _server.CharacterManager.FindPlayerByName(receiverName);
         if (chr == null)
-            return false;
+            return;
 
         var model = new NoteModel()
         {
@@ -92,7 +93,7 @@ public class NoteManager : StorageBase<int, NoteModel>
             Fame = 1
         };
         await SendNote(chr);
-        return SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
+        SetDirty(model);
     }
 
     /**
@@ -117,7 +118,7 @@ public class NoteManager : StorageBase<int, NoteModel>
             return null;
 
         model.IsDeleted = true;
-        SetDirty(model.Id, new StoreUnit<NoteModel>(StoreFlag.AddOrUpdate, model));
+        SetDirty(model);
         return MapToDto(model);
     }
 
