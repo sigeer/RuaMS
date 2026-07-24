@@ -38,6 +38,8 @@ public class ImgPathResolver : IWzPathResolver
                 return [Path.Combine(imgDir, "NpcLocation.img")];
             case ProviderType.EtcMakeCharInfo:
                 return [Path.Combine(imgDir, "MakeCharInfo.img")];
+            case ProviderType.EtcItemMake:
+                return [Path.Combine(imgDir, "ItemMake.img")];
             case ProviderType.EtcScriptInfo:
                 return [Path.Combine(imgDir, "ScriptInfo.img")];
             case ProviderType.UIMobWithBossHpBar:
@@ -150,6 +152,7 @@ public class ImgPathResolver : IWzPathResolver
         ProviderType.EtcCashCommodity or
         ProviderType.EtcCashPackage or
         ProviderType.EtcScriptInfo or
+        ProviderType.EtcItemMake or
         ProviderType.EtcNpcLocation or
         ProviderType.EtcMakeCharInfo => "Etc",
         _ => type.ToString()

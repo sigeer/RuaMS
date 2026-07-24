@@ -5,7 +5,7 @@ import "Base/BoolWrapper.proto";
 import "Sync/PlayerGetter.proto";
 import "Sync/PlayerBuff.proto";
 import "Dto/Client.proto";
-import "Dto/AccountCtrl.proto";
+import "Account/AccountCtrl.proto";
 import "Item/HiredMerchant.proto";
 
 import "Creator/CreateCharRequest.proto";
@@ -24,7 +24,7 @@ service SyncService {
 	rpc GetPlayerObject(SyncProto.GetPlayerByLoginRequest) returns(SyncProto.GetPlayerByLoginResponse);
 	rpc SetCharacterTransition(Dto.SetClientCharacterTransitionRequest) returns(google.protobuf.Empty);
 	rpc HasCharacterInTransition(Dto.CheckCharacterInTransitionRequest) returns(BaseProto.BoolWrapper);
-	rpc UpdateAccountState(Dto.UpdateAccountStateRequest) returns(Dto.AccountLoginStateDto);
+	rpc UpdateAccountState(AccountDto.UpdateAccountStateRequest) returns(AccountDto.AccountLoginStateDto);
 	rpc PushPlayerBuffers(SyncProto.PushPlayerBuffsRequest) returns(google.protobuf.Empty);
 	rpc GetPlayerBuffers(SyncProto.GetPlayerBufferRequest) returns(SyncProto.PlayerBuffDto);
 	rpc SyncPlayerShop(ItemProto.SyncPlayerShopRequest) returns(google.protobuf.Empty);

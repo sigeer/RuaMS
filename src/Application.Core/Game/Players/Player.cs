@@ -10,6 +10,7 @@ using Application.Shared.Objects;
 using Application.Utility.Tickables;
 using client;
 using client.autoban;
+using Google.Protobuf.Collections;
 using server;
 using server.events;
 using server.life;
@@ -30,7 +31,7 @@ namespace Application.Core.Game.Players
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
-
+        public RepeatedField<ItemProto.RingDto> Rings { get; }
         public PlayerKeyMap KeyMap { get; set; }
         public List<FameLogObject> FameLogs { get; set; }
 
@@ -45,6 +46,7 @@ namespace Application.Core.Game.Players
             MaxMP = o.Character.Maxmp;
             RemainingSp = o.Character.Sp.Split(",").Select(int.Parse).ToArray();
             JobModel = JobFactory.GetById(Shared.Constants.Job.JobId.BEGINNER);
+            Rings = o.RingSourceList;
 
             AutobanManager = new AutobanManager(this);
             Skills = new(this);

@@ -1,29 +1,18 @@
 using Application.Core.Login.Servers;
+using Application.EF.Entities;
 using Application.Shared.Constants;
 using Application.Shared.Items;
+using Application.Utility.Extensions;
 
 namespace Application.Core.Login.Models
 {
-    public class CharacterLiveObject : CharacterViewObject
+    public class CharacterLiveObject 
     {
-        public CharacterLiveObject(CharacterModel model, ItemModel[] items) : base(model, items)
+        public CharacterLiveObject(Dto.CharacterDto model)
         {
-            MonsterBooks = [];
-            PetIgnores = [];
-            TrockLocations = [];
-            Areas = [];
-            Events = [];
-            QuestStatuses = [];
-            Skills = [];
-            SkillMacros = [];
-            CoolDowns = [];
-            SavedLocations = [];
-            BuddyList = [];
-            NewYearCards = [];
-            FameLogs = [];
-            GachaponStorage = new StorageModel(Character.AccountId, (int)StorageType.AccountStorage);
-            KeyMaps = GameConstants.GetDefaultKeyMapping().Select(x => new KeyMapModel() { Key = x.Key, Action = x.Value.getAction(), Type = x.Value.getType() }).ToArray();
+            Character = model;
         }
+        public Dto.CharacterDto Character { get; set; }
         /// <summary>
         /// 仅在MasterServer使用，-1：商城，0：离线
         /// </summary>
@@ -33,26 +22,131 @@ namespace Application.Core.Login.Models
         /// </summary>
         public ChannelServerNode? ChannelNode { get; set; }
         public int ActualChannel => ChannelNode == null ? 0 : Channel;
-        public int[] WishItems { get; set; } = [];
-        public MonsterbookModel[] MonsterBooks { get; set; }
-        public PetIgnoreModel[] PetIgnores { get; set; }
-        public TrockLocationModel[] TrockLocations { get; set; }
-        public AreaModel[] Areas { get; set; }
-        public EventModel[] Events { get; set; }
 
-        public QuestStatusModel[] QuestStatuses { get; set; }
-        public SkillModel[] Skills { get; set; }
-        public SkillMacroModel[] SkillMacros { get; set; }
         /// <summary>
-        /// 原逻辑不随着玩家保存而一起保存，仅断开连接时才保存，现简化成一起保存
+        /// AvatarLook::Decode
         /// </summary>
-        public CoolDownModel[] CoolDowns { get; set; }
-        public KeyMapModel[] KeyMaps { get; set; }
-        public SavedLocationModel[] SavedLocations { get; set; }
-        public Dictionary<int, BuddyModel> BuddyList { get; set; }
-        public NewYearCardModel[] NewYearCards { get; set; }
-        public FameLogModel[] FameLogs { get; set; }
-        public StorageModel GachaponStorage { get; set; }
+        /// <param name="p"></param>
+        /// <param name="mega">不明</param>
+        public virtual void EncodeAvatarLook(OutPacket p)
+        {
+            p.writeByte(Character.Gender);
+            p.writeByte((int)Character.Skincolor); // skin color
+            p.writeInt(Character.Face); // face
+            p.writeBool(true);
+            p.writeInt(Character.Hair); // hair
+
+            Dictionary<short, int> myEquip = new();
+            Dictionary<short, int> maskedEquip = new();
+            int weaponItemId = 0;
+            foreach (var item in Character.Data.Bag.EquippedInv)
+            {
+                short pos = (short)(item.Position * -1);
+                if (pos < 100 && !myEquip.ContainsKey(pos))
+                {
+                    myEquip.AddOrUpdate(pos, item.Itemid);
+                }
+                else if (pos > 100 && pos != 111)
+                {
+                    // don't ask. o.o
+                    pos -= 100;
+                    if (myEquip.TryGetValue(pos, out var d))
+                    {
+                        maskedEquip.AddOrUpdate(pos, d);
+                    }
+                    myEquip.AddOrUpdate(pos, item.Itemid);
+                }
+                else if (myEquip.ContainsKey(pos))
+                {
+                    maskedEquip.AddOrUpdate(pos, item.Itemid);
+                }
+
+                if (item.Position == -111)
+                    weaponItemId = item.Itemid;
+            }
+            foreach (var entry in myEquip)
+            {
+                p.writeByte(entry.Key);
+                p.writeInt(entry.Value);
+            }
+
+            p.writeByte(0xFF);
+            foreach (var entry in maskedEquip)
+            {
+                p.writeByte(entry.Key);
+                p.writeInt(entry.Value);
+            }
+
+            p.writeByte(0xFF);
+            p.writeInt(weaponItemId);
+            for (int i = 0; i < 3; i++)
+            {
+                p.writeInt(0);
+            }
+        }
+
+        /// <summary>
+        /// GW_CharacterStat::Decode
+        /// </summary>
+        /// <param name="p"></param>
+        public virtual void EncodeStats(OutPacket p)
+        {
+            p.writeInt(Character.Id); // character id
+            p.writeFixedString(Character.Name);
+            p.writeByte(Character.Gender); // gender (0 = male, 1 = female)
+            p.writeByte((byte)Character.Skincolor); // skin color
+            p.writeInt(Character.Face); // face
+            p.writeInt(Character.Hair); // hair
+
+            for (int i = 0; i < 3; i++)
+            {
+                p.writeLong(0);
+            }
+
+            p.writeByte(Character.Level); // level
+            p.writeShort(Character.JobId); // job
+            p.writeShort(Character.Str); // str
+            p.writeShort(Character.Dex); // dex
+            p.writeShort(Character.Int); // int
+            p.writeShort(Character.Luk); // luk
+            p.writeShort(Character.Hp); // hp (?)
+            p.writeShort(Character.Maxhp); // maxhp
+            p.writeShort(Character.Mp); // mp (?)
+            p.writeShort(Character.Maxmp); // maxmp
+            p.writeShort(Character.Ap); // remaining ap
+            p.writeShort(0); // remaining sp 只是在登录界面预览，应该不会影响游戏内容吧？
+            p.writeInt(Character.Exp); // current exp
+            p.writeShort(Character.Fame); // fame
+            p.writeInt(Character.Gachaexp); //Gacha Exp
+            p.writeInt(Character.Map); // current map id
+            p.writeByte(Character.Spawnpoint); // spawnpoint
+            p.writeInt(0);
+        }
+
+        public virtual OutPacket Encode(OutPacket p, AccountCtrl accountInfo, bool isViewAll, bool rankEnable)
+        {
+            EncodeStats(p);
+
+            EncodeAvatarLook(p);
+
+            if (!isViewAll)
+                p.writeByte(0);
+
+            EncodeRankInfo(p, !accountInfo.IsGmAccount() && !JobFactory.GetById(Character.JobId).IsGmJob() && rankEnable);
+            return p;
+        }
+
+        protected void EncodeRankInfo(OutPacket p, bool enable)
+        {
+            p.writeBool(enable); // world rank enabled (next 4 ints are not sent if disabled) short??
+            if (enable)
+            {
+                p.writeInt(Character.Rank); // world rank
+                p.writeInt(Character.RankMove); // move (negative is downwards)
+                p.writeInt(Character.JobRank); // job rank
+                p.writeInt(Character.JobRankMove); // move (negative is downwards)
+            }
+        }
     }
 
 }

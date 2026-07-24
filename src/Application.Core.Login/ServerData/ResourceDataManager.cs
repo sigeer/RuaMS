@@ -21,6 +21,7 @@ namespace Application.Core.Login.ServerData
         int _localPLifeId = 0;
 
         public ResourceDataManager(ILogger<ResourceDataManager> logger, IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
+            : base(x => x.Id)
         {
             _logger = logger;
             _mapper = mapper;
@@ -59,7 +60,7 @@ namespace Application.Core.Login.ServerData
         {
             var newKey = Interlocked.Increment(ref _localPLifeId);
             var newModel = _mapper.Map<PLifeModel>(request.Data);
-            SetDirty(newKey, new StoreUnit<PLifeModel>(StoreFlag.AddOrUpdate, newModel));
+            SetDirty(newModel);
 
             await _server.Transport.BroadcastPLifeCreated(request);
         }

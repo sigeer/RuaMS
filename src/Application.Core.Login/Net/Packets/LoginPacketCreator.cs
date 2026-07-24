@@ -253,7 +253,7 @@ namespace Application.Core.Login.Net.Packets
             return p;
         }
 
-        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<CharacterViewObject> chars, bool usePic)
+        public static Packet showAllCharacterInfo(ILoginClient client, int worldid, List<CharacterLiveObject> chars, bool usePic)
         {
             OutPacket p = OutPacket.create(SendOpcode.VIEW_ALL_CHAR);
             p.writeByte(0);
@@ -271,7 +271,7 @@ namespace Application.Core.Login.Net.Packets
         {
             OutPacket p = OutPacket.create(SendOpcode.CHARLIST);
             p.writeByte(0);
-            List<CharacterViewObject> chars = c.LoadCharactersView();
+            var chars = c.LoadCharactersView();
             p.writeByte((byte)chars.Count);
             foreach (var chr in chars)
             {

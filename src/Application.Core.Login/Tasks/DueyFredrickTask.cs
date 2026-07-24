@@ -13,7 +13,6 @@ namespace Application.Core.Login.Tasks
         public override void HandleRun()
         {
             _server.PlayerShopManager.RunFredrickSchedule();
-            _server.DueyManager.RunDueyExpireSchedule();
         }
     }
 

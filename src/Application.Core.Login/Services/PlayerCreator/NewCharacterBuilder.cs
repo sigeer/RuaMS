@@ -3,6 +3,7 @@ using Application.Shared.Constants;
 using Application.Shared.Items;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Services.PlayerCreator;
 
@@ -31,8 +32,6 @@ public class NewCharacterBuilder
     public int Face { get; set; }
     public string Name { get; set; }
 
-    public List<ItemModel> Items { get; }
-
     public NewCharacterBuilder(string name, int gender, Job job, int level, int map, int top, int bottom, int shoes, int weapon)
     {
         Name = name;
@@ -58,8 +57,6 @@ public class NewCharacterBuilder
             }
         }
 
-        Items = new();
-
     }
     public string GetRemainingSp()
     {
@@ -70,7 +67,7 @@ public class NewCharacterBuilder
 
     public virtual NewCharacterPreview Build(AccountCtrl account)
     {
-        var newCharacter = new CharacterModel()
+        var newCharacter = new Dto.CharacterDto()
         {
             AccountId = account.Id,
             Hp = MaxHP,
@@ -92,22 +89,50 @@ public class NewCharacterBuilder
             Map = Map,
             Ap = AP,
             Meso = Meso,
-            Sp = GetRemainingSp()
+            Sp = GetRemainingSp(),
+
+            DataString = "",
+            CreateDate = DateTimeOffset.Now.ToTimestamp(),
+            LastExpGainTime = DateTimeOffset.Now.ToTimestamp(),
+            LastLogoutTime = DateTimeOffset.Now.ToTimestamp(),
+
+            Equipslots = DefaultConfigs.BagSize,
+            Useslots = DefaultConfigs.BagSize,
+            Etcslots = DefaultConfigs.BagSize,
+            Setupslots = DefaultConfigs.BagSize,
         };
 
-        Items.RemoveAll(x => x.Type == (int)ItemType.Inventory && x.InventoryType == (int)InventoryType.EQUIPPED);
-        if (Top > 0)
-            Items.Add(new ItemModel() { Itemid = Top, Position = -5, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
+        var data = new Dto.CharacterDataProto() { GachaponStorage = new Dto.StorageDto(), Bag = new Dto.CharacterBagDataProto() };
+        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        {
+            Position = -5,
+            Quantity = 1,
+            Expiration = -1,
+            Itemid = Top,
+        });
+        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        {
+            Position = -6,
+            Quantity = 1,
+            Expiration = -1,
+            Itemid = Bottom,
+        });
+        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        {
+            Position = -7,
+            Quantity = 1,
+            Expiration = -1,
+            Itemid = Shoes,
+        });
+        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        {
+            Position = -11,
+            Quantity = 1,
+            Expiration = -1,
+            Itemid = Weapon,
+        });
 
-        if (Bottom > 0)
-            Items.Add(new ItemModel() { Itemid = Bottom, Position = -6, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
-
-        if (Shoes > 0)
-            Items.Add(new ItemModel() { Itemid = Shoes, Position = -7, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
-
-        if (Weapon > 0)
-            Items.Add(new ItemModel() { Itemid = Weapon, Position = -11, Quantity = 1, Expiration = -1, InventoryType = (int)InventoryType.EQUIPPED, Type = (int)ItemType.Inventory });
-
-        return new NewCharacterPreview(account, newCharacter, Items.ToArray());
+        newCharacter.Data = data;
+        return new NewCharacterPreview(account, newCharacter);
     }
 }

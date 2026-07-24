@@ -107,8 +107,6 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Expiration, source => source.getExpiration())
                 .Map(dest => dest.GiftFrom, source => source.getGiftFrom())
                 .Map(dest => dest.Position, source => source.getPosition())
-                .Map(dest => dest.InventoryType, src => GetInventoryType(src))
-                .Map(dest => dest.Type, src => src.PlayerInventory == null ? -1 : (int)src.PlayerInventory.StoreType)
                 .Include<Pet, Dto.ItemDto>()
                 .Include<Equip, Dto.ItemDto>();
 
@@ -145,8 +143,6 @@ namespace Application.Core.Mappers
                         dest.setLevel((byte)rs.EquipInfo!.Level);
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
-
-                        dest.SetRing(rs.EquipInfo!.RingId, rs.EquipInfo!.RingSourceInfo.Adapt<RingSourceModel>());
                     });
 
             config.NewConfig<Equip, Dto.ItemDto>()
@@ -173,9 +169,7 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Upgradeslots, source => source.getUpgradeSlots())
                 .Map(dest => dest.Level, source => source.getLevel())
                 .Map(dest => dest.Itemlevel, source => source.getItemLevel())
-                .Map(dest => dest.Itemexp, source => source.getItemExp())
-                .Map(dest => dest.RingId, source => source.RingId)
-                .Map(dest => dest.RingSourceInfo, source => source.RingSource);
+                .Map(dest => dest.Itemexp, source => source.getItemExp());
             #endregion 
 
             config.NewConfig<Dto.SkillMacroDto, SkillMacro>()
@@ -270,16 +264,18 @@ namespace Application.Core.Mappers
             if (src == null)
                 return null;
 
-            if (src.EquipInfo != null)
+            if (ItemConstants.getInventoryType(src.Itemid) == InventoryType.EQUIP)
             {
-                return src.Adapt<Equip>();
+                if (src.EquipInfo != null)
+                {
+                    return src.Adapt<Equip>();
+                }
+                else
+                {
+                    var equip = ItemInformationProvider.getInstance().getEquipById(src.Itemid, (short)src.Position);
+                    return equip;
+                }
             }
-
-            //if (src.InventoryType == (int)InventoryType.EQUIP || src.InventoryType == (int)InventoryType.EQUIPPED)
-            //{
-            //    var equip = ItemInformationProvider.getInstance().getEquipById(src.Itemid, (short)src.Position);
-            //    return equip;
-            //}
 
             if (src.PetInfo != null)
                 return src.Adapt<Pet>();

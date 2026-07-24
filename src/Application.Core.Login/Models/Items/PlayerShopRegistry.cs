@@ -4,18 +4,6 @@ using Application.Utility;
 
 namespace Application.Core.Login.Models.Items
 {
-    public class PlayerShopRegistry : ITrackableEntityKey<int>
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = null!;
-        public int Channel { get; set; }
-        public int MapId { get; set; }
-        public PlayerShopType Type { get; set; }
-        public int MapObjectId { get; set; }
-
-        public List<PlayerShopItemModel> Items { get; set; } = [];
-        public int Meso { get; set; }
-    }
 
     public class FredrickStoreModel : ITrackableEntityKey<int>
     {
@@ -28,7 +16,7 @@ namespace Application.Core.Login.Models.Items
         /// </summary>
         public long StoreTime { get; init; }
 
-        public ItemModel[] Items { get; set; } = [];
+        public ItemProto.PlayerShopStoreItems Items { get; set; }
 
         /// <summary>
         /// 交易额

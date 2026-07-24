@@ -114,6 +114,12 @@ namespace Application.Templates.Reader.Img.Provider
                             IncubatorItemTemplateGenerated_Duey.ApplyProperties(inc, itemNode);
                             template = inc;
                         }
+                        else if (groupId == 425)
+                        {
+                            var p = new EtcMakeItemTemplate(itemId);
+                            EtcItemTemplateGenerated_Duey.ApplyProperties(p, itemNode);
+                            template = p;
+                        }
                         else
                         {
                             var etc = new EtcItemTemplate(itemId);

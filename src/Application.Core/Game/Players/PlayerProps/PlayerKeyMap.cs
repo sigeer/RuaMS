@@ -13,11 +13,14 @@ namespace Application.Core.Game.Players.PlayerProps
 
         public override void LoadData(RepeatedField<Dto.KeyMapDto> keyMapFromDB)
         {
-            _dataSource.Clear();
-
-            foreach (var item in keyMapFromDB)
+            if (keyMapFromDB.Count > 0)
             {
-                _dataSource[item.Key] = new KeyBinding(item.Type, item.Action);
+                _dataSource.Clear();
+
+                foreach (var item in keyMapFromDB)
+                {
+                    _dataSource[item.Key] = new KeyBinding(item.Type, item.Action);
+                }
             }
         }
 

@@ -69,3 +69,7 @@ message SearchHiredMerchantChannelRequest {
 message SearchHiredMerchantChannelResponse {
 	int32 channel = 1;
 }
+
+message PlayerShopStoreItems {
+	repeated PlayerShopItemDto items = 1;
+}

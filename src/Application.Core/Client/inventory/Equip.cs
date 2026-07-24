@@ -58,9 +58,7 @@ public class Equip : Item
     private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
     public bool IsElemental { get; }
     public int MaxLevel { get; }
-    public Ring? Ring { get; private set; }
-    public long RingId { get; private set; } = -1;
-    public RingSourceModel? RingSource { get; private set; }
+
     public override EquipTemplate SourceTemplate { get; }
 
     public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
@@ -804,27 +802,6 @@ public class Equip : Item
     public void setUpgradeSlots(int i)
     {
         this.upgradeSlots = (sbyte)i;
-    }
-    public long getRingId()
-    {
-        return RingId;
-    }
-
-    public void SetRing(long ringId, RingSourceModel? source)
-    {
-        RingId = ringId;
-        RingSource = source;
-        Ring = RingSource?.GetRing(RingId);
-    }
-    public void ResetRing()
-    {
-        SetRing(-1, null);
-    }
-
-    public override long getCashId()
-    {
-        var ringId = getRingId();
-        return ringId > 0 ? ringId : base.getCashId();
     }
 
     public bool isWearing()

@@ -12,6 +12,8 @@
 
 	<ItemGroup>
 		<Protobuf Include="Account\AccountInfo.proto" GrpcServices="None" />
+		<Protobuf Include="Account\AccountCtrl.proto" GrpcServices="None" />
+		
 		<Protobuf Include="Base\MessageWarpper.proto" GrpcServices="None" />
 		<Protobuf Include="Base\TimeWrapper.proto">
 		  <GrpcServices>None</GrpcServices>
@@ -20,6 +22,8 @@
 			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Base\IPEndPoint.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\AccountGameData.proto" GrpcServices="None" />
+		<Protobuf Include="Dto\CharacterData.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Door.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Jail.proto">
 		  <GrpcServices>None</GrpcServices>
@@ -91,7 +95,6 @@
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Server\MonitorData.proto" GrpcServices="None" />
-		<Protobuf Include="Services\PlayerShop.proto" GrpcServices="Both" />
 		<Protobuf Include="Services\Data.proto">
 		  <GrpcServices>Both</GrpcServices>
 		</Protobuf>
@@ -145,7 +148,7 @@
 		<Protobuf Include="Dto\Drop.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\AccountCtrl.proto" GrpcServices="None" />
+
 		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
 		<Protobuf Include="Buddy\Buddy.proto" GrpcServices="None" />
@@ -184,10 +187,6 @@
 
 	<ItemGroup>
 		<Protobuf Include="Services\System.proto" GrpcServices="Both" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Player\" />
 	</ItemGroup>
 
 

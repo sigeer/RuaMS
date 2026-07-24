@@ -1,19 +1,20 @@
+using System;
 using Application.Core.Login.Mappers;
-using Application.Core.Login.Models;
+using Application.EF.Entities;
 using Dto;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Login.Mappers
 {
     public partial class CharacterMapper : ICharacterMapper
     {
-        public CharacterDto MapToDto(CharacterModel p1)
+        public CharacterDto MapToDto(CharacterEntity p1)
         {
             return p1 == null ? null : new CharacterDto()
             {
                 Id = p1.Id,
                 AccountId = p1.AccountId,
-                World = p1.World,
                 Name = p1.Name,
                 Level = p1.Level,
                 Exp = p1.Exp,
@@ -39,7 +40,6 @@ namespace Application.Core.Login.Mappers
                 Sp = p1.Sp,
                 Map = p1.Map,
                 Spawnpoint = p1.Spawnpoint,
-                Party = p1.Party,
                 BuddyCapacity = p1.BuddyCapacity,
                 CreateDate = Timestamp.FromDateTimeOffset(p1.CreateDate),
                 Rank = p1.Rank,
@@ -48,8 +48,6 @@ namespace Application.Core.Login.Mappers
                 JobRankMove = p1.JobRankMove,
                 GuildId = p1.GuildId,
                 GuildRank = p1.GuildRank,
-                MessengerId = p1.MessengerId,
-                MessengerPosition = p1.MessengerPosition,
                 MountLevel = p1.MountLevel,
                 MountExp = p1.MountExp,
                 Mounttiredness = p1.Mounttiredness,
@@ -73,8 +71,6 @@ namespace Application.Core.Login.Mappers
                 FinishedDojoTutorial = p1.FinishedDojoTutorial,
                 VanquisherKills = p1.VanquisherKills,
                 SummonValue = p1.SummonValue,
-                MarriageItemId = p1.MarriageItemId,
-                Reborns = p1.Reborns,
                 Pqpoints = p1.Pqpoints,
                 DataString = p1.DataString,
                 LastLogoutTime = Timestamp.FromDateTimeOffset(p1.LastLogoutTime),
@@ -83,85 +79,110 @@ namespace Application.Core.Login.Mappers
                 Jailexpire = p1.Jailexpire,
                 HpAlert = p1.HpAlert,
                 MpAlert = p1.MpAlert,
-                PendantOfSpiritEquippedTime = p1.PendantOfSpiritEquippedTime
+                Data = funcMain1(CharacterDataProto.Parser.ParseFrom(p1.Blob))
             };
         }
-        public CharacterModel MapToExisting(CharacterDto p2, CharacterModel p3)
+        public CharacterEntity MapToExisting(CharacterDto p3, CharacterEntity p4)
         {
-            if (p2 == null)
+            if (p3 == null)
             {
                 return null;
             }
-            CharacterModel result = p3 ?? new CharacterModel();
+            CharacterEntity result = p4 ?? new CharacterEntity();
             
-            result.Id = p2.Id;
-            result.AccountId = p2.AccountId;
-            result.World = p2.World;
-            result.Name = p2.Name;
-            result.Level = p2.Level;
-            result.Exp = p2.Exp;
-            result.Gachaexp = p2.Gachaexp;
-            result.Str = p2.Str;
-            result.Dex = p2.Dex;
-            result.Luk = p2.Luk;
-            result.Int = p2.Int;
-            result.Hp = p2.Hp;
-            result.Mp = p2.Mp;
-            result.Maxhp = p2.Maxhp;
-            result.Maxmp = p2.Maxmp;
-            result.Meso = p2.Meso;
-            result.HpMpUsed = p2.HpMpUsed;
-            result.JobId = p2.JobId;
-            result.Skincolor = p2.Skincolor;
-            result.Gender = p2.Gender;
-            result.Fame = p2.Fame;
-            result.Fquest = p2.Fquest;
-            result.Hair = p2.Hair;
-            result.Face = p2.Face;
-            result.Ap = p2.Ap;
-            result.Sp = p2.Sp;
-            result.Map = p2.Map;
-            result.Spawnpoint = p2.Spawnpoint;
-            result.BuddyCapacity = p2.BuddyCapacity;
-            result.CreateDate = p2.CreateDate.ToDateTimeOffset();
-            result.Rank = p2.Rank;
-            result.RankMove = p2.RankMove;
-            result.JobRank = p2.JobRank;
-            result.JobRankMove = p2.JobRankMove;
-            result.MessengerId = p2.MessengerId;
-            result.MessengerPosition = p2.MessengerPosition;
-            result.MountLevel = p2.MountLevel;
-            result.MountExp = p2.MountExp;
-            result.Mounttiredness = p2.Mounttiredness;
-            result.Omokwins = p2.Omokwins;
-            result.Omoklosses = p2.Omoklosses;
-            result.Omokties = p2.Omokties;
-            result.Matchcardwins = p2.Matchcardwins;
-            result.Matchcardlosses = p2.Matchcardlosses;
-            result.Matchcardties = p2.Matchcardties;
-            result.Equipslots = p2.Equipslots;
-            result.Useslots = p2.Useslots;
-            result.Setupslots = p2.Setupslots;
-            result.Etcslots = p2.Etcslots;
-            result.FamilyId = p2.FamilyId;
-            result.Monsterbookcover = p2.Monsterbookcover;
-            result.VanquisherStage = p2.VanquisherStage;
-            result.AriantPoints = p2.AriantPoints;
-            result.DojoPoints = p2.DojoPoints;
-            result.LastDojoStage = p2.LastDojoStage;
-            result.FinishedDojoTutorial = p2.FinishedDojoTutorial;
-            result.VanquisherKills = p2.VanquisherKills;
-            result.SummonValue = p2.SummonValue;
-            result.MarriageItemId = p2.MarriageItemId;
-            result.Reborns = p2.Reborns;
-            result.Pqpoints = p2.Pqpoints;
-            result.DataString = p2.DataString;
-            result.LastLogoutTime = p2.LastLogoutTime.ToDateTimeOffset();
-            result.LastExpGainTime = p2.LastExpGainTime.ToDateTimeOffset();
-            result.PartySearch = p2.PartySearch;
-            result.HpAlert = p2.HpAlert;
-            result.MpAlert = p2.MpAlert;
-            result.PendantOfSpiritEquippedTime = p2.PendantOfSpiritEquippedTime;
+            result.Id = p3.Id;
+            result.AccountId = p3.AccountId;
+            result.Name = p3.Name;
+            result.Level = p3.Level;
+            result.Exp = p3.Exp;
+            result.Gachaexp = p3.Gachaexp;
+            result.Str = p3.Str;
+            result.Dex = p3.Dex;
+            result.Luk = p3.Luk;
+            result.Int = p3.Int;
+            result.Hp = p3.Hp;
+            result.Mp = p3.Mp;
+            result.Maxhp = p3.Maxhp;
+            result.Maxmp = p3.Maxmp;
+            result.Meso = p3.Meso;
+            result.HpMpUsed = p3.HpMpUsed;
+            result.JobId = p3.JobId;
+            result.Skincolor = p3.Skincolor;
+            result.Gender = p3.Gender;
+            result.Fame = p3.Fame;
+            result.Fquest = p3.Fquest;
+            result.Hair = p3.Hair;
+            result.Face = p3.Face;
+            result.Ap = p3.Ap;
+            result.Sp = p3.Sp;
+            result.Map = p3.Map;
+            result.Spawnpoint = p3.Spawnpoint;
+            result.BuddyCapacity = p3.BuddyCapacity;
+            result.CreateDate = p3.CreateDate.ToDateTimeOffset();
+            result.Rank = p3.Rank;
+            result.RankMove = p3.RankMove;
+            result.JobRank = p3.JobRank;
+            result.JobRankMove = p3.JobRankMove;
+            result.GuildId = p3.GuildId;
+            result.GuildRank = p3.GuildRank;
+            result.MountLevel = p3.MountLevel;
+            result.MountExp = p3.MountExp;
+            result.Mounttiredness = p3.Mounttiredness;
+            result.Omokwins = p3.Omokwins;
+            result.Omoklosses = p3.Omoklosses;
+            result.Omokties = p3.Omokties;
+            result.Matchcardwins = p3.Matchcardwins;
+            result.Matchcardlosses = p3.Matchcardlosses;
+            result.Matchcardties = p3.Matchcardties;
+            result.Equipslots = p3.Equipslots;
+            result.Useslots = p3.Useslots;
+            result.Setupslots = p3.Setupslots;
+            result.Etcslots = p3.Etcslots;
+            result.FamilyId = p3.FamilyId;
+            result.Monsterbookcover = p3.Monsterbookcover;
+            result.AllianceRank = p3.AllianceRank;
+            result.VanquisherStage = p3.VanquisherStage;
+            result.AriantPoints = p3.AriantPoints;
+            result.DojoPoints = p3.DojoPoints;
+            result.LastDojoStage = p3.LastDojoStage;
+            result.FinishedDojoTutorial = p3.FinishedDojoTutorial;
+            result.VanquisherKills = p3.VanquisherKills;
+            result.SummonValue = p3.SummonValue;
+            result.Pqpoints = p3.Pqpoints;
+            result.DataString = p3.DataString;
+            result.LastLogoutTime = p3.LastLogoutTime.ToDateTimeOffset();
+            result.LastExpGainTime = p3.LastExpGainTime.ToDateTimeOffset();
+            result.PartySearch = p3.PartySearch;
+            result.Jailexpire = p3.Jailexpire;
+            result.HpAlert = p3.HpAlert;
+            result.MpAlert = p3.MpAlert;
+            result.Blob = funcMain2(p3.Data.ToByteArray(), result.Blob);
+            return result;
+            
+        }
+        
+        private CharacterDataProto funcMain1(CharacterDataProto p2)
+        {
+            return p2 == null ? null : new CharacterDataProto()
+            {
+                Bag = p2.Bag,
+                GachaponStorage = p2.GachaponStorage == null ? null : new StorageDto()
+                {
+                    OwnerId = p2.GachaponStorage.OwnerId,
+                    Slots = p2.GachaponStorage.Slots,
+                    Meso = p2.GachaponStorage.Meso
+                }
+            };
+        }
+        
+        private byte[] funcMain2(byte[] p5, byte[] p6)
+        {
+            if (p5 == null)
+            {
+                return null;
+            }
+            byte[] result = new byte[p5.Length];
+            Array.Copy(p5, 0, result, 0, p5.Length);
             return result;
             
         }

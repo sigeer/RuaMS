@@ -1,3 +1,4 @@
+using Application.Core.EF.SeedData;
 using Application.Core.Login.Services;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -65,6 +66,16 @@ namespace Application.Core.Login.Datas
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 await dbContext.Database.MigrateAsync(cancellationToken);
+
+                if (!dbContext.Accounts.Any())
+                {
+                    dbContext.Accounts.Add(AdminSeedData.Account);
+                    await dbContext.SaveChangesAsync();
+
+                    dbContext.Characters.Add(AdminSeedData.GenerateAdminCharacter());
+                    await dbContext.SaveChangesAsync();
+                }
+
                 sw.Stop();
                 _logger.LogInformation("数据库迁移>>>成功，耗时{StarupCost}秒", sw.Elapsed.TotalSeconds);
             }

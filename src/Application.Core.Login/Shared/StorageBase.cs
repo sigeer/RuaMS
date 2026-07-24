@@ -1,34 +1,45 @@
 using Application.EF;
+using Application.EF.Entities;
 using Application.Utility;
+using DueyDto;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using ZLinq;
 
 namespace Application.Core.Login.Shared
 {
-    public abstract class StorageBase<TKey, TModel> : IStorage where TKey : notnull where TModel : class, ITrackableEntityKey<TKey>
+    /// <summary>
+    /// 部分数据在内存里
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TModel"></typeparam>
+    public abstract class StorageBase<TKey, TModel> : IStorage where TKey : notnull where TModel : class
     {
         protected ConcurrentDictionary<TKey, StoreUnit<TModel>> _localData = new();
+        Func<TModel, TKey> _getKey;
+
+        protected StorageBase(Func<TModel, TKey> getKey)
+        {
+            _getKey = getKey;
+        }
 
         public abstract Task InitializeAsync(DBContext dbContext);
 
         protected abstract Task CommitInternal(DBContext dbContext, Dictionary<TKey, StoreUnit<TModel>> updateData);
 
-        protected virtual bool SetDirty(TKey key, StoreUnit<TModel> model)
+        protected virtual bool SetDirty(TKey key)
         {
             if (_localData.TryGetValue(key, out var d))
             {
-                _localData[key] = model;
-                return d.Flag != d.Flag;
+                d.Flag = StoreFlag.AddOrUpdate;
+                return true;
             }
-
-            _localData[key] = model;
-            return true;
+            return false;
         }
 
-        protected virtual bool SetDirty(StoreUnit<TModel> model)
+        protected virtual void SetDirty(TModel model)
         {
-            return SetDirty(model.Data!.Id, model);
+            _localData[_getKey(model)] = new StoreUnit<TModel>(StoreFlag.AddOrUpdate, model);
         }
 
         protected virtual bool SetRemoved(TKey key)
@@ -53,7 +64,7 @@ namespace Application.Core.Login.Shared
         /// <returns></returns>
         protected List<TModel> QueryWithDirty(List<TModel> dataFromDB, Func<TModel, bool> func)
         {
-            Dictionary<TKey, TModel> sourceDict = dataFromDB.ToDictionary(x => x.Id);
+            Dictionary<TKey, TModel> sourceDict = dataFromDB.ToDictionary(x => _getKey(x));
 
             foreach (var kv in _localData)
             {
@@ -82,7 +93,7 @@ namespace Application.Core.Login.Shared
             var updateData = new Dictionary<TKey, StoreUnit<TModel>>();
             foreach (var key in _localData.Keys.ToList())
             {
-                if (_localData.TryRemove(key, out var d) && d.Flag != StoreFlag.Cached)
+                if (_localData.TryGetValue(key, out var d) && d.Flag != StoreFlag.Cached)
                     updateData[key] = d;
             }
 
@@ -94,13 +105,19 @@ namespace Application.Core.Login.Shared
             {
                 await CommitInternal(dbContext, updateData);
             }
-            catch (Exception)
+            finally
             {
-                foreach (var item in updateData)
+                foreach (var kw in updateData)
                 {
-                    _localData.TryAdd(item.Key, item.Value);
+                    if (kw.Value.Flag == StoreFlag.Remove)
+                    {
+                        _localData.TryRemove(kw.Key, out _);
+                    }
+                    else
+                    {
+                        _localData.GetValueOrDefault(kw.Key)?.Flag = StoreFlag.Cached;
+                    }
                 }
-                throw;
             }
         }
     }

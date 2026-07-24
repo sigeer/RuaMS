@@ -13,10 +13,4 @@
 		<ProjectReference Include="..\Application.Core.EF\Application.Core.EF.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Content Include="MySQLSeedData\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
 </Project>

@@ -2,6 +2,7 @@ using Application.Core.Login.Models;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Application.Shared.Team;
+using Google.Protobuf.WellKnownTypes;
 using GuildProto;
 using Microsoft.Extensions.Logging;
 
@@ -57,7 +58,7 @@ namespace Application.Core.Login.Modules
 
         public override async Task OnPlayerLogoff(CharacterLiveObject obj)
         {
-            obj.Character.LastLogoutTime = _server.GetCurrentTimeDateTimeOffset();
+            obj.Character.LastLogoutTime = _server.GetCurrentTimeDateTimeOffset().ToTimestamp();
             obj.ChannelNode = null;
 
             var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);

@@ -119,8 +119,6 @@ namespace Application.Core.Login
 
             services.AddSingleton<BuddyManager>();
 
-            services.AddSingleton<InventoryManager>();
-            services.AddSingleton<ItemFactoryManager>();
             services.AddSingleton<SystemManager>();
 
             services.AddSingleton<ServerManager>();
@@ -174,9 +172,8 @@ namespace Application.Core.Login
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             services.AddSingleton(mapperConfig);
             services.AddSingleton<IMapper, ServiceMapper>();
-            services.AddSingleton<ICharacterMapper, CharacterMapper>();
-            services.AddSingleton<IItemMapper, ItemMapper>();
-            services.AddSingleton<IAccountMapper, AccountMapper>();
+            //services.AddSingleton<ICharacterMapper, CharacterMapper>();
+            //services.AddSingleton<IAccountMapper, AccountMapper>();
 
             services.AddLoginHandlers();
 

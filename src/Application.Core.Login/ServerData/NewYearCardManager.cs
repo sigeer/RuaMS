@@ -11,18 +11,16 @@ using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData
 {
-    public class NewYearCardManager : StorageBase<int, NewYearCardModel>
+    public class NewYearCardManager : StorageBase<int, Dto.NewYearCardDto>
     {
         readonly MasterServer _server;
-        readonly IMapper _mapper;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
 
         int currentId = 1;
 
-        public NewYearCardManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory)
+        public NewYearCardManager(MasterServer server, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
         {
             _server = server;
-            _mapper = mapper;
             _dbContextFactory = dbContextFactory;
         }
 
@@ -31,15 +29,15 @@ namespace Application.Core.Login.ServerData
             currentId = await dbContext.Newyears.MaxAsync(x => (int?)x.Id) ?? 0;
         }
 
-        public override List<NewYearCardModel> Query(Expression<Func<NewYearCardModel, bool>> expression)
+        public override List<Dto.NewYearCardDto> Query(Expression<Func<Dto.NewYearCardDto, bool>> expression)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var dataFromDB = (from a in dbContext.Newyears.AsNoTracking().ProjectToType<NewYearCardModel>().Where(expression)
+            var dataFromDB = (from a in dbContext.Newyears.AsNoTracking().ProjectToType<Dto.NewYearCardDto>().Where(expression)
                               join b in dbContext.Characters on a.SenderId equals b.Id into bss
                               from bs in bss.DefaultIfEmpty()
                               join c in dbContext.Characters on a.ReceiverId equals c.Id into css
                               from cs in css
-                              select new NewYearCardModel
+                              select new Dto.NewYearCardDto
                               {
                                   Id = a.Id,
                                   SenderId = a.SenderId,
@@ -57,13 +55,13 @@ namespace Application.Core.Login.ServerData
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
-        public NewYearCardModel? GetDataById(int id)
+        public Dto.NewYearCardDto? GetDataById(int id)
         {
             return Query(x => x.Id == id).FirstOrDefault();
         }
 
 
-        public List<NewYearCardModel> LoadPlayerNewYearCard(int chrId)
+        public List<Dto.NewYearCardDto> LoadPlayerNewYearCard(int chrId)
         {
             return Query(x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard);
         }
@@ -86,7 +84,7 @@ namespace Application.Core.Login.ServerData
                 return;
             }
 
-            var newCard = new NewYearCardModel()
+            var newCard = new Dto.NewYearCardDto()
             {
                 Id = Interlocked.Increment(ref currentId),
                 Message = request.Message,
@@ -97,13 +95,13 @@ namespace Application.Core.Login.ServerData
                 TimeSent = _server.getCurrentTime(),
             };
 
-            SetDirty(newCard.Id, new Utility.StoreUnit<NewYearCardModel>(Utility.StoreFlag.AddOrUpdate, newCard));
+            SetDirty(newCard);
 
             await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse
             {
                 Code = 0,
                 Request = request,
-                Model = _mapper.Map<Dto.NewYearCardDto>(newCard)
+                Model = newCard
             });
         }
 
@@ -135,8 +133,8 @@ namespace Application.Core.Login.ServerData
             card.Received = true;
             card.TimeReceived = _server.getCurrentTime();
 
-            SetDirty(card.Id, new Utility.StoreUnit<NewYearCardModel>(Utility.StoreFlag.AddOrUpdate, card));
-            res.Model = _mapper.Map<Dto.NewYearCardDto>(card);
+            SetDirty(card);
+            res.Model = card;
             res.Code = (int)NewYearCardResponseCode.Success;
 
             await _server.Transport.SendMessageN(ChannelRecvCode.OnNewYearCardReceived, res, [res.Request.MasterId, res.Model.SenderId]);
@@ -149,7 +147,7 @@ namespace Application.Core.Login.ServerData
 
             var allUnReceivedCards = allData
                 .GroupBy(x => x.ReceiverId)
-                .ToDictionary(x => x.Key, x => _mapper.Map<Dto.NewYearCardDto[]>(x.ToArray()));
+                .ToDictionary(x => x.Key, x => x.ToArray());
             var response = new Dto.NewYearCardNotifyDto();
             foreach (var data in allUnReceivedCards)
             {
@@ -167,7 +165,7 @@ namespace Application.Core.Login.ServerData
 
             var cards = LoadPlayerNewYearCard(request.MasterId);
 
-            List<NewYearCardModel> toRemove = [];
+            List<Dto.NewYearCardDto> toRemove = [];
             foreach (var card in cards)
             {
                 if (request.IsSender && card.SenderId == request.MasterId)
@@ -191,13 +189,13 @@ namespace Application.Core.Login.ServerData
                 {
                     SetRemoved(item.Id);
                 }
-                response.UpdateList.AddRange(_mapper.Map<Dto.NewYearCardDto[]>(toRemove));
+                response.UpdateList.AddRange(toRemove);
                 await _server.Transport.SendNewYearCardDiscard(response);
             }
 
         }
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<NewYearCardModel>> updateData)
+        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<Dto.NewYearCardDto>> updateData)
         {
             await dbContext.Newyears.Where(x => updateData.Keys.Contains(x.Id)).ExecuteDeleteAsync();
             foreach (var kv in updateData)
@@ -215,6 +213,11 @@ namespace Application.Core.Login.ServerData
                     dbModel.Received = item.Received;
                     dbModel.Message = item.Message;
                     dbContext.Newyears.Add(dbModel);
+                }
+
+                if (kv.Value.Flag == StoreFlag.Remove)
+                {
+                    _localData.TryRemove(kv.Key, out _);
                 }
             }
             await dbContext.SaveChangesAsync();

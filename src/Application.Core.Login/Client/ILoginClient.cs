@@ -22,7 +22,7 @@ namespace Application.Core.Login.Client
         LoginResultCode FinishLogin();
         bool CheckChar(int accid);
         Task SendCharList();
-        List<CharacterViewObject> LoadCharactersView();
+        List<CharacterLiveObject> LoadCharactersView();
         bool CanRequestCharlist();
         void UpdateRequestCharListTick();
         bool AcceptToS();

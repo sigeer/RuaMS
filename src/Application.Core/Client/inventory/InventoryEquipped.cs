@@ -108,7 +108,6 @@ public class InventoryEquipped : AbstractInventory
             _timedItems.Add(new TimedItemWrapper(item, 0));
         }
 
-        Owner.getRingById(equip.getRingId())?.equip();
 
         if (!fromLogin)
         {
@@ -137,8 +136,6 @@ public class InventoryEquipped : AbstractInventory
         {
             await Owner.CalculateSpiritPendant(Owner.Client.CurrentServer.Node.getCurrentTime(), false);
         }
-
-        Owner.getRingById(equip.getRingId())?.unequip();
 
         var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
         if (petIndex != -1)

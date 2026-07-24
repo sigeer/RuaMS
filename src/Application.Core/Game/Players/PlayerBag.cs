@@ -1,7 +1,12 @@
 using Application.Core.Client.inventory;
+using Application.Core.Game.Items;
+using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Mappers;
 using Application.Templates.Item;
 using Application.Utility.Tickables;
 using client.inventory;
+using Microsoft.Extensions.DependencyInjection;
+using System.Numerics;
 using tools;
 
 namespace Application.Core.Game.Players

@@ -291,14 +291,6 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         cs.removeFromInventory(item);
                         await c.SendPacket(PacketCreator.takeFromCashInventory(item, addR.CurrentPosition));
-
-                        if (item is Equip equip)
-                        {
-                            if (equip.Ring != null)
-                            {
-                                chr.addPlayerRing(equip.Ring);
-                            }
-                        }
                     }
                 }
                 else if (action == 0x0E)

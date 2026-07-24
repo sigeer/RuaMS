@@ -2,6 +2,8 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+import "Dto/CharacterData.proto";
+
 package Dto;
 
 message CharacterDto {
@@ -42,8 +44,6 @@ message CharacterDto {
   int32 jobRankMove = 35;
   int32 guildId = 36;
   int32 guildRank = 37;
-  int32 messengerId = 38;
-  int32 messengerPosition = 39;
   int32 mountLevel = 40;
   int32 mountExp = 41;
   int32 mounttiredness = 42;
@@ -68,9 +68,8 @@ message CharacterDto {
   int32 vanquisherKills = 63;
   int32 summonValue = 64;
   int32 marriageItemId = 66;
-  int32 reborns = 67;
   int32 pqpoints = 68;
-  google.protobuf.StringValue dataString = 69;
+  string dataString = 69;
   google.protobuf.Timestamp lastLogoutTime = 70;
   google.protobuf.Timestamp lastExpGainTime = 71;
   bool partySearch = 72;
@@ -79,4 +78,5 @@ message CharacterDto {
   int32 hpAlert = 75;
   int32 mpAlert = 76;
   int64 pendantOfSpiritEquippedTime = 77;
+  Dto.CharacterDataProto data = 78;
 }

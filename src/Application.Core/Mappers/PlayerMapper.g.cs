@@ -72,7 +72,6 @@ namespace Application.Core.Mappers
                 FinishedDojoTutorial = p1.FinishedDojoTutorial,
                 VanquisherKills = p1.VanquisherKills,
                 SummonValue = p1.SummonValue,
-                Reborns = p1.Reborns,
                 Pqpoints = p1.Pqpoints,
                 DataString = p1.DataString,
                 LastLogoutTime = Timestamp.FromDateTimeOffset(p1.LastLogoutTime),
@@ -138,7 +137,6 @@ namespace Application.Core.Mappers
             result.FinishedDojoTutorial = p3.FinishedDojoTutorial;
             result.VanquisherKills = p3.VanquisherKills;
             result.SummonValue = p3.SummonValue;
-            result.Reborns = p3.Reborns;
             result.Pqpoints = p3.Pqpoints;
             result.DataString = p3.DataString;
             result.LastLogoutTime = p3.LastLogoutTime.ToDateTimeOffset();

@@ -20,6 +20,7 @@ public partial class DBContext : DbContext
     public DbSet<GachaponPoolLevelChanceEntity> GachaponPoolLevelChances { get; set; }
     public DbSet<GachaponPoolEntity> GachaponPools { get; set; }
     public DbSet<GachaponPoolItemEntity> GachaponPoolItems { get; set; }
+
     public virtual DbSet<ExpLogRecord> ExpLogRecords { get; set; }
     public virtual DbSet<AccountEntity> Accounts { get; set; }
     public virtual DbSet<AccountBindingsEntity> AccountBindings { get; set; }
@@ -27,7 +28,6 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<AllianceEntity> Alliances { get; set; }
 
-    public virtual DbSet<AreaInfo> AreaInfos { get; set; }
 
     public virtual DbSet<BbsReplyEntity> BbsReplies { get; set; }
 
@@ -37,11 +37,9 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<BosslogWeekly> BosslogWeeklies { get; set; }
 
-    public virtual DbSet<BuddyEntity> Buddies { get; set; }
 
     public virtual DbSet<CharacterEntity> Characters { get; set; }
 
-    public virtual DbSet<CooldownEntity> Cooldowns { get; set; }
 
     public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
 
@@ -49,9 +47,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<DueyPackageEntity> Dueypackages { get; set; }
 
-    public virtual DbSet<Eventstat> Eventstats { get; set; }
 
-    public virtual DbSet<FamelogEntity> Famelogs { get; set; }
 
     public virtual DbSet<FamilyCharacterEntity> FamilyCharacters { get; set; }
 
@@ -67,31 +63,18 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<HwidbanEntity> Hwidbans { get; set; }
 
-    public virtual DbSet<Inventoryequipment> Inventoryequipments { get; set; }
-
-    public virtual DbSet<Inventoryitem> Inventoryitems { get; set; }
 
     public virtual DbSet<IpbanEntity> Ipbans { get; set; }
 
-    public virtual DbSet<KeyMapEntity> Keymaps { get; set; }
 
     public virtual DbSet<MacbanEntity> Macbans { get; set; }
 
-    public virtual DbSet<MakerCreatedataEntity> Makercreatedata { get; set; }
 
-    public virtual DbSet<MakerReagentdataEntity> Makerreagentdata { get; set; }
-
-    public virtual DbSet<MakerRecipedataEntity> Makerrecipedata { get; set; }
-
-    public virtual DbSet<MakerRewardDataEntity> Makerrewarddata { get; set; }
 
     public virtual DbSet<MarriageEntity> Marriages { get; set; }
 
-    public virtual DbSet<Medalmap> Medalmaps { get; set; }
 
-    public virtual DbSet<MonsterbookEntity> Monsterbooks { get; set; }
-
-    public virtual DbSet<Monstercarddatum> Monstercarddata { get; set; }
+    public virtual DbSet<MonsterCardDataEntity> Monstercarddata { get; set; }
 
     public virtual DbSet<MtsCart> MtsCarts { get; set; }
 
@@ -108,12 +91,6 @@ public partial class DBContext : DbContext
     public virtual DbSet<CdkItemEntity> CdkItems { get; set; }
     public virtual DbSet<CdkRecordEntity> CdkRecords { get; set; }
 
-    public virtual DbSet<PetEntity> Pets { get; set; }
-
-    public virtual DbSet<PetIgnoreEntity> Petignores { get; set; }
-
-    public virtual DbSet<Playerdisease> Playerdiseases { get; set; }
-
     public virtual DbSet<PlayerNpcEntity> Playernpcs { get; set; }
 
     public virtual DbSet<PlayerNpcsEquipEntity> PlayernpcsEquips { get; set; }
@@ -122,40 +99,23 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<PlifeEntity> Plives { get; set; }
 
-    public virtual DbSet<Questaction> Questactions { get; set; }
-
-    public virtual DbSet<Questprogress> Questprogresses { get; set; }
-
-    public virtual DbSet<Questrequirement> Questrequirements { get; set; }
-
-    public virtual DbSet<QuestStatusEntity> Queststatuses { get; set; }
-
-    public virtual DbSet<Quickslotkeymapped> Quickslotkeymappeds { get; set; }
 
     public virtual DbSet<ReactorDropEntity> Reactordrops { get; set; }
 
     public virtual DbSet<Report> Reports { get; set; }
 
 
-    public virtual DbSet<Ring_Entity> Rings { get; set; }
+    public virtual DbSet<RingEntity> Rings { get; set; }
 
-    public virtual DbSet<SavedLocationEntity> Savedlocations { get; set; }
+
 
     public virtual DbSet<ShopEntity> Shops { get; set; }
 
     public virtual DbSet<Shopitem> Shopitems { get; set; }
 
-    public virtual DbSet<SkillEntity> Skills { get; set; }
-
-    public virtual DbSet<SkillMacroEntity> Skillmacros { get; set; }
 
     public virtual DbSet<SpecialCashItemEntity> Specialcashitems { get; set; }
 
-    public virtual DbSet<StorageEntity> Storages { get; set; }
-
-    public virtual DbSet<Trocklocation> Trocklocations { get; set; }
-
-    public virtual DbSet<WishlistEntity> Wishlists { get; set; }
     #endregion
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -209,24 +169,6 @@ public partial class DBContext : DbContext
                 .HasColumnName("rank5");
         });
 
-        modelBuilder.Entity<AreaInfo>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("area_info");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Area)
-                .HasColumnType("int")
-                .HasColumnName("area");
-            entity.Property(e => e.Charid)
-                .HasColumnType("int")
-                .HasColumnName("charid");
-            entity.Property(e => e.Info)
-                .HasMaxLength(200)
-                .HasColumnName("info");
-        });
 
         modelBuilder.Entity<BbsReplyEntity>(entity =>
         {
@@ -286,6 +228,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
+
         modelBuilder.Entity<BosslogDaily>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -328,54 +271,13 @@ public partial class DBContext : DbContext
                 .HasColumnName("characterid");
         });
 
-        modelBuilder.Entity<BuddyEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("buddies");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.BuddyId)
-                .HasColumnType("int")
-                .HasColumnName("buddyid");
-            entity.Property(e => e.CharacterId)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Group)
-                .HasMaxLength(17)
-                .HasDefaultValueSql("'0'")
-                .HasColumnName("group");
-            entity.Property(e => e.Pending)
-                .HasColumnType("tinyint")
-                .HasColumnName("pending");
-        });
-
-        modelBuilder.Entity<CooldownEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("cooldowns");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Charid)
-                .HasColumnType("int")
-                .HasColumnName("charid");
-            entity.Property(e => e.Length)
-                .HasColumnType("bigint")
-                .HasColumnName("length");
-            entity.Property(e => e.SkillId)
-                .HasColumnType("int")
-                .HasColumnName("SkillID");
-            entity.Property(e => e.StartTime).HasColumnType("bigint");
-        });
 
         modelBuilder.Entity<DropDataGlobal>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("drop_data_global");
+            entity.ToTable("sys_drop_data_global");
 
             entity.HasIndex(e => e.Continent, "mobid");
 
@@ -412,7 +314,7 @@ public partial class DBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("drop_data");
+            entity.ToTable("sys_drop_data");
 
             entity.HasIndex(e => new { e.Dropperid, e.Itemid }, "dropperid").IsUnique();
 
@@ -444,6 +346,32 @@ public partial class DBContext : DbContext
                 .HasColumnName("questid");
         });
 
+        modelBuilder.Entity<ReactorDropEntity>(entity =>
+        {
+            entity.HasKey(e => e.Reactordropid).HasName("PRIMARY");
+
+            entity.ToTable("sys_reactordrops");
+
+            entity.HasIndex(e => e.Reactorid, "reactorid");
+
+            entity.Property(e => e.Reactordropid)
+                .HasColumnName("reactordropid");
+            entity.Property(e => e.Chance)
+                .HasColumnType("int")
+                .HasColumnName("chance");
+            entity.Property(e => e.Itemid)
+                .HasColumnType("int")
+                .HasColumnName("itemid");
+            entity.Property(e => e.Questid)
+                .HasDefaultValueSql("'-1'")
+                .HasColumnType("int")
+                .HasColumnName("questid");
+            entity.Property(e => e.Reactorid)
+                .HasColumnType("int")
+                .HasColumnName("reactorid");
+        });
+
+
         modelBuilder.Entity<DueyPackageEntity>(entity =>
         {
             entity.HasKey(e => e.PackageId).HasName("PRIMARY");
@@ -451,9 +379,8 @@ public partial class DBContext : DbContext
             entity.ToTable("dueypackages");
 
             entity.Property(e => e.PackageId);
-            entity.Property(e => e.Checked)
-                .HasDefaultValue(true)
-                .HasSentinel(true)
+            entity.Property(e => e.HasNotified)
+                .HasDefaultValue(false)
                 .HasColumnType("tinyint(1)");
             entity.Property(e => e.Mesos)
                 .HasDefaultValueSql("'0'")
@@ -461,59 +388,18 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Message).HasMaxLength(200);
             entity.Property(e => e.ReceiverId).HasColumnType("int");
             entity.Property(e => e.SenderId).HasColumnType("int");
-            entity.Property(e => e.TimeStamp)
+            entity.Property(e => e.CreateTime)
                 .HasDefaultValueSql("'2015-01-01 05:00:00'")
                 .HasColumnType("timestamp")
                 .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1)");
+            entity.Property(e => e.ItemBlob)
+                .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
         });
 
-        modelBuilder.Entity<Eventstat>(entity =>
-        {
-            entity.HasKey(e => e.Characterid).HasName("PRIMARY");
 
-            entity.ToTable("eventstats");
-
-            entity.Property(e => e.Characterid)
-                .HasColumnName("characterid");
-            entity.Property(e => e.Info)
-                .HasColumnType("int")
-                .HasColumnName("info");
-            entity.Property(e => e.Name)
-                .HasMaxLength(11)
-                .HasDefaultValueSql("'0'")
-                .HasComment("0")
-                .HasColumnName("name");
-        });
-
-        modelBuilder.Entity<FamelogEntity>(entity =>
-        {
-            entity.HasKey(e => e.Famelogid).HasName("PRIMARY");
-
-            entity.ToTable("famelog");
-
-            entity.HasIndex(e => e.Characterid, "characterid");
-
-            entity.Property(e => e.Famelogid)
-                .HasColumnName("famelogid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.CharacteridTo)
-                .HasColumnType("int")
-                .HasColumnName("characterid_to");
-            entity.Property(e => e.When)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("when");
-
-            entity.HasOne(d => d.Character).WithMany(p => p.Famelogs)
-                .HasForeignKey(d => d.Characterid)
-                .HasConstraintName("famelog_ibfk_1");
-        });
 
         modelBuilder.Entity<FamilyCharacterEntity>(entity =>
         {
@@ -576,6 +462,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("timestamp");
         });
 
+
         modelBuilder.Entity<FredstorageEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -603,6 +490,8 @@ public partial class DBContext : DbContext
                 .HasColumnType("timestamp")
                 .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("timestamp");
+            entity.Property(e => e.ItemsBlob)
+                .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
         });
 
         modelBuilder.Entity<GiftEntity>(entity =>
@@ -736,7 +625,6 @@ public partial class DBContext : DbContext
                 .HasColumnName("AccountId");
         });
 
-        ConfigInventory(modelBuilder);
 
         modelBuilder.Entity<IpbanEntity>(entity =>
         {
@@ -754,27 +642,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("ip");
         });
 
-        modelBuilder.Entity<KeyMapEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("keymap");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Action)
-                .HasColumnType("int")
-                .HasColumnName("action");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Key)
-                .HasColumnType("int")
-                .HasColumnName("key");
-            entity.Property(e => e.Type)
-                .HasColumnType("int")
-                .HasColumnName("type");
-        });
 
         modelBuilder.Entity<MacbanEntity>(entity =>
         {
@@ -794,93 +662,6 @@ public partial class DBContext : DbContext
         });
 
 
-        modelBuilder.Entity<MakerCreatedataEntity>(entity =>
-        {
-            entity.HasKey(e => new { e.Id, e.Itemid }).HasName("PRIMARY");
-
-            entity.ToTable("makercreatedata");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Itemid)
-                .HasColumnType("int")
-                .HasColumnName("itemid");
-            entity.Property(e => e.Catalyst)
-                .HasColumnType("int")
-                .HasColumnName("catalyst");
-            entity.Property(e => e.Quantity)
-                .HasColumnType("smallint")
-                .HasColumnName("quantity");
-            entity.Property(e => e.ReqEquip)
-                .HasColumnType("int")
-                .HasColumnName("req_equip");
-            entity.Property(e => e.ReqItem)
-                .HasColumnType("int")
-                .HasColumnName("req_item");
-            entity.Property(e => e.ReqLevel)
-                .HasColumnType("smallint")
-                .HasColumnName("req_level");
-            entity.Property(e => e.ReqMakerLevel)
-                .HasColumnType("smallint")
-                .HasColumnName("req_maker_level");
-            entity.Property(e => e.ReqMeso)
-                .HasColumnType("int")
-                .HasColumnName("req_meso");
-            entity.Property(e => e.Tuc)
-                .HasColumnType("tinyint")
-                .HasColumnName("tuc");
-        });
-
-        modelBuilder.Entity<MakerReagentdataEntity>(entity =>
-        {
-            entity.HasKey(e => e.Itemid).HasName("PRIMARY");
-
-            entity.ToTable("makerreagentdata");
-
-            entity.Property(e => e.Itemid)
-                .HasColumnName("itemid");
-            entity.Property(e => e.Stat)
-                .HasMaxLength(20)
-                .HasColumnName("stat");
-            entity.Property(e => e.Value)
-                .HasColumnType("smallint")
-                .HasColumnName("value");
-        });
-
-        modelBuilder.Entity<MakerRecipedataEntity>(entity =>
-        {
-            entity.HasKey(e => new { e.Itemid, e.ReqItem }).HasName("PRIMARY");
-
-            entity.ToTable("makerrecipedata");
-
-            entity.Property(e => e.Itemid)
-                .HasColumnName("itemid");
-            entity.Property(e => e.ReqItem)
-                .HasColumnType("int")
-                .HasColumnName("req_item");
-            entity.Property(e => e.Count)
-                .HasColumnType("smallint")
-                .HasColumnName("count");
-        });
-
-        modelBuilder.Entity<MakerRewardDataEntity>(entity =>
-        {
-            entity.HasKey(e => new { e.Itemid, e.Rewardid }).HasName("PRIMARY");
-
-            entity.ToTable("makerrewarddata");
-
-            entity.Property(e => e.Itemid)
-                .HasColumnName("itemid");
-            entity.Property(e => e.Rewardid)
-                .HasColumnName("rewardid");
-            entity.Property(e => e.Prob)
-                .HasDefaultValueSql("'100'")
-                .HasColumnType("tinyint")
-                .HasColumnName("prob");
-            entity.Property(e => e.Quantity)
-                .HasColumnType("smallint")
-                .HasColumnName("quantity");
-        });
 
         modelBuilder.Entity<MarriageEntity>(entity =>
         {
@@ -898,48 +679,13 @@ public partial class DBContext : DbContext
                 .HasColumnName("wifeid");
         });
 
-        modelBuilder.Entity<Medalmap>(entity =>
+
+
+        modelBuilder.Entity<MonsterCardDataEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("medalmaps");
-
-            entity.HasIndex(e => e.Queststatusid, "queststatusid");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Mapid)
-                .HasColumnType("int")
-                .HasColumnName("mapid");
-            entity.Property(e => e.Queststatusid)
-                .HasColumnType("int")
-                .HasColumnName("queststatusid");
-        });
-
-        modelBuilder.Entity<MonsterbookEntity>(entity =>
-        {
-            entity.HasKey(e => new { e.Cardid, e.Charid });
-            entity
-                .ToTable("monsterbook");
-
-            entity.Property(e => e.Cardid)
-                .HasColumnName("cardid");
-            entity.Property(e => e.Charid)
-                .HasColumnName("charid");
-            entity.Property(e => e.Level)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int")
-                .HasColumnName("level");
-        });
-
-        modelBuilder.Entity<Monstercarddatum>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("monstercarddata");
+            entity.ToTable("sys_monstercarddata");
 
             entity.HasIndex(e => e.Id, "id").IsUnique();
 
@@ -1274,83 +1020,6 @@ public partial class DBContext : DbContext
         });
 
 
-        modelBuilder.Entity<PetEntity>(entity =>
-        {
-            entity.HasKey(e => e.Petid).HasName("PRIMARY");
-
-            entity.ToTable("pets");
-
-            var idProp = entity.Property(e => e.Petid)
-                .HasColumnName("petid");
-
-            entity.Property(e => e.Closeness)
-                    .HasColumnType("int")
-                    .HasColumnName("closeness");
-            entity.Property(e => e.Flag)
-                .HasColumnType("int")
-                .HasColumnName("flag");
-            entity.Property(e => e.Fullness)
-                .HasColumnType("int")
-                .HasColumnName("fullness");
-            entity.Property(e => e.Level)
-                .HasColumnType("int")
-                .HasColumnName("level");
-            entity.Property(e => e.Name)
-                .HasMaxLength(13)
-                .HasColumnName("name");
-            entity.Property(e => e.Summoned).HasColumnName("summoned");
-        });
-
-        modelBuilder.Entity<PetIgnoreEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("petignores");
-
-            entity.HasIndex(e => e.Petid, "fk_petignorepetid");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Itemid)
-                .HasColumnType("int")
-                .HasColumnName("itemid");
-            entity.Property(e => e.Petid)
-                .HasColumnType("bigint")
-                .HasColumnName("petid");
-            entity.Property(e => e.CharacterId)
-                .HasColumnType("int")
-                .HasColumnName("CharacterId");
-
-            entity.HasOne(d => d.Pet).WithMany(p => p.Petignores)
-                .HasForeignKey(d => d.Petid)
-                .HasConstraintName("fk_petignorepetid");
-        });
-
-        modelBuilder.Entity<Playerdisease>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("playerdiseases");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Charid)
-                .HasColumnType("int")
-                .HasColumnName("charid");
-            entity.Property(e => e.Disease)
-                .HasColumnType("int")
-                .HasColumnName("disease");
-            entity.Property(e => e.Length)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int")
-                .HasColumnName("length");
-            entity.Property(e => e.Mobskillid)
-                .HasColumnType("int")
-                .HasColumnName("mobskillid");
-            entity.Property(e => e.Mobskilllv)
-                .HasColumnType("int")
-                .HasColumnName("mobskilllv");
-        });
 
         modelBuilder.Entity<PlayerNpcEntity>(entity =>
         {
@@ -1512,142 +1181,8 @@ public partial class DBContext : DbContext
                 .HasColumnName("y");
         });
 
-        modelBuilder.Entity<Questaction>(entity =>
-        {
-            entity.HasKey(e => e.Questactionid).HasName("PRIMARY");
 
-            entity.ToTable("questactions");
 
-            entity.Property(e => e.Questactionid)
-                .HasColumnName("questactionid");
-            entity.Property(e => e.Data)
-                .HasColumnType("blob")
-                .HasColumnName("data");
-            entity.Property(e => e.Questid)
-                .HasColumnType("int")
-                .HasColumnName("questid");
-            entity.Property(e => e.Status)
-                .HasColumnType("int")
-                .HasColumnName("status");
-        });
-
-        modelBuilder.Entity<Questprogress>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("questprogress");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Progress)
-                .HasMaxLength(15)
-                .HasDefaultValueSql("''")
-                .HasColumnName("progress");
-            entity.Property(e => e.Progressid)
-                .HasColumnType("int")
-                .HasColumnName("progressid");
-            entity.Property(e => e.Queststatusid)
-                .HasColumnType("int")
-                .HasColumnName("queststatusid");
-        });
-
-        modelBuilder.Entity<Questrequirement>(entity =>
-        {
-            entity.HasKey(e => e.Questrequirementid).HasName("PRIMARY");
-
-            entity.ToTable("questrequirements");
-
-            entity.Property(e => e.Questrequirementid)
-                .HasColumnName("questrequirementid");
-            entity.Property(e => e.Data)
-                .HasColumnType("blob")
-                .HasColumnName("data");
-            entity.Property(e => e.Questid)
-                .HasColumnType("int")
-                .HasColumnName("questid");
-            entity.Property(e => e.Status)
-                .HasColumnType("int")
-                .HasColumnName("status");
-        });
-
-        modelBuilder.Entity<QuestStatusEntity>(entity =>
-        {
-            entity.HasKey(e => e.Queststatusid).HasName("PRIMARY");
-
-            entity.ToTable("queststatus");
-
-            entity.Property(e => e.Queststatusid)
-                .HasColumnName("queststatusid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Completed)
-                .HasColumnType("int")
-                .HasColumnName("completed");
-            entity.Property(e => e.Expires)
-                .HasColumnType("bigint")
-                .HasColumnName("expires");
-            entity.Property(e => e.Forfeited)
-                .HasColumnType("int")
-                .HasColumnName("forfeited");
-            entity.Property(e => e.Info)
-                .HasColumnType("tinyint")
-                .HasColumnName("info");
-            entity.Property(e => e.Quest)
-                .HasColumnType("int")
-                .HasColumnName("quest");
-            entity.Property(e => e.Status)
-                .HasColumnType("int")
-                .HasColumnName("status");
-            entity.Property(e => e.Time)
-                .HasColumnType("int")
-                .HasColumnName("time");
-        });
-
-        modelBuilder.Entity<Quickslotkeymapped>(entity =>
-        {
-            entity.HasKey(e => e.Accountid).HasName("PRIMARY");
-
-            entity.ToTable("quickslotkeymapped");
-
-            entity.Property(e => e.Accountid)
-                .HasColumnName("accountid");
-            entity.Property(e => e.Keymap)
-                .HasColumnType("bigint")
-                .HasColumnName("keymap");
-
-            entity.HasOne(d => d.Account).WithOne(p => p.Quickslotkeymapped)
-                .HasForeignKey<Quickslotkeymapped>(d => d.Accountid)
-                .HasConstraintName("quickslotkeymapped_accountid_fk");
-        });
-
-        modelBuilder.Entity<ReactorDropEntity>(entity =>
-        {
-            entity.HasKey(e => e.Reactordropid).HasName("PRIMARY");
-
-            entity.ToTable("reactordrops");
-
-            entity.HasIndex(e => e.Reactorid, "reactorid");
-
-            entity.Property(e => e.Reactordropid)
-                .HasColumnName("reactordropid");
-            entity.Property(e => e.Chance)
-                .HasColumnType("int")
-                .HasColumnName("chance");
-            entity.Property(e => e.Itemid)
-                .HasColumnType("int")
-                .HasColumnName("itemid");
-            entity.Property(e => e.Questid)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("int")
-                .HasColumnName("questid");
-            entity.Property(e => e.Reactorid)
-                .HasColumnType("int")
-                .HasColumnName("reactorid");
-        });
 
         modelBuilder.Entity<Report>(entity =>
         {
@@ -1681,7 +1216,7 @@ public partial class DBContext : DbContext
         });
 
 
-        modelBuilder.Entity<Ring_Entity>(entity =>
+        modelBuilder.Entity<RingEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1706,35 +1241,12 @@ public partial class DBContext : DbContext
                 .HasColumnName("ringId2");
         });
 
-        modelBuilder.Entity<SavedLocationEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("savedlocations");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-
-            entity.Property(e => e.Locationtype)
-             .HasColumnName("locationtype")
-             .HasColumnType(isMysql ? "enum('FREE_MARKET','WORLDTOUR','FLORINA','INTRO','SUNDAY_MARKET','MIRROR','EVENT','BOSSPQ','HAPPYVILLE','DEVELOPER','MONSTER_CARNIVAL','JAIL','CYGNUSINTRO')" : "text");
-
-            entity.Property(e => e.Map)
-                .HasColumnType("int")
-                .HasColumnName("map");
-            entity.Property(e => e.Portal)
-                .HasColumnType("int")
-                .HasColumnName("portal");
-        });
 
         modelBuilder.Entity<ShopEntity>(entity =>
         {
             entity.HasKey(e => e.ShopId).HasName("PRIMARY");
 
-            entity.ToTable("shops");
+            entity.ToTable("sys_shops");
 
             entity.Property(e => e.ShopId)
                 .HasColumnName("shopid");
@@ -1747,7 +1259,7 @@ public partial class DBContext : DbContext
         {
             entity.HasKey(e => e.Shopitemid).HasName("PRIMARY");
 
-            entity.ToTable("shopitems");
+            entity.ToTable("sys_shopitems");
 
             entity.Property(e => e.Shopitemid)
                 .HasColumnName("shopitemid");
@@ -1769,68 +1281,12 @@ public partial class DBContext : DbContext
                 .HasColumnName("shopid");
         });
 
-        modelBuilder.Entity<SkillEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("skills");
-
-            entity.HasIndex(e => new { e.Skillid, e.Characterid }, "skillpair").IsUnique();
-
-            entity.HasIndex(e => e.Characterid, "skills_chrid_fk");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Expiration)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint")
-                .HasColumnName("expiration");
-            entity.Property(e => e.Masterlevel)
-                .HasColumnType("int")
-                .HasColumnName("masterlevel");
-            entity.Property(e => e.Skillid)
-                .HasColumnType("int")
-                .HasColumnName("skillid");
-            entity.Property(e => e.Skilllevel)
-                .HasColumnType("int")
-                .HasColumnName("skilllevel");
-        });
-
-        modelBuilder.Entity<SkillMacroEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("skillmacros");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Name)
-                .HasMaxLength(13)
-                .HasColumnName("name");
-            entity.Property(e => e.Position).HasColumnName("position").HasColumnType("tinyint").HasDefaultValueSql("'0'");
-            entity.Property(e => e.Shout).HasColumnName("shout").HasColumnType("tinyint").HasDefaultValueSql("'0'");
-            entity.Property(e => e.Skill1)
-                .HasColumnType("int")
-                .HasColumnName("skill1");
-            entity.Property(e => e.Skill2)
-                .HasColumnType("int")
-                .HasColumnName("skill2");
-            entity.Property(e => e.Skill3)
-                .HasColumnType("int")
-                .HasColumnName("skill3");
-        });
 
         modelBuilder.Entity<SpecialCashItemEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("specialcashitems");
+            entity.ToTable("sys_specialcashitems");
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");
@@ -1846,62 +1302,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("sn");
         });
 
-        modelBuilder.Entity<StorageEntity>(entity =>
-        {
-            entity.HasKey(e => e.Storageid).HasName("PRIMARY");
 
-            entity.ToTable("storages");
-
-            entity.Property(e => e.Storageid)
-                .HasColumnName("storageid");
-            entity.Property(e => e.OwnerId)
-                .HasColumnType("int")
-                .HasColumnName("OwnerId");
-            entity.Property(e => e.Meso)
-                .HasColumnType("int")
-                .HasColumnName("meso");
-            entity.Property(e => e.Slots)
-                .HasColumnType("int")
-                .HasColumnName("slots");
-            entity.Property(e => e.Type)
-                .HasColumnType("int")
-                .HasColumnName("Type");
-        });
-
-        modelBuilder.Entity<Trocklocation>(entity =>
-        {
-            entity.HasKey(e => e.Trockid).HasName("PRIMARY");
-
-            entity.ToTable("trocklocations");
-
-            entity.Property(e => e.Trockid)
-                .HasColumnName("trockid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Mapid)
-                .HasColumnType("int")
-                .HasColumnName("mapid");
-            entity.Property(e => e.Vip)
-                .HasColumnType("int")
-                .HasColumnName("vip");
-        });
-
-        modelBuilder.Entity<WishlistEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("wishlists");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.CharId)
-                .HasColumnType("int")
-                .HasColumnName("charid");
-            entity.Property(e => e.Sn)
-                .HasColumnType("int")
-                .HasColumnName("sn");
-        });
 
         modelBuilder.Entity<ExpLogRecord>(entity =>
         {
@@ -1934,21 +1335,21 @@ public partial class DBContext : DbContext
 
         modelBuilder.Entity<GachaponPoolEntity>(entity =>
         {
-            entity.ToTable("gachapon_pool");
+            entity.ToTable("sys_gachapon_pool");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
             entity.Property(e => e.Name).HasColumnType("varchar(50)").IsRequired().HasDefaultValueSql("''");
         });
 
         modelBuilder.Entity<GachaponPoolItemEntity>(entity =>
         {
-            entity.ToTable("gachapon_pool_item");
+            entity.ToTable("sys_gachapon_pool_item");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 
 
         modelBuilder.Entity<GachaponPoolLevelChanceEntity>(entity =>
         {
-            entity.ToTable("gachapon_pool_level_chance");
+            entity.ToTable("sys_gachapon_pool_level_chance");
             entity.HasKey(e => e.Id).HasName("PRIMARY");
         });
 
@@ -1960,6 +1361,8 @@ public partial class DBContext : DbContext
 
     private void ConfigAccountCharacter(ModelBuilder modelBuilder)
     {
+        var isMysql = Database.ProviderName!.Contains("mysql", StringComparison.OrdinalIgnoreCase);
+
         modelBuilder.Entity<AccountEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -2029,6 +1432,8 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("gmlevel");
             entity.Property(e => e.Tos).HasColumnName("tos");
+            entity.Property(e => e.Blob)
+                .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
         });
 
         modelBuilder.Entity<AccountBindingsEntity>(entity =>
@@ -2305,9 +1710,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.RankMove)
                 .HasColumnType("int")
                 .HasColumnName("rankMove");
-            entity.Property(e => e.Reborns)
-                .HasColumnType("int")
-                .HasColumnName("reborns");
+
             entity.Property(e => e.Setupslots)
                 .HasDefaultValueSql("'24'")
                 .HasColumnType("int")
@@ -2342,145 +1745,8 @@ public partial class DBContext : DbContext
             entity.Property(e => e.IsDeleted)
                 .HasColumnType("tinyint(1)")
                 .HasColumnName("IsDeleted");
+            entity.Property(e => e.Blob)
+                .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
         });
     }
-
-    private void ConfigInventory(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Inventoryitem>(entity =>
-        {
-            entity.HasKey(e => e.Inventoryitemid).HasName("PRIMARY");
-
-            entity.ToTable("inventoryitems");
-
-            entity.HasIndex(e => e.Characterid, "idx_inv_charId");
-
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnName("inventoryitemid");
-            entity.Property(e => e.Accountid)
-                .HasColumnType("int")
-                .HasColumnName("accountid");
-            entity.Property(e => e.Characterid)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-            entity.Property(e => e.Expiration)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint")
-                .HasColumnName("expiration");
-            entity.Property(e => e.Flag)
-                .HasColumnType("int")
-                .HasColumnName("flag");
-            entity.Property(e => e.GiftFrom)
-                .HasMaxLength(26)
-                .HasColumnName("giftFrom");
-            entity.Property(e => e.Inventorytype)
-                .HasColumnType("int")
-                .HasColumnName("inventorytype");
-            entity.Property(e => e.Itemid)
-                .HasColumnType("int")
-                .HasColumnName("itemid");
-            entity.Property(e => e.Owner)
-                .HasColumnType("tinytext")
-                .HasColumnName("owner");
-            entity.Property(e => e.Position)
-                .HasColumnType("int")
-                .HasColumnName("position");
-            entity.Property(e => e.Quantity)
-                .HasColumnType("int")
-                .HasColumnName("quantity");
-            entity.Property(e => e.Type)
-                .HasColumnType("tinyint")
-                .HasColumnName("type");
-            entity.Property(e => e.UniqueId)
-                .HasColumnType("bigint")
-                .HasColumnName("UniqueId");
-            entity.Property(e => e.Properties)
-                .HasColumnType("text")
-                .HasColumnName("Properties");
-        });
-
-        modelBuilder.Entity<Inventoryequipment>(entity =>
-        {
-            entity.HasKey(e => e.Inventoryequipmentid).HasName("PRIMARY");
-
-            entity.ToTable("inventoryequipment");
-
-            entity.HasIndex(e => e.Inventoryitemid, "INVENTORYITEMID");
-
-            entity.Property(e => e.Inventoryequipmentid)
-                .HasColumnName("inventoryequipmentid");
-            entity.Property(e => e.Acc)
-                .HasColumnType("int")
-                .HasColumnName("acc");
-            entity.Property(e => e.Avoid)
-                .HasColumnType("int")
-                .HasColumnName("avoid");
-            entity.Property(e => e.Dex)
-                .HasColumnType("int")
-                .HasColumnName("dex");
-            entity.Property(e => e.Hands)
-                .HasColumnType("int")
-                .HasColumnName("hands");
-            entity.Property(e => e.Hp)
-                .HasColumnType("int")
-                .HasColumnName("hp");
-            entity.Property(e => e.Int)
-                .HasColumnType("int")
-                .HasColumnName("int");
-            entity.Property(e => e.Inventoryitemid)
-                .HasColumnType("int")
-                .HasColumnName("inventoryitemid");
-            entity.Property(e => e.Itemexp)
-                .HasColumnType("int")
-                .HasColumnName("itemexp");
-            entity.Property(e => e.Itemlevel)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType("int")
-                .HasColumnName("itemlevel");
-            entity.Property(e => e.Jump)
-                .HasColumnType("int")
-                .HasColumnName("jump");
-            entity.Property(e => e.Level)
-                .HasColumnType("int")
-                .HasColumnName("level");
-            entity.Property(e => e.Locked)
-                .HasColumnType("int")
-                .HasColumnName("locked");
-            entity.Property(e => e.Luk)
-                .HasColumnType("int")
-                .HasColumnName("luk");
-            entity.Property(e => e.Matk)
-                .HasColumnType("int")
-                .HasColumnName("matk");
-            entity.Property(e => e.Mdef)
-                .HasColumnType("int")
-                .HasColumnName("mdef");
-            entity.Property(e => e.Mp)
-                .HasColumnType("int")
-                .HasColumnName("mp");
-            entity.Property(e => e.RingId)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType("bigint")
-                .HasColumnName("ringid");
-            entity.Property(e => e.Speed)
-                .HasColumnType("int")
-                .HasColumnName("speed");
-            entity.Property(e => e.Str)
-                .HasColumnType("int")
-                .HasColumnName("str");
-            entity.Property(e => e.Upgradeslots)
-                .HasColumnType("int")
-                .HasColumnName("upgradeslots");
-            entity.Property(e => e.Vicious)
-                .HasColumnType("int")
-                .HasColumnName("vicious");
-            entity.Property(e => e.Watk)
-                .HasColumnType("int")
-                .HasColumnName("watk");
-            entity.Property(e => e.Wdef)
-                .HasColumnType("int")
-                .HasColumnName("wdef");
-        });
-    }
-
 }

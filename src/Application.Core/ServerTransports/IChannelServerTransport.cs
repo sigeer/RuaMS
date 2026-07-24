@@ -59,9 +59,7 @@ namespace Application.Core.ServerTransports
         Task RemoveTimer();
         #endregion
 
-        #region PlayerShop
-        SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request);
-        #endregion
+
 
         #region Guild
 
@@ -161,8 +159,6 @@ namespace Application.Core.ServerTransports
         CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
         Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
 
-        StoreItemsResponse SaveItems(StoreItemsRequest request);
-        LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest loadItemsFromStoreRequest);
         Task BatchSyncMap(List<MapSyncDto> data);
         Task SendReport(SendReportRequest sendReportRequest);
         Task SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest);

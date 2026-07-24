@@ -16,7 +16,7 @@ namespace Application.Core.Login.ServerData
         readonly IMapper _mapper;
         readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-        public CDKManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory)
+        public CDKManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
         {
             _server = server;
             _mapper = mapper;
@@ -97,7 +97,7 @@ namespace Application.Core.Login.ServerData
                         return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
 
                     data.Histories.Add(new CdkRecordModel { RecipientId = request.MasterId, RecipientTime = _server.GetCurrentTimeDateTimeOffset() });
-                    SetDirty(new StoreUnit<CdkCodeModel>(StoreFlag.AddOrUpdate, data));
+                    SetDirty(data);
 
                     var res = new UseCdkResponse();
                     res.Items.AddRange(_mapper.Map<ItemProto.CdkRewordPackageDto[]>(data.Items));

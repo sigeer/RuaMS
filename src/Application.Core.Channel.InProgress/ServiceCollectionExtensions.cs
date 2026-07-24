@@ -1,6 +1,5 @@
 using Application.Core.Channel.HostExtensions;
 using Application.Core.ServerTransports;
-using Application.Module.Maker.Channel.InProgress;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +13,6 @@ namespace Application.Core.Channel.InProgress
             builder.Services.AddSingleton<IChannelServerTransport, LocalChannelServerTransport>();
             builder.AddChannelServer();
 
-            builder.Services.AddMakerInProgress();
             // builder.Services.AddPlayerNPCInProgress();
         }
     }

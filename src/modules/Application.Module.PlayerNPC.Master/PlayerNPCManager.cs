@@ -23,7 +23,7 @@ namespace Application.Module.PlayerNPC.Master
         ConcurrentDictionary<int, int> _fields = new();
 
         int _currentId = NpcId.PlayerNpc_ObjectId_Base;
-        public PlayerNPCManager(MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory)
+        public PlayerNPCManager(MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
         {
             _transport = transport;
             _mapper = mapper;
@@ -137,10 +137,10 @@ namespace Application.Module.PlayerNPC.Master
             var updatedList = _mapper.Map<List<PlayerNpcModel>>(request.UpdatedList);
             foreach (var item in updatedList)
             {
-                SetDirty(item.Id, new StoreUnit<PlayerNpcModel>(StoreFlag.AddOrUpdate, item));
+                SetDirty(item);
             }
 
-            SetDirty(model.Id, new StoreUnit<PlayerNpcModel>(StoreFlag.AddOrUpdate, model));
+            SetDirty(model);
 
             var res = new UpdateMapPlayerNPCResponse();
             res.MapId = request.MapId;

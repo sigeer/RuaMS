@@ -165,11 +165,6 @@ namespace Application.Core.Channel.InProgress
         }
 
 
-        public SearchHiredMerchantChannelResponse FindPlayerShopChannel(SearchHiredMerchantChannelRequest request)
-        {
-            return _server.PlayerShopManager.FindHiredMerchantChannel(request);
-        }
-
         public void SendAccountLogout(int accountId)
         {
             _server.UpdateAccountState(accountId, LoginStage.LOGIN_NOTLOGGEDIN);
@@ -574,15 +569,6 @@ namespace Application.Core.Channel.InProgress
         public ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest request)
         {
             return _server.PlayerShopManager.OwlSearch(request);
-        }
-        public StoreItemsResponse SaveItems(StoreItemsRequest request)
-        {
-            return _server.ItemFactoryManager.Store(request);
-        }
-
-        public LoadItemsFromStoreResponse LoadItemFromStore(LoadItemsFromStoreRequest request)
-        {
-            return _server.ItemFactoryManager.LoadItems(request);
         }
 
         public async Task SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest)

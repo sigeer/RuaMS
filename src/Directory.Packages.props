@@ -48,8 +48,6 @@
     <PackageVersion Include="Polly" Version="8.6.5" />
     <PackageVersion Include="Quartz" Version="3.18.2" />
     <PackageVersion Include="YamlDotNet" Version="18.1.0" />
-    <PackageVersion Include="AutoMapper" Version="14.0.0" />
-    <PackageVersion Include="AutoMapper.Extensions.ExpressionMapping" Version="8.0.0" />
     <PackageVersion Include="ZLinq" Version="1.5.6" />
     <PackageVersion Include="Yitter.IdGenerator" Version="1.0.14" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />

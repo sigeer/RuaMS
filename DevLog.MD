@@ -10,7 +10,7 @@ dotnet ef migrations add [migration_name] --output-dir Migrations --startup-proj
 
 dotnet ef migrations remove --startup-project ../Application.Host
 
-dotnet ef database update --startup-project ../Application.Host
+dotnet ef database update --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 ```
 
 ## 发布

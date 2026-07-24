@@ -184,7 +184,7 @@ public class WeddingHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        await _weddingManager.TakeItemFromGifts(c.OnlinedCharacter, itemPos);
+                        // await _weddingManager.TakeItemFromGifts(c.OnlinedCharacter, itemPos);
                     }
                 }
                 else if (mode == 8)

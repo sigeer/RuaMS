@@ -4,7 +4,7 @@ namespace Application.Templates.Item.Consume
     /// 204: 卷轴
     /// </summary>
     [GenerateTag]
-    public sealed class ScrollItemTemplate : ConsumeItemTemplate
+    public sealed class ScrollItemTemplate : ConsumeItemTemplate, IEnhanceEquipItem
     {
         public ScrollItemTemplate(int templateId) : base(templateId)
         {
@@ -26,7 +26,7 @@ namespace Application.Templates.Item.Consume
 
         [WZPath("info/incMMP")]
         public int IncMMP { get; set; }
-
+        public int IncReqLevel { get; set; }
 
 
         [WZPath("info/incMAD")]

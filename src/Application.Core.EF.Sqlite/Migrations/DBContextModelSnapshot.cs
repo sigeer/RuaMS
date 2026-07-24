@@ -117,7 +117,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.ToTable("gachapon_pool", (string)null);
+                    b.ToTable("sys_gachapon_pool", (string)null);
                 });
 
             modelBuilder.Entity("Application.Core.EF.Entities.Gachapons.GachaponPoolItemEntity", b =>
@@ -141,7 +141,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.ToTable("gachapon_pool_item", (string)null);
+                    b.ToTable("sys_gachapon_pool_item", (string)null);
                 });
 
             modelBuilder.Entity("Application.Core.EF.Entities.Gachapons.GachaponPoolLevelChanceEntity", b =>
@@ -162,7 +162,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.ToTable("gachapon_pool_level_chance", (string)null);
+                    b.ToTable("sys_gachapon_pool_level_chance", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.CdkCodeEntity", b =>
@@ -280,6 +280,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("birthday")
                         .HasDefaultValueSql("'2005-05-11'");
 
+                    b.Property<byte[]>("Blob")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
                     b.Property<sbyte>("Characterslots")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint")
@@ -309,7 +313,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
-                    b.Property<int?>("MaplePoint")
+                    b.Property<int>("MaplePoint")
                         .HasColumnType("int")
                         .HasColumnName("maplePoint");
 
@@ -326,11 +330,11 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("nick");
 
-                    b.Property<int?>("NxCredit")
+                    b.Property<int>("NxCredit")
                         .HasColumnType("int")
                         .HasColumnName("nxCredit");
 
-                    b.Property<int?>("NxPrepaid")
+                    b.Property<int>("NxPrepaid")
                         .HasColumnType("int")
                         .HasColumnName("nxPrepaid");
 
@@ -449,33 +453,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasDatabaseName("name1");
 
                     b.ToTable("alliance", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.AreaInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Area")
-                        .HasColumnType("int")
-                        .HasColumnName("area");
-
-                    b.Property<int>("Charid")
-                        .HasColumnType("int")
-                        .HasColumnName("charid");
-
-                    b.Property<string>("Info")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("info");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("area_info", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.BbsReplyEntity", b =>
@@ -617,38 +594,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("bosslog_weekly", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.BuddyEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("BuddyId")
-                        .HasColumnType("int")
-                        .HasColumnName("buddyid");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<string>("Group")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(17)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("group")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<sbyte>("Pending")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("pending");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("buddies", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.CdkItemEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -706,6 +651,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("AriantPoints")
                         .HasColumnType("int")
                         .HasColumnName("ariantPoints");
+
+                    b.Property<byte[]>("Blob")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
                     b.Property<int>("BuddyCapacity")
                         .ValueGeneratedOnAdd()
@@ -965,10 +914,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("int")
                         .HasColumnName("rankMove");
 
-                    b.Property<int>("Reborns")
-                        .HasColumnType("int")
-                        .HasColumnName("reborns");
-
                     b.Property<int>("Setupslots")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -1029,34 +974,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("characters", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.CooldownEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Charid")
-                        .HasColumnType("int")
-                        .HasColumnName("charid");
-
-                    b.Property<long>("Length")
-                        .HasColumnType("bigint")
-                        .HasColumnName("length");
-
-                    b.Property<int>("SkillId")
-                        .HasColumnType("int")
-                        .HasColumnName("SkillID");
-
-                    b.Property<long>("StartTime")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("cooldowns", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.DropDataEntity", b =>
                 {
                     b.Property<long>("Id")
@@ -1102,7 +1019,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.HasIndex(new[] { "Dropperid" }, "mobid");
 
-                    b.ToTable("drop_data", (string)null);
+                    b.ToTable("sys_drop_data", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.DropDataGlobal", b =>
@@ -1153,7 +1070,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasIndex(new[] { "Continent" }, "mobid")
                         .HasDatabaseName("mobid1");
 
-                    b.ToTable("drop_data_global", (string)null);
+                    b.ToTable("sys_drop_data_global", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.DueyPackageEntity", b =>
@@ -1162,10 +1079,21 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("Checked")
+                    b.Property<DateTimeOffset?>("ClaimTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+
+                    b.Property<bool>("HasNotified")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(false);
+
+                    b.Property<byte[]>("ItemBlob")
+                        .HasColumnType("BLOB");
 
                     b.Property<int>("Mesos")
                         .ValueGeneratedOnAdd()
@@ -1182,11 +1110,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("TimeStamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
-
                     b.Property<bool>("Type")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -1196,61 +1119,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("dueypackages", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Eventstat", b =>
-                {
-                    b.Property<int>("Characterid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Info")
-                        .HasColumnType("int")
-                        .HasColumnName("info");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(11)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("name")
-                        .HasDefaultValueSql("'0'")
-                        .HasComment("0");
-
-                    b.HasKey("Characterid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("eventstats", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.FamelogEntity", b =>
-                {
-                    b.Property<int>("Famelogid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("famelogid");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("CharacteridTo")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid_to");
-
-                    b.Property<DateTime>("When")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("when")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Famelogid")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Characterid" }, "characterid");
-
-                    b.ToTable("famelog", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>
@@ -1345,6 +1213,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("ItemMeso")
                         .HasColumnType("bigint")
                         .HasColumnName("itemMeso");
+
+                    b.Property<byte[]>("ItemsBlob")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
                     b.Property<int>("Meso")
                         .HasColumnType("int")
@@ -1558,78 +1430,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("hwidbans", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Inventoryitem", b =>
-                {
-                    b.Property<int>("Inventoryitemid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("inventoryitemid");
-
-                    b.Property<int?>("Accountid")
-                        .HasColumnType("int")
-                        .HasColumnName("accountid");
-
-                    b.Property<int?>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<long>("Expiration")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("expiration")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.Property<short>("Flag")
-                        .HasColumnType("int")
-                        .HasColumnName("flag");
-
-                    b.Property<string>("GiftFrom")
-                        .IsRequired()
-                        .HasMaxLength(26)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("giftFrom");
-
-                    b.Property<sbyte>("Inventorytype")
-                        .HasColumnType("int")
-                        .HasColumnName("inventorytype");
-
-                    b.Property<int>("Itemid")
-                        .HasColumnType("int")
-                        .HasColumnName("itemid");
-
-                    b.Property<string>("Owner")
-                        .IsRequired()
-                        .HasColumnType("tinytext")
-                        .HasColumnName("owner");
-
-                    b.Property<short>("Position")
-                        .HasColumnType("int")
-                        .HasColumnName("position");
-
-                    b.Property<string>("Properties")
-                        .HasColumnType("text")
-                        .HasColumnName("Properties");
-
-                    b.Property<short>("Quantity")
-                        .HasColumnType("int")
-                        .HasColumnName("quantity");
-
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("type");
-
-                    b.Property<long>("UniqueId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("UniqueId");
-
-                    b.HasKey("Inventoryitemid")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Characterid" }, "idx_inv_charId");
-
-                    b.ToTable("inventoryitems", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.IpbanEntity", b =>
                 {
                     b.Property<int>("Ipbanid")
@@ -1653,35 +1453,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("ipbans", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.KeyMapEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Action")
-                        .HasColumnType("int")
-                        .HasColumnName("action");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Key")
-                        .HasColumnType("int")
-                        .HasColumnName("key");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int")
-                        .HasColumnName("type");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("keymap", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.MacbanEntity", b =>
@@ -1708,123 +1479,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsUnique();
 
                     b.ToTable("macbans", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.MakerCreatedataEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Itemid")
-                        .HasColumnType("int")
-                        .HasColumnName("itemid");
-
-                    b.Property<int>("Catalyst")
-                        .HasColumnType("int")
-                        .HasColumnName("catalyst");
-
-                    b.Property<short>("Quantity")
-                        .HasColumnType("smallint")
-                        .HasColumnName("quantity");
-
-                    b.Property<int>("ReqEquip")
-                        .HasColumnType("int")
-                        .HasColumnName("req_equip");
-
-                    b.Property<int>("ReqItem")
-                        .HasColumnType("int")
-                        .HasColumnName("req_item");
-
-                    b.Property<short>("ReqLevel")
-                        .HasColumnType("smallint")
-                        .HasColumnName("req_level");
-
-                    b.Property<short>("ReqMakerLevel")
-                        .HasColumnType("smallint")
-                        .HasColumnName("req_maker_level");
-
-                    b.Property<int>("ReqMeso")
-                        .HasColumnType("int")
-                        .HasColumnName("req_meso");
-
-                    b.Property<sbyte>("Tuc")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("tuc");
-
-                    b.HasKey("Id", "Itemid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("makercreatedata", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.MakerReagentdataEntity", b =>
-                {
-                    b.Property<int>("Itemid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("itemid");
-
-                    b.Property<string>("Stat")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("stat");
-
-                    b.Property<short>("Value")
-                        .HasColumnType("smallint")
-                        .HasColumnName("value");
-
-                    b.HasKey("Itemid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("makerreagentdata", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.MakerRecipedataEntity", b =>
-                {
-                    b.Property<int>("Itemid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("itemid");
-
-                    b.Property<int>("ReqItem")
-                        .HasColumnType("int")
-                        .HasColumnName("req_item");
-
-                    b.Property<short>("Count")
-                        .HasColumnType("smallint")
-                        .HasColumnName("count");
-
-                    b.HasKey("Itemid", "ReqItem")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("makerrecipedata", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.MakerRewardDataEntity", b =>
-                {
-                    b.Property<int>("Itemid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("itemid");
-
-                    b.Property<int>("Rewardid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("rewardid");
-
-                    b.Property<sbyte>("Prob")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
-                        .HasColumnName("prob")
-                        .HasDefaultValueSql("'100'");
-
-                    b.Property<short>("Quantity")
-                        .HasColumnType("smallint")
-                        .HasColumnName("quantity");
-
-                    b.HasKey("Itemid", "Rewardid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("makerrewarddata", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.MarriageEntity", b =>
@@ -1866,34 +1520,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("marriages", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Medalmap", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Mapid")
-                        .HasColumnType("int")
-                        .HasColumnName("mapid");
-
-                    b.Property<int>("Queststatusid")
-                        .HasColumnType("int")
-                        .HasColumnName("queststatusid");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Queststatusid" }, "queststatusid");
-
-                    b.ToTable("medalmaps", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Monstercarddatum", b =>
+            modelBuilder.Entity("Application.EF.Entities.MonsterCardDataEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1915,7 +1542,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .IsUnique()
                         .HasDatabaseName("id1");
 
-                    b.ToTable("monstercarddata", (string)null);
+                    b.ToTable("sys_monstercarddata", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.MtsCart", b =>
@@ -2208,75 +1835,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "Characterid" }, "characterid")
-                        .HasDatabaseName("characterid1");
+                    b.HasIndex(new[] { "Characterid" }, "characterid");
 
                     b.ToTable("namechanges", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.PetEntity", b =>
-                {
-                    b.Property<long>("Petid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("petid");
-
-                    b.Property<int>("Closeness")
-                        .HasColumnType("int")
-                        .HasColumnName("closeness");
-
-                    b.Property<int>("Flag")
-                        .HasColumnType("int")
-                        .HasColumnName("flag");
-
-                    b.Property<int>("Fullness")
-                        .HasColumnType("int")
-                        .HasColumnName("fullness");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int")
-                        .HasColumnName("level");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(13)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("name");
-
-                    b.Property<bool>("Summoned")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("summoned");
-
-                    b.HasKey("Petid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("pets", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.PetIgnoreEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int")
-                        .HasColumnName("CharacterId");
-
-                    b.Property<int>("Itemid")
-                        .HasColumnType("int")
-                        .HasColumnName("itemid");
-
-                    b.Property<long>("Petid")
-                        .HasColumnType("bigint")
-                        .HasColumnName("petid");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Petid" }, "fk_petignorepetid");
-
-                    b.ToTable("petignores", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.PlayerNpcEntity", b =>
@@ -2395,41 +1956,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("playernpcs_equip", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Playerdisease", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Charid")
-                        .HasColumnType("int")
-                        .HasColumnName("charid");
-
-                    b.Property<int>("Disease")
-                        .HasColumnType("int")
-                        .HasColumnName("disease");
-
-                    b.Property<int>("Length")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("length")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<int>("Mobskillid")
-                        .HasColumnType("int")
-                        .HasColumnName("mobskillid");
-
-                    b.Property<int>("Mobskilllv")
-                        .HasColumnType("int")
-                        .HasColumnName("mobskilllv");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("playerdiseases", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.PlayernpcsField", b =>
                 {
                     b.Property<int>("Id")
@@ -2536,152 +2062,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("plife", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.QuestStatusEntity", b =>
-                {
-                    b.Property<int>("Queststatusid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("queststatusid");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Completed")
-                        .HasColumnType("int")
-                        .HasColumnName("completed");
-
-                    b.Property<long>("Expires")
-                        .HasColumnType("bigint")
-                        .HasColumnName("expires");
-
-                    b.Property<int>("Forfeited")
-                        .HasColumnType("int")
-                        .HasColumnName("forfeited");
-
-                    b.Property<sbyte>("Info")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("info");
-
-                    b.Property<int>("Quest")
-                        .HasColumnType("int")
-                        .HasColumnName("quest");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasColumnName("status");
-
-                    b.Property<int>("Time")
-                        .HasColumnType("int")
-                        .HasColumnName("time");
-
-                    b.HasKey("Queststatusid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("queststatus", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Questaction", b =>
-                {
-                    b.Property<int>("Questactionid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("questactionid");
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("blob")
-                        .HasColumnName("data");
-
-                    b.Property<int>("Questid")
-                        .HasColumnType("int")
-                        .HasColumnName("questid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasColumnName("status");
-
-                    b.HasKey("Questactionid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("questactions", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Questprogress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<string>("Progress")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(15)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("progress")
-                        .HasDefaultValueSql("''");
-
-                    b.Property<int>("Progressid")
-                        .HasColumnType("int")
-                        .HasColumnName("progressid");
-
-                    b.Property<int>("Queststatusid")
-                        .HasColumnType("int")
-                        .HasColumnName("queststatusid");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("questprogress", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Questrequirement", b =>
-                {
-                    b.Property<int>("Questrequirementid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("questrequirementid");
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("blob")
-                        .HasColumnName("data");
-
-                    b.Property<int>("Questid")
-                        .HasColumnType("int")
-                        .HasColumnName("questid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasColumnName("status");
-
-                    b.HasKey("Questrequirementid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("questrequirements", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Quickslotkeymapped", b =>
-                {
-                    b.Property<int>("Accountid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("accountid");
-
-                    b.Property<long>("Keymap")
-                        .HasColumnType("bigint")
-                        .HasColumnName("keymap");
-
-                    b.HasKey("Accountid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("quickslotkeymapped", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.ReactorDropEntity", b =>
                 {
                     b.Property<int>("Reactordropid")
@@ -2712,7 +2092,7 @@ namespace Application.Core.EF.Sqlite.Migrations
 
                     b.HasIndex(new[] { "Reactorid" }, "reactorid");
 
-                    b.ToTable("reactordrops", (string)null);
+                    b.ToTable("sys_reactordrops", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.Report", b =>
@@ -2756,7 +2136,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("reports", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Ring_Entity", b =>
+            modelBuilder.Entity("Application.EF.Entities.RingEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2789,36 +2169,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("rings", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.SavedLocationEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<string>("Locationtype")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("locationtype");
-
-                    b.Property<int>("Map")
-                        .HasColumnType("int")
-                        .HasColumnName("map");
-
-                    b.Property<int>("Portal")
-                        .HasColumnType("int")
-                        .HasColumnName("portal");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("savedlocations", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.ShopEntity", b =>
                 {
                     b.Property<int>("ShopId")
@@ -2833,7 +2183,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("ShopId")
                         .HasName("PRIMARY");
 
-                    b.ToTable("shops", (string)null);
+                    b.ToTable("sys_shops", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.Shopitem", b =>
@@ -2867,93 +2217,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Shopitemid")
                         .HasName("PRIMARY");
 
-                    b.ToTable("shopitems", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.SkillEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<long>("Expiration")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("expiration")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.Property<int>("Masterlevel")
-                        .HasColumnType("int")
-                        .HasColumnName("masterlevel");
-
-                    b.Property<int>("Skillid")
-                        .HasColumnType("int")
-                        .HasColumnName("skillid");
-
-                    b.Property<int>("Skilllevel")
-                        .HasColumnType("int")
-                        .HasColumnName("skilllevel");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Skillid", "Characterid" }, "skillpair")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "Characterid" }, "skills_chrid_fk");
-
-                    b.ToTable("skills", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.SkillMacroEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(13)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("name");
-
-                    b.Property<sbyte>("Position")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
-                        .HasColumnName("position")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<sbyte>("Shout")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
-                        .HasColumnName("shout")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Skill1")
-                        .HasColumnType("int")
-                        .HasColumnName("skill1");
-
-                    b.Property<int>("Skill2")
-                        .HasColumnType("int")
-                        .HasColumnName("skill2");
-
-                    b.Property<int>("Skill3")
-                        .HasColumnType("int")
-                        .HasColumnName("skill3");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("skillmacros", (string)null);
+                    b.ToTable("sys_shopitems", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.SpecialCashItemEntity", b =>
@@ -2979,214 +2243,7 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.ToTable("specialcashitems", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.StorageEntity", b =>
-                {
-                    b.Property<int>("Storageid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("storageid");
-
-                    b.Property<int>("Meso")
-                        .HasColumnType("int")
-                        .HasColumnName("meso");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("int")
-                        .HasColumnName("OwnerId");
-
-                    b.Property<int>("Slots")
-                        .HasColumnType("int")
-                        .HasColumnName("slots");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int")
-                        .HasColumnName("Type");
-
-                    b.HasKey("Storageid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("storages", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Trocklocation", b =>
-                {
-                    b.Property<int>("Trockid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("trockid");
-
-                    b.Property<int>("Characterid")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.Property<int>("Mapid")
-                        .HasColumnType("int")
-                        .HasColumnName("mapid");
-
-                    b.Property<int>("Vip")
-                        .HasColumnType("int")
-                        .HasColumnName("vip");
-
-                    b.HasKey("Trockid")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("trocklocations", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.WishlistEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("id");
-
-                    b.Property<int>("CharId")
-                        .HasColumnType("int")
-                        .HasColumnName("charid");
-
-                    b.Property<int>("Sn")
-                        .HasColumnType("int")
-                        .HasColumnName("sn");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("wishlists", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Inventoryequipment", b =>
-                {
-                    b.Property<int>("Inventoryequipmentid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("inventoryequipmentid");
-
-                    b.Property<int>("Acc")
-                        .HasColumnType("int")
-                        .HasColumnName("acc");
-
-                    b.Property<int>("Avoid")
-                        .HasColumnType("int")
-                        .HasColumnName("avoid");
-
-                    b.Property<int>("Dex")
-                        .HasColumnType("int")
-                        .HasColumnName("dex");
-
-                    b.Property<int>("Hands")
-                        .HasColumnType("int")
-                        .HasColumnName("hands");
-
-                    b.Property<int>("Hp")
-                        .HasColumnType("int")
-                        .HasColumnName("hp");
-
-                    b.Property<int>("Int")
-                        .HasColumnType("int")
-                        .HasColumnName("int");
-
-                    b.Property<int>("Inventoryitemid")
-                        .HasColumnType("int")
-                        .HasColumnName("inventoryitemid");
-
-                    b.Property<int>("Itemexp")
-                        .HasColumnType("int")
-                        .HasColumnName("itemexp");
-
-                    b.Property<byte>("Itemlevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("itemlevel")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<int>("Jump")
-                        .HasColumnType("int")
-                        .HasColumnName("jump");
-
-                    b.Property<byte>("Level")
-                        .HasColumnType("int")
-                        .HasColumnName("level");
-
-                    b.Property<int>("Locked")
-                        .HasColumnType("int")
-                        .HasColumnName("locked");
-
-                    b.Property<int>("Luk")
-                        .HasColumnType("int")
-                        .HasColumnName("luk");
-
-                    b.Property<int>("Matk")
-                        .HasColumnType("int")
-                        .HasColumnName("matk");
-
-                    b.Property<int>("Mdef")
-                        .HasColumnType("int")
-                        .HasColumnName("mdef");
-
-                    b.Property<int>("Mp")
-                        .HasColumnType("int")
-                        .HasColumnName("mp");
-
-                    b.Property<long>("RingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("ringid")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.Property<int>("Speed")
-                        .HasColumnType("int")
-                        .HasColumnName("speed");
-
-                    b.Property<int>("Str")
-                        .HasColumnType("int")
-                        .HasColumnName("str");
-
-                    b.Property<int>("Upgradeslots")
-                        .HasColumnType("int")
-                        .HasColumnName("upgradeslots");
-
-                    b.Property<int>("Vicious")
-                        .HasColumnType("int")
-                        .HasColumnName("vicious");
-
-                    b.Property<int>("Watk")
-                        .HasColumnType("int")
-                        .HasColumnName("watk");
-
-                    b.Property<int>("Wdef")
-                        .HasColumnType("int")
-                        .HasColumnName("wdef");
-
-                    b.HasKey("Inventoryequipmentid")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Inventoryitemid" }, "INVENTORYITEMID");
-
-                    b.ToTable("inventoryequipment", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.MonsterbookEntity", b =>
-                {
-                    b.Property<int>("Cardid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("cardid");
-
-                    b.Property<int>("Charid")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("charid");
-
-                    b.Property<int>("Level")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("level")
-                        .HasDefaultValueSql("'1'");
-
-                    b.HasKey("Cardid", "Charid");
-
-                    b.ToTable("monsterbook", (string)null);
+                    b.ToTable("sys_specialcashitems", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.NewYearCardEntity", b =>
@@ -3280,18 +2337,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.ToTable("notes", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.FamelogEntity", b =>
-                {
-                    b.HasOne("Application.EF.Entities.CharacterEntity", "Character")
-                        .WithMany("Famelogs")
-                        .HasForeignKey("Characterid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("famelog_ibfk_1");
-
-                    b.Navigation("Character");
-                });
-
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>
                 {
                     b.HasOne("Application.EF.Entities.CharacterEntity", "CidNavigation")
@@ -3304,56 +2349,9 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Navigation("CidNavigation");
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.PetIgnoreEntity", b =>
-                {
-                    b.HasOne("Application.EF.Entities.PetEntity", "Pet")
-                        .WithMany("Petignores")
-                        .HasForeignKey("Petid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_petignorepetid");
-
-                    b.Navigation("Pet");
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.Quickslotkeymapped", b =>
-                {
-                    b.HasOne("Application.EF.Entities.AccountEntity", "Account")
-                        .WithOne("Quickslotkeymapped")
-                        .HasForeignKey("Application.EF.Entities.Quickslotkeymapped", "Accountid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("quickslotkeymapped_accountid_fk");
-
-                    b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.SkillEntity", b =>
-                {
-                    b.HasOne("Application.EF.Entities.CharacterEntity", "Character")
-                        .WithMany()
-                        .HasForeignKey("Characterid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Character");
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.AccountEntity", b =>
-                {
-                    b.Navigation("Quickslotkeymapped");
-                });
-
             modelBuilder.Entity("Application.EF.Entities.CharacterEntity", b =>
                 {
-                    b.Navigation("Famelogs");
-
                     b.Navigation("FamilyCharacter");
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.PetEntity", b =>
-                {
-                    b.Navigation("Petignores");
                 });
 #pragma warning restore 612, 618
         }

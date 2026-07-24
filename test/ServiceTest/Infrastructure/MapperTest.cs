@@ -20,7 +20,7 @@ namespace ServiceTest.Infrastructure
         {
             var services = new ServiceCollection();
 
-            services.AddLoginServerDI("Sqlite", "Data Source=benchmark.db");
+            services.AddLoginServerDI("Sqlite", "Data Source=database.db");
 
             var provider = services.BuildServiceProvider();
 
@@ -55,13 +55,6 @@ namespace ServiceTest.Infrastructure
         }
 
         [Test]
-        public void UseAutoMapper()
-        {
-            var model = new FredrickStoreModel { Meso = 1 };
-            Assert.That(_mapper2.Map<FredstorageEntity>(model).Meso == model.Meso);
-        }
-
-        [Test]
         public void MapsterMapExpressionTest()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
@@ -70,30 +63,6 @@ namespace ServiceTest.Infrastructure
             var dataFromDB = queryable.ToList();
             //可以考虑用Mapster替换AutoMapper
             Assert.Pass();
-        }
-
-        [Test]
-        public void AutoMapperRecordTest()
-        {
-            var model = new Test() { IntA = 1 };
-
-            var config = new AutoMapper.MapperConfiguration(o =>
-            {
-                o.CreateMap<Test, DiffPropNameRecord>()
-                .ForMember(dest => dest.IntB, src => src.MapFrom(x => x.IntA));
-
-                o.CreateMap<Test, SamePropNameRecord>();
-            });
-            var localMapper = config.CreateMapper();
-
-            Assert.Throws<AutoMapper.AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
-            Assert.Throws<ArgumentException>(() => localMapper.Map<DiffPropNameRecord>(model));
-
-            var applyModel = new DiffPropNameRecord(2);
-            Assert.That(localMapper.Map(model, applyModel).IntB, Is.EqualTo(model.IntA));
-
-            Assert.Throws<AutoMapper.AutoMapperConfigurationException>(() => config.AssertConfigurationIsValid());
-            Assert.That(localMapper.Map<SamePropNameRecord>(model).IntA, Is.EqualTo(model.IntA));
         }
 
     }
