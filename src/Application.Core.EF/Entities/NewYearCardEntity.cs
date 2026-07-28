@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF;
 
-public partial class NewYearCardEntity
+public partial class NewYearCardEntity: IKeyedEntity<int>
 {
     public int Id { get; set; }
 

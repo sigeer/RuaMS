@@ -1,6 +1,7 @@
 using Application.EF;
 using Application.Shared.Login;
 using Application.Utility.Configs;
+using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Core.Login.Services
@@ -24,7 +25,6 @@ namespace Application.Core.Login.Services
         /// 角色登录
         /// </summary>
         /// <param name="clientSession"></param>
-        /// <param name="channelId"></param>
         /// <param name="characterId"></param>
         /// <returns></returns>
         public SyncProto.PlayerGetterDto? PlayerLogin(string clientSession, int characterId)
@@ -61,7 +61,7 @@ namespace Application.Core.Login.Services
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
                 .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
-            data.RingSourceList.AddRange(_masterServer.RingManager.Query(x => x.CharacterId1 == data.Character.Id || x.CharacterId2 == data.Character.Id));
+            data.RingSourceList.AddRange(_masterServer.RingManager.LoadCharacterRings(data.Character.Id));
             data.AccountGame = _masterServer.AccountGameManager.GetAccountGameData(data.Character.AccountId);
             data.Account = _mapper.Map<AccountDto.AccountInfoProto>(accountData);
             data.NewYearCards.AddRange(_masterServer.NewYearCardManager.LoadPlayerNewYearCard(data.Character.Id));

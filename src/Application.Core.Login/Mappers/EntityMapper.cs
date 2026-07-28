@@ -27,9 +27,9 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<Dto.CharacterDto, CharacterEntity>()
                 .Map(dest => dest.Blob, src => src.Data.ToByteArray());
 
-            config.NewConfig<AccountEntity, Dto.AccountGameDto>()
-                .Map(dest => dest.Data, src => Dto.AccountGameDataProto.Parser.ParseFrom(src.Blob));
-            config.NewConfig<Dto.AccountGameDto, AccountEntity>()
+            config.NewConfig<AccountEntity, AccountDto.AccountGameDto>()
+                .Map(dest => dest.Data, src => AccountDto.AccountGameDataProto.Parser.ParseFrom(src.Blob));
+            config.NewConfig<AccountDto.AccountGameDto, AccountEntity>()
                 .Map(dest => dest.Blob, src => src.Data.ToByteArray());
 
 
@@ -60,51 +60,88 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.MaxCount, src => src.MaximumQuantity)
                 .Map(dest => dest.Chance, src => src.Chance);
 
-            config.NewConfig<NoteEntity, NoteModel>()
-                .Map(dest => dest.IsDeleted, src => src.Deleted);
-
             config.NewConfig<ShopEntity, Dto.ShopDto>();
             config.NewConfig<Shopitem, Dto.ShopItemDto>();
 
-            config.NewConfig<RingEntity, RingSourceModel>();
+            config.NewConfig<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
 
-            config.NewConfig<GiftEntity, GiftModel>()
+            config.NewConfig<NoteEntity, Dto.NoteDto>();
+            config.NewConfig<Dto.NoteDto, NoteEntity>()
+                .ConstructUsing(x => new NoteEntity(x.Id, x.ToId, x.FromId, x.Message, x.Timestamp));
+
+
+            config.NewConfig<RingEntity, RingSourceModel>();
+            config.NewConfig<RingSourceModel, RingEntity>();
+
+            config.NewConfig<RingSourceModel, ItemProto.RingDto>();
+            config.NewConfig<ItemProto.RingDto, RingSourceModel>();
+
+            #region Gifts
+            config.NewConfig<GiftEntity, GiftModel>();
+            config.NewConfig<GiftModel, GiftEntity>()
+                .ConstructUsing(x => new GiftEntity(x.Id, x.ToId, x.FromId, x.Message, x.Sn, x.RingSourceId));
+
+            config.NewConfig<GiftModel, ItemProto.GiftDto>()
                 .Map(dest => dest.To, src => src.ToId)
                 .Map(dest => dest.From, src => src.FromId);
-
-            config.NewConfig<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
+            config.NewConfig<ItemProto.GiftDto, GiftModel>()
+                .Map(dest => dest.ToId, src => src.To)
+                .Map(dest => dest.FromId, src => src.From);
+            #endregion
 
             config.NewConfig<GuildEntity, GuildModel>();
             config.NewConfig<AllianceEntity, AllianceModel>();
 
-            config.NewConfig<PlifeEntity, PLifeModel>();
-            config.NewConfig<PLifeModel, PlifeEntity>();
+
 
             config.NewConfig<FredstorageEntity, FredrickStoreModel>()
                 .Map(dest => dest.StoreTime, src => src.Timestamp.ToUnixTimeMilliseconds())
                 .Map(dest => dest.Items, src => ItemProto.PlayerShopStoreItems.Parser.ParseFrom(src.ItemsBlob));
             config.NewConfig<FredrickStoreModel, FredstorageEntity>()
+                .ConstructUsing(x => new FredstorageEntity(x.Id, x.Cid, x.Daynotes, x.Meso, DateTimeOffset.FromUnixTimeMilliseconds(x.StoreTime)))
                 .Map(dest => dest.Timestamp, src => DateTimeOffset.FromUnixTimeMilliseconds(src.StoreTime))
                 .Map(dest => dest.ItemsBlob, src => src.Items.ToByteArray());
 
             config.NewConfig<AccountBindingsEntity, AccountHistoryModel>();
+            config.NewConfig<AccountHistoryModel, AccountBindingsEntity>()
+                .ConstructUsing(x => new AccountBindingsEntity(x.Id, x.AccountId, x.IP, x.MAC, x.HWID, x.LastActiveTime));
+
             config.NewConfig<AccountBanEntity, AccountBanModel>()
                 .Map(dest => dest.BanLevel, src => (BanLevel)src.BanLevel);
+            config.NewConfig<AccountBanModel, AccountBanEntity>()
+                .ConstructUsing(x => new AccountBanEntity(x.Id, x.AccountId, x.StartTime, x.EndTime, (int)x.BanLevel, x.Reason, x.ReasonDescription));
 
-            config.NewConfig<GachaponPoolEntity, GachaponPoolModel>();
-            config.NewConfig<GachaponPoolLevelChanceEntity, GachaponPoolLevelChanceModel>();
-            config.NewConfig<GachaponPoolItemEntity, GachaponPoolItemModel>();
+
+            config.NewConfig<GachaponPoolEntity, ItemProto.GachaponPoolDto>();
+            config.NewConfig<GachaponPoolLevelChanceEntity, ItemProto.GachaponPoolChanceDto>();
+            config.NewConfig<GachaponPoolItemEntity, ItemProto.GachaponPoolItemDto>();
 
             config.NewConfig<CdkCodeEntity, CdkCodeModel>();
             config.NewConfig<CdkItemEntity, CdkItemModel>();
+
             config.NewConfig<CdkRecordEntity, CdkRecordModel>();
+            config.NewConfig<CdkRecordModel, CdkRecordEntity>()
+                .ConstructUsing(x => new CdkRecordEntity(x.Id, x.CodeId, x.RecipientId, x.RecipientTime));
 
             config.NewConfig<DueyPackageEntity, DueyDto.DueyPackageDto>()
+                .Map(dest => dest.PackageId, src => src.Id)
                 .Map(dest => dest.Item, src => src.ItemBlob == null ? null : Dto.ItemDto.Parser.ParseFrom(src.ItemBlob))
                 .Map(dest => dest.Notified, src => src.HasNotified);
             config.NewConfig<DueyDto.DueyPackageDto, DueyPackageEntity>()
+                .Map(dest => dest.Id, src => src.PackageId)
                 .Map(dest => dest.ItemBlob, src => src.Item == null ? null : src.Item.ToByteArray())
                 .Map(dest => dest.HasNotified, src => src.Notified);
+
+            config.NewConfig<Dto.NewYearCardDto, NewYearCardEntity>();
+            config.NewConfig<NewYearCardEntity, Dto.NewYearCardDto>();
+
+            config.NewConfig<PlifeEntity, LifeProto.PLifeDto>()
+                .Map(dest => dest.MapId, src => src.Map)
+                .Map(dest => dest.LifeId, src => src.Life);
+            config.NewConfig<LifeProto.PLifeDto, PlifeEntity>()
+                .ConstructUsing(x => new PlifeEntity(x.Id, x.MapId, x.LifeId, x.Mobtime, x.X, x.Y, x.Fh, x.Type))
+                .Map(dest => dest.Map, src => src.MapId)
+                .Map(dest => dest.Life, src => src.LifeId);
         }
     }
 }

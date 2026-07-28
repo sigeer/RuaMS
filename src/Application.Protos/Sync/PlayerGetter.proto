@@ -3,6 +3,7 @@ syntax = "proto3";
 
 import "Dto/Character.proto";
 import "Account/AccountInfo.proto";
+import "Account/AccountGame.proto";
 import "Dto/Item.proto";
 import "Dto/Monsterbook.proto";
 import "Dto/PetIgnore.proto";
@@ -16,7 +17,6 @@ import "Dto/CoolDown.proto";
 import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
 import "Buddy/Buddy.proto";
-import "Dto/AccountGame.proto";
 import "Dto/NewYearCard.proto";
 import "Dto/ServerCrossCallback.proto";
 import "Dto/Fame.proto";
@@ -38,7 +38,7 @@ message CharacterLinkDto {
 message PlayerGetterDto {
   AccountDto.AccountInfoProto account = 1;
   Dto.CharacterDto character = 2; // CHECK TYPE
-  Dto.AccountGameDto accountGame = 3; // 账号共享数据
+  AccountDto.AccountGameDto accountGame = 3; // 账号共享数据
   repeated ItemProto.RingDto ringSourceList = 4;
   repeated Dto.NewYearCardDto newYearCards = 5;	// 新年贺卡
   LoginInfo loginInfo = 17;

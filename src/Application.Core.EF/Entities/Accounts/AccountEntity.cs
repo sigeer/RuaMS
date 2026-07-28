@@ -1,12 +1,13 @@
+using Application.Core.EF;
 using Google.Protobuf;
 
 namespace Application.EF.Entities;
 
-public partial class AccountEntity
+public partial class AccountEntity: IKeyedEntity<int>
 {
     public AccountEntity() 
     {
-        Blob = (new Dto.AccountGameDataProto
+        Blob = (new AccountDto.AccountGameDataProto
         {
             Storage = new Dto.StorageDto { Slots = 4 }
         }).ToByteArray();

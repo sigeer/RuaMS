@@ -5,8 +5,8 @@ namespace Application.Core.Login.Mappers
     [Mapper]
     public interface IAccountMapper
     {
-        Dto.AccountGameDto MapToDto(AccountEntity entity);
-        AccountEntity MapToExisting(Dto.AccountGameDto dto, AccountEntity entity);
+        AccountDto.AccountGameDto MapToDto(AccountEntity entity);
+        AccountEntity MapToExisting(AccountDto.AccountGameDto dto, AccountEntity entity);
 
     }
 }

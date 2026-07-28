@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "Dto/Item.proto";
+import "Dto/QuickSlot.proto";
+import "Dto/Storage.proto";
+
+package AccountDto;
+
+message AccountGameDto {
+  int32 id = 1;
+
+  int32 nxCredit = 2;
+  int32 maplePoint = 3;
+  int32 nxPrepaid = 4;
+
+  AccountGameDataProto data = 6;
+}
+
+message AccountGameDataProto {
+  repeated Dto.ItemDto cashExplorerItems = 6;
+  repeated Dto.ItemDto cashCygnusItems = 7;
+  repeated Dto.ItemDto cashAranItems = 8;
+  repeated Dto.ItemDto cashOverallItems = 9;
+
+  Dto.StorageDto storage = 11;
+
+  Dto.QuickSlotDto quickSlot = 12;
+}

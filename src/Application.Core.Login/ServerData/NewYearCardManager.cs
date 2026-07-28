@@ -1,69 +1,44 @@
-using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
-using Application.Shared.Constants;
 using Application.Shared.Message;
 using Application.Shared.NewYear;
 using Application.Utility;
 using Dto;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class NewYearCardManager : StorageBase<int, Dto.NewYearCardDto>
+    public class NewYearCardManager : DataStorageBase<int, Dto.NewYearCardDto, NewYearCardEntity>
     {
         readonly MasterServer _server;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
-        int currentId = 1;
-
-        public NewYearCardManager(MasterServer server, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
+        public NewYearCardManager(MasterServer server, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, ILogger<NewYearCardManager> logger)
+            : base(StorageCategory.NewYearCard, dbContextFactory, mapper, logger)
         {
             _server = server;
-            _dbContextFactory = dbContextFactory;
         }
 
-        public override async Task InitializeAsync(DBContext dbContext)
-        {
-            currentId = await dbContext.Newyears.MaxAsync(x => (int?)x.Id) ?? 0;
-        }
+        protected override int GetKey(NewYearCardDto model) => model.Id;
 
-        public override List<Dto.NewYearCardDto> Query(Expression<Func<Dto.NewYearCardDto, bool>> expression)
+        protected override NewYearCardDto MapModel(NewYearCardEntity entities)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dataFromDB = (from a in dbContext.Newyears.AsNoTracking().ProjectToType<Dto.NewYearCardDto>().Where(expression)
-                              join b in dbContext.Characters on a.SenderId equals b.Id into bss
-                              from bs in bss.DefaultIfEmpty()
-                              join c in dbContext.Characters on a.ReceiverId equals c.Id into css
-                              from cs in css
-                              select new Dto.NewYearCardDto
-                              {
-                                  Id = a.Id,
-                                  SenderId = a.SenderId,
-                                  ReceiverId = a.ReceiverId,
-                                  SenderName = bs == null ? StringConstants.CharacterUnknown : bs.Name,
-                                  ReceiverName = cs == null ? StringConstants.CharacterUnknown : cs.Name,
-                                  SenderDiscard = a.SenderDiscard,
-                                  Message = a.Message,
-                                  Received = a.Received,
-                                  ReceiverDiscard = a.ReceiverDiscard,
-                                  TimeReceived = a.TimeReceived,
-                                  TimeSent = a.TimeSent
-                              }).ToList();
-
-            return QueryWithDirty(dataFromDB, expression.Compile());
+            var item = base.MapModel(entities);
+            item.SenderName = _server.CharacterManager.GetPlayerName(item.SenderId);
+            item.ReceiverName = _server.CharacterManager.GetPlayerName(item.ReceiverId);
+            return item;
         }
 
         public Dto.NewYearCardDto? GetDataById(int id)
         {
-            return Query(x => x.Id == id).FirstOrDefault();
+            return Find(id);
         }
 
 
         public List<Dto.NewYearCardDto> LoadPlayerNewYearCard(int chrId)
         {
-            return Query(x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard);
+            return Query(x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard,
+                x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard);
         }
 
 
@@ -86,7 +61,7 @@ namespace Application.Core.Login.ServerData
 
             var newCard = new Dto.NewYearCardDto()
             {
-                Id = Interlocked.Increment(ref currentId),
+                Id = Interlocked.Increment(ref _localId),
                 Message = request.Message,
                 SenderId = request.FromId,
                 SenderName = fromPlayer.Character.Name,
@@ -143,11 +118,12 @@ namespace Application.Core.Login.ServerData
         internal async Task NotifyNewYearCard()
         {
             var allData = Query(
+                x => !x.Received && !x.SenderDiscard && !x.ReceiverDiscard,
                 x => !x.Received && !x.SenderDiscard && !x.ReceiverDiscard);
 
             var allUnReceivedCards = allData
                 .GroupBy(x => x.ReceiverId)
-                .ToDictionary(x => x.Key, x => x.ToArray());
+                .ToDictionary(x => x.Key, x => x.ToList());
             var response = new Dto.NewYearCardNotifyDto();
             foreach (var data in allUnReceivedCards)
             {
@@ -187,40 +163,12 @@ namespace Application.Core.Login.ServerData
             {
                 foreach (var item in toRemove)
                 {
-                    SetRemoved(item.Id);
+                    SetDirty(item);
                 }
                 response.UpdateList.AddRange(toRemove);
                 await _server.Transport.SendNewYearCardDiscard(response);
             }
 
-        }
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<Dto.NewYearCardDto>> updateData)
-        {
-            await dbContext.Newyears.Where(x => updateData.Keys.Contains(x.Id)).ExecuteDeleteAsync();
-            foreach (var kv in updateData)
-            {
-                var item = kv.Value.Data;
-                if (kv.Value.Flag == StoreFlag.AddOrUpdate && item != null)
-                {
-                    var dbModel = new NewYearCardEntity() { Id = item.Id };
-                    dbModel.SenderId = item.SenderId;
-                    dbModel.ReceiverId = item.ReceiverId;
-                    dbModel.TimeReceived = item.TimeReceived;
-                    dbModel.TimeSent = item.TimeSent;
-                    dbModel.ReceiverDiscard = item.ReceiverDiscard;
-                    dbModel.SenderDiscard = item.SenderDiscard;
-                    dbModel.Received = item.Received;
-                    dbModel.Message = item.Message;
-                    dbContext.Newyears.Add(dbModel);
-                }
-
-                if (kv.Value.Flag == StoreFlag.Remove)
-                {
-                    _localData.TryRemove(kv.Key, out _);
-                }
-            }
-            await dbContext.SaveChangesAsync();
         }
     }
 }

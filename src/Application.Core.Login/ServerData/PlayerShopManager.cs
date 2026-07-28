@@ -7,17 +7,16 @@ using Application.Utility;
 using Application.Utility.Configs;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using ZLinq;
 
 namespace Application.Core.Login.ServerData
 {
-    public class PlayerShopManager : StorageBase<int, FredrickStoreModel>
+    public class PlayerShopManager : DataStorageBase<int, FredrickStoreModel, FredstorageEntity>
     {
-        readonly IMapper _mapper;
         readonly MasterServer _server;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
         /// <summary>
         /// 正在营业的个人商店
@@ -30,32 +29,30 @@ namespace Application.Core.Login.ServerData
         ConcurrentDictionary<int, ItemProto.SyncPlayerShopRequest> _hiredMerchantData = new();
 
 
-        int _localId = 0;
-        public PlayerShopManager(IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
+        public PlayerShopManager(IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory, ILogger<PlayerShopManager> logger) 
+            : base(StorageCategory.PlayerShop, dbContextFactory, mapper, logger)
         {
-            _mapper = mapper;
             _server = server;
-            _dbContextFactory = dbContextFactory;
         }
 
-        public override async Task InitializeAsync(DBContext dbContext)
+        protected override int GetKey(FredrickStoreModel model) => model.Id;
+
+
+        FredrickStoreModel? GetStoreByCharacterId(int id)
         {
-            _localId = (await dbContext.Fredstorages.Select(x => x.Id).DefaultIfEmpty().MaxAsync());
+            return Find(x => x.Cid == id, x => x.Cid == id);
         }
 
-        public override List<FredrickStoreModel> Query(Expression<Func<FredrickStoreModel, bool>> expression)
+        List<FredrickStoreModel> QueryActive()
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var dataFromDB = dbContext.Fredstorages.ProjectToType<FredrickStoreModel>().Where(expression).ToList();
-
-            return QueryWithDirty(dataFromDB, expression.Compile());
+            var dayBefore100 = _server.GetCurrentTimeDateTimeOffset().AddDays(-100);
+            var dayBefore100_l = dayBefore100.ToUnixTimeMilliseconds();
+            return Query(x => x.Timestamp >= dayBefore100, x => x.StoreTime >= dayBefore100_l);
         }
-
 
         private void Store(ItemProto.SyncPlayerShopRequest hm)
         {
-            var item = Query(x => x.Cid == hm.OwnerId).FirstOrDefault();
+            var item = GetStoreByCharacterId(hm.OwnerId);
             if (item == null)
             {
                 item = new FredrickStoreModel
@@ -127,7 +124,7 @@ namespace Application.Core.Login.ServerData
             }
             else
             {
-                var store = Query(x => x.Cid == request.MasterId).FirstOrDefault();
+                var store = GetStoreByCharacterId(request.MasterId);
                 if (store != null)
                 {
                     res.Meso = store.Meso;
@@ -143,48 +140,21 @@ namespace Application.Core.Login.ServerData
 
         public CommitRetrievedResponse CommitRetrieve(ItemProto.CommitRetrievedRequest request)
         {
-            var obj = Query(x => x.Cid == request.OwnerId).FirstOrDefault();
-            return new CommitRetrievedResponse() { IsSuccess = obj == null ? false : SetRemoved(obj.Id) };
-        }
-
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<FredrickStoreModel>> updateData)
-        {
-            var updatePackages = updateData.Keys.ToArray();
-
-            var allDbList = await dbContext.Fredstorages.Where(x => updatePackages.Contains(x.Id)).ToListAsync();
-            foreach (var item in updateData)
+            var obj = GetStoreByCharacterId(request.OwnerId);
+            bool isSuccess = false;
+            if (obj != null)
             {
-                var dbModel = allDbList.FirstOrDefault(x => x.Id == item.Key);
-                if (item.Value.Flag == StoreFlag.Remove)
-                {
-                    if (dbModel != null)
-                    {
-                        dbContext.Fredstorages.Remove(dbModel);
-                    }
-                    continue;
-                }
-
-                if (item.Value.Data is null)
-                    continue;
-
-                if (dbModel == null)
-                {
-                    dbModel = _mapper.Map<FredstorageEntity>(item.Value.Data);
-                    dbContext.Fredstorages.Add(dbModel);
-                }
-                else
-                {
-                    _mapper.Map(item.Value.Data, dbModel);
-                }
+                SetRemoved(obj);
+                isSuccess = true;
             }
-            await dbContext.SaveChangesAsync();
+            return new CommitRetrievedResponse() { IsSuccess = isSuccess };
         }
+
 
         private static int[] dailyReminders = new int[] { 2, 5, 10, 15, 30, 60, 90, int.MaxValue };
         public void RunFredrickSchedule()
         {
-            var allData = Query(x => true);
+            var allData = QueryActive();
             List<int> expiredCids = [];
             allData.ForEach(async x =>
             {
@@ -193,7 +163,7 @@ namespace Application.Core.Login.ServerData
                 int elapsedDays = TimeUtils.DayDiff(x.StoreTime, _server.getCurrentTime());
                 if (elapsedDays > 100)
                 {
-                    SetRemoved(x.Id);
+                    SetRemoved(x);
 
                     expiredCids.Add(x.Id);
                 }

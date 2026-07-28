@@ -1,3 +1,5 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
 public class MarriageEntity

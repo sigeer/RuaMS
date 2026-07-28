@@ -15,16 +15,16 @@ import "Dto/KeyMap.proto";
 import "Dto/SavedLocation.proto";
 import "Dto/QuickSlot.proto";
 import "Dto/Storage.proto";
-import "Dto/AccountGame.proto";
 import "Dto/Fame.proto";
 import "Sync/PlayerTimerQuest.proto";
+import "Account/AccountGame.proto";
 
 package SyncProto;
 
 message PlayerSaveDto {
   int32 channel = 1;
   Dto.CharacterDto character = 2; // CHECK TYPE
-  Dto.AccountGameDto accountGame = 3; // 账号共享数据
+  AccountDto.AccountGameDto accountGame = 3; // 账号共享数据
 }
 
 message SyncPlayerRequest {

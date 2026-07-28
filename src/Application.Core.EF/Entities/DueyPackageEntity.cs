@@ -1,8 +1,10 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
-public partial class DueyPackageEntity
+public partial class DueyPackageEntity: IKeyedEntity<int>
 {
-    public int PackageId { get; set; }
+    public int Id { get; set; }
 
     public int ReceiverId { get; set; }
     public int SenderId { get; set; }
@@ -25,7 +27,7 @@ public partial class DueyPackageEntity
 
     public DueyPackageEntity(int id, int receiverId, int senderId, int mesos, string? message, bool @checked, bool type, DateTimeOffset createTime) : this()
     {
-        PackageId = id;
+        Id = id;
         ReceiverId = receiverId;
         SenderId = senderId;
         Mesos = mesos;

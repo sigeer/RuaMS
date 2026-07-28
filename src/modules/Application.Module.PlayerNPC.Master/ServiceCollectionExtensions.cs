@@ -11,7 +11,7 @@ namespace Application.Module.PlayerNPC.Master
         {
             services.AddSingleton<PlayerNPCManager>();
             services.AddSingleton<IPlayerNPCManager, PlayerNPCManager>(sp => sp.GetRequiredService<PlayerNPCManager>());
-            services.AddSingleton<IStorage, PlayerNPCManager>(sp => sp.GetRequiredService<PlayerNPCManager>());
+            services.AddSingleton<IDataStorage, PlayerNPCManager>(sp => sp.GetRequiredService<PlayerNPCManager>());
 
             services.AddSingleton<MasterTransport>();
             services.AddSingleton<AbstractMasterModule, PlayerNPCMasterModule>();

@@ -384,13 +384,13 @@ namespace Application.Core.Channel.Services
                     kw.Value.Add(_itemMapper.MapToDto(invItem));
                 }
             }
-            saveDto.AccountGame = new Dto.AccountGameDto()
+            saveDto.AccountGame = new AccountDto.AccountGameDto()
             {
                 NxCredit = player.CashShopModel.NxCredit,
                 NxPrepaid = player.CashShopModel.NxPrepaid,
                 MaplePoint = player.CashShopModel.MaplePoint,
                 Id = playerDto.AccountId,
-                Data = new Dto.AccountGameDataProto()
+                Data = new AccountDto.AccountGameDataProto()
                 {
                     Storage = new Dto.StorageDto
                     {

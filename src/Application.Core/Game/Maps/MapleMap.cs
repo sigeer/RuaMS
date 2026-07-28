@@ -599,18 +599,16 @@ public class MapleMap : IMap, INamedInstance
 
     public async Task killFriendlies(Monster mob)
     {
-        await this.RemoveMob(mob, getAllPlayers().ElementAtOrDefault(0), false);
+        await this.RemoveMob(mob, null, false);
     }
 
     public async Task killMonster(int mobId, bool withDrops = false)
     {
-        Player? chr = getAllPlayers().ElementAtOrDefault(0);
-
         await ProcessMonster(async mob =>
         {
             if (mob.getId() == mobId)
             {
-                await this.RemoveMob(mob, chr, withDrops);
+                await this.RemoveMob(mob, null, withDrops);
             }
         });
     }

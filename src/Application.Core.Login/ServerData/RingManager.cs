@@ -1,40 +1,26 @@
+using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData
 {
-    public class RingManager : StorageBase<int, ItemProto.RingDto>
+    public class RingManager : DataStorageBase<int, RingSourceModel, RingEntity>
     {
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly ILogger<RingManager> _logger;
-        readonly IMapper _mapper;
         readonly MasterServer _server;
-
-
-        int _localId = 0;
-
         public RingManager(IDbContextFactory<DBContext> dbContextFactory, ILogger<RingManager> logger, IMapper mapper, MasterServer server)
-            : base(x => x.Id)
+            : base(StorageCategory.Ring, dbContextFactory, mapper, logger)
         {
-            _dbContextFactory = dbContextFactory;
-            _logger = logger;
-            _mapper = mapper;
             _server = server;
         }
+        protected override int GetKey(RingSourceModel model) => model.Id;
 
-        public override async Task InitializeAsync(DBContext dbContext)
-        {
-            _localId = await dbContext.Rings.MaxAsync(x => (int?)x.Id) ?? 0;
-        }
 
-        public ItemProto.RingDto CreateRing(int itemId, int chr1, int chr2)
+        public RingSourceModel CreateRing(int itemId, int chr1, int chr2)
         {
-            var model = new ItemProto.RingDto()
+            var model = new RingSourceModel()
             {
                 Id = Interlocked.Increment(ref _localId),
                 CharacterId1 = chr1,
@@ -42,53 +28,27 @@ namespace Application.Core.Login.ServerData
                 ItemId = itemId,
                 RingId1 = Yitter.IdGenerator.YitIdHelper.NextId(),
                 RingId2 = Yitter.IdGenerator.YitIdHelper.NextId(),
-                CharacterName1 = _server.CharacterManager.GetPlayerName(chr1),
-                CharacterName2 = _server.CharacterManager.GetPlayerName(chr2)
             };
-
+            SetDirty(model);
             return model;
         }
 
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<ItemProto.RingDto>> updateData)
+        public ItemProto.RingDto? MapDto(RingSourceModel? model)
         {
-            var updateItems = updateData.Keys.ToArray();
-
-            var allDbList = await dbContext.Rings.Where(x => updateItems.Contains(x.Id)).ToListAsync();
-            foreach (var item in updateData)
+            if (model == null)
             {
-                var dbModel = allDbList.FirstOrDefault(x => x.Id == item.Key);
-                if (item.Value.Flag == StoreFlag.Remove)
-                {
-                    if (dbModel != null)
-                    {
-                        dbContext.Rings.Remove(dbModel);
-                    }
-                    continue;
-                }
-
-                if (item.Value.Data is null)
-                    continue;
-
-                if (dbModel == null)
-                {
-                    dbModel = _mapper.Map<RingEntity>(item.Value.Data);
-                    dbContext.Rings.Add(dbModel);
-                }
-                else
-                {
-                    _mapper.Map(item.Value.Data, dbModel);
-                }
+                return null;
             }
-            await dbContext.SaveChangesAsync();
+            var item = _mapper.Map<ItemProto.RingDto>(model);
+            item.CharacterName1 = _server.CharacterManager.GetPlayerName(item.CharacterId1);
+            item.CharacterName2 = _server.CharacterManager.GetPlayerName(item.CharacterId2);
+            return item;
         }
 
-        public override List<ItemProto.RingDto> Query(Expression<Func<ItemProto.RingDto, bool>> expression)
+        public List<ItemProto.RingDto> LoadCharacterRings(int chrId)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var dataFromDB = dbContext.Rings.AsNoTracking().ProjectToType<ItemProto.RingDto>().Where(expression).ToList();
-            return QueryWithDirty(dataFromDB, expression.Compile());
+            var items = Query(x => x.CharacterId1 == chrId || x.CharacterId2 == chrId, x => x.CharacterId1 == chrId || x.CharacterId2 == chrId);
+            return items.Select(x => MapDto(x)).OfType<ItemProto.RingDto>().ToList();
         }
     }
 }

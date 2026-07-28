@@ -14,28 +14,29 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using YamlDotNet.Core;
+using Serilog.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Marriage.Master
 {
-    public class MarriageManager : StorageBase<int, MarriageModel>
+    public class MarriageManager : DataStorageBase<int, MarriageModel, MarriageEntity>
     {
         readonly MasterServer _server;
         readonly MasterTransport _transport;
-        readonly IMapper _mapper;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
         int _localMarriageId = 0;
 
-        public MarriageManager(MasterServer server, MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
+        public MarriageManager(MasterServer server, MasterTransport transport, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, ILogger<MarriageManager> logger) 
+            : base(StorageCategory.Marriage, dbContextFactory, mapper, logger)
         {
             _server = server;
             _transport = transport;
-            _mapper = mapper;
-            _dbContextFactory = dbContextFactory;
         }
 
         public override async Task InitializeAsync(DBContext dbContext)
         {
+            await base.InitializeAsync(dbContext);
+
             _localMarriageId = await dbContext.Marriages.MaxAsync(x => (int?)x.Marriageid) ?? 0;
         }
 
@@ -135,17 +136,11 @@ namespace Application.Module.Marriage.Master
             await dbContext.SaveChangesAsync();
         }
 
-        public override List<MarriageModel> Query(Expression<Func<MarriageModel, bool>> expression)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var dbList = dbContext.Marriages.AsNoTracking().ProjectToType<MarriageModel>().Where(expression).ToList();
-            return QueryWithDirty(dbList, expression.Compile());
-        }
 
         public MarriageModel? GetEffectMarriageModel(int chrId)
         {
-            return Query(x => (x.Husbandid == chrId || x.Wifeid == chrId) && x.Status != (int)MarriageStatusEnum.Divorced).FirstOrDefault();
+            return Find(x => (x.Husbandid == chrId || x.Wifeid == chrId) && x.Status != (int)MarriageStatusEnum.Divorced,
+                x => (x.Husbandid == chrId || x.Wifeid == chrId) && x.Status != (int)MarriageStatusEnum.Divorced);
         }
 
         public MarriageProto.LoadMarriageInfoResponse GetEffectMarriageModelRemote(MarriageProto.LoadMarriageInfoRequest request)

@@ -11,7 +11,6 @@ namespace Application.Module.ExpeditionBossLog.Master
     {
         readonly ExpeditionBossLogManager _manager;
 
-        ScheduledFuture? _task;
         public ExpeditionLogModule(MasterServer server, ILogger<MasterModule> logger, ExpeditionBossLogManager manager) : base(server, logger)
         {
             _manager = manager;
@@ -20,23 +19,9 @@ namespace Application.Module.ExpeditionBossLog.Master
         public override async Task InitializeAsync()
         {
             await base.InitializeAsync();
-            _manager.ResetBossLogTable();
 
         }
 
-        public override async Task RegisterTask(ITimerManager timerManager)
-        {
-            var timeLeft = TimeUtils.GetTimeLeftForNextDay();
-            _task =  await timerManager.register(new BossLogTask(_manager), TimeSpan.FromDays(1), timeLeft);
-        }
-
-        public override async Task UninstallAsync()
-        {
-            await base.UninstallAsync();
-
-            if (_task != null)
-                await _task.CancelAsync(false);
-        }
 
         public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request)
         {

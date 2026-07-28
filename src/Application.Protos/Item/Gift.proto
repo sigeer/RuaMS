@@ -13,6 +13,7 @@ message GiftDto {
   string message = 6;
   int32 sn = 7;
   ItemProto.RingDto ring = 8;
+  int32 ringSourceId = 9;
 }
 
 message GetMyGiftsRequest {

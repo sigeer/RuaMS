@@ -12,51 +12,41 @@ using System.Collections.Concurrent;
 
 namespace Application.Core.Login.ServerData
 {
-    public class DueyManager : LocalStorageBase<int, DueyDto.DueyPackageDto>
+    public class DueyManager : DataStorageBase<int, DueyDto.DueyPackageDto, DueyPackageEntity>
     {
-        readonly ILogger<DueyManager> _logger;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly IMapper _mapper;
         readonly MasterServer _server;
 
         HashSet<int> _lockDic = new();
-        public DueyManager(ILogger<DueyManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maper, MasterServer server)
-            : base(x => x.PackageId)
+        public DueyManager(ILogger<DueyManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
+            : base(StorageCategory.Duey, dbContextFactory, mapper, logger)
         {
-            _logger = logger;
-            _dbContextFactory = dbContextFactory;
-            _mapper = maper;
-
             _server = server;
         }
 
-        protected override Task<int> SetLocalId(DBContext dbContext)
-        {
-            return dbContext.Dueypackages.Select(x => x.PackageId).DefaultIfEmpty().MaxAsync();
-        }
+        protected override int GetKey(DueyPackageDto model) => model.PackageId;
 
-        protected override async Task<ConcurrentDictionary<int, StoreUnit<DueyPackageDto>>> SetLocalData(DBContext dbContext)
+        DueyDto.DueyPackageDto? FindById(int id)
         {
             var dayBefore30 = _server.GetCurrentTimeDateTimeOffset().AddDays(-30);
-            return new System.Collections.Concurrent.ConcurrentDictionary<int, StoreUnit<DueyPackageDto>>(
-                await dbContext.Dueypackages.Where(x => x.ClaimTime == null && x.CreateTime > dayBefore30)
-                    .ProjectToType<DueyDto.DueyPackageDto>().ToDictionaryAsync(x => x.PackageId, x => new StoreUnit<DueyDto.DueyPackageDto>(StoreFlag.Cached, x)));
+            var dayBefore30_l = dayBefore30.ToTimestamp();
+
+            return Find(x => x.CreateTime > dayBefore30 && x.ClaimTime == null && x.Id == id,
+                x => x.CreateTime > dayBefore30_l && x.ClaimTime == null && x.PackageId == id);
         }
 
-        public override List<DueyDto.DueyPackageDto> Query(Func<DueyDto.DueyPackageDto, bool> expression)
+        List<DueyDto.DueyPackageDto> QueryByReceiver(int receiverId)
         {
-            var dayBefore30 = _server.GetCurrentTimeDateTimeOffset().AddDays(-30).ToTimestamp();
+            var dayBefore30 = _server.GetCurrentTimeDateTimeOffset().AddDays(-30);
+            var dayBefore30_l = dayBefore30.ToTimestamp();
 
-            return _localData.Values.Where(x => x.Flag != StoreFlag.Remove)
-                .Select(x => x.Data!)
-                .Where(x => x.CreateTime > dayBefore30 && x.ClaimTime == null)
-                .Where(expression).ToList();
+            return Query(x => x.CreateTime > dayBefore30 && x.ClaimTime == null && x.ReceiverId == receiverId,
+                x => x.CreateTime > dayBefore30_l && x.ClaimTime == null && x.ReceiverId == receiverId);
         }
 
         public async Task TakeDueyPackage(DueyDto.TakeDueyPackageRequest request)
         {
             var res = new DueyDto.TakeDueyPackageResponse { Request = request };
-            var package = Query(x => x.PackageId == request.PackageId).FirstOrDefault();
+            var package = FindById(request.PackageId);
             if (package == null)
             {
                 res.Code = 1;
@@ -102,7 +92,7 @@ namespace Application.Core.Login.ServerData
 
         public void PackageUnfreeze(int chrId)
         {
-            var packages = Query(x => x.ReceiverId == chrId).Where(x => _lockDic.Contains(x.PackageId));
+            var packages = QueryByReceiver(chrId).Where(x => _lockDic.Contains(x.PackageId));
             foreach (var package in packages)
             {
                 _lockDic.Remove(package.PackageId);
@@ -118,7 +108,7 @@ namespace Application.Core.Login.ServerData
             }
             else
             {
-                var package = Query(x => x.PackageId == request.PackageId).FirstOrDefault();
+                var package = FindById(request.PackageId);
                 if (package != null)
                 {
                     // 领取失败、解冻
@@ -175,7 +165,7 @@ namespace Application.Core.Login.ServerData
         public async Task RemovePackage(DueyDto.RemovePackageRequest request)
         {
             var res = new DueyDto.RemovePackageResponse { Code = 0, Request = request };
-            var package = Query(x => x.PackageId == request.PackageId).FirstOrDefault();
+            var package = FindById(request.PackageId);
             if (package == null || package.ReceiverId != request.MasterId)
             {
                 res.Code = 1;
@@ -183,7 +173,7 @@ namespace Application.Core.Login.ServerData
             }
 
             package.ClaimTime = _server.GetCurrentTimeDateTimeOffset().ToTimestamp();
-            SetDirty(package.PackageId);
+            SetDirty(package);
 
             await _server.Transport.SendMessageN(ChannelRecvCode.DeleteDueyPackage, res, [request.MasterId]);
         }
@@ -191,7 +181,7 @@ namespace Application.Core.Login.ServerData
         public async Task GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
         {
             var res = new GetPlayerDueyPackageResponse();
-            res.List.AddRange(Query(x => x.ReceiverId == request.ReceiverId));
+            res.List.AddRange(QueryByReceiver(request.ReceiverId));
             res.ReceiverId = request.ReceiverId;
 
             await _server.Transport.SendMessageN(ChannelRecvCode.LoadDueyPackage, res, [request.ReceiverId]);
@@ -199,42 +189,18 @@ namespace Application.Core.Login.ServerData
 
         internal async Task SendDueyNotifyOnLogin(int id)
         {
-            var allUnreadData = Query(x => x.ReceiverId == id && x.Notified).OrderByDescending(x => x.Type);
+            var allUnreadData = QueryByReceiver(id).Where(x => !x.Notified).OrderByDescending(x => x.Type);
             var data = allUnreadData.FirstOrDefault();
             if (data != null)
             {
                 foreach (var item in allUnreadData)
                 {
-                    item.Notified = false;
+                    item.Notified = true;
 
-                    SetDirty(item.PackageId);
+                    SetDirty(item);
                 }
                 await _server.Transport.SendMessageN(ChannelRecvCode.LoginNotifyDueyPackage, new DueyDto.DueyNotifyDto { Type = data.Type, ReceiverId = data.ReceiverId }, [data.ReceiverId]);
             }
-        }
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<DueyPackageDto>> updateData)
-        {
-            var updatePackages = updateData.Keys.ToArray();
-
-            var allDbList = await dbContext.Dueypackages.Where(x => updatePackages.Contains(x.PackageId)).ToListAsync();
-            foreach (var item in updateData)
-            {
-                if (item.Value.Data == null)
-                    continue;
-
-                var dbModel = allDbList.FirstOrDefault(x => x.PackageId == item.Key);
-                if (dbModel == null)
-                {
-                    dbModel = _mapper.Map<DueyPackageEntity>(item.Value.Data);
-                    dbContext.Dueypackages.Add(dbModel);
-                }
-                else
-                {
-                    _mapper.Map(item.Value.Data, dbModel);
-                }
-            }
-            await dbContext.SaveChangesAsync();
         }
     }
 }

@@ -50,9 +50,9 @@ namespace Application.Core.Channel.Services
             };
             return CashItem2Item(it);
         }
-        public Item CashItem2Item(CashCommodityTemplate cashItem)
+        public Item CashItem2Item(CashCommodityTemplate cashItem, long uniqueId = 0)
         {
-            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.ItemID, cashItem.Count);
+            var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(cashItem.ItemID, cashItem.Count, uniqueId: uniqueId);
 
             if (cashItem.Period == 1)
             {
@@ -243,8 +243,9 @@ namespace Application.Core.Channel.Services
         {
             if (data.GiftInfo != null)
             {
-                Item item = CashItem2Item(cItem);
-                if (data.GiftInfo.RingSource != null && CashItem2Item(cItem) is Equip equip)
+                var ringUniqueId = data.GiftInfo.RingSource == null ? 0 : (data.GiftInfo.RingSource.CharacterId1 == chr.Id ? data.GiftInfo.RingSource.RingId1 : data.GiftInfo.RingSource.RingId2);
+                Item item = CashItem2Item(cItem, uniqueId: ringUniqueId);
+                if (data.GiftInfo.RingSource != null && item is Equip equip)
                 {
                     // 也许没必要？在现金仓库中没必要更新，回到主世界后会重新加载
                     chr.addPlayerRing(data.GiftInfo.RingSource);

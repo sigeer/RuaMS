@@ -1,6 +1,6 @@
 namespace Application.Core.EF.Entities
 {
-    public class AccountBanEntity
+    public class AccountBanEntity: IKeyedEntity<int>
     {
         private AccountBanEntity() { }
         public AccountBanEntity(int id, int accountId, DateTimeOffset startTime, DateTimeOffset endTime, int banLevel, int reason, string reasonDescription)

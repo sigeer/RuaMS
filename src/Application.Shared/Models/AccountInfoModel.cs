@@ -9,8 +9,7 @@ namespace Application.Shared.Models
         public sbyte Gender { get; set; }
         public sbyte GMLevel { get; set; }
         public bool GmMode { get; set; }
-        public int Language { get; set; }
-        public string CurrentHwid { get; set; } = "";
+
         public sbyte Characterslots { get; set; } = 3;
     }
 }

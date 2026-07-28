@@ -10,7 +10,7 @@ namespace Application.Module.ExpeditionBossLog.Master
         public static IServiceCollection AddExpeditionBossLogMaster(this IServiceCollection services)
         {
             services.AddSingleton<ExpeditionBossLogManager>();
-            services.AddSingleton<IStorage, ExpeditionBossLogManager>(sp => sp.GetRequiredService<ExpeditionBossLogManager>());
+            services.AddSingleton<IDataStorage, ExpeditionBossLogManager>(sp => sp.GetRequiredService<ExpeditionBossLogManager>());
 
             services.AddSingleton<IExpeditionService, ExpeditionLogModule>();
             services.AddSingleton<AbstractMasterModule, ExpeditionLogModule>();

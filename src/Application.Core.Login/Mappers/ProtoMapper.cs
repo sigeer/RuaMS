@@ -24,10 +24,6 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<DateTime, Timestamp>().MapWith(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             config.NewConfig<Timestamp, DateTime>().MapWith(src => src.ToDateTime());
 
-
-            config.NewConfig<RingSourceModel, ItemProto.RingDto>();
-            config.NewConfig<ItemProto.RingDto, RingSourceModel>();
-
             config.NewConfig<AccountCtrl, AccountDto.AccountInfoProto>();
 
 
@@ -56,26 +52,12 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.RoomId, src => src.Id)
                 .Ignore(dest => dest.Members);
 
-            config.NewConfig<GiftModel, ItemProto.GiftDto>();
-
-            config.NewConfig<PLifeModel, LifeProto.PLifeDto>()
-                .Map(dest => dest.LifeId, src => src.Life)
-                .Map(dest => dest.MapId, src => src.Map);
-            config.NewConfig<LifeProto.PLifeDto, PLifeModel>()
-                .Map(dest => dest.Life, src => src.LifeId)
-                .Map(dest => dest.Map, src => src.MapId);
 
             config.NewConfig<ItemQuantity, BaseProto.ItemQuantity>();
 
 
-            config.NewConfig<NoteModel, Dto.NoteDto>();
-
             config.NewConfig<CallbackModel, Dto.RemoteCallDto>();
             config.NewConfig<CallbackParamModel, Dto.RemoteCallParamDto>();
-
-            config.NewConfig<GachaponPoolModel, ItemProto.GachaponPoolDto>();
-            config.NewConfig<GachaponPoolLevelChanceModel, ItemProto.GachaponPoolChanceDto>();
-            config.NewConfig<GachaponPoolItemModel, ItemProto.GachaponPoolItemDto>();
 
             config.NewConfig<CdkItemModel, ItemProto.CdkRewordPackageDto>();
         }

@@ -112,8 +112,8 @@ namespace Application.Core.Login
         readonly Lazy<GiftManager> _giftManager;
         public GiftManager GiftManager => _giftManager.Value;
 
-        readonly Lazy<ResourceDataManager> _lazyResourceDataManager;
-        public ResourceDataManager ResourceDataManager => _lazyResourceDataManager.Value;
+        readonly Lazy<PLifeDataManager> _lazyResourceDataManager;
+        public PLifeDataManager ResourceDataManager => _lazyResourceDataManager.Value;
         readonly Lazy<NewYearCardManager> _lazyNewYearCardManager;
         public NewYearCardManager NewYearCardManager => _lazyNewYearCardManager.Value;
         readonly Lazy<PlayerShopManager> _playerShopManager;
@@ -203,7 +203,7 @@ namespace Application.Core.Login
             _giftManager = new(() => ServiceProvider.GetRequiredService<GiftManager>());
             _ringManager = new(() => ServiceProvider.GetRequiredService<RingManager>());
             _lazyNewYearCardManager = new(() => ServiceProvider.GetRequiredService<NewYearCardManager>());
-            _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<ResourceDataManager>());
+            _lazyResourceDataManager = new(() => ServiceProvider.GetRequiredService<PLifeDataManager>());
             _playerShopManager = new(() => ServiceProvider.GetRequiredService<PlayerShopManager>());
             _noteService = new(() => ServiceProvider.GetRequiredService<NoteManager>());
             _systemManager = new(() => ServiceProvider.GetRequiredService<SystemManager>());

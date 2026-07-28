@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
 {
-    public class FamilyManager : StorageBase<int, FamilyCharacterModel>
+    public class FamilyManager : DataStorageBase<int, FamilyCharacterModel>
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;

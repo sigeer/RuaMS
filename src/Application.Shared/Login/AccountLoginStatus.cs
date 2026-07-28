@@ -1,5 +1,8 @@
 namespace Application.Shared.Login
 {
+    /// <summary>
+    /// 本次登录信息
+    /// </summary>
     public class AccountLoginStatus
     {
         public AccountLoginStatus(int state, DateTimeOffset dateTime)

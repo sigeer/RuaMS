@@ -2,7 +2,7 @@ using Application.Core.Login.Shared;
 
 namespace Application.Core.Login.Models
 {
-    public class RingSourceModel : ITrackableEntityKey<int>
+    public class RingSourceModel 
     {
         public int Id { get; set; }
         public int ItemId { get; set; }

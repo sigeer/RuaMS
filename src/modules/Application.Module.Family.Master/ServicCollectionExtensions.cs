@@ -15,7 +15,7 @@ namespace Application.Module.Family.Master
             TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
 
             services.AddSingleton<FamilyManager>();
-            services.AddSingleton<IStorage, FamilyManager>(sp => sp.GetRequiredService<FamilyManager>());
+            services.AddSingleton<IDataStorage, FamilyManager>(sp => sp.GetRequiredService<FamilyManager>());
 
             services.AddSingleton<AbstractMasterModule, MasterFamilyModule>();
 

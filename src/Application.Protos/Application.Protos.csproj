@@ -22,7 +22,6 @@
 			<GrpcServices>None</GrpcServices>
 		</Protobuf>
 		<Protobuf Include="Base\IPEndPoint.proto" GrpcServices="None" />
-		<Protobuf Include="Dto\AccountGameData.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\CharacterData.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Door.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Jail.proto">
@@ -149,7 +148,7 @@
 		<Protobuf Include="Dto\Equip.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Item.proto" GrpcServices="None" />
 
-		<Protobuf Include="Dto\AccountGame.proto" GrpcServices="None" />
+		<Protobuf Include="Account\AccountGame.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Area.proto" GrpcServices="None" />
 		<Protobuf Include="Buddy\Buddy.proto" GrpcServices="None" />
 		<Protobuf Include="Dto\Character.proto" GrpcServices="None" />

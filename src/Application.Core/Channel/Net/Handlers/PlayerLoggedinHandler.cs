@@ -68,7 +68,7 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 return;
             }
 
-            c.Hwid = new Hwid(playerObject.Account.CurrentHwid);
+            // c.Hwid = new Hwid(playerObject.Account.CurrentHwid);
 
             var player = await _dataService.Serialize(c, playerObject);
             if (player == null)

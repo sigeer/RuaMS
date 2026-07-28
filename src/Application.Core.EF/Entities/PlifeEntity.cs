@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
-public partial class PlifeEntity
+public partial class PlifeEntity: IKeyedEntity<int>
 {
     protected PlifeEntity()
     {
