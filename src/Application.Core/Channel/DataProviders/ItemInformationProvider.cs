@@ -764,9 +764,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
 
 
-    public Equip GetEquipByTemplate(EquipTemplate equipTemplate, short position = 0)
+    public Equip GetEquipByTemplate(EquipTemplate equipTemplate, short position = 0, long uniqueId = 0)
     {
-        var nEquip = new Equip(equipTemplate, position, Yitter.IdGenerator.YitIdHelper.NextId());
+        var nEquip = new Equip(equipTemplate, position, uniqueId);
 
         nEquip.setStr(equipTemplate.IncSTR);
         nEquip.setDex(equipTemplate.IncDEX);
@@ -803,7 +803,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         //return nEquip.copy(); // Q.为什么要用copy？
     }
 
-    public Item GenerateVirtualItemById(int itemId, int quantity, bool randomIfEquip = false)
+    public Item GenerateVirtualItemById(int itemId, int quantity, bool randomIfEquip = false, long uniqueId = 0)
     {
         if (quantity < 0)
             throw new BusinessResException("不能创建一个数量为负数的物品");
@@ -817,7 +817,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         if (abTemplate is EquipTemplate equipTemplate)
         {
-            var eqp = GetEquipByTemplate(equipTemplate);
+            var eqp = GetEquipByTemplate(equipTemplate, uniqueId: uniqueId);
             if (randomIfEquip)
             {
                 randomizeStats(eqp);
@@ -827,10 +827,10 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
         else if (abTemplate is PetItemTemplate petTemplate)
         {
-            return new Pet(petTemplate, 0, Yitter.IdGenerator.YitIdHelper.NextId());
+            return new Pet(petTemplate, 0, uniqueId);
         }
         else
-            return new Item(itemId, 0, (short)quantity, Yitter.IdGenerator.YitIdHelper.NextId());
+            return new Item(itemId, 0, (short)quantity, uniqueId);
 
 
     }

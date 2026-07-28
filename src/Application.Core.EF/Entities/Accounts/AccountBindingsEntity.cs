@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
-public class AccountBindingsEntity
+public class AccountBindingsEntity: IKeyedEntity<int>
 {
     protected AccountBindingsEntity() { }
     public AccountBindingsEntity(int id, int accountId, string iP, string mAC, string hWID, DateTimeOffset lastActiveTime)

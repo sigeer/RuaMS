@@ -16,7 +16,7 @@ namespace Application.Module.Marriage.Master
         {
             TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<MarriageManager>();
-            services.AddSingleton<IStorage, MarriageManager>(sp => sp.GetRequiredService<MarriageManager>());
+            services.AddSingleton<IDataStorage, MarriageManager>(sp => sp.GetRequiredService<MarriageManager>());
 
             services.AddSingleton<WeddingManager>();
             services.AddSingleton<MasterTransport>();

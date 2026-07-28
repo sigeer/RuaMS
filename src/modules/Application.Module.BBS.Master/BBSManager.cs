@@ -14,27 +14,20 @@ using System.Linq.Expressions;
 
 namespace Application.Module.BBS.Master
 {
-    public class BBSManager : StorageBase<int, BBSThreadModel>
+    public class BBSManager : DataStorageBase<int, BBSThreadModel, BbsThreadEntity>
     {
         readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly ILogger<BBSManager> _logger;
         readonly IMapper _mapper;
         readonly MasterServer _server;
 
-        int _threadId;
-
         public BBSManager(ILogger<BBSManager> logger, IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory)
-            : base(x => x.Id)
+            : base(dbContextFactory, mapper)
         {
             _logger = logger;
             _mapper = mapper;
             _server = server;
             _dbContextFactory = dbContextFactory;
-        }
-
-        public override async Task InitializeAsync(DBContext dbContext)
-        {
-            _threadId = (await dbContext.BbsThreads.MaxAsync(x => (int?)x.Threadid)) ?? 0;
         }
 
         public override List<BBSThreadModel> Query(Expression<Func<BBSThreadModel, bool>> expression)
@@ -165,7 +158,7 @@ namespace Application.Module.BBS.Master
                 Icon = (short)request.Icon,
                 Startpost = request.Text,
                 Guildid = chr.Character.GuildId,
-                Id = Interlocked.Add(ref _threadId, 1000),
+                Id = Interlocked.Add(ref _localId, 1000),
             };
             SetDirty(newModel);
 
@@ -190,7 +183,7 @@ namespace Application.Module.BBS.Master
                 return;
             }
 
-            SetRemoved(request.ThreadId);
+            SetRemoved(thread);
         }
 
         public ShowBBSMainThreadResponse DeleteBBSReply(BBSProto.DeleteReplyRequest request)

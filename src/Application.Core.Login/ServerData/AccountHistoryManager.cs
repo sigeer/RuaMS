@@ -8,31 +8,23 @@ using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using SystemProto;
 
 namespace Application.Core.Login.ServerData
 {
-    public class AccountHistoryManager : StorageBase<int, AccountHistoryModel>
+    public class AccountHistoryManager : DataStorageBase<int, AccountHistoryModel, AccountBindingsEntity>
     {
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly IMapper _mapper;
         readonly MasterServer _server;
 
-        int _localId = 0;
-
-        public AccountHistoryManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
-            : base(x => x.Id)
+        public AccountHistoryManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server, ILogger<AccountHistoryManager> logger)
+            : base(StorageCategory.AccountHistory, dbContextFactory, mapper, logger)
         {
-            _dbContextFactory = dbContextFactory;
-            _mapper = mapper;
             _server = server;
         }
 
-        public override async Task InitializeAsync(DBContext dbContext)
-        {
-            _localId = await dbContext.AccountBindings.MaxAsync(x => (int?)x.Id) ?? 0;
-        }
+        protected override int GetKey(AccountHistoryModel model) => model.Id;
 
         public AccountHistoryModel InsertAccountLoginHistory(int accId, string ip, string hwid)
         {
@@ -50,7 +42,7 @@ namespace Application.Core.Login.ServerData
 
         public void AttachAccountMAC(int id, string mac)
         {
-            var model = Query(x => x.Id == id).FirstOrDefault();
+            var model = Find(id);
             if (model != null)
             {
                 model.MAC = mac;
@@ -58,63 +50,34 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public override List<AccountHistoryModel> Query(Expression<Func<AccountHistoryModel, bool>> expression)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            var dataFromDB = dbContext.AccountBindings.AsNoTracking().ProjectToType<AccountHistoryModel>().Where(expression).ToList();
-
-            return QueryWithDirty(dataFromDB, expression.Compile());
-        }
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<AccountHistoryModel>> updateData)
-        {
-            var updateKeys = updateData.Keys.ToArray();
-            await dbContext.AccountBindings.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
-
-            foreach (var item in updateData.Values)
-            {
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
-                {
-                    var dbData = new AccountBindingsEntity(obj.Id, obj.AccountId, obj.IP, obj.MAC, obj.HWID, obj.LastActiveTime);
-                    dbContext.AccountBindings.Add(dbData);
-                }
-            }
-
-            await dbContext.SaveChangesAsync();
-        }
-
     }
 
 
-    public class AccountBanManager : StorageBase<int, AccountBanModel>
+    public class AccountBanManager : DataStorageBase<int, AccountBanModel, AccountBanEntity>
     {
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly IMapper _mapper;
         readonly MasterServer _server;
 
-        int _localId = 0;
 
         List<IpbanEntity> bannedIP = new();
         List<MacbanEntity> bannedMAC = new();
         List<HwidbanEntity> bannedHWID = new();
 
-        public AccountBanManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server) : base(x => x.Id)
+        public AccountBanManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server, ILogger<AccountBanManager> logger) 
+            : base(StorageCategory.Ban, dbContextFactory, mapper, logger)
         {
-            _dbContextFactory = dbContextFactory;
-            _mapper = mapper;
             _server = server;
         }
 
         public override async Task InitializeAsync(DBContext dbContext)
         {
-            _localId = await dbContext.AccountBans.MaxAsync(x => (int?)x.Id) ?? 0;
+            await base.InitializeAsync(dbContext);
 
             bannedIP = await dbContext.Ipbans.AsNoTracking().ToListAsync();
             bannedMAC = await dbContext.Macbans.AsNoTracking().ToListAsync();
             bannedHWID = await dbContext.Hwidbans.AsNoTracking().ToListAsync();
         }
+
+        protected override int GetKey(AccountBanModel model) => model.Id;
 
         public bool IsIPBlocked(string ip)
         {
@@ -133,12 +96,13 @@ namespace Application.Core.Login.ServerData
 
         public AccountBanModel? GetAccountBanInfo(int accountId)
         {
-            return Query(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset()).FirstOrDefault();
+            return Query(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset(), 
+                x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset()).FirstOrDefault();
         }
 
         public bool BanAccount(int accountId, DateTimeOffset endTime, int level, int reason, string reasonDesc)
         {
-            var banModel = Query(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset()).FirstOrDefault();
+            var banModel = GetAccountBanInfo(accountId);
             if (banModel != null)
                 return false;
 
@@ -160,8 +124,10 @@ namespace Application.Core.Login.ServerData
             bannedHWID.RemoveAll(x => x.AccountId == accountId);
             bannedMAC.RemoveAll(x => x.Aid == accountId);
 
-            var dayBeforeMonth = _server.GetCurrentTimeDateTimeOffset().AddDays(30);
-            var histories = _server.AccountHistoryManager.Query(x => x.AccountId == accountId && x.LastActiveTime >= dayBeforeMonth);
+            var dayBeforeMonth = _server.GetCurrentTimeDateTimeOffset().AddMonths(-1);
+            var histories = _server.AccountHistoryManager.Query(
+                x => x.AccountId == accountId && x.LastActiveTime >= dayBeforeMonth, 
+                x => x.AccountId == accountId && x.LastActiveTime >= dayBeforeMonth);
             foreach (var his in histories)
             {
                 if (banLevel.HasFlag(BanLevel.IP))
@@ -186,11 +152,11 @@ namespace Application.Core.Login.ServerData
 
         public bool UnbanAccount(int accountId)
         {
-            var banModel = Query(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset()).FirstOrDefault();
+            var banModel = GetAccountBanInfo(accountId);
             if (banModel == null)
                 return false;
 
-            SetRemoved(banModel.Id);
+            SetRemoved(banModel);
 
             bannedIP.RemoveAll(x => x.Aid == accountId);
             bannedHWID.RemoveAll(x => x.AccountId == accountId);
@@ -245,21 +211,14 @@ namespace Application.Core.Login.ServerData
 
         public List<int> GetBannedAccounts()
         {
-            return Query(x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset()).Select(x => x.AccountId).ToList();
+            return Query(x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset(), x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset()).Select(x => x.AccountId).ToList();
         }
 
-        public override List<AccountBanModel> Query(Expression<Func<AccountBanModel, bool>> expression)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
 
-            var dataFromDB = dbContext.AccountBans.ProjectToType<AccountBanModel>().Where(expression).ToList();
-
-            return QueryWithDirty(dataFromDB, expression.Compile());
-        }
 
         protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<AccountBanModel>> updateData)
         {
-            var updateKeys = updateData.Keys.ToArray();
+            var updateKeys = updateData.Keys.ToList();
             await dbContext.AccountBans.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
 
             foreach (var kw in updateData)

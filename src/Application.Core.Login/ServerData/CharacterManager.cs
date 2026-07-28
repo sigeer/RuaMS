@@ -1,5 +1,4 @@
 using Application.Core.Login.Commands;
-using Application.Core.Login.Mappers;
 using Application.Core.Login.Models;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Shared;
@@ -14,7 +13,6 @@ using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Dto;
 using JailProto;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -27,26 +25,21 @@ namespace Application.Core.Login.Datas
     /// <summary>
     /// 不包含Account，Account可能会在登录时被单独修改
     /// </summary>
-    public class CharacterManager : IStorage, IDisposable
+    public class CharacterManager : DataStorageBase<int, CharacterLiveObject, CharacterEntity>, IDisposable
     {
-        int _localId = 0;
-
-        ConcurrentDictionary<int, IStoreUnit<CharacterLiveObject>> _idDataSource = new();
-        ConcurrentDictionary<string, IStoreUnit<CharacterLiveObject>> _nameDataSource = new();
+        ConcurrentDictionary<string, StoreUnit<CharacterLiveObject>> _nameDataSource = new();
 
 
-        readonly IMapper _mapper;
-        readonly ILogger<CharacterManager> _logger;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _masterServer;
 
         public CharacterManager(IMapper mapper, ILogger<CharacterManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
+            : base(StorageCategory.Character, dbContextFactory, mapper, logger)
         {
-            _mapper = mapper;
-            _logger = logger;
-            _dbContextFactory = dbContextFactory;
             _masterServer = masterServer;
         }
+
+        protected override int GetKey(CharacterLiveObject model) => model.Character.Id;
+
         CharacterLiveObject _sysChr = new CharacterLiveObject(new Dto.CharacterDto { Id = ServerConstants.SystemCId, Name = "系统" });
         public CharacterLiveObject? FindPlayerById(int id)
         {
@@ -56,50 +49,74 @@ namespace Application.Core.Login.Datas
             if (id <= 0)
                 return null;
 
-            if (_idDataSource.TryGetValue(id, out var data))
-            {
-                if (data.Flag == StoreFlag.Remove)
-                {
-                    return null;
-                }
-                else
-                {
-                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(id);
-                }
-            }
-
-            return GetCharacterFromDB(id);
+            return Find(id);
         }
+
+
         public CharacterLiveObject? FindPlayerByName(string name)
         {
             if (_nameDataSource.TryGetValue(name, out var data))
             {
-                if (data.Flag == StoreFlag.Remove)
-                {
-                    return null;
-                }
+                if (data.Flag != StoreFlag.Remove)
+                    return data.Data;
                 else
-                {
-                    return (data.Data as CharacterLiveObject) ?? GetCharacterFromDB(null, name);
-                }
+                    return null;
             }
 
-            return GetCharacterFromDB(null, name);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var dbData = dbContext.Set<CharacterEntity>().Where(x => x.Name.Equals(name)).FirstOrDefault();
+            if (dbData != null)
+            {
+                var localData = MapModel(dbData);
+                SetCache(localData);
+                return localData;
+            }
+
+            return null;
         }
 
         public void SetState(CharacterLiveObject obj)
         {
-            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove)
-            {
-                o.Update();
-            }
+            SetDirty(obj);
+        }
+
+        protected override void SetDirty(CharacterLiveObject model)
+        {
+            base.SetDirty(model);
+            _nameDataSource[model.Character.Name] = new StoreUnit<CharacterLiveObject>(StoreFlag.AddOrUpdate, model);
+        }
+
+        protected override void SetCache(CharacterLiveObject model)
+        {
+            base.SetCache(model);
+            _nameDataSource[model.Character.Name] = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, model);
+        }
+
+        protected override void SetRemoved(CharacterLiveObject model)
+        {
+            base.SetRemoved(model);
+            _nameDataSource[model.Character.Name] = new StoreUnit<CharacterLiveObject>(StoreFlag.Remove, model);
         }
 
         public List<Dto.CharacterDto> GetAllCachedPlayers()
         {
-            return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Select(x => x.Data!.Character).ToList();
+            return QueryLocal().Select(x => x.Character).ToList();
+        }
+
+        protected override CharacterLiveObject MapModel(CharacterEntity entity)
+        {
+            return new CharacterLiveObject(_mapper.Map<Dto.CharacterDto>(entity));
+        }
+
+        protected override CharacterEntity MapEntity(CharacterLiveObject localModel)
+        {
+            return _mapper.Map<CharacterEntity>(localModel.Character);
+        }
+
+        protected override CharacterEntity MapExsitedEntity(CharacterLiveObject localModel, CharacterEntity dbModel)
+        {
+            return _mapper.Map(localModel.Character, dbModel);
         }
 
         public string GetPlayerName(int id)
@@ -109,7 +126,8 @@ namespace Application.Core.Login.Datas
 
         public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
-            if (_idDataSource.TryGetValue(obj.Character.Id, out var o) && o.Flag != StoreFlag.Remove && o.Data is CharacterLiveObject origin)
+            var origin = FindPlayerById(obj.Character.Id);
+            if (origin != null)
             {
                 var oldMap = origin.Character.Map;
                 var oldLevel = origin.Character.Level;
@@ -251,7 +269,8 @@ namespace Application.Core.Login.Datas
 
         internal async Task<int> CompleteLogin(int playerId, int channel)
         {
-            if (_idDataSource.TryGetValue(playerId, out var data) && data.Flag != StoreFlag.Remove && data.Data is CharacterLiveObject d)
+            var d = FindPlayerById(playerId);
+            if (d != null)
             {
                 var lastChannel = d.Channel;
                 d.Channel = channel;
@@ -280,7 +299,7 @@ namespace Application.Core.Login.Datas
             }
             else
             {
-                throw new BusinessFatalException($"未验证的玩家Id {playerId}。{nameof(_idDataSource)} 中包含了所有登录过的玩家，而设置频道的玩家必然登录过。");
+                throw new BusinessFatalException($"未验证的玩家Id {playerId}。");
             }
         }
 
@@ -308,38 +327,10 @@ namespace Application.Core.Login.Datas
 
         public void Dispose()
         {
-            _idDataSource.Clear();
             _nameDataSource.Clear();
 
         }
 
-        CharacterLiveObject? GetCharacterFromDB(int? characterId = null, string? characterName = null)
-        {
-            if (characterId == null && characterName == null)
-                return null;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var characterEntity = characterId != null
-                ? dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Id == characterId)
-                : dbContext.Characters.AsNoTracking().FirstOrDefault(x => x.Name == characterName);
-            if (characterEntity == null)
-                return null;
-
-            characterId = characterEntity.Id;
-            characterName = characterEntity.Name;
-
-            var chrModel = _mapper.Map<Dto.CharacterDto>(characterEntity);
-            var d = new CharacterLiveObject(chrModel)
-            {
-                Channel = 0,
-            };
-
-            var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, d);
-            _idDataSource[characterEntity.Id] = data;
-            _nameDataSource[characterEntity.Name] = data;
-
-            return d;
-        }
 
         /// <summary>
         /// 获取用于展示的角色object
@@ -348,44 +339,12 @@ namespace Application.Core.Login.Datas
         /// <returns></returns>
         public List<CharacterLiveObject> GetCharactersView(IEnumerable<int> charIds)
         {
-            List<CharacterLiveObject> list = new List<CharacterLiveObject>();
-
-            List<int> needLoadFromDB = new();
-            foreach (var item in charIds)
-            {
-                if (_idDataSource.TryGetValue(item, out var e) && e.Flag != StoreFlag.Remove)
-                    list.Add(e.Data!);
-                else
-                    needLoadFromDB.Add(item);
-            }
-
-            if (needLoadFromDB.Count == 0)
-                return list;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var characters = dbContext.Characters.Where(x => needLoadFromDB.Contains(x.Id)).ToList();
-
-            foreach (var character in characters)
-            {
-                var chrDto = _mapper.Map<Dto.CharacterDto>(character);
-                var obj = new CharacterLiveObject(chrDto);
-
-                var data = new StoreUnit<CharacterLiveObject>(StoreFlag.Cached, obj);
-                _idDataSource[obj.Character.Id] = data;
-                _nameDataSource[obj.Character.Name] = data;
-                list.Add(obj);
-            }
-            return list;
-
+            return Query(x => charIds.Contains(x.Id), x => charIds.Contains(x.Character.Id));
         }
-
-
 
         internal int GetOnlinedPlayerCount()
         {
-            return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Count(x => x.Data is CharacterLiveObject o && o.Channel != 0);
+            return QueryLocal().Where(x => x.ChannelNode != null).Count();
         }
 
         public bool CheckCharacterName(string name)
@@ -405,7 +364,7 @@ namespace Application.Core.Login.Datas
                 return false;
 
             using var dbContext = _dbContextFactory.CreateDbContext();
-            return !dbContext.Characters.Any(x => !_idDataSource.Keys.Contains(x.Id) && x.Name == name);
+            return !dbContext.Characters.Any(x => !_localData.Keys.Contains(x.Id) && x.Name == name);
         }
 
 
@@ -416,37 +375,24 @@ namespace Application.Core.Login.Datas
 
         internal float GetChannelPlayerCount(int channelId)
         {
-            return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Count(x => x.Data is CharacterLiveObject o && o.Channel == channelId);
+            return QueryLocal().Where(x => x.Channel == channelId).Count();
         }
 
         internal int[] GetOnlinedGMs()
         {
             var accIds = _masterServer.AccountManager.GetOnlinedGmAccId();
-            return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0 && accIds.Contains(o.Character.AccountId))
-                .Select(x => x.Data!.Character.Id).ToArray();
+            return QueryLocal(x => x.ChannelNode != null && accIds.Contains(x.Character.AccountId)).Select(x => x.Character.Id).ToArray();
         }
 
         public List<int> GetOnlinedPlayerAccountId()
         {
-            return _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Where(x => x.Data is CharacterLiveObject o && o.Channel > 0)
-                .Select(x => x.Data!.Character.AccountId).ToList();
+            return QueryLocal(x => x.ChannelNode != null).Select(x => x.Character.AccountId).ToList();
         }
 
         public SystemProto.ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
-            var list = _idDataSource.Values.AsValueEnumerable()
-                .Where(x => x.Flag != StoreFlag.Remove)
-                .Select(x => x.Data)
-                .OfType<CharacterLiveObject>()
-                .Where(x => x.Channel > 0).ToList();
             var res = new SystemProto.ShowOnlinePlayerResponse();
-            res.List.AddRange(list.Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
+            res.List.AddRange(QueryLocal(x => x.ChannelNode != null).Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
         }
 
@@ -526,76 +472,19 @@ namespace Application.Core.Login.Datas
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Unjail, res, [request.MasterId, res.TargetId]);
         }
 
-        public async Task InitializeAsync(DBContext dbContext)
+        protected override void CommitRemove(DBContext dbContext, CharacterEntity? dbModel, CharacterLiveObject localModel)
         {
-            _localId = (await dbContext.Characters.IgnoreQueryFilters().MaxAsync(x => (int?)x.Id) ?? 0);
-        }
-
-        public async Task Commit(DBContext dbContext)
-        {
-            var updateData = _idDataSource.Where(x => x.Value.Flag != StoreFlag.Cached).ToDictionary();
-            if (updateData.Count == 0)
-                return;
-
-            var now = _masterServer.getCurrentTime();
-
-            var monthDuration = (long)TimeSpan.FromDays(30).TotalMilliseconds;
-            _logger.LogInformation("正在保存用户数据...");
-
-            try
+            if (dbModel != null)
             {
-                var updateCharacters = await dbContext.Characters.Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
-
-                foreach (var item in updateData)
-                {
-                    var dbModel = updateCharacters.FirstOrDefault(x => x.Id == item.Key);
-
-                    if (item.Value.Flag == StoreFlag.Remove)
-                    {
-                        _idDataSource.TryRemove(item.Key, out _);
-
-                        if (dbModel != null)
-                            dbModel.IsDeleted = true;
-                        else
-
-                        continue;
-                    }
-
-                    var obj = item.Value.Data;
-                    if (obj == null)
-                    {
-                        _logger.LogWarning("发现了更新项，但是没有记录 CharacterId={CharacterId}", item.Key);
-                        continue;
-                    }
-                    item.Value.Flag = StoreFlag.Cached;
-
-                    if (dbModel == null)
-                    {
-                        dbModel = _mapper.Map<CharacterEntity>(obj.Character);
-                        dbContext.Characters.Add(dbModel);
-                    }
-                    else
-                    {
-                        _mapper.Map(obj.Character, dbModel);
-                    }
-
-                    // family
-                }
-                await dbContext.SaveChangesAsync();
-                _logger.LogInformation("保存了{Count}个用户数据", updateData.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存用户数据{Status}", "失败");
+                dbModel.IsDeleted = true;
             }
         }
 
         public void InsertNewCharacter(NewCharacterPreview obj)
         {
             obj.Character.Id = Interlocked.Increment(ref _localId);
-            var data = new StoreUnit<NewCharacterPreview>(StoreFlag.AddOrUpdate, obj);
-            _idDataSource[obj.Character.Id] = data;
-            _nameDataSource[obj.Character.Name] = data;
+
+            SetDirty(obj);
 
             _masterServer.AccountManager.UpdateAccountCharacterCacheByAdd(obj.Character.AccountId, obj.Character.Id);
 
@@ -604,11 +493,10 @@ namespace Application.Core.Login.Datas
 
         public bool RemoveCharacter(int chrId, int checkAccount)
         {
-            if (_idDataSource.TryGetValue(chrId, out var model)
-                && model.Flag != StoreFlag.Remove
-                && model.Data!.Character.AccountId == checkAccount)
+            var chr = FindPlayerById(chrId);
+            if (chr != null && chr.Character.AccountId == checkAccount)
             {
-                model.Remove();
+                SetRemoved(chr);
 
                 _masterServer.AccountManager.UpdateAccountCharacterCacheByRemove(checkAccount, chrId);
                 return true;

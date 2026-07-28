@@ -2,32 +2,32 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
+using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData;
 
 
-public class NoteManager : StorageBase<int, NoteModel>
+public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
 {
-    readonly IDbContextFactory<DBContext> _dbContextFactory;
-    readonly ILogger<NoteManager> _logger;
-    readonly IMapper _mapper;
     readonly MasterServer _server;
 
-    int _localId = 0;
-    public NoteManager(IDbContextFactory<DBContext> dbContextFactory, ILogger<NoteManager> logger, IMapper mapper, MasterServer masterServer) : base(x => x.Id)
+    public NoteManager(IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer masterServer, ILogger<NoteManager> logger) 
+        : base(StorageCategory.Note, dbContextFactory, mapper, logger)
     {
-        _dbContextFactory = dbContextFactory;
-        _logger = logger;
-        _mapper = mapper;
         _server = masterServer;
     }
 
-    public override async Task InitializeAsync(DBContext dbContext)
+
+    protected override int GetKey(NoteDto model) => model.Id;
+
+    protected override NoteDto MapModel(NoteEntity entities)
     {
-        _localId = await dbContext.Notes.MaxAsync(x => (int?)x.Id) ?? 0;
+        var item = base.MapModel(entities);
+        item.From = _server.CharacterManager.GetPlayerName(item.FromId);
+        item.To = _server.CharacterManager.GetPlayerName(item.ToId);
+        return item;
     }
 
     /**
@@ -41,11 +41,13 @@ public class NoteManager : StorageBase<int, NoteModel>
         if (chr == null)
             return false;
 
-        var model = new NoteModel()
+        var model = new Dto.NoteDto()
         {
             Id = Interlocked.Increment(ref _localId),
-            FromId = sender,
             ToId = chr.Character.Id,
+            To = chr.Character.Name,
+            FromId = sender,
+            From = _server.CharacterManager.GetPlayerName(sender),
             Message = message,
             Timestamp = _server.getCurrentTime()
         };
@@ -60,11 +62,13 @@ public class NoteManager : StorageBase<int, NoteModel>
         if (chr == null)
             return;
 
-        var model = new NoteModel()
+        var model = new Dto.NoteDto()
         {
             Id = Interlocked.Increment(ref _localId),
-            FromId = sender,
             ToId = chr.Character.Id,
+            To = chr.Character.Name,
+            FromId = sender,
+            From = _server.CharacterManager.GetPlayerName(sender),
             Message = message,
             Timestamp = _server.getCurrentTime()
         };
@@ -83,11 +87,13 @@ public class NoteManager : StorageBase<int, NoteModel>
         if (chr == null)
             return;
 
-        var model = new NoteModel()
+        var model = new Dto.NoteDto()
         {
             Id = Interlocked.Increment(ref _localId),
-            FromId = sender,
             ToId = chr.Character.Id,
+            To = chr.Character.Name,
+            FromId = sender,
+            From = _server.CharacterManager.GetPlayerName(sender),
             Message = message,
             Timestamp = _server.getCurrentTime(),
             Fame = 1
@@ -106,61 +112,47 @@ public class NoteManager : StorageBase<int, NoteModel>
         if (liveObject.Channel <= 0)
             return;
 
-        var notes = Query(x => x.ToId == liveObject.Character.Id && !x.IsDeleted).Select(x => MapToDto(x)).ToArray();
+        var notes = QueryByToId(liveObject.Character.Id).ToArray();
         if (notes.Length > 0)
             await _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
     }
 
     public Dto.NoteDto? SetRead(int id)
     {
-        var model = Query(x => x.Id == id && !x.IsDeleted).FirstOrDefault();
+        var model = QueryById(id);
         if (model == null)
             return null;
 
-        model.IsDeleted = true;
-        SetDirty(model);
-        return MapToDto(model);
+        SetRemoved(model);
+        return model;
     }
 
-    Dto.NoteDto MapToDto(NoteModel? model)
-    {
-        var dto = _mapper.Map<Dto.NoteDto>(model);
-        dto.From = _server.CharacterManager.GetPlayerName(model.FromId);
-        dto.To = _server.CharacterManager.GetPlayerName(model.ToId);
-        return dto;
-    }
 
     public void removeFredrickReminders(List<int> expiredCids)
     {
-        var toRemove = Query(x => x.FromId == -NpcId.FREDRICK && expiredCids.Contains(x.ToId));
+        var toRemove = QueryFredrickExpired(expiredCids);
         foreach (var item in toRemove)
         {
-            SetRemoved(item.Id);
+            SetRemoved(item);
         }
     }
 
-    protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<NoteModel>> updateData)
+    protected override void CommitRemove(DBContext dbContext, NoteEntity? dbModel, NoteDto localModel)
     {
-        await dbContext.Notes.Where(x => updateData.Keys.Contains(x.Id)).ExecuteDeleteAsync();
-        foreach (var item in updateData)
+        if (dbModel != null)
         {
-            if (item.Value.Flag == StoreFlag.AddOrUpdate)
-            {
-                var obj = item.Value.Data!;
-
-                NoteEntity dbModel = new NoteEntity(obj.Id, obj.ToId, obj.FromId, obj.Message, obj.Timestamp, obj.Fame);
-                dbModel.Deleted = obj.IsDeleted;
-                dbContext.Notes.Add(dbModel);
-
-            }
+            dbModel.Deleted = true;
         }
-
-        await dbContext.SaveChangesAsync();
     }
 
-    public override List<NoteModel> Query(Expression<Func<NoteModel, bool>> expression)
-    {
-        using var dbContext = _dbContextFactory.CreateDbContext();
-        return QueryWithDirty(dbContext.Notes.AsNoTracking().ProjectToType<NoteModel>().Where(expression).AsNoTracking().ToList(), expression.Compile());
-    }
+
+    List<Dto.NoteDto> QueryByToId(int toId) => Query(x => x.ToId == toId, x => x.ToId == toId);
+
+    Dto.NoteDto? QueryById(int id)
+        => Find(id);
+
+    List<Dto.NoteDto> QueryFredrickExpired(List<int> expiredCids)
+        => Query(
+            x => x.FromId == -NpcId.FREDRICK && expiredCids.Contains(x.ToId),
+            x => x.FromId == -NpcId.FREDRICK && expiredCids.Contains(x.ToId));
 }

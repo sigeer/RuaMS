@@ -75,45 +75,45 @@ namespace Application.Core.Login
         static IServiceCollection AddDataManager(this IServiceCollection services)
         {
             services.AddSingleton<CharacterManager>();
-            services.AddSingleton<IStorage, CharacterManager>(sp => sp.GetRequiredService<CharacterManager>());
+            services.AddSingleton<IDataStorage, CharacterManager>(sp => sp.GetRequiredService<CharacterManager>());
 
             services.AddSingleton<NoteManager>();
-            services.AddSingleton<IStorage, NoteManager>(sp => sp.GetRequiredService<NoteManager>());
+            services.AddSingleton<IDataStorage, NoteManager>(sp => sp.GetRequiredService<NoteManager>());
 
-            services.AddSingleton<ResourceDataManager>();
-            services.AddSingleton<IStorage, ResourceDataManager>(sp => sp.GetRequiredService<ResourceDataManager>());
+            services.AddSingleton<PLifeDataManager>();
+            services.AddSingleton<IDataStorage, PLifeDataManager>(sp => sp.GetRequiredService<PLifeDataManager>());
 
             services.AddSingleton<NewYearCardManager>();
-            services.AddSingleton<IStorage, NewYearCardManager>(sp => sp.GetRequiredService<NewYearCardManager>());
+            services.AddSingleton<IDataStorage, NewYearCardManager>(sp => sp.GetRequiredService<NewYearCardManager>());
 
             services.AddSingleton<GiftManager>();
-            services.AddSingleton<IStorage, GiftManager>(sp => sp.GetRequiredService<GiftManager>());
+            services.AddSingleton<IDataStorage, GiftManager>(sp => sp.GetRequiredService<GiftManager>());
 
             services.AddSingleton<RingManager>();
-            services.AddSingleton<IStorage, RingManager>(sp => sp.GetRequiredService<RingManager>());
+            services.AddSingleton<IDataStorage, RingManager>(sp => sp.GetRequiredService<RingManager>());
 
             services.AddSingleton<PlayerShopManager>();
-            services.AddSingleton<IStorage, PlayerShopManager>(sp => sp.GetRequiredService<PlayerShopManager>());
+            services.AddSingleton<IDataStorage, PlayerShopManager>(sp => sp.GetRequiredService<PlayerShopManager>());
 
             services.AddSingleton<AccountHistoryManager>();
-            services.AddSingleton<IStorage, AccountHistoryManager>(sp => sp.GetRequiredService<AccountHistoryManager>());
+            services.AddSingleton<IDataStorage, AccountHistoryManager>(sp => sp.GetRequiredService<AccountHistoryManager>());
             services.AddSingleton<AccountBanManager>();
-            services.AddSingleton<IStorage, AccountBanManager>(sp => sp.GetRequiredService<AccountBanManager>());
+            services.AddSingleton<IDataStorage, AccountBanManager>(sp => sp.GetRequiredService<AccountBanManager>());
 
             services.AddSingleton<GachaponManager>();
-            services.AddSingleton<IStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
+            services.AddSingleton<IDataStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
 
             services.AddSingleton<CDKManager>();
-            services.AddSingleton<IStorage, CDKManager>(sp => sp.GetRequiredService<CDKManager>());
+            services.AddSingleton<IDataStorage, CDKManager>(sp => sp.GetRequiredService<CDKManager>());
 
             services.AddSingleton<DueyManager>();
-            services.AddSingleton<IStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
+            services.AddSingleton<IDataStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
 
             services.AddSingleton<AccountGameManager>();
-            services.AddSingleton<IStorage, AccountGameManager>(sp => sp.GetRequiredService<AccountGameManager>());
+            services.AddSingleton<IDataStorage, AccountGameManager>(sp => sp.GetRequiredService<AccountGameManager>());
 
             services.AddSingleton<AccountManager>();
-            services.AddSingleton<IStorage, AccountManager>(sp => sp.GetRequiredService<AccountManager>());
+            services.AddSingleton<IDataStorage, AccountManager>(sp => sp.GetRequiredService<AccountManager>());
 
             services.TryAddSingleton<IPlayerNPCManager, DefaultPlayerNPCManager>();
 

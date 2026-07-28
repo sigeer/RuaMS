@@ -1,78 +1,32 @@
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Utility;
+using Dto;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class AccountGameManager : IStorage
+    public class AccountGameManager : DataStorageBase<int, AccountDto.AccountGameDto, AccountEntity>
     {
-        readonly IMapper _mapper;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;
 
-        ConcurrentDictionary<int, IStoreUnit<Dto.AccountGameDto>> _accGameDataSource = new();
-
-        public AccountGameManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server)
+        public AccountGameManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, ILogger<AccountGameManager> logger)
+            : base(StorageCategory.AccountGame, dbContextFactory, mapper, logger)
         {
-            _mapper = mapper;
-            _dbContextFactory = dbContextFactory;
             _server = server;
         }
 
-        public async Task Commit(DBContext dbContext)
+        protected override int GetKey(AccountDto.AccountGameDto model) => model.Id;
+
+        public AccountDto.AccountGameDto? GetAccountGameData(int accountId)
         {
-            var updateData = _accGameDataSource.Where(x => x.Value.Flag != StoreFlag.Cached).ToDictionary();
-            if (updateData.Count == 0)
-                return;
-
-            var updateAccounts = await dbContext.Accounts.Where(x => updateData.Keys.Contains(x.Id)).ToListAsync();
-
-            foreach (var acc in updateData)
-            {
-                if (acc.Value.Data == null)
-                    continue;
-
-                acc.Value.Flag = StoreFlag.Cached;
-                var dbAcc = updateAccounts.FirstOrDefault(x => x.Id == acc.Key);
-                if (dbAcc == null)
-                {
-                    dbAcc = _mapper.Map<AccountEntity>(acc.Value.Data);
-                    dbContext.Accounts.Add(dbAcc);
-                }
-                else
-                {
-                    _mapper.Map(acc.Value.Data, dbAcc);
-                }
-            }
-            await dbContext.SaveChangesAsync();
+            return Find(accountId);
         }
 
-        public Task InitializeAsync(DBContext dbContext)
+        public void UpdateAccountGame(AccountDto.AccountGameDto accountGame)
         {
-            return Task.CompletedTask;
-        }
-
-        public Dto.AccountGameDto? GetAccountGameData(int accountId)
-        {
-            if (_accGameDataSource.TryGetValue(accountId, out var data) && data != null)
-                return data.Data;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-            if (accountData == null)
-                return null;
-
-            data = new StoreUnit<Dto.AccountGameDto>(StoreFlag.Cached, _mapper.Map<Dto.AccountGameDto>(accountData));
-            _accGameDataSource[accountId] = data;
-            return data.Data;
-        }
-
-        public void UpdateAccountGame(Dto.AccountGameDto accountGame)
-        {
-            _accGameDataSource[accountGame.Id] = new StoreUnit<Dto.AccountGameDto>(StoreFlag.AddOrUpdate, accountGame);
+            SetDirty(accountGame);
         }
     }
 }

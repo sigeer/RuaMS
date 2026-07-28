@@ -75,6 +75,8 @@ namespace Application.Core.Login.Modules
                 res.AllMembers.AddRange(allMembers);
                 await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildMemberLoginOff, res, allMembers);
             }
+
+            _server.DueyManager.PackageUnfreeze(obj.Character.Id);
         }
 
         public override async Task OnPlayerMapChanged(CharacterLiveObject obj)

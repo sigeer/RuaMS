@@ -13,31 +13,26 @@ using System.Collections.Concurrent;
 
 namespace Application.Core.Login.Datas
 {
-    public class AccountManager : IStorage
+    public class AccountManager : DataStorageBase<int, AccountCtrl, AccountEntity>
     {
         /// <summary>
         /// 账户登录态记录
         /// </summary>
         ConcurrentDictionary<int, AccountLoginStatus> _accStageCache = new();
 
-        ConcurrentDictionary<int, AccountCtrl> _accDataSource = new();
-        ConcurrentDictionary<int, StoreFlag> _updated = new();
         /// <summary>
         /// 账户及其拥有的角色id缓存
         /// </summary>
         ConcurrentDictionary<int, HashSet<int>> _accPlayerCache = new();
 
-        readonly ILogger<AccountManager> _logger;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
-        readonly IMapper _maaper;
         readonly MasterServer _server;
         public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, MasterServer server)
+            :base(StorageCategory.Account, dbContextFactory, maaper, logger)
         {
-            _logger = logger;
-            _dbContextFactory = dbContextFactory;
-            _maaper = maaper;
             _server = server;
         }
+
+        protected override int GetKey(AccountCtrl model) => model.Id;
 
         public AccountCtrl? GetAccountDto(int accId)
         {
@@ -46,8 +41,7 @@ namespace Application.Core.Login.Datas
 
         public int GetAccountIdByName(string accName)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            return dbContext.Accounts.AsNoTracking().FirstOrDefault(x => x.Name == accName)?.Id ?? -2;
+            return Find(x => x.Name == accName, x => x.Name == accName)?.Id ?? -2;
         }
 
         public AccountLoginStatus GetAccountLoginStatus(int accId)
@@ -125,23 +119,12 @@ namespace Application.Core.Login.Datas
 
         internal AccountCtrl? GetAccount(int accountId)
         {
-            if (_accDataSource.TryGetValue(accountId, out var accountCtrl) && accountCtrl != null)
-                return accountCtrl;
-
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var accountData = dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-            if (accountData == null)
-                return null;
-
-            accountCtrl = _maaper.Map<AccountCtrl>(accountData);
-            _accDataSource[accountId] = accountCtrl;
-            return accountCtrl;
+            return Find(accountId);
         }
 
         public void UpdateAccount(AccountCtrl obj)
         {
-            _accDataSource[obj.Id] = obj;
-            _updated[obj.Id] = StoreFlag.AddOrUpdate;
+            SetDirty(obj);
         }
 
         public ConfigProto.SetFlyResponse SetFly(ConfigProto.SetFlyRequest request)
@@ -149,10 +132,10 @@ namespace Application.Core.Login.Datas
             var chr = _server.CharacterManager.FindPlayerById(request.CId);
             if (chr != null)
             {
-                if (_accDataSource.TryGetValue(chr.Character.AccountId, out var data))
+                var acc = GetAccount(chr.Character.AccountId);
+                if (acc != null)
                 {
-                    data.GmMode = request.SetStatus;
-
+                    acc.GmMode = request.SetStatus;
                     return new ConfigProto.SetFlyResponse { Code = 0, Request = request };
                 }
             }
@@ -161,7 +144,7 @@ namespace Application.Core.Login.Datas
 
         public int[] GetOnlinedGmAccId()
         {
-            return _accDataSource.Values.Where(x => x.IsGmAccount()).Select(x => x.Id).ToArray();
+            return Query(x => x.GMLevel > 1, x => x.IsGmAccount()).Select(x => x.Id).ToArray();
         }
 
         public async Task SetGmLevel(SystemProto.SetGmLevelRequest request)
@@ -199,7 +182,7 @@ namespace Application.Core.Login.Datas
         public GetAllClientInfo GetOnliendClientInfo()
         {
             var onlinedPlayerAccounts = _server.CharacterManager.GetOnlinedPlayerAccountId();
-            var accountInfo = _accDataSource.Values.Where(x => onlinedPlayerAccounts.Contains(x.Id));
+            var accountInfo = Query(x => onlinedPlayerAccounts.Contains(x.Id), x => onlinedPlayerAccounts.Contains(x.Id));
 
             var res = new GetAllClientInfo();
             res.List.AddRange(accountInfo.Select(x => new ClientInfo { AccountName = x.Name, CharacterName = "", CurrentHWID = x.CurrentHwid, CurrentIP = x.CurrentIP, CurrentMAC = x.CurrentMac }));
@@ -218,36 +201,24 @@ namespace Application.Core.Login.Datas
             return acc.IsGmAccount();
         }
 
-        public async Task InitializeAsync(DBContext dbContext)
+        public override async Task InitializeAsync(DBContext dbContext)
         {
+            await base.InitializeAsync(dbContext);
+
             _accPlayerCache = new((await dbContext.Characters.AsNoTracking().Select(x => new { Id = x.Id, AccountId = x.AccountId }).ToListAsync())
                 .GroupBy(x => x.AccountId)
                 .ToDictionary(x => x.Key, x => x.Select(y => y.Id).ToHashSet()));
         }
 
-        public async Task Commit(DBContext dbContext)
+        protected override AccountEntity MapExsitedEntity(AccountCtrl localModel, AccountEntity dbModel)
         {
-            var updatedItems = _updated.Keys.ToList();
-            _updated.Clear();
-            if (updatedItems.Count == 0)
-                return;
-
-            var trackingItems = _accDataSource.Where(x => updatedItems.Contains(x.Key)).Select(x => x.Value).ToList();
-            var allAccounts = await dbContext.Accounts.Where(x => updatedItems.Contains(x.Id)).ToListAsync();
-            foreach (var obj in trackingItems)
-            {
-                var dbModel = allAccounts.FirstOrDefault(x => x.Id == obj.Id);
-                if (dbModel != null)
-                {
-                    dbModel.Pic = obj.Pic;
-                    dbModel.Pin = obj.Pin;
-                    dbModel.Gender = obj.Gender;
-                    dbModel.Tos = obj.Tos;
-                    dbModel.GMLevel = obj.GMLevel;
-                    dbModel.Characterslots = obj.Characterslots;
-                }
-            }
-            await dbContext.SaveChangesAsync();
+            dbModel.Pic = localModel.Pic;
+            dbModel.Pin = localModel.Pin;
+            dbModel.Gender = localModel.Gender;
+            dbModel.Tos = localModel.Tos;
+            dbModel.GMLevel = localModel.GMLevel;
+            dbModel.Characterslots = localModel.Characterslots;
+            return dbModel;
         }
     }
 }

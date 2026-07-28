@@ -44,7 +44,7 @@ namespace Application.Core.Login.Datas
                 await InitializeDataBase(dbContext, cancellationToken);
 
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
-                foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
+                foreach (var item in _masterServer.ServiceProvider.GetServices<IDataStorage>())
                 {
                     await item.InitializeAsync(dbContext);
                 }
@@ -67,13 +67,13 @@ namespace Application.Core.Login.Datas
                 sw.Start();
                 await dbContext.Database.MigrateAsync(cancellationToken);
 
-                if (!dbContext.Accounts.Any())
+                if (!await dbContext.Accounts.AnyAsync(cancellationToken))
                 {
                     dbContext.Accounts.Add(AdminSeedData.Account);
-                    await dbContext.SaveChangesAsync();
+                    await dbContext.SaveChangesAsync(cancellationToken);
 
                     dbContext.Characters.Add(AdminSeedData.GenerateAdminCharacter());
-                    await dbContext.SaveChangesAsync();
+                    await dbContext.SaveChangesAsync(cancellationToken);
                 }
 
                 sw.Stop();
@@ -139,7 +139,7 @@ namespace Application.Core.Login.Datas
                 await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
                 await using var dbTrans = await dbContext.Database.BeginTransactionAsync();
 
-                foreach (var item in _masterServer.ServiceProvider.GetServices<IStorage>())
+                foreach (var item in _masterServer.ServiceProvider.GetServices<IDataStorage>())
                 {
                     await item.Commit(dbContext);
                 }

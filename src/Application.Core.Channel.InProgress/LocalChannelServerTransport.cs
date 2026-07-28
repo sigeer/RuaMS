@@ -46,7 +46,7 @@ namespace Application.Core.Channel.InProgress
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
-        readonly ResourceDataManager _resourceService;
+        readonly PLifeDataManager _resourceService;
         readonly IMapper _mapper;
         readonly IServiceProvider _sp;
         public LocalChannelServerTransport(
@@ -60,7 +60,7 @@ namespace Application.Core.Channel.InProgress
             RankService rankService,
             InvitationService invitationService,
             IExpeditionService expeditionService,
-            ResourceDataManager resourceDataService,
+            PLifeDataManager resourceDataService,
             IMapper mapper)
         {
             _sp = sp;

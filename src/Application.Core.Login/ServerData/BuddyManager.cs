@@ -12,19 +12,12 @@ namespace Application.Core.Login.ServerData
     public class BuddyManager
     {
         readonly MasterServer _server;
-        readonly IMapper _mapper;
-        readonly ILogger<BuddyManager> _logger;
-        readonly InvitationService _invitationService;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
 
 
-        public BuddyManager(MasterServer server, IMapper mapper, ILogger<BuddyManager> logger, InvitationService invitationService, IDbContextFactory<DBContext> dbContextFactory)
+
+        public BuddyManager(MasterServer server)
         {
             _server = server;
-            _mapper = mapper;
-            _logger = logger;
-            _invitationService = invitationService;
-            _dbContextFactory = dbContextFactory;
         }
 
         public static BuddyProto.BuddyDto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)

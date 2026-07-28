@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
-public partial class RingEntity
+public partial class RingEntity: IKeyedEntity<int>
 {
     public RingEntity(int id, int itemId, long ringId1, long ringId2, int characterId1, int characterId2)
     {

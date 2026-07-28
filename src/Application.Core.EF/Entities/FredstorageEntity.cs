@@ -1,8 +1,9 @@
+using Application.Core.EF;
 using Google.Protobuf;
 
 namespace Application.EF.Entities;
 
-public partial class FredstorageEntity
+public partial class FredstorageEntity: IKeyedEntity<int>
 {
     private FredstorageEntity() 
     {

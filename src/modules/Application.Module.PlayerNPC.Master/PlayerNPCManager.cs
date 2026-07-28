@@ -14,7 +14,7 @@ using System.Linq.Expressions;
 
 namespace Application.Module.PlayerNPC.Master
 {
-    public class PlayerNPCManager : StorageBase<int, PlayerNpcModel>, IPlayerNPCManager
+    public class PlayerNPCManager : DataStorageBase<int, PlayerNpcModel>, IPlayerNPCManager
     {
         readonly MasterTransport _transport;
         readonly IMapper _mapper;

@@ -16,8 +16,10 @@ using System.Xml.Linq;
 
 namespace Application.Core.Login.ServerData
 {
-    public class GuildManager : IStorage, IDisposable
+    public class GuildManager : IDataStorage, IDisposable
     {
+        public StorageCategory Category => StorageCategory.Guild;
+
         ConcurrentDictionary<int, GuildModel> _idGuildDataSource = new();
         ConcurrentDictionary<string, GuildModel> _nameGuildDataSource = new();
         int _currentGuildId = 1;

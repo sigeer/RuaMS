@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF.Entities;
 
-public class GiftEntity
+public class GiftEntity: IKeyedEntity<int>
 {
     public GiftEntity(int id , int to, int from, string message, int sn, int ringid)
     {
@@ -20,9 +22,10 @@ public class GiftEntity
 
     public int FromId { get; set; }
 
-    public string Message { get; set; } = null!;
+    public string Message { get; set; } = "";
 
     public int Sn { get; set; }
 
     public int RingSourceId { get; set; }
+    public DateTimeOffset? ClaimTime { get; set; }
 }

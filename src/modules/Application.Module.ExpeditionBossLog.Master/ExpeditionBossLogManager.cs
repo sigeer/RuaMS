@@ -1,94 +1,72 @@
+using Application.Core.EF.Entities;
 using Application.Core.Login;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
 using Application.Utility.Configs;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.ExpeditionBossLog.Master
 {
-    public class ExpeditionBossLogManager : IStorage
+    public class ExpeditionBossLogManager : DataStorageBase<int, PlayerBossLogModel, BossLogEntity>
     {
-        readonly ILogger<ExpeditionBossLogManager> _logger;
-        List<PlayerBossLogModel> _dataSource = new();
         readonly MasterServer _server;
 
         List<BossLogEntry> _allTypes = EnumClassUtils.GetValues<BossLogEntry>();
 
-        public ExpeditionBossLogManager(ILogger<ExpeditionBossLogManager> logger, MasterServer server)
+        public ExpeditionBossLogManager(ILogger<ExpeditionBossLogManager> logger, MasterServer server, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper)
+            : base(StorageCategory.ExpeditionRecord, dbContextFactory, mapper, logger)
         {
             _server = server;
             _logger = logger;
         }
 
-        public async Task InitializeAsync(DBContext dbContext)
+        protected override int GetKey(PlayerBossLogModel model) => model.Id;
+
+        protected override PlayerBossLogModel MapModel(BossLogEntity entity)
         {
-            var weeklyData = await dbContext.BosslogWeeklies.AsNoTracking()
-                .Select(x => new PlayerBossLogModel { BossName = x.Bosstype, CharacterId = x.CharacterId, Time = x.Attempttime }).ToArrayAsync();
-            var dailyData = await dbContext.BosslogDailies.AsNoTracking()
-                .Select(x => new PlayerBossLogModel { BossName = x.Bosstype, CharacterId = x.CharacterId, Time = x.Attempttime }).ToArrayAsync();
-            _dataSource.AddRange(weeklyData);
-            _dataSource.AddRange(dailyData);
+            return new PlayerBossLogModel
+            {
+                Id = entity.Id,
+                BossName = entity.BossType,
+                CharacterId = entity.CharacterId,
+                Flag = entity.Flag,
+                Time = entity.Time
+            };
         }
 
-        public async Task Commit(DBContext dbContext)
+        protected override BossLogEntity MapEntity(PlayerBossLogModel localModel)
         {
-            await dbContext.BosslogWeeklies.ExecuteDeleteAsync();
-            await dbContext.BosslogDailies.ExecuteDeleteAsync();
-            foreach (var type in _allTypes)
-            {
-                var typedData = _dataSource.Where(x => x.BossName == type.name());
-                if (type.Week)
-                {
-                    dbContext.BosslogWeeklies.AddRange(typedData.Select(x => new EF.Entities.BosslogWeekly(x.CharacterId, x.BossName, x.Time)));
-                }
-                else
-                {
-                    dbContext.BosslogDailies.AddRange(typedData.Select(x => new EF.Entities.BosslogDaily(x.CharacterId, x.BossName, x.Time)));
-                }
-            }
-            await dbContext.SaveChangesAsync();
-        }
-        public void ResetBossLogTable()
-        {
-            /*
-            Boss logs resets 12am, weekly thursday 12AM - thanks Smitty Werbenjagermanjensen (superadlez) - https://www.reddit.com/r/Maplestory/comments/61tiup/about_reset_time/
-            */
-            var thursday = _server.GetCurrentTimeDateTimeOffset().Date;
-            int delta = ((int)DayOfWeek.Thursday - (int)thursday.DayOfWeek + 7) % 7;
-            //if (delta <= 0)
-            //    delta += 7; // 如加7天到下一个周四
-            thursday = thursday.AddDays(delta);
-
-            DateTimeOffset now = _server.GetCurrentTimeDateTimeOffset();
-            var deltaTime = now - thursday;
-            if (deltaTime.TotalHours < 12)
-            {
-                ResetWeeklyData(thursday);
-            }
-
-            ResetDailyData(now);
+            return new BossLogEntity(localModel.Id, localModel.CharacterId, localModel.BossName, localModel.Flag, localModel.Time);
         }
 
-        private void ResetWeeklyData(DateTimeOffset c)
+        protected override BossLogEntity MapExsitedEntity(PlayerBossLogModel localModel, BossLogEntity dbModel)
         {
-            var weeklyType = _allTypes.Where(x => x.Week).ToList();
-            foreach (var data in weeklyType)
-            {
-                var bossName = data.name();
-                _dataSource.RemoveAll(x => x.BossName == bossName && x.Time <= c);
-            }
+            dbModel.Flag = localModel.Flag;
+
+            return dbModel;
         }
 
-        private void ResetDailyData(DateTimeOffset c)
+        List<PlayerBossLogModel> GetTodayData(int characterId, string bossName)
         {
-            var dailyType = _allTypes.Where(x => !x.Week).ToList();
-            foreach (var data in dailyType)
-            {
-                var bossName = data.name();
-                _dataSource.RemoveAll(x => x.BossName == bossName && x.Time <= c);
-            }
+            var today = _server.GetCurrentTimeDateTimeOffset().ToLocalTime();
+            return Query(x => x.CharacterId == characterId && x.BossType == bossName && x.Time.Date == today
+            , x => x.CharacterId == characterId && x.BossName == bossName && x.Time.Date == today);
+        }
+
+        List<PlayerBossLogModel> GetWeekData(int characterId, string bossName)
+        {
+            var now = _server.GetCurrentTimeDateTimeOffset().ToLocalTime();
+            var diff = (int)now.DayOfWeek - (int)DayOfWeek.Monday;
+            if (diff < 0) diff += 7;
+            var monday = now.Date.AddDays(-diff); // 注意：Date 返回 DateTime，需要转回 DateTimeOffset
+            var mondayOffset = new DateTimeOffset(monday, now.Offset);
+            var nextMondayOffset = mondayOffset.AddDays(7);
+
+            return Query(x => x.CharacterId == characterId && x.BossType == bossName && x.Time >= mondayOffset && x.Time < nextMondayOffset && x.Flag == 0
+            , x => x.CharacterId == characterId && x.BossName == bossName && x.Time >= mondayOffset && x.Time < nextMondayOffset && x.Flag == 0);
         }
 
         public bool AttemptBoss(int cid, int channel, string bossName, bool log)
@@ -109,14 +87,15 @@ namespace Application.Module.ExpeditionBossLog.Master
                 return false;
             }
 
-            if (_dataSource.Count(x => x.CharacterId == cid && x.BossName == boss.name()) >= boss.Entries)
+            var dataList = boss.Week ? GetWeekData(cid, bossName) : GetTodayData(cid, bossName);
+            if (dataList.Count >= boss.Entries)
             {
                 return false;
             }
 
             if (log)
             {
-                _dataSource.Add(new PlayerBossLogModel { BossName = boss.name(), CharacterId = cid, Time = _server.GetCurrentTimeDateTimeOffset() });
+                SetDirty(new PlayerBossLogModel { Id = Interlocked.Increment(ref _localId), BossName = boss.name(), CharacterId = cid, Time = _server.GetCurrentTimeDateTimeOffset() });
             }
             return true;
         }

@@ -5,69 +5,43 @@ using Application.Shared.Items;
 using Application.Utility;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
 namespace Application.Core.Login.ServerData
 {
-    public class CDKManager : StorageBase<int, CdkCodeModel>
+    public class CDKManager : DataStorageBase<int, CdkRecordModel, CdkRecordEntity>
     {
         readonly MasterServer _server;
-        readonly IMapper _mapper;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
+        IMemoryCache _cache;
 
-        public CDKManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory) : base(x => x.Id)
+        public CDKManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, IMemoryCache cache, ILogger<CDKManager> logger) 
+            : base(StorageCategory.CDK, dbContextFactory, mapper, logger)
         {
             _server = server;
-            _mapper = mapper;
-            _dbContextFactory = dbContextFactory;
+            _cache = cache;
         }
 
+        protected override int GetKey(CdkRecordModel model) => model.Id;
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<CdkCodeModel>> updateData)
+
+        CdkCodeModel? GetCdkData(string cdk)
         {
-            await dbContext.CdkItems.Where(x => updateData.Keys.Contains(x.CodeId)).ExecuteDeleteAsync();
-            await dbContext.CdkRecords.Where(x => updateData.Keys.Contains(x.CodeId)).ExecuteDeleteAsync();
-
-            foreach (var item in updateData)
+            return _cache.GetOrCreate($"CDK:{cdk}", e =>
             {
-                if (item.Value.Flag == StoreFlag.AddOrUpdate)
+                using var dbContext = _dbContextFactory.CreateDbContext();
+                var model = dbContext.CdkCodes.FirstOrDefault(x => x.Code == cdk);
+                if (model != null)
                 {
-                    var obj = item.Value.Data!;
-                    dbContext.CdkItems.AddRange(obj.Items.Select(x => new Application.EF.Entities.CdkItemEntity(obj.Id, x.Type, x.ItemId, x.Quantity)));
-                    dbContext.CdkRecords.AddRange(obj.Histories.Select(x => new CdkRecordEntity(obj.Id, x.RecipientId, x.RecipientTime)));
+                    var items = dbContext.CdkItems.Where(x => x.CodeId == model.Id).ToList();
+                    var dto = _mapper.Map<CdkCodeModel>(model);
+                    dto.Items = _mapper.Map<List<CdkItemModel>>(items);
+                    return dto;
                 }
-
-            }
-            await dbContext.SaveChangesAsync();
-        }
-
-        public override List<CdkCodeModel> Query(Expression<Func<CdkCodeModel, bool>> expression)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext(); ;
-
-           var dataFromDB = dbContext.CdkCodes.AsNoTracking().ProjectToType<CdkCodeModel>().Where(expression).ToList();
-            var filteredCodeIds = dataFromDB.Select(x => x.Id).ToArray();
-            var allCodeItems = dbContext.CdkItems.AsNoTracking().Where(x => filteredCodeIds.Contains(x.CodeId)).ToList();
-            var allHistories = dbContext.CdkRecords.AsNoTracking().Where(x => filteredCodeIds.Contains(x.CodeId)).ToList();
-            foreach (var item in dataFromDB)
-            {
-                item.Items = _mapper.Map<List<CdkItemModel>>(allCodeItems.Where(y => y.CodeId == item.Id));
-                item.Histories = _mapper.Map<List<CdkRecordModel>>(allHistories.Where(y => y.CodeId == item.Id));
-            }
-            return QueryWithDirty(dataFromDB, expression.Compile());
-        }
-
-        public override Task InitializeAsync(DBContext dbContext)
-        {
-            //long timeClear = _server.GetCurrentTimeDateTimeOffset().AddDays(-14).ToUnixTimeMilliseconds();
-
-            //var codeList = await dbContext.CdkCodes.Where(x => x.Expiration <= timeClear).ToListAsync();
-            //var codeIdList = codeList.Select(x => x.Id).ToList();
-            //await dbContext.CdkItems.Where(x => codeIdList.Contains(x.CodeId)).ExecuteDeleteAsync();
-            //dbContext.CdkCodes.RemoveRange(codeList);
-            //await dbContext.SaveChangesAsync();
-            return Task.CompletedTask;
+                return null;
+            });
         }
 
         ConcurrentDictionary<string, Lock> _cdkLocks = new ConcurrentDictionary<string, Lock>();
@@ -82,7 +56,7 @@ namespace Application.Core.Login.ServerData
 
             lock (lockObj)
             {
-                var data = Query(x => x.Code == request.Cdk).FirstOrDefault();
+                var data = GetCdkData(request.Cdk);
 
                 if (data != null)
                 {
@@ -90,14 +64,15 @@ namespace Application.Core.Login.ServerData
                     if (data.Expiration < _server.getCurrentTime())
                         return new UseCdkResponse { Code = (int)UseCdkResponseCode.Expired };
 
-                    if (data.MaxCount > 0 && data.Histories.Count >= data.MaxCount)
+                    var histories = Query(x => x.CodeId == data.Id, x => x.CodeId == data.Id).ToList();
+
+                    if (data.MaxCount > 0 && histories.Count >= data.MaxCount)
                         return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
 
-                    if (data.Histories.Any(x => x.RecipientId == request.MasterId))
+                    if (histories.Any(x => x.RecipientId == request.MasterId))
                         return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
 
-                    data.Histories.Add(new CdkRecordModel { RecipientId = request.MasterId, RecipientTime = _server.GetCurrentTimeDateTimeOffset() });
-                    SetDirty(data);
+                    SetDirty(new CdkRecordModel { Id = Interlocked.Increment(ref _localId), CodeId = data.Id, RecipientId = request.MasterId, RecipientTime = _server.GetCurrentTimeDateTimeOffset() });
 
                     var res = new UseCdkResponse();
                     res.Items.AddRange(_mapper.Map<ItemProto.CdkRewordPackageDto[]>(data.Items));

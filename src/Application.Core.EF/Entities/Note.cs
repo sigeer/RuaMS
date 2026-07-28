@@ -1,6 +1,8 @@
+using Application.Core.EF;
+
 namespace Application.EF;
 
-public partial class NoteEntity
+public partial class NoteEntity: IKeyedEntity<int>
 {
     private NoteEntity()
     {

@@ -7,11 +7,8 @@ namespace Application.Shared.Models
         public string Pin { get; set; } = "";
 
         public string Pic { get; set; } = "";
-
-
-
         public bool Tos { get; set; }
-
+        public string CurrentHwid { get; set; } = "";
         public string CurrentIP { get; set; } = "";
         public string CurrentMac { get; set; } = "";
 

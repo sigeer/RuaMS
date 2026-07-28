@@ -15,7 +15,7 @@ namespace Application.Module.BBS.Master
         {
             TypeAdapterConfig.GlobalSettings.Scan(typeof(Mapper).Assembly);
             services.AddSingleton<BBSManager>();
-            services.AddSingleton<IStorage, BBSManager>(sp => sp.GetRequiredService<BBSManager>());
+            services.AddSingleton<IDataStorage, BBSManager>(sp => sp.GetRequiredService<BBSManager>());
             services.AddSingleton<IServerBootstrap, BBSMasterBootstrap>();
             return services;
         }

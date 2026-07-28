@@ -33,9 +33,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<BbsThreadEntity> BbsThreads { get; set; }
 
-    public virtual DbSet<BosslogDaily> BosslogDailies { get; set; }
-
-    public virtual DbSet<BosslogWeekly> BosslogWeeklies { get; set; }
+    public virtual DbSet<BossLogEntity> BossLogs { get; set; }
 
 
     public virtual DbSet<CharacterEntity> Characters { get; set; }
@@ -117,6 +115,12 @@ public partial class DBContext : DbContext
     public virtual DbSet<SpecialCashItemEntity> Specialcashitems { get; set; }
 
     #endregion
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.EnableSensitiveDataLogging(true);
+    }
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -229,48 +233,25 @@ public partial class DBContext : DbContext
         });
 
 
-        modelBuilder.Entity<BosslogDaily>(entity =>
+        modelBuilder.Entity<BossLogEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("bosslog_daily");
+            entity.ToTable("boss_log");
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");
-            entity.Property(e => e.Attempttime)
+            entity.Property(e => e.Time)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime,v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("attempttime");
-            entity.Property(e => e.Bosstype)
-                .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
-                .HasColumnName("bosstype");
+                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
+            entity.Property(e => e.BossType)
+                .HasColumnType("varchar(20)");
             entity.Property(e => e.CharacterId)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
+                .HasColumnType("int");
+            entity.Property(e => e.Flag)
+                .HasColumnType("int");
         });
-
-        modelBuilder.Entity<BosslogWeekly>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("bosslog_weekly");
-
-            entity.Property(e => e.Id)
-                .HasColumnName("id");
-            entity.Property(e => e.Attempttime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("attempttime");
-            entity.Property(e => e.Bosstype)
-                .HasColumnType(isMysql ? "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')" : "text")
-                .HasColumnName("bosstype");
-            entity.Property(e => e.CharacterId)
-                .HasColumnType("int")
-                .HasColumnName("characterid");
-        });
-
 
 
         modelBuilder.Entity<DropDataGlobal>(entity =>
@@ -374,11 +355,11 @@ public partial class DBContext : DbContext
 
         modelBuilder.Entity<DueyPackageEntity>(entity =>
         {
-            entity.HasKey(e => e.PackageId).HasName("PRIMARY");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.ToTable("dueypackages");
 
-            entity.Property(e => e.PackageId);
+            entity.Property(e => e.Id);
             entity.Property(e => e.HasNotified)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1)");
@@ -938,7 +919,7 @@ public partial class DBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("notes");
+            entity.ToTable("notes").HasQueryFilter(x => !x.Deleted);
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");

@@ -1,36 +1,27 @@
-using Application.Core.Login.Models;
+using Application.Core.Login.Models.Items;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Application.Utility;
 using CashProto;
 using ItemProto;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class GiftManager : StorageBase<int, GiftModel>
+    public class GiftManager : DataStorageBase<int, GiftModel, GiftEntity>
     {
-        readonly IMapper _mapper;
-        readonly IDbContextFactory<DBContext> _dbContextFactory;
         readonly MasterServer _server;
         readonly NoteManager _noteService;
 
-        int _localId = 0;
-
-        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteManager noteService) : base(x => x.Id)
+        public GiftManager(IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, MasterServer server, NoteManager noteService, ILogger<GiftManager> logger)
+            : base(StorageCategory.Gift, dbContextFactory, mapper, logger)
         {
-            _mapper = mapper;
-            _dbContextFactory = dbContextFactory;
             _server = server;
             _noteService = noteService;
         }
 
-        public override async Task InitializeAsync(DBContext dbContext)
-        {
-            _localId = await dbContext.Gifts.MaxAsync(x => (int?)x.Id) ?? 0;
-        }
+        protected override int GetKey(GiftModel model) => model.Id;
         public CreateGiftResponse CreateGift(int fromId, string toName, int sn, int cashItemId, string message, bool createRing)
         {
             var receiver = _server.CharacterManager.FindPlayerByName(toName);
@@ -46,16 +37,15 @@ namespace Application.Core.Login.ServerData
             }
 
             var ringModel = createRing ? _server.RingManager.CreateRing(cashItemId, sender.Character.Id, receiver.Character.Id) : null;
-
-            var newId = Interlocked.Increment(ref _localId);
+            var ringDto = _server.RingManager.MapDto(ringModel);
             var newModel = new GiftModel
             {
-                Id = newId,
-                From = sender.Character.Id,
+                Id = Interlocked.Increment(ref _localId),
+                FromId = sender.Character.Id,
                 Message = message,
                 Sn = sn,
-                To = receiver.Character.Id,
-                RingSourceId = ringModel?.Id ?? -1
+                ToId = receiver.Character.Id,
+                RingSourceId = ringModel?.Id ?? 0,
             };
             SetDirty(newModel);
 
@@ -66,66 +56,46 @@ namespace Application.Core.Login.ServerData
 
 
 
-            return new CreateGiftResponse { Recipient = toName, RingSource = ringModel };
-        }
-
-        ItemProto.GiftDto MapToGiftDto(GiftModel? giftModel)
-        {
-            var dto = _mapper.Map<ItemProto.GiftDto>(giftModel);
-            dto.FromName = _server.CharacterManager.GetPlayerName(giftModel.From);
-            dto.ToName = _server.CharacterManager.GetPlayerName(giftModel.To);
-            return dto;
+            return new CreateGiftResponse { Recipient = toName, RingSource = ringDto };
         }
 
         public GetMyGiftsResponse LoadGifts(GetMyGiftsRequest request)
         {
-            var gifts = Query(x => x.To == request.MasterId);
-            var ringIds = gifts.Select(x => x.RingSourceId).ToArray();
-            var rings = _server.RingManager.Query(x => ringIds.Contains(x.Id));
-
+            var gifts = Query(x => x.ToId == request.MasterId && x.ClaimTime == null, x => x.ToId == request.MasterId && x.ClaimTime == null);
             var res = new GetMyGiftsResponse();
-            foreach (var gift in gifts)
-            {
-                var dto = MapToGiftDto(gift);
-
-                dto.Ring = rings.FirstOrDefault(x => x.Id == gift.RingSourceId);
-                res.List.Add(dto);
-            }
+            res.List.AddRange(MapDto(gifts));
             return res;
+        }
+
+        List<ItemProto.GiftDto> MapDto(List<GiftModel> model)
+        {
+            var ringIdList = model.Select(x => x.RingSourceId).ToList();
+            var rings = _server.RingManager.Query(x => ringIdList.Contains(x.Id), x => ringIdList.Contains(x.Id)).ToList();
+
+            var list = _mapper.Map<List<ItemProto.GiftDto>>(model);
+            foreach (var item in list)
+            {
+                item.FromName = _server.CharacterManager.GetPlayerName(item.From);
+                item.ToName = _server.CharacterManager.GetPlayerName(item.To);
+                item.Ring = _server.RingManager.MapDto(rings.FirstOrDefault(x => x.Id == item.RingSourceId));
+            }
+            return list;
         }
 
         public void CommitRetrieveGift(int[] giftIdArray)
         {
-            foreach (var item in giftIdArray)
+            var gifts = Query(x => giftIdArray.Contains(x.Id), x => giftIdArray.Contains(x.Id));
+            foreach (var item in gifts)
             {
+                item.ClaimTime = _server.GetCurrentTimeDateTimeOffset();
                 SetRemoved(item);
             }
         }
 
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<GiftModel>> updateData)
+        protected override void CommitRemove(DBContext dbContext, GiftEntity? dbModel, GiftModel localModel)
         {
-            var updateKeys = updateData.Keys.ToArray();
-            await dbContext.Gifts.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
-
-            foreach (var kw in updateData)
-            {
-                var item = kw.Value;
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
-                {
-                    var dbData = new GiftEntity(obj.Id, obj.To, obj.From, obj.Message, obj.Sn, obj.RingSourceId);
-                    dbContext.Gifts.Add(dbData);
-                }
-            }
-
-            await dbContext.SaveChangesAsync();
-        }
-
-        public override List<GiftModel> Query(Expression<Func<GiftModel, bool>> expression)
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
-            return QueryWithDirty(dbContext.Gifts.ProjectToType<GiftModel>().Where(expression).ToList(), expression.Compile());
+            if (dbModel != null)
+                dbModel.ClaimTime = localModel.ClaimTime;
         }
     }
 }

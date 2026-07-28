@@ -1,9 +1,10 @@
+using Application.Core.EF;
 using Application.Shared.Constants;
 using Google.Protobuf;
 
 namespace Application.EF.Entities;
 
-public class CharacterEntity
+public class CharacterEntity: IKeyedEntity<int>
 {
     public CharacterEntity() 
     { 
