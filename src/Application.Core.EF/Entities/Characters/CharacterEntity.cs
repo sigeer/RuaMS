@@ -110,7 +110,7 @@ public class CharacterEntity: IKeyedEntity<int>
 
     public int BuddyCapacity { get; set; } = DefaultConfigs.BuddyCapacity;
 
-    public DateTimeOffset CreateDate { get; set; }
+    public DateTimeOffset CreateDate { get; set; } = DateTimeOffset.UtcNow;
 
     public int Rank { get; set; }
 
@@ -174,9 +174,9 @@ public class CharacterEntity: IKeyedEntity<int>
 
     public string DataString { get; set; } = "";
 
-    public DateTimeOffset LastLogoutTime { get; set; }
+    public DateTimeOffset LastLogoutTime { get; set; } = DateTimeOffset.UtcNow;
 
-    public DateTimeOffset LastExpGainTime { get; set; }
+    public DateTimeOffset LastExpGainTime { get; set; } = DateTimeOffset.UtcNow;
 
     public bool PartySearch { get; set; } = true;
 

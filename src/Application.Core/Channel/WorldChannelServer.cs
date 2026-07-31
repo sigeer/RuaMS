@@ -9,6 +9,7 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Login;
 using Application.Shared.Servers;
@@ -23,10 +24,11 @@ using Microsoft.Extensions.Options;
 using SyncProto;
 using System.Diagnostics;
 using System.Net;
+using tools;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer : IServerBase<IChannelServerTransport>, IActorInstance<WorldChannelServer>, IServiceCenter, ITickable
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>, INodeServer, IServiceCenter, ITickable
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
@@ -127,7 +129,6 @@ namespace Application.Core.Channel
         public TickableStatus Status => throw new NotImplementedException();
         public PluginManager PluginManager { get; }
         public IMapper Mapper { get; }
-
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
             IOptions<ChannelServerConfig> serverConfigOptions,
@@ -576,26 +577,28 @@ namespace Application.Core.Channel
         /// 在本节点的所有频道中查找目标玩家并执行操作。
         /// 节点内频道数通常很少（1-5），直接遍历即可。
         /// </summary>
-        public async Task SendToPlayerAsync(int playerId, Func<Player, Task> action)
+        public async Task<bool> SendToPlayerAsync(int playerId, Func<Player, Task> action)
         {
             foreach (var ch in Servers.Values)
             {
                 if (await ch.SendToPlayerAsync(playerId, action))
                 {
-                    return;
+                    return true;
                 }
             }
+            return false;
         }
 
-        public async Task SendToPlayerAsync(int playerId, Action<Player> action)
+        public async Task<bool> SendToPlayerAsync(int playerId, Action<Player> action)
         {
             foreach (var ch in Servers.Values)
             {
                 if (await ch.SendToPlayerAsync(playerId, action))
                 {
-                    return;
+                    return true;
                 }
             }
+            return false;
         }
 
 
@@ -608,11 +611,11 @@ namespace Application.Core.Channel
             }
         }
 
-        public async Task SendToPlayersAsync(IEnumerable<int> playerIds, Func<Player, Task> action)
+        public async Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Func<Player, Task> action)
         {
             var ids = playerIds.ToList();
             if (ids.Count == 0)
-                return;
+                return 0;
 
             var count = 0;
             foreach (var ch in Servers.Values)
@@ -623,14 +626,14 @@ namespace Application.Core.Channel
                     break;
                 }
             }
+            return count;
         }
 
-        public async Task SendToPlayersAsync(IEnumerable<int> playerIds, Action<Player> action)
+        public async Task<int> SendToPlayersAsync(IEnumerable<int> playerIds, Action<Player> action)
         {
-
             var ids = playerIds.ToList();
             if (ids.Count == 0)
-                return;
+                return 0;
 
             var count = 0;
             foreach (var ch in Servers.Values)
@@ -641,6 +644,7 @@ namespace Application.Core.Channel
                     break;
                 }
             }
+            return count;
         }
 
         public async Task BroadcastPlayersAsync(Func<Player, Task> action)
@@ -651,5 +655,27 @@ namespace Application.Core.Channel
             }
         }
 
+        public void RegisterScriptableNpc(ScriptableNpc data)
+        {
+            Broadcast(ch =>
+            {
+                ch.RegisterScriptableNpc(data);
+            });
+        }
+
+        public void RemoveScriptableNpc(int npcId)
+        {
+            Broadcast(ch =>
+            {
+                ch.RemoveScriptableNpc(npcId);
+            });
+        }
+        public async Task FlushScriptableNpc()
+        {
+            await BroadcastAsync(async ch =>
+            {
+                await ch.FlushScriptableNpc();
+            });
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Img.Provider
         {
         }
 
-        protected override AbstractTemplate? SetStringTemplate(IDataNode rootNode)
+        protected override StringTemplateBase? SetStringTemplate(IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var id))
             {
@@ -36,13 +36,6 @@ namespace Application.Templates.Reader.Img.Provider
                 return template;
             }
             return null;
-        }
-
-        public override IEnumerable<AbstractTemplate> Search(string searchText, int maxCount = 50)
-        {
-            return LoadAll().OfType<StringNpcTemplate>()
-                .Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                .Take(maxCount);
         }
     }
 }

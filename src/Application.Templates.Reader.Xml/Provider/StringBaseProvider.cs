@@ -1,5 +1,4 @@
 using Application.Templates.Exceptions;
-using Application.Templates.Reader;
 using Application.Templates.Reader.Resolvers;
 using Application.Templates.String;
 using Microsoft.Extensions.Logging;
@@ -15,29 +14,7 @@ namespace Application.Templates.Reader.Xml.Provider
         {
         }
 
-        protected override AbstractTemplate? GetItemInternal(int templateId)
-        {
-            return LoadAll().FirstOrDefault(x => x.TemplateId == templateId);
-        }
-
-        protected override IEnumerable<AbstractTemplate> LoadAllInternal()
-        {
-            List<AbstractTemplate> all = new List<AbstractTemplate>();
-            try
-            {
-                foreach (var file in _resolver.ResolveGroup(Type))
-                {
-                    all.AddRange(GetDataFromImg(file));
-                }
-            }
-            catch (Exception ex)
-            {
-                LibLog.Logger.LogError(ex.ToString());
-            }
-            return all;
-        }
-
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<StringTemplateBase> GetDataFromImg(string path)
         {
             try
             {
@@ -69,7 +46,7 @@ namespace Application.Templates.Reader.Xml.Provider
         }
 
 
-        protected virtual AbstractTemplate? SetStringTemplate(XElement rootNode)
+        protected virtual StringTemplateBase? SetStringTemplate(XElement rootNode)
         {
             if (int.TryParse(rootNode.GetName(), out var id))
             {
@@ -90,7 +67,7 @@ namespace Application.Templates.Reader.Xml.Provider
             return null;
         }
 
-        protected IEnumerable<AbstractTemplate> ProcessStringXml(StringTemplateType fileType, XElement rootNode)
+        protected IEnumerable<StringTemplateBase> ProcessStringXml(StringTemplateType fileType, XElement rootNode)
         {
             if (fileType == StringTemplateType.Eqp)
             {
@@ -128,11 +105,6 @@ namespace Application.Templates.Reader.Xml.Provider
                         yield return data;
                 }
             }
-        }
-
-        public virtual IEnumerable<AbstractTemplate> Search(string searchText, int maxCount = 50)
-        {
-            return LoadAll().OfType<StringTemplate>().Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(maxCount);
         }
     }
 }

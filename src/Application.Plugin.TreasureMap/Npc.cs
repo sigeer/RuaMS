@@ -18,7 +18,7 @@ namespace Application.Plugin.TreasureMap
 
         static ConcurrentDictionary<int, int> _quests = [];
 
-        public async Task n1052103()
+        public async Task getTreasureMap()
         {
             if (getLevel() < 30)
             {

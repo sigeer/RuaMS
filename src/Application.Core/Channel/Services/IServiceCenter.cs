@@ -3,6 +3,7 @@ using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.Models;
 using Application.Shared.Servers;
 using System.Net;
 
@@ -11,7 +12,7 @@ namespace Application.Core.Channel.Services
     /// <summary>
     /// 只读服务
     /// </summary>
-    public interface IServiceCenter
+    public interface IServiceCenter: IScriptableNpcConfig
     {
         ChannelServerConfig ServerConfig { get; }
         PluginManager PluginManager { get; }
@@ -40,7 +41,6 @@ namespace Application.Core.Channel.Services
         CashItemProvider CashItemProvider { get; }
         BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
         List<AbstractChannelModule> Modules { get; }
-
         /// <summary>
         /// 
         /// </summary>

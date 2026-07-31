@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Hwidaccount
 {
@@ -8,7 +8,7 @@ public partial class Hwidaccount
 
     public sbyte Relevance { get; set; }
 
-    public DateTimeOffset ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.UtcNow;
     public Hwidaccount(string hWId, int accountId, DateTimeOffset expiresAt)
     {
         Hwid = hWId;

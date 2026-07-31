@@ -1,7 +1,5 @@
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Application.Core.Login;
+using Application.Host.Models;
 
 namespace Application.Host.Services
 {
@@ -10,45 +8,50 @@ namespace Application.Host.Services
     /// </summary>
     public class AuthService
     {
-        public string GenerateToken()
+        public const string IssuerSigningKey = "38395FD9-2E84-452B-8244-C5D78B175BCA";
+        readonly MasterServer _server;
+
+        public AuthService(MasterServer server)
         {
-            var token = new JwtSecurityToken(
-                issuer:"ruams",
-                claims: [new Claim(ClaimTypes.NameIdentifier, "admin")],
-                notBefore: DateTime.Now,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AuthService.GetAuthCode())), SecurityAlgorithms.HmacSha256));
-            var handler = new JwtSecurityTokenHandler();
-            return handler.WriteToken(token);
+            _server = server;
         }
 
-        public string CheckAuth(string pwd)
+        public TokenModel? Login(LoginForm loginForm)
         {
-            if (pwd == AuthCode)
-                return GenerateToken();
-
-            return "error";
-        }
-
-        public static string? AuthCode { get; set; }
-        public static string GetAuthCode()
-        {
-            if (!string.IsNullOrEmpty(AuthCode))
-                return AuthCode;
-
-            var rootPwd = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "authentication");
-            if (!File.Exists(rootPwd))
+            var acc = _server.AccountManager.Find(x => x.Name == loginForm.UserName, x => x.Name.Equals(loginForm.UserName, StringComparison.OrdinalIgnoreCase));
+            if (acc == null)
+                return null;
+            if (acc.Password.Equals(loginForm.Password,  StringComparison.OrdinalIgnoreCase))
             {
-                AuthCode = Guid.NewGuid().ToString();
-                File.WriteAllText(rootPwd, AuthCode);
+                return TokenModel.CreateToken(
+                    2 * 3600,
+                    30 * 24 * 3600, 
+                    "ruams", 
+                    _server.Name, 
+                    acc.Id, 
+                    acc.GetRole(), 
+                    IssuerSigningKey);
             }
-            else
-                AuthCode = File.ReadAllText(rootPwd);
 
-            return AuthCode;
+            return null;
+        }
 
+        public TokenModel? LoginById(int accId)
+        {
+            var acc = _server.AccountManager.Find(accId);
+            if (acc != null)
+            {
+                return TokenModel.CreateToken(
+                    2 * 3600,
+                    30 * 24 * 3600,
+                    "ruams",
+                    _server.Name,
+                    acc.Id,
+                    acc.GetRole(),
+                    IssuerSigningKey);
+            }
+
+            return null;
         }
     }
-
-    public record AuthModel(string Password);
 }

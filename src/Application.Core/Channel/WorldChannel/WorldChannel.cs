@@ -7,6 +7,7 @@ using Application.Core.Channel.Tasks;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
+using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using Application.Shared.Servers;
@@ -20,13 +21,14 @@ using scripting.npc;
 using scripting.reactor;
 using server.events.gm;
 using server.expeditions;
+using server.life;
 using server.maps;
 using System.Net;
 using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer
+public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer, IScriptableNpcConfig, IScriptableNpcData
 {
     public int Id => channel;
     public string InstanceName { get; }
@@ -815,4 +817,34 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     public Task Send(Func<WorldChannel, Task> action) => Send(new AsyncChannelDelegateCommand(action));
 
     public Task Send(Action<WorldChannel> action) => Send(new ChannelDelegateCommand(action));
+
+    Dictionary<int, ScriptableNpc> _channelScriptNpc = new();
+    public IEnumerable<ScriptableNpc> GetAllScriptableNpcs() => _channelScriptNpc.Values;
+    public void RegisterScriptableNpc(ScriptableNpc data)
+    {
+        _channelScriptNpc[data.NpcId] = data;
+    }
+
+    public void RemoveScriptableNpc(int npcId)
+    {
+        _channelScriptNpc[npcId] = new ScriptableNpc(npcId, "", "");
+    }
+    public string? GetNpcScript(int npcId)
+    {
+        // 通过 SetScriptableNPC 覆盖WZ的值
+        if (_channelScriptNpc.TryGetValue(npcId, out var cScript))
+        {
+            return cScript.Script;
+        }
+        var wzData = LifeFactory.Instance.getNPC(npcId);
+        if (wzData != null)
+        {
+            return wzData.Script;
+        }
+        return null;
+    }
+    public async Task FlushScriptableNpc()
+    {
+        await BroadcastPlayersAsync(chr => chr.SendPacket(PacketCreator.SetScriptableNPC(_channelScriptNpc.Values)));
+    }
 }

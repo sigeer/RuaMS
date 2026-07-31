@@ -12,6 +12,12 @@ namespace Application.Core.Channel.Modules
         {
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+            _server.RegisterScriptableNpc(new ScriptableNpc(9010000, null, "领取奖励"));
+        }
+
         public override void OnPlayerServerChanged(PlayerFieldChange arg)
         {
             base.OnPlayerServerChanged(arg);

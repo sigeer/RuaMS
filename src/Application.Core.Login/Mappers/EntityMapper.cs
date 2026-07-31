@@ -51,7 +51,7 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.MaxCount, src => src.MaximumQuantity)
                 .Map(dest => dest.Chance, src => src.Chance);
 
-            config.NewConfig<DropDataGlobal, Dto.DropItemDto>()
+            config.NewConfig<DropDataGlobalEntity, Dto.DropItemDto>()
                 .Map(dest => dest.ItemId, src => src.Itemid)
                 .Map(dest => dest.QuestId, src => src.Questid)
                 .Map(dest => dest.DropperId, src => src.Continent)
@@ -61,7 +61,7 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.Chance, src => src.Chance);
 
             config.NewConfig<ShopEntity, Dto.ShopDto>();
-            config.NewConfig<Shopitem, Dto.ShopItemDto>();
+            config.NewConfig<ShopItemEntity, Dto.ShopItemDto>();
 
             config.NewConfig<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
 
@@ -106,22 +106,16 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<AccountHistoryModel, AccountBindingsEntity>()
                 .ConstructUsing(x => new AccountBindingsEntity(x.Id, x.AccountId, x.IP, x.MAC, x.HWID, x.LastActiveTime));
 
-            config.NewConfig<AccountBanEntity, AccountBanModel>()
-                .Map(dest => dest.BanLevel, src => (BanLevel)src.BanLevel);
-            config.NewConfig<AccountBanModel, AccountBanEntity>()
-                .ConstructUsing(x => new AccountBanEntity(x.Id, x.AccountId, x.StartTime, x.EndTime, (int)x.BanLevel, x.Reason, x.ReasonDescription));
-
-
             config.NewConfig<GachaponPoolEntity, ItemProto.GachaponPoolDto>();
             config.NewConfig<GachaponPoolLevelChanceEntity, ItemProto.GachaponPoolChanceDto>();
             config.NewConfig<GachaponPoolItemEntity, ItemProto.GachaponPoolItemDto>();
 
-            config.NewConfig<CdkCodeEntity, CdkCodeModel>();
-            config.NewConfig<CdkItemEntity, CdkItemModel>();
+            config.NewConfig<RewardEntity, CdkCodeModel>();
+            config.NewConfig<RewardItemEntity, CdkItemModel>();
 
-            config.NewConfig<CdkRecordEntity, CdkRecordModel>();
-            config.NewConfig<CdkRecordModel, CdkRecordEntity>()
-                .ConstructUsing(x => new CdkRecordEntity(x.Id, x.CodeId, x.RecipientId, x.RecipientTime));
+            config.NewConfig<RewardRecordEntity, CdkRecordModel>();
+            config.NewConfig<CdkRecordModel, RewardRecordEntity>()
+                .ConstructUsing(x => new RewardRecordEntity(x.Id, x.CodeId, x.RecipientId, x.RecipientTime));
 
             config.NewConfig<DueyPackageEntity, DueyDto.DueyPackageDto>()
                 .Map(dest => dest.PackageId, src => src.Id)

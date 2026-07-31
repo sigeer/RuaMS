@@ -163,14 +163,9 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 await c.CurrentServer.EventRecallManager.recallEventInstance(player);
             }
 
-            // Tell the client to use the custom scripts available for the NPCs provided, instead of the WZ entries.
-            if (YamlConfig.config.server.USE_NPCS_SCRIPTABLE)
+            if (c.CurrentServer.GetAllScriptableNpcs().Count() > 0)
             {
-
-                // Create a copy to prevent always adding entries to the server's list.
-                Dictionary<int, string> npcsIds = YamlConfig.config.server.NPCS_SCRIPTABLE.Select(x => new KeyValuePair<int, string>(int.Parse(x.Key), x.Value)).ToDictionary();
-
-                await c.SendPacket(PacketCreator.setNPCScriptable(npcsIds));
+                await c.SendPacket(PacketCreator.SetScriptableNPC(c.CurrentServer.GetAllScriptableNpcs()));
             }
 
             await _dataService.CompleteLogin(c.CurrentServer, player, playerObject);

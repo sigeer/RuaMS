@@ -14,4 +14,5 @@ public partial class IpbanEntity
     public string Ip { get; set; } = null!;
 
     public int Aid { get; set; }
+    public int LinkedBanId { get; set; }
 }

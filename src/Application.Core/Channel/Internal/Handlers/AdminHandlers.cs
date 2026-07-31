@@ -1,10 +1,12 @@
 using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.Commands;
+using Application.Core.Channel.DataProviders;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Config;
 using Dto;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using JailProto;
 using Microsoft.Extensions.DependencyInjection;
 using SystemProto;
@@ -278,6 +280,48 @@ namespace Application.Core.Channel.Internal.Handlers
             }
 
             protected override AntiMacroNotifyMessage Parse(ByteString data) => AntiMacroNotifyMessage.Parser.ParseFrom(data);
+        }
+
+        public class DropDataRefresh : InternalSessionChannelEmptyHandler
+        {
+            public DropDataRefresh(WorldChannelServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.DropDataUpdated;
+
+            protected override async Task HandleMessage(Empty res)
+            {
+                MonsterInformationProvider.getInstance().Reload();
+            }
+        }
+
+        public class ShopDataRefresh : InternalSessionChannelEmptyHandler
+        {
+            public ShopDataRefresh(WorldChannelServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.ShopDataUpdated;
+
+            protected override async Task HandleMessage(Empty res)
+            {
+                _server.ShopManager.reloadShops();
+            }
+        }
+
+        public class GachaponRefresh : InternalSessionChannelEmptyHandler
+        {
+            public GachaponRefresh(WorldChannelServer server) : base(server)
+            {
+            }
+
+            public override int MessageId => (int)ChannelRecvCode.GachaponDataUpdated;
+
+            protected override async Task HandleMessage(Empty res)
+            {
+                _server.GachaponManager.Reload();
+            }
         }
     }
 }

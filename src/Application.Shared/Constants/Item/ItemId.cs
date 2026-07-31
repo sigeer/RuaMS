@@ -28,6 +28,12 @@ public class ItemId
     public const int MerchantWithNotifyBegin = 5030008;
     public const int MerchantWithNotifyEnd = 5030012;
 
+    public const int Meso = 0;
+    public const int NxCredit = -1;
+    public const int MaplePoint = -2;
+    public const int NxPrepare = -3;
+    public const int Exp = -4;
+
     public static bool isExpIncrease(int itemId)
     {
         return itemId == 2022442 || itemId >= 2022450 && itemId <= 2022452;

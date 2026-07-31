@@ -99,7 +99,7 @@ namespace ServiceTest.Infrastructure.WZ
         // [Test]
         public void FindAllScriptedNpc()
         {
-            var allNpcStr = _providerSource.GetProviderByKey<StringProvider>("zh-CN").GetSubProvider(StringCategory.Npc).LoadAll().OfType<StringNpcTemplate>();
+            var allNpcStr = _providerSource.GetProviderByKey<IStringProvider>("zh-CN").GetSubProvider(StringCategory.Npc).LoadAll().OfType<StringNpcTemplate>();
 
             // 用于推测是不是Npc.img中的几个字段来触发NpcTalkHandler
             var allNpc = _providerSource.GetProvider(ProviderType.Npc).LoadAll().OfType<NpcTemplate>();

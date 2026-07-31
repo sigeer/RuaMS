@@ -9,6 +9,7 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace Application.Core.Login.ServerData
 {
@@ -137,29 +138,42 @@ namespace Application.Core.Login.ServerData
 
             else
             {
-                // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
-                var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
-                if (request.Quick)
-                    time = time.AddDays(-1);
-                var model = new DueyDto.DueyPackageDto()
-                {
-                    PackageId = Interlocked.Increment(ref _localId),
-                    ReceiverId = target.Character.Id,
-                    SenderId = sender.Character.Id,
-                    Mesos = request.SendMeso,
-                    Message = request.SendMessage,
-                    Type = request.Quick,
-                    Notified = false,
-                    CreateTime = time.ToTimestamp(),
-                    Item = request.Item
-                };
-
-                SetDirty(model);
-
-                var data = new CreatePackageBroadcast { Package = model };
-                await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, data, [model.ReceiverId]);
+                await SendDueyPackage(request.SenderId, target.Character.Id, request.Item, request.SendMeso, request.Quick, request.SendMessage);
                 return res;
             }
+        }
+
+        DueyDto.DueyPackageDto CreateDueyPackageModel(int senderId, int reciverId, Dto.ItemDto? item, int meso, bool quick, string? message)
+        {
+            // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
+            var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+            if (quick)
+                time = time.AddDays(-1);
+
+            var model = new DueyDto.DueyPackageDto()
+            {
+                PackageId = Interlocked.Increment(ref _localId),
+                ReceiverId = reciverId,
+                SenderId = senderId,
+                Mesos = meso,
+                Message = message ?? "",
+                Type = quick,
+                Notified = false,
+                CreateTime = time.ToTimestamp(),
+                Item = item
+            };
+            return model;
+        }
+
+
+        public async Task SendDueyPackage(int senderId, int reciverId, Dto.ItemDto? item, int meso, bool quick, string? message)
+        {
+            var model = CreateDueyPackageModel(senderId, reciverId, item, meso, quick, message);
+
+            SetDirty(model);
+
+            var data = new CreatePackageBroadcast { Package = model };
+            await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, data, [model.ReceiverId]);
         }
 
         public async Task RemovePackage(DueyDto.RemovePackageRequest request)

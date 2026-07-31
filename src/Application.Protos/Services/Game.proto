@@ -26,6 +26,7 @@ import "Duey/CreatePackageRequest.proto";
 import "Duey/RemovePackageRequest.proto";
 import "Duey/TakeDueyPackage.proto";
 import "Duey/DueyPackage.proto";
+import "Item/Rewards.proto";
 
 
 package ServiceProto;
@@ -49,6 +50,9 @@ service GameService {
 	rpc CheckExpedition(ExpeditionProto.ExpeditionCheckRequest) returns (ExpeditionProto.ExpeditionCheckResponse);
 
 	rpc UseCDK(ItemProto.UseCdkRequest) returns(ItemProto.UseCdkResponse);
+
+	rpc GetActiveRewards(ItemProto.GetRewardsRequestProto) returns (ItemProto.GetRewardsResponseProto);
+	rpc TakeReward(ItemProto.UseIdRequest) returns (ItemProto.UseCdkResponse);
 
 	rpc LoadCharacterRank(RankProto.LoadCharacterRankRequest) returns(RankProto.LoadCharacterRankResponse);
 

@@ -1,7 +1,10 @@
+using Application.Core.Login.Dtos.Drop;
 using Application.EF;
+using Application.EF.Entities;
 using Application.Shared.Constants.Item;
 using Application.Shared.Message;
 using Application.Utility.Compatible.Atomics;
+using Application.Utility.Extensions;
 using BaseProto;
 using Dto;
 using ItemProto;
@@ -23,25 +26,6 @@ namespace Application.Core.Login.Services
             _server = server;
         }
 
-        public Dto.DropAllDto LoadMobDropDto()
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var mobDrop = dbContext.DropData.Where(x => x.Chance >= 0).AsNoTracking().ToList();
-            var globalDrop = dbContext.DropDataGlobals.Where(x => x.Chance >= 0).AsNoTracking().ToList();
-            var data = new DropAllDto();
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(mobDrop));
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(globalDrop));
-            return data;
-        }
-
-        public Dto.DropAllDto LoadAllReactorDrops()
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            var dbData = dbContext.Reactordrops.Where(x => x.Chance >= 0).AsNoTracking().ToList();
-            var data = new DropAllDto();
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(dbData));
-            return data;
-        }
 
         public int[] LoadReactorSkillBooks()
         {

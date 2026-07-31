@@ -6,11 +6,13 @@ namespace Application.Core.Login.Models
     {
         public int Id { get; set; }
 
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; }
 
-        public long Expiration { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
         public List<CdkItemModel> Items { get; set; } = [];
         public int MaxCount { get; set; }
+        public bool AccountOnce { get; set; }
     }
     public class CdkItemModel
     {

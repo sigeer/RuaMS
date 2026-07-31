@@ -45,7 +45,7 @@ public class ShopManager
 
     internal Shop GetShop(int id, bool isShopId)
     {
-            return _mapper.Map<Shop>(_transport.GetShop(id, isShopId));
+        return _mapper.Map<Shop>(_transport.GetShop(id, isShopId));
     }
 
     private Shop? LoadShopFromRemote(int id, bool isShopId)

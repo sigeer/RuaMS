@@ -1,14 +1,11 @@
 using Application.Core.Channel;
-using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.Gameplay.Plugins;
-using Application.Shared.Constants.Map;
+using Application.Shared.Models;
 using System.Reflection;
-using tools;
 
 namespace Application.Plugin.TreasureMap
 {
-    public class TreasureMapService : PluginServiceBase , IScriptItemService, IScriptNpcService, IPluginMapObjectService
+    public class TreasureMapService : PluginServiceBase, IScriptItemService, IScriptNpcService
     {
 
         Dictionary<string, (Type ObjType, MethodInfo Method)> _itemScripts;
@@ -17,23 +14,10 @@ namespace Application.Plugin.TreasureMap
 
         public Dictionary<string, (Type ObjType, MethodInfo Method)> NpcScripts => _npcScripts;
 
-        public TreasureMapService(WorldChannelServer node, string pluginName):base(node, pluginName)
+        public TreasureMapService(WorldChannelServer node, string pluginName) : base(node, pluginName)
         {
             _itemScripts = TypeUtils.LoadFromType(typeof(ItemScript));
             _npcScripts = TypeUtils.LoadFromType(typeof(NpcScript));
-        }
-
-        public async Task OnMapObjectEnterField(IMap map, IMapObject mapObject)
-        {
-            if (map.Id == MapId.KERNING_CITY && map.ChannelServer.Id == Settings.ActiveChannel && mapObject is Player chr)
-            {
-                await chr.SendPacket(PacketCreator.SetNPCScriptable([(1052103, "getTreasureMap")]));
-            }
-        }
-
-        public Task OnMapObjectLeaveField(IMap map, IMapObject mapObject)
-        {
-            return Task.CompletedTask;
         }
 
         public override async ValueTask DisposeAsync()
@@ -45,26 +29,20 @@ namespace Application.Plugin.TreasureMap
             {
                 await effectChannel.Send(async c =>
                 {
-                    var mapObj = await c.getMapFactory().getMap(MapId.KERNING_CITY);
-                    foreach (var chr in mapObj.getAllPlayers())
-                    {
-                        await chr.SendPacket(PacketCreator.SetNPCScriptable([(1052103, "")]));
-                    }
+                    c.RemoveScriptableNpc(1052103);
+                    await c.FlushScriptableNpc();
                 });
             }
         }
 
         public override async Task OnMounted()
         {
-            if (_node.Servers.TryGetValue(Settings.ActiveChannel, out  var effectChannel))
+            if (_node.Servers.TryGetValue(Settings.ActiveChannel, out var effectChannel))
             {
                 await effectChannel.Send(async c =>
                 {
-                    var mapObj = await c.getMapFactory().getMap(MapId.KERNING_CITY);
-                    foreach (var chr in mapObj.getAllPlayers())
-                    {
-                        await chr.SendPacket(PacketCreator.SetNPCScriptable([(1052103, "getTreasureMap")]));
-                    }
+                    c.RegisterScriptableNpc(new ScriptableNpc(1052103, "getTreasureMap", "藏宝图任务"));
+                    await c.FlushScriptableNpc();
                 });
             }
             await base.OnMounted();

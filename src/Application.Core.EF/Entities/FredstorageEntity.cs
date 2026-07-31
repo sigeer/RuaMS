@@ -28,5 +28,5 @@ public partial class FredstorageEntity: IKeyedEntity<int>
     public int ItemMeso { get; set; }
     public byte[] ItemsBlob { get; set; }
 
-    public DateTimeOffset Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 }

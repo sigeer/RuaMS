@@ -8,7 +8,7 @@
 // 在 Application.Core.EF.MySQL/Sqlite 中执行
 dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 
-dotnet ef migrations remove --startup-project ../Application.Host
+dotnet ef migrations remove --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 
 dotnet ef database update --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 ```

@@ -29,7 +29,7 @@ public partial class AccountEntity: IKeyedEntity<int>
     public string Pin { get; set; } = "";
 
     public string Pic { get; set; } = "";
-    public DateTimeOffset Createdat { get; set; }
+    public DateTimeOffset Createdat { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTime Birthday { get; set; }
 

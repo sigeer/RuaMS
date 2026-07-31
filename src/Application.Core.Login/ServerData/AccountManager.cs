@@ -1,3 +1,4 @@
+using Application.Core.Login.Dtos.Account;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
@@ -6,6 +7,7 @@ using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
 using Application.Utility.Exceptions;
+using Application.Utility.Extensions;
 using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -32,11 +34,22 @@ namespace Application.Core.Login.Datas
             _server = server;
         }
 
+        static AccountCtrl System = new AccountCtrl { Name = "System", Id = ServerConstants.SystemCId, GMLevel = 6 };
+
         protected override int GetKey(AccountCtrl model) => model.Id;
 
         public AccountCtrl? GetAccountDto(int accId)
         {
             return GetAccount(accId);
+        }
+
+        public override AccountCtrl? Find(int key)
+        {
+            if (key == ServerConstants.SystemCId)
+            {
+                return System;
+            }
+            return base.Find(key);
         }
 
         public int GetAccountIdByName(string accName)
@@ -220,5 +233,58 @@ namespace Application.Core.Login.Datas
             dbModel.Characterslots = localModel.Characterslots;
             return dbModel;
         }
+
+        #region Console 非实时数据
+        public (List<AccountResponseDto> Data, int Total) GetAccountPagedData(int pageIndex, int pageSize)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var data = dbContext.Accounts.OrderBy(x => x.Id).ToPage(pageIndex, pageSize).ToList();
+            var ids = data.Select(x => x.Id).ToList();
+            var final = data.Select(x => new AccountResponseDto 
+            {
+                Id= x.Id,
+                Name= x.Name,
+                GMLevel = x.GMLevel,
+            }).ToList();
+            var banInfos = _server.AccountBanManager.FilterAccount(ids);
+            foreach (var item in final)
+            {
+                var banInfo = banInfos.FirstOrDefault(x => x.AccountId == item.Id);
+                if (banInfo != null)
+                    item.BanInfo = new AccountBanPreviewDto
+                    {
+                        Start = banInfo.StartTime,
+                        End = banInfo.EndTime
+                    };
+            }
+            return (final, dbContext.Accounts.Count());
+        }
+
+        public AccountPreviewResponseDto? GetAccountPreview(int accId)
+        {
+            var model = Find(accId);
+            if (model == null)
+            {
+                return null;
+            }
+
+            return _mapper.Map<AccountPreviewResponseDto>(model);
+        }
+
+        public AccountDetailDto? GetAccountDetailAsync(int accId)
+        {
+            var model = Find(accId);
+            if (model == null)
+            {
+                return null;
+            }
+
+            return new AccountDetailDto
+            {
+
+            };
+        }
+        #endregion
     }
 }

@@ -36,7 +36,7 @@ namespace Application.Core.Login.Shared
 
         public virtual async Task InitializeAsync(DBContext dbContext)
         {
-            _logger.LogInformation("正在初始化 {Category}", Category);
+            _logger.LogInformation("正在初始化 {DataCategory}", Category);
 
             _localId = (await dbContext.Set<TEntity>()
                 .IgnoreQueryFilters()
@@ -78,12 +78,11 @@ namespace Application.Core.Login.Shared
 
         public virtual List<TModel> Query(Expression<Func<TEntity, bool>> dbExpression, Func<TModel, bool> localExpression)
         {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-
             var localData = QueryLocal(localExpression);
             var localIds = localData.Select(x => GetKey(x)).ToList();
 
             List<TModel> dbList = [];
+            using var dbContext = _dbContextFactory.CreateDbContext();
             var dbData = dbContext.Set<TEntity>().Where(dbExpression);
             // 用List不要用数组 
             if (localIds.Count > 0)
@@ -168,7 +167,7 @@ namespace Application.Core.Login.Shared
         /// <returns></returns>
         public virtual async Task Commit(DBContext dbContext)
         {
-            _logger.LogInformation("正在保存 {Category}...", Category);
+            _logger.LogInformation("正在保存 {DataCategory}...", Category);
 
             var updateData = new Dictionary<TKey, StoreUnit<TModel>>();
             foreach (var key in _localData.Keys.ToList())
@@ -179,17 +178,20 @@ namespace Application.Core.Login.Shared
 
             var updateCount = updateData.Count;
             if (updateCount == 0)
+            {
+                _logger.LogInformation("正在保存 {DataCategory}...无修改，跳过", Category);
                 return;
+            }
 
             try
             {
                 await CommitInternal(dbContext, updateData);
 
-                _logger.LogInformation("保存了{Count}个{Category}数据", updateData.Count, Category);
+                _logger.LogInformation("正在保存 {DataCategory}...{Count}条", Category, updateData.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存{Category} {Status}", Category, "失败");
+                _logger.LogError(ex, "正在保存 {DataCategory}...{Status}", Category, "失败");
                 throw;
             }
             finally

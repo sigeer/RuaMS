@@ -355,62 +355,55 @@ namespace Application.Core.Channel.Services
                     int quantity = pair.Quantity;
 
                     CashShop cs = chr.getCashShop();
-                    var itemType = (CdkItemType)pair.Type;
-                    switch (itemType)
+                    if (pair.ItemId == ItemId.Meso)
                     {
-                        case CdkItemType.Meso:
-                            await chr.GainMeso(quantity); //mesos
-                            mesos += quantity;
-                            break;
-                        case CdkItemType.NxCredit:
-                            cs.gainCash(1, quantity);    //nxCredit
-                            nxCredit += quantity;
-                            break;
-                        case CdkItemType.MaplePoint:
-                            cs.gainCash(2, quantity);    //maplePoint
-                            maplePoints += quantity;
-                            break;
-                        case CdkItemType.NxPrepaid:
-                            cs.gainCash(4, quantity);    //nxPrepaid
-                            nxPrepaid += quantity;
-                            break;
-                        case CdkItemType.Unknown:
-                            cs.gainCash(1, quantity);
-                            nxCredit += quantity;
-                            cs.gainCash(4, (quantity / 5000));
-                            nxPrepaid += quantity / 5000;
-                            break;
+                        await chr.GainMeso(quantity); //mesos
+                        mesos += quantity;
+                    }
+                    else if (pair.ItemId == ItemId.NxCredit)
+                    {
+                        cs.gainCash(1, quantity);    //nxCredit
+                        nxCredit += quantity;
+                    }
+                    else if (pair.ItemId == ItemId.MaplePoint)
+                    {
+                        cs.gainCash(2, quantity);    //maplePoints
+                        maplePoints += quantity;
+                    }
+                    else if (pair.ItemId == ItemId.NxPrepare)
+                    {
+                        cs.gainCash(4, quantity);    //nxPrepaid
+                        nxPrepaid += quantity;
+                    }
+                    else
+                    {
+                        int item = pair.ItemId;
+                        short qty;
+                        if (quantity > short.MaxValue)
+                        {
+                            qty = short.MaxValue;
+                        }
+                        else if (quantity < short.MinValue)
+                        {
+                            qty = 1;
+                        }
+                        else
+                        {
+                            qty = (short)quantity;
+                        }
 
-                        default:
-                            int item = pair.ItemId;
+                        if (ItemInformationProvider.getInstance().isCash(item))
+                        {
+                            Item it = GenerateCouponItem(item, qty);
 
-                            short qty;
-                            if (quantity > short.MaxValue)
-                            {
-                                qty = short.MaxValue;
-                            }
-                            else if (quantity < short.MinValue)
-                            {
-                                qty = 1;
-                            }
-                            else
-                            {
-                                qty = (short)quantity;
-                            }
-
-                            if (ItemInformationProvider.getInstance().isCash(item))
-                            {
-                                Item it = GenerateCouponItem(item, qty);
-
-                                cs.addToInventory(it);
-                                cashItems.Add(it);
-                            }
-                            else
-                            {
-                                await chr.GainItem(item, qty); ;
-                                items.Add(new(item, qty));
-                            }
-                            break;
+                            cs.addToInventory(it);
+                            cashItems.Add(it);
+                        }
+                        else
+                        {
+                            await chr.GainItem(item, qty); ;
+                            items.Add(new(item, qty));
+                        }
                     }
                 }
                 if (cashItems.Count > 255)

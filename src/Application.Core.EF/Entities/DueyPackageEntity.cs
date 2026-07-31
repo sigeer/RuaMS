@@ -11,7 +11,7 @@ public partial class DueyPackageEntity: IKeyedEntity<int>
 
     public int Mesos { get; set; }
 
-    public DateTimeOffset CreateTime { get; set; }
+    public DateTimeOffset CreateTime { get; set; } = DateTimeOffset.UtcNow;
 
     public string? Message { get; set; }
 

@@ -12,7 +12,7 @@ namespace Application.Core.Login.Shared
 
         AccountHistory,
         Ban,
-        CDK,
+        Reward,
         Duey,
         Note,
         Guild,

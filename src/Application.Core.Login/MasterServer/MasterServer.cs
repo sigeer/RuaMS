@@ -40,7 +40,7 @@ namespace Application.Core.Login
         public int Port { get; set; } = 8484;
         public AbstractNettyServer NettyServer { get; }
         /// <summary>
-        /// 频道服务器，Key：频道服务器名
+        /// 频道服务器，Key：频道服务器名, node.ServerName
         /// </summary>
         public Dictionary<string, ChannelServerNode> ChannelServerList { get; }
         /// <summary>
@@ -134,8 +134,8 @@ namespace Application.Core.Login
         readonly Lazy<GachaponManager> _gachaponManager;
         public GachaponManager GachaponManager => _gachaponManager.Value;
 
-        readonly Lazy<CDKManager> _cdkManager;
-        public CDKManager CDKManager => _cdkManager.Value;
+        readonly Lazy<RewardManager> _cdkManager;
+        public RewardManager RewardManager => _cdkManager.Value;
 
         readonly Lazy<DueyManager> _dueyManager;
         public DueyManager DueyManager => _dueyManager.Value;
@@ -143,6 +143,10 @@ namespace Application.Core.Login
         public IPlayerNPCManager PlayerNPCManager => _playerNPCManager.Value;
         readonly Lazy<CreatePlayerService> _createPlayerService;
         public CreatePlayerService CreatePlayerService => _createPlayerService.Value;
+        readonly Lazy<ShopManager> _shopManager;
+        public ShopManager ShopManager => _shopManager.Value;
+        readonly Lazy<DropDataManager> _dropDataManager;
+        public DropDataManager DropDataManager => _dropDataManager.Value;
         #endregion
 
         readonly Lazy<NoteManager> _noteService;
@@ -212,11 +216,13 @@ namespace Application.Core.Login
             _antiMacroAutobanManager = new(() => new AntiMacroAutobanManager());
             _crossServerService = new(() => ServiceProvider.GetRequiredService<CrossServerService>());
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
-            _cdkManager = new(() => ServiceProvider.GetRequiredService<CDKManager>());
+            _cdkManager = new(() => ServiceProvider.GetRequiredService<RewardManager>());
             _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
             _playerNPCManager = new(() => ServiceProvider.GetRequiredService<IPlayerNPCManager>());
             _accountGameManager = new(() => ServiceProvider.GetRequiredService<AccountGameManager>());
             _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());
+            _shopManager = new(() => ServiceProvider.GetRequiredService<ShopManager>());
+            _dropDataManager = new(() => ServiceProvider.GetRequiredService<DropDataManager>());
 
             _messageDispatcher = new(() => new(this));
             CommandLoop = new(this);
@@ -262,7 +268,7 @@ namespace Application.Core.Login
                 if (delaySeconds <= 0)
                     await ShutdownServer();
                 else
-                    _ = Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token)
+                    await Task.Delay(TimeSpan.FromSeconds(delaySeconds), _shutdownDelayCtrl.Token)
                         .ContinueWith(task => ShutdownServer(), TaskContinuationOptions.OnlyOnRanToCompletion);
             }
             finally
@@ -352,7 +358,7 @@ namespace Application.Core.Login
             _logger.LogInformation(SystemMessage.Server_ShutdownComplete);
         }
 
-        public async Task StartServer(CancellationToken cancellationToken)
+        public async Task StartServer(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -390,21 +396,21 @@ namespace Application.Core.Login
         }
 
 
-        public int AddChannel(ChannelServerNode channel)
+        public int AddChannel(ChannelServerNode node)
         {
-            if (IsRunning && ChannelServerList.TryAdd(channel.ServerName, channel))
+            if (IsRunning && ChannelServerList.TryAdd(node.ServerName, node))
             {
                 var started = Channels.Count;
-                foreach (var item in channel.ServerConfigs)
+                foreach (var item in node.ServerConfigs)
                 {
                     Channels.Add(new RegisteredChannelConfig
                     {
-                        ServerHost = channel.ServerHost,
+                        ServerHost = node.ServerHost,
                         Port = item.Port,
-                        ServerName = channel.ServerName,
+                        ServerName = node.ServerName,
                         MaxSize = item.MaxSize
                     });
-                    _logger.LogInformation("已注册服务器[{ChannelServerName}]：频道{Channel}", channel.ServerName, Channels.Count);
+                    _logger.LogInformation("已注册服务器[{ChannelServerName}]：频道{Channel}", node.ServerName, Channels.Count);
                 }
                 return started + 1;
             }
@@ -638,7 +644,8 @@ namespace Application.Core.Login
 
                 if (failedCount >= 2)
                 {
-                    AccountBanManager.BanAccount(
+                    await AccountBanManager.BanAccount(
+                        ServerConstants.SystemCId,
                         victim!.Character.AccountId,
                         DateTimeOffset.MaxValue,
                         (int)BanLevel.All,
@@ -648,6 +655,7 @@ namespace Application.Core.Login
 
                 if (victim.Channel <= 0)
                 {
+                    // TODO: 目标在商城时，会被退出商城的保存覆盖
                     victim.Character.Meso -= Math.Min(victim.Character.Meso, 5000);
                 }
             }

@@ -6,6 +6,7 @@ using Application.Templates.Etc;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
+using server;
 using System.Diagnostics;
 using tools;
 
@@ -293,11 +294,16 @@ namespace Application.Core.Game.Players
         /// <param name="expires">道具有效时长。单位ms， -1不会过期</param>
         /// <param name="nextSetter">设置其他道具属性，不能对返回值修改属性（要在传客户端前修改）</param>
         /// <returns>获得的道具，尽量不使用：如果是可叠放物品，不会与背包物品对应，</returns>
-        public async Task<Item?> GainItem(int itemId, short quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
+        public async Task<Item?> GainItem(int itemId, int quantity, bool randomStats = false, GainItemShow show = GainItemShow.NotShown, long expires = -1, Action<Item>? nextSetter = null)
         {
             if (quantity == 0)
             {
                 return null;
+            }
+
+            if (itemId > 0 && quantity > short.MaxValue)
+            {
+                quantity = short.MaxValue;
             }
 
             using var activity = GameMetrics.ActivitySource.StartActivity("PlayerGainItem");
@@ -305,6 +311,32 @@ namespace Application.Core.Game.Players
             activity?.SetTag("Player", Name);
             activity?.SetTag("ItemId", itemId);
             activity?.SetTag("Quantity", quantity);
+
+            if (itemId <= 0)
+            {
+                if (itemId == ItemId.Meso)
+                {
+                    await TryGainMeso(quantity, show);
+                }
+                else if (itemId == ItemId.NxCredit)
+                {
+                    CashShopModel.TryGainCash(CashShop.NX_CREDIT, quantity);
+                }
+                else if (itemId == ItemId.MaplePoint)
+                {
+                    CashShopModel.TryGainCash(CashShop.MAPLE_POINT, quantity);
+                }
+                else if (itemId == ItemId.NxPrepare)
+                {
+                    CashShopModel.TryGainCash(CashShop.NX_PREPAID, quantity);
+                }
+                else if (itemId == ItemId.Exp)
+                {
+                    await gainExp(quantity, show != GainItemShow.NotShown, show == GainItemShow.ShowInChat);
+                }
+                return null;
+            }
+
 
             Item? item = null;
 
@@ -367,7 +399,7 @@ namespace Application.Core.Game.Players
                 await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
             }
 
-            await GainItemShowMessage(itemId, quantity, show);
+            await GainItemShowMessage(itemId, (short)quantity, show);
 
             return item;
         }

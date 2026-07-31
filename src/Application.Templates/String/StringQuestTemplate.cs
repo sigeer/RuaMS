@@ -1,8 +1,7 @@
 namespace Application.Templates.String
 {
-    public class StringQuestTemplate : AbstractTemplate
+    public class StringQuestTemplate : StringTemplateBase
     {
-        public string Name { get; set; }
         public string ParentName { get; set; }
         public StringQuestTemplate(int templateId) : base(templateId)
         {

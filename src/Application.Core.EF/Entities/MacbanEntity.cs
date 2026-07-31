@@ -13,4 +13,5 @@ public partial class MacbanEntity
     public string Mac { get; set; } = null!;
 
     public int Aid { get; set; }
+    public int LinkedBanId { get; set; }
 }

@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Xml.Provider
         {
         }
 
-        protected override AbstractTemplate? SetStringTemplate(XElement rootNode)
+        protected override StringTemplateBase? SetStringTemplate(XElement rootNode)
         {
             var skillIdStr = rootNode.GetName();
             if (string.IsNullOrEmpty(skillIdStr) || skillIdStr.Length < 7)

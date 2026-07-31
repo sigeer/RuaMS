@@ -1,4 +1,5 @@
 using Application.Core.EF.Entities;
+using Application.Core.Login.Dtos.Ban;
 using Application.Core.Login.Models.Accounts;
 using Application.Core.Login.Shared;
 using Application.EF;
@@ -7,6 +8,7 @@ using Application.Resources.Messages;
 using Application.Shared.Login;
 using Application.Shared.Message;
 using Application.Utility;
+using Application.Utility.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -53,7 +55,7 @@ namespace Application.Core.Login.ServerData
     }
 
 
-    public class AccountBanManager : DataStorageBase<int, AccountBanModel, AccountBanEntity>
+    public class AccountBanManager : DBStorageBase
     {
         readonly MasterServer _server;
 
@@ -77,8 +79,6 @@ namespace Application.Core.Login.ServerData
             bannedHWID = await dbContext.Hwidbans.AsNoTracking().ToListAsync();
         }
 
-        protected override int GetKey(AccountBanModel model) => model.Id;
-
         public bool IsIPBlocked(string ip)
         {
             return bannedIP.Any(x => x.Ip == ip);
@@ -93,36 +93,33 @@ namespace Application.Core.Login.ServerData
         {
             return bannedHWID.Any(x => x.Hwid == hwid);
         }
-
-        public AccountBanModel? GetAccountBanInfo(int accountId)
+        public List<AccountBanEntity> FilterAccount(IEnumerable<int> accIdList)
         {
-            return Query(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset(), 
-                x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset()).FirstOrDefault();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return dbContext.AccountBans.Where(x => accIdList.Contains(x.AccountId) && x.EndTime >= _server.GetCurrentTimeDateTimeOffset() && !x.Canceled).ToList();
+        }
+        public AccountBanEntity? GetAccountBanInfo(DBContext dbContext, int accountId)
+        {
+            return dbContext.AccountBans.Where(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset() && !x.Canceled).FirstOrDefault();
         }
 
-        public bool BanAccount(int accountId, DateTimeOffset endTime, int level, int reason, string reasonDesc)
+        public AccountBanEntity? GetAccountBanInfo(int accountId)
         {
-            var banModel = GetAccountBanInfo(accountId);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return dbContext.AccountBans.Where(x => x.AccountId == accountId && x.EndTime >= _server.GetCurrentTimeDateTimeOffset() && !x.Canceled).FirstOrDefault();
+        }
+
+        public async Task<bool> BanAccount(int operatorId, int accountId, DateTimeOffset endTime, int level, int reason, string reasonDesc)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var banModel = GetAccountBanInfo(dbContext, accountId);
             if (banModel != null)
                 return false;
 
             var banLevel = (BanLevel)level;
-            banModel = new AccountBanModel
-            {
-                Id = Interlocked.Increment(ref _localId),
-                AccountId = accountId,
-                BanLevel = banLevel,
-                StartTime = _server.GetCurrentTimeDateTimeOffset(),
-                EndTime = endTime,
-                Reason = reason,
-                ReasonDescription = reasonDesc
-            };
-
-            SetDirty(banModel);
-
-            bannedIP.RemoveAll(x => x.Aid == accountId);
-            bannedHWID.RemoveAll(x => x.AccountId == accountId);
-            bannedMAC.RemoveAll(x => x.Aid == accountId);
+            banModel = new AccountBanEntity(accountId, _server.GetCurrentTimeDateTimeOffset(), endTime, level, reason, reasonDesc, operatorId);
+            dbContext.AccountBans.Add(banModel);
+            await dbContext.SaveChangesAsync();
 
             var dayBeforeMonth = _server.GetCurrentTimeDateTimeOffset().AddMonths(-1);
             var histories = _server.AccountHistoryManager.Query(
@@ -132,36 +129,37 @@ namespace Application.Core.Login.ServerData
             {
                 if (banLevel.HasFlag(BanLevel.IP))
                 {
-                    bannedIP.Add(new IpbanEntity(his.IP, accountId));
+                    bannedIP.Add(new IpbanEntity(his.IP, accountId) { LinkedBanId = banModel.Id});
                 }
                 if (banLevel.HasFlag(BanLevel.Mac))
                 {
                     foreach (var mac in his.MAC.Split(','))
                     {
-                        bannedMAC.Add(new MacbanEntity(mac.Trim(), accountId));
+                        bannedMAC.Add(new MacbanEntity(mac.Trim(), accountId) { LinkedBanId = banModel.Id });
                     }
                 }
                 if (banLevel.HasFlag(BanLevel.Hwid))
                 {
-                    bannedHWID.Add(new HwidbanEntity(his.HWID, accountId));
+                    bannedHWID.Add(new HwidbanEntity(his.HWID, accountId) { LinkedBanId = banModel.Id });
                 }
             }
 
             return true;
         }
 
-        public bool UnbanAccount(int accountId)
+        public async Task<bool> UnbanAccount(int opAccId, int accountId)
         {
-            var banModel = GetAccountBanInfo(accountId);
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var banModel = GetAccountBanInfo(dbContext, accountId);
             if (banModel == null)
                 return false;
 
-            SetRemoved(banModel);
+            banModel.UnBan(opAccId);
+            await dbContext.SaveChangesAsync();
 
-            bannedIP.RemoveAll(x => x.Aid == accountId);
-            bannedHWID.RemoveAll(x => x.AccountId == accountId);
-            bannedMAC.RemoveAll(x => x.Aid == accountId);
-
+            bannedIP.RemoveAll(x => x.LinkedBanId == banModel.Id);
+            bannedMAC.RemoveAll(x => x.LinkedBanId == banModel.Id);
+            bannedHWID.RemoveAll(x => x.LinkedBanId == banModel.Id);
             return true;
         }
 
@@ -175,7 +173,7 @@ namespace Application.Core.Login.ServerData
                 res.Code = 1;
             }
 
-            else if (!UnbanAccount(targetChr.Character.AccountId))
+            else if (!await UnbanAccount(request.OperatorId, targetChr.Character.AccountId))
             {
                 res.Code = 2;
             }
@@ -194,7 +192,7 @@ namespace Application.Core.Login.ServerData
                 return;
             }
 
-            if (!BanAccount(targetChr.Character.AccountId,
+            if (!await BanAccount(request.OperatorId, targetChr.Character.AccountId,
                 request.Days < 0 ? DateTimeOffset.MaxValue : _server.GetCurrentTimeDateTimeOffset().AddDays(request.Days),
                 request.BanLevel,
                 request.Reason,
@@ -211,26 +209,13 @@ namespace Application.Core.Login.ServerData
 
         public List<int> GetBannedAccounts()
         {
-            return Query(x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset(), x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset()).Select(x => x.AccountId).ToList();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            return dbContext.AccountBans.Where(x => x.EndTime <= _server.GetCurrentTimeDateTimeOffset() && x!.Canceled).Select(x => x.AccountId).ToList();
         }
 
-
-
-        protected override async Task CommitInternal(DBContext dbContext, Dictionary<int, StoreUnit<AccountBanModel>> updateData)
+        public override async Task Commit(DBContext dbContext)
         {
-            var updateKeys = updateData.Keys.ToList();
-            await dbContext.AccountBans.Where(x => updateKeys.Contains(x.Id)).ExecuteDeleteAsync();
-
-            foreach (var kw in updateData)
-            {
-                var item = kw.Value;
-                var obj = item.Data;
-                if (item.Flag == StoreFlag.AddOrUpdate && obj != null)
-                {
-                    var dbData = new AccountBanEntity(obj.Id, obj.AccountId, obj.StartTime, obj.EndTime, (int)obj.BanLevel, obj.Reason, obj.ReasonDescription);
-                    dbContext.AccountBans.Add(dbData);
-                }
-            }
+            await base.Commit(dbContext);
 
             await dbContext.Ipbans.ExecuteDeleteAsync();
             await dbContext.Macbans.ExecuteDeleteAsync();
@@ -243,5 +228,30 @@ namespace Application.Core.Login.ServerData
             await dbContext.SaveChangesAsync();
         }
 
+        public (List<BanResponseDto> Data, int Total) GetBanPagedData(int inBan, int pageIndex, int pageSize)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var now = _server.GetCurrentTimeDateTimeOffset();
+
+            var all = dbContext.AccountBans.OrderByDescending(x => x.StartTime).AsQueryable();
+
+            if (inBan == 0)
+                all = all.Where(x => now < x.StartTime || now > x.EndTime || x.Canceled);
+            else if (inBan > 1)
+                all = all.Where(x => now >= x.StartTime && now <= x.EndTime && !x.Canceled);
+
+            var pagedData = all.ToPage(pageIndex, pageSize).ToList();
+            List<BanResponseDto> list = [];
+            foreach (var item in pagedData)
+            {
+                var data = _mapper.Map<BanResponseDto>(item);
+                data.Account = _server.AccountManager.GetAccountPreview(item.AccountId);
+                data.OperateAccount = _server.AccountManager.GetAccountPreview(item.OperateAccountId);
+                data.AuditAccount = _server.AccountManager.GetAccountPreview(item.AuditAccountId);
+                list.Add(data);
+            }
+
+            return (list, all.Count());
+        }
     }
 }
