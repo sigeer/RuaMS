@@ -13,7 +13,11 @@ message UseCdkResponse {
 }
 
 message CdkRewordPackageDto {
-	int32 type = 2;
-	int32 itemId = 3;
-	int32 quantity = 4;
+	int32 itemId = 1;
+	int32 quantity = 2;
+}
+
+message UseIdRequest  {
+	int32 masterId =1;
+	int32 id = 2;
 }

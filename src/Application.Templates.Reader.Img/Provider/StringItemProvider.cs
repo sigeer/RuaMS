@@ -9,6 +9,10 @@ namespace Application.Templates.Reader.Img.Provider
         public override ProviderType Type => ProviderType.StringItem;
         public StringItemProvider(CultureInfo cultureInfo, IWzPathResolver resolver) : base(cultureInfo, resolver)
         {
+            foreach (var item in ExternalTemplates)
+            {
+                InsertItem(item);
+            }
         }
     }
 }

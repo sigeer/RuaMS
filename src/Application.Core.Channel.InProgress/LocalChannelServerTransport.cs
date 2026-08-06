@@ -41,8 +41,8 @@ namespace Application.Core.Channel.InProgress
         readonly MasterServer _server;
         readonly ItemService _itemService;
         readonly NoteManager _noteService;
-        readonly ShopService _shopManager;
-        readonly MessageService _msgService;
+        readonly ShopManager _shopManager;
+        readonly ReportService _msgService;
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
@@ -55,8 +55,8 @@ namespace Application.Core.Channel.InProgress
             LoginService loginService,
             ItemService itemService,
             NoteManager noteService,
-            ShopService shopManager,
-            MessageService messageService,
+            ShopManager shopManager,
+            ReportService messageService,
             RankService rankService,
             InvitationService invitationService,
             IExpeditionService expeditionService,
@@ -221,7 +221,7 @@ namespace Application.Core.Channel.InProgress
 
         public Dto.DropAllDto RequestAllReactorDrops()
         {
-            return _itemService.LoadAllReactorDrops();
+            return _server.DropDataManager.LoadAllReactorDrops();
         }
 
         public int[] RequestReactorSkillBooks()
@@ -504,7 +504,7 @@ namespace Application.Core.Channel.InProgress
 
         public DropAllDto RequestDropData()
         {
-            return _itemService.LoadMobDropDto();
+            return _server.DropDataManager.LoadMobDropDto();
         }
 
         public QueryMonsterCardDataResponse RequestMonsterCardData()
@@ -692,7 +692,7 @@ namespace Application.Core.Channel.InProgress
 
         public UseCdkResponse UseCdk(UseCdkRequest useCdkRequest)
         {
-            return _server.CDKManager.UseCdk(useCdkRequest);
+            return _server.RewardManager.UseCdk(useCdkRequest);
         }
 
         public ServerStateDto GetServerState()
@@ -780,6 +780,16 @@ namespace Application.Core.Channel.InProgress
         public async Task AntiMacroNotify(AntiMacroNotifyMessage message)
         {
             await _server.ProcessAntiMacroPenalty(message);
+        }
+
+        public Task<ItemProto.GetRewardsResponseProto> GetActiveRewards(ItemProto.GetRewardsRequestProto request)
+        {
+            return _server.RewardManager.GetActiveRewards(request);
+        }
+
+        public Task<ItemProto.UseCdkResponse> TakeReward(ItemProto.UseIdRequest request)
+        {
+            return Task.FromResult(_server.RewardManager.UseId(request));
         }
     }
 }

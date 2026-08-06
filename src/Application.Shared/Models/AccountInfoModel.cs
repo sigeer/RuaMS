@@ -11,5 +11,10 @@ namespace Application.Shared.Models
         public bool GmMode { get; set; }
 
         public sbyte Characterslots { get; set; } = 3;
+
+        public string GetRole()
+        {
+            return GMLevel == 6 ? "Admin" : "User";
+        }
     }
 }

@@ -35,14 +35,21 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("AccountId");
 
+                    b.Property<int>("AuditAccountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("BanLevel")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("EndTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<bool>("Canceled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<long>("EndTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("EndTime");
+
+                    b.Property<int>("OperateAccountId")
+                        .HasColumnType("int");
 
                     b.Property<sbyte>("Reason")
                         .HasColumnType("tinyint")
@@ -53,11 +60,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("text")
                         .HasColumnName("ReasonDescription");
 
-                    b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("StartTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("StartTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("StartTime");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -86,10 +91,8 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<int>("Flag")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Time")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("Time")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -118,11 +121,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("exp_coupon");
 
-                    b.Property<DateTime>("ExpGainTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("exp_gain_time")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("ExpGainTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("exp_gain_time");
 
                     b.Property<long>("GainedExp")
                         .HasColumnType("bigint")
@@ -210,97 +211,6 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("sys_gachapon_pool_level_chance", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.CdkCodeEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<long>("Expiration")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("MaxCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Code" }, "idx_code")
-                        .IsUnique();
-
-                    b.ToTable("cdk_codes", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.CdkItemEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CodeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'4000000'");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<int>("Type")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'5'");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "CodeId" }, "idx_code")
-                        .HasDatabaseName("idx_code1");
-
-                    b.ToTable("cdk_items", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.CdkRecordEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CodeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RecipientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RecipientTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "CodeId" }, "idx_code")
-                        .HasDatabaseName("idx_code2");
-
-                    b.ToTable("cdk_records", (string)null);
-                });
-
             modelBuilder.Entity("Application.EF.Entities.AccountBindingsEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -330,11 +240,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("IP")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTime>("LastActiveTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("LastActiveTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("LastActiveTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("LastActiveTime");
 
                     b.Property<string>("MAC")
                         .IsRequired()
@@ -378,11 +286,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("characterslots")
                         .HasDefaultValueSql("'3'");
 
-                    b.Property<DateTime>("Createdat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("createdat")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("Createdat")
+                        .HasColumnType("bigint")
+                        .HasColumnName("createdat");
 
                     b.Property<string>("Email")
                         .HasMaxLength(45)
@@ -669,11 +575,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("buddyCapacity")
                         .HasDefaultValueSql("'25'");
 
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("createdate")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("CreateDate")
+                        .HasColumnType("bigint")
+                        .HasColumnName("createdate");
 
                     b.Property<string>("DataString")
                         .IsRequired()
@@ -798,17 +702,13 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("lastDojoStage");
 
-                    b.Property<DateTime>("LastExpGainTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("lastExpGainTime")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("LastExpGainTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("lastExpGainTime");
 
-                    b.Property<DateTime>("LastLogoutTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("lastLogoutTime")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("LastLogoutTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("lastLogoutTime");
 
                     b.Property<int>("Level")
                         .ValueGeneratedOnAdd()
@@ -1031,7 +931,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("sys_drop_data", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.DropDataGlobal", b =>
+            modelBuilder.Entity("Application.EF.Entities.DropDataGlobalEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1092,13 +992,11 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset?>("ClaimTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("ClaimTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("CreateTime")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("HasNotified")
                         .ValueGeneratedOnAdd()
@@ -1239,11 +1137,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("meso");
 
-                    b.Property<DateTime>("Timestamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint")
+                        .HasColumnName("timestamp");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -1263,8 +1159,8 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset?>("ClaimTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("ClaimTime")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("FromId")
                         .HasColumnType("int")
@@ -1412,11 +1308,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("hwid")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTime>("ExpiresAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("expiresat")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("ExpiresAt")
+                        .HasColumnType("bigint")
+                        .HasColumnName("expiresat");
 
                     b.Property<sbyte>("Relevance")
                         .HasColumnType("tinyint")
@@ -1446,6 +1340,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)")
                         .HasColumnName("hwid");
+
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("int");
 
                     b.HasKey("Hwidbanid")
                         .HasName("PRIMARY");
@@ -1477,6 +1374,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("ip")
                         .HasDefaultValueSql("''");
 
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("int");
+
                     b.HasKey("Ipbanid")
                         .HasName("PRIMARY");
 
@@ -1495,6 +1395,9 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<int>("Aid")
                         .HasColumnType("int")
                         .HasColumnName("aid");
+
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Mac")
                         .IsRequired()
@@ -1533,14 +1436,14 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("Time0")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long>("Time0")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset?>("Time1")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("Time1")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset?>("Time2")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("Time2")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Wifeid")
                         .HasColumnType("int")
@@ -1850,8 +1753,8 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("characterid");
 
-                    b.Property<DateTime?>("CompletionTime")
-                        .HasColumnType("timestamp")
+                    b.Property<long?>("CompletionTime")
+                        .HasColumnType("bigint")
                         .HasColumnName("completionTime");
 
                     b.Property<string>("New")
@@ -1866,11 +1769,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("varchar(13)")
                         .HasColumnName("old");
 
-                    b.Property<DateTime>("RequestTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("requestTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("RequestTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("requestTime");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");
@@ -2145,7 +2046,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("sys_reactordrops", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Report", b =>
+            modelBuilder.Entity("Application.EF.Entities.ReportEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2164,23 +2065,23 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<bool>("Processed")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<sbyte>("Reason")
                         .HasColumnType("tinyint")
                         .HasColumnName("reason");
 
-                    b.Property<int>("Reporterid")
+                    b.Property<long>("ReportTime")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint")
+                        .HasColumnName("reporttime");
+
+                    b.Property<int>("ReporterId")
                         .HasColumnType("int")
                         .HasColumnName("reporterid");
 
-                    b.Property<DateTime>("Reporttime")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("reporttime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Reporttime"));
-
-                    b.Property<int>("Victimid")
+                    b.Property<int>("VictimId")
                         .HasColumnType("int")
                         .HasColumnName("victimid");
 
@@ -2244,7 +2145,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("sys_shops", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Shopitem", b =>
+            modelBuilder.Entity("Application.EF.Entities.ShopItemEntity", b =>
                 {
                     b.Property<int>("Shopitemid")
                         .ValueGeneratedOnAdd()
@@ -2401,6 +2302,102 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("notes", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AccountOnce")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .HasColumnType("varchar(17)")
+                        .UseCollation("utf8mb4_bin");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<long?>("EndTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("MaxCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("StartTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "Code" }, "idx_cdk_codes_code")
+                        .IsUnique();
+
+                    b.ToTable("ex_reward_codes", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardItemEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CodeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("'1'");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "CodeId" }, "idx_cdk_items_code");
+
+                    b.ToTable("ex_reward_items", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardRecordEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CodeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecipientId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RecipientTime")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "CodeId" }, "idx_code_records");
+
+                    b.ToTable("ex_reward_records", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>

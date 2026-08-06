@@ -1,4 +1,6 @@
 using Application.Core.Login.Commands;
+using Application.Core.Login.Dtos.Character;
+using Application.Core.Login.Dtos.Item;
 using Application.Core.Login.Models;
 using Application.Core.Login.ServerData;
 using Application.Core.Login.Shared;
@@ -8,9 +10,11 @@ using Application.Shared.Constants;
 using Application.Shared.Events;
 using Application.Shared.Items;
 using Application.Shared.Login;
+using Application.Shared.Message;
 using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
+using Application.Utility.Extensions;
 using Dto;
 using JailProto;
 using Microsoft.EntityFrameworkCore;
@@ -503,5 +507,38 @@ namespace Application.Core.Login.Datas
             }
             return false;
         }
+        #region Console
+        public (List<CharacterResponseDto> Data, int Total) GetCharacterPagedData(int optionOnline, int pageIndex, int pageSize)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            var onlinedPlayers = QueryLocal().Where(x => x.ChannelNode != null).Select(x => x.Character.Id).ToHashSet();
+
+            var allData = dbContext.Characters.OrderByDescending(x => x.Level).ThenByDescending(x => x.Exp).ThenBy(x => x.Id).AsQueryable();
+            if (optionOnline == 0)
+            {
+                allData = allData.Where(x => !onlinedPlayers.Contains(x.Id));
+            }
+            else if (optionOnline > 0)
+            {
+                allData = allData.Where(x => onlinedPlayers.Contains(x.Id));
+            }
+
+            var pagedData = allData.ToPage(pageIndex, pageSize).ProjectToType<CharacterResponseDto>().ToList();
+            foreach (var item in pagedData)
+            {
+                item.IsOnline = onlinedPlayers.Contains(item.Id);
+            }
+
+            return (pagedData, allData.Count());
+        }
+
+        public CharacterResponseDto? GetCharacterDto(int id)
+        {
+            var chr = Find(id);
+
+            return _mapper.Map<CharacterResponseDto>(chr);
+        }
+        #endregion
     }
 }

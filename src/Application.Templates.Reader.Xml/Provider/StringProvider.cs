@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Application.Templates.Reader.Xml.Provider
 {
-    public sealed class StringProvider : GenericKeyedProvider<StringBaseProvider>, IStringProvider
+    public sealed class StringProvider : GenericKeyedProvider<StringBaseProvider, StringTemplateBase>, IStringProvider
     {
         CultureInfo _culture;
         public StringProvider(CultureInfo cultureInfo, IWzPathResolver resolver)
@@ -21,9 +21,9 @@ namespace Application.Templates.Reader.Xml.Provider
         }
 
 
-        public IEnumerable<AbstractTemplate> Search(StringCategory category, string searchText, int maxCount = 50)
+        public IEnumerable<StringTemplateBase> Search(StringCategory category, string searchText, int maxCount = 50)
         {
-            var categoryData = GetRequiredSubProvider(category);
+            var categoryData = GetSubProvider(category);
             if (categoryData == null)
                 return [];
 

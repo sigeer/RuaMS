@@ -34,7 +34,7 @@ namespace Application.Shared.Login
         /// </summary>
         SCAM,
         /// <summary>
-        /// 不当
+        /// 行为不当
         /// </summary>
         MISCONDUCT,
         /// <summary>

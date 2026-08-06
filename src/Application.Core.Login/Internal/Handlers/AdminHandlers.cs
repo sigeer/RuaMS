@@ -93,8 +93,8 @@ namespace Application.Core.Login.Internal.Handlers
 
         internal class SendReportPlayerHandler : InternalSessionMasterHandler<SendReportRequest>
         {
-            readonly MessageService _messageService;
-            public SendReportPlayerHandler(MasterServer server, MessageService messageService) : base(server)
+            readonly ReportService _messageService;
+            public SendReportPlayerHandler(MasterServer server, ReportService messageService) : base(server)
             {
                 _messageService = messageService;
             }

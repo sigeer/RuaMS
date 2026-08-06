@@ -9,8 +9,16 @@ namespace Application.Templates.Reader
         IEnumerable<IProvider> GetSubProviders();
     }
 
-    public interface IStringProvider : IKeyedProvider
+
+    public interface IKeyedProvider<out TSubTemplate> : IKeyedProvider 
+        where TSubTemplate : AbstractTemplate
     {
-        IEnumerable<AbstractTemplate> Search(StringCategory category, string searchText, int maxCount = 50);
+        new IProvider<TSubTemplate>? GetSubProvider(StringCategory key);
+        new IEnumerable<IProvider<TSubTemplate>> GetSubProviders();
+    }
+
+    public interface IStringProvider : IKeyedProvider<StringTemplateBase>
+    {
+        IEnumerable<StringTemplateBase> Search(StringCategory category, string searchText, int maxCount = 50);
     }
 }

@@ -14,4 +14,5 @@ public partial class HwidbanEntity
 
     public string Hwid { get; set; } = null!;
     public int AccountId { get; set; }
+    public int LinkedBanId { get; set; }
 }

@@ -1,7 +1,9 @@
 using Application.Core.EF.Entities;
 using Application.Core.EF.Entities.Gachapons;
+using Application.Core.EF.Utils;
 using Application.EF.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Application.EF;
 
@@ -39,7 +41,7 @@ public partial class DBContext : DbContext
     public virtual DbSet<CharacterEntity> Characters { get; set; }
 
 
-    public virtual DbSet<DropDataGlobal> DropDataGlobals { get; set; }
+    public virtual DbSet<DropDataGlobalEntity> DropDataGlobals { get; set; }
 
     public virtual DbSet<DropDataEntity> DropData { get; set; }
 
@@ -84,10 +86,10 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<NoteEntity> Notes { get; set; }
 
-    public virtual DbSet<CdkCodeEntity> CdkCodes { get; set; }
+    public virtual DbSet<RewardEntity> RewardCodes { get; set; }
 
-    public virtual DbSet<CdkItemEntity> CdkItems { get; set; }
-    public virtual DbSet<CdkRecordEntity> CdkRecords { get; set; }
+    public virtual DbSet<RewardItemEntity> RewardItems { get; set; }
+    public virtual DbSet<RewardRecordEntity> RewardRecords { get; set; }
 
     public virtual DbSet<PlayerNpcEntity> Playernpcs { get; set; }
 
@@ -100,7 +102,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<ReactorDropEntity> Reactordrops { get; set; }
 
-    public virtual DbSet<Report> Reports { get; set; }
+    public virtual DbSet<ReportEntity> Reports { get; set; }
 
 
     public virtual DbSet<RingEntity> Rings { get; set; }
@@ -109,7 +111,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<ShopEntity> Shops { get; set; }
 
-    public virtual DbSet<Shopitem> Shopitems { get; set; }
+    public virtual DbSet<ShopItemEntity> Shopitems { get; set; }
 
 
     public virtual DbSet<SpecialCashItemEntity> Specialcashitems { get; set; }
@@ -128,6 +130,24 @@ public partial class DBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var unixConverter = new DateTimeOffsetToUnixMillisecondsConverter();
+        var unixNullableConverter = new DateTimeOffsetToUnixMillisecondsNullableConverter();
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset))
+                {
+                    property.SetValueConverter(unixConverter);
+                }
+                else if (property.ClrType == typeof(DateTimeOffset?))
+                {
+                    property.SetValueConverter(unixNullableConverter);
+                }
+            }
+        }
+
         var isMysql = Database.ProviderName!.Contains("mysql", StringComparison.OrdinalIgnoreCase);
         ConfigAccountCharacter(modelBuilder);
 
@@ -241,10 +261,7 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");
-            entity.Property(e => e.Time)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
+            entity.Property(e => e.Time);
             entity.Property(e => e.BossType)
                 .HasColumnType("varchar(20)");
             entity.Property(e => e.CharacterId)
@@ -254,7 +271,7 @@ public partial class DBContext : DbContext
         });
 
 
-        modelBuilder.Entity<DropDataGlobal>(entity =>
+        modelBuilder.Entity<DropDataGlobalEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -369,10 +386,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Message).HasMaxLength(200);
             entity.Property(e => e.ReceiverId).HasColumnType("int");
             entity.Property(e => e.SenderId).HasColumnType("int");
-            entity.Property(e => e.CreateTime)
-                .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
+            entity.Property(e => e.CreateTime);
             entity.Property(e => e.Type)
                 .HasDefaultValue(false)
                 .HasColumnType("tinyint(1)");
@@ -467,9 +481,6 @@ public partial class DBContext : DbContext
                 .HasColumnType("bigint")
                 .HasColumnName("itemMeso");
             entity.Property(e => e.Timestamp)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("timestamp");
             entity.Property(e => e.ItemsBlob)
                 .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
@@ -579,9 +590,6 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("''")
                 .HasColumnName("hwid");
             entity.Property(e => e.ExpiresAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("expiresat");
             entity.Property(e => e.Relevance)
                 .HasColumnType("tinyint")
@@ -865,11 +873,6 @@ public partial class DBContext : DbContext
                 .HasColumnType("int")
                 .HasColumnName("characterid");
             entity.Property(e => e.CompletionTime)
-                .HasColumnType("timestamp")
-                .HasConversion(
-                    v => v.HasValue ? v.Value.UtcDateTime : (DateTime?)null,
-                    v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : (DateTimeOffset?)null
-                )
                 .HasColumnName("completionTime");
             entity.Property(e => e.New)
                 .HasMaxLength(13)
@@ -878,9 +881,6 @@ public partial class DBContext : DbContext
                 .HasMaxLength(13)
                 .HasColumnName("old");
             entity.Property(e => e.RequestTime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("requestTime");
         });
 
@@ -942,62 +942,62 @@ public partial class DBContext : DbContext
                 .HasColumnName("toId");
         });
 
-        modelBuilder.Entity<CdkCodeEntity>(entity =>
+        modelBuilder.Entity<RewardEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("cdk_codes");
+            entity.ToTable("ex_reward_codes");
 
-            entity.HasIndex(e => e.Code, "idx_code").IsUnique();
+            entity.HasIndex(e => e.Code, "idx_cdk_codes_code")
+                .IsUnique();
 
             entity.Property(e => e.Id);
+            entity.Property(e => e.Title)
+                .HasMaxLength(50);
             entity.Property(e => e.Code)
                 .HasMaxLength(17);
+            entity.Property(e => e.StartTime);
             entity.Property(e => e.MaxCount)
                 .HasColumnType("int");
-            entity.Property(e => e.Expiration)
-                .HasColumnType("bigint");
+
+            if (isMysql)
+            {
+                entity.Property(e => e.Code).UseCollation("utf8mb4_bin");
+            }
         });
 
-        modelBuilder.Entity<CdkItemEntity>(entity =>
+        modelBuilder.Entity<RewardItemEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("cdk_items");
+            entity.ToTable("ex_reward_items");
 
-            entity.HasIndex(e => e.CodeId, "idx_code");
+            entity.HasIndex(e => e.CodeId, "idx_cdk_items_code");
 
             entity.Property(e => e.Id);
             entity.Property(e => e.CodeId)
                 .HasColumnType("int");
             entity.Property(e => e.ItemId)
-                .HasDefaultValueSql("'4000000'")
                 .HasColumnType("int");
             entity.Property(e => e.Quantity)
                 .HasDefaultValueSql("'1'")
                 .HasColumnType("int");
-            entity.Property(e => e.Type)
-                .HasDefaultValueSql("'5'")
-                .HasColumnType("int");
         });
 
-        modelBuilder.Entity<CdkRecordEntity>(entity =>
+        modelBuilder.Entity<RewardRecordEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("cdk_records");
+            entity.ToTable("ex_reward_records");
 
-            entity.HasIndex(e => e.CodeId, "idx_code");
+            entity.HasIndex(e => e.CodeId, "idx_code_records");
 
             entity.Property(e => e.Id);
             entity.Property(e => e.CodeId)
                 .HasColumnType("int");
             entity.Property(e => e.RecipientId)
                 .HasColumnType("int");
-            entity.Property(e => e.RecipientTime)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero));
+            entity.Property(e => e.RecipientTime);
         });
 
 
@@ -1165,7 +1165,7 @@ public partial class DBContext : DbContext
 
 
 
-        modelBuilder.Entity<Report>(entity =>
+        modelBuilder.Entity<ReportEntity>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
@@ -1182,16 +1182,13 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Reason)
                 .HasColumnType("tinyint")
                 .HasColumnName("reason");
-            entity.Property(e => e.Reporterid)
+            entity.Property(e => e.ReporterId)
                 .HasColumnType("int")
                 .HasColumnName("reporterid");
-            entity.Property(e => e.Reporttime)
+            entity.Property(e => e.ReportTime)
                 .ValueGeneratedOnAddOrUpdate()
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("reporttime");
-            entity.Property(e => e.Victimid)
+            entity.Property(e => e.VictimId)
                 .HasColumnType("int")
                 .HasColumnName("victimid");
         });
@@ -1236,7 +1233,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("npcid");
         });
 
-        modelBuilder.Entity<Shopitem>(entity =>
+        modelBuilder.Entity<ShopItemEntity>(entity =>
         {
             entity.HasKey(e => e.Shopitemid).HasName("PRIMARY");
 
@@ -1305,9 +1302,6 @@ public partial class DBContext : DbContext
                 .HasColumnType("int")
                 .HasColumnName("current_exp");
             entity.Property(e => e.ExpGainTime)
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("exp_gain_time");
             entity.Property(e => e.CharId)
                 .HasColumnType("int")
@@ -1369,9 +1363,6 @@ public partial class DBContext : DbContext
                 .HasColumnType("tinyint")
                 .HasColumnName("characterslots");
             entity.Property(e => e.Createdat)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("createdat");
             entity.Property(e => e.Email)
                 .HasMaxLength(45)
@@ -1415,6 +1406,13 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Tos).HasColumnName("tos");
             entity.Property(e => e.Blob)
                 .HasColumnType(isMysql ? "MEDIUMBLOB" : "BLOB");
+
+            if (!isMysql)
+            {
+                entity.Property(e => e.Email).UseCollation("NOCASE");
+                entity.Property(e => e.Name).UseCollation("NOCASE");
+                entity.Property(e => e.Password).UseCollation("NOCASE");
+            }
         });
 
         modelBuilder.Entity<AccountBindingsEntity>(entity =>
@@ -1447,10 +1445,7 @@ public partial class DBContext : DbContext
                 .HasColumnName("HWID");
 
             entity.Property(e => e.LastActiveTime)
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("LastActiveTime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasColumnName("LastActiveTime");
         });
 
         modelBuilder.Entity<AccountBanEntity>(entity =>
@@ -1476,16 +1471,10 @@ public partial class DBContext : DbContext
                 .HasColumnName("ReasonDescription");
 
             entity.Property(e => e.StartTime)
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("StartTime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasColumnName("StartTime");
 
             entity.Property(e => e.EndTime)
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
-                .HasColumnName("EndTime")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasColumnName("EndTime");
         });
 
         modelBuilder.Entity<CharacterEntity>(entity =>
@@ -1520,9 +1509,6 @@ public partial class DBContext : DbContext
                 .HasColumnType("int")
                 .HasColumnName("buddyCapacity");
             entity.Property(e => e.CreateDate)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("createdate");
             entity.Property(e => e.DataString)
                 .HasMaxLength(64)
@@ -1606,14 +1592,8 @@ public partial class DBContext : DbContext
                 .HasColumnType("int")
                 .HasColumnName("lastDojoStage");
             entity.Property(e => e.LastExpGainTime)
-                .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("lastExpGainTime");
             entity.Property(e => e.LastLogoutTime)
-                .HasDefaultValueSql("'2015-01-01 05:00:00'")
-                .HasColumnType("timestamp")
-                .HasConversion(v => v.UtcDateTime, v => new DateTimeOffset(v, TimeSpan.Zero))
                 .HasColumnName("lastLogoutTime");
             entity.Property(e => e.Level)
                 .HasDefaultValueSql("'1'")

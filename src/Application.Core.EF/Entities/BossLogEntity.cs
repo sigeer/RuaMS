@@ -21,6 +21,6 @@ namespace Application.Core.EF.Entities
         public string BossType { get; set; } = null!;
         public int Flag { get; set; }
 
-        public DateTimeOffset Time { get; set; }
+        public DateTimeOffset Time { get; set; } = DateTimeOffset.UtcNow;
     }
 }

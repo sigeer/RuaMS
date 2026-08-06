@@ -65,11 +65,6 @@ public class NPCTalkHandler : ChannelHandlerBase
 
         if (obj is NPC npc)
         {
-            if (YamlConfig.config.server.USE_DEBUG)
-            {
-                await c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npc.SourceTemplate.Script}");
-            }
-
             if (npc.SourceTemplate.Parcel)
             {
                 await c.CurrentServer.NodeService.DueyManager.SendTalk(c);
@@ -100,7 +95,13 @@ public class NPCTalkHandler : ChannelHandlerBase
                 return;
             }
 
-            await c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npc.SourceTemplate.Script);
+            var npcScript = c.CurrentServer.GetNpcScript(npc.getId());
+            if (YamlConfig.config.server.USE_DEBUG)
+            {
+                await c.OnlinedCharacter.Pink($"Talking to NPC {npc.getId()}, 可触发脚本: {npcScript}");
+            }
+
+            await c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npcScript);
             return;
 
             //if (npc.getId() == NpcId.DUEY)

@@ -166,20 +166,6 @@ namespace Application.Plugin.Script.Npc
         }
 
 
-        // Npc: 2007 
-        public async Task tutorialSkip()
-        {
-            if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
-            {
-                await warp(104000000, 0);
-            }
-            else
-            {
-                await SayNext("旅行愉快。");
-            }
-        }
-
-
         // Npc: 2104 
         public async Task HL_LADDER()
         {
@@ -6445,5 +6431,26 @@ namespace Application.Plugin.Script.Npc
             await SayNext("You don't belong to this world... Return now.");
             await warp(220080000);
         }
+
+        // Npc: 2007 
+        public async Task tutorialSkip()
+        {
+            if (getPlayer().Level <= 10)
+            {
+                if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
+                {
+                    await warp(104000000, 0);
+                }
+                else
+                {
+                    await SayNext("旅行愉快。");
+                }
+            }
+            else
+            {
+                await SayNext("旅行愉快。");
+            }
+        }
     }
+
 }

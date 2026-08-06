@@ -239,7 +239,4 @@ public class ServerConfig
     public int MINIMUM_GM_LEVEL_TO_USE_STORAGE;
     public int MINIMUM_GM_LEVEL_TO_USE_DUEY;
     public int MINIMUM_GM_LEVEL_TO_DROP;
-
-    //Custom NPC overrides. List of NPC IDs.
-    public Dictionary<string, string> NPCS_SCRIPTABLE = new ();
 }

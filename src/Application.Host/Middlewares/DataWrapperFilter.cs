@@ -10,17 +10,20 @@ namespace Application.Host.Middlewares
         {
             if (context.Result is ObjectResult objectResult)
             {
-                if (objectResult.DeclaredType?.Name != typeof(ResponseData<>).Name)
+                // 判断值是否已经为 ResponseData
+                if (objectResult.Value is not null &&
+                    objectResult.Value.GetType().IsGenericType &&
+                    objectResult.Value.GetType().GetGenericTypeDefinition() == typeof(ResponseData<>))
                 {
+                    // 已包装，跳过
+                }
+                else
+                {
+                    // 包装
                     objectResult.Value = new ResponseData<object>(objectResult.Value);
                     objectResult.DeclaredType = objectResult.Value?.GetType();
                 }
-                //if (objectResult.DeclaredType == typeof(int))
-                //{
-                //    objectResult.DeclaredType = objectResult.Value?.GetType();
-                //}
             }
-
 
             await next();
         }

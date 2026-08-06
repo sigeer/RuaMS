@@ -27,6 +27,9 @@
 		<Protobuf Include="Dto\Jail.proto">
 		  <GrpcServices>None</GrpcServices>
 		</Protobuf>
+		<Protobuf Include="Item\Rewards.proto">
+		  <GrpcServices>None</GrpcServices>
+		</Protobuf>
 		<Protobuf Include="Lives\DBLife.proto" GrpcServices="None" />
 		<Protobuf Include="Base\ItemQuantity.proto" GrpcServices="None" />
 		<Protobuf Include="Base\MonsterCardData.proto" GrpcServices="None" />

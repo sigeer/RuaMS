@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Img.Provider
         {
         }
 
-        protected override AbstractTemplate? SetStringTemplate(IDataNode rootNode)
+        protected override StringTemplateBase? SetStringTemplate(IDataNode rootNode)
         {
             var skillIdStr = rootNode.Name;
             if (string.IsNullOrEmpty(skillIdStr) || skillIdStr.Length < 7)

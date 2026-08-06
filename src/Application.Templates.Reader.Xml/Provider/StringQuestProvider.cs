@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Xml.Provider
         {
         }
 
-        protected override AbstractTemplate? SetStringTemplate(XElement rootNode)
+        protected override StringTemplateBase? SetStringTemplate(XElement rootNode)
         {
             if (int.TryParse(rootNode.Attribute("name")?.Value, out var questId))
             {
@@ -30,11 +30,15 @@ namespace Application.Templates.Reader.Xml.Provider
             return null;
         }
 
-        public override IEnumerable<AbstractTemplate> Search(string searchText, int maxCount = 50)
+        public override IEnumerable<StringTemplateBase> Search(string searchText, int maxCount = 50)
         {
-            return LoadAll().OfType<StringQuestTemplate>().Where(x => 
+            return LoadAll().OfType<StringQuestTemplate>().Where(x =>
                 x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-                || x.ParentName.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(maxCount);
+                || x.ParentName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || x.TemplateId.ToString().Contains(searchText))
+                .OrderByDescending(x => x.Name == searchText)               // 第一优先级：Name精确
+                .ThenByDescending(x => x.TemplateId.ToString() == searchText) // 第二优先级：Id精确
+                .Take(maxCount);
         }
     }
 }

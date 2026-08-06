@@ -24,7 +24,7 @@ namespace ServiceTest.Infrastructure.WZ
 
         private MapTemplate[] GetRandomMapTemplates(int count = 100)
         {
-            var allMapIds = _providerSource.GetProviderByKey<IKeyedProvider>("zh-CN").GetSubProvider(Application.Templates.String.StringCategory.Map).LoadAll()
+            var allMapIds = _providerSource.GetProviderByKey<IStringProvider>("zh-CN").GetSubProvider(Application.Templates.String.StringCategory.Map).LoadAll()
                 .Select(x => x.TemplateId)
                 .OrderBy(x => Guid.NewGuid())
                 .Take(count)

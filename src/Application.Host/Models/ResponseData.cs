@@ -10,5 +10,6 @@ namespace Application.Host.Models
 
         public int Code { get; set; }
         public TData? Data { get; set; }
+        public string? Message { get; set; }
     }
 }

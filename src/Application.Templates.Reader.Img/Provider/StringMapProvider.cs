@@ -12,14 +12,19 @@ namespace Application.Templates.Reader.Img.Provider
         {
         }
 
-        public override IEnumerable<AbstractTemplate> Search(string searchText, int maxCount = 50)
+        public override IEnumerable<StringTemplateBase> Search(string searchText, int maxCount = 50)
         {
             return LoadAll().OfType<StringMapTemplate>().Where(x =>
-                (x.StreetName != null && x.StreetName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                || (x.MapName != null && x.MapName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+                x.StreetName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || x.MapName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || x.TemplateId.ToString().Contains(searchText))
+                .OrderByDescending(x => x.MapName == searchText)
+                .ThenByDescending(x => x.StreetName == searchText)
+                .ThenByDescending(x => x.TemplateId.ToString() == searchText)
+                .Take(maxCount);
         }
 
-        protected override AbstractTemplate? SetStringTemplate(IDataNode rootNode)
+        protected override StringTemplateBase? SetStringTemplate(IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var id))
             {

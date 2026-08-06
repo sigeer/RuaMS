@@ -1,5 +1,4 @@
 using Application.Templates.Exceptions;
-using Application.Templates.Reader;
 using Application.Templates.Reader.Resolvers;
 using Application.Templates.String;
 using Duey.Abstractions;
@@ -15,7 +14,7 @@ namespace Application.Templates.Reader.Img.Provider
         {
         }
 
-        protected override IEnumerable<AbstractTemplate> GetDataFromImg(string path)
+        protected override IEnumerable<StringTemplateBase> GetDataFromImg(string path)
         {
             try
             {
@@ -45,7 +44,7 @@ namespace Application.Templates.Reader.Img.Provider
             }
         }
 
-        protected virtual AbstractTemplate? SetStringTemplate(IDataNode rootNode)
+        protected virtual StringTemplateBase? SetStringTemplate(IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var id))
             {
@@ -66,7 +65,7 @@ namespace Application.Templates.Reader.Img.Provider
             return null;
         }
 
-        protected IEnumerable<AbstractTemplate> ProcessContent(StringTemplateType fileType, IDataNode rootNode)
+        protected IEnumerable<StringTemplateBase> ProcessContent(StringTemplateType fileType, IDataNode rootNode)
         {
             if (fileType == StringTemplateType.Eqp)
             {

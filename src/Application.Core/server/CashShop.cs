@@ -48,10 +48,6 @@ public class CashShop: IItemStore
     /// </summary>
     public const int NX_PREPAID = 4;
 
-
-    private int accountId;
-    private int characterId;
-
     private bool opened;
     private List<Item> inventory = new();
     private List<int> wishList = new();
@@ -67,9 +63,6 @@ public class CashShop: IItemStore
     public CashShop(Player player)
     {
         Owner = player;
-
-        this.accountId = player.AccountId;
-        this.characterId = player.Id;
 
         Factory = ItemType.CashOverall;
         if (!YamlConfig.config.server.USE_JOINT_CASHSHOP_INVENTORY)

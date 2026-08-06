@@ -17,10 +17,10 @@ namespace Application.Core.Login.Servers
     internal class SystemGrpcService : ServiceProto.SystemService.SystemServiceBase
     {
         readonly MasterServer _server;
-        readonly MessageService _msgService;
+        readonly ReportService _msgService;
         readonly ILogger<SystemGrpcService> _logger;
 
-        public SystemGrpcService(MasterServer masterServer, MessageService messageService, ILogger<SystemGrpcService> logger)
+        public SystemGrpcService(MasterServer masterServer, ReportService messageService, ILogger<SystemGrpcService> logger)
         {
             _server = masterServer;
             _msgService = messageService;

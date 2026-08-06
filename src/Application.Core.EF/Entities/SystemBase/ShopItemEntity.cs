@@ -1,7 +1,17 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
-public partial class Shopitem
+public partial class ShopItemEntity
 {
+    private ShopItemEntity() { }
+    public ShopItemEntity(int shopid, int itemId, int price, int pitch, int position)
+    {
+        Shopid = shopid;
+        ItemId = itemId;
+        Price = price;
+        Pitch = pitch;
+        Position = position;
+    }
+
     public int Shopitemid { get; set; }
 
     public int Shopid { get; set; }

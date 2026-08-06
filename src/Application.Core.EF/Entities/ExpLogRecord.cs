@@ -20,7 +20,7 @@ namespace Application.Core.EF.Entities
         public long GainedExp { get; set; }
 
         public int CurrentExp { get; set; }
-        public DateTimeOffset ExpGainTime { get; set; }
+        public DateTimeOffset ExpGainTime { get; set; } = DateTimeOffset.UtcNow;
 
     }
 }

@@ -2,8 +2,9 @@ using Application.Templates.String;
 
 namespace Application.Templates.Reader
 {
-    public abstract class GenericKeyedProvider<TSubProvider> : IKeyedProvider
-        where TSubProvider : AbstractProvider<AbstractTemplate>
+    public abstract class GenericKeyedProvider<TSubProvider, TSubTemplate> : IKeyedProvider<TSubTemplate>
+        where TSubProvider : IProvider<TSubTemplate>
+        where TSubTemplate: AbstractTemplate
     {
         public string Key { get; }
 
@@ -12,11 +13,7 @@ namespace Application.Templates.Reader
             Key = key;
             _categoryData = new();
         }
-        protected Dictionary<int, AbstractProvider<AbstractTemplate>> _categoryData;
-        public TSubProvider? GetRequiredSubProvider(StringCategory key)
-        {
-            return GetSubProvider(key) as TSubProvider;
-        }
+        protected Dictionary<int, TSubProvider> _categoryData;
 
         public void Dispose()
         {
@@ -27,19 +24,19 @@ namespace Application.Templates.Reader
             _categoryData.Clear();
         }
 
-        public IProvider? GetSubProvider(StringCategory key)
+        protected TSubProvider? GetSubProvider(StringCategory key)
         {
             return _categoryData.GetValueOrDefault((int)key);
         }
 
-        public IEnumerable<IProvider> GetSubProviders()
+        protected IEnumerable<TSubProvider> GetSubProviders()
         {
             return _categoryData.Values;
         }
 
         public string GetBaseDir() => string.Empty;
 
-        public AbstractTemplate? GetItem(int templateId)
+        public TSubTemplate? GetItem(int templateId)
         {
             foreach (var sub in _categoryData.Values)
             {
@@ -47,6 +44,26 @@ namespace Application.Templates.Reader
                 if (item != null) return item;
             }
             return null;
+        }
+
+        IProvider<TSubTemplate>? IKeyedProvider<TSubTemplate>.GetSubProvider(StringCategory key)
+        {
+            return GetSubProvider(key);
+        }
+
+        IEnumerable<IProvider<TSubTemplate>> IKeyedProvider<TSubTemplate>.GetSubProviders()
+        {
+            return GetSubProviders().OfType<IProvider<TSubTemplate>>();
+        }
+
+        IProvider? IKeyedProvider.GetSubProvider(StringCategory key)
+        {
+            return GetSubProvider(key);
+        }
+
+        IEnumerable<IProvider> IKeyedProvider.GetSubProviders()
+        {
+            return GetSubProviders().OfType<IProvider>();
         }
     }
 }

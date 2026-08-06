@@ -20,5 +20,5 @@ public class AccountBindingsEntity: IKeyedEntity<int>
     public string IP { get; set; } = null!;
     public string MAC { get; set; } = null!;
     public string HWID { get; set; } = null!;
-    public DateTimeOffset LastActiveTime { get; set; }
+    public DateTimeOffset LastActiveTime { get; set; } = DateTimeOffset.UtcNow;
 }

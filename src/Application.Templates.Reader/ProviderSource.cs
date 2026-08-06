@@ -46,7 +46,7 @@ namespace Application.Templates.Reader
         {
             var p = factory();
             if (!_providersByName.TryAdd(p.Type, new Lazy<IProvider>(factory)))
-                throw new ProviderDuplicateException(p.Type.ToString());
+                LibLog.Logger.LogWarning("{Type} 重复注册", p.Type.ToString());
             return this;
         }
 
@@ -72,7 +72,7 @@ namespace Application.Templates.Reader
         public ProviderSource RegisterKeydProvider(string key, Func<IKeyedProvider> func)
         {
             if (!_keyedProviders.TryAdd(key, new Lazy<IKeyedProvider>(func)))
-                throw new ProviderDuplicateException(key);
+                LibLog.Logger.LogWarning("{Type} 重复注册", key);
             return this;
         }
 

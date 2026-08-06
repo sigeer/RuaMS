@@ -6875,30 +6875,7 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Makes the NPCs provided set as scriptable, informing the client to search for js scripts for these NPCs even
-     * if they already have entries within the wz files.
-     *
-     * @param scriptableNpcIds Ids of npcs to enable scripts for.
-     * @return a packet which makes the npc's provided scriptable.
-     */
-    public static Packet setNPCScriptable(Dictionary<int, string> scriptableNpcIds)
-    {  // thanks to GabrielSin
-        OutPacket p = OutPacket.create(SendOpcode.SET_NPC_SCRIPTABLE);
-        p.writeByte(scriptableNpcIds.Count);
-        foreach (var item in scriptableNpcIds)
-        {
-            var (id, name) = (item.Key, item.Value);
-            p.writeInt(id);
-            // The client needs a name for the npc conversation, which is displayed under etc when the npc has a quest available.
-            p.writeString(name);
-            p.writeInt(0); // start time
-            p.writeInt(int.MaxValue); // end time
-        }
-        return p;
-    }
-
-    public static Packet SetNPCScriptable(IEnumerable<(int NpcId, string Script)> scriptableNpcIds)
+    public static Packet SetScriptableNPC(IEnumerable<ScriptableNpc> scriptableNpcIds)
     {
         // thanks to GabrielSin
         OutPacket p = OutPacket.create(SendOpcode.SET_NPC_SCRIPTABLE);
@@ -6907,7 +6884,7 @@ public class PacketCreator
         {
             p.writeInt(item.NpcId);
             // The client needs a name for the npc conversation, which is displayed under etc when the npc has a quest available.
-            p.writeString(item.Script);
+            p.writeString(item.ScriptInfo);
             p.writeInt(0); // start time
             p.writeInt(int.MaxValue); // end time
         }

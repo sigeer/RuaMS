@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Xml.Provider
         {
         }
 
-        protected override AbstractTemplate? SetStringTemplate(XElement rootNode)
+        protected override StringTemplateBase? SetStringTemplate(XElement rootNode)
         {
             if (int.TryParse(rootNode.GetName(), out var id))
             {
@@ -36,11 +36,6 @@ namespace Application.Templates.Reader.Xml.Provider
                 return template;
             }
             return null;
-        }
-
-        public override IEnumerable<AbstractTemplate> Search(string searchText, int maxCount = 50)
-        {
-            return LoadAll().OfType<StringNpcTemplate>().Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(maxCount);
         }
     }
 }

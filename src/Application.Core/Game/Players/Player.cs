@@ -214,13 +214,12 @@ namespace Application.Core.Game.Players
 
         public async Task OpenNpc(int npcId, string? customeScript = null)
         {
-            var script = customeScript ?? LifeFactory.Instance.GetNPCTemplateTrust(npcId)?.Script;
+            var script = customeScript ?? Client.CurrentServer.GetNpcScript(npcId);
             if (script != null)
             {
                 var npcObj = MapModel.getNPCById(npcId);
                 await Client.CurrentServer.NodeService.PluginManager.StartNpcConversation(Client, npcId, MapModel.getNPCById(npcId), script);
             }
-
         }
     }
 }

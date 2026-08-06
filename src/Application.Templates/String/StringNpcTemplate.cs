@@ -1,8 +1,7 @@
 namespace Application.Templates.String
 {
-    public class StringNpcTemplate : AbstractTemplate
+    public class StringNpcTemplate : StringTemplateBase
     {
-        public string Name { get; set; }
         public string? Func { get; set; }
         /// <summary>
         /// d0
@@ -17,7 +16,6 @@ namespace Application.Templates.String
 
         public StringNpcTemplate(int templateId) : base(templateId)
         {
-            Name = WzDefaults.WZ_MissingNo;
             DefaultTalk0 = "(...)";
         }
     }

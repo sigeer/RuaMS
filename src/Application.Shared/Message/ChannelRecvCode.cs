@@ -88,6 +88,12 @@ namespace Application.Shared.Message
         LoadDueyPackage ,
         OnDoorRemoved,
 
-        AntiMacroNotify
+        AntiMacroNotify,
+
+        DropDataUpdated,
+        ShopDataUpdated,
+        GachaponDataUpdated,
+
+        SendItem
     }
 }

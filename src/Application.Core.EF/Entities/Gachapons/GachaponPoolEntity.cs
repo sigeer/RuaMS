@@ -2,6 +2,12 @@ namespace Application.Core.EF.Entities.Gachapons
 {
     public class GachaponPoolEntity
     {
+        private GachaponPoolEntity() { }
+        public GachaponPoolEntity(int npcId)
+        {
+            NpcId = npcId;
+        }
+
         public int Id { get; set; }
         /// <summary>
         /// -1：全局

@@ -14,6 +14,7 @@ using Application.EF;
 using Application.Protos;
 using Application.Shared.Servers;
 using Application.Utility;
+using Google.Protobuf.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,10 +102,9 @@ namespace Application.Core.Login
             services.AddSingleton<IDataStorage, AccountBanManager>(sp => sp.GetRequiredService<AccountBanManager>());
 
             services.AddSingleton<GachaponManager>();
-            services.AddSingleton<IDataStorage, GachaponManager>(sp => sp.GetRequiredService<GachaponManager>());
 
-            services.AddSingleton<CDKManager>();
-            services.AddSingleton<IDataStorage, CDKManager>(sp => sp.GetRequiredService<CDKManager>());
+            services.AddSingleton<RewardManager>();
+            services.AddSingleton<IDataStorage, RewardManager>(sp => sp.GetRequiredService<RewardManager>());
 
             services.AddSingleton<DueyManager>();
             services.AddSingleton<IDataStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
@@ -128,6 +128,9 @@ namespace Application.Core.Login
             services.AddSingleton<ChatRoomManager>();
             services.AddSingleton<CashShopDataManager>();
             services.AddSingleton<InvitationManager>();
+
+            services.AddSingleton<ShopManager>();
+            services.AddSingleton<DropDataManager>();
             return services;
         }
 
@@ -135,9 +138,7 @@ namespace Application.Core.Login
         {
             services.AddSingleton<LoginService>();
             services.AddSingleton<ItemService>();
-
-            services.AddSingleton<ShopService>();
-            services.AddSingleton<MessageService>();
+            services.AddSingleton<ReportService>();
             services.AddSingleton<RankService>();
             services.AddSingleton<CreatePlayerService>();
 
@@ -169,6 +170,11 @@ namespace Application.Core.Login
             });
 
             var mapperConfig = TypeAdapterConfig.GlobalSettings;
+
+            mapperConfig.Default
+                    .UseDestinationValue(member => member.SetterModifier == AccessModifier.None &&
+                                           member.Type.IsGenericType &&
+                                           member.Type.GetGenericTypeDefinition() == typeof(RepeatedField<>));
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             services.AddSingleton(mapperConfig);
             services.AddSingleton<IMapper, ServiceMapper>();

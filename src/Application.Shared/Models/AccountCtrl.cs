@@ -2,6 +2,7 @@ namespace Application.Shared.Models
 {
     public class AccountCtrl: AccountInfoModel
     {
+        public string NickName { get; set; } = "";
         public string Password { get; set; } = "";
 
         public string Pin { get; set; } = "";

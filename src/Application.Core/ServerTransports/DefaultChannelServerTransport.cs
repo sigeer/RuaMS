@@ -774,5 +774,15 @@ namespace Application.Core.ServerTransports
         {
             await InternalSession.SendAsync(ChannelSendCode.RemoveDoor);
         }
+
+        public async Task<ItemProto.GetRewardsResponseProto> GetActiveRewards(ItemProto.GetRewardsRequestProto request)
+        {
+            return await _gameClient.GetActiveRewardsAsync(request);
+        }
+
+        public async Task<ItemProto.UseCdkResponse> TakeReward(ItemProto.UseIdRequest request)
+        {
+            return await _gameClient.TakeRewardAsync(request);
+        }
     }
 }

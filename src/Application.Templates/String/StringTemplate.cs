@@ -1,9 +1,10 @@
 namespace Application.Templates.String
 {
-    public sealed class StringTemplate : AbstractTemplate
+    /// <summary>
+    /// Item, Skill, Mob
+    /// </summary>
+    public sealed class StringTemplate : StringTemplateBase
     {
-        [WZPath("name")]
-        public string Name { get; set; }
 
         [WZPath("desc")]
         public string? Description { get; set; }
@@ -14,7 +15,6 @@ namespace Application.Templates.String
         public StringTemplate(int templateId)
             : base(templateId)
         {
-            Name = WzDefaults.WZ_NoName;
         }
     }
 }

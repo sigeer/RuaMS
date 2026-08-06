@@ -1,4 +1,4 @@
-﻿namespace Application.EF.Entities;
+namespace Application.EF.Entities;
 
 public partial class Namechange
 {
@@ -10,7 +10,7 @@ public partial class Namechange
 
     public string New { get; set; } = null!;
 
-    public DateTimeOffset RequestTime { get; set; }
+    public DateTimeOffset RequestTime { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset? CompletionTime { get; set; }
 }

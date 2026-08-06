@@ -2,6 +2,7 @@ using Application.Core.Login.Services;
 using BaseProto;
 using Config;
 using Dto;
+using DueyDto;
 using ExpeditionProto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -15,11 +16,11 @@ namespace Application.Core.Login.Servers
     {
         readonly MasterServer _server;
         readonly ItemService _itemService;
-        readonly ShopService _shopService;
+        readonly ShopManager _shopService;
         readonly InvitationService _invitationService;
         readonly IExpeditionService _expeditionService;
         readonly RankService _rankService;
-        public GameGrpcService(MasterServer server, ItemService itemService, ShopService shopService, InvitationService invitationService, IExpeditionService expeditionService, RankService rankService)
+        public GameGrpcService(MasterServer server, ItemService itemService, ShopManager shopService, InvitationService invitationService, IExpeditionService expeditionService, RankService rankService)
         {
             _server = server;
             _itemService = itemService;
@@ -76,7 +77,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<DropAllDto> LoadMobDropData(Empty request, ServerCallContext context)
         {
-            return Task.FromResult(_itemService.LoadMobDropDto());
+            return Task.FromResult(_server.DropDataManager.LoadMobDropDto());
         }
 
         public override Task<MonitorDataWrapper> LoadMonitor(Empty request, ServerCallContext context)
@@ -96,7 +97,7 @@ namespace Application.Core.Login.Servers
 
         public override Task<DropAllDto> LoadReactorDropData(Empty request, ServerCallContext context)
         {
-            return Task.FromResult(_itemService.LoadAllReactorDrops());
+            return Task.FromResult(_server.DropDataManager.LoadAllReactorDrops());
         }
 
         public override Task<ReactorSkillBookDto> LoadReactorSkillBookData(Empty request, ServerCallContext context)
@@ -120,7 +121,27 @@ namespace Application.Core.Login.Servers
 
         public override Task<UseCdkResponse> UseCDK(UseCdkRequest request, ServerCallContext context)
         {
-            return Task.FromResult(_server.CDKManager.UseCdk(request));
+            return Task.FromResult(_server.RewardManager.UseCdk(request));
+        }
+
+        public override Task<GetRewardsResponseProto> GetActiveRewards(GetRewardsRequestProto request, ServerCallContext context)
+        {
+            return _server.RewardManager.GetActiveRewards(request);
+        }
+
+        public override Task<UseCdkResponse> TakeReward(UseIdRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(_server.RewardManager.UseId(request));
+        }
+
+        public override Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request, ServerCallContext context)
+        {
+            return _server.DueyManager.CreateDueyPackage(request);
+        }
+
+        public override async Task<BoolWrapper> SendNote(SendNormalNoteRequest request, ServerCallContext context)
+        {
+            return new BoolWrapper { Value = await _server.NoteManager.SendNormal(request.Message, request.FromId, request.ToName) };
         }
 
         #region PlayerNPC

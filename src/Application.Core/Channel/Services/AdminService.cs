@@ -23,11 +23,11 @@ namespace Application.Core.Channel.Services
             return Ban(ServerConstants.SystemCId, chr.Name, reason, reasonDesc, days, level);
         }
 
-        public async Task Ban(int operatorId, string victim, BanReason reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
+        public async Task Ban(int operatorAccId, string victim, BanReason reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
             await _transport.Ban(new SystemProto.BanRequest
             {
-                OperatorId = operatorId,
+                OperatorId = operatorAccId,
                 Victim = victim,
                 Reason = (int)reason,
                 ReasonDesc = reasonDesc,
@@ -40,7 +40,7 @@ namespace Application.Core.Channel.Services
         {
             _ = _transport.Unban(new SystemProto.UnbanRequest
             {
-                OperatorId = chr.Id,
+                OperatorId = chr.AccountId,
                 Victim = victim,
             });
         }

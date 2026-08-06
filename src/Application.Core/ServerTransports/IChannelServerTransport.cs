@@ -214,5 +214,7 @@ namespace Application.Core.ServerTransports
         Task UnjailPlayer(CreateUnjailRequest request);
 
         Task SendRemoveDoor(int ownerId);
+        Task<ItemProto.GetRewardsResponseProto> GetActiveRewards(ItemProto.GetRewardsRequestProto request);
+        Task<ItemProto.UseCdkResponse> TakeReward(ItemProto.UseIdRequest request);
     }
 }
