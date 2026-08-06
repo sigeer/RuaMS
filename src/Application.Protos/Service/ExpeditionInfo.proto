@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "Model/ExpeditionInfo.proto";
+
+package ProtoService;
+
+
+
+message QueryChannelExpeditionRequest {
+	int32 channel = 1;
+}
+
+
+
+message QueryChannelExpeditionResponse {
+	repeated ProtoModel.ChannelExpeditionProto list = 1;
+}

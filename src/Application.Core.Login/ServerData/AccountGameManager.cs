@@ -1,13 +1,12 @@
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class AccountGameManager : DataStorageBase<int, AccountDto.AccountGameDto, AccountEntity>
+    public class AccountGameManager : DataStorageBase<int, ProtoModel.AccountGameProto, AccountEntity>
     {
         readonly MasterServer _server;
 
@@ -17,14 +16,14 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        protected override int GetKey(AccountDto.AccountGameDto model) => model.Id;
+        protected override int GetKey(ProtoModel.AccountGameProto model) => model.Id;
 
-        public AccountDto.AccountGameDto? GetAccountGameData(int accountId)
+        public ProtoModel.AccountGameProto? GetAccountGameData(int accountId)
         {
             return Find(accountId);
         }
 
-        public void UpdateAccountGame(AccountDto.AccountGameDto accountGame)
+        public void UpdateAccountGame(ProtoModel.AccountGameProto accountGame)
         {
             SetDirty(accountGame);
         }

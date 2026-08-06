@@ -1,11 +1,10 @@
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Google.Protobuf;
-using SystemProto;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class SetGmLevelHandler : InternalSessionChannelHandler<SystemProto.SetGmLevelResponse>
+    internal class SetGmLevelHandler : InternalSessionChannelHandler<ProtoService.SetGmLevelResponse>
     {
         public SetGmLevelHandler(WorldChannelServer server) : base(server)
         {
@@ -13,7 +12,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeSetGmLevel;
 
-        protected override async Task HandleMessage(SetGmLevelResponse res)
+        protected override async Task HandleMessage(ProtoService.SetGmLevelResponse res)
         {
             if (res.Code == 0)
             {
@@ -40,6 +39,6 @@ namespace Application.Core.Channel.Internal.Handlers
             }
         }
 
-        protected override SetGmLevelResponse Parse(ByteString content) => SetGmLevelResponse.Parser.ParseFrom(content);
+        protected override ProtoService.SetGmLevelResponse Parse(ByteString content) => ProtoService.SetGmLevelResponse.Parser.ParseFrom(content);
     }
 }

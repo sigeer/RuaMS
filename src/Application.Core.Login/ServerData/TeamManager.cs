@@ -3,7 +3,6 @@ using Application.Shared.Message;
 using Application.Shared.Team;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using TeamProto;
 
 namespace Application.Core.Login.ServerData
 {
@@ -23,7 +22,7 @@ namespace Application.Core.Login.ServerData
             _logger = logger;
         }
 
-        public TeamProto.TeamDto? GetTeamDto(int teamId)
+        public ProtoModel.TeamProto? GetTeamDto(int teamId)
         {
             var data = GetTeamModel(teamId);
             if (data == null)
@@ -32,19 +31,19 @@ namespace Application.Core.Login.ServerData
             return MapTeamDto(data);
         }
 
-        public TeamProto.TeamDto? MapTeamDto(TeamModel data)
+        public ProtoModel.TeamProto? MapTeamDto(TeamModel data)
         {
-            var response = new TeamProto.TeamDto();
+            var response = new ProtoModel.TeamProto();
             response.Id = data.Id;
             response.LeaderId = data.LeaderId;
-            response.Members.AddRange(_mapper.Map<TeamProto.TeamMemberDto[]>(data.GetMembers().Select(_server.CharacterManager.FindPlayerById)));
+            response.Members.AddRange(_mapper.Map<ProtoModel.TeamMemberProto[]>(data.GetMembers().Select(_server.CharacterManager.FindPlayerById)));
             return response;
         }
         public TeamModel? GetTeamModel(int teamId) => _dataSource.GetValueOrDefault(teamId);
 
-        public CreateTeamResponse CreateTeam(CreateTeamRequest request)
+        public ProtoService.CreateTeamResponse CreateTeam(ProtoService.CreateTeamRequest request)
         {
-            var res = new CreateTeamResponse() { Request = request };
+            var res = new ProtoService.CreateTeamResponse() { Request = request };
             var chrFrom = _server.CharacterManager.FindPlayerById(request.LeaderId)!;
             if (chrFrom.Character.Party > 0)
             {
@@ -68,9 +67,9 @@ namespace Application.Core.Login.ServerData
         }
         public async Task UpdateParty(int partyid, PartyOperation operation, int fromId, int toId, int reason = 0)
         {
-            var response = new TeamProto.UpdateTeamResponse()
+            var response = new ProtoService.UpdateTeamResponse()
             {
-                Request = new UpdateTeamRequest
+                Request = new ProtoService.UpdateTeamRequest
                 {
                     TeamId = partyid,
                     Operation = (int)operation,
@@ -142,7 +141,7 @@ namespace Application.Core.Login.ServerData
                 await SendError(response);
         }
 
-        async Task SendError(TeamProto.UpdateTeamResponse response)
+        async Task SendError(ProtoService.UpdateTeamResponse response)
         {
             var operation = (PartyOperation)response.Request.Operation;
             if (operation != PartyOperation.SILENT_UPDATE && operation != PartyOperation.LOG_ONOFF)

@@ -10,7 +10,7 @@ namespace Application.Core.Channel.Invitation
         {
         }
 
-        public override void OnInvitationAnswered(InvitationProto.AnswerInviteResponse data)
+        public override void OnInvitationAnswered(ProtoService.AnswerInviteResponse data)
         {
             var result = (InviteResultType)data.Result;
             if (result != InviteResultType.ACCEPTED)
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Invitation
             }
         }
 
-        public override void OnInvitationCreated(InvitationProto.CreateInviteResponse data)
+        public override void OnInvitationCreated(ProtoService.CreateInviteResponse data)
         {
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)

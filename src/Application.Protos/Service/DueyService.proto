@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "Model/DueyPackage.proto";
+import "Service/CreatePackageRequest.proto";
+
+package ProtoService;
+
+
+
+service DueyService {
+	rpc CreateDueyPackage (CreatePackageRequest) returns(CreatePackageResponse);
+}
+
+message GetPlayerDueyPackageRequest {
+	int32 receiverId = 1;
+}
+
+message GetPlayerDueyPackageResponse {
+	int32 receiverId = 1;
+	repeated ProtoModel.DueyPackageProto list = 2;
+}
+
+message TakeDueyPackageRequest {
+	int32 masterId = 1;
+	int32 packageId = 2;
+}
+
+message TakeDueyPackageResponse {
+	int32 code = 1;
+	TakeDueyPackageRequest request = 2;
+	ProtoModel.DueyPackageProto package = 3;
+}
+
+message TakeDueyPackageCommitRequest {
+	int32 masterId = 1;
+	int32 packageId = 2;
+	bool success = 3;
+}

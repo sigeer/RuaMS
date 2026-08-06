@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "Model/MedalMap.proto";
+import "Model/QuestProgress.proto";
+
+package ProtoModel;
+
+
+
+message QuestStatusProto {
+  int32 id = 1;
+  int32 questId = 2;
+  int32 status = 3;
+  int32 time = 4;
+  int64 expires = 5;
+  int32 forfeited = 6;
+  int32 completed = 7;
+  int32 info = 8;
+  int32 characterid = 9;
+  repeated QuestProgressProto progress = 10;
+  repeated MedalMapProto medalMap = 11;
+}

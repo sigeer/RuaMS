@@ -7,7 +7,6 @@ using Application.Templates.Item.Pet;
 using Application.Templates.Reader;
 using Application.Utility;
 using DotNetty.Buffers;
-using Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -184,7 +183,7 @@ namespace Application.Shared.Net
             op.WriteBytes(ip, movementDataLength);
         }
 
-        public static void EncodeItem(OutPacket p, ItemDto item, AbstractItemTemplate itemTemplate, bool forLook = false)
+        public static void EncodeItem(OutPacket p, ProtoModel.ItemProto item, AbstractItemTemplate itemTemplate, bool forLook = false)
         {
             bool isCash = itemTemplate.Cash;
             var pos = item.Position;

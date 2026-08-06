@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Services
 
         public async Task Ban(int operatorAccId, string victim, BanReason reason, string? reasonDesc, int days, BanLevel level = BanLevel.OnlyAccount)
         {
-            await _transport.Ban(new SystemProto.BanRequest
+            await _transport.Ban(new ProtoService.BanRequest
             {
                 OperatorId = operatorAccId,
                 Victim = victim,
@@ -38,7 +38,7 @@ namespace Application.Core.Channel.Services
 
         public void Unban(Player chr, string victim)
         {
-            _ = _transport.Unban(new SystemProto.UnbanRequest
+            _ = _transport.Unban(new ProtoService.UnbanRequest
             {
                 OperatorId = chr.AccountId,
                 Victim = victim,
@@ -47,13 +47,13 @@ namespace Application.Core.Channel.Services
 
         internal void SetGmLevel(Player chr, string victim, int newLevel)
         {
-            _ = _transport.SetGmLevel(new SystemProto.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
+            _ = _transport.SetGmLevel(new ProtoService.SetGmLevelRequest { OperatorId = chr.Id, Level = newLevel, TargetName = victim });
         }
 
 
         public void SetFly(Player chr, bool v)
         {
-            var data = _transport.SendSetFly(new ConfigProto.SetFlyRequest { CId = chr.Id, SetStatus = v });
+            var data = _transport.SendSetFly(new ProtoService.SetFlyRequest { CId = chr.Id, SetStatus = v });
             if (data.Code == 0)
             {
                 string sendStr = "";
@@ -78,7 +78,7 @@ namespace Application.Core.Channel.Services
             }
         }
 
-        public SystemProto.OnlinedPlayerInfoDto[] GetOnlinedPlayers()
+        public ProtoModel.OnlinedPlayerInfoProto[] GetOnlinedPlayers()
         {
             return _transport.GetOnlinedPlayers().List.ToArray();
         }
@@ -98,7 +98,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                await _transport.WarpPlayerByName(new SystemProto.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.WarpPlayerByName(new ProtoService.WrapPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
@@ -119,7 +119,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                await _transport.SummonPlayerByName(new SystemProto.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.SummonPlayerByName(new ProtoService.SummonPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
@@ -132,7 +132,7 @@ namespace Application.Core.Channel.Services
             }
             else
             {
-                await _transport.DisconnectPlayerByName(new SystemProto.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
+                await _transport.DisconnectPlayerByName(new ProtoService.DisconnectPlayerByNameRequest { MasterId = chr.Id, Victim = victim });
             }
         }
 
@@ -140,13 +140,13 @@ namespace Application.Core.Channel.Services
         public async Task DisconnectAll(Player chr)
         {
             await _server.Transport.DisconnectAllNotifyAsync();
-            // _transport.DisconnectAll(new SystemProto.DisconnectAllRequest { MasterId = chr.Id });
+            // _transport.DisconnectAll(new ProtoService.DisconnectAllRequest { MasterId = chr.Id });
             await chr.Pink(ClientMessage.Command_Done, "dcall");
         }
 
-        public List<Dto.ClientInfo> GetOnliendClientInfo()
+        public List<ProtoModel.ClientInfo> GetOnliendClientInfo()
         {
-            Dto.GetAllClientInfo res = _transport.GetOnliendClientInfo();
+            ProtoModel.GetAllClientInfo res = _transport.GetOnliendClientInfo();
             return res.List.ToList();
         }
 
@@ -157,7 +157,7 @@ namespace Application.Core.Channel.Services
         public void ShutdownMaster(Player chr, int delay = -1)
         {
             chr.Notice("服务器正在停止中...");
-            _ = _transport.ShutdownMaster(new SystemProto.ShutdownMasterRequest() { DelaySeconds = delay });
+            _ = _transport.ShutdownMaster(new ProtoService.ShutdownMasterRequest() { DelaySeconds = delay });
         }
 
         internal void SavelAll()
@@ -265,12 +265,12 @@ namespace Application.Core.Channel.Services
 
         public async Task JailPlayer(int operatorId, string targetName, int minutes)
         {
-            await _transport.JailPlayer(new JailProto.CreateJailRequest { MasterId = operatorId, TargetName = targetName, Minutes = minutes });
+            await _transport.JailPlayer(new ProtoService.CreateJailRequest { MasterId = operatorId, TargetName = targetName, Minutes = minutes });
         }
 
         public async Task UnjailPlayer(Player chr, string targetName)
         {
-            await _transport.UnjailPlayer(new JailProto.CreateUnjailRequest { MasterId = chr.Id, TargetName = targetName });
+            await _transport.UnjailPlayer(new ProtoService.CreateUnjailRequest { MasterId = chr.Id, TargetName = targetName });
         }
     }
 }

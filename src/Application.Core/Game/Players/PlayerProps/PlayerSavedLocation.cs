@@ -2,7 +2,7 @@ using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
-    public class PlayerSavedLocation : PlayerPropBase<Dto.SavedLocationDto>
+    public class PlayerSavedLocation : PlayerPropBase<ProtoModel.SavedLocationProto>
     {
         public SavedLocationType[] AllType { get; set; }
         public PlayerSavedLocation(Player owner) : base(owner)
@@ -12,7 +12,7 @@ namespace Application.Core.Game.Players.PlayerProps
         }
 
         SavedLocation?[] _dataSource;
-        public override void LoadData(RepeatedField<Dto.SavedLocationDto> savedLocFromDB)
+        public override void LoadData(RepeatedField<ProtoModel.SavedLocationProto> savedLocFromDB)
         {
             foreach (var item in savedLocFromDB)
             {
@@ -20,9 +20,9 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public override Dto.SavedLocationDto[] ToDto()
+        public override ProtoModel.SavedLocationProto[] ToDto()
         {
-            return _dataSource.Where(x => x != null).Select((x, idx) => new Dto.SavedLocationDto
+            return _dataSource.Where(x => x != null).Select((x, idx) => new ProtoModel.SavedLocationProto
             {
                 Locationtype = ((SavedLocationType)idx).ToString(),
                 Map = x.getMapId(),

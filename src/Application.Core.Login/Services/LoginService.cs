@@ -27,7 +27,7 @@ namespace Application.Core.Login.Services
         /// <param name="clientSession"></param>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public SyncProto.PlayerGetterDto? PlayerLogin(string clientSession, int characterId)
+        public ProtoModel.PlayerGetterProto? PlayerLogin(string clientSession, int characterId)
         {
             var characterObj = _masterServer.CharacterManager.FindPlayerById(characterId);
             if (characterObj == null || characterObj.Character == null)
@@ -50,8 +50,8 @@ namespace Application.Core.Login.Services
 
             _masterServer.CharacterManager.FlushCharacter(characterObj);
 
-            var data = _mapper.Map<SyncProto.PlayerGetterDto>(characterObj);
-            data.LoginInfo = new SyncProto.LoginInfo
+            var data = _mapper.Map<ProtoModel.PlayerGetterProto>(characterObj);
+            data.LoginInfo = new ProtoModel.LoginInfoProto
             {
                 IsNewCommer = accountModel.State == LoginStage.LOGIN_SERVER_TRANSITION,
                 Language = accountModel.Language
@@ -59,11 +59,11 @@ namespace Application.Core.Login.Services
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             data.Link = dbContext.Characters.Where(x => x.AccountId == data.Character.AccountId && x.Id != data.Character.Id).OrderByDescending(x => x.Level)
-                .Select(x => new SyncProto.CharacterLinkDto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
+                .Select(x => new ProtoModel.CharacterLinkProto() { Level = x.Level, Name = x.Name }).FirstOrDefault();
 
             data.RingSourceList.AddRange(_masterServer.RingManager.LoadCharacterRings(data.Character.Id));
             data.AccountGame = _masterServer.AccountGameManager.GetAccountGameData(data.Character.AccountId);
-            data.Account = _mapper.Map<AccountDto.AccountInfoProto>(accountData);
+            data.Account = _mapper.Map<ProtoModel.AccountInfoProto>(accountData);
             data.NewYearCards.AddRange(_masterServer.NewYearCardManager.LoadPlayerNewYearCard(data.Character.Id));
             data.RemoteCallList.AddRange(_masterServer.CrossServerService.GetCallback(characterId));
             return data;

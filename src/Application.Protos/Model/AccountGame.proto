@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+import "Model/QuickSlot.proto";
+import "Model/Storage.proto";
+
+package ProtoModel;
+
+
+
+message AccountGameProto {
+  int32 id = 1;
+
+  int32 nxCredit = 2;
+  int32 maplePoint = 3;
+  int32 nxPrepaid = 4;
+
+  AccountGameDataProto data = 6;
+}
+
+
+
+message AccountGameDataProto {
+  repeated ItemProto cashExplorerItems = 6;
+  repeated ItemProto cashCygnusItems = 7;
+  repeated ItemProto cashAranItems = 8;
+  repeated ItemProto cashOverallItems = 9;
+
+  StorageProto storage = 11;
+
+  QuickSlotProto quickSlot = 12;
+}

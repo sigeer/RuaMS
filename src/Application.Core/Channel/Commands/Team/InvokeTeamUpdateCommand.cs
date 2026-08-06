@@ -1,16 +1,15 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Resources.Messages;
 using Application.Shared.Team;
-using TeamProto;
 
 namespace Application.Core.Channel.Commands
 {
     internal class InvokeTeamUpdateCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeTeamUpdateCommand);
-        UpdateTeamResponse res;
+        ProtoService.UpdateTeamResponse res;
 
-        public InvokeTeamUpdateCommand(UpdateTeamResponse res)
+        public InvokeTeamUpdateCommand(ProtoService.UpdateTeamResponse res)
         {
             this.res = res;
         }

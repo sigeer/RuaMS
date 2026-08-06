@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+import "Model/AccountGame.proto";
+import "Model/AccountInfo.proto";
+import "Model/Character.proto";
+import "Model/NewYearCard.proto";
+import "Model/Ring.proto";
+import "Model/ServerCrossCallback.proto";
+
+package ProtoModel;
+
+
+
+message LoginInfoProto {
+	bool isNewCommer = 1;
+	int32 language = 2;
+}
+
+
+
+message CharacterLinkProto {
+  int32 level = 1;
+  string name = 2;
+}
+
+
+
+message PlayerGetterProto {
+  AccountInfoProto account = 1;
+  CharacterProto character = 2; // CHECK TYPE
+  AccountGameProto accountGame = 3; // 账号共享数据
+  repeated RingProto ringSourceList = 4;
+  repeated NewYearCardProto newYearCards = 5;	// 新年贺卡
+  LoginInfoProto loginInfo = 17;
+  CharacterLinkProto link = 18;
+  repeated RemoteCallProto remoteCallList = 23;
+}

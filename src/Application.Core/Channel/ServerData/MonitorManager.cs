@@ -81,7 +81,7 @@ namespace Application.Core.Channel.ServerData
 
         public void ToggleMonitor(Player chr, string name)
         {
-            _ = _transport.SetMonitor(new Config.ToggleMonitorPlayerRequest { TargetName = name });
+            _ = _transport.SetMonitor(new ProtoService.ToggleMonitorPlayerRequest { TargetName = name });
         }
     }
 }

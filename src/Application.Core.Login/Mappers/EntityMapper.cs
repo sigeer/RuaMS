@@ -21,19 +21,19 @@ namespace Application.Core.Login.Mappers
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<CharacterEntity, Dto.CharacterDto>()
-                .Map(dest => dest.Data, src => Dto.CharacterDataProto.Parser.ParseFrom(src.Blob));
+            config.NewConfig<CharacterEntity, ProtoModel.CharacterProto>()
+                .Map(dest => dest.Data, src => ProtoModel.CharacterDataProto.Parser.ParseFrom(src.Blob));
 
-            config.NewConfig<Dto.CharacterDto, CharacterEntity>()
+            config.NewConfig<ProtoModel.CharacterProto, CharacterEntity>()
                 .Map(dest => dest.Blob, src => src.Data.ToByteArray());
 
-            config.NewConfig<AccountEntity, AccountDto.AccountGameDto>()
-                .Map(dest => dest.Data, src => AccountDto.AccountGameDataProto.Parser.ParseFrom(src.Blob));
-            config.NewConfig<AccountDto.AccountGameDto, AccountEntity>()
+            config.NewConfig<AccountEntity, ProtoModel.AccountGameProto>()
+                .Map(dest => dest.Data, src => ProtoModel.AccountGameDataProto.Parser.ParseFrom(src.Blob));
+            config.NewConfig<ProtoModel.AccountGameProto, AccountEntity>()
                 .Map(dest => dest.Blob, src => src.Data.ToByteArray());
 
 
-            config.NewConfig<ReactorDropEntity, Dto.DropItemDto>()
+            config.NewConfig<ReactorDropEntity, ProtoModel.DropItemProto>()
                 .Map(dest => dest.ItemId, src => src.Itemid)
                 .Map(dest => dest.QuestId, src => src.Questid)
                 .Map(dest => dest.DropperId, src => src.Reactorid)
@@ -42,7 +42,7 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.MaxCount, _ => 1)
                 .Map(dest => dest.Chance, src => src.Chance);
 
-            config.NewConfig<DropDataEntity, Dto.DropItemDto>()
+            config.NewConfig<DropDataEntity, ProtoModel.DropItemProto>()
                 .Map(dest => dest.ItemId, src => src.Itemid)
                 .Map(dest => dest.QuestId, src => src.Questid)
                 .Map(dest => dest.DropperId, src => src.Dropperid)
@@ -51,7 +51,7 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.MaxCount, src => src.MaximumQuantity)
                 .Map(dest => dest.Chance, src => src.Chance);
 
-            config.NewConfig<DropDataGlobalEntity, Dto.DropItemDto>()
+            config.NewConfig<DropDataGlobalEntity, ProtoModel.DropItemProto>()
                 .Map(dest => dest.ItemId, src => src.Itemid)
                 .Map(dest => dest.QuestId, src => src.Questid)
                 .Map(dest => dest.DropperId, src => src.Continent)
@@ -60,31 +60,31 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.MaxCount, src => src.MaximumQuantity)
                 .Map(dest => dest.Chance, src => src.Chance);
 
-            config.NewConfig<ShopEntity, Dto.ShopDto>();
-            config.NewConfig<ShopItemEntity, Dto.ShopItemDto>();
+            config.NewConfig<ShopEntity, ProtoModel.ShopProto>();
+            config.NewConfig<ShopItemEntity, ProtoModel.ShopItemProto>();
 
-            config.NewConfig<SpecialCashItemEntity, CashProto.SpecialCashItemDto>();
+            config.NewConfig<SpecialCashItemEntity, ProtoModel.SpecialCashItemProto>();
 
-            config.NewConfig<NoteEntity, Dto.NoteDto>();
-            config.NewConfig<Dto.NoteDto, NoteEntity>()
+            config.NewConfig<NoteEntity, ProtoModel.NoteProto>();
+            config.NewConfig<ProtoModel.NoteProto, NoteEntity>()
                 .ConstructUsing(x => new NoteEntity(x.Id, x.ToId, x.FromId, x.Message, x.Timestamp));
 
 
             config.NewConfig<RingEntity, RingSourceModel>();
             config.NewConfig<RingSourceModel, RingEntity>();
 
-            config.NewConfig<RingSourceModel, ItemProto.RingDto>();
-            config.NewConfig<ItemProto.RingDto, RingSourceModel>();
+            config.NewConfig<RingSourceModel, ProtoModel.RingProto>();
+            config.NewConfig<ProtoModel.RingProto, RingSourceModel>();
 
             #region Gifts
             config.NewConfig<GiftEntity, GiftModel>();
             config.NewConfig<GiftModel, GiftEntity>()
                 .ConstructUsing(x => new GiftEntity(x.Id, x.ToId, x.FromId, x.Message, x.Sn, x.RingSourceId));
 
-            config.NewConfig<GiftModel, ItemProto.GiftDto>()
+            config.NewConfig<GiftModel, ProtoModel.GiftProto>()
                 .Map(dest => dest.To, src => src.ToId)
                 .Map(dest => dest.From, src => src.FromId);
-            config.NewConfig<ItemProto.GiftDto, GiftModel>()
+            config.NewConfig<ProtoModel.GiftProto, GiftModel>()
                 .Map(dest => dest.ToId, src => src.To)
                 .Map(dest => dest.FromId, src => src.From);
             #endregion
@@ -96,7 +96,7 @@ namespace Application.Core.Login.Mappers
 
             config.NewConfig<FredstorageEntity, FredrickStoreModel>()
                 .Map(dest => dest.StoreTime, src => src.Timestamp.ToUnixTimeMilliseconds())
-                .Map(dest => dest.Items, src => ItemProto.PlayerShopStoreItems.Parser.ParseFrom(src.ItemsBlob));
+                .Map(dest => dest.Items, src => ProtoModel.PlayerShopStoreItemsProto.Parser.ParseFrom(src.ItemsBlob));
             config.NewConfig<FredrickStoreModel, FredstorageEntity>()
                 .ConstructUsing(x => new FredstorageEntity(x.Id, x.Cid, x.Daynotes, x.Meso, DateTimeOffset.FromUnixTimeMilliseconds(x.StoreTime)))
                 .Map(dest => dest.Timestamp, src => DateTimeOffset.FromUnixTimeMilliseconds(src.StoreTime))
@@ -106,9 +106,9 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<AccountHistoryModel, AccountBindingsEntity>()
                 .ConstructUsing(x => new AccountBindingsEntity(x.Id, x.AccountId, x.IP, x.MAC, x.HWID, x.LastActiveTime));
 
-            config.NewConfig<GachaponPoolEntity, ItemProto.GachaponPoolDto>();
-            config.NewConfig<GachaponPoolLevelChanceEntity, ItemProto.GachaponPoolChanceDto>();
-            config.NewConfig<GachaponPoolItemEntity, ItemProto.GachaponPoolItemDto>();
+            config.NewConfig<GachaponPoolEntity, ProtoModel.GachaponPoolProto>();
+            config.NewConfig<GachaponPoolLevelChanceEntity, ProtoModel.GachaponPoolChanceProto>();
+            config.NewConfig<GachaponPoolItemEntity, ProtoModel.GachaponPoolItemProto>();
 
             config.NewConfig<RewardEntity, CdkCodeModel>();
             config.NewConfig<RewardItemEntity, CdkItemModel>();
@@ -117,22 +117,22 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<CdkRecordModel, RewardRecordEntity>()
                 .ConstructUsing(x => new RewardRecordEntity(x.Id, x.CodeId, x.RecipientId, x.RecipientTime));
 
-            config.NewConfig<DueyPackageEntity, DueyDto.DueyPackageDto>()
+            config.NewConfig<DueyPackageEntity, ProtoModel.DueyPackageProto>()
                 .Map(dest => dest.PackageId, src => src.Id)
-                .Map(dest => dest.Item, src => src.ItemBlob == null ? null : Dto.ItemDto.Parser.ParseFrom(src.ItemBlob))
+                .Map(dest => dest.Item, src => src.ItemBlob == null ? null : ProtoModel.ItemProto.Parser.ParseFrom(src.ItemBlob))
                 .Map(dest => dest.Notified, src => src.HasNotified);
-            config.NewConfig<DueyDto.DueyPackageDto, DueyPackageEntity>()
+            config.NewConfig<ProtoModel.DueyPackageProto, DueyPackageEntity>()
                 .Map(dest => dest.Id, src => src.PackageId)
                 .Map(dest => dest.ItemBlob, src => src.Item == null ? null : src.Item.ToByteArray())
                 .Map(dest => dest.HasNotified, src => src.Notified);
 
-            config.NewConfig<Dto.NewYearCardDto, NewYearCardEntity>();
-            config.NewConfig<NewYearCardEntity, Dto.NewYearCardDto>();
+            config.NewConfig<ProtoModel.NewYearCardProto, NewYearCardEntity>();
+            config.NewConfig<NewYearCardEntity, ProtoModel.NewYearCardProto>();
 
-            config.NewConfig<PlifeEntity, LifeProto.PLifeDto>()
+            config.NewConfig<PlifeEntity, ProtoModel.PLifeProto>()
                 .Map(dest => dest.MapId, src => src.Map)
                 .Map(dest => dest.LifeId, src => src.Life);
-            config.NewConfig<LifeProto.PLifeDto, PlifeEntity>()
+            config.NewConfig<ProtoModel.PLifeProto, PlifeEntity>()
                 .ConstructUsing(x => new PlifeEntity(x.Id, x.MapId, x.LifeId, x.Mobtime, x.X, x.Y, x.Fh, x.Type))
                 .Map(dest => dest.Map, src => src.MapId)
                 .Map(dest => dest.Life, src => src.LifeId);

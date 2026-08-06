@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "Model/HiredMerchant.proto";
+
+package ProtoModel;
+
+
+
+message OwlSearchRecordProto {
+  int32 itemId = 1;
+  int32 count = 2;
+}
+
+
+
+message OwlSearchResultItemProto {
+	PlayerShopItemProto item = 1;
+	string title = 2;
+	string ownerName = 3;
+	int32 mapId = 4;
+	int32 channel = 5;
+	int32 mapObjectId = 6;
+}

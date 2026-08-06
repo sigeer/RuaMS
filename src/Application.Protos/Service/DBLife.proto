@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+import "Model/DBLife.proto";
+
+package ProtoService;
+
+
+
+message GetPLifeByMapIdRequest {
+	int32 mapId = 1;
+}
+
+
+
+message GetPLifeByMapIdResponse {
+	repeated ProtoModel.PLifeProto list = 2;
+}
+
+
+
+message GetAllPLifeRequest {
+}
+
+
+
+message GetAllPLifeResponse {
+	repeated ProtoModel.PLifeProto list = 2;
+}
+
+
+
+message CreatePLifeRequest {
+	int32 masterId = 1;
+	ProtoModel.PLifeProto data = 2;
+}
+
+
+
+message RemovePLifeRequest {
+	int32 masterId = 1;
+	int32 mapId = 2;
+	int32 lifeId = 3;
+	string lifeType = 4;
+	int32 posX = 5;
+	int32 posY = 6;
+}
+
+
+
+message RemovePLifeResponse {
+	int32 masterId = 1;
+	string lifeType = 2;
+	repeated ProtoModel.PLifeProto removedItems = 3;
+}

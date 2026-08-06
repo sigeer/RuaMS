@@ -3,8 +3,6 @@ using Application.Core.Login.Models.Invitations;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
 using Application.Utility.Configs;
-using Dto;
-using InvitationProto;
 using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
@@ -23,7 +21,7 @@ namespace Application.Module.Family.Master
             return Task.CompletedTask;
         }
 
-        public override async Task HandleInvitationCreated(CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
 

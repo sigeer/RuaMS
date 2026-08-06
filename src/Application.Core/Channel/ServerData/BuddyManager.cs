@@ -37,7 +37,7 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
+            await _transport.SendAddBuddyRequest(new ProtoService.AddBuddyRequest { MasterId = player.Id, TargetName = addName, GroupName = addGroup });
 
         }
 
@@ -55,17 +55,17 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            await _transport.SendAddBuddyRequest(new BuddyProto.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
+            await _transport.SendAddBuddyRequest(new ProtoService.AddBuddyByIdRequest { MasterId = chr.Id, TargetId = fromId });
         }
 
         public Task DeleteBuddy(Player chr, int targetId)
         {
-            return _transport.SendDeleteBuddy(new BuddyProto.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
+            return _transport.SendDeleteBuddy(new ProtoService.DeleteBuddyRequest { MasterId = chr.Id, Buddyid = targetId });
         }
 
         internal Task SendWhisper(Player chr, string targetName, string message)
         {
-            return _transport.SendWhisper(new MessageProto.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
+            return _transport.SendWhisper(new ProtoService.SendWhisperMessageRequest { FromId = chr.Id, TargetName = targetName, Text = message });
         }
 
         internal async Task GetLocation(Player chr, string name)
@@ -77,7 +77,7 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            await _transport.GetLocation(new BuddyProto.GetLocationRequest { MasterId = chr.Id, TargetName = name });
+            await _transport.GetLocation(new ProtoService.GetLocationRequest { MasterId = chr.Id, TargetName = name });
 
         }
     }

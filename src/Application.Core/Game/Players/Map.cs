@@ -175,7 +175,7 @@ namespace Application.Core.Game.Players
                     await SendPacket(warpPacket);
                     await t.addPlayer(this);
 
-                    Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new SyncProto.MapSyncDto { MasterId = Id, MapId = t.getId() });
+                    Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new ProtoModel.MapSyncProto { MasterId = Id, MapId = t.getId() });
                 });
             }
             else

@@ -2,7 +2,6 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Shared.Constants;
 using server.movement;
-using SyncProto;
 using System.Drawing;
 using tools;
 
@@ -95,9 +94,9 @@ namespace Application.Plugin.FakeCharacter
                 new FakeClient(owner.Client.CurrentServer),
                 map,
                 pos,
-                new PlayerGetterDto
+                new ProtoModel.PlayerGetterProto
                 {
-                    Character = new Dto.CharacterDto
+                    Character = new ProtoModel.CharacterProto
                     {
                         Sp = "0,0,0,0,0,0",
                         Hp = NumericConfig.MaxHP,

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "Service/Guild.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service GuildService {
+	rpc GetGuildModel(GetGuildRequest) returns(GetGuildResponse);
+	rpc SendGuildPacket(GuildPacketRequest) returns (google.protobuf.Empty);
+	rpc GuildDropMessage(GuildDropMessageRequest) returns (google.protobuf.Empty);
+
+	rpc GetGuildRank(google.protobuf.Empty) returns(QueryRankedGuildsResponse);
+}

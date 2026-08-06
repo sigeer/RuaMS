@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "Model/NewYearCard.proto";
+
+package ProtoService;
+
+
+
+message SendNewYearCardRequest {
+	int32 fromId = 1;
+	string toName = 2;
+	string message = 3;
+}
+
+
+
+message SendNewYearCardResponse {
+	int32 code = 1;
+	SendNewYearCardRequest request = 2;
+	ProtoModel.NewYearCardProto model = 3;
+}
+
+
+
+message ReceiveNewYearCardRequest {
+	int32 masterId = 1;
+	int32 cardId = 2;
+}
+
+
+
+message ReceiveNewYearCardResponse {
+	int32 code = 1;
+	ReceiveNewYearCardRequest request = 2;
+	ProtoModel.NewYearCardProto model = 3;
+}
+
+
+
+message DiscardNewYearCardRequest {
+	int32 masterId = 1;
+	bool isSender = 2;
+}
+
+
+
+message DiscardNewYearCardResponse {
+	int32 code = 1;
+	DiscardNewYearCardRequest request = 2;
+	repeated ProtoModel.NewYearCardProto updateList = 3;
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message EquipProto {
+  int32 level = 1;
+  int32 upgradeslots = 2;
+  int32 str = 3;
+  int32 dex = 4;
+  int32 int = 5;
+  int32 luk = 6;
+  int32 hp = 7;
+  int32 mp = 8;
+  int32 watk = 9;
+  int32 matk = 10;
+  int32 wdef = 11;
+  int32 mdef = 12;
+  int32 acc = 13;
+  int32 avoid = 14;
+  int32 hands = 15;
+  int32 speed = 16;
+  int32 jump = 17;
+  int32 locked = 18;
+  int32 vicious = 19;
+  int32 itemlevel = 20;
+  int32 itemexp = 21;
+}

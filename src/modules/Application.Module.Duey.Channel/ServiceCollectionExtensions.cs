@@ -19,7 +19,7 @@ namespace Application.Module.Duey.Channel
     {
         public static IServiceCollection AddDueyChannel(this IServiceCollection services)
         {
-            services.AddGrpcClient<DueyService.ChannelService.ChannelServiceClient>("DueyGrpcClient", (sp, o) =>
+            services.AddGrpcClient<ProtoService.DueyService.DueyServiceClient>("DueyGrpcClient", (sp, o) =>
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();

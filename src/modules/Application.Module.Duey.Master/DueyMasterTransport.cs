@@ -2,7 +2,6 @@ using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
 using Application.EF.Entities;
 using Application.Module.Duey.Common;
-using DueyDto;
 
 namespace Application.Module.Duey.Master
 {
@@ -12,17 +11,17 @@ namespace Application.Module.Duey.Master
         {
         }
 
-        internal void SendCreatePackage(CreatePackageBroadcast response)
+        internal void SendCreatePackage(ProtoModel.CreatePackageBroadcastProto response)
         {
             SendMessage(BroadcastType.OnDueyPackageCreation, response, [response.Package.SenderId, response.Package.ReceiverId]);
         }
 
-        internal void SendDueyPackageRemoved(RemovePackageResponse response)
+        internal void SendDueyPackageRemoved(ProtoService.RemovePackageResponse response)
         {
             SendMessage(BroadcastType.OnDueyPackageRemove, response, [response.Request.MasterId]);
         }
 
-        internal void SendTakeDueyPackage(TakeDueyPackageResponse response)
+        internal void SendTakeDueyPackage(ProtoService.TakeDueyPackageResponse response)
         {
             List<int> receivers = [];
             if (response.Package != null)
@@ -32,7 +31,7 @@ namespace Application.Module.Duey.Master
             SendMessage(BroadcastType.OnDueyPackageTaking, response, receivers.ToArray());
         }
 
-        internal void SendDueyNotifyOnLogin(int receiverId, DueyNotifyDto response)
+        internal void SendDueyNotifyOnLogin(int receiverId, ProtoModel.DueyNotifyProto response)
         {
             SendMessage(BroadcastType.OnDueyNotify, response, [receiverId]);
         }

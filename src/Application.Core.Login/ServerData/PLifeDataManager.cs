@@ -3,7 +3,6 @@ using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
 using Application.Utility;
-using LifeProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -11,7 +10,7 @@ using ZLinq;
 
 namespace Application.Core.Login.ServerData
 {
-    public class PLifeDataManager : DataStorageBase<int, LifeProto.PLifeDto, PlifeEntity>
+    public class PLifeDataManager : DataStorageBase<int, ProtoModel.PLifeProto, PlifeEntity>
     {
         readonly MasterServer _server;
 
@@ -21,24 +20,24 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        protected override int GetKey(LifeProto.PLifeDto model) => model.Id;
+        protected override int GetKey(ProtoModel.PLifeProto model) => model.Id;
 
 
-        public LifeProto.GetPLifeByMapIdResponse LoadMapPLife(LifeProto.GetPLifeByMapIdRequest request)
+        public ProtoService.GetPLifeByMapIdResponse LoadMapPLife(ProtoService.GetPLifeByMapIdRequest request)
         {
-            var res = new LifeProto.GetPLifeByMapIdResponse();
-            res.List.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(Query(x => x.Map == request.MapId, x => x.MapId == request.MapId)));
+            var res = new ProtoService.GetPLifeByMapIdResponse();
+            res.List.AddRange(_mapper.Map<ProtoModel.PLifeProto[]>(Query(x => x.Map == request.MapId, x => x.MapId == request.MapId)));
             return res;
         }
 
-        public LifeProto.GetAllPLifeResponse GetAllPLife()
+        public ProtoService.GetAllPLifeResponse GetAllPLife()
         {
-            var res = new LifeProto.GetAllPLifeResponse();
-            res.List.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(Query(x => true, x => true)));
+            var res = new ProtoService.GetAllPLifeResponse();
+            res.List.AddRange(_mapper.Map<ProtoModel.PLifeProto[]>(Query(x => true, x => true)));
             return res;
         }
 
-        public async Task CreatePLife(LifeProto.CreatePLifeRequest request)
+        public async Task CreatePLife(ProtoService.CreatePLifeRequest request)
         {
             var newKey = Interlocked.Increment(ref _localId);
             request.Data.Id = newKey;
@@ -47,9 +46,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.BroadcastPLifeCreated(request);
         }
 
-        public async Task RemovePLife(LifeProto.RemovePLifeRequest request)
+        public async Task RemovePLife(ProtoService.RemovePLifeRequest request)
         {
-            List<PLifeDto> toRemove = [];
+            List<ProtoModel.PLifeProto> toRemove = [];
             if (request.LifeId > 0)
             {
                 toRemove = Query(x => x.Type == request.LifeType && x.Map == request.MapId && x.Life == request.LifeId,
@@ -66,8 +65,8 @@ namespace Application.Core.Login.ServerData
                 SetRemoved(item);
             }
 
-            var res = new LifeProto.RemovePLifeResponse { MasterId = request.MasterId };
-            res.RemovedItems.AddRange(_mapper.Map<LifeProto.PLifeDto[]>(toRemove));
+            var res = new ProtoService.RemovePLifeResponse { MasterId = request.MasterId };
+            res.RemovedItems.AddRange(_mapper.Map<ProtoModel.PLifeProto[]>(toRemove));
             await _server.Transport.BroadcastPLifeRemoved(res);
         }
     }

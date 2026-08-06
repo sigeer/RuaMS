@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "Model/Guild.proto";
+
+package ProtoModel;
+
+
+
+message AllianceProto {
+  int32 allianceId = 1;
+  int32 capacity = 2;
+  string name = 3;
+  string notice = 4;
+  repeated string rankTitles = 5;
+  repeated GuildProto guilds = 6;
+}

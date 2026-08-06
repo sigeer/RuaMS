@@ -1,6 +1,5 @@
 using Application.Core.Channel.Net.Packets;
 using server.movement;
-using SystemProto;
 using tools;
 
 namespace Application.Core.Channel.AntiMacro;
@@ -74,7 +73,7 @@ public class AntiMacroService
 
             if (_captcha.TryRemove(tId))
             {
-                await _server.Transport.AntiMacroNotify(new SystemProto.AntiMacroNotifyMessage
+                await _server.Transport.AntiMacroNotify(new ProtoModel.AntiMacroNotifyMessageProto
                 {
                     ReporterId = senderId,
                     VictimId = tId,
@@ -97,7 +96,7 @@ public class AntiMacroService
             return;
         }
 
-        await _server.Transport.AntiMacroNotify(new SystemProto.AntiMacroNotifyMessage
+        await _server.Transport.AntiMacroNotify(new ProtoModel.AntiMacroNotifyMessageProto
         {
             ReporterId = result.SourceId,
             VictimId = chr.Id,
@@ -110,7 +109,7 @@ public class AntiMacroService
     /// <summary>
     /// 测谎结束回调
     /// </summary>
-    public async Task PenalizeAsync(AntiMacroNotifyMessage res)
+    public async Task PenalizeAsync(ProtoModel.AntiMacroNotifyMessageProto res)
     {
         var type = (AntiMacroType)res.Type;
 

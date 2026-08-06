@@ -70,12 +70,12 @@ namespace Application.Core.Login.Mappers
 
             config.NewConfig<ReportEntity, ReportResponseDto>();
 
-            config.NewConfig<CreateItemRequestDto, Dto.ItemDto>()
+            config.NewConfig<CreateItemRequestDto, ProtoModel.ItemProto>()
                 .Map(dest => dest.Itemid, src => src.ItemId)
                 .Map(dest => dest.Quantity, src => src.Quantity)
                 .Map(dest => dest.Flag, src => src.Flag)
                 .Map(dest => dest.EquipInfo, src => src.EquipInfo);
-            config.NewConfig<CreateEquipRequestDto, Dto.EquipDto>();
+            config.NewConfig<CreateEquipRequestDto, ProtoModel.EquipProto>();
         }
     }
 }

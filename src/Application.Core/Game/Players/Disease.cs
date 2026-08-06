@@ -15,7 +15,7 @@ namespace Application.Core.Game.Players
 
         public int getDiseasesSize() => Diseases.Count;
 
-        public void silentApplyDiseases(IEnumerable<Dto.DiseaseDto> diseaseMap)
+        public void silentApplyDiseases(IEnumerable<ProtoModel.DiseaseProto> diseaseMap)
         {
             foreach (var item in diseaseMap)
             {

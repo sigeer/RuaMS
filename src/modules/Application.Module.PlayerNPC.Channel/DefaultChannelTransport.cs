@@ -1,31 +1,30 @@
-using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel
 {
     public class DefaultChannelTransport : IChannelTransport
     {
-        readonly ServiceProto.GameService.GameServiceClient _grpcClient;
-        public DefaultChannelTransport(ServiceProto.GameService.GameServiceClient client)
+        readonly ProtoService.GameService.GameServiceClient _grpcClient;
+        public DefaultChannelTransport(ProtoService.GameService.GameServiceClient client)
         {
             _grpcClient = client;
         }
 
-        public void CreatePlayerNPC(CreatePlayerNPCRequest request)
+        public void CreatePlayerNPC(ProtoService.CreatePlayerNPCRequest request)
         {
             _grpcClient.CreatePlayerNPC(request);
         }
 
-        public GetMapPlayerNPCListResponse GetMapPlayerNPCList(GetMapPlayerNPCListRequest request)
+        public ProtoService.GetMapPlayerNPCListResponse GetMapPlayerNPCList(ProtoService.GetMapPlayerNPCListRequest request)
         {
             return _grpcClient.GetMapPlayerNPC(request);
         }
 
-        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
+        public ProtoService.GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
         {
             return _grpcClient.GetAllPlayerNPC(new Google.Protobuf.WellKnownTypes.Empty());
         }
 
-        public CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest request)
+        public ProtoService.CreatePlayerNPCPreResponse PreCreatePlayerNPC(ProtoService.CreatePlayerNPCPreRequest request)
         {
             return _grpcClient.CreatePlayerNPCCheck(request);
         }
@@ -35,7 +34,7 @@ namespace Application.Module.PlayerNPC.Channel
             _grpcClient.RemoveAll(new Google.Protobuf.WellKnownTypes.Empty());
         }
 
-        public void RemovePlayerNPC(RemovePlayerNPCRequest request)
+        public void RemovePlayerNPC(ProtoService.RemovePlayerNPCRequest request)
         {
             _grpcClient.RemoveByName(request);
         }

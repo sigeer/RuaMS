@@ -1,13 +1,11 @@
 using Application.Shared.Message;
-using Config;
 using Google.Protobuf;
-using MessageProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class BroadcastHandlers
     {
-        internal class BroadcastWorldConfigUpdateHandler : InternalSessionMasterHandler<Config.WorldConfig>
+        internal class BroadcastWorldConfigUpdateHandler : InternalSessionMasterHandler<ProtoModel.WorldConfig>
         {
             public BroadcastWorldConfigUpdateHandler(MasterServer server) : base(server)
             {
@@ -15,15 +13,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateWorldConfig;
 
-            protected override Task HandleMessage(WorldConfig message)
+            protected override Task HandleMessage(ProtoModel.WorldConfig message)
             {
                 return _server.UpdateWorldConfig(message);
             }
 
-            protected override WorldConfig Parse(ByteString content) => WorldConfig.Parser.ParseFrom(content);
+            protected override ProtoModel.WorldConfig Parse(ByteString content) => ProtoModel.WorldConfig.Parser.ParseFrom(content);
         }
 
-        internal class BroadcastMessageHandler : InternalSessionMasterHandler<DropMessageRequest>
+        internal class BroadcastMessageHandler : InternalSessionMasterHandler<ProtoService.DropMessageRequest>
         {
             public BroadcastMessageHandler(MasterServer server) : base(server)
             {
@@ -31,15 +29,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DropMessage;
 
-            protected override Task HandleMessage(DropMessageRequest message)
+            protected override Task HandleMessage(ProtoService.DropMessageRequest message)
             {
                 return _server.DropWorldMessage(message.Type, message.Message, message.OnlyGM);
             }
 
-            protected override DropMessageRequest Parse(ByteString content) => DropMessageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.DropMessageRequest Parse(ByteString content) => ProtoService.DropMessageRequest.Parser.ParseFrom(content);
         }
 
-        internal class BroadcastPacketHandler : InternalSessionMasterHandler<PacketRequest>
+        internal class BroadcastPacketHandler : InternalSessionMasterHandler<ProtoService.PacketRequest>
         {
             public BroadcastPacketHandler(MasterServer server) : base(server)
             {
@@ -47,12 +45,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.BroadcastPacket;
 
-            protected override Task HandleMessage(PacketRequest message)
+            protected override Task HandleMessage(ProtoService.PacketRequest message)
             {
                 return _server.BroadcastPacket(message);
             }
 
-            protected override PacketRequest Parse(ByteString content) => PacketRequest.Parser.ParseFrom(content);
+            protected override ProtoService.PacketRequest Parse(ByteString content) => ProtoService.PacketRequest.Parser.ParseFrom(content);
         }
     }
 }

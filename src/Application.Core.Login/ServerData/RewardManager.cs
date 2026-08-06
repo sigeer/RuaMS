@@ -8,7 +8,6 @@ using Application.Shared.Items;
 using Application.Templates.Reader;
 using Application.Utility;
 using Application.Utility.Extensions;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -33,7 +32,7 @@ namespace Application.Core.Login.ServerData
 
         protected override int GetKey(CdkRecordModel model) => model.Id;
 
-        public async Task<ItemProto.GetRewardsResponseProto> GetActiveRewards(ItemProto.GetRewardsRequestProto request)
+        public async Task<ProtoModel.GetRewardsResponse> GetActiveRewards(ProtoModel.GetRewardsRequest request)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -46,25 +45,25 @@ namespace Application.Core.Login.ServerData
                 && x.StartTime <= now && (x.EndTime == null || x.EndTime >= now)
                 && !x.IsDeleted).ToListAsync();
 
-            List<ItemProto.RewardPreviewProto> list = [];
+            List<ProtoModel.RewardPreviewProto> list = [];
             foreach (var item in allActiveRewards)
             {
                 if (item.AccountOnce)
                 {
                     if (!accountRecords.Any(x => x.CodeId == item.Id))
                     {
-                        list.Add(new RewardPreviewProto { Id = item.Id, Title = item.Title, Description = item.Description});
+                        list.Add(new ProtoModel.RewardPreviewProto { Id = item.Id, Title = item.Title, Description = item.Description});
                     }
                 }
                 else
                 {
                     if (!accountRecords.Any(x => x.CodeId == item.Id && x.RecipientId == request.PlayerId))
                     {
-                        list.Add(new RewardPreviewProto { Id = item.Id, Title = item.Title, Description = item.Description });
+                        list.Add(new ProtoModel.RewardPreviewProto { Id = item.Id, Title = item.Title, Description = item.Description });
                     }
                 }
             }
-            var res = new ItemProto.GetRewardsResponseProto { PlayerId = request.PlayerId };
+            var res = new ProtoModel.GetRewardsResponse { PlayerId = request.PlayerId };
             res.Rewards.AddRange(list);
             return res;
         }
@@ -103,7 +102,7 @@ namespace Application.Core.Login.ServerData
             });
         }
 
-        public ItemProto.UseCdkResponse UseCdk(ItemProto.UseCdkRequest request)
+        public ProtoService.UseCdkResponse UseCdk(ProtoService.UseCdkRequest request)
         {
             var now = _server.GetCurrentTimeDateTimeOffset();
             var data = GetCdkData(request.Cdk);
@@ -112,10 +111,10 @@ namespace Application.Core.Login.ServerData
             {
                 return TakeReward(data, request.MasterId);
             }
-            return new UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+            return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
         }
 
-        public ItemProto.UseCdkResponse UseId(ItemProto.UseIdRequest request)
+        public ProtoService.UseCdkResponse UseId(ProtoService.UseIdRequest request)
         {
             var now = _server.GetCurrentTimeDateTimeOffset();
             var data = GetRewardData(request.Id);
@@ -124,33 +123,33 @@ namespace Application.Core.Login.ServerData
             {
                 return TakeReward(data, request.MasterId);
             }
-            return new UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+            return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
         }
 
-        public ItemProto.UseCdkResponse TakeReward(CdkCodeModel data, int playerId)
+        public ProtoService.UseCdkResponse TakeReward(CdkCodeModel data, int playerId)
         {
             var chr = _server.CharacterManager.FindPlayerById(playerId);
             if (chr == null || chr.Channel != -1)
-                return new UseCdkResponse { Code = (int)UseCdkResponseCode.FetalError };
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.FetalError };
 
             var now = _server.GetCurrentTimeDateTimeOffset();
             if (now < data.StartTime || now > data.EndTime)
-                return new UseCdkResponse { Code = (int)UseCdkResponseCode.Expired };
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.Expired };
 
             var histories = Query(x => x.CodeId == data.Id, x => x.CodeId == data.Id).ToList();
 
             if (data.MaxCount > 0 && histories.Count >= data.MaxCount)
-                return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
 
             if (histories.Any(x => x.RecipientId == playerId))
-                return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
 
             if (data.AccountOnce)
             {
                 var sameAccountChrs = _server.AccountManager.GetAccountPlayerIds(chr.Character.AccountId);
                 if (histories.Any(x => sameAccountChrs.Contains(x.RecipientId)))
                 {
-                    return new UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
+                    return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.Used };
                 }
             }
 
@@ -162,8 +161,8 @@ namespace Application.Core.Login.ServerData
                 RecipientTime = now
             });
 
-            var res = new UseCdkResponse();
-            res.Items.AddRange(_mapper.Map<ItemProto.CdkRewordPackageDto[]>(data.Items));
+            var res = new ProtoService.UseCdkResponse();
+            res.Items.AddRange(_mapper.Map<ProtoModel.CdkRewordPackageProto[]>(data.Items));
             return res;
         }
 

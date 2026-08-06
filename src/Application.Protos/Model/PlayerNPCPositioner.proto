@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message PositionerDataProto {
+	int32 mapId = 1;
+	int32 type = 2;
+	int32 value = 3;
+}
+
+
+
+message PositionerDataCollectionProto {
+	repeated PositionerDataProto list = 1;
+}

@@ -11,12 +11,12 @@ namespace Application.Core.Game.Players
             return marriageRing;
         }
 
-        public ItemProto.RingDto? GetRingBySourceId(int sourceId)
+        public ProtoModel.RingProto? GetRingBySourceId(int sourceId)
         {
             return Rings.FirstOrDefault(x => x.Id == sourceId);
         }
 
-        public ItemProto.RingDto? getRingById(long id)
+        public ProtoModel.RingProto? getRingById(long id)
         {
             return Rings.FirstOrDefault(x => x.RingId1 == id || x.RingId2 == id);
         }

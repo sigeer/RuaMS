@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+import "Model/Guild.proto";
+
+package ProtoService;
+
+
+
+message GetGuildRequest {
+	int32 id = 1;
+}
+
+
+
+message GetGuildResponse {
+	ProtoModel.GuildProto model = 1;
+}
+
+
+
+message QueryRankedGuildsResponse {
+	repeated ProtoModel.GuildProto guilds = 1;
+}
+
+
+
+message GuildDropMessageRequest {
+	int32 guildId = 1;
+	int32 type = 2;
+	string message = 3;
+}
+
+
+
+message GuildPacketRequest {
+	bytes data = 1;
+	int32 guildId = 2;
+	int32 exceptChrId = 3;
+}

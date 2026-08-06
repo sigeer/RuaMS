@@ -7,9 +7,9 @@ public partial class AccountEntity: IKeyedEntity<int>
 {
     public AccountEntity() 
     {
-        Blob = (new AccountDto.AccountGameDataProto
+        Blob = (new ProtoModel.AccountGameDataProto
         {
-            Storage = new Dto.StorageDto { Slots = 4 }
+            Storage = new ProtoModel.StorageProto { Slots = 4 }
         }).ToByteArray();
     }
     public AccountEntity(string name, string password) : this()

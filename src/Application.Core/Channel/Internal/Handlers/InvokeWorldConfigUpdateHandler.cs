@@ -1,10 +1,9 @@
 using Application.Shared.Message;
-using Config;
 using Google.Protobuf;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class InvokeWorldConfigUpdateHandler : InternalSessionChannelHandler<WorldConfig>
+    internal class InvokeWorldConfigUpdateHandler : InternalSessionChannelHandler<ProtoModel.WorldConfig>
     {
         public InvokeWorldConfigUpdateHandler(WorldChannelServer server) : base(server)
         {
@@ -12,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.OnWorldConfigUpdate;
 
-        protected override Task HandleMessage(WorldConfig res)
+        protected override Task HandleMessage(ProtoModel.WorldConfig res)
         {
             _server.UpdateWorldConfig(res);
             return _server.BroadcastAsync(async w =>
@@ -21,6 +20,6 @@ namespace Application.Core.Channel.Internal.Handlers
             });
         }
 
-        protected override WorldConfig Parse(ByteString data) => WorldConfig.Parser.ParseFrom(data);
+        protected override ProtoModel.WorldConfig Parse(ByteString data) => ProtoModel.WorldConfig.Parser.ParseFrom(data);
     }
 }

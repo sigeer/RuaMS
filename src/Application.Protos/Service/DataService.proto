@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "Model/BoolWrapper.proto";
+import "Service/GuildQueue.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service DataService {
+	rpc RemoveGuildQueued(GuildQueueRequest) returns(google.protobuf.Empty);
+	rpc IsGuildQueued(GuildQueueRequest) returns(ProtoModel.BoolWrapper);
+	rpc PutGuildQueued(GuildQueueRequest) returns(google.protobuf.Empty);
+}

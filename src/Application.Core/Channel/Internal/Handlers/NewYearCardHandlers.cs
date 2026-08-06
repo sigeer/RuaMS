@@ -1,7 +1,6 @@
 using Application.Core.Models;
 using Application.Shared.Internal;
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 using tools;
 
@@ -9,7 +8,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class NewYearCardHandlers
     {
-        public class ReceiveCard : InternalSessionChannelHandler<ReceiveNewYearCardResponse>
+        public class ReceiveCard : InternalSessionChannelHandler<ProtoService.ReceiveNewYearCardResponse>
         {
             public ReceiveCard(WorldChannelServer server) : base(server)
             {
@@ -17,7 +16,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardReceived;
 
-            protected override Task HandleMessage(ReceiveNewYearCardResponse res)
+            protected override Task HandleMessage(ProtoService.ReceiveNewYearCardResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -53,10 +52,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override ReceiveNewYearCardResponse Parse(ByteString data) => ReceiveNewYearCardResponse.Parser.ParseFrom(data);
+            protected override ProtoService.ReceiveNewYearCardResponse Parse(ByteString data) => ProtoService.ReceiveNewYearCardResponse.Parser.ParseFrom(data);
         }
 
-        public class SendCard : InternalSessionChannelHandler<SendNewYearCardResponse>
+        public class SendCard : InternalSessionChannelHandler<ProtoService.SendNewYearCardResponse>
         {
             public SendCard(WorldChannelServer server) : base(server)
             {
@@ -64,7 +63,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardSent;
 
-            protected override Task HandleMessage(SendNewYearCardResponse data)
+            protected override Task HandleMessage(ProtoService.SendNewYearCardResponse data)
             {
                 return _server.SendToPlayerAsync(data.Request.FromId, async chr =>
                 {
@@ -84,10 +83,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override SendNewYearCardResponse Parse(ByteString data) => SendNewYearCardResponse.Parser.ParseFrom(data);
+            protected override ProtoService.SendNewYearCardResponse Parse(ByteString data) => ProtoService.SendNewYearCardResponse.Parser.ParseFrom(data);
         }
 
-        public class Notify : InternalSessionChannelHandler<NewYearCardNotifyDto>
+        public class Notify : InternalSessionChannelHandler<ProtoModel.NewYearCardNotifyProto>
         {
             readonly IMapper _mapper;
             public Notify(WorldChannelServer server, IMapper mapper) : base(server)
@@ -97,7 +96,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardNotify;
 
-            protected override async Task HandleMessage(NewYearCardNotifyDto res)
+            protected override async Task HandleMessage(ProtoModel.NewYearCardNotifyProto res)
             {
                 var allMembers = res.List.Select(x => x.MasterId);
                 await _server.SendToPlayersAsync(allMembers, async chr =>
@@ -110,10 +109,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override NewYearCardNotifyDto Parse(ByteString data) => NewYearCardNotifyDto.Parser.ParseFrom(data);
+            protected override ProtoModel.NewYearCardNotifyProto Parse(ByteString data) => ProtoModel.NewYearCardNotifyProto.Parser.ParseFrom(data);
         }
 
-        public class Discard : InternalSessionHandler<WorldChannelServer, DiscardNewYearCardResponse>
+        public class Discard : InternalSessionHandler<WorldChannelServer, ProtoService.DiscardNewYearCardResponse>
         {
             public Discard(WorldChannelServer server) : base(server)
             {
@@ -121,7 +120,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnNewYearCardDiscard;
 
-            protected override Task HandleMessage(DiscardNewYearCardResponse res)
+            protected override Task HandleMessage(ProtoService.DiscardNewYearCardResponse res)
             {
                 _server.Broadcast(w =>
                 {
@@ -156,7 +155,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override DiscardNewYearCardResponse Parse(ByteString data) => DiscardNewYearCardResponse.Parser.ParseFrom(data);
+            protected override ProtoService.DiscardNewYearCardResponse Parse(ByteString data) => ProtoService.DiscardNewYearCardResponse.Parser.ParseFrom(data);
         }
     }
 }

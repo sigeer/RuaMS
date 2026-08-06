@@ -3,8 +3,6 @@ using Application.Core.Channel.Invitation;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
-using Dto;
-using InvitationProto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Family.Channel
@@ -18,7 +16,7 @@ namespace Application.Module.Family.Channel
             _familyManager = familyManager;
         }
 
-        public override void OnInvitationAnswered(AnswerInviteResponse data)
+        public override void OnInvitationAnswered(ProtoService.AnswerInviteResponse data)
         {
             var result = (InviteResultType)data.Result;
 
@@ -49,7 +47,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public override void OnInvitationCreated(CreateInviteResponse data)
+        public override void OnInvitationCreated(ProtoService.CreateInviteResponse data)
         {
             var code = (InviteResponseCode)data.Code;
             if (code == InviteResponseCode.Success)

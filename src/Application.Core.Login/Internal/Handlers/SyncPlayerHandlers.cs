@@ -2,13 +2,12 @@ using Application.Core.Login.Commands;
 using Application.Shared.Events;
 using Application.Shared.Message;
 using Google.Protobuf;
-using SyncProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class SyncPlayerHandlers
     {
-        internal class SingleHandler : InternalSessionMasterHandler<SyncPlayerRequest>
+        internal class SingleHandler : InternalSessionMasterHandler<ProtoService.SyncPlayerRequest>
         {
             public SingleHandler(MasterServer server) : base(server)
             {
@@ -16,7 +15,7 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SyncPlayer;
 
-            protected override async Task HandleMessage(SyncPlayerRequest message)
+            protected override async Task HandleMessage(ProtoService.SyncPlayerRequest message)
             {
                 await _server.CharacterManager.Update(message.Data, (SyncCharacterTrigger)message.Trigger);
                 if (message.SaveDb)
@@ -25,13 +24,13 @@ namespace Application.Core.Login.Internal.Handlers
                 }
             }
 
-            protected override SyncPlayerRequest Parse(ByteString data)
+            protected override ProtoService.SyncPlayerRequest Parse(ByteString data)
             {
-                return SyncPlayerRequest.Parser.ParseFrom(data);
+                return ProtoService.SyncPlayerRequest.Parser.ParseFrom(data);
             }
         }
 
-        internal class MultipleHandler : InternalSessionMasterHandler<BatchSyncPlayerRequest>
+        internal class MultipleHandler : InternalSessionMasterHandler<ProtoService.BatchSyncPlayerRequest>
         {
             public MultipleHandler(MasterServer server) : base(server)
             {
@@ -39,14 +38,14 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.BatchSyncPlayer;
 
-            protected override Task HandleMessage(BatchSyncPlayerRequest message)
+            protected override Task HandleMessage(ProtoService.BatchSyncPlayerRequest message)
             {
                 return _server.CharacterManager.BatchUpdateOrSave(message.List.ToList(), message.SaveDb);
             }
 
-            protected override BatchSyncPlayerRequest Parse(ByteString data)
+            protected override ProtoService.BatchSyncPlayerRequest Parse(ByteString data)
             {
-                return BatchSyncPlayerRequest.Parser.ParseFrom(data);
+                return ProtoService.BatchSyncPlayerRequest.Parser.ParseFrom(data);
             }
         }
     }

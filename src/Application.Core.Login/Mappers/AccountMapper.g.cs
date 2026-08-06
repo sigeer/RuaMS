@@ -1,17 +1,16 @@
 using System;
-using AccountDto;
 using Application.Core.Login.Mappers;
 using Application.EF.Entities;
-using Dto;
 using Google.Protobuf;
+using ProtoModel;
 
 namespace Application.Core.Login.Mappers
 {
     public partial class AccountMapper : IAccountMapper
     {
-        public AccountGameDto MapToDto(AccountEntity p1)
+        public AccountGameProto MapToDto(AccountEntity p1)
         {
-            return p1 == null ? null : new AccountGameDto()
+            return p1 == null ? null : new AccountGameProto()
             {
                 Id = p1.Id,
                 NxCredit = p1.NxCredit,
@@ -20,7 +19,7 @@ namespace Application.Core.Login.Mappers
                 Data = funcMain1(AccountGameDataProto.Parser.ParseFrom(p1.Blob))
             };
         }
-        public AccountEntity MapToExisting(AccountGameDto p3, AccountEntity p4)
+        public AccountEntity MapToExisting(AccountGameProto p3, AccountEntity p4)
         {
             if (p3 == null)
             {
@@ -41,13 +40,13 @@ namespace Application.Core.Login.Mappers
         {
             return p2 == null ? null : new AccountGameDataProto()
             {
-                Storage = p2.Storage == null ? null : new StorageDto()
+                Storage = p2.Storage == null ? null : new StorageProto()
                 {
                     OwnerId = p2.Storage.OwnerId,
                     Slots = p2.Storage.Slots,
                     Meso = p2.Storage.Meso
                 },
-                QuickSlot = p2.QuickSlot == null ? null : new QuickSlotDto() {LongValue = p2.QuickSlot.LongValue}
+                QuickSlot = p2.QuickSlot == null ? null : new QuickSlotProto() {LongValue = p2.QuickSlot.LongValue}
             };
         }
         

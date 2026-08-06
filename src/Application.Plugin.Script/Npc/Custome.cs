@@ -5,7 +5,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9010000 
         public async Task n9010000()
         {
-            var res = await c.CurrentServer.Node.Transport.GetActiveRewards(new ItemProto.GetRewardsRequestProto { PlayerId = getPlayer().Id });
+            var res = await c.CurrentServer.Node.Transport.GetActiveRewards(new ProtoModel.GetRewardsRequest { PlayerId = getPlayer().Id });
             if (res.Rewards.Count == 0)
             {
                 await SayNext("旅行愉快。");
@@ -13,7 +13,7 @@ namespace Application.Plugin.Script.Npc
             }
             var idx = await AskMenu("", res.Rewards.Select(x => x.Title));
             await SayNext(res.Rewards[idx].Description);
-            var takeRes = await c.CurrentServer.Node.Transport.TakeReward(new ItemProto.UseIdRequest { Id = res.Rewards[idx].Id, MasterId = getPlayer().Id });
+            var takeRes = await c.CurrentServer.Node.Transport.TakeReward(new ProtoService.UseIdRequest { Id = res.Rewards[idx].Id, MasterId = getPlayer().Id });
             if (takeRes.Code == 0)
             {
                 foreach (var item in takeRes.Items)

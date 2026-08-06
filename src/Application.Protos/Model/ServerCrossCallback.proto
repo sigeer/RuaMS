@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message RemoteCallParamProto {
+	int32 index = 1;
+	string schema = 2;
+	string value = 3;
+}
+
+
+
+message RemoteCallProto {
+	string callbackName = 1;
+	repeated RemoteCallParamProto params = 2;
+}

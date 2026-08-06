@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "Model/Character.proto";
+
+package ProtoModel;
+
+
+
+
+message PlayerViewProto {
+  int32 channel = 1;
+  CharacterProto character = 2; // CHECK TYPE
+}

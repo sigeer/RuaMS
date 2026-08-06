@@ -21,34 +21,34 @@ namespace Application.Core.Channel.ServerData
 
         public Task CreateChatRoom(Player chr)
         {
-            return _transport.SendCreateChatRoom(new Dto.CreateChatRoomRequest { MasterId = chr.Id });
+            return _transport.SendCreateChatRoom(new ProtoService.CreateChatRoomRequest { MasterId = chr.Id });
         }
 
 
         public Task JoinChatRoom(Player chr, int roomId)
         {
-            return _transport.SendPlayerJoinChatRoom(new Dto.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
+            return _transport.SendPlayerJoinChatRoom(new ProtoService.JoinChatRoomRequest { MasterId = chr.Id, RoomId = roomId });
         }
 
 
         public Task LeftChatRoom(Player chr)
         {
-            return _transport.SendPlayerLeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = chr.Id });
+            return _transport.SendPlayerLeaveChatRoom(new ProtoService.LeaveChatRoomRequest { MasterId = chr.Id });
         }
 
         public Task SendMessage(Player chr, string text)
         {
-            return _transport.SendChatRoomMesage(new Dto.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
+            return _transport.SendChatRoomMesage(new ProtoService.SendChatRoomMessageRequest { MasterId = chr.Id, Text = text });
         }
 
         internal Task CreateInvite(Player player, string input)
         {
-            return _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
+            return _server.Transport.SendInvitation(new ProtoService.CreateInviteRequest { FromId = player.Id, Type = InviteTypes.Messenger, ToName = input });
         }
 
         internal Task AnswerInvite(Player player, int roomId, bool v)
         {
-            return _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
+            return _server.Transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { MasterId = player.Id, Ok = v, Type = InviteTypes.Messenger, CheckKey = roomId });
         }
     }
 }

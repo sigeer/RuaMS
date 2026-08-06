@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+
+package ProtoModel;
+
+
+
+message GetRewardsRequest {
+	int32 playerId = 1;
+}
+
+
+
+message GetRewardsResponse {
+	int32 playerId = 1;
+	repeated RewardPreviewProto rewards = 2;
+}
+
+
+
+message RewardPreviewProto {
+	string title = 1;
+	string description = 2;
+	int32 id = 3;
+}

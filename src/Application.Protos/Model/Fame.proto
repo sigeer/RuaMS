@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message FameLogRecordProto {
+	int32 toId = 1;
+	int64 time = 2;
+}

@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message QuickSlotDto {
-  int64 longValue = 1;
-}

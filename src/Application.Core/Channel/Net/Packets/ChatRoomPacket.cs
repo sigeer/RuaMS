@@ -4,7 +4,7 @@ namespace Application.Core.Channel.Net.Packets
 {
     public class ChatRoomPacket
     {
-        public static Packet addMessengerPlayer(string from, Dto.PlayerViewDto chr, int position)
+        public static Packet addMessengerPlayer(string from, ProtoModel.PlayerViewProto chr, int position)
         {
             OutPacket p = OutPacket.create(SendOpcode.MESSENGER);
             p.writeByte(0x00);

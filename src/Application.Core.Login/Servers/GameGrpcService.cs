@@ -1,18 +1,11 @@
 using Application.Core.Login.Services;
-using BaseProto;
-using Config;
-using Dto;
-using DueyDto;
-using ExpeditionProto;
+using ItemService = Application.Core.Login.Services.ItemService;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using ItemProto;
-using LifeProto;
-using RankProto;
 
 namespace Application.Core.Login.Servers
 {
-    internal class GameGrpcService : ServiceProto.GameService.GameServiceBase
+    internal class GameGrpcService : ProtoService.GameService.GameServiceBase
     {
         readonly MasterServer _server;
         readonly ItemService _itemService;
@@ -30,138 +23,133 @@ namespace Application.Core.Login.Servers
             _rankService = rankService;
         }
 
-        public override Task<NameChangeResponse> ChangeName(NameChangeRequest request, ServerCallContext context)
+        public override Task<ProtoService.NameChangeResponse> ChangeName(ProtoService.NameChangeRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.CharacterManager.ChangeName(request));
         }
 
-        public override Task<BoolWrapper> CheckCharacterName(ServiceProto.CheckCharacterNameRequest request, ServerCallContext context)
+        public override Task<ProtoModel.BoolWrapper> CheckCharacterName(ProtoService.CheckCharacterNameRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new BoolWrapper { Value = _server.CharacterManager.CheckCharacterName(request.Name) });
+            return Task.FromResult(new ProtoModel.BoolWrapper { Value = _server.CharacterManager.CheckCharacterName(request.Name) });
         }
 
-        public override Task<ExpeditionCheckResponse> CheckExpedition(ExpeditionCheckRequest request, ServerCallContext context)
+        public override Task<ProtoService.ExpeditionCheckResponse> CheckExpedition(ProtoService.ExpeditionCheckRequest request, ServerCallContext context)
         {
             return Task.FromResult(_expeditionService.CanStartExpedition(request));
         }
 
-        public override Task<CommitRetrievedResponse> CommitRetrievedFromFredrick(CommitRetrievedRequest request, ServerCallContext context)
+        public override Task<ProtoService.CommitRetrievedResponse> CommitRetrievedFromFredrick(ProtoService.CommitRetrievedRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerShopManager.CommitRetrieve(request));
         }
 
-        public override Task<GetPLifeByMapIdResponse> GetLifeByMapId(GetPLifeByMapIdRequest request, ServerCallContext context)
+        public override Task<ProtoService.GetPLifeByMapIdResponse> GetLifeByMapId(ProtoService.GetPLifeByMapIdRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.ResourceDataManager.LoadMapPLife(request));
         }
 
-        public override Task<GetAllPLifeResponse> GetAllPLife(GetAllPLifeRequest request, ServerCallContext context)
+        public override Task<ProtoService.GetAllPLifeResponse> GetAllPLife(ProtoService.GetAllPLifeRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.ResourceDataManager.GetAllPLife());
         }
 
-        public override Task<GetShopResponse> GetShop(GetShopRequest request, ServerCallContext context)
+        public override Task<ProtoService.GetShopResponse> GetShop(ProtoService.GetShopRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new GetShopResponse { Data = _shopService.LoadFromDB(request.Id, request.IsShopId) });
+            return Task.FromResult(new ProtoService.GetShopResponse { Data = _shopService.LoadFromDB(request.Id, request.IsShopId) });
         }
 
-        public override Task<LoadCharacterRankResponse> LoadCharacterRank(LoadCharacterRankRequest request, ServerCallContext context)
+        public override Task<ProtoService.LoadCharacterRankResponse> LoadCharacterRank(ProtoService.LoadCharacterRankRequest request, ServerCallContext context)
         {
             return Task.FromResult(_rankService.LoadPlayerRanking(request.Count));
         }
 
-        public override Task<GacheponDataDto> LoadGachaponData(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.GacheponDataProto> LoadGachaponData(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.GachaponManager.GetGachaponData());
         }
 
-        public override Task<DropAllDto> LoadMobDropData(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.DropAllProto> LoadMobDropData(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.DropDataManager.LoadMobDropDto());
         }
 
-        public override Task<MonitorDataWrapper> LoadMonitor(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.MonitorDataWrapperProto> LoadMonitor(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.SystemManager.LoadMonitorData());
         }
 
-        public override Task<QueryMonsterCardDataResponse> LoadMonsterCardData(Empty request, ServerCallContext context)
+        public override Task<ProtoService.QueryMonsterCardDataResponse> LoadMonsterCardData(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_itemService.LoadMonsterCard());
         }
 
-        public override Task<RemoteHiredMerchantDto> LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest request, ServerCallContext context)
+        public override Task<ProtoModel.RemoteHiredMerchantProto> LoadPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerShopManager.GetPlayerHiredMerchant(request));
         }
 
-        public override Task<DropAllDto> LoadReactorDropData(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.DropAllProto> LoadReactorDropData(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.DropDataManager.LoadAllReactorDrops());
         }
 
-        public override Task<ReactorSkillBookDto> LoadReactorSkillBookData(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.ReactorSkillBookProto> LoadReactorSkillBookData(Empty request, ServerCallContext context)
         {
-            var req = new ReactorSkillBookDto();
+            var req = new ProtoModel.ReactorSkillBookProto();
             req.IdList.AddRange(_itemService.LoadReactorSkillBooks());
             return Task.FromResult(req);
         }
 
 
-        public override Task<Empty> RegisterExpedition(ExpeditionRegistry request, ServerCallContext context)
+        public override Task<Empty> RegisterExpedition(ProtoModel.ExpeditionRegistry request, ServerCallContext context)
         {
             _expeditionService.RegisterExpedition(request);
             return Task.FromResult(new Empty());
         }
 
-        public override Task<SetNoteReadResponse> SetNoteRead(SetNoteReadRequest request, ServerCallContext context)
+        public override Task<ProtoService.SetNoteReadResponse> SetNoteRead(ProtoService.SetNoteReadRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new SetNoteReadResponse { Data = _server.NoteManager.SetRead(request.Id) });
+            return Task.FromResult(new ProtoService.SetNoteReadResponse { Data = _server.NoteManager.SetRead(request.Id) });
         }
 
-        public override Task<UseCdkResponse> UseCDK(UseCdkRequest request, ServerCallContext context)
+        public override Task<ProtoService.UseCdkResponse> UseCDK(ProtoService.UseCdkRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.RewardManager.UseCdk(request));
         }
 
-        public override Task<GetRewardsResponseProto> GetActiveRewards(GetRewardsRequestProto request, ServerCallContext context)
+        public override Task<ProtoModel.GetRewardsResponse> GetActiveRewards(ProtoModel.GetRewardsRequest request, ServerCallContext context)
         {
             return _server.RewardManager.GetActiveRewards(request);
         }
 
-        public override Task<UseCdkResponse> TakeReward(UseIdRequest request, ServerCallContext context)
+        public override Task<ProtoService.UseCdkResponse> TakeReward(ProtoService.UseIdRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.RewardManager.UseId(request));
         }
 
-        public override Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request, ServerCallContext context)
+        public override async Task<ProtoModel.BoolWrapper> SendNote(ProtoService.SendNormalNoteRequest request, ServerCallContext context)
         {
-            return _server.DueyManager.CreateDueyPackage(request);
-        }
-
-        public override async Task<BoolWrapper> SendNote(SendNormalNoteRequest request, ServerCallContext context)
-        {
-            return new BoolWrapper { Value = await _server.NoteManager.SendNormal(request.Message, request.FromId, request.ToName) };
+            return new ProtoModel.BoolWrapper { Value = await _server.NoteManager.SendNormal(request.Message, request.FromId, request.ToName) };
         }
 
         #region PlayerNPC
-        public override Task<Empty> CreatePlayerNPC(CreatePlayerNPCRequest request, ServerCallContext context)
+        public override Task<Empty> CreatePlayerNPC(ProtoService.CreatePlayerNPCRequest request, ServerCallContext context)
         {
             _server.PlayerNPCManager.Create(request);
             return Task.FromResult(new Empty());
         }
 
-        public override Task<CreatePlayerNPCPreResponse> CreatePlayerNPCCheck(CreatePlayerNPCPreRequest request, ServerCallContext context)
+        public override Task<ProtoService.CreatePlayerNPCPreResponse> CreatePlayerNPCCheck(ProtoService.CreatePlayerNPCPreRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerNPCManager.PreCreate(request));
         }
 
-        public override Task<GetMapPlayerNPCListResponse> GetMapPlayerNPC(GetMapPlayerNPCListRequest request, ServerCallContext context)
+        public override Task<ProtoService.GetMapPlayerNPCListResponse> GetMapPlayerNPC(ProtoService.GetMapPlayerNPCListRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerNPCManager.GetMapData(request));
         }
 
-        public override Task<GetAllPlayerNPCDataResponse> GetAllPlayerNPC(Empty request, ServerCallContext context)
+        public override Task<ProtoService.GetAllPlayerNPCDataResponse> GetAllPlayerNPC(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.PlayerNPCManager.GetAllData());
         }
@@ -172,7 +160,7 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> RemoveByName(RemovePlayerNPCRequest request, ServerCallContext context)
+        public override Task<Empty> RemoveByName(ProtoService.RemovePlayerNPCRequest request, ServerCallContext context)
         {
             _server.PlayerNPCManager.Remove(request);
             return Task.FromResult(new Empty());

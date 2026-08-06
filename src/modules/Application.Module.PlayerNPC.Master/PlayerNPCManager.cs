@@ -5,7 +5,6 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Constants.Npc;
 using Application.Utility;
-using LifeProto;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -62,16 +61,16 @@ namespace Application.Module.PlayerNPC.Master
             return QueryWithDirty(dataFromDB, expression.Compile());
         }
 
-        public GetMapPlayerNPCListResponse GetMapData(GetMapPlayerNPCListRequest request)
+        public ProtoService.GetMapPlayerNPCListResponse GetMapData(ProtoService.GetMapPlayerNPCListRequest request)
         {
             var allData = Query(x => x.Map == request.MapId);
 
-            var res = new GetMapPlayerNPCListResponse();
-            res.List.AddRange(_mapper.Map<PlayerNPCDto[]>(allData));
+            var res = new ProtoService.GetMapPlayerNPCListResponse();
+            res.List.AddRange(_mapper.Map<ProtoModel.PlayerNPCProto[]>(allData));
             return res;
         }
 
-        public void Remove(RemovePlayerNPCRequest request)
+        public void Remove(ProtoService.RemovePlayerNPCRequest request)
         {
             var willRemoed = Query(x => x.Name == request.TargetName);
             foreach (var item in willRemoed)
@@ -79,8 +78,8 @@ namespace Application.Module.PlayerNPC.Master
                 SetRemoved(item.Id);
             }
 
-            var res = new RemovePlayerNPCResponse();
-            res.List.AddRange(willRemoed.Select(x => new RemovePlayerNPCItemResponse { MapId = x.Map, ObjectId = x.Id }));
+            var res = new ProtoService.RemovePlayerNPCResponse();
+            res.List.AddRange(willRemoed.Select(x => new ProtoService.RemovePlayerNPCItemResponse { MapId = x.Map, ObjectId = x.Id }));
             _transport.BroadcastRemovePlayerNpc(res);
         }
 
@@ -92,18 +91,18 @@ namespace Application.Module.PlayerNPC.Master
                 SetRemoved(item.Id);
             }
 
-            var res = new RemoveAllPlayerNPCResponse();
+            var res = new ProtoService.RemoveAllPlayerNPCResponse();
             res.MapIdList.AddRange(willRemoed.Select(x => x.Map).ToHashSet());
             _transport.BroadcastRemoveAllPlayerNpc(res);
         }
 
         Lock createLock = new Lock();
 
-        public CreatePlayerNPCPreResponse PreCreate(CreatePlayerNPCPreRequest request)
+        public ProtoService.CreatePlayerNPCPreResponse PreCreate(ProtoService.CreatePlayerNPCPreRequest request)
         {
             if (!createLock.TryEnter())
             {
-                return new CreatePlayerNPCPreResponse { Code = 1 };
+                return new ProtoService.CreatePlayerNPCPreResponse { Code = 1 };
             }
 
             // 返回 script id, 
@@ -114,14 +113,14 @@ namespace Application.Module.PlayerNPC.Master
 
             var allData = QueryWithDirty(dataFromDB, x => x.NpcId >= request.BranchSidStart && x.NpcId < request.BranchSidEnd);
 
-            var res = new CreatePlayerNPCPreResponse();
+            var res = new ProtoService.CreatePlayerNPCPreResponse();
             res.UsedScriptIdList.AddRange(allData.Select(x => x.NpcId).ToHashSet());
             res.NextPositionData = _fields.GetValueOrDefault(request.MapId, -1);
             res.MapId = request.MapId;
             return res;
         }
 
-        public void Create(CreatePlayerNPCRequest request)
+        public void Create(ProtoService.CreatePlayerNPCRequest request)
         {
             var newId = Interlocked.Increment(ref _currentId);
             var model = _mapper.Map<PlayerNpcModel>(request.NewData);
@@ -142,10 +141,10 @@ namespace Application.Module.PlayerNPC.Master
 
             SetDirty(model);
 
-            var res = new UpdateMapPlayerNPCResponse();
+            var res = new ProtoService.UpdateMapPlayerNPCResponse();
             res.MapId = request.MapId;
             res.UpdatedList.AddRange(request.UpdatedList);
-            res.NewData = _mapper.Map<PlayerNPCDto>(model);
+            res.NewData = _mapper.Map<ProtoModel.PlayerNPCProto>(model);
             _transport.BroadcastRefreshMapData(res);
 
             createLock.Exit();
@@ -176,12 +175,12 @@ namespace Application.Module.PlayerNPC.Master
             await dbContext.SaveChangesAsync();
         }
 
-        public GetAllPlayerNPCDataResponse GetAllData()
+        public ProtoService.GetAllPlayerNPCDataResponse GetAllData()
         {
             var allData = Query(x => true);
 
-            var res = new GetAllPlayerNPCDataResponse();
-            res.List.AddRange(_mapper.Map<PlayerNPCDto[]>(allData));
+            var res = new ProtoService.GetAllPlayerNPCDataResponse();
+            res.List.AddRange(_mapper.Map<ProtoModel.PlayerNPCProto[]>(allData));
             return res;
         }
     }

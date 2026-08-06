@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using MTSProto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +9,12 @@ namespace Application.Module.MTS.Channel
 {
     public interface IChannelTransport
     {
-        BuyResponse Buy(BuyRequest buyRequest);
-        ChangePageResponse ChangePage(ChangePageRequest changePageRequest);
-        SaleItemResponse SaleItem(SaleItemRequest saleItemRequest);
-        AddItemToCartResponse SendAddCartItem(AddItemToCartRequest addItemToCartRequest);
-        CancelSaleItemResponse SendCancelSale(CancelSaleItemRequest cancelSaleItemRequest);
-        RemoveItemFromCartResponse SendRemoveCartItem(RemoveItemFromCartRequest removeItemFromCartRequest);
-        TakeItemResponse TakeItem(TakeItemRequest takeItemRequest);
+        ProtoService.BuyResponse Buy(ProtoService.BuyRequest buyRequest);
+        ProtoService.ChangePageResponse ChangePage(ProtoService.ChangePageRequest changePageRequest);
+        ProtoService.SaleItemResponse SaleItem(ProtoService.SaleItemRequest saleItemRequest);
+        ProtoService.AddItemToCartResponse SendAddCartItem(ProtoService.AddItemToCartRequest addItemToCartRequest);
+        ProtoService.CancelSaleItemResponse SendCancelSale(ProtoService.CancelSaleItemRequest cancelSaleItemRequest);
+        ProtoService.RemoveItemFromCartResponse SendRemoveCartItem(ProtoService.RemoveItemFromCartRequest removeItemFromCartRequest);
+        ProtoService.TakeItemResponse TakeItem(ProtoService.TakeItemRequest takeItemRequest);
     }
 }

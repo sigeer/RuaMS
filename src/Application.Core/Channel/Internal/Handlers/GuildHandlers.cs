@@ -1,7 +1,6 @@
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Google.Protobuf;
-using GuildProto;
 using net.server.guild;
 using tools;
 
@@ -49,14 +48,14 @@ namespace Application.Core.Channel.Internal.Handlers
             return null;
         }
 
-        public class CreateHandler : InternalSessionChannelHandler<GuildProto.CreateGuildResponse>
+        public class CreateHandler : InternalSessionChannelHandler<ProtoService.CreateGuildResponse>
         {
             public CreateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildCreated;
 
-            protected override async Task HandleMessage(CreateGuildResponse res)
+            protected override async Task HandleMessage(ProtoService.CreateGuildResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -98,17 +97,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override CreateGuildResponse Parse(ByteString data) => CreateGuildResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateGuildResponse Parse(ByteString data) => ProtoService.CreateGuildResponse.Parser.ParseFrom(data);
         }
 
-        public class GuildMemberServerChangedHandler : InternalSessionChannelHandler<GuildProto.GuildMemberServerChangedResponse>
+        public class GuildMemberServerChangedHandler : InternalSessionChannelHandler<ProtoService.GuildMemberServerChangedResponse>
         {
             public GuildMemberServerChangedHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildMemberLoginOff;
 
-            protected override async Task HandleMessage(GuildMemberServerChangedResponse res)
+            protected override async Task HandleMessage(ProtoService.GuildMemberServerChangedResponse res)
             {
                 await _server.SendToPlayersAsync(res.AllMembers, async chr =>
                 {
@@ -134,18 +133,18 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override GuildMemberServerChangedResponse Parse(ByteString data) => GuildMemberServerChangedResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GuildMemberServerChangedResponse Parse(ByteString data) => ProtoService.GuildMemberServerChangedResponse.Parser.ParseFrom(data);
         }
 
 
-        public class GuildMemberUpdateHandler : InternalSessionChannelHandler<GuildProto.GuildMemberUpdateResponse>
+        public class GuildMemberUpdateHandler : InternalSessionChannelHandler<ProtoService.GuildMemberUpdateResponse>
         {
             public GuildMemberUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildMemberUpdate;
 
-            protected override async Task HandleMessage(GuildMemberUpdateResponse res)
+            protected override async Task HandleMessage(ProtoService.GuildMemberUpdateResponse res)
             {
                 await _server.SendToPlayersAsync(res.AllMembers, async chr =>
                 {
@@ -174,17 +173,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override GuildMemberUpdateResponse Parse(ByteString data) => GuildMemberUpdateResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GuildMemberUpdateResponse Parse(ByteString data) => ProtoService.GuildMemberUpdateResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildNoticeUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildNoticeResponse>
+        public class InvokeGuildNoticeUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildNoticeResponse>
         {
             public InvokeGuildNoticeUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildNoticeUpdate;
 
-            protected override async Task HandleMessage(UpdateGuildNoticeResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildNoticeResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode != GuildUpdateResult.Success)
@@ -199,17 +198,17 @@ namespace Application.Core.Channel.Internal.Handlers
                  });
             }
 
-            protected override UpdateGuildNoticeResponse Parse(ByteString data) => UpdateGuildNoticeResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildNoticeResponse Parse(ByteString data) => ProtoService.UpdateGuildNoticeResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildGpUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildGPResponse>
+        public class InvokeGuildGpUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildGPResponse>
         {
             public InvokeGuildGpUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildGpUpdate;
 
-            protected override async Task HandleMessage(UpdateGuildGPResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildGPResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode != GuildUpdateResult.Success)
@@ -229,17 +228,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 _server.GuildManager.ClearGuildCache(res.GuildId);
             }
 
-            protected override UpdateGuildGPResponse Parse(ByteString data) => UpdateGuildGPResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildGPResponse Parse(ByteString data) => ProtoService.UpdateGuildGPResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildCapacityUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildCapacityResponse>
+        public class InvokeGuildCapacityUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildCapacityResponse>
         {
             public InvokeGuildCapacityUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildCapacityUpdate;
 
-            protected override async Task HandleMessage(UpdateGuildCapacityResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildCapacityResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -266,17 +265,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override UpdateGuildCapacityResponse Parse(ByteString data) => UpdateGuildCapacityResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildCapacityResponse Parse(ByteString data) => ProtoService.UpdateGuildCapacityResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildEmblemUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildEmblemResponse>
+        public class InvokeGuildEmblemUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildEmblemResponse>
         {
             public InvokeGuildEmblemUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildEmblemUpdate;
 
-            protected override async Task HandleMessage(UpdateGuildEmblemResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildEmblemResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -318,17 +317,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override UpdateGuildEmblemResponse Parse(ByteString data) => UpdateGuildEmblemResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildEmblemResponse Parse(ByteString data) => ProtoService.UpdateGuildEmblemResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildRankTitleUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildRankTitleResponse>
+        public class InvokeGuildRankTitleUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildRankTitleResponse>
         {
             public InvokeGuildRankTitleUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildRankTitleUpdate;
 
-            protected override async Task HandleMessage(UpdateGuildRankTitleResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildRankTitleResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode != GuildUpdateResult.Success)
@@ -344,17 +343,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override UpdateGuildRankTitleResponse Parse(ByteString data) => UpdateGuildRankTitleResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildRankTitleResponse Parse(ByteString data) => ProtoService.UpdateGuildRankTitleResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildMemberRankUpdateHandler : InternalSessionChannelHandler<GuildProto.UpdateGuildMemberRankResponse>
+        public class InvokeGuildMemberRankUpdateHandler : InternalSessionChannelHandler<ProtoService.UpdateGuildMemberRankResponse>
         {
             public InvokeGuildMemberRankUpdateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildRankChanged;
 
-            protected override async Task HandleMessage(UpdateGuildMemberRankResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateGuildMemberRankResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode != GuildUpdateResult.Success)
@@ -374,17 +373,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override UpdateGuildMemberRankResponse Parse(ByteString data) => UpdateGuildMemberRankResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateGuildMemberRankResponse Parse(ByteString data) => ProtoService.UpdateGuildMemberRankResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildMemberJoinHandler : InternalSessionChannelHandler<GuildProto.JoinGuildResponse>
+        public class InvokeGuildMemberJoinHandler : InternalSessionChannelHandler<ProtoService.JoinGuildResponse>
         {
             public InvokeGuildMemberJoinHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnPlayerJoinGuild;
 
-            protected override async Task HandleMessage(JoinGuildResponse res)
+            protected override async Task HandleMessage(ProtoService.JoinGuildResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -435,17 +434,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override JoinGuildResponse Parse(ByteString data) => JoinGuildResponse.Parser.ParseFrom(data);
+            protected override ProtoService.JoinGuildResponse Parse(ByteString data) => ProtoService.JoinGuildResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildMemberLeaveHandler : InternalSessionChannelHandler<GuildProto.LeaveGuildResponse>
+        public class InvokeGuildMemberLeaveHandler : InternalSessionChannelHandler<ProtoService.LeaveGuildResponse>
         {
             public InvokeGuildMemberLeaveHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnPlayerLeaveGuild;
 
-            protected override async Task HandleMessage(LeaveGuildResponse res)
+            protected override async Task HandleMessage(ProtoService.LeaveGuildResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -493,17 +492,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override LeaveGuildResponse Parse(ByteString data) => LeaveGuildResponse.Parser.ParseFrom(data);
+            protected override ProtoService.LeaveGuildResponse Parse(ByteString data) => ProtoService.LeaveGuildResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildExpelMemberHandler : InternalSessionChannelHandler<GuildProto.ExpelFromGuildResponse>
+        public class InvokeGuildExpelMemberHandler : InternalSessionChannelHandler<ProtoService.ExpelFromGuildResponse>
         {
             public InvokeGuildExpelMemberHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildExpelMember;
 
-            protected override async Task HandleMessage(ExpelFromGuildResponse res)
+            protected override async Task HandleMessage(ProtoService.ExpelFromGuildResponse res)
             {
                 var resCode = (GuildUpdateResult)res.Code;
                 if (resCode == GuildUpdateResult.Success)
@@ -550,17 +549,17 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override ExpelFromGuildResponse Parse(ByteString data) => ExpelFromGuildResponse.Parser.ParseFrom(data);
+            protected override ProtoService.ExpelFromGuildResponse Parse(ByteString data) => ProtoService.ExpelFromGuildResponse.Parser.ParseFrom(data);
         }
 
-        public class InvokeGuildDisbandHandler : InternalSessionChannelHandler<GuildProto.GuildDisbandResponse>
+        public class InvokeGuildDisbandHandler : InternalSessionChannelHandler<ProtoService.GuildDisbandResponse>
         {
             public InvokeGuildDisbandHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnGuildDisband;
 
-            protected override async Task HandleMessage(GuildDisbandResponse res)
+            protected override async Task HandleMessage(ProtoService.GuildDisbandResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -590,7 +589,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override GuildDisbandResponse Parse(ByteString data) => GuildDisbandResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GuildDisbandResponse Parse(ByteString data) => ProtoService.GuildDisbandResponse.Parser.ParseFrom(data);
         }
     }
 }

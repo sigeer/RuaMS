@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message CdkRewordPackageProto {
+	int32 itemId = 1;
+	int32 quantity = 2;
+}

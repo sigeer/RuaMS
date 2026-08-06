@@ -45,7 +45,7 @@ public class RankingLoginTask : AbstractRunnable
         _server = server;
     }
 
-    private void resetMoveRank(List<Dto.CharacterDto> all)
+    private void resetMoveRank(List<ProtoModel.CharacterProto> all)
     {
         foreach (var item in all)
         {
@@ -54,7 +54,7 @@ public class RankingLoginTask : AbstractRunnable
         }
     }
 
-    public void RecalcRankMove(List<Dto.CharacterDto> all, int job)
+    public void RecalcRankMove(List<ProtoModel.CharacterProto> all, int job)
     {
         var jobRangeStart = job * 100;
         var jobRangeEnd = job * 100 + 99;

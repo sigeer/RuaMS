@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+import "Model/PlayerNPC.proto";
+
+package ProtoService;
+
+
+
+message GetMapPlayerNPCListRequest {
+	int32 mapId = 1;
+}
+
+
+
+message GetMapPlayerNPCListResponse {
+	repeated ProtoModel.PlayerNPCProto list = 1;
+}
+
+
+
+message GetAllPlayerNPCDataRequest {
+}
+
+
+
+message GetAllPlayerNPCDataResponse {
+	repeated ProtoModel.PlayerNPCProto list = 1;
+}
+
+
+
+message CreatePlayerNPCPreRequest {
+	int32 mapId = 1;
+	int32 branchSidStart = 2;
+	int32 branchSidEnd = 3;
+}
+
+
+
+message CreatePlayerNPCPreResponse {
+	int32 code = 1;
+	int32 mapId = 2;
+	int32 nextPositionData = 3;
+	repeated int32 usedScriptIdList = 4;
+}
+
+
+
+message CreatePlayerNPCRequest {
+	int32 mapId = 1;
+	int32 nextStepData = 2;
+	repeated ProtoModel.PlayerNPCProto updatedList = 3;
+	ProtoModel.PlayerNPCProto newData = 4;
+}
+
+
+
+message RemovePlayerNPCRequest {
+	string targetName = 1;
+}
+
+
+
+message RemovePlayerNPCItemResponse {
+	int32 mapId = 1;
+	int32 objectId = 2;
+}
+
+
+
+message RemovePlayerNPCResponse {
+	repeated RemovePlayerNPCItemResponse list = 1;
+}
+
+
+
+message UpdateMapPlayerNPCResponse {
+	int32 mapId = 1;
+	repeated ProtoModel.PlayerNPCProto updatedList = 3;
+	ProtoModel.PlayerNPCProto newData = 4;
+}
+
+
+
+message RemoveAllPlayerNPCResponse {
+	repeated int32 mapIdList = 1;
+}

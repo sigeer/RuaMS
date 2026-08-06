@@ -4,7 +4,7 @@ namespace Application.Core.tools
 {
     public class CharacterViewDtoUtils
     {
-        public static string GetPlayerNameWithMedal(Dto.PlayerViewDto data)
+        public static string GetPlayerNameWithMedal(ProtoModel.PlayerViewProto data)
         {
             return GetPlayerNameWithMedal(data.Character.Name,
                 data.Character.Data.Bag.EquippedInv.FirstOrDefault(x => x.Position == EquipSlot.Medal)?.Itemid ?? -1);

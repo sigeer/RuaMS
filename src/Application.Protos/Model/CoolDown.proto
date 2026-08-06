@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message CoolDownProto {
+  int32 skillId = 1;
+  int64 length = 2;
+  int64 startTime = 3;
+}

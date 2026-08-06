@@ -13,7 +13,7 @@ namespace Application.Core.Channel.Commands
 
         public async Task Execute(WorldChannel ctx)
         {
-            List<SyncProto.PlayerSaveDto> list = [];
+            List<ProtoModel.PlayerSaveProto> list = [];
             foreach (var player in ctx.getPlayerStorage().getAllCharacters())
             {
                 list.Add(ctx.NodeService.DataService.Deserialize(player));

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "Model/PlayerView.proto";
+import "Service/TVMessage.proto";
+
+package ProtoModel;
+
+
+
+message CreateTVMessageBroadcastProto {
+	ProtoService.CreateTVMessageRequest request = 1;
+    PlayerViewProto master = 2;
+    PlayerViewProto masterPartner = 3;
+}

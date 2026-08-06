@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Config;
-
-message PlayerBaseDto {
-	int32 id = 1;
-	string name = 2;
-}

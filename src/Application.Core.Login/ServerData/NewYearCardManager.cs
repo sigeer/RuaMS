@@ -3,13 +3,12 @@ using Application.EF;
 using Application.Shared.Message;
 using Application.Shared.NewYear;
 using Application.Utility;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
 {
-    public class NewYearCardManager : DataStorageBase<int, Dto.NewYearCardDto, NewYearCardEntity>
+    public class NewYearCardManager : DataStorageBase<int, ProtoModel.NewYearCardProto, NewYearCardEntity>
     {
         readonly MasterServer _server;
 
@@ -19,9 +18,9 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        protected override int GetKey(NewYearCardDto model) => model.Id;
+        protected override int GetKey(ProtoModel.NewYearCardProto model) => model.Id;
 
-        protected override NewYearCardDto MapModel(NewYearCardEntity entities)
+        protected override ProtoModel.NewYearCardProto MapModel(NewYearCardEntity entities)
         {
             var item = base.MapModel(entities);
             item.SenderName = _server.CharacterManager.GetPlayerName(item.SenderId);
@@ -29,37 +28,37 @@ namespace Application.Core.Login.ServerData
             return item;
         }
 
-        public Dto.NewYearCardDto? GetDataById(int id)
+        public ProtoModel.NewYearCardProto? GetDataById(int id)
         {
             return Find(id);
         }
 
 
-        public List<Dto.NewYearCardDto> LoadPlayerNewYearCard(int chrId)
+        public List<ProtoModel.NewYearCardProto> LoadPlayerNewYearCard(int chrId)
         {
             return Query(x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard,
                 x => (x.SenderId == chrId || x.ReceiverId == chrId) && !x.ReceiverDiscard && !x.SenderDiscard);
         }
 
 
-        public async Task SendNewYearCard(Dto.SendNewYearCardRequest request)
+        public async Task SendNewYearCard(ProtoService.SendNewYearCardRequest request)
         {
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
 
             var toPlayer = _server.CharacterManager.FindPlayerByName(request.ToName);
             if (toPlayer == null)
             {
-                await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0x13, Request = request });
+                await _server.Transport.SendNewYearCards(new ProtoService.SendNewYearCardResponse { Code = 0x13, Request = request });
                 return;
             }
 
             if (toPlayer.Character.Id == request.FromId)
             {
-                await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse { Code = 0xF, Request = request });
+                await _server.Transport.SendNewYearCards(new ProtoService.SendNewYearCardResponse { Code = 0xF, Request = request });
                 return;
             }
 
-            var newCard = new Dto.NewYearCardDto()
+            var newCard = new ProtoModel.NewYearCardProto()
             {
                 Id = Interlocked.Increment(ref _localId),
                 Message = request.Message,
@@ -72,7 +71,7 @@ namespace Application.Core.Login.ServerData
 
             SetDirty(newCard);
 
-            await _server.Transport.SendNewYearCards(new Dto.SendNewYearCardResponse
+            await _server.Transport.SendNewYearCards(new ProtoService.SendNewYearCardResponse
             {
                 Code = 0,
                 Request = request,
@@ -80,9 +79,9 @@ namespace Application.Core.Login.ServerData
             });
         }
 
-        public async Task ReceiveNewYearCard(Dto.ReceiveNewYearCardRequest request)
+        public async Task ReceiveNewYearCard(ProtoService.ReceiveNewYearCardRequest request)
         {
-            var res = new Dto.ReceiveNewYearCardResponse { Request = request };
+            var res = new ProtoService.ReceiveNewYearCardResponse { Request = request };
             var card = GetDataById(request.CardId);
             if (card == null || card.SenderDiscard)
             {
@@ -124,10 +123,10 @@ namespace Application.Core.Login.ServerData
             var allUnReceivedCards = allData
                 .GroupBy(x => x.ReceiverId)
                 .ToDictionary(x => x.Key, x => x.ToList());
-            var response = new Dto.NewYearCardNotifyDto();
+            var response = new ProtoModel.NewYearCardNotifyProto();
             foreach (var data in allUnReceivedCards)
             {
-                var item = new NewYearCardNotifyItem { MasterId = data.Key };
+                var item = new ProtoModel.NewYearCardNotifyItemProto { MasterId = data.Key };
                 item.List.AddRange(data.Value);
                 response.List.Add(item);
             }
@@ -135,13 +134,13 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendNewYearCardNotify(response);
         }
 
-        public async Task DiscardNewYearCard(Dto.DiscardNewYearCardRequest request)
+        public async Task DiscardNewYearCard(ProtoService.DiscardNewYearCardRequest request)
         {
-            var response = new Dto.DiscardNewYearCardResponse { Code = 0 };
+            var response = new ProtoService.DiscardNewYearCardResponse { Code = 0 };
 
             var cards = LoadPlayerNewYearCard(request.MasterId);
 
-            List<Dto.NewYearCardDto> toRemove = [];
+            List<ProtoModel.NewYearCardProto> toRemove = [];
             foreach (var card in cards)
             {
                 if (request.IsSender && card.SenderId == request.MasterId)

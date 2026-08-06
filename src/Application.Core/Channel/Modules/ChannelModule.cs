@@ -1,7 +1,6 @@
 using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
 using Microsoft.Extensions.Logging;
-using SyncProto;
 using tools;
 
 namespace Application.Core.Channel.Modules
@@ -18,14 +17,14 @@ namespace Application.Core.Channel.Modules
             _server.RegisterScriptableNpc(new ScriptableNpc(9010000, null, "领取奖励"));
         }
 
-        public override void OnPlayerServerChanged(PlayerFieldChange arg)
+        public override void OnPlayerServerChanged(ProtoModel.PlayerFieldChange arg)
         {
             base.OnPlayerServerChanged(arg);
 
             _server.PushChannelCommand(new InvokeBuddyPacketCommand(arg.Id, arg.Buddies, PacketCreator.updateBuddyChannel(arg.Id, arg.Channel - 1)));
         }
 
-        public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange data)
+        public override void OnPlayerChangeJob(ProtoModel.PlayerFieldChange data)
         {
             if (YamlConfig.config.server.USE_ANNOUNCE_CHANGEJOB)
             {
@@ -37,7 +36,7 @@ namespace Application.Core.Channel.Modules
             }
         }
 
-        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange data)
+        public override void OnPlayerLevelUp(ProtoModel.PlayerFieldChange data)
         {
             if (data.Level == JobFactory.GetById(data.JobId).MaxLevel)
             {

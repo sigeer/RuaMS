@@ -2,18 +2,18 @@ namespace Application.Core.Login.Services
 {
     public interface IExpeditionService
     {
-        ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request);
-        void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request);
+        ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest request);
+        void RegisterExpedition(ProtoModel.ExpeditionRegistry request);
     }
 
     public class DefaultExpeditionService : IExpeditionService
     {
-        public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request)
+        public ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest request)
         {
-            return new ExpeditionProto.ExpeditionCheckResponse { IsSuccess = true };
+            return new ProtoService.ExpeditionCheckResponse { IsSuccess = true };
         }
 
-        public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
+        public void RegisterExpedition(ProtoModel.ExpeditionRegistry request)
         {
 
         }

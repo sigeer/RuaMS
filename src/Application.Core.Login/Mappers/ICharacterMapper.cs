@@ -6,7 +6,7 @@ namespace Application.Core.Login.Mappers
     [Mapper]
     public interface ICharacterMapper
     {
-        Dto.CharacterDto MapToDto(CharacterEntity player);
-        CharacterEntity MapToExisting(Dto.CharacterDto dto, CharacterEntity player);
+        ProtoModel.CharacterProto MapToDto(CharacterEntity player);
+        CharacterEntity MapToExisting(ProtoModel.CharacterProto dto, CharacterEntity player);
     }
 }

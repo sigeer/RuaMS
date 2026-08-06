@@ -1,4 +1,3 @@
-using ItemProto;
 using MarriageProto;
 
 namespace Application.Module.Marriage.Channel

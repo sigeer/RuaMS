@@ -4,14 +4,13 @@ using Application.Shared.Message;
 using client.inventory;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using ItemProto;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class ItemHandlers
     {
-        public class Megaphone : InternalSessionChannelHandler<UseItemMegaphoneBroadcast>
+        public class Megaphone : InternalSessionChannelHandler<ProtoModel.UseItemMegaphoneBroadcastProto>
         {
             readonly IItemMapper _mapper;
             public Megaphone(WorldChannelServer server, IItemMapper mapper) : base(server)
@@ -21,7 +20,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleItemMegaphone;
 
-            protected override Task HandleMessage(UseItemMegaphoneBroadcast res)
+            protected override Task HandleMessage(ProtoModel.UseItemMegaphoneBroadcastProto res)
             {
                 return _server.BroadcastAsync(async w =>
                 {
@@ -30,10 +29,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override UseItemMegaphoneBroadcast Parse(ByteString data) => UseItemMegaphoneBroadcast.Parser.ParseFrom(data);
+            protected override ProtoModel.UseItemMegaphoneBroadcastProto Parse(ByteString data) => ProtoModel.UseItemMegaphoneBroadcastProto.Parser.ParseFrom(data);
         }
 
-        public class TVMessageStart : InternalSessionChannelHandler<CreateTVMessageBroadcast>
+        public class TVMessageStart : InternalSessionChannelHandler<ProtoModel.CreateTVMessageBroadcastProto>
         {
             public TVMessageStart(WorldChannelServer server) : base(server)
             {
@@ -41,12 +40,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleTVMessageStart;
 
-            protected override Task HandleMessage(CreateTVMessageBroadcast res)
+            protected override Task HandleMessage(ProtoModel.CreateTVMessageBroadcastProto res)
             {
                 return _server.PushChannelCommandAsync(new InvokeTVCommand(res));
             }
 
-            protected override CreateTVMessageBroadcast Parse(ByteString data) => CreateTVMessageBroadcast.Parser.ParseFrom(data);
+            protected override ProtoModel.CreateTVMessageBroadcastProto Parse(ByteString data) => ProtoModel.CreateTVMessageBroadcastProto.Parser.ParseFrom(data);
         }
 
         public class TVMessageFinish : InternalSessionChannelEmptyHandler

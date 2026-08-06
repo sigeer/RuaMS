@@ -11,10 +11,10 @@ public class CharacterEntity: IKeyedEntity<int>
         CreateDate = DateTime.UtcNow;
         LastLogoutTime = DateTime.UtcNow;
         LastExpGainTime = DateTime.UtcNow;
-        Blob = new Dto.CharacterDataProto() 
+        Blob = new ProtoModel.CharacterDataProto() 
         {
-            GachaponStorage = new Dto.StorageDto(),
-            Bag = new Dto.CharacterBagDataProto()
+            GachaponStorage = new ProtoModel.StorageProto(),
+            Bag = new ProtoModel.CharacterBagDataProto()
         }.ToByteArray();
     }
 

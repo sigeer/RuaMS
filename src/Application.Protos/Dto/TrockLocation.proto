@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message TrockLocationDto {
-  int32 mapid = 1;
-  int32 vip = 2;
-}

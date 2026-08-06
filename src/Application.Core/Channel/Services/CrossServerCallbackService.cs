@@ -20,7 +20,7 @@ namespace Application.Core.Channel.Services
     }
     public class RemoteCallParams
     {
-        public RemoteCallParams(Dto.RemoteCallParamDto item)
+        public RemoteCallParams(ProtoModel.RemoteCallParamProto item)
         {
             Index = item.Index;
             Schema = item.Schema;
@@ -62,7 +62,7 @@ namespace Application.Core.Channel.Services
             _logger = logger;
         }
 
-        public void RunEventAfterLogin(Player chr, RepeatedField<Dto.RemoteCallDto> list)
+        public void RunEventAfterLogin(Player chr, RepeatedField<ProtoModel.RemoteCallProto> list)
         {
             foreach (var item in list)
             {
@@ -71,7 +71,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        public void Invoke(Dto.RemoteCallDto data, Player? chr = null)
+        public void Invoke(ProtoModel.RemoteCallProto data, Player? chr = null)
         {
             if (!_cache.TryGetValue(data.CallbackName, out var method))
                 method = _adminService.GetType()

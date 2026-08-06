@@ -1,14 +1,13 @@
-using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel
 {
     public interface IChannelTransport
     {
-        CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest commitPlayerNPCRequest);
-        void CreatePlayerNPC(CreatePlayerNPCRequest createRequest);
+        ProtoService.CreatePlayerNPCPreResponse PreCreatePlayerNPC(ProtoService.CreatePlayerNPCPreRequest commitPlayerNPCRequest);
+        void CreatePlayerNPC(ProtoService.CreatePlayerNPCRequest createRequest);
         void RemoveAllPlayerNPC();
-        void RemovePlayerNPC(RemovePlayerNPCRequest removePlayerNPCRequest);
-        GetMapPlayerNPCListResponse GetMapPlayerNPCList(GetMapPlayerNPCListRequest getMapPlayerNPCListRequest);
-        GetAllPlayerNPCDataResponse GetAllPlayerNPCList();
+        void RemovePlayerNPC(ProtoService.RemovePlayerNPCRequest removePlayerNPCRequest);
+        ProtoService.GetMapPlayerNPCListResponse GetMapPlayerNPCList(ProtoService.GetMapPlayerNPCListRequest getMapPlayerNPCListRequest);
+        ProtoService.GetAllPlayerNPCDataResponse GetAllPlayerNPCList();
     }
 }

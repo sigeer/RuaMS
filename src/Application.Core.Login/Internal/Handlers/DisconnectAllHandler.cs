@@ -1,7 +1,6 @@
 using Application.Shared.Message;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using SystemProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
@@ -19,7 +18,7 @@ namespace Application.Core.Login.Internal.Handlers
         }
     }
 
-    internal class DisconnectOneHandler : InternalSessionMasterHandler<DisconnectPlayerByNameRequest>
+    internal class DisconnectOneHandler : InternalSessionMasterHandler<ProtoService.DisconnectPlayerByNameRequest>
     {
         public DisconnectOneHandler(MasterServer server) : base(server)
         {
@@ -27,14 +26,14 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.DisconnectOne;
 
-        protected override Task HandleMessage(DisconnectPlayerByNameRequest message)
+        protected override Task HandleMessage(ProtoService.DisconnectPlayerByNameRequest message)
         {
             return _server.CrossServerService.DisconnectPlayerByName(message);
         }
 
-        protected override DisconnectPlayerByNameRequest Parse(ByteString data)
+        protected override ProtoService.DisconnectPlayerByNameRequest Parse(ByteString data)
         {
-            return DisconnectPlayerByNameRequest.Parser.ParseFrom(data);
+            return ProtoService.DisconnectPlayerByNameRequest.Parser.ParseFrom(data);
         }
     }
 }

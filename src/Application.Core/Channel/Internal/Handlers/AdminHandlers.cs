@@ -3,20 +3,16 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Resources.Messages;
 using Application.Shared.Message;
-using Config;
-using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using JailProto;
 using Microsoft.Extensions.DependencyInjection;
-using SystemProto;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class AdminHandlers
     {
-        public class ReloadWorldEvents : InternalSessionChannelHandler<ReloadEventsResponse>
+        public class ReloadWorldEvents : InternalSessionChannelHandler<ProtoService.ReloadEventsResponse>
         {
             public ReloadWorldEvents(WorldChannelServer server) : base(server)
             {
@@ -24,7 +20,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.HandleWorldEventReload;
 
-            protected override async Task HandleMessage(ReloadEventsResponse res)
+            protected override async Task HandleMessage(ProtoService.ReloadEventsResponse res)
             {
                 await _server.BroadcastAsync(w =>
                 {
@@ -33,10 +29,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override ReloadEventsResponse Parse(ByteString data) => ReloadEventsResponse.Parser.ParseFrom(data);
+            protected override ProtoService.ReloadEventsResponse Parse(ByteString data) => ProtoService.ReloadEventsResponse.Parser.ParseFrom(data);
         }
 
-        public class SummonPlayer : InternalSessionChannelHandler<SummonPlayerByNameResponse>
+        public class SummonPlayer : InternalSessionChannelHandler<ProtoService.SummonPlayerByNameResponse>
         {
             public SummonPlayer(WorldChannelServer server) : base(server)
             {
@@ -44,7 +40,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.SummonPlayer;
 
-            protected override async Task HandleMessage(SummonPlayerByNameResponse res)
+            protected override async Task HandleMessage(ProtoService.SummonPlayerByNameResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -65,10 +61,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override SummonPlayerByNameResponse Parse(ByteString data) => SummonPlayerByNameResponse.Parser.ParseFrom(data);
+            protected override ProtoService.SummonPlayerByNameResponse Parse(ByteString data) => ProtoService.SummonPlayerByNameResponse.Parser.ParseFrom(data);
         }
 
-        public class WarpPlayer : InternalSessionChannelHandler<WrapPlayerByNameResponse>
+        public class WarpPlayer : InternalSessionChannelHandler<ProtoService.WrapPlayerByNameResponse>
         {
             public WarpPlayer(WorldChannelServer server) : base(server)
             {
@@ -76,7 +72,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.WarpPlayer;
 
-            protected override async Task HandleMessage(WrapPlayerByNameResponse res)
+            protected override async Task HandleMessage(ProtoService.WrapPlayerByNameResponse res)
             {
                 await _server.SendToPlayerAsync(res.Request.MasterId, async chr =>
                 {
@@ -91,10 +87,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override WrapPlayerByNameResponse Parse(ByteString data) => WrapPlayerByNameResponse.Parser.ParseFrom(data);
+            protected override ProtoService.WrapPlayerByNameResponse Parse(ByteString data) => ProtoService.WrapPlayerByNameResponse.Parser.ParseFrom(data);
         }
 
-        public class MonitorChanged : InternalSessionChannelHandler<ToggleMonitorPlayerResponse>
+        public class MonitorChanged : InternalSessionChannelHandler<ProtoService.ToggleMonitorPlayerResponse>
         {
             public MonitorChanged(WorldChannelServer server) : base(server)
             {
@@ -102,7 +98,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.InvokeMonitor;
 
-            protected override async Task HandleMessage(ToggleMonitorPlayerResponse res)
+            protected override async Task HandleMessage(ProtoService.ToggleMonitorPlayerResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -114,10 +110,10 @@ namespace Application.Core.Channel.Internal.Handlers
                         new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
             }
 
-            protected override ToggleMonitorPlayerResponse Parse(ByteString data) => ToggleMonitorPlayerResponse.Parser.ParseFrom(data);
+            protected override ProtoService.ToggleMonitorPlayerResponse Parse(ByteString data) => ProtoService.ToggleMonitorPlayerResponse.Parser.ParseFrom(data);
         }
 
-        public class Ban : InternalSessionChannelHandler<BanResponse>
+        public class Ban : InternalSessionChannelHandler<ProtoService.BanResponse>
         {
             public Ban(WorldChannelServer server) : base(server)
             {
@@ -125,7 +121,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.BanPlayer;
 
-            protected override async Task HandleMessage(BanResponse data)
+            protected override async Task HandleMessage(ProtoService.BanResponse data)
             {
                 if (data.Code != 0)
                 {
@@ -163,10 +159,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override BanResponse Parse(ByteString data) => BanResponse.Parser.ParseFrom(data);
+            protected override ProtoService.BanResponse Parse(ByteString data) => ProtoService.BanResponse.Parser.ParseFrom(data);
         }
 
-        public class Unban : InternalSessionChannelHandler<UnbanResponse>
+        public class Unban : InternalSessionChannelHandler<ProtoService.UnbanResponse>
         {
             public Unban(WorldChannelServer server) : base(server)
             {
@@ -174,7 +170,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Unban;
 
-            protected override async Task HandleMessage(UnbanResponse res)
+            protected override async Task HandleMessage(ProtoService.UnbanResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -182,10 +178,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override UnbanResponse Parse(ByteString data) => UnbanResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UnbanResponse Parse(ByteString data) => ProtoService.UnbanResponse.Parser.ParseFrom(data);
         }
 
-        public class Jail : InternalSessionChannelHandler<CreateJailResponse>
+        public class Jail : InternalSessionChannelHandler<ProtoService.CreateJailResponse>
         {
             public Jail(WorldChannelServer server) : base(server)
             {
@@ -193,7 +189,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Jail;
 
-            protected override async Task HandleMessage(CreateJailResponse res)
+            protected override async Task HandleMessage(ProtoService.CreateJailResponse res)
             {
                 await _server.SendToPlayersAsync([res.Request.MasterId, res.TargetId], async chr =>
                 {
@@ -216,10 +212,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override CreateJailResponse Parse(ByteString data) => CreateJailResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateJailResponse Parse(ByteString data) => ProtoService.CreateJailResponse.Parser.ParseFrom(data);
         }
 
-        public class Unjail : InternalSessionChannelHandler<CreateUnjailResponse>
+        public class Unjail : InternalSessionChannelHandler<ProtoService.CreateUnjailResponse>
         {
             public Unjail(WorldChannelServer server) : base(server)
             {
@@ -227,7 +223,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.Unjail;
 
-            protected override async Task HandleMessage(CreateUnjailResponse res)
+            protected override async Task HandleMessage(ProtoService.CreateUnjailResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -261,10 +257,10 @@ namespace Application.Core.Channel.Internal.Handlers
 
             }
 
-            protected override CreateUnjailResponse Parse(ByteString data) => CreateUnjailResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateUnjailResponse Parse(ByteString data) => ProtoService.CreateUnjailResponse.Parser.ParseFrom(data);
         }
 
-        public class AntiMacroNotify : InternalSessionChannelHandler<AntiMacroNotifyMessage>
+        public class AntiMacroNotify : InternalSessionChannelHandler<ProtoModel.AntiMacroNotifyMessageProto>
         {
             AntiMacroService _service;
             public AntiMacroNotify(WorldChannelServer server) : base(server)
@@ -274,12 +270,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.AntiMacroNotify;
 
-            protected override Task HandleMessage(AntiMacroNotifyMessage res)
+            protected override Task HandleMessage(ProtoModel.AntiMacroNotifyMessageProto res)
             {
                 return _service.PenalizeAsync(res);
             }
 
-            protected override AntiMacroNotifyMessage Parse(ByteString data) => AntiMacroNotifyMessage.Parser.ParseFrom(data);
+            protected override ProtoModel.AntiMacroNotifyMessageProto Parse(ByteString data) => ProtoModel.AntiMacroNotifyMessageProto.Parser.ParseFrom(data);
         }
 
         public class DropDataRefresh : InternalSessionChannelEmptyHandler

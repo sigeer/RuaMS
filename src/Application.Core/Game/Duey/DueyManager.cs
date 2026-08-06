@@ -5,7 +5,6 @@ using Application.Core.Game.Trades;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using DueyDto;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -29,14 +28,14 @@ namespace Application.Core.Channel.DueyService
 
         private async Task CreateDueyPackage(Player chr, int costMeso, int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
-            var res = await _server.Transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+            var res = await _server.Transport.CreateDueyPackage(new ProtoService.CreatePackageRequest
             {
                 SenderId = chr.Id,
                 SendMeso = sendMesos,
                 SendMessage = sendMessage,
                 ReceiverName = recipient,
                 Quick = quick,
-                Item = _mapper.Map<Dto.ItemDto>(item),
+                Item = _mapper.Map<ProtoModel.ItemProto>(item),
             });
             var dueyResponseCode = (SendDueyItemResponseCode)res.Code;
             if (dueyResponseCode == SendDueyItemResponseCode.Success)
@@ -179,12 +178,12 @@ namespace Application.Core.Channel.DueyService
 
         public async Task RemoveDueyPackage(Player chr, int packageId)
         {
-            await _server.Transport.RequestRemovePackage(new DueyDto.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
+            await _server.Transport.RequestRemovePackage(new ProtoService.RemovePackageRequest { MasterId = chr.Id, PackageId = packageId, ByReceived = false, });
         }
 
         public async Task TakePackage(Player chr, int packageId)
         {
-            await _server.Transport.TakeDueyPackage(new DueyDto.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
+            await _server.Transport.TakeDueyPackage(new ProtoService.TakeDueyPackageRequest { MasterId = chr.Id, PackageId = packageId });
         }
 
         public async Task SendTalk(IChannelClient c)
@@ -201,7 +200,7 @@ namespace Application.Core.Channel.DueyService
                     }
                     c.OnlinedCharacter.setNpcCooldown(timeNow);
 
-                    await _server.Transport.GetDueyPackagesByPlayerId(new GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
+                    await _server.Transport.GetDueyPackagesByPlayerId(new ProtoService.GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
                 }
                 finally
                 {

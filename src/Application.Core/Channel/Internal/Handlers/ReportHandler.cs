@@ -1,10 +1,9 @@
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class ReportHandler : InternalSessionChannelHandler<SendReportResponse>
+    internal class ReportHandler : InternalSessionChannelHandler<ProtoService.SendReportResponse>
     {
         public ReportHandler(WorldChannelServer server) : base(server)
         {
@@ -12,7 +11,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.HandleReportReceived;
 
-        protected override async Task HandleMessage(SendReportResponse res)
+        protected override async Task HandleMessage(ProtoService.SendReportResponse res)
         {
             if (res.Code != 0)
             {
@@ -23,6 +22,6 @@ namespace Application.Core.Channel.Internal.Handlers
             }
         }
 
-        protected override SendReportResponse Parse(ByteString data) => SendReportResponse.Parser.ParseFrom(data);
+        protected override ProtoService.SendReportResponse Parse(ByteString data) => ProtoService.SendReportResponse.Parser.ParseFrom(data);
     }
 }

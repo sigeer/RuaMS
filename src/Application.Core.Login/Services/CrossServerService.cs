@@ -18,9 +18,9 @@ namespace Application.Core.Login.Services
             _mapper = mapper;
         }
 
-        public async Task WarpPlayerByName(SystemProto.WrapPlayerByNameRequest request)
+        public async Task WarpPlayerByName(ProtoService.WrapPlayerByNameRequest request)
         {
-            var res = new SystemProto.WrapPlayerByNameResponse() { Request = request };
+            var res = new ProtoService.WrapPlayerByNameResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel <= 0)
             {
@@ -45,9 +45,9 @@ namespace Application.Core.Login.Services
             await _server.Transport.SendMessageN(ChannelRecvCode.WarpPlayer, res, [request.MasterId]);
         }
 
-        public async Task SummonPlayerByName(SystemProto.SummonPlayerByNameRequest request)
+        public async Task SummonPlayerByName(ProtoService.SummonPlayerByNameRequest request)
         {
-            var res = new SystemProto.SummonPlayerByNameResponse() { Request = request };
+            var res = new ProtoService.SummonPlayerByNameResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel <= 0)
             {
@@ -68,7 +68,7 @@ namespace Application.Core.Login.Services
 
         private async Task SummonPlayer(int operatorId, CharacterLiveObject? targetChr)
         {
-            var res = new SystemProto.SummonPlayerByNameResponse() { Request = new SystemProto.SummonPlayerByNameRequest() };
+            var res = new ProtoService.SummonPlayerByNameResponse() { Request = new ProtoService.SummonPlayerByNameRequest() };
             if (targetChr == null || targetChr.Channel <= 0)
             {
                 await _server.Transport.SendMessageN(ChannelRecvCode.SummonPlayer, res, [operatorId]);
@@ -82,16 +82,16 @@ namespace Application.Core.Login.Services
         }
 
 
-        public Dto.RemoteCallDto[] GetCallback(int chrId)
+        public ProtoModel.RemoteCallProto[] GetCallback(int chrId)
         {
             if (_callbacks.TryRemove(chrId, out var d))
-                return _mapper.Map<Dto.RemoteCallDto[]>(d);
+                return _mapper.Map<ProtoModel.RemoteCallProto[]>(d);
             return [];
         }
 
-        public async Task DisconnectPlayerByName(SystemProto.DisconnectPlayerByNameRequest request)
+        public async Task DisconnectPlayerByName(ProtoService.DisconnectPlayerByNameRequest request)
         {
-            var res = new SystemProto.DisconnectPlayerByNameResponse() { Request = request };
+            var res = new ProtoService.DisconnectPlayerByNameResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null || targetChr.Channel == 0)
             {

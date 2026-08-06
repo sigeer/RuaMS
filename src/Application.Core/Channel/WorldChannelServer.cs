@@ -6,6 +6,8 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
+using DataService = Application.Core.Channel.Services.DataService;
+using ItemService = Application.Core.Channel.Services.ItemService;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Skills;
 using Application.Core.Gameplay.Plugins;
@@ -15,13 +17,10 @@ using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
-using Config;
 using Google.Protobuf;
-using MessageProto;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SyncProto;
 using System.Diagnostics;
 using System.Net;
 using tools;
@@ -106,7 +105,7 @@ namespace Application.Core.Channel
         #endregion
 
         #region GameConfig
-        public Config.WorldConfig? WorldConfigBackup { get; private set; }
+        public ProtoModel.WorldConfig? WorldConfigBackup { get; private set; }
 
         #endregion
         public List<AbstractChannelModule> Modules { get; private set; }
@@ -121,8 +120,8 @@ namespace Application.Core.Channel
         ScheduledFuture? timeoutTask;
         ScheduledFuture? checkMapActiveTask;
 
-        public BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
-        public BatchSyncManager<int, SyncProto.PlayerSaveDto> BatchSyncPlayerManager { get; }
+        public BatchSyncManager<int, ProtoModel.MapSyncProto> BatchSynMapManager { get; }
+        public BatchSyncManager<int, ProtoModel.PlayerSaveProto> BatchSyncPlayerManager { get; }
 
         public CommandLoop<WorldChannelServer> CommandLoop { get; }
 
@@ -178,8 +177,8 @@ namespace Application.Core.Channel
             _itemDistributeService = new(() => ServiceProvider.GetRequiredService<IItemDistributeService>());
             _fishingService = new(() => ServiceProvider.GetRequiredService<IFishingService>());
 
-            BatchSynMapManager = new BatchSyncManager<int, SyncProto.MapSyncDto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
-            BatchSyncPlayerManager = new BatchSyncManager<int, SyncProto.PlayerSaveDto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
+            BatchSynMapManager = new BatchSyncManager<int, ProtoModel.MapSyncProto>(50, 100, x => x.MasterId, data => Transport.BatchSyncMap(data));
+            BatchSyncPlayerManager = new BatchSyncManager<int, ProtoModel.PlayerSaveProto>(50, 100, x => x.Character.Id, data => Transport.BatchSyncPlayer(data));
 
             PluginManager = new(this);
 
@@ -313,7 +312,7 @@ namespace Application.Core.Channel
         }
 
         FileSystemWatcher? watcher;
-        public async Task<bool> HandleServerRegistered(RegisterServerResult configs, CancellationToken cancellationToken = default)
+        public async Task<bool> HandleServerRegistered(ProtoModel.RegisterServerResultProto configs, CancellationToken cancellationToken = default)
         {
             if (configs.StartChannel <= 0)
             {
@@ -466,7 +465,7 @@ namespace Application.Core.Channel
 
         public Task SendBroadcastWorldPacket(Packet p, bool onGM = false)
         {
-            return Transport.BroadcastMessage(new PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
+            return Transport.BroadcastMessage(new ProtoService.PacketRequest { Data = ByteString.CopyFrom(p.getBytes()), OnlyGM = onGM });
         }
 
 
@@ -479,10 +478,10 @@ namespace Application.Core.Channel
         /// <returns></returns>
         public void SendDropMessage(int type, string message, bool onlyGM = false)
         {
-            _ = Transport.DropWorldMessage(new MessageProto.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
+            _ = Transport.DropWorldMessage(new ProtoService.DropMessageRequest { Type = type, Message = message, OnlyGM = onlyGM });
         }
 
-        public void UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public void UpdateWorldConfig(ProtoModel.WorldConfig updatePatch)
         {
             WorldConfigBackup = updatePatch;
         }
@@ -500,7 +499,7 @@ namespace Application.Core.Channel
 
         public Task SendReloadEvents(Player chr)
         {
-            return Transport.SendReloadEvents(new Dto.ReloadEventsRequest { MasterId = chr.Id });
+            return Transport.SendReloadEvents(new ProtoService.ReloadEventsRequest { MasterId = chr.Id });
         }
 
         public void PushChannelCommand(ICommand command)
@@ -550,9 +549,9 @@ namespace Application.Core.Channel
         }
 
 
-        internal DistributeSession<int, PlayerSaveDto> CreateSyncPlayerSession()
+        internal DistributeSession<int, ProtoModel.PlayerSaveProto> CreateSyncPlayerSession()
         {
-            return new DistributeSession<int, PlayerSaveDto>(Servers.Values.Select(x => x.Id));
+            return new DistributeSession<int, ProtoModel.PlayerSaveProto>(Servers.Values.Select(x => x.Id));
         }
 
         public Task Send(ICommand command) => CommandLoop.Register(command);

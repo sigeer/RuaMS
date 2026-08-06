@@ -1,17 +1,17 @@
 using System;
 using Application.Core.Login.Mappers;
 using Application.EF.Entities;
-using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using ProtoModel;
 
 namespace Application.Core.Login.Mappers
 {
     public partial class CharacterMapper : ICharacterMapper
     {
-        public CharacterDto MapToDto(CharacterEntity p1)
+        public CharacterProto MapToDto(CharacterEntity p1)
         {
-            return p1 == null ? null : new CharacterDto()
+            return p1 == null ? null : new CharacterProto()
             {
                 Id = p1.Id,
                 AccountId = p1.AccountId,
@@ -82,7 +82,7 @@ namespace Application.Core.Login.Mappers
                 Data = funcMain1(CharacterDataProto.Parser.ParseFrom(p1.Blob))
             };
         }
-        public CharacterEntity MapToExisting(CharacterDto p3, CharacterEntity p4)
+        public CharacterEntity MapToExisting(CharacterProto p3, CharacterEntity p4)
         {
             if (p3 == null)
             {
@@ -166,7 +166,7 @@ namespace Application.Core.Login.Mappers
             return p2 == null ? null : new CharacterDataProto()
             {
                 Bag = p2.Bag,
-                GachaponStorage = p2.GachaponStorage == null ? null : new StorageDto()
+                GachaponStorage = p2.GachaponStorage == null ? null : new StorageProto()
                 {
                     OwnerId = p2.GachaponStorage.OwnerId,
                     Slots = p2.GachaponStorage.Slots,

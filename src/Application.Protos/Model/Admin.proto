@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message AntiMacroNotifyMessageProto {
+	int32 reporterId = 1;
+	int32 victimId = 2;
+	int32 type = 3;
+	bool passed = 4;
+	string reason = 5;
+}
+
+
+
+message OnlinedPlayerInfoProto {
+	int32 id = 1;
+	string name = 2;
+	int32 channel = 3;
+	int32 mapId = 4;
+}
+
+
+
+message DisconnectAllBroadcastProto {
+	int32 exceptId = 1;
+}

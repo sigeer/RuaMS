@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message MedalMapProto {
+  int32 mapId = 1;
+}

@@ -1,13 +1,12 @@
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using Google.Protobuf;
-using SyncProto;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class PlayerFieldHandlers
     {
-        public class ChangeJob : InternalSessionChannelHandler<PlayerFieldChange>
+        public class ChangeJob : InternalSessionChannelHandler<ProtoModel.PlayerFieldChange>
         {
             public ChangeJob(WorldChannelServer server) : base(server)
             {
@@ -15,7 +14,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerJobChanged;
 
-            protected override Task HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(ProtoModel.PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
@@ -25,10 +24,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
+            protected override ProtoModel.PlayerFieldChange Parse(ByteString data) => ProtoModel.PlayerFieldChange.Parser.ParseFrom(data);
         }
 
-        public class ChangeLevel : InternalSessionChannelHandler<PlayerFieldChange>
+        public class ChangeLevel : InternalSessionChannelHandler<ProtoModel.PlayerFieldChange>
         {
             public ChangeLevel(WorldChannelServer server) : base(server)
             {
@@ -36,7 +35,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerLevelChanged;
 
-            protected override Task HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(ProtoModel.PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
@@ -46,10 +45,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
+            protected override ProtoModel.PlayerFieldChange Parse(ByteString data) => ProtoModel.PlayerFieldChange.Parser.ParseFrom(data);
         }
 
-        public class ChangeServer : InternalSessionChannelHandler<PlayerFieldChange>
+        public class ChangeServer : InternalSessionChannelHandler<ProtoModel.PlayerFieldChange>
         {
             public ChangeServer(WorldChannelServer server) : base(server)
             {
@@ -57,7 +56,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlayerServerChanged;
 
-            protected override Task HandleMessage(PlayerFieldChange res)
+            protected override Task HandleMessage(ProtoModel.PlayerFieldChange res)
             {
                 foreach (var module in _server.Modules)
                 {
@@ -67,10 +66,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override PlayerFieldChange Parse(ByteString data) => PlayerFieldChange.Parser.ParseFrom(data);
+            protected override ProtoModel.PlayerFieldChange Parse(ByteString data) => ProtoModel.PlayerFieldChange.Parser.ParseFrom(data);
         }
 
-        public class RemoveDoor : InternalSessionChannelHandler<Dto.RemoveDoorResponse>
+        public class RemoveDoor : InternalSessionChannelHandler<ProtoService.RemoveDoorResponse>
         {
             public RemoveDoor(WorldChannelServer server) : base(server)
             {
@@ -78,12 +77,12 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnDoorRemoved;
 
-            protected override Task HandleMessage(Dto.RemoveDoorResponse res)
+            protected override Task HandleMessage(ProtoService.RemoveDoorResponse res)
             {
                 return _server.PushChannelCommandAsync(new InvokeRemoveDoorCommand(res.OwnerId));
             }
 
-            protected override Dto.RemoveDoorResponse Parse(ByteString data) => Dto.RemoveDoorResponse.Parser.ParseFrom(data);
+            protected override ProtoService.RemoveDoorResponse Parse(ByteString data) => ProtoService.RemoveDoorResponse.Parser.ParseFrom(data);
         }
     }
 }

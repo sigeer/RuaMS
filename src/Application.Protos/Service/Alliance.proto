@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+import "Model/Alliance.proto";
+
+package ProtoService;
+
+
+
+message GetAllianceRequest {
+	int32 id = 1;
+}
+
+
+
+message GetAllianceResponse {
+	ProtoModel.AllianceProto model = 1;
+}
+
+
+
+message CreateAllianceCheckRequest {
+	string name = 1;
+}
+
+
+
+message CreateAllianceCheckResponse {
+	bool isValid = 1;
+}
+
+
+
+message CreateAllianceRequest {
+	string name = 1;
+	repeated int32 members = 2;
+	int32 cost = 3;
+}
+
+
+
+message CreateAllianceResponse {
+	int32 code = 1;
+	CreateAllianceRequest request = 2;
+	ProtoModel.AllianceProto model = 3;
+}

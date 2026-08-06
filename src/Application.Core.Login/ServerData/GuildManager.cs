@@ -1,4 +1,3 @@
-using AllianceProto;
 using Application.Core.Login.Models;
 using Application.Core.Login.Models.Guilds;
 using Application.Core.Login.Shared;
@@ -8,7 +7,6 @@ using Application.Shared.Guild;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility;
-using GuildProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -69,9 +67,9 @@ namespace Application.Core.Login.ServerData
             _logger.LogInformation("共加载了{GuildCount}个家族，{AllianceCount}个联盟", allGuilds.Count, allAliance.Count);
         }
 
-        public async Task CreateGuild(GuildProto.CreateGuildRequest request)
+        public async Task CreateGuild(ProtoService.CreateGuildRequest request)
         {
-            var res = new GuildProto.CreateGuildResponse { Request = request };
+            var res = new ProtoService.CreateGuildResponse { Request = request };
             if (_nameGuildDataSource.ContainsKey(request.Name))
             {
                 res.Code = (int)GuildUpdateResult.Create_NameDumplicate;
@@ -133,21 +131,21 @@ namespace Application.Core.Login.ServerData
             return _idGuildDataSource.GetValueOrDefault(guildId);
         }
 
-        GuildProto.GuildDto? MapGuildDto(GuildModel data)
+        ProtoModel.GuildProto? MapGuildDto(GuildModel data)
         {
-            var response = _mapper.Map<GuildProto.GuildDto>(data);
-            response.Members.AddRange(_mapper.Map<GuildProto.GuildMemberDto[]>(GetGuildMembers(data)));
+            var response = _mapper.Map<ProtoModel.GuildProto>(data);
+            response.Members.AddRange(_mapper.Map<ProtoModel.GuildMemberProto[]>(GetGuildMembers(data)));
             return response;
         }
         public GuildModel? FindGuildByName(string name) => _nameGuildDataSource.GetValueOrDefault(name);
-        public GuildProto.GuildDto? GetGuildFull(int guildId)
+        public ProtoModel.GuildProto? GetGuildFull(int guildId)
         {
             var data = GetLocalGuild(guildId);
             if (data == null)
                 return null;
 
-            var response = _mapper.Map<GuildProto.GuildDto>(data);
-            response.Members.AddRange(_mapper.Map<GuildProto.GuildMemberDto[]>(GetGuildMembers(data)));
+            var response = _mapper.Map<ProtoModel.GuildProto>(data);
+            response.Members.AddRange(_mapper.Map<ProtoModel.GuildMemberProto[]>(GetGuildMembers(data)));
             return response;
         }
 
@@ -195,7 +193,7 @@ namespace Application.Core.Login.ServerData
         {
             return alliance.Guilds.Select(x => GetLocalGuild(x)).Where(x => x != null).SelectMany(x => x!.Members);
         }
-        public IEnumerable<int> GetAllianceMembers(AllianceDto alliance)
+        public IEnumerable<int> GetAllianceMembers(ProtoModel.AllianceProto alliance)
         {
             return alliance.Guilds.SelectMany(x => x.Members.Select(y => y.Id));
         }
@@ -203,7 +201,7 @@ namespace Application.Core.Login.ServerData
         {
             return _idAllianceDataSource.GetValueOrDefault(allianceId);
         }
-        public AllianceProto.AllianceDto? GetAllianceDto(int allianceId)
+        public ProtoModel.AllianceProto? GetAllianceDto(int allianceId)
         {
             var data = GetLocalAlliance(allianceId);
             if (data == null)
@@ -212,20 +210,20 @@ namespace Application.Core.Login.ServerData
             return MapAllianceDto(data);
         }
 
-        AllianceProto.AllianceDto MapAllianceDto(AllianceModel data)
+        ProtoModel.AllianceProto MapAllianceDto(AllianceModel data)
         {
-            var response = _mapper.Map<AllianceProto.AllianceDto>(data);
+            var response = _mapper.Map<ProtoModel.AllianceProto>(data);
             response.Guilds.AddRange(data.Guilds.Select(x => GetGuildFull(x)));
             return response;
         }
 
-        public AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request)
+        public ProtoService.CreateAllianceCheckResponse CreateAllianceCheck(ProtoService.CreateAllianceCheckRequest request)
         {
-            return new AllianceProto.CreateAllianceCheckResponse() { IsValid = !_nameAllianceDataSource.Keys.Contains(request.Name) };
+            return new ProtoService.CreateAllianceCheckResponse() { IsValid = !_nameAllianceDataSource.Keys.Contains(request.Name) };
         }
-        public async Task CreateAlliance(CreateAllianceRequest request)
+        public async Task CreateAlliance(ProtoService.CreateAllianceRequest request)
         {
-            var res = new CreateAllianceResponse { Request = request };
+            var res = new ProtoService.CreateAllianceResponse { Request = request };
             if (_nameAllianceDataSource.Keys.Contains(request.Name))
             {
                 res.Code = (int)AllianceUpdateResult.Create_NameInvalid;
@@ -293,7 +291,7 @@ namespace Application.Core.Login.ServerData
             _server.CharacterManager.SetState(first);
             _server.CharacterManager.SetState(second);
 
-            res.Model = _mapper.Map<AllianceProto.AllianceDto>(allianceModel);
+            res.Model = _mapper.Map<ProtoModel.AllianceProto>(allianceModel);
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCreated, res, request.Members);
         }
 
@@ -323,17 +321,17 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public async Task SendGuildPacket(GuildProto.GuildPacketRequest data)
+        public async Task SendGuildPacket(ProtoService.GuildPacketRequest data)
         {
             if (_idGuildDataSource.TryGetValue(data.GuildId, out var guild))
             {
-                await _server.BroadcastPacket(new MessageProto.PacketRequest { Data = data.Data }, guild.Members.Where(x => x != data.ExceptChrId));
+                await _server.BroadcastPacket(new ProtoService.PacketRequest { Data = data.Data }, guild.Members.Where(x => x != data.ExceptChrId));
             }
         }
 
-        public async Task UpdateGuildGPAsync(UpdateGuildGPRequest request)
+        public async Task UpdateGuildGPAsync(ProtoService.UpdateGuildGPRequest request)
         {
-            var response = new UpdateGuildGPResponse { Request = request };
+            var response = new ProtoService.UpdateGuildGPResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -360,9 +358,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildGpUpdate, response, response.GuildMembers);
         }
 
-        public async Task UpdateGuildRankTitle(UpdateGuildRankTitleRequest request)
+        public async Task UpdateGuildRankTitle(ProtoService.UpdateGuildRankTitleRequest request)
         {
-            var response = new UpdateGuildRankTitleResponse { Request = request };
+            var response = new ProtoService.UpdateGuildRankTitleResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -393,9 +391,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankTitleUpdate, response, response.GuildMembers);
         }
 
-        public async Task UpdateGuildNotice(UpdateGuildNoticeRequest request)
+        public async Task UpdateGuildNotice(ProtoService.UpdateGuildNoticeRequest request)
         {
-            var response = new UpdateGuildNoticeResponse { Request = request };
+            var response = new ProtoService.UpdateGuildNoticeResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -422,9 +420,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildNoticeUpdate, response, response.GuildMembers);
         }
 
-        public async Task IncreseGuildCapacity(UpdateGuildCapacityRequest request)
+        public async Task IncreseGuildCapacity(ProtoService.UpdateGuildCapacityRequest request)
         {
-            var response = new UpdateGuildCapacityResponse { Request = request };
+            var response = new ProtoService.UpdateGuildCapacityResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
@@ -458,9 +456,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildCapacityUpdate, response, response.GuildMembers);
         }
 
-        public async Task UpdateGuildEmblem(UpdateGuildEmblemRequest request)
+        public async Task UpdateGuildEmblem(ProtoService.UpdateGuildEmblemRequest request)
         {
-            var response = new UpdateGuildEmblemResponse { Request = request };
+            var response = new ProtoService.UpdateGuildEmblemResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -499,9 +497,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildEmblemUpdate, response, response.AllMembers);
         }
 
-        public async Task DisbandGuild(GuildDisbandRequest request)
+        public async Task DisbandGuild(ProtoService.GuildDisbandRequest request)
         {
-            var response = new GuildDisbandResponse { Request = request };
+            var response = new ProtoService.GuildDisbandResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -555,9 +553,9 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public async Task ChangePlayerGuildRank(UpdateGuildMemberRankRequest request)
+        public async Task ChangePlayerGuildRank(ProtoService.UpdateGuildMemberRankRequest request)
         {
-            var response = new UpdateGuildMemberRankResponse { Request = request };
+            var response = new ProtoService.UpdateGuildMemberRankResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -599,9 +597,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildRankChanged, response, response.GuildMembers);
         }
 
-        public async Task GuildExpelMember(ExpelFromGuildRequest request)
+        public async Task GuildExpelMember(ProtoService.ExpelFromGuildRequest request)
         {
-            var response = new ExpelFromGuildResponse { Request = request };
+            var response = new ProtoService.ExpelFromGuildResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -680,9 +678,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildExpelMember, response, notifyMembers);
         }
 
-        public async Task PlayerLeaveGuild(LeaveGuildRequest request)
+        public async Task PlayerLeaveGuild(ProtoService.LeaveGuildRequest request)
         {
-            var response = new LeaveGuildResponse { Request = request };
+            var response = new ProtoService.LeaveGuildResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.PlayerId);
             if (master == null)
@@ -737,9 +735,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnPlayerLeaveGuild, response, notifyMembers);
         }
 
-        public async Task PlayerJoinGuild(JoinGuildRequest request)
+        public async Task PlayerJoinGuild(ProtoService.JoinGuildRequest request)
         {
-            var response = new JoinGuildResponse { Request = request };
+            var response = new ProtoService.JoinGuildResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.PlayerId);
             if (master == null)
             {
@@ -801,9 +799,9 @@ namespace Application.Core.Login.ServerData
         #endregion
 
         #region Alliance
-        public async Task GuildJoinAlliance(AllianceProto.GuildJoinAllianceRequest request)
+        public async Task GuildJoinAlliance(ProtoService.GuildJoinAllianceRequest request)
         {
-            var response = new AllianceProto.GuildJoinAllianceResponse { Request = request };
+            var response = new ProtoService.GuildJoinAllianceResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
@@ -869,9 +867,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildJoinAlliance, response, notifyMembers);
         }
 
-        public async Task GuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest request)
+        public async Task GuildLeaveAlliance(ProtoService.GuildLeaveAllianceRequest request)
         {
-            var res = new AllianceProto.GuildLeaveAllianceResponse { Request = request };
+            var res = new ProtoService.GuildLeaveAllianceResponse { Request = request };
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
             {
@@ -929,9 +927,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnGuildLeaveAlliance, res, notifyMembers);
         }
 
-        public async Task AllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest request)
+        public async Task AllianceExpelGuild(ProtoService.AllianceExpelGuildRequest request)
         {
-            var res = new AllianceProto.AllianceExpelGuildResponse { Request = request };
+            var res = new ProtoService.AllianceExpelGuildResponse { Request = request };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
             var guild = GetLocalGuild(masterChr.Character.GuildId);
@@ -990,9 +988,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceExpelGuild, res, notifyMembers);
         }
 
-        public async Task IncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest request)
+        public async Task IncreaseAllianceCapacity(ProtoService.IncreaseAllianceCapacityRequest request)
         {
-            var res = new AllianceProto.IncreaseAllianceCapacityResponse { Request = request };
+            var res = new ProtoService.IncreaseAllianceCapacityResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -1027,9 +1025,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceCapacityUpdate, res, GetAllianceMembers(res.AllianceDto));
         }
 
-        public async Task UpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request)
+        public async Task UpdateAllianceRankTitle(ProtoService.UpdateAllianceRankTitleRequest request)
         {
-            var res = new AllianceProto.UpdateAllianceRankTitleResponse { Request = request };
+            var res = new ProtoService.UpdateAllianceRankTitleResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -1068,9 +1066,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceRankTitleUpdate, res, res.AllMembers);
         }
 
-        public async Task UpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest request)
+        public async Task UpdateAllianceNotice(ProtoService.UpdateAllianceNoticeRequest request)
         {
-            var res = new AllianceProto.UpdateAllianceNoticeResponse { Request = request };
+            var res = new ProtoService.UpdateAllianceNoticeResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -1105,9 +1103,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceNoticeUpdate, res, res.AllMembers);
         }
 
-        public async Task ChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest request)
+        public async Task ChangeAllianceLeader(ProtoService.AllianceChangeLeaderRequest request)
         {
-            var res = new AllianceProto.AllianceChangeLeaderResponse { Request = request };
+            var res = new ProtoService.AllianceChangeLeaderResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -1168,9 +1166,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceLeaderChanged, res, GetAllianceMembers(res.AllianceDto));
         }
 
-        public async Task ChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest request)
+        public async Task ChangePlayerAllianceRank(ProtoService.ChangePlayerAllianceRankRequest request)
         {
-            var res = new AllianceProto.ChangePlayerAllianceRankResponse { Request = request };
+            var res = new ProtoService.ChangePlayerAllianceRankResponse { Request = request };
 
             var master = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (master == null)
@@ -1222,9 +1220,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnAllianceMemberRankChanged, res, GetAllianceMembers(res.AllianceDto));
         }
 
-        public async Task DisbandAlliance(AllianceProto.DisbandAllianceRequest request)
+        public async Task DisbandAlliance(ProtoService.DisbandAllianceRequest request)
         {
-            var res = new AllianceProto.DisbandAllianceResponse { Request = request };
+            var res = new ProtoService.DisbandAllianceResponse { Request = request };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
             var guild = GetLocalGuild(masterChr.Character.GuildId);
@@ -1274,9 +1272,9 @@ namespace Application.Core.Login.ServerData
 
         }
 
-        public async Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request)
+        public async Task AllianceBroadcastPlayerInfo(ProtoService.AllianceBroadcastPlayerInfoRequest request)
         {
-            var res = new AllianceProto.AllianceBroadcastPlayerInfoResponse { Request = request };
+            var res = new ProtoService.AllianceBroadcastPlayerInfoResponse { Request = request };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId)!;
 
             var guild = GetLocalGuild(masterChr.Character.GuildId);
@@ -1300,11 +1298,11 @@ namespace Application.Core.Login.ServerData
         }
         #endregion
 
-        public QueryRankedGuildsResponse LoadRankedGuilds()
+        public ProtoService.QueryRankedGuildsResponse LoadRankedGuilds()
         {
             var list = _idGuildDataSource.Values.OrderByDescending(x => x.GP).Take(50);
-            var res = new QueryRankedGuildsResponse();
-            res.Guilds.AddRange(_mapper.Map<GuildDto[]>(list));
+            var res = new ProtoService.QueryRankedGuildsResponse();
+            res.Guilds.AddRange(_mapper.Map<ProtoModel.GuildProto[]>(list));
             return res;
         }
 

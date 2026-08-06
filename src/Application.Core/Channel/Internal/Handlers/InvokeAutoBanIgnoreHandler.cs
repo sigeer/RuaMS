@@ -1,11 +1,10 @@
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
-using Config;
 using Google.Protobuf;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class InvokeAutoBanIgnoreHandler : InternalSessionChannelHandler<Config.ToggleAutoBanIgnoreResponse>
+    internal class InvokeAutoBanIgnoreHandler : InternalSessionChannelHandler<ProtoService.ToggleAutoBanIgnoreResponse>
     {
         public InvokeAutoBanIgnoreHandler(WorldChannelServer server) : base(server)
         {
@@ -13,7 +12,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeAutoBanIgnore;
 
-        protected override Task HandleMessage(ToggleAutoBanIgnoreResponse res)
+        protected override Task HandleMessage(ProtoService.ToggleAutoBanIgnoreResponse res)
         {
             if (res.Code == 0)
                 return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored.")));
@@ -21,6 +20,6 @@ namespace Application.Core.Channel.Internal.Handlers
                 return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
         }
 
-        protected override ToggleAutoBanIgnoreResponse Parse(ByteString data) => ToggleAutoBanIgnoreResponse.Parser.ParseFrom(data);
+        protected override ProtoService.ToggleAutoBanIgnoreResponse Parse(ByteString data) => ProtoService.ToggleAutoBanIgnoreResponse.Parser.ParseFrom(data);
     }
 }

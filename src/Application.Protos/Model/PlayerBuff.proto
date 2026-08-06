@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "Model/Buff.proto";
+import "Model/Disease.proto";
+
+package ProtoModel;
+
+
+
+message PlayerBuffProto {
+  repeated BuffProto buffs = 1;
+  repeated DiseaseProto diseases = 2;
+}

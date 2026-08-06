@@ -141,13 +141,13 @@ namespace Application.Module.Marriage.Master
             wedding.Guests.Add(guestChr.Character.Id);
 
             await _server.DueyManager.CreateDueyPackage(
-                new DueyDto.CreatePackageRequest
+                new ProtoService.CreatePackageRequest
                 {
                     Quick = true,
                     ReceiverName = guestChr.Character.Name,
                     SenderId = request.MasterId,
                     SendMessage = "",
-                    Item = new Dto.ItemDto { 
+                    Item = new ProtoModel.ItemProto { 
                         Itemid = wedding.IsCathedral ? ItemId.RECEIVED_INVITATION_CATHEDRAL : ItemId.RECEIVED_INVITATION_CHAPEL, 
                         Quantity = 1,
                         GiftFrom = wedding.Id.ToString()

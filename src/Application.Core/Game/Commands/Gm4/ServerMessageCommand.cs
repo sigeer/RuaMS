@@ -10,6 +10,6 @@ public class ServerMessageCommand : CommandBase
     public override Task Execute(IChannelClient c, string[] paramsValue)
     {
         var player = c.OnlinedCharacter;
-        return c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { ServerMessage = player.getLastCommandMessage() });
+        return c.getChannelServer().Node.Transport.SendWorldConfig(new ProtoModel.WorldConfig { ServerMessage = player.getLastCommandMessage() });
     }
 }

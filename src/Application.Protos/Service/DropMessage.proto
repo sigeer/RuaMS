@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message DropMessageRequest {
+	int32 type = 1;
+	string message = 2;
+	bool onlyGM = 3;
+}

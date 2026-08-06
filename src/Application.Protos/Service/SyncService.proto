@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "Model/AccountCtrl.proto";
+import "Model/BoolWrapper.proto";
+import "Model/PlayerBuff.proto";
+import "Service/AccountCtrl.proto";
+import "Service/Client.proto";
+import "Service/HiredMerchant.proto";
+import "Service/PlayerBuff.proto";
+import "Service/Login.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service SyncService {
+	rpc GetPlayerObject(GetPlayerByLoginRequest) returns(GetPlayerByLoginResponse);
+	rpc SetCharacterTransition(SetClientCharacterTransitionRequest) returns(google.protobuf.Empty);
+	rpc HasCharacterInTransition(CheckCharacterInTransitionRequest) returns(ProtoModel.BoolWrapper);
+	rpc UpdateAccountState(UpdateAccountStateRequest) returns(ProtoModel.AccountLoginStateProto);
+	rpc PushPlayerBuffers(PushPlayerBuffsRequest) returns(google.protobuf.Empty);
+	rpc GetPlayerBuffers(GetPlayerBufferRequest) returns(ProtoModel.PlayerBuffProto);
+	rpc SyncPlayerShop(SyncPlayerShopRequest) returns(google.protobuf.Empty);
+	rpc BatchSyncPlayerShop(BatchSyncPlayerShopRequest) returns(google.protobuf.Empty);
+}
+
+
+
+
+
+message CompleteLoginRequest{
+	int32 characterId = 1;
+	int32 channel = 2;
+}

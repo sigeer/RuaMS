@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message TrockLocationProto {
+  int32 mapid = 1;
+  int32 vip = 2;
+}

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "Model/AutoBanConfig.proto";
+import "Model/ClientInfo.proto";
+import "Model/IPEndPoint.proto";
+import "Model/MonitorData.proto";
+import "Model/ServerState.proto";
+import "Model/TimeWrapper.proto";
+import "Service/Admin.proto";
+import "Service/FlySetting.proto";
+import "Service/GainCharacterSlot.proto";
+import "Service/IPEndPoint.proto";
+import "Service/Shutdown.proto";
+
+
+import "google/protobuf/empty.proto";
+import "Model/MessageWrapper.proto";
+package ProtoService;
+
+
+
+service SystemService {
+	rpc GetCurrentTime(google.protobuf.Empty) returns(ProtoModel.TimeWrapper);
+	rpc GetCurrentTimestamp(google.protobuf.Empty) returns(ProtoModel.TimeWrapper);
+	rpc GetChannelEndPoint(GetChannelEndPointRequest) returns(ProtoModel.IPEndPointProto);
+
+	rpc GetAutobanIgnores(google.protobuf.Empty) returns(ProtoModel.AutoBanIgnoredWrapperProto);
+
+	rpc SetAccountFly(SetFlyRequest) returns (SetFlyResponse);
+	rpc GetOnlinedPlayers(google.protobuf.Empty) returns(ShowOnlinePlayerResponse);
+	rpc GetOnlinedClients(google.protobuf.Empty) returns(ProtoModel.GetAllClientInfo);
+	rpc GainCharacterSlot(GainAccountCharacterSlotRequest) returns(GainAccountCharacterSlotResponse);
+
+	rpc ShutdownMaster(ShutdownMasterRequest) returns(google.protobuf.Empty);
+	rpc GetServerState(google.protobuf.Empty) returns(ProtoModel.ServerStateProto);
+	rpc HealthCheck(ProtoModel.MonitorData) returns(google.protobuf.Empty);
+	rpc Connect(stream ProtoModel.PacketWrapper) returns(stream ProtoModel.PacketWrapper);
+}

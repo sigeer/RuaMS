@@ -1,6 +1,5 @@
 using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
-using Dto;
 using System.Threading.Tasks;
 
 namespace Application.Module.Family.Master
@@ -11,12 +10,12 @@ namespace Application.Module.Family.Master
         {
         }
 
-        internal async Task Send(UseEntitlementResponse useEntitlementResponse)
+        internal async Task Send(Dto.UseEntitlementResponse useEntitlementResponse)
         {
             await SendMessageN(1, useEntitlementResponse, [useEntitlementResponse.Request.MatserId]);
         }
 
-        internal void SendReputationChanged(int cid, ReputationChangedMessage reputationChangedMessage)
+        internal void SendReputationChanged(int cid, Dto.ReputationChangedMessage reputationChangedMessage)
         {
             throw new NotImplementedException();
         }

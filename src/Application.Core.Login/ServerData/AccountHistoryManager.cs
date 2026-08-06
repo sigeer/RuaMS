@@ -12,7 +12,6 @@ using Application.Utility.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
-using SystemProto;
 
 namespace Application.Core.Login.ServerData
 {
@@ -164,9 +163,9 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public async Task Unban(UnbanRequest request)
+        public async Task Unban(ProtoService.UnbanRequest request)
         {
-            var res = new UnbanResponse() { Request = request };
+            var res = new ProtoService.UnbanResponse() { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null)
             {
@@ -181,9 +180,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.Unban, res, [request.OperatorId]);
         }
 
-        public async Task Ban(BanRequest request)
+        public async Task Ban(ProtoService.BanRequest request)
         {
-            var res = new BanResponse { Request = request };
+            var res = new ProtoService.BanResponse { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (targetChr == null)
             {

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+package ProtoModel;
+
+
+
+message PlayerShopItemProto {
+	ItemProto item = 1;
+	int32 price = 2;
+	int32 bundles = 3;
+}
+
+
+
+message RemoteHiredMerchantProto {
+	int32 ownerId = 1;
+	string title = 2;
+	int32 channel = 3;
+	int32 mapId = 4;
+	repeated ItemProto items = 5;
+	int32 meso = 6;
+	int32 feeMeso = 7;
+	int32 feePercentage = 8;
+}
+
+
+
+message PlayerShopStoreItemsProto {
+	repeated PlayerShopItemProto items = 1;
+}

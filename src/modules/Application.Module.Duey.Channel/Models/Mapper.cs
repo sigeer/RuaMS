@@ -6,7 +6,7 @@ namespace Application.Module.Duey.Channel.Models
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<DueyDto.DueyPackageDto, DueyPackageObject>();
+            config.NewConfig<ProtoModel.DueyPackageProto, DueyPackageObject>();
         }
     }
 }

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message BuddyProto {
+  int32 id = 1;
+  string name = 2;
+  int32 channel = 3;
+  int32 actualChannel =4;
+  string group = 5;
+  int32 mapId = 6;
+}
+
+
+
+message BuddyChatBroadcastProto {
+	int32 fromId = 1;
+	string fromName = 2;
+	repeated int32 toIds = 3;
+	string text = 4;
+}
+
+
+
+
+message NotifyBuddyWhenLoginoffBroadcastProto {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	int32 channel = 4;
+	int32 actualChannel = 5;
+}
+
+
+
+message SendBuddyNoticeMessageProto {
+	int32 masterId = 1;
+	repeated int32 buddyId = 2;
+	int32 type = 3;
+	string message = 4;
+}

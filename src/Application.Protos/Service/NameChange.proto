@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message NameChangeRequest {
+	int32 masterId = 1;
+	string newName = 2;
+}
+
+
+
+message NameChangeResponse {
+	int32 code = 1;
+}

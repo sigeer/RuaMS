@@ -2,14 +2,13 @@ using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.Utility;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData;
 
 
-public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
+public class NoteManager : DataStorageBase<int, ProtoModel.NoteProto, NoteEntity>
 {
     readonly MasterServer _server;
 
@@ -20,9 +19,9 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
     }
 
 
-    protected override int GetKey(NoteDto model) => model.Id;
+    protected override int GetKey(ProtoModel.NoteProto model) => model.Id;
 
-    protected override NoteDto MapModel(NoteEntity entities)
+    protected override ProtoModel.NoteProto MapModel(NoteEntity entities)
     {
         var item = base.MapModel(entities);
         item.From = _server.CharacterManager.GetPlayerName(item.FromId);
@@ -41,7 +40,7 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
         if (chr == null)
             return false;
 
-        var model = new Dto.NoteDto()
+        var model = new ProtoModel.NoteProto()
         {
             Id = Interlocked.Increment(ref _localId),
             ToId = chr.Character.Id,
@@ -62,7 +61,7 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
         if (chr == null)
             return;
 
-        var model = new Dto.NoteDto()
+        var model = new ProtoModel.NoteProto()
         {
             Id = Interlocked.Increment(ref _localId),
             ToId = chr.Character.Id,
@@ -87,7 +86,7 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
         if (chr == null)
             return;
 
-        var model = new Dto.NoteDto()
+        var model = new ProtoModel.NoteProto()
         {
             Id = Interlocked.Increment(ref _localId),
             ToId = chr.Character.Id,
@@ -117,7 +116,7 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
             await _server.Transport.SendNotes(liveObject.Channel, liveObject.Character.Id, notes);
     }
 
-    public Dto.NoteDto? SetRead(int id)
+    public ProtoModel.NoteProto? SetRead(int id)
     {
         var model = QueryById(id);
         if (model == null)
@@ -137,7 +136,7 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
         }
     }
 
-    protected override void CommitRemove(DBContext dbContext, NoteEntity? dbModel, NoteDto localModel)
+    protected override void CommitRemove(DBContext dbContext, NoteEntity? dbModel, ProtoModel.NoteProto localModel)
     {
         if (dbModel != null)
         {
@@ -146,12 +145,12 @@ public class NoteManager : DataStorageBase<int, Dto.NoteDto, NoteEntity>
     }
 
 
-    List<Dto.NoteDto> QueryByToId(int toId) => Query(x => x.ToId == toId, x => x.ToId == toId);
+    List<ProtoModel.NoteProto> QueryByToId(int toId) => Query(x => x.ToId == toId, x => x.ToId == toId);
 
-    Dto.NoteDto? QueryById(int id)
+    ProtoModel.NoteProto? QueryById(int id)
         => Find(id);
 
-    List<Dto.NoteDto> QueryFredrickExpired(List<int> expiredCids)
+    List<ProtoModel.NoteProto> QueryFredrickExpired(List<int> expiredCids)
         => Query(
             x => x.FromId == -NpcId.FREDRICK && expiredCids.Contains(x.ToId),
             x => x.FromId == -NpcId.FREDRICK && expiredCids.Contains(x.ToId));

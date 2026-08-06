@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message PlayerShopProto {
+  int32 channel = 1;
+  string mapName = 2;
+  bool isOpen = 3;
+  int32 type = 4;
+}

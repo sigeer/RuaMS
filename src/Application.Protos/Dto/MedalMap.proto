@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message MedalMapDto {
-  int32 mapId = 1;
-}

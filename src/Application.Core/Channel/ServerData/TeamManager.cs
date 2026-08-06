@@ -7,7 +7,6 @@ using Application.Shared.Team;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using TeamProto;
 
 namespace Application.Core.Channel.ServerData
 {
@@ -51,7 +50,7 @@ namespace Application.Core.Channel.ServerData
                 return;
             }
 
-            await _transport.CreateTeam(new CreateTeamRequest { LeaderId = leader.Id, Method = 0 });
+            await _transport.CreateTeam(new ProtoService.CreateTeamRequest { LeaderId = leader.Id, Method = 0 });
         }
 
 
@@ -130,7 +129,7 @@ namespace Application.Core.Channel.ServerData
         }
 
         static string GetTeamCacheKey(int teamId) => $"Team_{teamId}";
-        public void SetTeam(TeamDto dto)
+        public void SetTeam(ProtoModel.TeamProto dto)
         {
             if (dto != null)
             {
@@ -143,7 +142,7 @@ namespace Application.Core.Channel.ServerData
             _cache.Remove(GetTeamCacheKey(teamId));
         }
 
-        internal TeamDto? GetTeamDto(int party, bool useCache = true)
+        internal ProtoModel.TeamProto? GetTeamDto(int party, bool useCache = true)
         {
             var cacheKey = GetTeamCacheKey(party);
             return _cache.GetOrCreate(cacheKey, e =>
@@ -161,7 +160,7 @@ namespace Application.Core.Channel.ServerData
             return MapTeam(res);
         }
 
-        Team MapTeam(TeamDto dto)
+        Team MapTeam(ProtoModel.TeamProto dto)
         {
             var d = new Team(dto.Id, dto.LeaderId);
             foreach (var member in dto.Members)
@@ -171,19 +170,19 @@ namespace Application.Core.Channel.ServerData
             return d;
         }
 
-        List<Player> GetChannelMembers(WorldChannel channel, TeamDto team)
+        List<Player> GetChannelMembers(WorldChannel channel, ProtoModel.TeamProto team)
         {
             return team.Members.Select(x => channel.getPlayerStorage().getCharacterById(x.Id)).Where(x => x != null && x.isLoggedinWorld()).ToList();
         }
 
         public Task CreateInvite(Player fromChr, string toName)
         {
-            return _transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
+            return _transport.SendInvitation(new ProtoService.CreateInviteRequest { FromId = fromChr.Id, ToName = toName, Type = InviteTypes.Party });
 
         }
         public Task AnswerInvite(Player chr, int partyId, bool answer)
         {
-            return _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
+            return _transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = partyId, Type = InviteTypes.Party });
         }
     }
 }

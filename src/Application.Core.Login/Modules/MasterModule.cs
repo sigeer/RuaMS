@@ -3,7 +3,6 @@ using Application.Resources.Messages;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Google.Protobuf.WellKnownTypes;
-using GuildProto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.Modules
@@ -18,7 +17,7 @@ namespace Application.Core.Login.Modules
         {
             await base.OnPlayerServerChanged(obj, lastChannel);
 
-            await _server.ChatRoomManager.LeaveChatRoom(new Dto.LeaveChatRoomRequst { MasterId = obj.Character.Id });
+            await _server.ChatRoomManager.LeaveChatRoom(new ProtoService.LeaveChatRoomRequest { MasterId = obj.Character.Id });
             await _server.InvitationManager.RemovePlayerInvitation(obj.Character.Id);
 
             await _server.Transport.BroadcastPlayerFieldChange(ChannelRecvCode.OnPlayerServerChanged, obj, lastChannel);
@@ -43,7 +42,7 @@ namespace Application.Core.Login.Modules
             var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
             if (guild != null)
             {
-                var res = new GuildMemberServerChangedResponse
+                var res = new ProtoService.GuildMemberServerChangedResponse
                 {
                     GuildId = guild.GuildId,
                     MemberChanel = obj.Channel,
@@ -64,7 +63,7 @@ namespace Application.Core.Login.Modules
             var guild = _server.GuildManager.GetLocalGuild(obj.Character.GuildId);
             if (guild != null)
             {
-                var res = new GuildMemberServerChangedResponse
+                var res = new ProtoService.GuildMemberServerChangedResponse
                 {
                     GuildId = guild.GuildId,
                     MemberChanel = obj.Channel,
@@ -93,7 +92,7 @@ namespace Application.Core.Login.Modules
             var guild = _server.GuildManager.GetLocalGuild(origin.Character.GuildId);
             if (guild != null)
             {
-                var res = new GuildMemberUpdateResponse
+                var res = new ProtoService.GuildMemberUpdateResponse
                 {
                     GuildId = guild.GuildId,
                     MemberJob = origin.Character.JobId,
@@ -117,7 +116,7 @@ namespace Application.Core.Login.Modules
             var guild = _server.GuildManager.GetLocalGuild(origin.Character.GuildId);
             if (guild != null)
             {
-                var res = new GuildMemberUpdateResponse
+                var res = new ProtoService.GuildMemberUpdateResponse
                 {
                     GuildId = guild.GuildId,
                     MemberJob = origin.Character.JobId,

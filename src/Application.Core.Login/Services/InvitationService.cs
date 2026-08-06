@@ -21,7 +21,7 @@ namespace Application.Core.Login.Services
             _inviteRegistry.Register(_allHandlers);
         }
 
-        public async Task AddInvitation(InvitationProto.CreateInviteRequest request)
+        public async Task AddInvitation(ProtoService.CreateInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)
@@ -30,7 +30,7 @@ namespace Application.Core.Login.Services
             await handler.HandleInvitationCreated(request);
         }
 
-        public async Task AnswerInvitation(InvitationProto.AnswerInviteRequest request)
+        public async Task AnswerInvitation(ProtoService.AnswerInviteRequest request)
         {
             var handler = _inviteRegistry.GetHandler(request.Type);
             if (handler == null)

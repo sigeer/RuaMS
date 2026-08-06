@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message PLifeProto {
+	int32 lifeId = 1;
+	string type = 2;
+	int32 cy = 3;
+	int32 f = 4;
+	int32 fh = 5;
+	int32 rx0 = 6;
+	int32 rx1 = 7;
+	int32 x = 8;
+	int32 y = 9;
+	int32 hide = 10;
+	int32 mobtime = 11;
+	int32 team = 12;
+	int32 mapId = 13;
+	int32 id = 14;
+}

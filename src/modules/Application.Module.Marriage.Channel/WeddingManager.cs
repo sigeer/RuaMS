@@ -146,7 +146,7 @@ namespace Application.Module.Marriage.Channel
 
         //public List<Item> GetUnclaimedMarriageGifts(Player chr)
         //{
-        //    return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ItemProto.LoadItemsFromStoreRequest { 
+        //    return _mapper.Map<List<Item>>(_server.Transport.LoadItemFromStore(new ProtoService.LoadItemsFromStoreRequest { 
         //        Key = chr.Id, ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue() }).Items);
         //}
 
@@ -201,10 +201,10 @@ namespace Application.Module.Marriage.Channel
 
         private void StoreGifts(int id, List<Item> items)
         {
-            var request = new ItemProto.StoreItemsRequest();
+            var request = new ProtoService.StoreItemsRequest();
             request.Key = id;
             request.ItemFactory = ItemFactory.MARRIAGE_GIFTS.getValue();
-            request.Items.AddRange(_mapper.Map<Dto.ItemDto[]>(items));
+            request.Items.AddRange(_mapper.Map<ProtoModel.ItemProto[]>(items));
             _server.Transport.SaveItems(request);
         }
 

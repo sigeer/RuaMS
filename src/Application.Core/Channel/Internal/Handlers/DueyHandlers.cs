@@ -2,7 +2,6 @@ using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Services;
 using Application.Shared.Message;
-using DueyDto;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +9,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class DueyHandlers
     {
-        internal class CreateHandler : InternalSessionChannelHandler<CreatePackageBroadcast>
+        internal class CreateHandler : InternalSessionChannelHandler<ProtoService.CreatePackageNotifyResponse>
         {
             public CreateHandler(WorldChannelServer server) : base(server)
             {
@@ -18,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.CreateDueyPackage;
 
-            protected override Task HandleMessage(CreatePackageBroadcast data)
+            protected override Task HandleMessage(ProtoService.CreatePackageNotifyResponse data)
             {
                 return _server.SendToPlayerAsync(data.Package.ReceiverId, chr =>
                 {
@@ -26,10 +25,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override CreatePackageBroadcast Parse(ByteString content) => CreatePackageBroadcast.Parser.ParseFrom(content);
+            protected override ProtoService.CreatePackageNotifyResponse Parse(ByteString content) => ProtoService.CreatePackageNotifyResponse.Parser.ParseFrom(content);
         }
 
-        internal class RemoveHandler : InternalSessionChannelHandler<RemovePackageResponse>
+        internal class RemoveHandler : InternalSessionChannelHandler<ProtoService.RemovePackageResponse>
         {
             public RemoveHandler(WorldChannelServer server) : base(server)
             {
@@ -37,7 +36,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.DeleteDueyPackage;
 
-            protected override async Task HandleMessage(RemovePackageResponse data)
+            protected override async Task HandleMessage(ProtoService.RemovePackageResponse data)
             {
                 if (data.Code == 0)
                 {
@@ -48,10 +47,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override RemovePackageResponse Parse(ByteString content) => RemovePackageResponse.Parser.ParseFrom(content);
+            protected override ProtoService.RemovePackageResponse Parse(ByteString content) => ProtoService.RemovePackageResponse.Parser.ParseFrom(content);
         }
 
-        internal class GetHandler : InternalSessionChannelHandler<GetPlayerDueyPackageResponse>
+        internal class GetHandler : InternalSessionChannelHandler<ProtoService.GetPlayerDueyPackageResponse>
         {
             readonly IMapper _mapper;
             public GetHandler(WorldChannelServer server, IMapper mapper) : base(server)
@@ -61,7 +60,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.LoadDueyPackage;
 
-            protected override Task HandleMessage(GetPlayerDueyPackageResponse data)
+            protected override Task HandleMessage(ProtoService.GetPlayerDueyPackageResponse data)
             {
                 return _server.SendToPlayerAsync(data.ReceiverId, chr =>
                 {
@@ -70,10 +69,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override GetPlayerDueyPackageResponse Parse(ByteString content) => GetPlayerDueyPackageResponse.Parser.ParseFrom(content);
+            protected override ProtoService.GetPlayerDueyPackageResponse Parse(ByteString content) => ProtoService.GetPlayerDueyPackageResponse.Parser.ParseFrom(content);
         }
 
-        internal class TakeHandler : InternalSessionChannelHandler<TakeDueyPackageResponse>
+        internal class TakeHandler : InternalSessionChannelHandler<ProtoService.TakeDueyPackageResponse>
         {
             readonly IMapper _mapper;
             readonly IItemDistributeService _distributeService;
@@ -87,7 +86,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.TakeDueyPackage;
 
-            protected override Task HandleMessage(TakeDueyPackageResponse data)
+            protected override Task HandleMessage(ProtoService.TakeDueyPackageResponse data)
             {
                 return _server.SendToPlayerAsync(data.Package.ReceiverId, async chr =>
                 {
@@ -100,7 +99,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         if (!chr.canHoldMeso(dp.Mesos))
                         {
                             await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_UNKNOWN_ERROR.getCode()));
-                            await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                            await _server.Transport.TakeDueyPackageCommit(new ProtoService.TakeDueyPackageCommitRequest { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                             return;
                         }
 
@@ -109,20 +108,20 @@ namespace Application.Core.Channel.Internal.Handlers
                             if (!chr.CanHoldUniquesOnly(dpItem.getItemId()))
                             {
                                 await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_RECEIVER_WITH_UNIQUE.getCode()));
-                                await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                await _server.Transport.TakeDueyPackageCommit(new ProtoService.TakeDueyPackageCommitRequest { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                                 return;
                             }
 
                             if (!chr.canHold(dpItem.getItemId(), dpItem.getQuantity()))
                             {
                                 await chr.SendPacket(DueyPacketCreator.sendDueyMSG(DueyProcessorActions.TOCLIENT_RECV_NO_FREE_SLOTS.getCode()));
-                                await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                                await _server.Transport.TakeDueyPackageCommit(new ProtoService.TakeDueyPackageCommitRequest { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                                 return;
                             }
                         }
 
 
-                        await _server.Transport.TakeDueyPackageCommit(new DueyDto.TakeDueyPackageCommit { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
+                        await _server.Transport.TakeDueyPackageCommit(new ProtoService.TakeDueyPackageCommitRequest { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
                         await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
                     }
                     else
@@ -140,10 +139,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override TakeDueyPackageResponse Parse(ByteString content) => TakeDueyPackageResponse.Parser.ParseFrom(content);
+            protected override ProtoService.TakeDueyPackageResponse Parse(ByteString content) => ProtoService.TakeDueyPackageResponse.Parser.ParseFrom(content);
         }
 
-        internal class LoginNotifyHandler : InternalSessionChannelHandler<DueyNotificationDto>
+        internal class LoginNotifyHandler : InternalSessionChannelHandler<ProtoModel.DueyNotifyProto>
         {
             public LoginNotifyHandler(WorldChannelServer server) : base(server)
             {
@@ -151,7 +150,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.LoginNotifyDueyPackage;
 
-            protected override Task HandleMessage(DueyNotificationDto data)
+            protected override Task HandleMessage(ProtoModel.DueyNotifyProto data)
             {
                 return _server.SendToPlayerAsync(data.ReceiverId, chr =>
                 {
@@ -159,7 +158,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override DueyNotificationDto Parse(ByteString content) => DueyNotificationDto.Parser.ParseFrom(content);
+            protected override ProtoModel.DueyNotifyProto Parse(ByteString content) => ProtoModel.DueyNotifyProto.Parser.ParseFrom(content);
         }
     }
 }

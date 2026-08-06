@@ -4,16 +4,16 @@ using Application.Core.Game.Players;
 using Application.Core.Mappers;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
-using Dto;
 using Google.Protobuf.WellKnownTypes;
+using ProtoModel;
 
 namespace Application.Core.Mappers
 {
     public partial class PlayerMapper : IPlayerMapper
     {
-        public CharacterDto MapToDto(Player p1)
+        public CharacterProto MapToDto(Player p1)
         {
-            return p1 == null ? null : new CharacterDto()
+            return p1 == null ? null : new CharacterProto()
             {
                 Id = p1.Id,
                 AccountId = p1.AccountId,
@@ -83,7 +83,7 @@ namespace Application.Core.Mappers
                 PendantOfSpiritEquippedTime = p1.PendantOfSpiritEquippedTime
             };
         }
-        public Player MapToExisting(CharacterDto p3, Player p4)
+        public Player MapToExisting(CharacterProto p3, Player p4)
         {
             if (p3 == null)
             {

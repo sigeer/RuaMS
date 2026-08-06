@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message GachaponPoolProto {
+	int32 id = 1;
+	int32 npcId = 2;
+	string name = 3;
+}
+
+
+
+message GachaponPoolChanceProto {
+	int32 id = 1;
+	int32 poolId = 2;
+	int32 level = 3;
+	int32 chance = 4;
+}
+
+
+
+message GachaponPoolItemProto {
+	int32 id = 1;
+	int32 poolId = 2;
+	int32 itemId = 3;
+	int32 level = 4;
+	int32 quantity = 5;
+}
+
+
+
+message GacheponDataProto {
+	repeated GachaponPoolProto pools = 1;
+	repeated GachaponPoolChanceProto chances = 2;
+	repeated GachaponPoolItemProto items = 3;
+}
+
+
+
+message GachaponResetBroadcast {
+
+}

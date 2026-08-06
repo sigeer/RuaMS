@@ -44,7 +44,7 @@ public class MonsterBook
         Owner = owner;
     }
 
-    public void LoadData(RepeatedField<Dto.MonsterbookDto> dataList)
+    public void LoadData(RepeatedField<ProtoModel.MonsterbookProto> dataList)
     {
         foreach (var item in dataList)
         {
@@ -149,9 +149,9 @@ public class MonsterBook
         return specialCard;
     }
 
-    public Dto.MonsterbookDto[] ToDto()
+    public ProtoModel.MonsterbookProto[] ToDto()
     {
-        return cards.Select(x => new Dto.MonsterbookDto()
+        return cards.Select(x => new ProtoModel.MonsterbookProto()
         {
             Cardid = x.Key,
             Level = x.Value

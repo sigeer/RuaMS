@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+import "Model/Note.proto";
+
+package ProtoService;
+
+
+
+message SendNoteResponse {
+	int32 receiverId = 1;
+	int32 receiverChannel = 2;
+	repeated ProtoModel.NoteProto list = 3;
+}
+
+
+
+message SendNormalNoteRequest {
+	int32 fromId = 1;
+	string toName = 2;
+	string message = 3;
+}
+
+
+
+message SetNoteReadRequest {
+	int32 id = 1;
+}
+
+
+
+message SetNoteReadResponse {
+	ProtoModel.NoteProto data = 1;
+}

@@ -4,7 +4,6 @@ using Application.Module.Family.Channel.Models;
 using Application.Module.Family.Channel.Net.Packets;
 using Application.Module.Family.Common;
 using Application.Shared.Net;
-using Dto;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using tools;
@@ -154,19 +153,19 @@ namespace Application.Module.Family.Channel
 
         internal async Task CreateInvite(Player chr, string toAdd)
         {
-            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
+            await _server.Transport.SendInvitation(new ProtoService.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_Family });
         }
         internal async Task AnswerInvite(Player chr, int familyId, bool accept)
         {
-           await  _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+           await  _server.Transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { Type = Constants.InviteType_Family, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
         internal async Task CreateSummonInvite(Player chr, string toAdd)
         {
-            await _server.Transport.SendInvitation(new InvitationProto.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
+            await _server.Transport.SendInvitation(new ProtoService.CreateInviteRequest { FromId = chr.Id, ToName = toAdd, Type = Constants.InviteType_FamilySummon });
         }
         internal async Task AnswerSummonInvite(Player chr, int familyId, bool accept)
         {
-            await _server.Transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
+            await _server.Transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { Type = Constants.InviteType_FamilySummon, CheckKey = familyId, Ok = accept, MasterId = chr.Id });
         }
 
         //public void OnJoinFamily(Dto.JoinFamilyResponse data)
@@ -199,7 +198,7 @@ namespace Application.Module.Family.Channel
 
         public void UseEntitlement(Player player, FamilyEntitlement entitlement)
         {
-            _transport.UseEntitlement(new UseEntitlementRequest { MatserId = player.Id, EntitlementId = entitlement.ordinal() });
+            _transport.UseEntitlement(new Dto.UseEntitlementRequest { MatserId = player.Id, EntitlementId = entitlement.ordinal() });
         }
 
         //public void OnUseEntitlement(UseEntitlementResponse data)

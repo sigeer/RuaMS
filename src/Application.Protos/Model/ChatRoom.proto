@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "Model/PlayerView.proto";
+
+package ProtoModel;
+
+
+
+message ChatRoomProto {
+	int32 roomId = 1;
+	repeated ChatRoomMemberProto members = 2;
+}
+
+
+
+message ChatRoomMemberProto {
+	int32 position = 1;
+	PlayerViewProto playerInfo = 2;
+}

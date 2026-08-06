@@ -1,6 +1,4 @@
 using Application.Shared.Servers;
-using BaseProto;
-using Config;
 using Google.Protobuf;
 using Grpc.Core;
 
@@ -12,10 +10,10 @@ namespace Application.Core.Login.Servers
         public string ServerName { get; protected set; } = null!;
         public List<ChannelConfig> ServerConfigs { get; protected set; } = null!;
 
-        public ServerProto.MonitorData? MonitorData { get; protected set; }
+        public ProtoModel.MonitorData? MonitorData { get; protected set; }
         public DateTimeOffset LastPingTime { get; set; }
 
-        public void HealthCheck(ServerProto.MonitorData data)
+        public void HealthCheck(ProtoModel.MonitorData data)
         {
             LastPingTime = DateTimeOffset.Now;
             MonitorData = data;
@@ -27,12 +25,12 @@ namespace Application.Core.Login.Servers
 
     public class RemoteChannelServerNode : ChannelServerNode
     {
-        private readonly IServerStreamWriter<BaseProto.PacketWrapper> _writer;
+        private readonly IServerStreamWriter<ProtoModel.PacketWrapper> _writer;
         readonly MasterServer _server;
         public RemoteChannelServerNode(
             MasterServer server,
-            IServerStreamWriter<BaseProto.PacketWrapper> writer,
-            RegisterServerRequest request)
+            IServerStreamWriter<ProtoModel.PacketWrapper> writer,
+            ProtoService.RegisterServerRequest request)
         {
             _server = server;
             _writer = writer;
@@ -43,14 +41,14 @@ namespace Application.Core.Login.Servers
         }
 
 
-        public void HandleAsync(PacketWrapper packet)
+        public void HandleAsync(ProtoModel.PacketWrapper packet)
         {
             _server.MessageDispatcherV.DispatchAsync(packet.EventId, packet.Data);
         }
 
         async Task SendAsync(int type, IMessage realMessage, CancellationToken cancellationToken = default)
         {
-            await _writer.WriteAsync(new PacketWrapper
+            await _writer.WriteAsync(new ProtoModel.PacketWrapper
             {
                 EventId = type,
                 Data = realMessage.ToByteString()
@@ -59,7 +57,7 @@ namespace Application.Core.Login.Servers
 
         async Task SendAsync(int type, CancellationToken cancellationToken = default)
         {
-            await _writer.WriteAsync(new PacketWrapper
+            await _writer.WriteAsync(new ProtoModel.PacketWrapper
             {
                 EventId = type
             }, cancellationToken);

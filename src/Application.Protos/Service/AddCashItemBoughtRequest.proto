@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message AddCashItemBoughtRequest {
+  int32 sn = 1;
+}

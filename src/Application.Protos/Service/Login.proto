@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "Model/PlayerGetter.proto";
+
+package ProtoService;
+
+
+
+message GetPlayerByLoginRequest {
+	string clientSession = 1;
+	int32 characterId = 2; 
+}
+
+
+
+message GetPlayerByLoginResponse {
+	ProtoModel.PlayerGetterProto data = 1;
+}

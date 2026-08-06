@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+package ProtoService;
+
+
+
+message UseItemMegaphoneRequest {
+	int32 masterId = 1;
+	ProtoModel.ItemProto item = 2;
+	string message = 3;
+	bool isWishper = 4;
+}
+
+
+
+message UseItemMegaphoneResponse {
+	int32 code = 1;
+}

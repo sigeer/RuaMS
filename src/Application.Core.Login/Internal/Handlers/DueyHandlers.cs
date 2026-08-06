@@ -1,12 +1,11 @@
 using Application.Shared.Message;
-using DueyDto;
 using Google.Protobuf;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class DueyHandlers
     {
-        internal class GetHandler : InternalSessionMasterHandler<GetPlayerDueyPackageRequest>
+        internal class GetHandler : InternalSessionMasterHandler<ProtoService.GetPlayerDueyPackageRequest>
         {
             public GetHandler(MasterServer server) : base(server)
             {
@@ -14,16 +13,16 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LoadDueyPackage;
 
-            protected override Task HandleMessage(GetPlayerDueyPackageRequest message)
+            protected override Task HandleMessage(ProtoService.GetPlayerDueyPackageRequest message)
             {
                 return _server.DueyManager.GetPlayerDueyPackages(message);
             }
 
-            protected override GetPlayerDueyPackageRequest Parse(ByteString content) => GetPlayerDueyPackageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.GetPlayerDueyPackageRequest Parse(ByteString content) => ProtoService.GetPlayerDueyPackageRequest.Parser.ParseFrom(content);
         }
 
 
-        internal class RemoveHandler : InternalSessionMasterHandler<RemovePackageRequest>
+        internal class RemoveHandler : InternalSessionMasterHandler<ProtoService.RemovePackageRequest>
         {
             public RemoveHandler(MasterServer server) : base(server)
             {
@@ -31,15 +30,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveDueyPackage;
 
-            protected override Task HandleMessage(RemovePackageRequest message)
+            protected override Task HandleMessage(ProtoService.RemovePackageRequest message)
             {
                 return _server.DueyManager.RemovePackage(message);
             }
 
-            protected override RemovePackageRequest Parse(ByteString content) => RemovePackageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.RemovePackageRequest Parse(ByteString content) => ProtoService.RemovePackageRequest.Parser.ParseFrom(content);
         }
 
-        internal class TakeHandler : InternalSessionMasterHandler<TakeDueyPackageRequest>
+        internal class TakeHandler : InternalSessionMasterHandler<ProtoService.TakeDueyPackageRequest>
         {
             public TakeHandler(MasterServer server) : base(server)
             {
@@ -47,15 +46,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.TakeDueyPackage;
 
-            protected override Task HandleMessage(TakeDueyPackageRequest message)
+            protected override Task HandleMessage(ProtoService.TakeDueyPackageRequest message)
             {
                 return _server.DueyManager.TakeDueyPackage(message);
             }
 
-            protected override TakeDueyPackageRequest Parse(ByteString content) => TakeDueyPackageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.TakeDueyPackageRequest Parse(ByteString content) => ProtoService.TakeDueyPackageRequest.Parser.ParseFrom(content);
         }
 
-        internal class TakeCallbackHandler : InternalSessionMasterHandler<TakeDueyPackageCommit>
+        internal class TakeCallbackHandler : InternalSessionMasterHandler<ProtoService.TakeDueyPackageCommitRequest>
         {
             public TakeCallbackHandler(MasterServer server) : base(server)
             {
@@ -63,12 +62,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.TakeDueyPackageCallback;
 
-            protected override Task HandleMessage(TakeDueyPackageCommit message)
+            protected override Task HandleMessage(ProtoService.TakeDueyPackageCommitRequest message)
             {
                 return _server.DueyManager.TakeDueyPackageCommit(message);
             }
 
-            protected override TakeDueyPackageCommit Parse(ByteString content) => TakeDueyPackageCommit.Parser.ParseFrom(content);
+            protected override ProtoService.TakeDueyPackageCommitRequest Parse(ByteString content) => ProtoService.TakeDueyPackageCommitRequest.Parser.ParseFrom(content);
         }
     }
 }

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message PlayerTimerQuestProto {
+  int32 questId = 1;
+  int64 expiredTime = 2;
+}

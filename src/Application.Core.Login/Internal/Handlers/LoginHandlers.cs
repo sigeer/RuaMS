@@ -1,13 +1,12 @@
 using Application.Core.Login.Services;
 using Application.Shared.Message;
 using Google.Protobuf;
-using ServiceProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class LoginHandlers
     {
-        internal class CompletLoginHandler : InternalSessionMasterHandler<CompleteLoginRequest>
+        internal class CompletLoginHandler : InternalSessionMasterHandler<ProtoService.CompleteLoginRequest>
         {
             readonly LoginService _loginService;
             public CompletLoginHandler(MasterServer server, LoginService loginService) : base(server)
@@ -17,13 +16,13 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.CompleteLogin;
 
-            protected override Task HandleMessage(CompleteLoginRequest message)
+            protected override Task HandleMessage(ProtoService.CompleteLoginRequest message)
             {
                 return _loginService.SetPlayerLogedIn(message.CharacterId, message.Channel);
             }
-            protected override CompleteLoginRequest Parse(ByteString data)
+            protected override ProtoService.CompleteLoginRequest Parse(ByteString data)
             {
-                return CompleteLoginRequest.Parser.ParseFrom(data);
+                return ProtoService.CompleteLoginRequest.Parser.ParseFrom(data);
             }
         }
     }

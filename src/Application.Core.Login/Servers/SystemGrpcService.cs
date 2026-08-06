@@ -1,20 +1,13 @@
 using Application.Core.Login.Services;
 using Application.Shared.Message;
-using BaseProto;
-using Config;
-using ConfigProto;
-using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using ServerProto;
-using SyncProto;
-using SystemProto;
 
 namespace Application.Core.Login.Servers
 {
-    internal class SystemGrpcService : ServiceProto.SystemService.SystemServiceBase
+    internal class SystemGrpcService : ProtoService.SystemService.SystemServiceBase
     {
         readonly MasterServer _server;
         readonly ReportService _msgService;
@@ -28,7 +21,7 @@ namespace Application.Core.Login.Servers
         }
 
 
-        public override async Task Connect(IAsyncStreamReader<PacketWrapper> requestStream, IServerStreamWriter<PacketWrapper> responseStream, ServerCallContext context)
+        public override async Task Connect(IAsyncStreamReader<ProtoModel.PacketWrapper> requestStream, IServerStreamWriter<ProtoModel.PacketWrapper> responseStream, ServerCallContext context)
         {
             RemoteChannelServerNode? serverNode = null;
             try
@@ -55,11 +48,11 @@ namespace Application.Core.Login.Servers
 
                     if (msg.EventId == (int)ChannelSendCode.RegisterChannel)
                     {
-                        serverNode = new RemoteChannelServerNode(_server, responseStream, RegisterServerRequest.Parser.ParseFrom(msg.Data));
+                        serverNode = new RemoteChannelServerNode(_server, responseStream, ProtoService.RegisterServerRequest.Parser.ParseFrom(msg.Data));
                         var channelId = _server.AddChannel(serverNode);
                         if (channelId > 0)
                         {
-                            await serverNode.SendMessage(msg.EventId, new RegisterServerResult
+                            await serverNode.SendMessage(msg.EventId, new ProtoModel.RegisterServerResultProto
                             {
                                 StartChannel = channelId,
                                 Config = _server.GetWorldConfig()
@@ -67,7 +60,7 @@ namespace Application.Core.Login.Servers
                         }
                         else
                         {
-                            await serverNode.SendMessage(msg.EventId, new RegisterServerResult
+                            await serverNode.SendMessage(msg.EventId, new ProtoModel.RegisterServerResultProto
                             {
                                 StartChannel = channelId,
                             });
@@ -96,55 +89,55 @@ namespace Application.Core.Login.Servers
             }
         }
 
-        public override async Task<Empty> ShutdownMaster(ShutdownMasterRequest request, ServerCallContext context)
+        public override async Task<Empty> ShutdownMaster(ProtoService.ShutdownMasterRequest request, ServerCallContext context)
         {
             await _server.Shutdown(request.DelaySeconds);
             return new Empty();
         }
 
 
-        public override Task<AutoBanIgnoredWrapper> GetAutobanIgnores(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.AutoBanIgnoredWrapperProto> GetAutobanIgnores(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.SystemManager.LoadAutobanIgnoreData());
         }
 
-        public override Task<IPEndPointDto> GetChannelEndPoint(GetChannelEndPointRequest request, ServerCallContext context)
+        public override Task<ProtoModel.IPEndPointProto> GetChannelEndPoint(ProtoService.GetChannelEndPointRequest request, ServerCallContext context)
         {
             var ipep = _server.GetChannelIPEndPoint(request.Channel);
-            return Task.FromResult(new IPEndPointDto { Address = ByteString.CopyFrom(ipep.Address.GetAddressBytes()), Port = ipep.Port });
+            return Task.FromResult(new ProtoModel.IPEndPointProto { Address = ByteString.CopyFrom(ipep.Address.GetAddressBytes()), Port = ipep.Port });
         }
 
-        public override Task<TimeWrapper> GetCurrentTime(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.TimeWrapper> GetCurrentTime(Empty request, ServerCallContext context)
         {
-            return Task.FromResult(new TimeWrapper { Value = _server.getCurrentTime() });
+            return Task.FromResult(new ProtoModel.TimeWrapper { Value = _server.getCurrentTime() });
         }
 
-        public override Task<TimeWrapper> GetCurrentTimestamp(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.TimeWrapper> GetCurrentTimestamp(Empty request, ServerCallContext context)
         {
-            return Task.FromResult(new TimeWrapper { Value = _server.getCurrentTimestamp() });
+            return Task.FromResult(new ProtoModel.TimeWrapper { Value = _server.getCurrentTimestamp() });
         }
 
-        public override Task<GetAllClientInfo> GetOnlinedClients(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.GetAllClientInfo> GetOnlinedClients(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.AccountManager.GetOnliendClientInfo());
         }
 
-        public override Task<ShowOnlinePlayerResponse> GetOnlinedPlayers(Empty request, ServerCallContext context)
+        public override Task<ProtoService.ShowOnlinePlayerResponse> GetOnlinedPlayers(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.CharacterManager.GetOnlinedPlayers());
         }
 
-        public override Task<ServerStateDto> GetServerState(Empty request, ServerCallContext context)
+        public override Task<ProtoModel.ServerStateProto> GetServerState(Empty request, ServerCallContext context)
         {
             return Task.FromResult(_server.GetServerStats());
         }
 
 
-        public override Task<SetFlyResponse> SetAccountFly(SetFlyRequest request, ServerCallContext context)
+        public override Task<ProtoService.SetFlyResponse> SetAccountFly(ProtoService.SetFlyRequest request, ServerCallContext context)
         {
             return Task.FromResult(_server.AccountManager.SetFly(request));
         }
-        public override Task<Empty> HealthCheck(MonitorData request, ServerCallContext context)
+        public override Task<Empty> HealthCheck(ProtoModel.MonitorData request, ServerCallContext context)
         {
             var serverName = context.RequestHeaders.Get("x-server-name")?.Value;
             if (serverName != null && _server.ChannelServerList.TryGetValue(serverName, out var node))
@@ -154,7 +147,7 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<GainAccountCharacterSlotResponse> GainCharacterSlot(GainAccountCharacterSlotRequest request, ServerCallContext context)
+        public override Task<ProtoService.GainAccountCharacterSlotResponse> GainCharacterSlot(ProtoService.GainAccountCharacterSlotRequest request, ServerCallContext context)
         {
             _server.AccountManager.GainCharacterSlot(request.AccId);
             return base.GainCharacterSlot(request, context);

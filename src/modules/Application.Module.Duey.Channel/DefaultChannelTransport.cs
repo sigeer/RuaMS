@@ -1,39 +1,38 @@
 using Application.Core.Channel;
-using DueyDto;
 using Grpc.Net.Client;
 
 namespace Application.Module.Duey.Channel
 {
     internal class DefaultChannelTransport : IChannelTransport
     {
-        readonly DueyService.ChannelService.ChannelServiceClient _grpcClient;
+        readonly ProtoService.DueyService.DueyServiceClient _grpcClient;
 
-        public DefaultChannelTransport(DueyService.ChannelService.ChannelServiceClient client)
+        public DefaultChannelTransport(ProtoService.DueyService.DueyServiceClient client)
         {
             _grpcClient = client;
         }
 
-        public CreatePackageResponse CreateDueyPackage(CreatePackageRequest request)
+        public ProtoService.CreatePackageResponse CreateDueyPackage(ProtoService.CreatePackageRequest request)
         {
             return _grpcClient.CreateDueyPackage(request);
         }
 
-        public GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)
+        public ProtoService.GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(ProtoService.GetPlayerDueyPackageRequest request)
         {
             return _grpcClient.GetPlayerDueyPackage(request);
         }
 
-        public void RequestRemovePackage(RemovePackageRequest request)
+        public void RequestRemovePackage(ProtoService.RemovePackageRequest request)
         {
             _grpcClient.RemoveDueyPackage(request);
         }
 
-        public void TakeDueyPackage(TakeDueyPackageRequest request)
+        public void TakeDueyPackage(ProtoService.TakeDueyPackageRequest request)
         {
             _grpcClient.TakeDueyPackage(request);
         }
 
-        public void TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit)
+        public void TakeDueyPackageCommit(ProtoModel.TakeDueyPackageCommitProto takeDueyPackageCommit)
         {
             _grpcClient.TakeDueyPackageCommit(takeDueyPackageCommit);
         }

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message MonsterbookDto {
-  int32 cardid = 1;
-  int32 level = 2;
-}
