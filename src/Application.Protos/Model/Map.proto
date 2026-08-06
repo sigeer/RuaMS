@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message MapSyncProto {
+	int32 masterId = 1;
+	int32 mapId = 2;
+}
+
+
+
+message MapBatchSyncProto {
+	repeated MapSyncProto list = 1;
+}

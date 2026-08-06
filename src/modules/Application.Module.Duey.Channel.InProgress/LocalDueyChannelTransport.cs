@@ -1,5 +1,4 @@
 using Application.Module.Duey.Master;
-using DueyDto;
 
 namespace Application.Module.Duey.Channel.InProgress
 {
@@ -14,27 +13,27 @@ namespace Application.Module.Duey.Channel.InProgress
             _mapper = mapper;
         }
 
-        public CreatePackageResponse CreateDueyPackage(CreatePackageRequest request)
+        public ProtoService.CreatePackageResponse CreateDueyPackage(ProtoService.CreatePackageRequest request)
         {
             return _masterManager.CreateDueyPackage(request);
         }
 
-        public GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request)
+        public ProtoService.GetPlayerDueyPackageResponse GetDueyPackagesByPlayerId(ProtoService.GetPlayerDueyPackageRequest request)
         {
             return _masterManager.GetPlayerDueyPackages(request);
         }
 
-        public void RequestRemovePackage(RemovePackageRequest request)
+        public void RequestRemovePackage(ProtoService.RemovePackageRequest request)
         {
             _masterManager.RemovePackage(request);
         }
 
-        public void TakeDueyPackage(TakeDueyPackageRequest request)
+        public void TakeDueyPackage(ProtoService.TakeDueyPackageRequest request)
         {
             _masterManager.TakeDueyPackage(request);
         }
 
-        public void TakeDueyPackageCommit(TakeDueyPackageCommit request)
+        public void TakeDueyPackageCommit(ProtoModel.TakeDueyPackageCommitProto request)
         {
             _masterManager.TakeDueyPackageCommit(request);
         }

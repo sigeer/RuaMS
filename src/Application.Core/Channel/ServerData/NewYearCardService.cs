@@ -17,16 +17,16 @@ namespace Application.Core.Channel.ServerData
 
         public void SendNewYearCard(Player from, string toName, string message)
         {
-            _ = _transport.SendNewYearCard(new Dto.SendNewYearCardRequest { FromId = from.Id, ToName = toName, Message = message });
+            _ = _transport.SendNewYearCard(new ProtoService.SendNewYearCardRequest { FromId = from.Id, ToName = toName, Message = message });
         }
         public void AcceptNewYearCard(Player receiver, int cardId)
         {
-            _ = _transport.ReceiveNewYearCard(new Dto.ReceiveNewYearCardRequest { MasterId = receiver.Id, CardId = cardId });
+            _ = _transport.ReceiveNewYearCard(new ProtoService.ReceiveNewYearCardRequest { MasterId = receiver.Id, CardId = cardId });
         }
 
         public void DiscardNewYearCard(Player chr, bool isSender)
         {
-            _ = _transport.SendDiscardNewYearCard(new Dto.DiscardNewYearCardRequest { MasterId = chr.Id, IsSender = isSender });
+            _ = _transport.SendDiscardNewYearCard(new ProtoService.DiscardNewYearCardRequest { MasterId = chr.Id, IsSender = isSender });
         }
 
     }

@@ -2,16 +2,14 @@ using Application.Core.Game.Relation;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Buddy;
 using Application.Shared.Message;
-using BuddyProto;
 using Google.Protobuf;
-using MessageProto;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class BuddyHandlers
     {
-        internal class InvokeBuddyAddHandler : InternalSessionChannelHandler<BuddyProto.AddBuddyResponse>
+        internal class InvokeBuddyAddHandler : InternalSessionChannelHandler<ProtoService.AddBuddyResponse>
         {
             public InvokeBuddyAddHandler(WorldChannelServer server) : base(server)
             {
@@ -19,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyAdd;
 
-            protected override async Task HandleMessage(AddBuddyResponse res)
+            protected override async Task HandleMessage(ProtoService.AddBuddyResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -53,10 +51,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override AddBuddyResponse Parse(ByteString data) => AddBuddyResponse.Parser.ParseFrom(data);
+            protected override ProtoService.AddBuddyResponse Parse(ByteString data) => ProtoService.AddBuddyResponse.Parser.ParseFrom(data);
         }
 
-        internal class InvokeBuddyDeleteHandler : InternalSessionChannelHandler<BuddyProto.DeleteBuddyResponse>
+        internal class InvokeBuddyDeleteHandler : InternalSessionChannelHandler<ProtoService.DeleteBuddyResponse>
         {
             public InvokeBuddyDeleteHandler(WorldChannelServer server) : base(server)
             {
@@ -64,7 +62,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyRemove;
 
-            protected override async Task HandleMessage(DeleteBuddyResponse res)
+            protected override async Task HandleMessage(ProtoService.DeleteBuddyResponse res)
             {
                 await _server.SendToPlayersAsync([res.MasterId, res.Buddyid], async chr =>
                 {
@@ -83,10 +81,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override DeleteBuddyResponse Parse(ByteString data) => DeleteBuddyResponse.Parser.ParseFrom(data);
+            protected override ProtoService.DeleteBuddyResponse Parse(ByteString data) => ProtoService.DeleteBuddyResponse.Parser.ParseFrom(data);
         }
 
-        internal class GetLocation : InternalSessionChannelHandler<BuddyProto.GetLocationResponse>
+        internal class GetLocation : InternalSessionChannelHandler<ProtoService.GetLocationResponse>
         {
             public GetLocation(WorldChannelServer server) : base(server)
             {
@@ -94,7 +92,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnBuddyLocation;
 
-            protected override async Task HandleMessage(GetLocationResponse res)
+            protected override async Task HandleMessage(ProtoService.GetLocationResponse res)
             {
                 await _server.SendToPlayerAsync(res.MasterId, async chr =>
                 {
@@ -118,10 +116,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override GetLocationResponse Parse(ByteString data) => GetLocationResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GetLocationResponse Parse(ByteString data) => ProtoService.GetLocationResponse.Parser.ParseFrom(data);
         }
 
-        internal class Whisper : InternalSessionChannelHandler<MessageProto.SendWhisperMessageResponse>
+        internal class Whisper : InternalSessionChannelHandler<ProtoService.SendWhisperMessageResponse>
         {
             public Whisper(WorldChannelServer server) : base(server)
             {
@@ -129,7 +127,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnWhisper;
 
-            protected override async Task HandleMessage(SendWhisperMessageResponse res)
+            protected override async Task HandleMessage(ProtoService.SendWhisperMessageResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -148,7 +146,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override SendWhisperMessageResponse Parse(ByteString data) => SendWhisperMessageResponse.Parser.ParseFrom(data);
+            protected override ProtoService.SendWhisperMessageResponse Parse(ByteString data) => ProtoService.SendWhisperMessageResponse.Parser.ParseFrom(data);
         }
     }
 }

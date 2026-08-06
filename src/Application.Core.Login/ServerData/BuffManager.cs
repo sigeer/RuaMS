@@ -4,18 +4,18 @@ namespace Application.Core.Login.Datas
 {
     public class BuffManager
     {
-        ConcurrentDictionary<int, SyncProto.PlayerBuffDto> _datasource;
+        ConcurrentDictionary<int, ProtoModel.PlayerBuffProto> _datasource;
         public BuffManager()
         {
             _datasource = new();
         }
 
-        public void SaveBuff(int v, SyncProto.PlayerBuffDto data)
+        public void SaveBuff(int v, ProtoModel.PlayerBuffProto data)
         {
             _datasource[v] = data;
         }
 
-        public SyncProto.PlayerBuffDto Get(int playerId)
+        public ProtoModel.PlayerBuffProto Get(int playerId)
         {
             if (_datasource.TryRemove(playerId, out var d))
                 return d;

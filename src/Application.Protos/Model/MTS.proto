@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+package ProtoModel;
+
+
+
+message MTSItemProto {
+	ItemProto item = 1;
+	int32 id = 2;
+	int32 sellerId = 3;
+}
+
+message MTSQueryProto {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+}
+
+
+
+
+message PlayerMTSInfoProto {
+	repeated MTSItemProto onSale = 1;
+	repeated MTSItemProto inTransfer = 2;
+}
+
+
+
+message PagedItemsProto {
+	repeated MTSItemProto items = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 totalPages = 5;
+}

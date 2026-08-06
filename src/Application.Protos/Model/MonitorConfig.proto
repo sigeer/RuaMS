@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "Model/PlayerBase.proto";
+
+package ProtoModel;
+
+
+
+message MonitorDataWrapperProto {
+	repeated PlayerBaseProto list = 1;
+}
+
+
+
+message MonitorDataChangedNotifyProto {
+	string operatorName = 1;
+	string targetName = 2;
+	bool isMonitored = 3;
+	repeated int32 gmId = 4;
+}

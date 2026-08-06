@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+import "Model/Admin.proto";
+
+package ProtoService;
+
+
+
+message BanRequest {
+	int32 operatorId = 1;
+	string victim = 2;
+	int32 victimId = 3;
+	int32 banLevel = 4;
+	string reasonDesc = 5;
+	int32 reason = 6;
+	int32 days = 7;
+	int32 reporterId = 8;
+}
+
+
+
+message BanResponse {
+	int32 code = 1;
+	BanRequest request = 2;
+	string operatorName = 3;
+	int32 victimId = 4;
+}
+
+
+
+
+message UnbanRequest {
+	int32 operatorId = 1;
+	string victim = 2;
+}
+
+
+
+message UnbanResponse {
+	int32 code = 1;
+	UnbanRequest request = 2;
+}
+
+
+
+message SetGmLevelRequest {
+	int32 operatorId = 1;
+	string targetName = 2;
+	int32 level = 3;
+}
+
+
+
+message SetGmLevelResponse {
+	int32 code = 1;
+	SetGmLevelRequest request = 2;
+	int32 targetId = 3;
+}
+
+
+
+message ShowOnlinePlayerResponse {
+	repeated ProtoModel.OnlinedPlayerInfoProto list = 1;
+}
+
+
+
+message WrapPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+
+
+message WrapPlayerByNameResponse {
+	int32 code = 1;
+	WrapPlayerByNameRequest request = 2;
+	int32 targetChannel = 3;
+}
+
+
+
+message SummonPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+
+
+message SummonPlayerByNameResponse {
+	int32 code = 1;
+	SummonPlayerByNameRequest request = 2;
+	int32 victimId = 3;
+	string warpToName = 4;
+	int32 warpToChannel = 5;
+}
+
+
+
+
+
+message DisconnectPlayerByNameRequest {
+	int32 masterId = 1;
+	string victim = 2;
+}
+
+
+
+message DisconnectPlayerByNameResponse {
+	int32 code = 1;
+	DisconnectPlayerByNameRequest request = 2;
+	int32 targetId = 3;
+}
+
+
+
+message DisconnectAllRequest {
+	int32 masterId = 1;
+}

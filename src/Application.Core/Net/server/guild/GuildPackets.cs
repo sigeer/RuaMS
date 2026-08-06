@@ -1,6 +1,4 @@
-using AllianceProto;
 using Application.Core.Game.Relation;
-using GuildProto;
 
 namespace net.server.guild;
 
@@ -8,7 +6,7 @@ namespace net.server.guild;
 
 public class GuildPackets
 {
-    public static Packet ShowGuildInfo(GuildDto? g)
+    public static Packet ShowGuildInfo(ProtoModel.GuildProto? g)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x1A); //signature for showing guild info
@@ -222,7 +220,7 @@ public class GuildPackets
 
 
 
-    public static Packet showGuildRanks(int npcid, List<GuildProto.GuildDto> dataList)
+    public static Packet showGuildRanks(int npcid, List<ProtoModel.GuildProto> dataList)
     {
         OutPacket p = OutPacket.create(SendOpcode.GUILD_OPERATION);
         p.writeByte(0x49);
@@ -277,7 +275,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet UpdateAllianceInfo(AllianceDto alliance)
+    public static Packet UpdateAllianceInfo(ProtoModel.AllianceProto alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0F);
@@ -303,7 +301,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet GetGuildAlliances(AllianceDto alliance)
+    public static Packet GetGuildAlliances(ProtoModel.AllianceProto alliance)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x0D);
@@ -317,7 +315,7 @@ public class GuildPackets
         return p;
     }
 
-    static void GetGuildInfo(OutPacket p, GuildDto guild)
+    static void GetGuildInfo(OutPacket p, ProtoModel.GuildProto guild)
     {
         p.writeInt(guild.GuildId);
         p.writeString(guild.Name);
@@ -396,7 +394,7 @@ public class GuildPackets
         return p;
     }
 
-    public static Packet RemoveGuildFromAlliance(AllianceDto alliance, GuildDto expelledGuild)
+    public static Packet RemoveGuildFromAlliance(ProtoModel.AllianceProto alliance, ProtoModel.GuildProto expelledGuild)
     {
         OutPacket p = OutPacket.create(SendOpcode.ALLIANCE_OPERATION);
         p.writeByte(0x10);

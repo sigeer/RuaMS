@@ -1,5 +1,4 @@
 using Application.Shared.Message;
-using Config;
 
 namespace Application.Core.Login.ServerData
 {
@@ -13,9 +12,9 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        public async Task ToggleMonitor(ToggleMonitorPlayerRequest request)
+        public async Task ToggleMonitor(ProtoService.ToggleMonitorPlayerRequest request)
         {
-            var res = new ToggleMonitorPlayerResponse { Request = request };
+            var res = new ProtoService.ToggleMonitorPlayerResponse { Request = request };
             var chr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (chr == null)
             {
@@ -48,10 +47,10 @@ namespace Application.Core.Login.ServerData
             await _server.DropWorldMessage(5, master.Character.Name + (res.IsMonitored ? " has started monitoring " : " has stopped monitoring ") + request.TargetName + ".", true);
         }
 
-        public MonitorDataWrapper LoadMonitorData()
+        public ProtoModel.MonitorDataWrapperProto LoadMonitorData()
         {
-            var data = new MonitorDataWrapper();
-            data.List.AddRange(_monitored.Select(x => new Config.PlayerBaseDto()
+            var data = new ProtoModel.MonitorDataWrapperProto();
+            data.List.AddRange(_monitored.Select(x => new ProtoModel.PlayerBaseProto()
             {
                 Id = x,
                 Name = _server.CharacterManager.GetPlayerName(x)
@@ -61,9 +60,9 @@ namespace Application.Core.Login.ServerData
 
 
         HashSet<int> _autoBanIgnores = new();
-        public async Task ToggleAutoBanIgnored(ToggleAutoBanIgnoreRequest request)
+        public async Task ToggleAutoBanIgnored(ProtoService.ToggleAutoBanIgnoreRequest request)
         {
-            var res = new ToggleAutoBanIgnoreResponse() { Request = request };
+            var res = new ProtoService.ToggleAutoBanIgnoreResponse() { Request = request };
             var chr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (chr == null)
             {
@@ -96,10 +95,10 @@ namespace Application.Core.Login.ServerData
             await _server.DropWorldMessage(5, master.Character.Name + (res.IsIgnored ? " has started ignoring " : " has stopped ignoring ") + request.TargetName + ".", true);
         }
 
-        public AutoBanIgnoredWrapper LoadAutobanIgnoreData()
+        public ProtoModel.AutoBanIgnoredWrapperProto LoadAutobanIgnoreData()
         {
-            var data = new AutoBanIgnoredWrapper();
-            data.List.AddRange(_autoBanIgnores.Select(x => new Config.PlayerBaseDto()
+            var data = new ProtoModel.AutoBanIgnoredWrapperProto();
+            data.List.AddRange(_autoBanIgnores.Select(x => new ProtoModel.PlayerBaseProto()
             {
                 Id = x,
                 Name = _server.CharacterManager.GetPlayerName(x)

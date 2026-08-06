@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "Model/OwlSearch.proto";
+
+package ProtoService;
+
+
+
+message OwlSearchRecordResponse {
+	repeated ProtoModel.OwlSearchRecordProto items = 1;
+}
+
+
+
+message OwlSearchRequest {
+	int32 masterId = 1;
+	int32 usedItemId = 2;
+	int32 searchItemId = 3;
+}
+
+
+
+message OwlSearchResponse{
+	int32 itemdId = 1;
+	repeated ProtoModel.OwlSearchResultItemProto items = 2;
+}

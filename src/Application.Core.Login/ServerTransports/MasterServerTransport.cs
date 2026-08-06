@@ -2,8 +2,6 @@ using Application.Core.Login.Models;
 using Application.Core.Login.ServerTransports;
 using Application.Shared.Message;
 using Application.Shared.Servers;
-using Dto;
-using MessageProto;
 
 namespace Application.Core.Login
 {
@@ -13,9 +11,9 @@ namespace Application.Core.Login
         {
         }
 
-        public async Task SendNotes(int channel, int id, Dto.NoteDto[] notes)
+        public async Task SendNotes(int channel, int id, ProtoModel.NoteProto[] notes)
         {
-            var data = new SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
+            var data = new ProtoService.SendNoteResponse() { ReceiverChannel = channel, ReceiverId = id };
             data.List.AddRange(notes);
             await SendMessageN(ChannelRecvCode.InvokeNoteMessage, data, [data.ReceiverId]);
         }
@@ -23,7 +21,7 @@ namespace Application.Core.Login
 
         public async Task SendMultiChatAsync(int type, string nameFrom, IEnumerable<CharacterLiveObject> teamMember, string chatText)
         {
-            var res = new MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
+            var res = new ProtoModel.MultiChatMessage { Type = type, FromName = nameFrom, Text = chatText };
             res.Receivers.AddRange(teamMember.Select(x => x.Character.Id));
 
             await BroadcastMessageN(ChannelRecvCode.MultiChat, res);
@@ -31,7 +29,7 @@ namespace Application.Core.Login
 
         public async Task BroadcastPlayerFieldChange(ChannelRecvCode evt, CharacterLiveObject obj, int fromChannel)
         {
-            SyncProto.PlayerFieldChange response = new SyncProto.PlayerFieldChange
+            ProtoModel.PlayerFieldChange response = new ProtoModel.PlayerFieldChange
             {
                 Channel = obj.Channel,
                 FromChannel = fromChannel,
@@ -55,28 +53,28 @@ namespace Application.Core.Login
             await BroadcastMessageN(ChannelRecvCode.UnregisterChannel);
         }
 
-        internal async Task SendNewYearCards(SendNewYearCardResponse response)
+        internal async Task SendNewYearCards(ProtoService.SendNewYearCardResponse response)
         {
             await SendMessageN(ChannelRecvCode.OnNewYearCardSent, response, [response.Request.FromId]);
         }
 
-        internal async Task SendNewYearCardNotify(NewYearCardNotifyDto response)
+        internal async Task SendNewYearCardNotify(ProtoModel.NewYearCardNotifyProto response)
         {
             await SendMessageN(ChannelRecvCode.OnNewYearCardNotify, response, response.List.Select(x => x.MasterId).ToArray());
         }
 
-        internal async Task SendNewYearCardDiscard(DiscardNewYearCardResponse response)
+        internal async Task SendNewYearCardDiscard(ProtoService.DiscardNewYearCardResponse response)
         {
             await BroadcastMessageN(ChannelRecvCode.OnNewYearCardDiscard, response);
         }
 
 
-        internal async Task BroadcastPLifeCreated(LifeProto.CreatePLifeRequest request)
+        internal async Task BroadcastPLifeCreated(ProtoService.CreatePLifeRequest request)
         {
             await BroadcastMessageN(ChannelRecvCode.OnPlifeCreated, request);
         }
 
-        internal async Task BroadcastPLifeRemoved(LifeProto.RemovePLifeResponse request)
+        internal async Task BroadcastPLifeRemoved(ProtoService.RemovePLifeResponse request)
         {
             await BroadcastMessageN(ChannelRecvCode.OnPlifeRemoved, request);
         }

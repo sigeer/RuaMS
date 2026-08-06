@@ -14,10 +14,16 @@ namespace server.movement
         AfterBattleR,
         AfterBattleL,
 
+        DuckR,
+        DuckL,
+
         LadderR = 14,
         LadderL = 15,
         RopeR = 16,
-        RopeL = 17
+        RopeL = 17,
+
+        SitR,
+        SitL
     }
 
     public class StanceUtils

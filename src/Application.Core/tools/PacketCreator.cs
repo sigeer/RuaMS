@@ -683,7 +683,7 @@ public class PacketCreator
     /// </param>
     /// <param name="partner">The partner shown with chr</param>
     /// <returns>the SEND_TV packet</returns>
-    public static Packet sendTV(Dto.PlayerViewDto chr, string[] messages, int type, Dto.PlayerViewDto? partner)
+    public static Packet sendTV(ProtoModel.PlayerViewProto chr, string[] messages, int type, ProtoModel.PlayerViewProto? partner)
     {
         OutPacket p = OutPacket.create(SendOpcode.SEND_TV);
         p.writeByte(partner != null ? 3 : 1);
@@ -1972,7 +1972,7 @@ public class PacketCreator
 
     private static void addRingLook(OutPacket p, Player chr, bool crush)
     {
-        List<ItemProto.RingDto> rings;
+        List<ProtoModel.RingProto> rings;
         if (crush)
         {
             rings = chr.getCrushRings();
@@ -4945,7 +4945,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet OwlOfMinerva(int itemId, ItemProto.OwlSearchResponse result)
+    public static Packet OwlOfMinerva(int itemId, ProtoService.OwlSearchResponse result)
     {
         sbyte itemType = ItemConstants.getInventoryType(itemId).getType();
 
@@ -6947,7 +6947,7 @@ public class PacketCreator
         return p;
     }
 
-    public static void addCharLook(OutPacket p, Dto.PlayerViewDto chr, bool mega)
+    public static void addCharLook(OutPacket p, ProtoModel.PlayerViewProto chr, bool mega)
     {
         p.writeByte(chr.Character.Gender);
         p.writeByte((int)chr.Character.Skincolor); // skin color
@@ -6957,7 +6957,7 @@ public class PacketCreator
         addCharEquips(p, chr);
     }
 
-    private static void addCharEquips(OutPacket p, Dto.PlayerViewDto chr)
+    private static void addCharEquips(OutPacket p, ProtoModel.PlayerViewProto chr)
     {
         Dictionary<short, int> myEquip = new();
         Dictionary<short, int> maskedEquip = new();

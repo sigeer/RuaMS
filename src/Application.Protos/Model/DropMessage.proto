@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message DropMessageBroadcastProto {
+	int32 type = 1;
+	string message = 2;
+	repeated int32 receivers = 3;
+}

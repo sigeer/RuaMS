@@ -1,7 +1,5 @@
-using AllianceProto;
 using Application.Core.ServerTransports;
 using Application.Shared.Invitations;
-using GuildProto;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -29,17 +27,17 @@ namespace Application.Core.Channel.ServerData
         static string GetGuildCacheKey(int guildId) => $"Guild:{guildId}";
         static string GetAllianceCacheKey(int allianceId) => $"Alliance:{allianceId}";
 
-        public void StoreGuild(GuildDto? guild)
+        public void StoreGuild(ProtoModel.GuildProto? guild)
         {
             if (guild == null)
                 return;
 
             _cache.Set(GetGuildCacheKey(guild.GuildId), guild);
         }
-        public GuildDto? GetGuild(int guildId)
+        public ProtoModel.GuildProto? GetGuild(int guildId)
         {
             var cacheKey = GetGuildCacheKey(guildId);
-            return _cache.GetOrCreate<GuildDto>(cacheKey, e =>
+            return _cache.GetOrCreate<ProtoModel.GuildProto>(cacheKey, e =>
             {
                 return _transport.GetGuild(guildId).Model;
             });
@@ -68,12 +66,12 @@ namespace Application.Core.Channel.ServerData
                 return false;
             }
 
-            return _transport.CreateAllianceCheck(new AllianceProto.CreateAllianceCheckRequest { Name = name }).IsValid;
+            return _transport.CreateAllianceCheck(new ProtoService.CreateAllianceCheckRequest { Name = name }).IsValid;
         }
 
         public Task SendInvitation(IChannelClient c, string targetName)
         {
-            return _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            return _transport.SendInvitation(new ProtoService.CreateInviteRequest
             {
                 Type = InviteTypes.Guild,
                 FromId = c.OnlinedCharacter.Id,
@@ -83,7 +81,7 @@ namespace Application.Core.Channel.ServerData
 
         public Task AnswerInvitation(Player answer, int guildId, bool operation)
         {
-            return _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
+            return _transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { Type = InviteTypes.Guild, MasterId = answer.Id, CheckKey = guildId, Ok = operation });
         }
 
         public async Task CreateGuild(Player leader, string name)
@@ -143,7 +141,7 @@ namespace Application.Core.Channel.ServerData
 
             await leader.GainMeso(-YamlConfig.config.server.CREATE_GUILD_COST, GainItemShow.ShowInChat);
 
-            var req = new CreateGuildRequest { LeaderId = leader.Id, Name = name };
+            var req = new ProtoService.CreateGuildRequest { LeaderId = leader.Id, Name = name };
             req.Members.AddRange(members.Select(x => x.Id));
             await _serverContainer.Transport.CreateGuild(req);
 
@@ -152,22 +150,22 @@ namespace Application.Core.Channel.ServerData
 
         public Task LeaveMember(Player fromChr)
         {
-            return _transport.SendPlayerLeaveGuild(new LeaveGuildRequest { PlayerId = fromChr.Id });
+            return _transport.SendPlayerLeaveGuild(new ProtoService.LeaveGuildRequest { PlayerId = fromChr.Id });
         }
 
         public Task ExpelMember(Player fromChr, int toId)
         {
-            return _transport.SendGuildExpelMember(new ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
+            return _transport.SendGuildExpelMember(new ProtoService.ExpelFromGuildRequest { MasterId = fromChr.Id, TargetPlayerId = toId });
         }
 
         public Task ChangeRank(Player fromChr, int toId, int toRank)
         {
-            return _transport.SendChangePlayerGuildRank(new UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
+            return _transport.SendChangePlayerGuildRank(new ProtoService.UpdateGuildMemberRankRequest { MasterId = fromChr.Id, TargetPlayerId = toId, NewRank = toRank });
         }
 
         public Task SetGuildEmblem(Player chr, short bg, byte bgcolor, short logo, byte logocolor)
         {
-            return _transport.SendUpdateGuildEmblem(new GuildProto.UpdateGuildEmblemRequest
+            return _transport.SendUpdateGuildEmblem(new ProtoService.UpdateGuildEmblemRequest
             {
                 Logo = logo,
                 LogoColor = logocolor,
@@ -178,7 +176,7 @@ namespace Application.Core.Channel.ServerData
 
         public Task SetGuildRankTitle(Player chr, string[] titles)
         {
-            var request = new GuildProto.UpdateGuildRankTitleRequest { MasterId = chr.Id };
+            var request = new ProtoService.UpdateGuildRankTitleRequest { MasterId = chr.Id };
             request.RankTitles.AddRange(titles);
             return _transport.SendUpdateGuildRankTitle(request);
         }
@@ -186,17 +184,17 @@ namespace Application.Core.Channel.ServerData
         public async Task IncreaseGuildCapacity(Player chr, int cost)
         {
             await chr.GainMeso(-cost, GainItemShow.ShowInChat);
-            await _transport.SendUpdateGuildCapacity(new GuildProto.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
+            await _transport.SendUpdateGuildCapacity(new ProtoService.UpdateGuildCapacityRequest { MasterId = chr.Id, Cost = cost });
         }
 
         public Task SetGuildNotice(Player chr, string notice)
         {
-            return _transport.SendUpdateGuildNotice(new UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
+            return _transport.SendUpdateGuildNotice(new ProtoService.UpdateGuildNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
 
         public Task Disband(Player chr)
         {
-            return _transport.SendGuildDisband(new GuildProto.GuildDisbandRequest { MasterId = chr.Id });
+            return _transport.SendGuildDisband(new ProtoService.GuildDisbandRequest { MasterId = chr.Id });
         }
 
 
@@ -207,7 +205,7 @@ namespace Application.Core.Channel.ServerData
 
         public Task GainGP(Player chr, int gp)
         {
-            return _transport.SendUpdateGuildGP(new UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
+            return _transport.SendUpdateGuildGP(new ProtoService.UpdateGuildGPRequest { MasterId = chr.Id, Gp = gp });
         }
 
         public void ClearGuildCache(int guildId)
@@ -222,13 +220,13 @@ namespace Application.Core.Channel.ServerData
             await leader.GainMeso(-cost, GainItemShow.ShowInChat);
             var guilds = leader.getPartyMembersOnSameMap().Select(x => x.Id).ToArray();
 
-            var request = new CreateAllianceRequest { Name = name, Cost = cost };
+            var request = new ProtoService.CreateAllianceRequest { Name = name, Cost = cost };
             request.Members.AddRange(guilds);
             await _serverContainer.Transport.CreateAlliance(request);
         }
         public async Task SendAllianceInvitation(IChannelClient c, string targetGuildName)
         {
-            await _transport.SendInvitation(new InvitationProto.CreateInviteRequest
+            await _transport.SendInvitation(new ProtoService.CreateInviteRequest
             {
                 Type = InviteTypes.Alliance,
                 FromId = c.OnlinedCharacter.Id,
@@ -238,14 +236,14 @@ namespace Application.Core.Channel.ServerData
 
         public async Task AnswerAllianceInvitation(Player chr, int allianceId, bool answer)
         {
-            await _transport.AnswerInvitation(new InvitationProto.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
+            await _transport.AnswerInvitation(new ProtoService.AnswerInviteRequest { MasterId = chr.Id, Ok = answer, CheckKey = allianceId, Type = InviteTypes.Alliance });
         }
 
 
         #endregion
 
         #region Alliance
-        public void StoreAlliance(AllianceDto? alliance)
+        public void StoreAlliance(ProtoModel.AllianceProto? alliance)
         {
             if (alliance == null)
                 return;
@@ -255,17 +253,17 @@ namespace Application.Core.Channel.ServerData
                 StoreGuild(guild);
             }
         }
-        public AllianceDto? GetAlliance(int allianceId)
+        public ProtoModel.AllianceProto? GetAlliance(int allianceId)
         {
             var cacheKey = GetGuildCacheKey(allianceId);
-            return _cache.GetOrCreate<AllianceDto>(cacheKey, e =>
+            return _cache.GetOrCreate<ProtoModel.AllianceProto>(cacheKey, e =>
             {
                 return _transport.GetAlliance(allianceId).Model;
             });
         }
         public async Task AllianceBroadcastPlayerInfo(Player chr)
         {
-            await _transport.AllianceBroadcastPlayerInfo(new AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });
+            await _transport.AllianceBroadcastPlayerInfo(new ProtoService.AllianceBroadcastPlayerInfoRequest { MasterId = chr.Id });
         }
         public async Task GuildLeaveAlliance(Player player, int guildId)
         {
@@ -273,12 +271,12 @@ namespace Application.Core.Channel.ServerData
             {
                 return;
             }
-            await _transport.SendGuildLeaveAlliance(new AllianceProto.GuildLeaveAllianceRequest { MasterId = player.Id });
+            await _transport.SendGuildLeaveAlliance(new ProtoService.GuildLeaveAllianceRequest { MasterId = player.Id });
         }
 
         public async Task AllianceExpelGuild(Player player, int allianceId, int guildId)
         {
-            await _transport.SendAllianceExpelGuild(new AllianceProto.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
+            await _transport.SendAllianceExpelGuild(new ProtoService.AllianceExpelGuildRequest { MasterId = player.Id, GuildId = guildId });
         }
 
         public async Task ChageLeaderAllianceRank(Player player, int targetPlayerId)
@@ -287,30 +285,30 @@ namespace Application.Core.Channel.ServerData
             {
                 return;
             }
-            await _transport.SendChangeAllianceLeader(new AllianceProto.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
+            await _transport.SendChangeAllianceLeader(new ProtoService.AllianceChangeLeaderRequest { MasterId = player.Id, PlayerId = targetPlayerId });
         }
         public async Task ChangePlayerAllianceRank(Player player, int targetPlayerId, bool isIncrease)
         {
-            await _transport.SendChangePlayerAllianceRank(new AllianceProto.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
+            await _transport.SendChangePlayerAllianceRank(new ProtoService.ChangePlayerAllianceRankRequest { MasterId = player.Id, PlayerId = targetPlayerId, Delta = isIncrease ? 1 : -1 });
         }
         public async Task HandleIncreaseAllianceCapacity(Player chr)
         {
-            await _transport.SendIncreaseAllianceCapacity(new AllianceProto.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
+            await _transport.SendIncreaseAllianceCapacity(new ProtoService.IncreaseAllianceCapacityRequest { MasterId = chr.Id });
         }
 
         internal async Task UpdateAllianceRank(Player chr, string[] ranks)
         {
-            var request = new AllianceProto.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
+            var request = new ProtoService.UpdateAllianceRankTitleRequest() { MasterId = chr.Id };
             request.RankTitles.AddRange(ranks);
             await _transport.SendUpdateAllianceRankTitle(request);
         }
         internal async Task UpdateAllianceNotice(Player chr, string notice)
         {
-            await _transport.SendUpdateAllianceNotice(new AllianceProto.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
+            await _transport.SendUpdateAllianceNotice(new ProtoService.UpdateAllianceNoticeRequest { MasterId = chr.Id, Notice = notice });
         }
         internal async Task DisbandAlliance(Player player, int allianceId)
         {
-            await _transport.SendAllianceDisband(new AllianceProto.DisbandAllianceRequest { MasterId = player.Id });
+            await _transport.SendAllianceDisband(new ProtoService.DisbandAllianceRequest { MasterId = player.Id });
         }
 
         internal async Task ShowRankedGuilds(IChannelClient c, int npc)

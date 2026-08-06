@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message DueyNotifyProto {
+	int32 receiverId = 1;
+	bool type = 2;
+}

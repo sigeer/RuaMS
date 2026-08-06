@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message AreaDto {
-  int32 area = 1;
-  string info = 2;
-}

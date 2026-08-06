@@ -1,4 +1,3 @@
-using AllianceProto;
 using Application.Shared.Guild;
 using Application.Shared.Message;
 using Google.Protobuf;
@@ -45,14 +44,14 @@ namespace Application.Core.Channel.Internal.Handlers
             }
             return null;
         }
-        public class CreateHandler : InternalSessionChannelHandler<AllianceProto.CreateAllianceResponse>
+        public class CreateHandler : InternalSessionChannelHandler<ProtoService.CreateAllianceResponse>
         {
             public CreateHandler(WorldChannelServer server) : base(server)
             {
             }
             public override int MessageId => (int)ChannelRecvCode.OnAllianceCreated;
 
-            protected override Task HandleMessage(CreateAllianceResponse res)
+            protected override Task HandleMessage(ProtoService.CreateAllianceResponse res)
             {
                 _server.Broadcast(w =>
                 {
@@ -92,10 +91,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override CreateAllianceResponse Parse(ByteString data) => CreateAllianceResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateAllianceResponse Parse(ByteString data) => ProtoService.CreateAllianceResponse.Parser.ParseFrom(data);
         }
 
-        public class BroadcastPlayerInfo : InternalSessionChannelHandler<AllianceBroadcastPlayerInfoResponse>
+        public class BroadcastPlayerInfo : InternalSessionChannelHandler<ProtoService.AllianceBroadcastPlayerInfoResponse>
         {
             public BroadcastPlayerInfo(WorldChannelServer server) : base(server)
             {
@@ -103,7 +102,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAlliancePlayerInfoBroadcast;
 
-            protected override async Task HandleMessage(AllianceBroadcastPlayerInfoResponse res)
+            protected override async Task HandleMessage(ProtoService.AllianceBroadcastPlayerInfoResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -116,9 +115,9 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override AllianceBroadcastPlayerInfoResponse Parse(ByteString data) => AllianceBroadcastPlayerInfoResponse.Parser.ParseFrom(data);
+            protected override ProtoService.AllianceBroadcastPlayerInfoResponse Parse(ByteString data) => ProtoService.AllianceBroadcastPlayerInfoResponse.Parser.ParseFrom(data);
         }
-        public class UpdateNotice : InternalSessionChannelHandler<UpdateAllianceNoticeResponse>
+        public class UpdateNotice : InternalSessionChannelHandler<ProtoService.UpdateAllianceNoticeResponse>
         {
             public UpdateNotice(WorldChannelServer server) : base(server)
             {
@@ -126,7 +125,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceNoticeUpdate;
 
-            protected override async Task HandleMessage(UpdateAllianceNoticeResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateAllianceNoticeResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -142,10 +141,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override UpdateAllianceNoticeResponse Parse(ByteString data) => UpdateAllianceNoticeResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateAllianceNoticeResponse Parse(ByteString data) => ProtoService.UpdateAllianceNoticeResponse.Parser.ParseFrom(data);
         }
 
-        public class JoinAlliance : InternalSessionChannelHandler<GuildJoinAllianceResponse>
+        public class JoinAlliance : InternalSessionChannelHandler<ProtoService.GuildJoinAllianceResponse>
         {
             public JoinAlliance(WorldChannelServer server) : base(server)
             {
@@ -153,7 +152,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnGuildJoinAlliance;
 
-            protected override async Task HandleMessage(GuildJoinAllianceResponse res)
+            protected override async Task HandleMessage(ProtoService.GuildJoinAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -179,10 +178,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override GuildJoinAllianceResponse Parse(ByteString data) => GuildJoinAllianceResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GuildJoinAllianceResponse Parse(ByteString data) => ProtoService.GuildJoinAllianceResponse.Parser.ParseFrom(data);
         }
 
-        public class LeaveAlliance : InternalSessionChannelHandler<GuildLeaveAllianceResponse>
+        public class LeaveAlliance : InternalSessionChannelHandler<ProtoService.GuildLeaveAllianceResponse>
         {
             public LeaveAlliance(WorldChannelServer server) : base(server)
             {
@@ -190,7 +189,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnGuildLeaveAlliance;
 
-            protected override async Task HandleMessage(GuildLeaveAllianceResponse res)
+            protected override async Task HandleMessage(ProtoService.GuildLeaveAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -220,10 +219,10 @@ namespace Application.Core.Channel.Internal.Handlers
             }
 
 
-            protected override GuildLeaveAllianceResponse Parse(ByteString data) => GuildLeaveAllianceResponse.Parser.ParseFrom(data);
+            protected override ProtoService.GuildLeaveAllianceResponse Parse(ByteString data) => ProtoService.GuildLeaveAllianceResponse.Parser.ParseFrom(data);
         }
 
-        public class ExpelGuild : InternalSessionChannelHandler<AllianceExpelGuildResponse>
+        public class ExpelGuild : InternalSessionChannelHandler<ProtoService.AllianceExpelGuildResponse>
         {
             public ExpelGuild(WorldChannelServer server) : base(server)
             {
@@ -231,7 +230,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceExpelGuild;
 
-            protected override async Task HandleMessage(AllianceExpelGuildResponse res)
+            protected override async Task HandleMessage(ProtoService.AllianceExpelGuildResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -260,10 +259,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override AllianceExpelGuildResponse Parse(ByteString data) => AllianceExpelGuildResponse.Parser.ParseFrom(data);
+            protected override ProtoService.AllianceExpelGuildResponse Parse(ByteString data) => ProtoService.AllianceExpelGuildResponse.Parser.ParseFrom(data);
         }
 
-        public class IncreaseCapacity : InternalSessionChannelHandler<IncreaseAllianceCapacityResponse>
+        public class IncreaseCapacity : InternalSessionChannelHandler<ProtoService.IncreaseAllianceCapacityResponse>
         {
             public IncreaseCapacity(WorldChannelServer server) : base(server)
             {
@@ -271,7 +270,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceCapacityUpdate;
 
-            protected override async Task HandleMessage(IncreaseAllianceCapacityResponse res)
+            protected override async Task HandleMessage(ProtoService.IncreaseAllianceCapacityResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -287,10 +286,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override IncreaseAllianceCapacityResponse Parse(ByteString data) => IncreaseAllianceCapacityResponse.Parser.ParseFrom(data);
+            protected override ProtoService.IncreaseAllianceCapacityResponse Parse(ByteString data) => ProtoService.IncreaseAllianceCapacityResponse.Parser.ParseFrom(data);
         }
 
-        public class DisbandAlliance : InternalSessionChannelHandler<DisbandAllianceResponse>
+        public class DisbandAlliance : InternalSessionChannelHandler<ProtoService.DisbandAllianceResponse>
         {
             public DisbandAlliance(WorldChannelServer server) : base(server)
             {
@@ -298,7 +297,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceDisband;
 
-            protected override async Task HandleMessage(DisbandAllianceResponse res)
+            protected override async Task HandleMessage(ProtoService.DisbandAllianceResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -313,10 +312,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override DisbandAllianceResponse Parse(ByteString data) => DisbandAllianceResponse.Parser.ParseFrom(data);
+            protected override ProtoService.DisbandAllianceResponse Parse(ByteString data) => ProtoService.DisbandAllianceResponse.Parser.ParseFrom(data);
         }
 
-        public class UpdateAllianceRank : InternalSessionChannelHandler<ChangePlayerAllianceRankResponse>
+        public class UpdateAllianceRank : InternalSessionChannelHandler<ProtoService.ChangePlayerAllianceRankResponse>
         {
             public UpdateAllianceRank(WorldChannelServer server) : base(server)
             {
@@ -324,7 +323,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceMemberRankChanged;
 
-            protected override async Task HandleMessage(ChangePlayerAllianceRankResponse res)
+            protected override async Task HandleMessage(ProtoService.ChangePlayerAllianceRankResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -345,10 +344,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override ChangePlayerAllianceRankResponse Parse(ByteString data) => ChangePlayerAllianceRankResponse.Parser.ParseFrom(data);
+            protected override ProtoService.ChangePlayerAllianceRankResponse Parse(ByteString data) => ProtoService.ChangePlayerAllianceRankResponse.Parser.ParseFrom(data);
         }
 
-        public class UpdateRankTitle : InternalSessionChannelHandler<UpdateAllianceRankTitleResponse>
+        public class UpdateRankTitle : InternalSessionChannelHandler<ProtoService.UpdateAllianceRankTitleResponse>
         {
             public UpdateRankTitle(WorldChannelServer server) : base(server)
             {
@@ -356,7 +355,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceRankTitleUpdate;
 
-            protected override async Task HandleMessage(UpdateAllianceRankTitleResponse res)
+            protected override async Task HandleMessage(ProtoService.UpdateAllianceRankTitleResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -370,10 +369,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override UpdateAllianceRankTitleResponse Parse(ByteString data) => UpdateAllianceRankTitleResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateAllianceRankTitleResponse Parse(ByteString data) => ProtoService.UpdateAllianceRankTitleResponse.Parser.ParseFrom(data);
         }
 
-        public class ChangeLeader : InternalSessionChannelHandler<AllianceChangeLeaderResponse>
+        public class ChangeLeader : InternalSessionChannelHandler<ProtoService.AllianceChangeLeaderResponse>
         {
             public ChangeLeader(WorldChannelServer server) : base(server)
             {
@@ -381,7 +380,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnAllianceLeaderChanged;
 
-            protected override async Task HandleMessage(AllianceChangeLeaderResponse res)
+            protected override async Task HandleMessage(ProtoService.AllianceChangeLeaderResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -406,7 +405,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override AllianceChangeLeaderResponse Parse(ByteString data) => AllianceChangeLeaderResponse.Parser.ParseFrom(data);
+            protected override ProtoService.AllianceChangeLeaderResponse Parse(ByteString data) => ProtoService.AllianceChangeLeaderResponse.Parser.ParseFrom(data);
         }
     }
 }

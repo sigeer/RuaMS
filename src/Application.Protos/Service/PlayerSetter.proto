@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "Model/PlayerSetter.proto";
+
+package ProtoService;
+
+
+
+message SyncPlayerRequest {
+	ProtoModel.PlayerSaveProto data = 1;
+	int32 Trigger = 2;
+	bool saveDb = 3;
+}
+
+
+
+message BatchSyncPlayerRequest {
+	repeated ProtoModel.PlayerSaveProto list = 1;
+	bool saveDb = 2;
+}

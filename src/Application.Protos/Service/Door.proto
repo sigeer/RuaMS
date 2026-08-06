@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message RemoveDoorRequest {
+  int32 ownerId = 1;
+}
+
+
+
+message RemoveDoorResponse {
+	int32 ownerId = 1;
+}

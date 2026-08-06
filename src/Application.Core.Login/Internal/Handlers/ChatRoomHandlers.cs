@@ -1,5 +1,4 @@
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 
 namespace Application.Core.Login.Internal.Handlers
@@ -7,7 +6,7 @@ namespace Application.Core.Login.Internal.Handlers
     internal class ChatRoomHandlers
     {
 
-        internal class ChatRoomCreatedHandler : InternalSessionMasterHandler<Dto.CreateChatRoomRequest>
+        internal class ChatRoomCreatedHandler : InternalSessionMasterHandler<ProtoService.CreateChatRoomRequest>
         {
             public ChatRoomCreatedHandler(MasterServer server) : base(server)
             {
@@ -15,15 +14,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.CreateChatRoom;
 
-            protected override Task HandleMessage(CreateChatRoomRequest message)
+            protected override Task HandleMessage(ProtoService.CreateChatRoomRequest message)
             {
                 return _server.ChatRoomManager.CreateChatRoom(message);
             }
 
-            protected override CreateChatRoomRequest Parse(ByteString content) => CreateChatRoomRequest.Parser.ParseFrom(content);
+            protected override ProtoService.CreateChatRoomRequest Parse(ByteString content) => ProtoService.CreateChatRoomRequest.Parser.ParseFrom(content);
         }
 
-        internal class ChatRoomMemberJoinHandler : InternalSessionMasterHandler<Dto.JoinChatRoomRequest>
+        internal class ChatRoomMemberJoinHandler : InternalSessionMasterHandler<ProtoService.JoinChatRoomRequest>
         {
             public ChatRoomMemberJoinHandler(MasterServer server) : base(server)
             {
@@ -31,15 +30,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.JoinChatRoom;
 
-            protected override Task HandleMessage(JoinChatRoomRequest message)
+            protected override Task HandleMessage(ProtoService.JoinChatRoomRequest message)
             {
                 return _server.ChatRoomManager.JoinChatRoom(message);
             }
 
-            protected override JoinChatRoomRequest Parse(ByteString content) => JoinChatRoomRequest.Parser.ParseFrom(content);
+            protected override ProtoService.JoinChatRoomRequest Parse(ByteString content) => ProtoService.JoinChatRoomRequest.Parser.ParseFrom(content);
         }
 
-        internal class ChatRoomMemberLeaveHandler : InternalSessionMasterHandler<Dto.LeaveChatRoomRequst>
+        internal class ChatRoomMemberLeaveHandler : InternalSessionMasterHandler<ProtoService.LeaveChatRoomRequest>
         {
             public ChatRoomMemberLeaveHandler(MasterServer server) : base(server)
             {
@@ -47,15 +46,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LeaveChatRoom;
 
-            protected override Task HandleMessage(LeaveChatRoomRequst message)
+            protected override Task HandleMessage(ProtoService.LeaveChatRoomRequest message)
             {
                 return _server.ChatRoomManager.LeaveChatRoom(message);
             }
 
-            protected override LeaveChatRoomRequst Parse(ByteString content) => LeaveChatRoomRequst.Parser.ParseFrom(content);
+            protected override ProtoService.LeaveChatRoomRequest Parse(ByteString content) => ProtoService.LeaveChatRoomRequest.Parser.ParseFrom(content);
         }
 
-        internal class ChatRoomMessageSentHandler : InternalSessionMasterHandler<SendChatRoomMessageRequest>
+        internal class ChatRoomMessageSentHandler : InternalSessionMasterHandler<ProtoService.SendChatRoomMessageRequest>
         {
             public ChatRoomMessageSentHandler(MasterServer server) : base(server)
             {
@@ -63,12 +62,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendChatRoomMessage;
 
-            protected override Task HandleMessage(SendChatRoomMessageRequest message)
+            protected override Task HandleMessage(ProtoService.SendChatRoomMessageRequest message)
             {
                 return _server.ChatRoomManager.SendMessage(message);
             }
 
-            protected override SendChatRoomMessageRequest Parse(ByteString content) => SendChatRoomMessageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.SendChatRoomMessageRequest Parse(ByteString content) => ProtoService.SendChatRoomMessageRequest.Parser.ParseFrom(content);
         }
     }
 }

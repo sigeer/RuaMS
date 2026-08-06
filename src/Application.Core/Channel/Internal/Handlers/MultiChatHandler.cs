@@ -1,12 +1,11 @@
 using Application.Core.Channel.Commands;
 using Application.Shared.Message;
 using Google.Protobuf;
-using MessageProto;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class MultiChatHandler : InternalSessionChannelHandler<MultiChatMessage>
+    internal class MultiChatHandler : InternalSessionChannelHandler<ProtoModel.MultiChatMessage>
     {
         public MultiChatHandler(WorldChannelServer server) : base(server)
         {
@@ -14,11 +13,11 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.MultiChat;
 
-        protected override Task HandleMessage(MultiChatMessage data)
+        protected override Task HandleMessage(ProtoModel.MultiChatMessage data)
         {
             return _server.PushChannelCommandAsync(new InvokeChannelBroadcastCommand(data.Receivers, PacketCreator.multiChat(data.FromName, data.Text, data.Type)));
         }
 
-        protected override MultiChatMessage Parse(ByteString content) => MultiChatMessage.Parser.ParseFrom(content);
+        protected override ProtoModel.MultiChatMessage Parse(ByteString content) => ProtoModel.MultiChatMessage.Parser.ParseFrom(content);
     }
 }

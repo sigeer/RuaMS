@@ -1,12 +1,11 @@
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class BuffHandlers
     {
-        public class RemoveDoor : InternalSessionMasterHandler<RemoveDoorRequest>
+        public class RemoveDoor : InternalSessionMasterHandler<ProtoService.RemoveDoorRequest>
         {
             public RemoveDoor(MasterServer server) : base(server)
             {
@@ -14,12 +13,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveDoor;
 
-            protected override Task HandleMessage(RemoveDoorRequest res)
+            protected override Task HandleMessage(ProtoService.RemoveDoorRequest res)
             {
-                return _server.Transport.BroadcastMessageN(ChannelRecvCode.OnDoorRemoved, new RemoveDoorResponse { OwnerId = res.OwnerId });
+                return _server.Transport.BroadcastMessageN(ChannelRecvCode.OnDoorRemoved, new ProtoService.RemoveDoorResponse { OwnerId = res.OwnerId });
             }
 
-            protected override RemoveDoorRequest Parse(ByteString data) => RemoveDoorRequest.Parser.ParseFrom(data);
+            protected override ProtoService.RemoveDoorRequest Parse(ByteString data) => ProtoService.RemoveDoorRequest.Parser.ParseFrom(data);
         }
     }
 }

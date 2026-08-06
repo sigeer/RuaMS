@@ -2,7 +2,6 @@ using Application.Core.Login.Models.ChatRoom;
 using Application.Shared.Constants;
 using Application.Shared.Invitations;
 using Application.Shared.Message;
-using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -31,19 +30,19 @@ namespace Application.Core.Login.ServerData
             _mapper = mapper;
         }
 
-        private Dto.ChatRoomDto MapDto(ChatRoomModel model)
+        private ProtoModel.ChatRoomProto MapDto(ChatRoomModel model)
         {
-            var roomDto = _mapper.Map<Dto.ChatRoomDto>(model);
+            var roomDto = _mapper.Map<ProtoModel.ChatRoomProto>(model);
             var membersDto = model.Members
                     .Select(_server.CharacterManager.FindPlayerById)
-                    .Select((x, idx) => new ChatRoomMemberDto() { Position = idx, PlayerInfo = _mapper.Map<Dto.PlayerViewDto>(x) }).ToArray();
+                    .Select((x, idx) => new ProtoModel.ChatRoomMemberProto() { Position = idx, PlayerInfo = _mapper.Map<ProtoModel.PlayerViewProto>(x) }).ToArray();
             roomDto.Members.AddRange(membersDto);
             return roomDto;
         }
 
         public ChatRoomModel? GetPlayerRoom(int playerId) => _playerMapper.GetValueOrDefault(playerId);
 
-        public async Task<int> CreateChatRoom(Dto.CreateChatRoomRequest request)
+        public async Task<int> CreateChatRoom(ProtoService.CreateChatRoomRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (chr == null)
@@ -55,13 +54,13 @@ namespace Application.Core.Login.ServerData
             var newRoom = new ChatRoomModel(Interlocked.Increment(ref _currentId));
             _dataSource[newRoom.Id] = newRoom;
 
-            await JoinChatRoom(new JoinChatRoomRequest { RoomId = newRoom.Id, MasterId = request.MasterId });
+            await JoinChatRoom(new ProtoService.JoinChatRoomRequest { RoomId = newRoom.Id, MasterId = request.MasterId });
             return newRoom.Id;
         }
 
-        public async Task JoinChatRoom(Dto.JoinChatRoomRequest request)
+        public async Task JoinChatRoom(ProtoService.JoinChatRoomRequest request)
         {
-            var response = new Dto.JoinChatRoomResponse { Request = request };
+            var response = new ProtoService.JoinChatRoomResponse { Request = request };
 
             if (_playerMapper.ContainsKey(request.MasterId))
             {
@@ -96,14 +95,14 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnJoinChatRoom, response);
         }
 
-        public async Task LeaveChatRoom(Dto.LeaveChatRoomRequst request)
+        public async Task LeaveChatRoom(ProtoService.LeaveChatRoomRequest request)
         {
             if (_playerMapper.TryRemove(request.MasterId, out var room))
             {
                 if (room.TryRemoveMember(request.MasterId, out var position))
                 {
                     var roomDto = MapDto(room);
-                    await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnLeaveChatRoom, new Dto.LeaveChatRoomResponse
+                    await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnLeaveChatRoom, new ProtoService.LeaveChatRoomResponse
                     {
                         Code = 0,
                         Room = roomDto,
@@ -118,12 +117,12 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public async Task SendMessage(SendChatRoomMessageRequest request)
+        public async Task SendMessage(ProtoService.SendChatRoomMessageRequest request)
         {
             if (_playerMapper.TryGetValue(request.MasterId, out var room))
             {
                 // /invite name
-                var res = new Dto.SendChatRoomMessageResponse { Code = 0, Text = request.Text };
+                var res = new ProtoService.SendChatRoomMessageResponse { Code = 0, Text = request.Text };
                 res.Members.AddRange(room.Members.Where(x => x != request.MasterId));
                 await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnChatRoomMessageReceived, res);
             }

@@ -5,7 +5,6 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Utility;
 using Application.Utility.Configs;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -21,12 +20,12 @@ namespace Application.Core.Login.ServerData
         /// <summary>
         /// 正在营业的个人商店
         /// </summary>
-        ConcurrentDictionary<int, ItemProto.SyncPlayerShopRequest> _playerShopData = new();
+        ConcurrentDictionary<int, ProtoService.SyncPlayerShopRequest> _playerShopData = new();
         /// <summary>
         /// 正在营业的雇佣商店
         /// </summary>
 
-        ConcurrentDictionary<int, ItemProto.SyncPlayerShopRequest> _hiredMerchantData = new();
+        ConcurrentDictionary<int, ProtoService.SyncPlayerShopRequest> _hiredMerchantData = new();
 
 
         public PlayerShopManager(IMapper mapper, MasterServer server, IDbContextFactory<DBContext> dbContextFactory, ILogger<PlayerShopManager> logger) 
@@ -50,7 +49,7 @@ namespace Application.Core.Login.ServerData
             return Query(x => x.Timestamp >= dayBefore100, x => x.StoreTime >= dayBefore100_l);
         }
 
-        private void Store(ItemProto.SyncPlayerShopRequest hm)
+        private void Store(ProtoService.SyncPlayerShopRequest hm)
         {
             var item = GetStoreByCharacterId(hm.OwnerId);
             if (item == null)
@@ -70,7 +69,7 @@ namespace Application.Core.Login.ServerData
             SetDirty(item);
         }
 
-        public void SyncPlayerStorage(ItemProto.SyncPlayerShopRequest request)
+        public void SyncPlayerStorage(ProtoService.SyncPlayerShopRequest request)
         {
             var shopType = (PlayerShopType)request.Type;
 
@@ -93,7 +92,7 @@ namespace Application.Core.Login.ServerData
             {
                 // 交易通知
                 //_server.Transport.SendHiredMerchantSellNotify(
-                //    new ItemProto.NotifyItemPurchasedResponse 
+                //    new ProtoService.NotifyItemPurchasedResponse 
                 //    { 
                 //        OwnerId = data.Id,
                 //        ItemId = 
@@ -110,9 +109,9 @@ namespace Application.Core.Login.ServerData
 
         }
 
-        public ItemProto.RemoteHiredMerchantDto GetPlayerHiredMerchant(ItemProto.GetPlayerHiredMerchantRequest request)
+        public ProtoModel.RemoteHiredMerchantProto GetPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest request)
         {
-            var res = new ItemProto.RemoteHiredMerchantDto()
+            var res = new ProtoModel.RemoteHiredMerchantProto()
             {
                 OwnerId = request.MasterId,
             };
@@ -138,7 +137,7 @@ namespace Application.Core.Login.ServerData
 
         }
 
-        public CommitRetrievedResponse CommitRetrieve(ItemProto.CommitRetrievedRequest request)
+        public ProtoService.CommitRetrievedResponse CommitRetrieve(ProtoService.CommitRetrievedRequest request)
         {
             var obj = GetStoreByCharacterId(request.OwnerId);
             bool isSuccess = false;
@@ -147,7 +146,7 @@ namespace Application.Core.Login.ServerData
                 SetRemoved(obj);
                 isSuccess = true;
             }
-            return new CommitRetrievedResponse() { IsSuccess = isSuccess };
+            return new ProtoService.CommitRetrievedResponse() { IsSuccess = isSuccess };
         }
 
 
@@ -212,18 +211,18 @@ namespace Application.Core.Login.ServerData
             return msg;
         }
 
-        public OwlSearchResponse OwlSearch(OwlSearchRequest request)
+        public ProtoService.OwlSearchResponse OwlSearch(ProtoService.OwlSearchRequest request)
         {
-            var res = new OwlSearchResponse();
+            var res = new ProtoService.OwlSearchResponse();
             res.Items.AddRange(_hiredMerchantData.Values.Concat(_playerShopData.Values).AsValueEnumerable()
-                .SelectMany(x => x.Items.Where(y => y.Item.Itemid == request.SearchItemId).Select(y => new ItemProto.OwlSearchResultItemDto
+                .SelectMany(x => x.Items.Where(y => y.Item.Itemid == request.SearchItemId).Select(y => new ProtoModel.OwlSearchResultItemProto
                 {
                     MapObjectId = x.MapObjectId,
                     Channel = x.Channel,
                     MapId = x.MapId,
                     OwnerName = _server.CharacterManager.GetPlayerName(x.OwnerId),
                     Title = x.Title,
-                    Item = _mapper.Map<ItemProto.PlayerShopItemDto>(y)
+                    Item = _mapper.Map<ProtoModel.PlayerShopItemProto>(y)
                 })).OrderBy(x => x.Item.Price).Take(200).ToArray());
 
             return res;
@@ -237,15 +236,15 @@ namespace Application.Core.Login.ServerData
                 owlSearched[itemid] = 1;
         }
 
-        public ItemProto.OwlSearchRecordResponse GetOwlSearchedItems()
+        public ProtoService.OwlSearchRecordResponse GetOwlSearchedItems()
         {
             if (YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION)
             {
                 return new();
             }
 
-            var res = new ItemProto.OwlSearchRecordResponse();
-            res.Items.AddRange(owlSearched.Select(x => new ItemProto.OwlSearchRecordDto() { ItemId = x.Key, Count = x.Value }).ToList());
+            var res = new ProtoService.OwlSearchRecordResponse();
+            res.Items.AddRange(owlSearched.Select(x => new ProtoModel.OwlSearchRecordProto() { ItemId = x.Key, Count = x.Value }).ToList());
             return res;
         }
 

@@ -23,12 +23,12 @@ namespace Application.Module.ExpeditionBossLog.Master
         }
 
 
-        public ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest request)
+        public ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest request)
         {
-            return new ExpeditionProto.ExpeditionCheckResponse { IsSuccess = _manager.AttemptBoss(request.Cid, request.Channel, request.BossName, false) };
+            return new ProtoService.ExpeditionCheckResponse { IsSuccess = _manager.AttemptBoss(request.Cid, request.Channel, request.BossName, false) };
         }
 
-        public void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request)
+        public void RegisterExpedition(ProtoModel.ExpeditionRegistry request)
         {
             foreach (var cid in request.CidList)
             {

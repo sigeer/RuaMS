@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "Service/Alliance.proto";
+
+package ProtoService;
+
+
+
+service AllianceService {
+	rpc GetAllianceModel(GetAllianceRequest) returns(GetAllianceResponse);
+	rpc CreateAllianceCheck(CreateAllianceCheckRequest) returns(CreateAllianceCheckResponse);
+}

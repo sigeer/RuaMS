@@ -3,7 +3,6 @@ using Application.Core.Models;
 using Application.Core.ServerTransports;
 using client.inventory;
 using client.inventory.manipulator;
-using ItemProto;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -54,7 +53,7 @@ namespace Application.Core.Channel.Services
 
         public async Task SendFriankPacket(Player chr)
         {
-            var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
+            var res = _server.Transport.LoadPlayerHiredMerchant(new ProtoService.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
             var remoteData = _mapper.Map<RemoteHiredMerchantData>(res);
             if (remoteData.MapId > 0)
@@ -77,7 +76,7 @@ namespace Application.Core.Channel.Services
 
         public RemoteHiredMerchantData LoadPlayerHiredMerchant(Player chr)
         {
-            var res = _server.Transport.LoadPlayerHiredMerchant(new ItemProto.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
+            var res = _server.Transport.LoadPlayerHiredMerchant(new ProtoService.GetPlayerHiredMerchantRequest { MasterId = chr.Id });
 
             return _mapper.Map<RemoteHiredMerchantData>(res);
         }
@@ -109,7 +108,7 @@ namespace Application.Core.Channel.Services
                             return;
                         }
 
-                        CommitRetrievedResponse commitRes = _server.Transport.CommitRetrievedFromFredrick(new CommitRetrievedRequest
+                        ProtoService.CommitRetrievedResponse commitRes = _server.Transport.CommitRetrievedFromFredrick(new ProtoService.CommitRetrievedRequest
                         {
                             OwnerId = chr.Id,
                         });
@@ -162,7 +161,7 @@ namespace Application.Core.Channel.Services
         }
 
 
-        //public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
+        //public void OnHiredMerchantItemBuy(ProtoService.NotifyItemPurchasedResponse data)
         //{
         //    var owner = _server.FindPlayerById(data.OwnerId);
         //    if (owner != null)
@@ -176,8 +175,8 @@ namespace Application.Core.Channel.Services
 
         internal async Task OwlSearch(Player chr, int useItemId, int searchItemId)
         {
-            ItemProto.OwlSearchResponse data = _server.Transport.SendOwlSearch(
-                new ItemProto.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });
+            ProtoService.OwlSearchResponse data = _server.Transport.SendOwlSearch(
+                new ProtoService.OwlSearchRequest { MasterId = chr.Id, UsedItemId = useItemId, SearchItemId = searchItemId });
 
             if (data.Items.Count > 0)
             {

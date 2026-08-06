@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+package ProtoModel;
+
+
+
+message DueyPackageProto {
+  int32 packageId = 1;
+  int32 receiverId = 2;
+  int32 senderId = 3;
+  int32 mesos = 4;
+  google.protobuf.Timestamp createTime = 5;
+  google.protobuf.StringValue message = 6;
+  bool notified = 7;
+  bool type = 8;
+  ItemProto item = 9;
+  string senderName = 10;
+  google.protobuf.Timestamp claimTime = 11;
+}

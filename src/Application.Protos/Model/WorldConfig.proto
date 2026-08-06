@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+
+
+import "google/protobuf/wrappers.proto";
+package ProtoModel;
+
+
+
+message WorldConfig {
+	google.protobuf.FloatValue mobRate = 1;
+	google.protobuf.FloatValue mesoRate = 2;
+	google.protobuf.FloatValue expRate = 3;
+	google.protobuf.FloatValue questRate = 4;
+	google.protobuf.FloatValue dropRate = 5;
+	google.protobuf.FloatValue bossDropRate = 6;
+	google.protobuf.FloatValue travelRate = 7;
+	google.protobuf.FloatValue fishingRate = 8;
+	google.protobuf.StringValue serverMessage = 9;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "Model/WorldConfig.proto";
+
+package ProtoModel;
+
+
+
+message RegisterChannelConfigProto {
+	int32 port = 1;
+	int32 maxSize = 3;
+
+}
+
+
+
+message RegisterServerResultProto {
+  int32 startChannel = 1;
+  WorldConfig config = 2;
+  string message = 4;
+}

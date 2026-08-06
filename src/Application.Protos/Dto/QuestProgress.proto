@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message QuestProgressDto {
-  int32 progressId = 1;
-  string progress = 2;
-}

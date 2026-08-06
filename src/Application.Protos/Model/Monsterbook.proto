@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message MonsterbookProto {
+  int32 cardid = 1;
+  int32 level = 2;
+}

@@ -7,7 +7,7 @@ public partial class FredstorageEntity: IKeyedEntity<int>
 {
     private FredstorageEntity() 
     {
-        ItemsBlob = new ItemProto.PlayerShopStoreItems().ToByteArray();
+        ItemsBlob = new ProtoModel.PlayerShopStoreItemsProto().ToByteArray();
     }
     public FredstorageEntity(int id, int cid, int daynotes, int meso, DateTimeOffset timestamp)
         : this()

@@ -3,7 +3,7 @@ using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
-    public class PlayerKeyMap : PlayerPropBase<Dto.KeyMapDto>
+    public class PlayerKeyMap : PlayerPropBase<ProtoModel.KeyMapProto>
     {
         private Dictionary<int, KeyBinding> _dataSource;
         public PlayerKeyMap(Player owner) : base(owner)
@@ -11,7 +11,7 @@ namespace Application.Core.Game.Players.PlayerProps
             _dataSource = GameConstants.GetDefaultKeyMapping();
         }
 
-        public override void LoadData(RepeatedField<Dto.KeyMapDto> keyMapFromDB)
+        public override void LoadData(RepeatedField<ProtoModel.KeyMapProto> keyMapFromDB)
         {
             if (keyMapFromDB.Count > 0)
             {
@@ -24,9 +24,9 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public override Dto.KeyMapDto[] ToDto()
+        public override ProtoModel.KeyMapProto[] ToDto()
         {
-            return _dataSource.Select(x => new Dto.KeyMapDto
+            return _dataSource.Select(x => new ProtoModel.KeyMapProto
             {
                 Key = x.Key,
                 Action = x.Value.getAction(),

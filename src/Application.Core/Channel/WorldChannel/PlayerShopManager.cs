@@ -4,7 +4,6 @@ using Application.Resources.Messages;
 using client.autoban;
 using client.inventory;
 using client.inventory.manipulator;
-using ItemProto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using tools;
@@ -26,9 +25,9 @@ namespace Application.Core.Channel
             _worldChannel = worldChannel;
         }
 
-        public async Task<List<SyncPlayerShopRequest>> CheckExpired()
+        public async Task<List<ProtoService.SyncPlayerShopRequest>> CheckExpired()
         {
-            List<SyncPlayerShopRequest> requests = [];
+            List<ProtoService.SyncPlayerShopRequest> requests = [];
 
             var currentTime = _worldChannel.Node.getCurrentTime();
             var allShops = GetAllShops().Where(x => x.ExpirationTime < currentTime).ToArray();
@@ -297,9 +296,9 @@ namespace Application.Core.Channel
             _worldChannel.Node.Transport.SyncPlayerShop(GenrateSyncRequest(shop, operation));
         }
 
-        private ItemProto.SyncPlayerShopRequest GenrateSyncRequest(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
+        private ProtoService.SyncPlayerShopRequest GenrateSyncRequest(IPlayerShop shop, SyncPlayerShopOperation operation = SyncPlayerShopOperation.Update)
         {
-            var request = new ItemProto.SyncPlayerShopRequest()
+            var request = new ProtoService.SyncPlayerShopRequest()
             {
                 OwnerId = shop.OwnerId,
                 Operation = (int)operation,
@@ -310,11 +309,11 @@ namespace Application.Core.Channel
                 Type = (int)shop.Type,
                 MapObjectId = shop.getObjectId()
             };
-            request.Items.AddRange(_mapper.Map<ItemProto.PlayerShopItemDto[]>(shop.Commodity.Where(x => x.getBundles() > 0)));
+            request.Items.AddRange(_mapper.Map<ProtoModel.PlayerShopItemProto[]>(shop.Commodity.Where(x => x.getBundles() > 0)));
             return request;
         }
 
-        //public void OnHiredMerchantItemBuy(ItemProto.NotifyItemPurchasedResponse data)
+        //public void OnHiredMerchantItemBuy(ProtoService.NotifyItemPurchasedResponse data)
         //{
         //    var owner = _worldChannel.Container.FindPlayerById(data.OwnerId);
         //    if (owner != null)
@@ -328,7 +327,7 @@ namespace Application.Core.Channel
 
         public async ValueTask DisposeAsync()
         {
-            List<SyncPlayerShopRequest> requests = [];
+            List<ProtoService.SyncPlayerShopRequest> requests = [];
 
             var allShops = GetAllShops();
 
@@ -345,7 +344,7 @@ namespace Application.Core.Channel
                 requests.Add(GenrateSyncRequest(item, SyncPlayerShopOperation.Close));
             }
 
-            var request = new ItemProto.BatchSyncPlayerShopRequest();
+            var request = new ProtoService.BatchSyncPlayerShopRequest();
             request.List.AddRange(requests);
             await _worldChannel.Node.Transport.BatchSyncPlayerShop(request);
         }

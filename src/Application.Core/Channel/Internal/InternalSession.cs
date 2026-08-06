@@ -1,5 +1,4 @@
 using Application.Shared.Message;
-using BaseProto;
 using Google.Protobuf;
 using Grpc.Core;
 
@@ -8,7 +7,7 @@ namespace Application.Core.Channel.Internal
     public class InternalSession : IDisposable
     {
         WorldChannelServer _server;
-        AsyncDuplexStreamingCall<BaseProto.PacketWrapper, BaseProto.PacketWrapper>? _streamingCall;
+        AsyncDuplexStreamingCall<ProtoModel.PacketWrapper, ProtoModel.PacketWrapper>? _streamingCall;
 
         bool _connected = false;
         public InternalSession(WorldChannelServer server)
@@ -16,7 +15,7 @@ namespace Application.Core.Channel.Internal
             _server = server;
         }
 
-        public void Connect(AsyncDuplexStreamingCall<BaseProto.PacketWrapper, BaseProto.PacketWrapper> call)
+        public void Connect(AsyncDuplexStreamingCall<ProtoModel.PacketWrapper, ProtoModel.PacketWrapper> call)
         {
             if (_connected)
                 return;
@@ -45,7 +44,7 @@ namespace Application.Core.Channel.Internal
             if (_streamingCall == null)
                 throw new BusinessServerOfflineException();
 
-            await _streamingCall.RequestStream.WriteAsync(new PacketWrapper
+            await _streamingCall.RequestStream.WriteAsync(new ProtoModel.PacketWrapper
             {
                 EventId = type,
                 Data = message.ToByteString()
@@ -59,7 +58,7 @@ namespace Application.Core.Channel.Internal
             if (_streamingCall == null)
                 throw new BusinessServerOfflineException();
 
-            await _streamingCall.RequestStream.WriteAsync(new PacketWrapper
+            await _streamingCall.RequestStream.WriteAsync(new ProtoModel.PacketWrapper
             {
                 EventId = type,
             }, cancellationToken);

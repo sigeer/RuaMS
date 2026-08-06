@@ -1,9 +1,8 @@
 using Grpc.Core;
-using TeamProto;
 
 namespace Application.Core.Login.Servers
 {
-    internal class TeamGrpcService : ServiceProto.TeamService.TeamServiceBase
+    internal class TeamGrpcService : ProtoService.TeamService.TeamServiceBase
     {
         readonly MasterServer _server;
 
@@ -12,9 +11,9 @@ namespace Application.Core.Login.Servers
             _server = server;
         }
 
-        public override Task<GetTeamResponse> GetTeamModel(GetTeamRequest request, ServerCallContext context)
+        public override Task<ProtoService.GetTeamResponse> GetTeamModel(ProtoService.GetTeamRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new GetTeamResponse { Model = _server.TeamManager.GetTeamDto(request.Id) });
+            return Task.FromResult(new ProtoService.GetTeamResponse { Model = _server.TeamManager.GetTeamDto(request.Id) });
         }
     }
 }

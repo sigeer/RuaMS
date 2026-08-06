@@ -7,17 +7,17 @@ namespace Application.Core.Login.Mappers
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<PlayerNpcEquipModel, LifeProto.PlayerNPCEquip>()
+            config.NewConfig<PlayerNpcEquipModel, ProtoModel.PlayerNPCEquipProto>()
                 .Map(dest => dest.ItemId, src => src.Equipid)
                 .Map(dest => dest.Position, src => src.Equippos);
-            config.NewConfig<LifeProto.PlayerNPCEquip, PlayerNpcEquipModel>()
+            config.NewConfig<ProtoModel.PlayerNPCEquipProto, PlayerNpcEquipModel>()
                 .Map(dest => dest.Equipid, src => src.ItemId)
                 .Map(dest => dest.Equippos, src => src.Position);
 
-            config.NewConfig<PlayerNpcModel, LifeProto.PlayerNPCDto>()
+            config.NewConfig<PlayerNpcModel, ProtoModel.PlayerNPCProto>()
                 .Map(dest => dest.MapId, src => src.Map)
                 .Map(dest => dest.ScriptId, src => src.NpcId);
-            config.NewConfig<LifeProto.PlayerNPCDto, PlayerNpcModel>()
+            config.NewConfig<ProtoModel.PlayerNPCProto, PlayerNpcModel>()
                 .Map(dest => dest.Map, src => src.MapId)
                 .Map(dest => dest.NpcId, src => src.ScriptId);
 

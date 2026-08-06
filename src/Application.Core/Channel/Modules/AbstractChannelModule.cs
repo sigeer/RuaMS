@@ -36,9 +36,9 @@ namespace Application.Core.Channel.Modules
             _logger.LogInformation("模块 {Name}：卸载", _moduleName);
             return Task.CompletedTask;
         }
-        public virtual void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg) { }
-        public virtual void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg) { }
-        public virtual void OnPlayerServerChanged(SyncProto.PlayerFieldChange arg)
+        public virtual void OnPlayerLevelUp(ProtoModel.PlayerFieldChange arg) { }
+        public virtual void OnPlayerChangeJob(ProtoModel.PlayerFieldChange arg) { }
+        public virtual void OnPlayerServerChanged(ProtoModel.PlayerFieldChange arg)
         {
             if (arg.FromChannel == 0 && arg.Channel > 0)
             {

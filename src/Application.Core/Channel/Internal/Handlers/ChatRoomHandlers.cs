@@ -1,6 +1,5 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 using tools;
 
@@ -8,7 +7,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class ChatRoomHandlers
     {
-        public class OnJoinChatRoom : InternalSessionChannelHandler<JoinChatRoomResponse>
+        public class OnJoinChatRoom : InternalSessionChannelHandler<ProtoService.JoinChatRoomResponse>
         {
             public OnJoinChatRoom(WorldChannelServer server) : base(server)
             {
@@ -16,7 +15,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnJoinChatRoom;
 
-            protected override async Task HandleMessage(JoinChatRoomResponse data)
+            protected override async Task HandleMessage(ProtoService.JoinChatRoomResponse data)
             {
                 var code = (JoinChatRoomResult)data.Code;
                 if (code == JoinChatRoomResult.Success)
@@ -47,10 +46,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 }
             }
 
-            protected override JoinChatRoomResponse Parse(ByteString data) => JoinChatRoomResponse.Parser.ParseFrom(data);
+            protected override ProtoService.JoinChatRoomResponse Parse(ByteString data) => ProtoService.JoinChatRoomResponse.Parser.ParseFrom(data);
         }
 
-        public class OnLeaveChatRoom : InternalSessionChannelHandler<LeaveChatRoomResponse>
+        public class OnLeaveChatRoom : InternalSessionChannelHandler<ProtoService.LeaveChatRoomResponse>
         {
             public OnLeaveChatRoom(WorldChannelServer server) : base(server)
             {
@@ -58,7 +57,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnLeaveChatRoom;
 
-            protected override async Task HandleMessage(LeaveChatRoomResponse data)
+            protected override async Task HandleMessage(ProtoService.LeaveChatRoomResponse data)
             {
                 var allMembers = data.Room.Members.Where(x => x.PlayerInfo != null).Select(x => x.PlayerInfo.Character.Id);
                 await _server.SendToPlayersAsync([data.LeftPlayerID, .. allMembers], async chr =>
@@ -74,10 +73,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override LeaveChatRoomResponse Parse(ByteString data) => LeaveChatRoomResponse.Parser.ParseFrom(data);
+            protected override ProtoService.LeaveChatRoomResponse Parse(ByteString data) => ProtoService.LeaveChatRoomResponse.Parser.ParseFrom(data);
         }
 
-        public class ReceiveMessage : InternalSessionChannelHandler<SendChatRoomMessageResponse>
+        public class ReceiveMessage : InternalSessionChannelHandler<ProtoService.SendChatRoomMessageResponse>
         {
             public ReceiveMessage(WorldChannelServer server) : base(server)
             {
@@ -85,7 +84,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnChatRoomMessageReceived;
 
-            protected override async Task HandleMessage(SendChatRoomMessageResponse res)
+            protected override async Task HandleMessage(ProtoService.SendChatRoomMessageResponse res)
             {
                 await _server.SendToPlayersAsync(res.Members, async chr =>
                 {
@@ -93,7 +92,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override SendChatRoomMessageResponse Parse(ByteString data) => SendChatRoomMessageResponse.Parser.ParseFrom(data);
+            protected override ProtoService.SendChatRoomMessageResponse Parse(ByteString data) => ProtoService.SendChatRoomMessageResponse.Parser.ParseFrom(data);
         }
     }
 }

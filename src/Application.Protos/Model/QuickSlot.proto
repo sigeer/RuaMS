@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message QuickSlotProto {
+  int64 longValue = 1;
+}

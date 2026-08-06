@@ -31,12 +31,12 @@ namespace Application.Core.Game.Players
         public PlayerBag Bag { get; set; }
         public BuddyList BuddyList { get; set; }
 
-        public RepeatedField<ItemProto.RingDto> Rings { get; }
+        public RepeatedField<ProtoModel.RingProto> Rings { get; }
         public PlayerKeyMap KeyMap { get; set; }
         public List<FameLogObject> FameLogs { get; set; }
 
 
-        public Player(IChannelClient client, IMap map, Point pos, SyncProto.PlayerGetterDto o) : base(map, pos, 0)
+        public Player(IChannelClient client, IMap map, Point pos, ProtoModel.PlayerGetterProto o) : base(map, pos, 0)
         {
             Client = client;
 

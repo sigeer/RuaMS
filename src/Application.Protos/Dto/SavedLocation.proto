@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message SavedLocationDto {
-  string locationtype = 1;
-  int32 map = 2;
-  int32 portal = 3;
-}

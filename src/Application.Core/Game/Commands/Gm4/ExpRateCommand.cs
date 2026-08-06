@@ -19,6 +19,6 @@ public class ExpRateCommand : CommandBase
             return;
 
         int exprate = Math.Max(d, 1);
-        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { ExpRate = exprate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new ProtoModel.WorldConfig { ExpRate = exprate });
     }
 }

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "Model/Equip.proto";
+import "Model/Pet.proto";
+
+
+import "google/protobuf/wrappers.proto";
+package ProtoModel;
+
+
+
+message ItemProto {
+  int64 uniqueId = 1;
+  int32 itemid = 2;
+  int32 quantity = 3;
+  int32 position = 4;
+  string owner = 5;
+  int32 flag = 6;
+  int64 expiration = 7;
+  string giftFrom = 8;
+  EquipProto equipInfo = 9;
+  PetProto petInfo = 10;
+  google.protobuf.StringValue properties = 11;
+}

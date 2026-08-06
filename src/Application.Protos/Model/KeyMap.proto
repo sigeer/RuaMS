@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message KeyMapProto {
+  int32 key = 1;
+  int32 type = 2;
+  int32 action = 3;
+}

@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package BaseProto;
-
-message TimeWrapper {
-	int64 value = 1;
-}

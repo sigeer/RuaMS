@@ -97,9 +97,9 @@ public static class AdminSeedData
             PartySearch = true,
             Jailexpire = 0,
         };
-        var data = new Dto.CharacterDataProto() { GachaponStorage = new(), Bag = new Dto.CharacterBagDataProto() };
+        var data = new ProtoModel.CharacterDataProto() { GachaponStorage = new(), Bag = new ProtoModel.CharacterBagDataProto() };
         data.Bag.EtcInv.Add(
-            new Dto.ItemDto()
+            new ProtoModel.ItemProto()
             {
                 UniqueId = -1,
                 Itemid = 4161001,
@@ -113,7 +113,7 @@ public static class AdminSeedData
             }
         );
 
-        data.Bag.EquippedInv.Add(new Dto.ItemDto()
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto()
         {
             UniqueId = -1,
             Itemid = 1040002,
@@ -124,7 +124,7 @@ public static class AdminSeedData
             Expiration = -1,
             GiftFrom = "",
             Properties = null,
-            EquipInfo = new Dto.EquipDto
+            EquipInfo = new ProtoModel.EquipProto
             {
                 Upgradeslots = 7,
                 Level = 0,
@@ -149,7 +149,7 @@ public static class AdminSeedData
                 Itemexp = 0,
             },
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto()
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto()
         {
             UniqueId = -1,
             Itemid = 1060002,
@@ -160,7 +160,7 @@ public static class AdminSeedData
             Expiration = -1,
             GiftFrom = "",
             Properties = null,
-            EquipInfo = new Dto.EquipDto()
+            EquipInfo = new ProtoModel.EquipProto()
             {
                 Upgradeslots = 7,
                 Level = 0,
@@ -185,7 +185,7 @@ public static class AdminSeedData
                 Itemexp = 0,
             },
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto()
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto()
         {
             UniqueId = -1,
             Itemid = 1072001,
@@ -196,7 +196,7 @@ public static class AdminSeedData
             Expiration = -1,
             GiftFrom = "",
             Properties = null,
-            EquipInfo = new Dto.EquipDto
+            EquipInfo = new ProtoModel.EquipProto
             {
                 Upgradeslots = 5,
                 Level = 0,
@@ -221,7 +221,7 @@ public static class AdminSeedData
                 Itemexp = 0,
             },
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto()
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto()
         {
             UniqueId = -1,
             Itemid = 1302000,
@@ -232,7 +232,7 @@ public static class AdminSeedData
             Expiration = -1,
             GiftFrom = "",
             Properties = null,
-            EquipInfo = new Dto.EquipDto
+            EquipInfo = new ProtoModel.EquipProto
             {
                 Upgradeslots = 7,
                 Level = 0,

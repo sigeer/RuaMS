@@ -1,12 +1,11 @@
 using Application.Shared.Message;
 using Google.Protobuf;
-using InvitationProto;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class InvitationHandlers
     {
-        public class SendInvite : InternalSessionChannelHandler<CreateInviteResponse>
+        public class SendInvite : InternalSessionChannelHandler<ProtoService.CreateInviteResponse>
         {
             public SendInvite(WorldChannelServer server) : base(server)
             {
@@ -14,7 +13,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnInvitationSent;
 
-            protected override Task HandleMessage(CreateInviteResponse res)
+            protected override Task HandleMessage(ProtoService.CreateInviteResponse res)
             {
                 return _server.BroadcastAsync(w =>
                 {
@@ -22,10 +21,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override CreateInviteResponse Parse(ByteString data) => CreateInviteResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateInviteResponse Parse(ByteString data) => ProtoService.CreateInviteResponse.Parser.ParseFrom(data);
         }
 
-        public class AnswerInvite : InternalSessionChannelHandler<AnswerInviteResponse>
+        public class AnswerInvite : InternalSessionChannelHandler<ProtoService.AnswerInviteResponse>
         {
             public AnswerInvite(WorldChannelServer server) : base(server)
             {
@@ -33,7 +32,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnInvitationAnswered;
 
-            protected override Task HandleMessage(AnswerInviteResponse res)
+            protected override Task HandleMessage(ProtoService.AnswerInviteResponse res)
             {
                 return _server.BroadcastAsync(w =>
                 {
@@ -41,7 +40,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override AnswerInviteResponse Parse(ByteString data) => AnswerInviteResponse.Parser.ParseFrom(data);
+            protected override ProtoService.AnswerInviteResponse Parse(ByteString data) => ProtoService.AnswerInviteResponse.Parser.ParseFrom(data);
         }
     }
 }

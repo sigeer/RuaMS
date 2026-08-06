@@ -1,6 +1,6 @@
 namespace Application.Shared.MapObjects
 {
-    public class PlayerShopDto
+    public class PlayerShopProto
     {
         public int Channel { get; set; }
         public string MapName { get; set; }

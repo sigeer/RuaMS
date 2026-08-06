@@ -1,4 +1,3 @@
-using ItemProto;
 using tools;
 
 namespace Application.Core.Channel.Commands
@@ -6,9 +5,9 @@ namespace Application.Core.Channel.Commands
     internal class InvokeTVCommand : IWorldChannelAsyncCommand
     {
         public string Name => nameof(InvokeTVCommand);
-        CreateTVMessageBroadcast res;
+        ProtoModel.CreateTVMessageBroadcastProto res;
 
-        public InvokeTVCommand(CreateTVMessageBroadcast res)
+        public InvokeTVCommand(ProtoModel.CreateTVMessageBroadcastProto res)
         {
             this.res = res;
         }

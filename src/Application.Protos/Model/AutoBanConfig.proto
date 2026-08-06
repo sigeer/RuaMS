@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Model/PlayerBase.proto";
+
+package ProtoModel;
+
+
+
+message AutoBanIgnoredWrapperProto {
+	repeated PlayerBaseProto list = 1;
+}

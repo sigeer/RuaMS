@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message ShopProto {
+  int32 shopId = 1;
+  int32 npcId = 2;
+  repeated ShopItemProto items = 3;
+}
+
+
+
+message ShopItemProto {
+  int32 itemId = 1;
+  int32 price = 2;
+  int32 pitch = 3;
+  int32 position = 4;
+  int32 buyable = 5;
+}

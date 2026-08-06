@@ -186,7 +186,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return (int)Math.Ceiling(travelTime / WorldTravelRate);
     }
 
-    public async Task UpdateWorldConfig(Config.WorldConfig updatePatch)
+    public async Task UpdateWorldConfig(ProtoModel.WorldConfig updatePatch)
     {
         if (updatePatch.MobRate.HasValue)
         {
@@ -252,7 +252,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         // NodeService.PluginManager.GetPluginContainer("Application.Plugin.Script")
     }
-    public async Task Initialize(Config.RegisterServerResult config)
+    public async Task Initialize(ProtoModel.RegisterServerResultProto config)
     {
         log.Information("初始化...");
 

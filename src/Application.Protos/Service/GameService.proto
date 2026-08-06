@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+import "Model/BoolWrapper.proto";
+import "Model/Drop.proto";
+import "Model/ExpeditionRegistry.proto";
+import "Model/Gachapon.proto";
+import "Model/HiredMerchant.proto";
+import "Model/MonitorConfig.proto";
+import "Model/Rewards.proto";
+import "Model/SkillBook.proto";
+import "Service/CDK.proto";
+import "Service/CreatePackageRequest.proto";
+import "Service/DBLife.proto";
+import "Service/ExpeditionEntry.proto";
+import "Service/HiredMerchant.proto";
+import "Service/MonsterCardData.proto";
+import "Service/NameChange.proto";
+import "Service/Note.proto";
+import "Service/PlayerNPC.proto";
+import "Service/RankCharacter.proto";
+import "Service/Shop.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service GameService {
+	rpc CheckCharacterName(CheckCharacterNameRequest) returns(ProtoModel.BoolWrapper);
+	rpc ChangeName(NameChangeRequest) returns(NameChangeResponse);
+
+	rpc LoadReactorDropData(google.protobuf.Empty) returns(ProtoModel.DropAllProto);
+	rpc LoadMobDropData(google.protobuf.Empty) returns(ProtoModel.DropAllProto);
+	rpc LoadMonsterCardData(google.protobuf.Empty) returns(QueryMonsterCardDataResponse);
+	rpc LoadGachaponData(google.protobuf.Empty) returns(ProtoModel.GacheponDataProto);
+	rpc LoadReactorSkillBookData(google.protobuf.Empty) returns(ProtoModel.ReactorSkillBookProto);
+
+	rpc SendNote(SendNormalNoteRequest) returns(ProtoModel.BoolWrapper);
+	rpc SetNoteRead(SetNoteReadRequest) returns(SetNoteReadResponse);
+
+	rpc GetShop(GetShopRequest) returns(GetShopResponse);
+
+	rpc RegisterExpedition(ProtoModel.ExpeditionRegistry) returns (google.protobuf.Empty);
+	rpc CheckExpedition(ExpeditionCheckRequest) returns (ExpeditionCheckResponse);
+
+	rpc UseCDK(UseCdkRequest) returns(UseCdkResponse);
+
+	rpc GetActiveRewards(ProtoModel.GetRewardsRequest) returns (ProtoModel.GetRewardsResponse);
+	rpc TakeReward(UseIdRequest) returns (UseCdkResponse);
+
+	rpc LoadCharacterRank(LoadCharacterRankRequest) returns(LoadCharacterRankResponse);
+
+	rpc LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest) returns(ProtoModel.RemoteHiredMerchantProto);
+	rpc CommitRetrievedFromFredrick(CommitRetrievedRequest) returns(CommitRetrievedResponse);
+
+	rpc LoadMonitor(google.protobuf.Empty) returns(ProtoModel.MonitorDataWrapperProto);
+
+	rpc GetAllPLife(GetAllPLifeRequest) returns(GetAllPLifeResponse);
+	rpc GetLifeByMapId(GetPLifeByMapIdRequest) returns(GetPLifeByMapIdResponse);
+
+	rpc CreatePlayerNPCCheck(CreatePlayerNPCPreRequest)returns(CreatePlayerNPCPreResponse);
+	rpc CreatePlayerNPC(CreatePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc RemoveAll(google.protobuf.Empty) returns(google.protobuf.Empty);
+	rpc RemoveByName(RemovePlayerNPCRequest) returns(google.protobuf.Empty);
+	rpc GetMapPlayerNPC(GetMapPlayerNPCListRequest) returns(GetMapPlayerNPCListResponse);
+	rpc GetAllPlayerNPC(google.protobuf.Empty) returns(GetAllPlayerNPCDataResponse);
+}
+
+
+
+message CheckCharacterNameRequest {
+	string name = 1;
+}

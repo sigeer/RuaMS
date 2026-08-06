@@ -16,7 +16,7 @@ namespace Application.Core.Login.Models.Items
         /// </summary>
         public long StoreTime { get; init; }
 
-        public ItemProto.PlayerShopStoreItems Items { get; set; }
+        public ProtoModel.PlayerShopStoreItemsProto Items { get; set; }
 
         /// <summary>
         /// 交易额

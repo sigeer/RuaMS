@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "Model/Character.proto";
+import "Model/Event.proto";
+import "Model/Item.proto";
+import "Model/KeyMap.proto";
+import "Model/Skill.proto";
+
+package ProtoModel;
+
+
+
+message NewPlayerSaveProto {
+  int32 accountId = 1;
+  CharacterProto character = 2; // CHECK TYPE
+  repeated KeyMapProto keyMaps = 6; // CHECK TYPE
+  repeated ItemProto inventoryItems = 3; // CHECK TYPE
+  repeated EventProto events = 4; // CHECK TYPE
+  repeated SkillProto skills = 5; // CHECK TYPE
+}

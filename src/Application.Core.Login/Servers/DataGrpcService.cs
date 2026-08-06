@@ -1,11 +1,9 @@
-using BaseProto;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using SyncProto;
 
 namespace Application.Core.Login.Servers
 {
-    internal class DataGrpcService : ServiceProto.DataService.DataServiceBase
+    internal class DataGrpcService : ProtoService.DataService.DataServiceBase
     {
         readonly MasterServer _server;
 
@@ -14,18 +12,18 @@ namespace Application.Core.Login.Servers
             _server = server;
         }
 
-        public override Task<BoolWrapper> IsGuildQueued(QuildRequest request, ServerCallContext context)
+        public override Task<ProtoModel.BoolWrapper> IsGuildQueued(ProtoService.GuildQueueRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new BoolWrapper { Value = _server.IsGuildQueued(request.GuildId) });
+            return Task.FromResult(new ProtoModel.BoolWrapper { Value = _server.IsGuildQueued(request.GuildId) });
         }
 
-        public override Task<Empty> PutGuildQueued(QuildRequest request, ServerCallContext context)
+        public override Task<Empty> PutGuildQueued(ProtoService.GuildQueueRequest request, ServerCallContext context)
         {
             _server.PutGuildQueued(request.GuildId);
             return Task.FromResult(new Empty());
         }
 
-        public override Task<Empty> RemoveGuildQueued(QuildRequest request, ServerCallContext context)
+        public override Task<Empty> RemoveGuildQueued(ProtoService.GuildQueueRequest request, ServerCallContext context)
         {
             _server.RemoveGuildQueued(request.GuildId);
             return Task.FromResult(new Empty());

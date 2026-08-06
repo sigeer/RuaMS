@@ -1,10 +1,9 @@
 using Application.Shared.Message;
 using Google.Protobuf;
-using MessageProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
-    internal class MultiChatHandler : InternalSessionMasterHandler<MultiChatMessage>
+    internal class MultiChatHandler : InternalSessionMasterHandler<ProtoModel.MultiChatMessage>
     {
         public MultiChatHandler(MasterServer server) : base(server)
         {
@@ -12,7 +11,7 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.MultiChat;
 
-        protected override Task HandleMessage(MultiChatMessage data)
+        protected override Task HandleMessage(ProtoModel.MultiChatMessage data)
         {
             if (data.Type == 0)
                 return _server.BuddyManager.SendBuddyChatAsync(data.FromName, data.Text, data.Receivers.ToArray());
@@ -25,6 +24,6 @@ namespace Application.Core.Login.Internal.Handlers
             return Task.CompletedTask;
         }
 
-        protected override MultiChatMessage Parse(ByteString content) => MultiChatMessage.Parser.ParseFrom(content);
+        protected override ProtoModel.MultiChatMessage Parse(ByteString content) => ProtoModel.MultiChatMessage.Parser.ParseFrom(content);
     }
 }

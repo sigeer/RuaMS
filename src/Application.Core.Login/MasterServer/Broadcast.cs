@@ -4,9 +4,9 @@ namespace Application.Core.Login
 {
     public partial class MasterServer
     {
-        public Config.WorldConfig GetWorldConfig()
+        public ProtoModel.WorldConfig GetWorldConfig()
         {
-            return new Config.WorldConfig
+            return new ProtoModel.WorldConfig
             {
                 BossDropRate = BossDropRate,
                 DropRate = DropRate,
@@ -22,7 +22,7 @@ namespace Application.Core.Login
 
         public async Task DropWorldMessage(int type, string message, bool onlyGM = false)
         {
-            var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
+            var msg = new ProtoModel.DropMessageBroadcastProto { Type = type, Message = message };
             if (onlyGM)
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
@@ -38,15 +38,15 @@ namespace Application.Core.Login
 
         public async Task DropWorldMessage(int type, string message, int[] targets)
         {
-            var msg = new MessageProto.DropMessageBroadcast { Type = type, Message = message };
+            var msg = new ProtoModel.DropMessageBroadcastProto { Type = type, Message = message };
             msg.Receivers.AddRange(targets);
 
             await Transport.SendMessageN(ChannelRecvCode.DropTextMessage, msg, msg.Receivers);
         }
 
-        public async Task BroadcastPacket(MessageProto.PacketRequest p)
+        public async Task BroadcastPacket(ProtoService.PacketRequest p)
         {
-            var msg = new MessageProto.PacketBroadcast { Data = p.Data };
+            var msg = new ProtoModel.PacketBroadcastProto { Data = p.Data };
             if (p.OnlyGM)
             {
                 var gmids = CharacterManager.GetOnlinedGMs();
@@ -60,9 +60,9 @@ namespace Application.Core.Login
             }
         }
 
-        public async Task BroadcastPacket(MessageProto.PacketRequest p, IEnumerable<int> chrIds)
+        public async Task BroadcastPacket(ProtoService.PacketRequest p, IEnumerable<int> chrIds)
         {
-            var msg = new MessageProto.PacketBroadcast { Data = p.Data };
+            var msg = new ProtoModel.PacketBroadcastProto { Data = p.Data };
             msg.Receivers.AddRange(chrIds);
             await Transport.SendMessageN(ChannelRecvCode.HandleFullPacket, msg, msg.Receivers);
         }
@@ -79,7 +79,7 @@ namespace Application.Core.Login
 
         public void DisconnectChr(int chrId)
         {
-            var data = new SystemProto.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new() };
+            var data = new ProtoService.DisconnectPlayerByNameResponse() { TargetId = chrId, Request = new() };
             _ = Transport.SendMessageN(ChannelRecvCode.InvokeDisconnectPlayer, data, [chrId]);
         }
     }

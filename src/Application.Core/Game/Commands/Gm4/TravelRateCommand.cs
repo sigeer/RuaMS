@@ -24,6 +24,6 @@ public class TravelRateCommand : CommandBase
         }
 
         int travelrate = Math.Max(d, 1);
-        await c.getChannelServer().Node.Transport.SendWorldConfig(new Config.WorldConfig { TravelRate = travelrate });
+        await c.getChannelServer().Node.Transport.SendWorldConfig(new ProtoModel.WorldConfig { TravelRate = travelrate });
     }
 }

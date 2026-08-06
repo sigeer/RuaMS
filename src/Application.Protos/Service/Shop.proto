@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "Model/Shop.proto";
+
+package ProtoService;
+
+
+
+message GetShopRequest {
+	int32 id = 1;
+	bool isShopId = 2;
+}
+
+
+
+message GetShopResponse {
+	ProtoModel.ShopProto data = 1;
+}

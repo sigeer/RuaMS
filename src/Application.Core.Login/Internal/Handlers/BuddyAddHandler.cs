@@ -1,13 +1,11 @@
 using Application.Shared.Message;
-using BuddyProto;
 using Google.Protobuf;
-using MessageProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class BuddyHandlers
     {
-        internal class BuddyAddHandler : InternalSessionMasterHandler<AddBuddyRequest>
+        internal class BuddyAddHandler : InternalSessionMasterHandler<ProtoService.AddBuddyRequest>
         {
             public BuddyAddHandler(MasterServer server) : base(server)
             {
@@ -15,15 +13,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AddBuddy;
 
-            protected override Task HandleMessage(AddBuddyRequest message)
+            protected override Task HandleMessage(ProtoService.AddBuddyRequest message)
             {
                 return _server.BuddyManager.AddBuddyByName(message);
             }
 
-            protected override AddBuddyRequest Parse(ByteString content) => AddBuddyRequest.Parser.ParseFrom(content);
+            protected override ProtoService.AddBuddyRequest Parse(ByteString content) => ProtoService.AddBuddyRequest.Parser.ParseFrom(content);
         }
 
-        internal class BuddyAddByIdHandler : InternalSessionMasterHandler<AddBuddyByIdRequest>
+        internal class BuddyAddByIdHandler : InternalSessionMasterHandler<ProtoService.AddBuddyByIdRequest>
         {
             public BuddyAddByIdHandler(MasterServer server) : base(server)
             {
@@ -31,15 +29,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AddBuddyById;
 
-            protected override Task HandleMessage(AddBuddyByIdRequest message)
+            protected override Task HandleMessage(ProtoService.AddBuddyByIdRequest message)
             {
                 return _server.BuddyManager.AddBuddyById(message);
             }
 
-            protected override AddBuddyByIdRequest Parse(ByteString content) => AddBuddyByIdRequest.Parser.ParseFrom(content);
+            protected override ProtoService.AddBuddyByIdRequest Parse(ByteString content) => ProtoService.AddBuddyByIdRequest.Parser.ParseFrom(content);
         }
 
-        internal class BuddyRemoveHandler : InternalSessionMasterHandler<DeleteBuddyRequest>
+        internal class BuddyRemoveHandler : InternalSessionMasterHandler<ProtoService.DeleteBuddyRequest>
         {
             public BuddyRemoveHandler(MasterServer server) : base(server)
             {
@@ -47,15 +45,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.RemoveBuddy;
 
-            protected override Task HandleMessage(DeleteBuddyRequest message)
+            protected override Task HandleMessage(ProtoService.DeleteBuddyRequest message)
             {
                 return _server.BuddyManager.DeleteBuddy(message);
             }
 
-            protected override DeleteBuddyRequest Parse(ByteString content) => DeleteBuddyRequest.Parser.ParseFrom(content);
+            protected override ProtoService.DeleteBuddyRequest Parse(ByteString content) => ProtoService.DeleteBuddyRequest.Parser.ParseFrom(content);
         }
 
-        internal class BuddyNoticeHandler : InternalSessionMasterHandler<SendBuddyNoticeMessageDto>
+        internal class BuddyNoticeHandler : InternalSessionMasterHandler<ProtoModel.SendBuddyNoticeMessageProto>
         {
             public BuddyNoticeHandler(MasterServer server) : base(server)
             {
@@ -63,15 +61,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DropBuddyMessage;
 
-            protected override Task HandleMessage(SendBuddyNoticeMessageDto message)
+            protected override Task HandleMessage(ProtoModel.SendBuddyNoticeMessageProto message)
             {
                 return _server.BuddyManager.BroadcastNoticeMessage(message);
             }
 
-            protected override SendBuddyNoticeMessageDto Parse(ByteString content) => SendBuddyNoticeMessageDto.Parser.ParseFrom(content);
+            protected override ProtoModel.SendBuddyNoticeMessageProto Parse(ByteString content) => ProtoModel.SendBuddyNoticeMessageProto.Parser.ParseFrom(content);
         }
 
-        internal class BuddyLocationHandler : InternalSessionMasterHandler<GetLocationRequest>
+        internal class BuddyLocationHandler : InternalSessionMasterHandler<ProtoService.GetLocationRequest>
         {
             public BuddyLocationHandler(MasterServer server) : base(server)
             {
@@ -79,15 +77,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.GetLocation;
 
-            protected override Task HandleMessage(GetLocationRequest message)
+            protected override Task HandleMessage(ProtoService.GetLocationRequest message)
             {
                 return _server.BuddyManager.GetLocation(message);
             }
 
-            protected override GetLocationRequest Parse(ByteString content) => GetLocationRequest.Parser.ParseFrom(content);
+            protected override ProtoService.GetLocationRequest Parse(ByteString content) => ProtoService.GetLocationRequest.Parser.ParseFrom(content);
         }
 
-        internal class WhisperHandler : InternalSessionMasterHandler<SendWhisperMessageRequest>
+        internal class WhisperHandler : InternalSessionMasterHandler<ProtoService.SendWhisperMessageRequest>
         {
             public WhisperHandler(MasterServer server) : base(server)
             {
@@ -95,12 +93,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendWhisper;
 
-            protected override Task HandleMessage(SendWhisperMessageRequest message)
+            protected override Task HandleMessage(ProtoService.SendWhisperMessageRequest message)
             {
                 return _server.BuddyManager.SendWhisper(message);
             }
 
-            protected override SendWhisperMessageRequest Parse(ByteString content) => SendWhisperMessageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.SendWhisperMessageRequest Parse(ByteString content) => ProtoService.SendWhisperMessageRequest.Parser.ParseFrom(content);
         }
     }
 

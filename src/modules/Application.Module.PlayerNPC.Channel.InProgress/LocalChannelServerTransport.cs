@@ -1,4 +1,3 @@
-using LifeProto;
 
 namespace Application.Module.PlayerNPC.Channel.InProgress
 {
@@ -11,22 +10,22 @@ namespace Application.Module.PlayerNPC.Channel.InProgress
             _manager = manager;
         }
 
-        public void CreatePlayerNPC(CreatePlayerNPCRequest createRequest)
+        public void CreatePlayerNPC(ProtoService.CreatePlayerNPCRequest createRequest)
         {
             _manager.Create(createRequest);
         }
 
-        public GetMapPlayerNPCListResponse GetMapPlayerNPCList(GetMapPlayerNPCListRequest getMapPlayerNPCListRequest)
+        public ProtoService.GetMapPlayerNPCListResponse GetMapPlayerNPCList(ProtoService.GetMapPlayerNPCListRequest getMapPlayerNPCListRequest)
         {
             return _manager.GetMapData(getMapPlayerNPCListRequest);
         }
 
-        public GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
+        public ProtoService.GetAllPlayerNPCDataResponse GetAllPlayerNPCList()
         {
             return _manager.GetAllData();
         }
 
-        public CreatePlayerNPCPreResponse PreCreatePlayerNPC(CreatePlayerNPCPreRequest commitPlayerNPCRequest)
+        public ProtoService.CreatePlayerNPCPreResponse PreCreatePlayerNPC(ProtoService.CreatePlayerNPCPreRequest commitPlayerNPCRequest)
         {
             return _manager.PreCreate(commitPlayerNPCRequest);
         }
@@ -36,7 +35,7 @@ namespace Application.Module.PlayerNPC.Channel.InProgress
             _manager.RemoveAll();
         }
 
-        public void RemovePlayerNPC(RemovePlayerNPCRequest removePlayerNPCRequest)
+        public void RemovePlayerNPC(ProtoService.RemovePlayerNPCRequest removePlayerNPCRequest)
         {
             _manager.Remove(removePlayerNPCRequest);
         }

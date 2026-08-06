@@ -5,8 +5,8 @@ namespace Application.Core.Mappers
     [Mapper]
     public interface IItemMapper
     {
-        Dto.ItemDto MapToDto(Item? item);
+        ProtoModel.ItemProto MapToDto(Item? item);
 
-        Item MapToObject(Dto.ItemDto itemDto);
+        Item MapToObject(ProtoModel.ItemProto itemDto);
     }
 }

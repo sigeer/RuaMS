@@ -105,7 +105,7 @@ namespace Application.Core.Channel.Services
             List<ItemMessagePair> gifts = new();
             try
             {
-                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(new ItemProto.GetMyGiftsRequest { MasterId = chr.Id }).List);
+                var dataList = _mapper.Map<GiftModel[]>(_transport.LoadPlayerGifts(new ProtoService.GetMyGiftsRequest { MasterId = chr.Id }).List);
                 foreach (var rs in dataList)
                 {
                     cashShop.Notes++;
@@ -191,7 +191,7 @@ namespace Application.Core.Channel.Services
 
         internal bool UseCash_TV(Player player, string? victim, List<string> messages, int tvType, bool showEar)
         {
-            var request = new ItemProto.CreateTVMessageRequest
+            var request = new ProtoService.CreateTVMessageRequest
             {
                 MasterId = player.Id,
                 PartnerName = victim,
@@ -206,7 +206,7 @@ namespace Application.Core.Channel.Services
 
         internal bool UseCash_ItemMegaphone(Player player, Item? item, string message, bool isWishper)
         {
-            var request = new ItemProto.UseItemMegaphoneRequest
+            var request = new ProtoService.UseItemMegaphoneRequest
             {
                 MasterId = player.Id,
                 Message = message,
@@ -221,7 +221,7 @@ namespace Application.Core.Channel.Services
         {
             await chr.BuyCashItem(cashType, cItem, async () =>
             {
-                var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+                var data = _transport.SendBuyCashItem(new ProtoService.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
                     CashItemId = cItem.ItemID,
@@ -239,7 +239,7 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        async Task BuyCashItemCallback(Player chr, CashCommodityTemplate cItem, CashProto.BuyCashItemResponse data)
+        async Task BuyCashItemCallback(Player chr, CashCommodityTemplate cItem, ProtoService.BuyCashItemResponse data)
         {
             if (data.GiftInfo != null)
             {
@@ -286,12 +286,12 @@ namespace Application.Core.Channel.Services
         {
             await chr.BuyCashItem(cashType, cItem, async () =>
             {
-                var data = _transport.SendBuyCashItem(new CashProto.BuyCashItemRequest
+                var data = _transport.SendBuyCashItem(new ProtoService.BuyCashItemRequest
                 {
                     MasterId = chr.Id,
                     CashItemId = cItem.ItemID,
                     CashItemSn = cItem.CashItemSN,
-                    GiftInfo = new CashProto.GiftInfo
+                    GiftInfo = new ProtoModel.GiftInfoProto
                     {
                         Message = message,
                         Recipient = toName,
@@ -311,7 +311,7 @@ namespace Application.Core.Channel.Services
 
         public bool RegisterNameChange(Player chr, string newName)
         {
-            Dto.NameChangeResponse res = _transport.ReigsterNameChange(new Dto.NameChangeRequest { MasterId = chr.Id, NewName = newName });
+            ProtoService.NameChangeResponse res = _transport.ReigsterNameChange(new ProtoService.NameChangeRequest { MasterId = chr.Id, NewName = newName });
             if (res.Code == 0)
             {
                 chr.Name = newName;
@@ -329,10 +329,10 @@ namespace Application.Core.Channel.Services
                 code = UseCdkResponseCode.TooManyError;
             }
 
-            ItemProto.UseCdkResponse res = new ItemProto.UseCdkResponse();
+            ProtoService.UseCdkResponse res = new ProtoService.UseCdkResponse();
             if (code == UseCdkResponseCode.Success)
             {
-                res = _transport.UseCdk(new ItemProto.UseCdkRequest { MasterId = chr.Id, Cdk = cdk });
+                res = _transport.UseCdk(new ProtoService.UseCdkRequest { MasterId = chr.Id, Cdk = cdk });
                 code = (UseCdkResponseCode)res.Code;
             }
 

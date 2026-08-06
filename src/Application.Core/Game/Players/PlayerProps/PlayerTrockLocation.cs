@@ -5,7 +5,7 @@ namespace Application.Core.Game.Players.PlayerProps
     /// <summary>
     /// 传送石
     /// </summary>
-    public class PlayerTrockLocation : PlayerPropBase<Dto.TrockLocationDto>
+    public class PlayerTrockLocation : PlayerPropBase<ProtoModel.TrockLocationProto>
     {
         int[] _dataSouce;
         int[] _vipDataSouce;
@@ -20,7 +20,7 @@ namespace Application.Core.Game.Players.PlayerProps
             _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
         }
 
-        public override void LoadData(RepeatedField<Dto.TrockLocationDto> trockLocList)
+        public override void LoadData(RepeatedField<ProtoModel.TrockLocationProto> trockLocList)
         {
             _dataSouce = Enumerable.Repeat(MapId.NONE, _size).ToArray();
             _vipDataSouce = Enumerable.Repeat(MapId.NONE, _vipSize).ToArray();
@@ -43,10 +43,10 @@ namespace Application.Core.Game.Players.PlayerProps
             }
         }
 
-        public override Dto.TrockLocationDto[] ToDto()
+        public override ProtoModel.TrockLocationProto[] ToDto()
         {
-            return _dataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 0 })
-                .Concat(_vipDataSouce.Select(x => new Dto.TrockLocationDto() { Mapid = x, Vip = 1 })).ToArray();
+            return _dataSouce.Select(x => new ProtoModel.TrockLocationProto() { Mapid = x, Vip = 0 })
+                .Concat(_vipDataSouce.Select(x => new ProtoModel.TrockLocationProto() { Mapid = x, Vip = 1 })).ToArray();
         }
         public int[] GetTrockMaps()
         {

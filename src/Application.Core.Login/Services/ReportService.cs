@@ -3,7 +3,6 @@ using Application.EF;
 using Application.EF.Entities;
 using Application.Shared.Message;
 using Application.Utility.Extensions;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,9 +23,9 @@ namespace Application.Core.Login.Services
             _server = server;
         }
 
-        public async Task AddReport(SendReportRequest request)
+        public async Task AddReport(ProtoService.SendReportRequest request)
         {
-            var res = new SendReportResponse() { MasterId = request.MasterId };
+            var res = new ProtoService.SendReportResponse() { MasterId = request.MasterId };
             var target = _server.CharacterManager.FindPlayerByName(request.Victim);
             if (target == null)
             {

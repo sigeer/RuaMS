@@ -1,7 +1,6 @@
 using Application.Shared.Constants;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
-using CashProto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Login.ServerData
@@ -29,16 +28,16 @@ namespace Application.Core.Login.ServerData
 
         }
 
-        public BuyCashItemResponse BuyCashItem(BuyCashItemRequest request)
+        public ProtoService.BuyCashItemResponse BuyCashItem(ProtoService.BuyCashItemRequest request)
         {
-            CreateGiftResponse? giftResult = null;
+            ProtoService.CreateGiftResponse? giftResult = null;
             if (request.GiftInfo != null)
             {
                 giftResult = _server.GiftManager.CreateGift(
                     request.MasterId, request.GiftInfo.Recipient, request.CashItemSn, request.CashItemId, request.GiftInfo.Message, request.GiftInfo.CreateRing);
                 if (giftResult.Code != 0)
                 {
-                    return new BuyCashItemResponse { Code = giftResult.Code };
+                    return new ProtoService.BuyCashItemResponse { Code = giftResult.Code };
                 }
             }
 
@@ -58,7 +57,7 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
-            return new BuyCashItemResponse
+            return new ProtoService.BuyCashItemResponse
             {
                 Code = 0,
                 GiftInfo = giftResult,

@@ -1,41 +1,40 @@
 using Application.Utility.Exceptions;
-using LifeProto;
 
 namespace Application.Core.Login.ServerData
 {
     public interface IPlayerNPCManager
     {
-        GetMapPlayerNPCListResponse GetMapData(GetMapPlayerNPCListRequest request);
-        void Remove(RemovePlayerNPCRequest request);
+        ProtoService.GetMapPlayerNPCListResponse GetMapData(ProtoService.GetMapPlayerNPCListRequest request);
+        void Remove(ProtoService.RemovePlayerNPCRequest request);
         void RemoveAll();
-        CreatePlayerNPCPreResponse PreCreate(CreatePlayerNPCPreRequest request);
-        void Create(CreatePlayerNPCRequest request);
-        GetAllPlayerNPCDataResponse GetAllData();
+        ProtoService.CreatePlayerNPCPreResponse PreCreate(ProtoService.CreatePlayerNPCPreRequest request);
+        void Create(ProtoService.CreatePlayerNPCRequest request);
+        ProtoService.GetAllPlayerNPCDataResponse GetAllData();
     }
 
     public class DefaultPlayerNPCManager : IPlayerNPCManager
     {
-        public void Create(CreatePlayerNPCRequest request)
+        public void Create(ProtoService.CreatePlayerNPCRequest request)
         {
             throw new BusinessNotsupportException();
         }
 
-        public GetAllPlayerNPCDataResponse GetAllData()
+        public ProtoService.GetAllPlayerNPCDataResponse GetAllData()
         {
-            return new GetAllPlayerNPCDataResponse();
+            return new ProtoService.GetAllPlayerNPCDataResponse();
         }
 
-        public GetMapPlayerNPCListResponse GetMapData(GetMapPlayerNPCListRequest request)
+        public ProtoService.GetMapPlayerNPCListResponse GetMapData(ProtoService.GetMapPlayerNPCListRequest request)
         {
-            return new GetMapPlayerNPCListResponse();
+            return new ProtoService.GetMapPlayerNPCListResponse();
         }
 
-        public CreatePlayerNPCPreResponse PreCreate(CreatePlayerNPCPreRequest request)
+        public ProtoService.CreatePlayerNPCPreResponse PreCreate(ProtoService.CreatePlayerNPCPreRequest request)
         {
             throw new BusinessNotsupportException();
         }
 
-        public void Remove(RemovePlayerNPCRequest request)
+        public void Remove(ProtoService.RemovePlayerNPCRequest request)
         {
 
         }

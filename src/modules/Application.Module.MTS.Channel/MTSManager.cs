@@ -6,7 +6,6 @@ using Application.Module.MTS.Channel.Net;
 using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using MTSProto;
 using tools;
 using XmlWzReader;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -38,7 +37,7 @@ namespace Application.Module.MTS.Channel
             {
                 chr.setSearch(null);
             }
-            var request = new MTSProto.ChangePageRequest
+            var request = new ProtoService.ChangePageRequest
             {
                 MasterId = chr.Id,
                 Tab = tab,
@@ -51,7 +50,7 @@ namespace Application.Module.MTS.Channel
             {
                 request.FilterItemId.AddRange(ItemInformationProvider.getInstance().getAllItems().Where(itemPair => itemPair.Name.Contains(chr.getSearch()!, StringComparison.OrdinalIgnoreCase)).Select(x => x.Id));
             }
-            MTSProto.ChangePageResponse res = _transport.ChangePage(request);
+            ProtoService.ChangePageResponse res = _transport.ChangePage(request);
 
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(res.Items),
                 res.Tab, res.Type, res.Page, res.TotalPages));
@@ -75,9 +74,9 @@ namespace Application.Module.MTS.Channel
             Query(chr, tab, type, 0);
         }
 
-        private MTSProto.MTSQuery GetQueryModel(IPlayer chr)
+        private ProtoModel.MTSQueryProto GetQueryModel(IPlayer chr)
         {
-            return new MTSQuery { MasterId = chr.Id, Tab = chr.getCurrentTab(), Type = chr.getCurrentType(), Page = chr.getCurrentPage() };
+            return new ProtoModel.MTSQueryProto { MasterId = chr.Id, Tab = chr.getCurrentTab(), Type = chr.getCurrentType(), Page = chr.getCurrentPage() };
         }
 
 
@@ -88,10 +87,10 @@ namespace Application.Module.MTS.Channel
                 return;
             }
 
-            MTSProto.SaleItemResponse res = _transport.SaleItem(new MTSProto.SaleItemRequest
+            ProtoService.SaleItemResponse res = _transport.SaleItem(new ProtoService.SaleItemRequest
             {
                 MasterId = chr.Id,
-                Item = _mapper.Map<Dto.ItemDto>(toSale),
+                Item = _mapper.Map<ProtoModel.ItemProto>(toSale),
                 Price = price,
                 Transaction = transaction
             });
@@ -120,7 +119,7 @@ namespace Application.Module.MTS.Channel
 
         public void CancelSaleItem(IPlayer chr, int productId)
         {
-            MTSProto.CancelSaleItemResponse data = _transport.SendCancelSale(new MTSProto.CancelSaleItemRequest { MasterId = chr.Id, ProductId = productId });
+            ProtoService.CancelSaleItemResponse data = _transport.SendCancelSale(new ProtoService.CancelSaleItemRequest { MasterId = chr.Id, ProductId = productId });
 
             chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
@@ -132,7 +131,7 @@ namespace Application.Module.MTS.Channel
 
         public void AddCartItem(IPlayer chr, int productId)
         {
-            MTSProto.AddItemToCartResponse data = _transport.SendAddCartItem(new AddItemToCartRequest { Query = GetQueryModel(chr), ProductId = productId });
+            ProtoService.AddItemToCartResponse data = _transport.SendAddCartItem(new ProtoService.AddItemToCartRequest { Query = GetQueryModel(chr), ProductId = productId });
 
             chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
@@ -147,7 +146,7 @@ namespace Application.Module.MTS.Channel
             query.Tab = 4;
             query.Type = 0;
             query.Page = 0;
-            MTSProto.RemoveItemFromCartResponse data = _transport.SendRemoveCartItem(new RemoveItemFromCartRequest { Query = GetQueryModel(chr), ProductId = productId });
+            ProtoService.RemoveItemFromCartResponse data = _transport.SendRemoveCartItem(new ProtoService.RemoveItemFromCartRequest { Query = GetQueryModel(chr), ProductId = productId });
 
             chr.enableCSActions();
             chr.sendPacket(MTSPacketCreator.sendMTS(_mapper.Map<List<MTSItemInfo>>(data.PageData.Items),
@@ -158,7 +157,7 @@ namespace Application.Module.MTS.Channel
 
         public void TakeItemFromTransferInv(IPlayer chr, int productId)
         {
-            TakeItemResponse res = _transport.TakeItem(new TakeItemRequest { Query = GetQueryModel(chr), ProductId = productId });
+            ProtoService.TakeItemResponse res = _transport.TakeItem(new ProtoService.TakeItemRequest { Query = GetQueryModel(chr), ProductId = productId });
 
             var item = _mapper.Map<Item>(res.Item);
             InventoryManipulator.addFromDrop(chr.Client, item, false);
@@ -173,7 +172,7 @@ namespace Application.Module.MTS.Channel
 
         public void Buy(IPlayer chr, int productId, bool fromCart)
         {
-            BuyResponse res = _transport.Buy(new BuyRequest { Query = GetQueryModel(chr), ProductId = productId });
+            ProtoService.BuyResponse res = _transport.Buy(new ProtoService.BuyRequest { Query = GetQueryModel(chr), ProductId = productId });
 
             if (res.Code == 0)
             {

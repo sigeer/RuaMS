@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+
+
+import "google/protobuf/wrappers.proto";
+package ProtoService;
+
+
+
+message CreateTVMessageRequest {
+	int32 masterId = 1;
+	google.protobuf.StringValue partnerName = 2;
+	int32 type = 3;
+	repeated string messageList = 4;
+	bool showEar = 5;
+}
+
+
+
+message CreateTVMessageResponse {
+	int32 code = 1;
+}

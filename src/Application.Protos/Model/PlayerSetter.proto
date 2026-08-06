@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "Model/AccountGame.proto";
+import "Model/Character.proto";
+
+package ProtoModel;
+
+
+
+message PlayerSaveProto {
+  int32 channel = 1;
+  CharacterProto character = 2; // CHECK TYPE
+  AccountGameProto accountGame = 3; // 账号共享数据
+}

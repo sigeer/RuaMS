@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message PacketRequest {
+	bytes data = 1;
+	bool onlyGM = 2;
+}

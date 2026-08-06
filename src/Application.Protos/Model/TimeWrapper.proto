@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message TimeWrapper {
+	int64 value = 1;
+}

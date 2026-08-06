@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "Model/CashShop.proto";
+import "Model/SpecialCashItem.proto";
+import "Service/Cash.proto";
+import "Service/Gift.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service CashService {
+	rpc LoadGifts(GetMyGiftsRequest) returns(GetMyGiftsResponse);
+	rpc CommitRetrieveGift(CommitRetrieveGiftRequest) returns(google.protobuf.Empty);
+
+	rpc BuyCashItem(BuyCashItemRequest) returns (BuyCashItemResponse);
+	rpc LoadSpecialItems(google.protobuf.Empty) returns(ProtoModel.SpecialCashItemListProto);
+	rpc LoadMosterSellItems(google.protobuf.Empty) returns(ProtoModel.MosterSellerInfo);
+}

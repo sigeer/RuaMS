@@ -50,7 +50,7 @@ namespace Application.Core.Channel.ServerData
 
         public void ToggleIgnore(Player chr, string name)
         {
-            _ = _transport.SetAutoBanIgnored(new Config.ToggleAutoBanIgnoreRequest { TargetName = name });
+            _ = _transport.SetAutoBanIgnored(new ProtoService.ToggleAutoBanIgnoreRequest { TargetName = name });
         }
 
         public async Task AddPoint(AutobanFactory type, Player chr, string reason)

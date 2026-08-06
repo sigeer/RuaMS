@@ -29,9 +29,9 @@ namespace Application.Core.Login.Services
             _server = server;
         }
 
-        public Dto.ShopDto? LoadFromDB(int id, bool isShopId)
+        public ProtoModel.ShopProto? LoadFromDB(int id, bool isShopId)
         {
-            Dto.ShopDto? ret = null;
+            ProtoModel.ShopProto? ret = null;
             int shopId;
             try
             {
@@ -49,26 +49,26 @@ namespace Application.Core.Login.Services
                 if (tmpModel != null)
                 {
                     shopId = tmpModel.ShopId;
-                    ret = _mapper.Map<Dto.ShopDto>(tmpModel);
+                    ret = _mapper.Map<ProtoModel.ShopProto>(tmpModel);
                 }
                 else
                 {
                     return null;
                 }
 
-                var items = new List<Dto.ShopItemDto>();
+                var items = new List<ProtoModel.ShopItemProto>();
                 var shopItems = dbContext.Shopitems.Where(x => x.Shopid == shopId).OrderByDescending(x => x.Position).ToList();
                 shopItems.ForEach(x =>
                 {
                     if (ItemConstants.isRechargeable(x.ItemId))
                     {
-                        var m = _mapper.Map<Dto.ShopItemDto>(x);
+                        var m = _mapper.Map<ProtoModel.ShopItemProto>(x);
                         m.Buyable = 1;
                         items.Add(m);
                     }
                     else
                     {
-                        var m = _mapper.Map<Dto.ShopItemDto>(x);
+                        var m = _mapper.Map<ProtoModel.ShopItemProto>(x);
                         m.Buyable = 1000;
                         items.Add(m);
                     }

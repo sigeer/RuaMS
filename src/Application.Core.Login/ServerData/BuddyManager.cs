@@ -20,10 +20,10 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        public static BuddyProto.BuddyDto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)
+        public static ProtoModel.BuddyProto GetChrBuddyDto(int chrId, CharacterLiveObject buddyChr, string group = StringConstants.Buddy_DefaultGroup)
         {
             var hasBuddy = buddyChr.Character.Data.BuddyList.Any(x => x.Id == chrId);
-            return new BuddyProto.BuddyDto
+            return new ProtoModel.BuddyProto
             {
                 Channel = hasBuddy ? buddyChr.Channel : -1,
                 ActualChannel = hasBuddy ? buddyChr.ActualChannel : -1,
@@ -36,10 +36,10 @@ namespace Application.Core.Login.ServerData
 
         async Task AddBuddy(CharacterLiveObject masterChr, CharacterLiveObject targetChr, string groupName = StringConstants.Buddy_DefaultGroup)
         {
-            //masterChr.Character.Data.BuddyList.Add(new BuddyProto.BuddyDto { Id = targetChr.Character.Id, Group = groupName });
+            //masterChr.Character.Data.BuddyList.Add(new ProtoModel.BuddyProto { Id = targetChr.Character.Id, Group = groupName });
             //_server.CharacterManager.SetState(masterChr);
 
-            var data = new BuddyProto.AddBuddyResponse()
+            var data = new ProtoService.AddBuddyResponse()
             {
                 Code = 1,
                 TargetId = targetChr.Character.Id,
@@ -49,9 +49,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, data);
         }
 
-        public async Task AddBuddyByName(BuddyProto.AddBuddyRequest request)
+        public async Task AddBuddyByName(ProtoService.AddBuddyRequest request)
         {
-            var res = new BuddyProto.AddBuddyResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
+            var res = new ProtoService.AddBuddyResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
             {
@@ -69,7 +69,7 @@ namespace Application.Core.Login.ServerData
                 return;
             }
 
-            //masterChr.Character.Data.BuddyList.Add(new BuddyProto.BuddyDto { Id = targetChr.Character.Id, Group = request.GroupName });
+            //masterChr.Character.Data.BuddyList.Add(new ProtoModel.BuddyProto { Id = targetChr.Character.Id, Group = request.GroupName });
             //_server.CharacterManager.SetState(masterChr);
 
             res.TargetId = targetChr.Character.Id;
@@ -77,7 +77,7 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.BroadcastMessageN(ChannelRecvCode.OnBuddyAdd, res);
         }
 
-        public async Task AddBuddyById(BuddyProto.AddBuddyByIdRequest request)
+        public async Task AddBuddyById(ProtoService.AddBuddyByIdRequest request)
         {
             var targetChr = _server.CharacterManager.FindPlayerById(request.TargetId);
             if (targetChr == null)
@@ -101,7 +101,7 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMultiChatAsync(3, fromName, tos!, text);
         }
 
-        public async Task BroadcastNoticeMessage(BuddyProto.SendBuddyNoticeMessageDto data)
+        public async Task BroadcastNoticeMessage(ProtoModel.SendBuddyNoticeMessageProto data)
         {
             var chr = _server.CharacterManager.FindPlayerById(data.MasterId)!;
 
@@ -109,9 +109,9 @@ namespace Application.Core.Login.ServerData
             await _server.DropWorldMessage(data.Type, data.Message, buddies);
         }
 
-        public async Task DeleteBuddy(BuddyProto.DeleteBuddyRequest request)
+        public async Task DeleteBuddy(ProtoService.DeleteBuddyRequest request)
         {
-            var res = new BuddyProto.DeleteBuddyResponse { MasterId = request.MasterId, Buddyid = request.Buddyid };
+            var res = new ProtoService.DeleteBuddyResponse { MasterId = request.MasterId, Buddyid = request.Buddyid };
             var masterChr = _server.CharacterManager.FindPlayerById(request.MasterId);
             if (masterChr == null)
             {
@@ -128,9 +128,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnBuddyRemove, res, [request.MasterId, request.Buddyid]);
         }
 
-        public async Task SendWhisper(MessageProto.SendWhisperMessageRequest request)
+        public async Task SendWhisper(ProtoService.SendWhisperMessageRequest request)
         {
-            var res = new MessageProto.SendWhisperMessageResponse() { Request = request };
+            var res = new ProtoService.SendWhisperMessageResponse() { Request = request };
             var senderChr = _server.CharacterManager.FindPlayerById(request.FromId);
             if (senderChr == null || senderChr.Channel <= 0)
             {
@@ -154,9 +154,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.OnWhisper, res, [res.ReceiverId]);
         }
 
-        public async Task GetLocation(BuddyProto.GetLocationRequest request)
+        public async Task GetLocation(ProtoService.GetLocationRequest request)
         {
-            var res = new BuddyProto.GetLocationResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
+            var res = new ProtoService.GetLocationResponse() { MasterId = request.MasterId, TargetName = request.TargetName };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
                 res.Code = (int)WhisperLocationResponseCode.NotFound;

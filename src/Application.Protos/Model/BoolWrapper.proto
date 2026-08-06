@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message BoolWrapper {
+	bool value = 1;
+}

@@ -2,14 +2,13 @@ using Application.Core.Channel;
 using Application.Core.Channel.Internal;
 using Application.Module.PlayerNPC.Channel.Commands;
 using Google.Protobuf;
-using LifeProto;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.PlayerNPC.Channel.Internal
 {
     internal class PlayerNpcHandlers
     {
-        public class Remove : InternalSessionChannelHandler<UpdateMapPlayerNPCResponse>
+        public class Remove : InternalSessionChannelHandler<ProtoService.UpdateMapPlayerNPCResponse>
         {
             public Remove(WorldChannelServer server) : base(server)
             {
@@ -17,7 +16,7 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 101;
 
-            protected override Task HandleMessage(UpdateMapPlayerNPCResponse res)
+            protected override Task HandleMessage(ProtoService.UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRemoveCommand(res));
                 _server.Send(s =>
@@ -27,10 +26,10 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             return Task.CompletedTask;
             }
 
-            protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateMapPlayerNPCResponse Parse(ByteString data) => ProtoService.UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
         }
 
-        public class Clear : InternalSessionChannelHandler<RemoveAllPlayerNPCResponse>
+        public class Clear : InternalSessionChannelHandler<ProtoService.RemoveAllPlayerNPCResponse>
         {
             public Clear(WorldChannelServer server) : base(server)
             {
@@ -38,7 +37,7 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 102;
 
-            protected override Task HandleMessage(RemoveAllPlayerNPCResponse res)
+            protected override Task HandleMessage(ProtoService.RemoveAllPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcClearCommand(res));
                 _server.Send(s =>
@@ -48,10 +47,10 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             return Task.CompletedTask;
             }
 
-            protected override RemoveAllPlayerNPCResponse Parse(ByteString data) => RemoveAllPlayerNPCResponse.Parser.ParseFrom(data);
+            protected override ProtoService.RemoveAllPlayerNPCResponse Parse(ByteString data) => ProtoService.RemoveAllPlayerNPCResponse.Parser.ParseFrom(data);
         }
 
-        public class Refresh : InternalSessionChannelHandler<UpdateMapPlayerNPCResponse>
+        public class Refresh : InternalSessionChannelHandler<ProtoService.UpdateMapPlayerNPCResponse>
         {
             public Refresh(WorldChannelServer server) : base(server)
             {
@@ -59,7 +58,7 @@ namespace Application.Module.PlayerNPC.Channel.Internal
 
             public override int MessageId => 103;
 
-            protected override Task HandleMessage(UpdateMapPlayerNPCResponse res)
+            protected override Task HandleMessage(ProtoService.UpdateMapPlayerNPCResponse res)
             {
                 _server.PushChannelCommand(new InvokePlayerNpcRefreshCommand(res));
                 _server.Send(s =>
@@ -69,7 +68,7 @@ namespace Application.Module.PlayerNPC.Channel.Internal
             return Task.CompletedTask;
             }
 
-            protected override UpdateMapPlayerNPCResponse Parse(ByteString data) => UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateMapPlayerNPCResponse Parse(ByteString data) => ProtoService.UpdateMapPlayerNPCResponse.Parser.ParseFrom(data);
         }
     }
 }

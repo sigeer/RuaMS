@@ -8,11 +8,11 @@ namespace Application.Core.Login.Models
 {
     public class CharacterLiveObject 
     {
-        public CharacterLiveObject(Dto.CharacterDto model)
+        public CharacterLiveObject(ProtoModel.CharacterProto model)
         {
             Character = model;
         }
-        public Dto.CharacterDto Character { get; set; }
+        public ProtoModel.CharacterProto Character { get; set; }
         /// <summary>
         /// 仅在MasterServer使用，-1：商城，0：离线
         /// </summary>

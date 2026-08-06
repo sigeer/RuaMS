@@ -8,7 +8,6 @@ using Application.Shared.Items;
 using Application.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MTSProto;
 using System.Collections.Concurrent;
 
 namespace Application.Module.MTS.Master
@@ -35,16 +34,16 @@ namespace Application.Module.MTS.Master
             _server = server;
         }
 
-        private MTSProto.PlayerMTSInfo LoadMyData(int sellerId)
+        private ProtoModel.PlayerMTSInfoProto LoadMyData(int sellerId)
         {
             var all = _dataSource.Values.Where(x => x.OwnerId == sellerId);
-            var res = new PlayerMTSInfo();
-            res.InTransfer.AddRange(_mapper.Map<MTSProto.MTSItemDto[]>(all.Where(x => x.IsInTransfer)));
-            res.OnSale.AddRange(_mapper.Map<MTSProto.MTSItemDto[]>(all.Where(x => !x.IsInTransfer)));
+            var res = new ProtoModel.PlayerMTSInfoProto();
+            res.InTransfer.AddRange(_mapper.Map<ProtoModel.MTSItemProto[]>(all.Where(x => x.IsInTransfer)));
+            res.OnSale.AddRange(_mapper.Map<ProtoModel.MTSItemProto[]>(all.Where(x => !x.IsInTransfer)));
             return res;
         }
 
-        private MTSProto.PagedItems LoadPageData(int tab, int type, int page)
+        private ProtoModel.PagedItemsProto LoadPageData(int tab, int type, int page)
         {
             var all = _dataSource.Values.Where(x => !x.IsInTransfer && x.Tab == tab && (type == 0 || type == x.Type))
                 .OrderByDescending(x => x.Id);
@@ -54,18 +53,18 @@ namespace Application.Module.MTS.Master
                 .Take(16)
                 .ToList();
             var totalPages = (int)Math.Ceiling(all.Count() / 16.0f);
-            var res = new PagedItems()
+            var res = new ProtoModel.PagedItemsProto()
             {
                 TotalPages = totalPages,
                 Page = page,
                 Tab = tab,
                 Type = type,
             };
-            res.Items.AddRange(_mapper.Map<MTSProto.MTSItemDto[]>(all));
+            res.Items.AddRange(_mapper.Map<ProtoModel.MTSItemProto[]>(all));
             return res;
         }
 
-        private MTSProto.PagedItems LoadCartData(int ownerId)
+        private ProtoModel.PagedItemsProto LoadCartData(int ownerId)
         {
             var allItems = _cartData.Values.Where(x => x.PlayerId == ownerId).SelectMany(x => x.Products).ToArray();
             var all = _dataSource.Values.Where(x => !x.IsInTransfer && allItems.Contains(x.Id))
@@ -75,17 +74,17 @@ namespace Application.Module.MTS.Master
                 .Take(16)
                 .ToList();
             var totalPages = (int)Math.Ceiling(all.Count() / 16.0f);
-            var res = new PagedItems()
+            var res = new ProtoModel.PagedItemsProto()
             {
                 TotalPages = totalPages,
                 Tab = 4,
                 Page = 0,
                 Type = 0,
             };
-            res.Items.AddRange(_mapper.Map<MTSProto.MTSItemDto[]>(all));
+            res.Items.AddRange(_mapper.Map<ProtoModel.MTSItemProto[]>(all));
             return res;
         }
-        public MTSProto.ChangePageResponse ChangePage(MTSProto.ChangePageRequest request)
+        public ProtoService.ChangePageResponse ChangePage(ProtoService.ChangePageRequest request)
         {
             var query = _dataSource.Values.Where(x => !x.IsInTransfer);
             if (request.Tab == 4 && request.Type == 0)
@@ -109,7 +108,7 @@ namespace Application.Module.MTS.Master
 
             var totalPages = (int)Math.Ceiling(query.Count() / 16.0f);
             var pagedData = query.Skip(request.Page * 16).Take(16).ToList();
-            var res = new ChangePageResponse
+            var res = new ProtoService.ChangePageResponse
             {
                 Type = request.Type,
                 Tab = request.Tab,
@@ -118,16 +117,16 @@ namespace Application.Module.MTS.Master
                 MyMTSInfo = LoadMyData(request.MasterId),
                 TotalPages = totalPages
             };
-            res.Items.AddRange(_mapper.Map<MTSProto.MTSItemDto[]>(pagedData));
+            res.Items.AddRange(_mapper.Map<ProtoModel.MTSItemProto[]>(pagedData));
             return res;
         }
 
-        public MTSProto.SaleItemResponse AddItemToSale(MTSProto.SaleItemRequest request)
+        public ProtoService.SaleItemResponse AddItemToSale(ProtoService.SaleItemRequest request)
         {
             var count = _dataSource.Values.Where(x => x.OwnerId == request.MasterId).Count();
             if (count > 10)
             {
-                return new MTSProto.SaleItemResponse
+                return new ProtoService.SaleItemResponse
                 {
                     Code = 1,
                     Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForRollback)
@@ -146,7 +145,7 @@ namespace Application.Module.MTS.Master
             };
             _dataSource[product.Id] = product;
 
-            return new MTSProto.SaleItemResponse
+            return new ProtoService.SaleItemResponse
             {
                 MasterId = request.MasterId,
                 Transaction = _server.ItemTransactionManager.CreateTransaction(request.Transaction, ItemTransactionStatus.PendingForCommit),
@@ -155,21 +154,21 @@ namespace Application.Module.MTS.Master
             };
         }
 
-        public CancelSaleItemResponse CancelMtsSale(CancelSaleItemRequest request)
+        public ProtoService.CancelSaleItemResponse CancelMtsSale(ProtoService.CancelSaleItemRequest request)
         {
             if (_dataSource.TryGetValue(request.ProductId, out var product))
             {
                 if (product.OwnerId != request.MasterId)
                 {
-                    return new CancelSaleItemResponse { Code = (int)MTSResponseCode.NoAccess };
+                    return new ProtoService.CancelSaleItemResponse { Code = (int)MTSResponseCode.NoAccess };
                 }
                 product.IsInTransfer = true;
-                return new CancelSaleItemResponse();
+                return new ProtoService.CancelSaleItemResponse();
             }
-            return new CancelSaleItemResponse() { Code = (int)MTSResponseCode.NotFound };
+            return new ProtoService.CancelSaleItemResponse() { Code = (int)MTSResponseCode.NotFound };
         }
 
-        public void AddToCart(AddItemToCartRequest request)
+        public void AddToCart(ProtoService.AddItemToCartRequest request)
         {
             if (_cartData.TryGetValue(request.Query.MasterId, out var cart))
             {
@@ -182,7 +181,7 @@ namespace Application.Module.MTS.Master
             }
         }
 
-        public void DeleteCart(RemoveItemFromCartRequest request)
+        public void DeleteCart(ProtoService.RemoveItemFromCartRequest request)
         {
             if (_cartData.TryGetValue(request.Query.MasterId, out var cart))
             {
@@ -190,18 +189,18 @@ namespace Application.Module.MTS.Master
             }
         }
 
-        public BuyResponse Buy(BuyRequest request)
+        public ProtoService.BuyResponse Buy(ProtoService.BuyRequest request)
         {
             if (_dataSource.TryGetValue(request.ProductId, out var product))
             {
                 if (!product.IsInTransfer)
                 {
-                    return new BuyResponse { Code = (int)MTSResponseCode.NotFound };
+                    return new ProtoService.BuyResponse { Code = (int)MTSResponseCode.NotFound };
                 }
 
                 if (product.OwnerId == request.Query.MasterId)
                 {
-                    new BuyResponse { Code = (int)MTSResponseCode.Buy_CannotBuyOwn };
+                    new ProtoService.BuyResponse { Code = (int)MTSResponseCode.Buy_CannotBuyOwn };
                 }
 
                 var chr = _server.CharacterManager.FindPlayerById(request.Query.MasterId)!;
@@ -210,7 +209,7 @@ namespace Application.Module.MTS.Master
 
                 if (accData.NxPrepaid - finalCost < 0)
                 {
-                    return new BuyResponse { Code = (int)MTSResponseCode.Buy_CostNotEnough };
+                    return new ProtoService.BuyResponse { Code = (int)MTSResponseCode.Buy_CostNotEnough };
                 }
 
                 var owner = _server.CharacterManager.FindPlayerById(product.OwnerId)!;
@@ -225,16 +224,16 @@ namespace Application.Module.MTS.Master
                 _server.AccountManager.UpdateAccountGame(accData);
                 _server.AccountManager.UpdateAccountGame(ownerAccData);
 
-                return new BuyResponse
+                return new ProtoService.BuyResponse
                 {
-                    Item = _mapper.Map<Dto.ItemDto>(product.Item),
+                    Item = _mapper.Map<ProtoModel.ItemProto>(product.Item),
                     MasterId = request.Query.MasterId,
                     CartItems = LoadCartData(request.Query.MasterId),
                     MyMTSInfo = LoadMyData(request.Query.MasterId),
                     PageData = LoadPageData(request.Query.Tab, request.Query.Type, request.Query.Page)
                 };
             }
-            return new BuyResponse { Code = (int)MTSResponseCode.NotFound };
+            return new ProtoService.BuyResponse { Code = (int)MTSResponseCode.NotFound };
         }
 
         protected override Task CommitInternal(DBContext dbContext, Dictionary<int, UpdateField<MTSProductModel>> updateData)

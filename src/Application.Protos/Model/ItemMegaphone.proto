@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "Service/ItemMegaphone.proto";
+
+package ProtoModel;
+
+
+
+message UseItemMegaphoneBroadcastProto {
+	ProtoService.UseItemMegaphoneRequest request = 1;
+	int32 masterChannel = 2;
+}

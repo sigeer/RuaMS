@@ -33,22 +33,22 @@ namespace Application.Core.Login.ServerData
             return model;
         }
 
-        public ItemProto.RingDto? MapDto(RingSourceModel? model)
+        public ProtoModel.RingProto? MapDto(RingSourceModel? model)
         {
             if (model == null)
             {
                 return null;
             }
-            var item = _mapper.Map<ItemProto.RingDto>(model);
+            var item = _mapper.Map<ProtoModel.RingProto>(model);
             item.CharacterName1 = _server.CharacterManager.GetPlayerName(item.CharacterId1);
             item.CharacterName2 = _server.CharacterManager.GetPlayerName(item.CharacterId2);
             return item;
         }
 
-        public List<ItemProto.RingDto> LoadCharacterRings(int chrId)
+        public List<ProtoModel.RingProto> LoadCharacterRings(int chrId)
         {
             var items = Query(x => x.CharacterId1 == chrId || x.CharacterId2 == chrId, x => x.CharacterId1 == chrId || x.CharacterId2 == chrId);
-            return items.Select(x => MapDto(x)).OfType<ItemProto.RingDto>().ToList();
+            return items.Select(x => MapDto(x)).OfType<ProtoModel.RingProto>().ToList();
         }
     }
 }

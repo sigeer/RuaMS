@@ -39,7 +39,7 @@ namespace Application.Core.Channel.Services
 
         SkillbookInformationProvider SkillbookInformationProvider { get; }
         CashItemProvider CashItemProvider { get; }
-        BatchSyncManager<int, SyncProto.MapSyncDto> BatchSynMapManager { get; }
+        BatchSyncManager<int, ProtoModel.MapSyncProto> BatchSynMapManager { get; }
         List<AbstractChannelModule> Modules { get; }
         /// <summary>
         /// 

@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package ProtoModel;
+
+
+
+message GuildProto {
+  int32 guildId = 1;
+  int32 leader = 2;
+  repeated GuildMemberProto members = 3;
+  string name = 4;
+  int32 gp = 5;
+  int32 logo = 6;
+  int32 logoColor = 7;
+  string rank1Title = 8;
+  string rank2Title = 9;
+  string rank3Title = 10;
+  string rank4Title = 11;
+  string rank5Title = 12;
+  int32 logoBg = 13;
+  int32 logoBgColor = 14;
+  google.protobuf.StringValue notice = 15;
+  int32 capacity = 16;
+  int64 signature = 17;
+  int32 allianceId = 18;
+}
+
+
+
+message GuildMemberProto {
+	int32 id = 1;
+	string name = 2;
+	int32 level = 3;
+	int32 job = 4;
+	int32 channel = 5;
+	int32 guildRank = 6;
+	int32 allianceRank = 7;
+	int32 guildId = 9;
+}

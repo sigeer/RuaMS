@@ -2,11 +2,10 @@ using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
 using Application.Shared.Message;
 using Google.Protobuf;
-using SystemProto;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class InvokeDisconnectOneHandler : InternalSessionChannelHandler<SystemProto.DisconnectPlayerByNameResponse>
+    internal class InvokeDisconnectOneHandler : InternalSessionChannelHandler<ProtoService.DisconnectPlayerByNameResponse>
     {
         public InvokeDisconnectOneHandler(WorldChannelServer server) : base(server)
         {
@@ -14,7 +13,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         public override int MessageId => (int)ChannelRecvCode.InvokeDisconnectPlayer;
 
-        protected override Task HandleMessage(DisconnectPlayerByNameResponse res)
+        protected override Task HandleMessage(ProtoService.DisconnectPlayerByNameResponse res)
         {
             if (res.Code != 0)
             {
@@ -26,6 +25,6 @@ namespace Application.Core.Channel.Internal.Handlers
             }
         }
 
-        protected override DisconnectPlayerByNameResponse Parse(ByteString data) => DisconnectPlayerByNameResponse.Parser.ParseFrom(data);
+        protected override ProtoService.DisconnectPlayerByNameResponse Parse(ByteString data) => ProtoService.DisconnectPlayerByNameResponse.Parser.ParseFrom(data);
     }
 }

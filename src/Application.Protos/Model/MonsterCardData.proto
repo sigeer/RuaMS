@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message MonsterCardDataProto {
+	int32 cardId = 1;
+	int32 mobId = 2;
+}

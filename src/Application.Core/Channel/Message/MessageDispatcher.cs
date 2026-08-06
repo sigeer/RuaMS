@@ -1,5 +1,3 @@
-
-using BaseProto;
 using Google.Protobuf;
 using System.Reflection;
 
@@ -25,7 +23,7 @@ namespace Application.Core.Channel.Message
             }
         }
 
-        public static void Dispatch(MessageWrapper wrapper)
+        public static void Dispatch(ProtoModel.MessageWrapper wrapper)
         {
             if (_handlers.TryGetValue(wrapper.Type, out var handler) &&
                 _parsers.TryGetValue(wrapper.Type, out var parser))

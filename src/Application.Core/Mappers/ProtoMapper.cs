@@ -35,16 +35,16 @@ namespace Application.Core.Mappers
             config.NewConfig<DateTime, Timestamp>().MapWith(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             config.NewConfig<Timestamp, DateTime>().MapWith(src => src.ToDateTime());
 
-            config.NewConfig<RankProto.RankCharacter, RankedCharacterInfo>()
+            config.NewConfig<ProtoModel.RankCharacterProto, RankedCharacterInfo>()
                 .ConstructUsing(x => new RankedCharacterInfo(x.Rank, x.Level, x.Name));
 
-            config.NewConfig<Dto.CharacterDto, Player>()
+            config.NewConfig<ProtoModel.CharacterProto, Player>()
                             .ConstructUsing(src => (Player)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(Player)))
                             .Map(x => x.RemainingSp, x => TranslateArray(x.Sp))
                             .Map(dest => dest.JobModel, src => JobFactory.GetById(src.JobId))
                             .Ignore(dest => dest.JobId);
 
-            config.NewConfig<Player, Dto.CharacterDto>()
+            config.NewConfig<Player, ProtoModel.CharacterProto>()
                             .Map(x => x.Sp, x => string.Join(",", x.RemainingSp))
                             .Map(x => x.Meso, x => x.MesoValue.get())
                             .Map(x => x.Exp, x => x.ExpValue.get())
@@ -63,10 +63,10 @@ namespace Application.Core.Mappers
                             .Map(x => x.Maxmp, x => x.MaxMP)
                             .Ignore(x => x.Map);
 
-            config.NewConfig<AccountDto.AccountInfoProto, AccountInfoModel>();
+            config.NewConfig<ProtoModel.AccountInfoProto, AccountInfoModel>();
 
             #region Item
-            config.NewConfig<Dto.ItemDto, Pet>()
+            config.NewConfig<ProtoModel.ItemProto, Pet>()
                  .ConstructUsing(source => new Pet(ItemInformationProvider.getInstance().GetPetTemplate(source.Itemid)!, (short)source.Position, source.PetInfo!.Petid))
                 .Map(x => x.Fullness, x => Math.Min(Limits.MaxFullness, x.PetInfo!.Fullness))
                 .Map(x => x.Level, x => Math.Min(Limits.MaxPetLevel, x.PetInfo!.Level))
@@ -83,9 +83,9 @@ namespace Application.Core.Mappers
                     dest.Name = rs.PetInfo!.Name;
                 });
 
-            config.NewConfig<Pet, Dto.ItemDto>()
-                .Inherits<Item, Dto.ItemDto>()
-                .Map(x => x.PetInfo, x => new Dto.PetDto
+            config.NewConfig<Pet, ProtoModel.ItemProto>()
+                .Inherits<Item, ProtoModel.ItemProto>()
+                .Map(x => x.PetInfo, x => new ProtoModel.PetProto
                 {
                     Closeness = Math.Min(Limits.MaxTameness, x.Tameness),
                     Fullness = Math.Min(Limits.MaxFullness, x.Fullness),
@@ -96,10 +96,10 @@ namespace Application.Core.Mappers
                     Petid = x.getUniqueId()
                 });
 
-            config.NewConfig<Dto.ItemDto, Item>()
+            config.NewConfig<ProtoModel.ItemProto, Item>()
                 .MapWith(src => MapItem(src));
 
-            config.NewConfig<Item, Dto.ItemDto>()
+            config.NewConfig<Item, ProtoModel.ItemProto>()
                 .Map(dest => dest.Owner, source => source.getOwner())
                 .Map(dest => dest.Itemid, source => source.getItemId())
                 .Map(dest => dest.Quantity, source => source.getQuantity())
@@ -107,13 +107,13 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Expiration, source => source.getExpiration())
                 .Map(dest => dest.GiftFrom, source => source.getGiftFrom())
                 .Map(dest => dest.Position, source => source.getPosition())
-                .Include<Pet, Dto.ItemDto>()
-                .Include<Equip, Dto.ItemDto>();
+                .Include<Pet, ProtoModel.ItemProto>()
+                .Include<Equip, ProtoModel.ItemProto>();
 
 
-            config.NewConfig<ItemProto.RingDto, RingSourceModel>().TwoWays();
+            config.NewConfig<ProtoModel.RingProto, RingSourceModel>().TwoWays();
 
-            config.NewConfig<Dto.ItemDto, Equip>()
+            config.NewConfig<ProtoModel.ItemProto, Equip>()
                     .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position, source.UniqueId))
                     .AfterMapping((rs, dest, ctx) =>
                     {
@@ -145,11 +145,11 @@ namespace Application.Core.Mappers
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
                     });
 
-            config.NewConfig<Equip, Dto.ItemDto>()
-                .Inherits<Item, Dto.ItemDto>()
+            config.NewConfig<Equip, ProtoModel.ItemProto>()
+                .Inherits<Item, ProtoModel.ItemProto>()
                 .Map(dest => dest.EquipInfo, source => source);
 
-            config.NewConfig<Equip, Dto.EquipDto>()
+            config.NewConfig<Equip, ProtoModel.EquipProto>()
                 .Map(dest => dest.Acc, source => source.getAcc())
                 .Map(dest => dest.Avoid, source => source.getAvoid())
                 .Map(dest => dest.Dex, source => source.getDex())
@@ -172,68 +172,68 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Itemexp, source => source.getItemExp());
             #endregion 
 
-            config.NewConfig<Dto.SkillMacroDto, SkillMacro>()
+            config.NewConfig<ProtoModel.SkillMacroProto, SkillMacro>()
                 .ConstructUsing(x => new SkillMacro(x.Skill1, x.Skill1, x.Skill3, x.Name, x.Shout, x.Position));
 
-            config.NewConfig<SkillMacro, Dto.SkillMacroDto>();
+            config.NewConfig<SkillMacro, ProtoModel.SkillMacroProto>();
 
-            config.NewConfig<Dto.FameLogRecordDto, FameLogObject>();
-            config.NewConfig<FameLogObject, Dto.FameLogRecordDto>();
+            config.NewConfig<ProtoModel.FameLogRecordProto, FameLogObject>();
+            config.NewConfig<FameLogObject, ProtoModel.FameLogRecordProto>();
 
-            config.NewConfig<BuddyProto.BuddyDto, BuddyCharacter>();
-            config.NewConfig<BuddyCharacter, BuddyProto.BuddyDto>();
+            config.NewConfig<ProtoModel.BuddyProto, BuddyCharacter>();
+            config.NewConfig<BuddyCharacter, ProtoModel.BuddyProto>();
 
-            config.NewConfig<PlayerCoolDownValueHolder, Dto.CoolDownDto>()
+            config.NewConfig<PlayerCoolDownValueHolder, ProtoModel.CoolDownProto>()
                 .Map(dest => dest.SkillId, source => source.skillId)
                 .Map(dest => dest.StartTime, source => source.startTime)
                 .Map(dest => dest.Length, source => source.length);
 
-            config.NewConfig<Dto.DropItemDto, DropEntry>()
+            config.NewConfig<ProtoModel.DropItemProto, DropEntry>()
                 .MapWith(src => MapDrop(src));
 
-            config.NewConfig<Dto.NoteDto, NoteObject>();
+            config.NewConfig<ProtoModel.NoteProto, NoteObject>();
 
-            config.NewConfig<Dto.ShopDto, Shop>()
+            config.NewConfig<ProtoModel.ShopProto, Shop>()
                 .ConstructUsing(src => new Shop(src.ShopId, src.NpcId, src.Items.Adapt<List<ShopItem>>()));
-            config.NewConfig<Dto.ShopItemDto, ShopItem>()
+            config.NewConfig<ProtoModel.ShopItemProto, ShopItem>()
                 .ConstructUsing(src => new ShopItem((short)src.Buyable, src.ItemId, src.Price, src.Pitch));
 
-            config.NewConfig<ItemProto.GiftDto, GiftModel>();
-            config.NewConfig<CashProto.SpecialCashItemDto, SpecialCashItem>()
+            config.NewConfig<ProtoModel.GiftProto, GiftModel>();
+            config.NewConfig<ProtoModel.SpecialCashItemProto, SpecialCashItem>()
                 .ConstructUsing(src => new SpecialCashItem(src.Sn, src.Modifier, (byte)src.Info));
 
-            config.NewConfig<TeamProto.TeamMemberDto, TeamMember>()
+            config.NewConfig<ProtoModel.TeamMemberProto, TeamMember>()
                 .Map(dest => dest.JobId, src => src.Job);
 
-            config.NewConfig<GuildProto.GuildMemberDto, GuildMember>();
+            config.NewConfig<ProtoModel.GuildMemberProto, GuildMember>();
 
-            config.NewConfig<Dto.NewYearCardDto, NewYearCardObject>();
+            config.NewConfig<ProtoModel.NewYearCardProto, NewYearCardObject>();
 
-            config.NewConfig<PlayerShopItem, ItemProto.PlayerShopItemDto>()
+            config.NewConfig<PlayerShopItem, ProtoModel.PlayerShopItemProto>()
                 .Map(dest => dest.Bundles, src => src.getBundles())
                 .Map(dest => dest.Price, src => src.getPrice())
                 .Map(dest => dest.Item, src => src.getItem());
 
-            config.NewConfig<ItemProto.PlayerShopItemDto, PlayerShopItem>()
+            config.NewConfig<ProtoModel.PlayerShopItemProto, PlayerShopItem>()
                 .ConstructUsing(src => new PlayerShopItem(src.Item.Adapt<Item>(), (short)src.Bundles, src.Price));
 
-            config.NewConfig<ItemProto.RemoteHiredMerchantDto, RemoteHiredMerchantData>();
-            config.NewConfig<ItemProto.OwlSearchResultItemDto, OwlSearchResultItem>();
-            config.NewConfig<ItemProto.OwlSearchResponse, OwlSearchResult>();
+            config.NewConfig<ProtoModel.RemoteHiredMerchantProto, RemoteHiredMerchantData>();
+            config.NewConfig<ProtoModel.OwlSearchResultItemProto, OwlSearchResultItem>();
+            config.NewConfig<ProtoService.OwlSearchResponse, OwlSearchResult>();
 
-            config.NewConfig<ItemProto.GachaponPoolDto, GachaponDataObject>();
-            config.NewConfig<ItemProto.GachaponPoolChanceDto, GachaponPoolLevelChanceDataObject>();
-            config.NewConfig<ItemProto.GachaponPoolItemDto, GachaponPoolItemDataObject>();
+            config.NewConfig<ProtoModel.GachaponPoolProto, GachaponDataObject>();
+            config.NewConfig<ProtoModel.GachaponPoolChanceProto, GachaponPoolLevelChanceDataObject>();
+            config.NewConfig<ProtoModel.GachaponPoolItemProto, GachaponPoolItemDataObject>();
 
-            config.NewConfig<LifeProto.PlayerNPCEquip, PlayerNpcEquipObject>()
+            config.NewConfig<ProtoModel.PlayerNPCEquipProto, PlayerNpcEquipObject>()
                 .Map(dest => dest.EquipId, src => src.ItemId)
                 .Map(dest => dest.EquipPos, src => src.Position);
 
-            config.NewConfig<PlayerNpcEquipObject, LifeProto.PlayerNPCEquip>()
+            config.NewConfig<PlayerNpcEquipObject, ProtoModel.PlayerNPCEquipProto>()
                 .Map(dest => dest.ItemId, src => src.EquipId)
                 .Map(dest => dest.Position, src => src.EquipPos);
 
-            config.NewConfig<LifeProto.PlayerNPCDto, PlayerNpc>()
+            config.NewConfig<ProtoModel.PlayerNPCProto, PlayerNpc>()
                 .Map(dest => dest.NpcId, src => src.ScriptId)
                 .AfterMapping((src, dest) =>
                 {
@@ -241,10 +241,10 @@ namespace Application.Core.Mappers
                     dest.setPosition(new Point(dest.X, dest.Cy));
                 });
 
-            config.NewConfig<PlayerNpc, LifeProto.PlayerNPCDto>()
+            config.NewConfig<PlayerNpc, ProtoModel.PlayerNPCProto>()
                 .Map(dest => dest.ScriptId, src => src.NpcId);
 
-            config.NewConfig<DueyDto.DueyPackageDto, DueyPackageObject>();
+            config.NewConfig<ProtoModel.DueyPackageProto, DueyPackageObject>();
         }
 
         public static int[] TranslateArray(string str)
@@ -259,7 +259,7 @@ namespace Application.Core.Mappers
                         : (sbyte)src.getInventoryType();
         }
 
-        public static Item? MapItem(Dto.ItemDto src)
+        public static Item? MapItem(ProtoModel.ItemProto src)
         {
             if (src == null)
                 return null;
@@ -289,7 +289,7 @@ namespace Application.Core.Mappers
             return dest;
         }
 
-        public static DropEntry MapDrop(Dto.DropItemDto src)
+        public static DropEntry MapDrop(ProtoModel.DropItemProto src)
         {
             if (src.Type == (int)DropFromType.ReactorDrop)
                 return DropEntry.ReactorDrop(src.DropperId, src.ItemId, src.Chance, (short)src.QuestId);

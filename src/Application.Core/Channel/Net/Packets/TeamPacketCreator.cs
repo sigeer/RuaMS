@@ -1,6 +1,5 @@
 using Application.Core.Game.Maps;
 using Application.Shared.Team;
-using TeamProto;
 
 namespace Application.Core.Channel.Net.Packets
 {
@@ -96,9 +95,9 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
-        private static void AddPartyStatus(WorldChannel forchannel, TeamDto party, OutPacket p)
+        private static void AddPartyStatus(WorldChannel forchannel, ProtoModel.TeamProto party, OutPacket p)
         {
-            List<(TeamMemberDto? RemotePlayer, Player? ChannelPlayer)> members = [];
+            List<(ProtoModel.TeamMemberProto? RemotePlayer, Player? ChannelPlayer)> members = [];
             for (int i = 0; i < Limits.MaxTeamMember; i++)
             {
                 if (i < party.Members.Count)
@@ -169,7 +168,7 @@ namespace Application.Core.Channel.Net.Packets
         }
 
 
-        public static Packet UpdateParty(WorldChannel forChannel, TeamDto party, PartyOperation op, int targetId, string targetName)
+        public static Packet UpdateParty(WorldChannel forChannel, ProtoModel.TeamProto party, PartyOperation op, int targetId, string targetName)
         {
             OutPacket p = OutPacket.create(SendOpcode.PARTY_OPERATION);
             switch (op)

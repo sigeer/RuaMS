@@ -1,7 +1,5 @@
 using Application.Core.Login.Servers;
 using Application.Shared.Servers;
-using CreatorProto;
-using ExpeditionProto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 

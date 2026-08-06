@@ -3,14 +3,14 @@ using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps
 {
-    public class PlayerSkill : PlayerPropBase<Dto.SkillDto>
+    public class PlayerSkill : PlayerPropBase<ProtoModel.SkillProto>
     {
         private Dictionary<Skill, SkillEntry> _dataSource;
         public PlayerSkill(Player owner) : base(owner)
         {
             _dataSource = [];
         }
-        public override void LoadData(RepeatedField<Dto.SkillDto> skills)
+        public override void LoadData(RepeatedField<ProtoModel.SkillProto> skills)
         {
             foreach (var item in skills)
             {
@@ -23,9 +23,9 @@ namespace Application.Core.Game.Players.PlayerProps
 
         }
 
-        public override Dto.SkillDto[] ToDto()
+        public override ProtoModel.SkillProto[] ToDto()
         {
-            return _dataSource.Select(x => new Dto.SkillDto
+            return _dataSource.Select(x => new ProtoModel.SkillProto
             {
                 Skillid = x.Key.getId(),
                 Expiration = x.Value.expiration,

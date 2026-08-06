@@ -3,7 +3,7 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Shared.MapObjects;
-using LifeProto;
+using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Module.PlayerNPC.Channel.Commands
@@ -11,9 +11,9 @@ namespace Application.Module.PlayerNPC.Channel.Commands
     internal class InvokePlayerNpcRemoveCommand : IWorldChannelCommand
     {
         public string Name => nameof(InvokePlayerNpcRemoveCommand);
-        UpdateMapPlayerNPCResponse data;
+        ProtoService.UpdateMapPlayerNPCResponse data;
 
-        public InvokePlayerNpcRemoveCommand(UpdateMapPlayerNPCResponse res)
+        public InvokePlayerNpcRemoveCommand(ProtoService.UpdateMapPlayerNPCResponse res)
         {
             this.data = res;
         }

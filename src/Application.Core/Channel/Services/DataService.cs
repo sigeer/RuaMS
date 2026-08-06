@@ -30,7 +30,7 @@ namespace Application.Core.Channel.Services
         readonly IItemMapper _itemMapper;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
-        Dictionary<int, List<LifeProto.PLifeDto>> _plifeCache;
+        Dictionary<int, List<ProtoModel.PLifeProto>> _plifeCache;
         public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server, IItemMapper itemMapper)
         {
             _mapper = mapper;
@@ -40,7 +40,7 @@ namespace Application.Core.Channel.Services
             _plifeCache = new();
         }
 
-        public SyncProto.PlayerGetterDto? GetPlayerData(int channelId, string clientSession, int cid)
+        public ProtoModel.PlayerGetterProto? GetPlayerData(int channelId, string clientSession, int cid)
         {
             return _transport.GetPlayerData(clientSession, cid);
         }
@@ -60,7 +60,7 @@ namespace Application.Core.Channel.Services
 
         //public void BatchSyncChar(List<Player> playerList, bool saveDB = false)
         //{
-        //    List<SyncProto.PlayerSaveDto> list = [];
+        //    List<ProtoModel.PlayerSaveProto> list = [];
         //    foreach (var player in playerList)
         //    {
         //        list.Add(Deserialize(player));
@@ -68,7 +68,7 @@ namespace Application.Core.Channel.Services
         //    _transport.BatchSyncPlayer(list, saveDB);
         //}
 
-        public async Task<Player?> Serialize(IChannelClient c, SyncProto.PlayerGetterDto o)
+        public async Task<Player?> Serialize(IChannelClient c, ProtoModel.PlayerGetterProto o)
         {
             if (o == null)
                 return null;
@@ -127,7 +127,7 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            var bagMapping = new Dictionary<InventoryType, RepeatedField<Dto.ItemDto>>()
+            var bagMapping = new Dictionary<InventoryType, RepeatedField<ProtoModel.ItemProto>>()
             {
                 { InventoryType.EQUIP, o.Character.Data.Bag.EquipInv},
                 { InventoryType.USE, o.Character.Data.Bag.UseInv},
@@ -275,12 +275,12 @@ namespace Application.Core.Channel.Services
             return player;
         }
 
-        public SyncProto.PlayerSaveDto Deserialize(Player player)
+        public ProtoModel.PlayerSaveProto Deserialize(Player player)
         {
-            List<Dto.QuestStatusDto> questStatusList = new();
+            List<ProtoModel.QuestStatusProto> questStatusList = new();
             foreach (var qs in player.getQuests())
             {
-                var questDto = new Dto.QuestStatusDto()
+                var questDto = new ProtoModel.QuestStatusProto()
                 {
                     Characterid = player.Id,
                     Expires = qs.getExpirationTime(),
@@ -290,8 +290,8 @@ namespace Application.Core.Channel.Services
                     Completed = qs.getCompleted(),
                     Forfeited = qs.getForfeited(),
                 };
-                questDto.MedalMap.AddRange(qs.getMedalMaps().Select(x => new Dto.MedalMapDto { MapId = x }));
-                questDto.Progress.AddRange(qs.getProgress().Select(x => new Dto.QuestProgressDto { ProgressId = x.Key, Progress = x.Value }));
+                questDto.MedalMap.AddRange(qs.getMedalMaps().Select(x => new ProtoModel.MedalMapProto { MapId = x }));
+                questDto.Progress.AddRange(qs.getProgress().Select(x => new ProtoModel.QuestProgressProto { ProgressId = x.Key, Progress = x.Value }));
                 questStatusList.Add(questDto);
             }
 
@@ -300,13 +300,13 @@ namespace Application.Core.Channel.Services
                 : !player.QuickSlotKeyMapped!.GetKeybindings().SequenceEqual(player.QuickSlotLoaded);
 
             var quickSlotDto = hasQuickSlotChanged
-                ? new Dto.QuickSlotDto()
+                ? new ProtoModel.QuickSlotProto()
                 {
                     LongValue = LongTool.BytesToLong(player.QuickSlotKeyMapped!.GetKeybindings()),
                 }
                 : null;
 
-            var playerDto = _mapper.Map<Dto.CharacterDto>(player);
+            var playerDto = _mapper.Map<ProtoModel.CharacterProto>(player);
             if (player.MapModel == null || player.CashShopModel.isOpened())
             {
                 playerDto.Map = player.Map;
@@ -340,35 +340,35 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            var saveDto = new SyncProto.PlayerSaveDto()
+            var saveDto = new ProtoModel.PlayerSaveProto()
             {
                 Channel = player.Channel,
                 Character = playerDto
             };
-            var data = new Dto.CharacterDataProto() { Bag = new Dto.CharacterBagDataProto(), GachaponStorage = new Dto.StorageDto() };
+            var data = new ProtoModel.CharacterDataProto() { Bag = new ProtoModel.CharacterBagDataProto(), GachaponStorage = new ProtoModel.StorageProto() };
             saveDto.Character.Data = data;
 
-            data.FameLogs.AddRange(_mapper.Map<Dto.FameLogRecordDto[]>(player.FameLogs));
-            data.Areas.AddRange(player.AreaInfo.Select(x => new Dto.AreaDto() { Area = x.Key, Info = x.Value }));
+            data.FameLogs.AddRange(_mapper.Map<ProtoModel.FameLogRecordProto[]>(player.FameLogs));
+            data.Areas.AddRange(player.AreaInfo.Select(x => new ProtoModel.AreaProto() { Area = x.Key, Info = x.Value }));
             data.MonsterBooks.AddRange(player.Monsterbook.ToDto());
             data.SavedLocations.AddRange(player.SavedLocations.ToDto());
-            data.Events.AddRange(player.Events.Select(x => new Dto.EventDto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
+            data.Events.AddRange(player.Events.Select(x => new ProtoModel.EventProto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
             data.Skills.AddRange(player.Skills.ToDto());
-            data.SkillMacros.AddRange(_mapper.Map<Dto.SkillMacroDto[]>(player.SkillMacros.Where(x => x != null)));
+            data.SkillMacros.AddRange(_mapper.Map<ProtoModel.SkillMacroProto[]>(player.SkillMacros.Where(x => x != null)));
             data.TrockLocations.AddRange(player.PlayerTrockLocation.ToDto());
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
             data.QuestStatuses.AddRange(questStatusList);
 
             data.PetIgnores.AddRange(player.getExcluded().Select(x =>
             {
-                var m = new Dto.PetIgnoreDto { PetId = x.Key };
+                var m = new ProtoModel.PetIgnoreProto { PetId = x.Key };
                 m.ExcludedItems.AddRange(x.Value);
                 return m;
             }));
             data.WishItems.AddRange(player.CashShopModel.getWishList());
-            data.CoolDowns.AddRange(_mapper.Map<Dto.CoolDownDto[]>(player.getAllCooldowns()));
+            data.CoolDowns.AddRange(_mapper.Map<ProtoModel.CoolDownProto[]>(player.getAllCooldowns()));
 
-            var bagMapping = new Dictionary<InventoryType, RepeatedField<Dto.ItemDto>>()
+            var bagMapping = new Dictionary<InventoryType, RepeatedField<ProtoModel.ItemProto>>()
             {
                 { InventoryType.EQUIP, data.Bag.EquipInv},
                 { InventoryType.USE, data.Bag.UseInv},
@@ -384,15 +384,15 @@ namespace Application.Core.Channel.Services
                     kw.Value.Add(_itemMapper.MapToDto(invItem));
                 }
             }
-            saveDto.AccountGame = new AccountDto.AccountGameDto()
+            saveDto.AccountGame = new ProtoModel.AccountGameProto()
             {
                 NxCredit = player.CashShopModel.NxCredit,
                 NxPrepaid = player.CashShopModel.NxPrepaid,
                 MaplePoint = player.CashShopModel.MaplePoint,
                 Id = playerDto.AccountId,
-                Data = new AccountDto.AccountGameDataProto()
+                Data = new ProtoModel.AccountGameDataProto()
                 {
-                    Storage = new Dto.StorageDto
+                    Storage = new ProtoModel.StorageProto
                     {
                         OwnerId = playerDto.AccountId,
                         Meso = player.Storage.Meso,
@@ -417,7 +417,7 @@ namespace Application.Core.Channel.Services
             return saveDto;
         }
 
-        public async Task CompleteLogin(WorldChannel server, Player chr, SyncProto.PlayerGetterDto o)
+        public async Task CompleteLogin(WorldChannel server, Player chr, ProtoModel.PlayerGetterProto o)
         {
             await _transport.SetPlayerOnlined(chr.Id, chr.ActualChannel);
             await chr.MapModel.Send(async map =>
@@ -451,12 +451,12 @@ namespace Application.Core.Channel.Services
             });
         }
 
-        //public PlayerSaveDto DeserializeCashShop(Player player)
+        //public PlayerSaveProto DeserializeCashShop(Player player)
         //{
         //    var cashShopItems = player.CashShopModel.getInventory();
         //    var cashShopDto  = new CashShopDto()
         //    {
-        //        Items = _mapper.Map<ItemDto[]>(cashShopItems, opt =>
+        //        Items = _mapper.Map<ItemProto[]>(cashShopItems, opt =>
         //        {
         //            opt.Items["Type"] = player.CashShopModel.Factory.getValue();
         //        }),
@@ -467,35 +467,35 @@ namespace Application.Core.Channel.Services
         //        MaplePoint = player.CashShopModel.MaplePoint
         //    };
 
-        //    var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<List<ItemDto>>(x.list(), opt =>
+        //    var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<List<ItemProto>>(x.list(), opt =>
         //    {
         //        opt.Items["InventoryType"] = (int)x.getType();
         //        opt.Items["Type"] = 1;
         //    })).ToArray();
 
-        //    return new PlayerSaveDto
+        //    return new PlayerSaveProto
         //    {
         //        CashShop = cashShopDto,
-        //        InventoryItems = _mapper.Map<ItemDto[]>(d),
+        //        InventoryItems = _mapper.Map<ItemProto[]>(d),
         //    };
         //}
 
-        public SyncProto.PlayerBuffDto DeserializeBuff(Player player)
+        public ProtoModel.PlayerBuffProto DeserializeBuff(Player player)
         {
-            var data = new SyncProto.PlayerBuffDto();
+            var data = new ProtoModel.PlayerBuffProto();
             data.Buffs.AddRange(player.getAllBuffs().Select(x =>
             {
-                var o = new Dto.BuffDto
+                var o = new ProtoModel.BuffProto
                 {
                     SkillLevel = x.Effect.SkillLevel,
                     SourceId = x.Effect.getBuffSourceId(),
 
                     StartTime = x.StartTime
                 };
-                o.Stats.AddRange(x.EffectStats.Select(y => new Dto.BuffStatDto { Value = y.Value, BuffStat = y.BuffState.ToString() }));
+                o.Stats.AddRange(x.EffectStats.Select(y => new ProtoModel.BuffStatProto { Value = y.Value, BuffStat = y.BuffState.ToString() }));
                 return o;
             }));
-            data.Diseases.AddRange(player.Diseases.Select(x => new Dto.DiseaseDto
+            data.Diseases.AddRange(player.Diseases.Select(x => new ProtoModel.DiseaseProto
             {
                 DiseaseOrdinal = x.Key.ordinal(),
                 StartTime = x.Value.StartTime,
@@ -561,10 +561,10 @@ namespace Application.Core.Channel.Services
             int ypos = checkpos.Y;
             int fh = chr.getMap().Footholds.FindBelowFoothold(checkpos)!.getId();
 
-            _ = _transport.SendCreatePLife(new LifeProto.CreatePLifeRequest
+            _ = _transport.SendCreatePLife(new ProtoService.CreatePLifeRequest
             {
                 MasterId = chr.Id,
-                Data = new LifeProto.PLifeDto
+                Data = new ProtoModel.PLifeProto
                 {
                     LifeId = lifeId,
                     Cy = ypos,
@@ -584,15 +584,15 @@ namespace Application.Core.Channel.Services
         public void RemovePLife(Player chr, string lifeType, int lifeId = -1)
         {
             var pos = chr.getPosition();
-            _ = _transport.SendRemovePLife(new LifeProto.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
+            _ = _transport.SendRemovePLife(new ProtoService.RemovePLifeRequest { LifeId = lifeId, LifeType = lifeType, MapId = chr.getMapId(), MasterId = chr.Id, PosX = pos.X, PosY = pos.Y });
         }
 
         public void LoadAllPLife()
         {
-            _plifeCache = _transport.RequestPLifeByMapId(new LifeProto.GetPLifeByMapIdRequest()).List.GroupBy(x => x.MapId).ToDictionary(x => x.Key, x => x.ToList());
+            _plifeCache = _transport.RequestPLifeByMapId(new ProtoService.GetPLifeByMapIdRequest()).List.GroupBy(x => x.MapId).ToDictionary(x => x.Key, x => x.ToList());
         }
 
-        internal List<LifeProto.PLifeDto> LoadPLife(int mapId)
+        internal List<ProtoModel.PLifeProto> LoadPLife(int mapId)
         {
             return _plifeCache.GetValueOrDefault(mapId, []);
         }
@@ -615,23 +615,23 @@ namespace Application.Core.Channel.Services
         }
 
 
-        //public QueryChannelExpedtionResponse GetExpeditionInfo()
+        //public QueryChannelExpeditionResponse GetExpeditionInfo()
         //{
-        //    var res = new QueryChannelExpedtionResponse();
+        //    var res = new QueryChannelExpeditionResponse();
         //    foreach (var channel in _server.Servers.Values)
         //    {
-        //        var item = new ExpeditionProto.ChannelExpeditionDto() { Channel = channel.getId() };
+        //        var item = new ProtoModel.ChannelExpeditionProto() { Channel = channel.getId() };
 
         //        var expeds = channel.getExpeditions();
         //        foreach (var exped in expeds)
         //        {
-        //            var dto = new ExpeditionInfoDto
+        //            var dto = new ExpeditionInfoProto
         //            {
         //                LeaderId = exped.getLeader().Id,
         //                Status = exped.isRegistering() ? 1 : 0,
         //                Type = exped.getType().ordinal()
         //            };
-        //            dto.Members.AddRange(exped.getMembers().Select(x => new ExpeditionMemberDto { Id = x.Key, Name = x.Value }).OrderBy(x => x.Id == dto.LeaderId));
+        //            dto.Members.AddRange(exped.getMembers().Select(x => new ExpeditionMemberProto { Id = x.Key, Name = x.Value }).OrderBy(x => x.Id == dto.LeaderId));
         //            item.Expeditions.Add(dto);
         //        }
         //        res.List.Add(item);

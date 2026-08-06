@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "Model/Cash.proto";
+import "Model/Ring.proto";
+
+package ProtoService;
+
+
+
+message BuyCashItemRequest {
+	int32 masterId = 1;
+	int32 cashItemSn = 2;
+	int32 cashItemId = 3;
+	ProtoModel.GiftInfoProto giftInfo = 4;
+}
+
+
+
+message BuySlotRequest {
+	int32 masterId = 1;
+	int32 slotType = 2;
+	int32 slotValue = 3;
+}
+
+
+
+message BuyCashItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	int32 sn = 3;
+	CreateGiftResponse giftInfo = 5;
+}
+
+
+
+message CreateGiftResponse {
+	int32 code = 1;
+	string recipient = 2;
+	ProtoModel.RingProto ringSource = 3;
+}

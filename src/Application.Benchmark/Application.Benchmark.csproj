@@ -15,7 +15,7 @@
   <ItemGroup>
 	  <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
-    <ProjectReference Include="..\Application.Templates.Reader.Img\Application.Templates.Reader.Img.csproj" />
+    <ProjectReference Include="..\Application.Templates.Reader.Xml\Application.Templates.Reader.Xml.csproj" />
   </ItemGroup>
 
 </Project>

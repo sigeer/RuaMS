@@ -1,10 +1,9 @@
 using Application.Shared.Message;
 using Google.Protobuf;
-using SyncProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
-    internal class SyncMapHandler : InternalSessionMasterHandler<MapBatchSyncDto>
+    internal class SyncMapHandler : InternalSessionMasterHandler<ProtoModel.MapBatchSyncProto>
     {
         public SyncMapHandler(MasterServer server) : base(server)
         {
@@ -12,11 +11,11 @@ namespace Application.Core.Login.Internal.Handlers
 
         public override int MessageId => (int)ChannelSendCode.SyncMap;
 
-        protected override Task HandleMessage(MapBatchSyncDto message)
+        protected override Task HandleMessage(ProtoModel.MapBatchSyncProto message)
         {
             return _server.CharacterManager.BatchUpdateMap(message.List.ToList());
         }
 
-        protected override MapBatchSyncDto Parse(ByteString content) => MapBatchSyncDto.Parser.ParseFrom(content);
+        protected override ProtoModel.MapBatchSyncProto Parse(ByteString content) => ProtoModel.MapBatchSyncProto.Parser.ParseFrom(content);
     }
 }

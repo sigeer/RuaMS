@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ProtoService;
+
+
+
+message SendReportRequest {
+	int32 masterId = 1;
+	string victim = 2;
+	string text = 3;
+	int32 reason = 4;
+	string chatLog = 5;
+}
+
+
+
+message SendReportResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	string victime = 3;
+}

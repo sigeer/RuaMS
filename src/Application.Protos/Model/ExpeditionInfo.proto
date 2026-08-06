@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message ChannelExpeditionProto {
+	int32 channel = 1;
+	repeated ExpeditionInfoProto expeditions = 2;
+}
+
+
+
+message ExpeditionInfoProto {
+	int32 type = 1;
+	int32 status = 2;
+	repeated ExpeditionMemberProto members = 3;
+	int32 leaderId = 4;
+}
+
+
+
+message ExpeditionMemberProto {
+	int32 id = 1;
+	string name = 2;
+}

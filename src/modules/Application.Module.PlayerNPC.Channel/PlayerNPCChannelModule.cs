@@ -58,7 +58,7 @@ namespace Application.Module.PlayerNPC.Channel
             _manager.SpawnPlayerNPCHere(mapId, position, chr);
         }
 
-        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
+        public override void OnPlayerLevelUp(ProtoModel.PlayerFieldChange arg)
         {
             if (arg.Level == JobFactory.GetById(arg.JobId).GetSlackMaxLevel() && _config.PLAYERNPC_AUTODEPLOY)
             {

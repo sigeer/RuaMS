@@ -1,6 +1,5 @@
 using Application.Core.Models;
 using Application.Shared.Message;
-using Dto;
 using Google.Protobuf;
 using net.packet.outs;
 
@@ -8,7 +7,7 @@ namespace Application.Core.Channel.Internal.Handlers
 {
     internal class NoteHandlers
     {
-        public class Receive : InternalSessionChannelHandler<SendNoteResponse>
+        public class Receive : InternalSessionChannelHandler<ProtoService.SendNoteResponse>
         {
             public Receive(WorldChannelServer server) : base(server)
             {
@@ -16,7 +15,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.InvokeNoteMessage;
 
-            protected override Task HandleMessage(SendNoteResponse res)
+            protected override Task HandleMessage(ProtoService.SendNoteResponse res)
             {
                 return _server.SendToPlayerAsync(res.ReceiverChannel, res.ReceiverId, async chr =>
                 {
@@ -24,7 +23,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override SendNoteResponse Parse(ByteString data) => SendNoteResponse.Parser.ParseFrom(data);
+            protected override ProtoService.SendNoteResponse Parse(ByteString data) => ProtoService.SendNoteResponse.Parser.ParseFrom(data);
         }
     }
 }

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message ClientInfo {
+  string characterName = 1;
+  string accountName = 2;
+  string currentIP = 3;
+  string currentMAC = 4;
+  string currentHWID = 5;
+}
+
+
+
+message GetAllClientInfo {
+	repeated ClientInfo list = 1;
+}

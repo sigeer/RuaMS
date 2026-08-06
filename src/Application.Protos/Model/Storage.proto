@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+package ProtoModel;
+
+
+
+message StorageProto {
+  int32 ownerId = 1;
+  int32 slots = 2;
+  int32 meso = 3;
+  repeated ItemProto items = 4;
+}

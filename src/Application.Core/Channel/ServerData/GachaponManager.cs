@@ -47,12 +47,6 @@ namespace Application.Core.Channel.ServerData
 
             _globalPoolIdList = _cachedPool.Where(x => x.Key <= 0).Select(x => x.Value.Id).ToList();
         }
-
-        public void OnDataReset(ItemProto.GachaponResetBroadcast data)
-        {
-            Reload();
-        }
-
         public List<GachaponPoolItemDataObject> GetItems(int poolId, int level)
         {
             return _cachedItems.Where(x => x.Level == level).Where(x => x.PoolId == poolId || _globalPoolIdList.Contains(x.PoolId)).ToList();

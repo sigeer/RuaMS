@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "Model/Team.proto";
+
+package ProtoService;
+
+
+
+message UpdateTeamResponse {
+  int32 code = 1;
+  UpdateTeamRequest request = 2;
+  ProtoModel.TeamProto team = 3;
+  string targetName = 4; 
+}
+
+
+
+message UpdateTeamRequest {
+	int32 teamId = 1;
+	int32 operation  = 2;
+	int32 fromId = 3;
+	int32 targetId =  4;
+	int32 reason = 5;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "Model/RegisterServer.proto";
+
+package ProtoService;
+
+
+
+message RegisterServerRequest {
+	string serverName = 1;
+	repeated ProtoModel.RegisterChannelConfigProto channels = 2;
+	string serverHost = 4;
+}

@@ -2,8 +2,6 @@ using Application.Core.Login;
 using Application.Core.Login.Models.Invitations;
 using Application.Module.Family.Common;
 using Application.Shared.Invitations;
-using Dto;
-using InvitationProto;
 
 namespace Application.Module.Family.Master
 {
@@ -18,7 +16,7 @@ namespace Application.Module.Family.Master
 
         protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            await _familyManager.UseEntitlement(new UseEntitlementRequest
+            await _familyManager.UseEntitlement(new Dto.UseEntitlementRequest
             {
                 MatserId = request.FromPlayerId,
                 TargetPlayerId = request.ToPlayerId,
@@ -36,7 +34,7 @@ namespace Application.Module.Family.Master
             await _familyManager.Refund(request.FromPlayerId);
         }
 
-        public override async Task HandleInvitationCreated(CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;

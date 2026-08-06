@@ -1,21 +1,9 @@
-using AllianceProto;
 using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Shared.Servers;
 using Application.Shared.Team;
-using CashProto;
-using Config;
-using Dto;
-using DueyDto;
 using Google.Protobuf;
-using GuildProto;
-using ItemProto;
-using JailProto;
-using MessageProto;
-using SyncProto;
 using System.Net;
-using SystemProto;
-using TeamProto;
 
 namespace Application.Core.ServerTransports
 {
@@ -30,13 +18,13 @@ namespace Application.Core.ServerTransports
         public int GetCurrentTimestamp();
 
         Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default);
-        void HealthCheck(ServerProto.MonitorData data);
-        Task DropWorldMessage(MessageProto.DropMessageRequest request);
+        void HealthCheck(ProtoModel.MonitorData data);
+        Task DropWorldMessage(ProtoService.DropMessageRequest request);
         /// <summary>
         /// 向全服发送数据包
         /// </summary>
         /// <param name="p"></param>
-        Task BroadcastMessage(MessageProto.PacketRequest p);
+        Task BroadcastMessage(ProtoService.PacketRequest p);
 
         #region
         void RemoveGuildQueued(int guildId);
@@ -48,10 +36,10 @@ namespace Application.Core.ServerTransports
         /// 更新全局倍率设置
         /// </summary>
         /// <param name="updatePatch"></param>
-        Task SendWorldConfig(Config.WorldConfig updatePatch);
+        Task SendWorldConfig(ProtoModel.WorldConfig updatePatch);
 
         #region Team
-        Task CreateTeam(CreateTeamRequest request);
+        Task CreateTeam(ProtoService.CreateTeamRequest request);
         #endregion
 
         #region
@@ -71,150 +59,150 @@ namespace Application.Core.ServerTransports
         AccountLoginStatus UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        SyncProto.PlayerGetterDto? GetPlayerData(string clientSession, int cid);
+        ProtoModel.PlayerGetterProto? GetPlayerData(string clientSession, int cid);
         bool CheckCharacterName(string name);
-        void SendBuffObject(int v, SyncProto.PlayerBuffDto playerBuffSaveDto);
-        SyncProto.PlayerBuffDto GetBuffObject(int id);
+        void SendBuffObject(int v, ProtoModel.PlayerBuffProto playerBuffSaveDto);
+        ProtoModel.PlayerBuffProto GetBuffObject(int id);
         /// <summary>
         /// 设置玩家在线
         /// </summary>
         /// <param name="id">玩家id</param>
         /// <param name="channelId">频道号</param>
         Task SetPlayerOnlined(int id, int channelId);
-        Dto.DropAllDto RequestAllReactorDrops();
+        ProtoModel.DropAllProto RequestAllReactorDrops();
         int[] RequestReactorSkillBooks();
-        CashProto.SpecialCashItemListDto RequestSpecialCashItems();
+        ProtoModel.SpecialCashItemListProto RequestSpecialCashItems();
 
-        GetMyGiftsResponse LoadPlayerGifts(GetMyGiftsRequest request);
+        ProtoService.GetMyGiftsResponse LoadPlayerGifts(ProtoService.GetMyGiftsRequest request);
         void ClearGifts(int[] giftIdArray);
         Task<bool> SendNormalNoteMessage(int senderId, string toName, string noteMessage);
-        Dto.NoteDto? DeleteNoteMessage(int id);
-        Dto.ShopDto? GetShop(int id, bool isShopId);
-        RankProto.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
+        ProtoModel.NoteProto? DeleteNoteMessage(int id);
+        ProtoModel.ShopProto? GetShop(int id, bool isShopId);
+        ProtoService.LoadCharacterRankResponse LoadPlayerRanking(int topCount);
         int[][] GetMostSellerCashItems();
-        ItemProto.OwlSearchResponse SendOwlSearch(OwlSearchRequest owlSearchRequest);
-        ItemProto.OwlSearchRecordResponse GetOwlSearchedItems();
+        ProtoService.OwlSearchResponse SendOwlSearch(ProtoService.OwlSearchRequest owlSearchRequest);
+        ProtoService.OwlSearchRecordResponse GetOwlSearchedItems();
         Task SendUpdateTeam(int teamId, PartyOperation operation, int fromId, int toId, int reason);
-        TeamProto.GetTeamResponse GetTeam(int party);
+        ProtoService.GetTeamResponse GetTeam(int party);
 
-        GuildProto.GetGuildResponse GetGuild(int id);
-        Task CreateGuild(GuildProto.CreateGuildRequest request);
+        ProtoService.GetGuildResponse GetGuild(int id);
+        Task CreateGuild(ProtoService.CreateGuildRequest request);
         Task BroadcastGuildMessage(int guildId, int v, string callout);
-        Task SendUpdateGuildGP(GuildProto.UpdateGuildGPRequest request);
-        Task SendUpdateGuildRankTitle(GuildProto.UpdateGuildRankTitleRequest request);
-        Task SendUpdateGuildNotice(GuildProto.UpdateGuildNoticeRequest request);
-        Task SendUpdateGuildCapacity(GuildProto.UpdateGuildCapacityRequest request);
-        Task SendUpdateGuildEmblem(GuildProto.UpdateGuildEmblemRequest request);
-        Task SendGuildDisband(GuildProto.GuildDisbandRequest request);
-        Task SendChangePlayerGuildRank(GuildProto.UpdateGuildMemberRankRequest request);
-        Task SendGuildExpelMember(GuildProto.ExpelFromGuildRequest expelFromGuildRequest);
-        Task SendPlayerLeaveGuild(GuildProto.LeaveGuildRequest leaveGuildRequest);
-        Task SendPlayerJoinGuild(GuildProto.JoinGuildRequest joinGuildRequest);
+        Task SendUpdateGuildGP(ProtoService.UpdateGuildGPRequest request);
+        Task SendUpdateGuildRankTitle(ProtoService.UpdateGuildRankTitleRequest request);
+        Task SendUpdateGuildNotice(ProtoService.UpdateGuildNoticeRequest request);
+        Task SendUpdateGuildCapacity(ProtoService.UpdateGuildCapacityRequest request);
+        Task SendUpdateGuildEmblem(ProtoService.UpdateGuildEmblemRequest request);
+        Task SendGuildDisband(ProtoService.GuildDisbandRequest request);
+        Task SendChangePlayerGuildRank(ProtoService.UpdateGuildMemberRankRequest request);
+        Task SendGuildExpelMember(ProtoService.ExpelFromGuildRequest expelFromGuildRequest);
+        Task SendPlayerLeaveGuild(ProtoService.LeaveGuildRequest leaveGuildRequest);
+        Task SendPlayerJoinGuild(ProtoService.JoinGuildRequest joinGuildRequest);
 
 
-        AllianceProto.GetAllianceResponse GetAlliance(int id);
-        AllianceProto.CreateAllianceCheckResponse CreateAllianceCheck(AllianceProto.CreateAllianceCheckRequest request);
-        Task CreateAlliance(AllianceProto.CreateAllianceRequest request);
-        Task SendGuildLeaveAlliance(AllianceProto.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
-        Task SendAllianceExpelGuild(AllianceProto.AllianceExpelGuildRequest allianceExpelGuildRequest);
-        Task SendChangeAllianceLeader(AllianceProto.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
-        Task SendChangePlayerAllianceRank(AllianceProto.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
-        Task SendIncreaseAllianceCapacity(AllianceProto.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
-        Task SendUpdateAllianceRankTitle(AllianceProto.UpdateAllianceRankTitleRequest request);
-        Task SendUpdateAllianceNotice(AllianceProto.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
-        Task SendAllianceDisband(AllianceProto.DisbandAllianceRequest disbandAllianceRequest);
-        Task AllianceBroadcastPlayerInfo(AllianceBroadcastPlayerInfoRequest request);
+        ProtoService.GetAllianceResponse GetAlliance(int id);
+        ProtoService.CreateAllianceCheckResponse CreateAllianceCheck(ProtoService.CreateAllianceCheckRequest request);
+        Task CreateAlliance(ProtoService.CreateAllianceRequest request);
+        Task SendGuildLeaveAlliance(ProtoService.GuildLeaveAllianceRequest guildLeaveAllianceRequest);
+        Task SendAllianceExpelGuild(ProtoService.AllianceExpelGuildRequest allianceExpelGuildRequest);
+        Task SendChangeAllianceLeader(ProtoService.AllianceChangeLeaderRequest allianceChangeLeaderRequest);
+        Task SendChangePlayerAllianceRank(ProtoService.ChangePlayerAllianceRankRequest changePlayerAllianceRankRequest);
+        Task SendIncreaseAllianceCapacity(ProtoService.IncreaseAllianceCapacityRequest increaseAllianceCapacityRequest);
+        Task SendUpdateAllianceRankTitle(ProtoService.UpdateAllianceRankTitleRequest request);
+        Task SendUpdateAllianceNotice(ProtoService.UpdateAllianceNoticeRequest updateAllianceNoticeRequest);
+        Task SendAllianceDisband(ProtoService.DisbandAllianceRequest disbandAllianceRequest);
+        Task AllianceBroadcastPlayerInfo(ProtoService.AllianceBroadcastPlayerInfoRequest request);
         #endregion
 
-        Task SendPlayerJoinChatRoom(Dto.JoinChatRoomRequest joinChatRoomRequest);
-        Task SendPlayerLeaveChatRoom(Dto.LeaveChatRoomRequst leaveChatRoomRequst);
-        Task SendChatRoomMesage(Dto.SendChatRoomMessageRequest sendChatRoomMessageRequest);
-        Task SendCreateChatRoom(Dto.CreateChatRoomRequest createChatRoomRequest);
+        Task SendPlayerJoinChatRoom(ProtoService.JoinChatRoomRequest joinChatRoomRequest);
+        Task SendPlayerLeaveChatRoom(ProtoService.LeaveChatRoomRequest leaveChatRoomRequst);
+        Task SendChatRoomMesage(ProtoService.SendChatRoomMessageRequest sendChatRoomMessageRequest);
+        Task SendCreateChatRoom(ProtoService.CreateChatRoomRequest createChatRoomRequest);
 
-        Task SendInvitation(InvitationProto.CreateInviteRequest request);
-        Task AnswerInvitation(InvitationProto.AnswerInviteRequest request);
+        Task SendInvitation(ProtoService.CreateInviteRequest request);
+        Task AnswerInvitation(ProtoService.AnswerInviteRequest request);
 
-        void RegisterExpedition(ExpeditionProto.ExpeditionRegistry request);
-        ExpeditionProto.ExpeditionCheckResponse CanStartExpedition(ExpeditionProto.ExpeditionCheckRequest expeditionCheckRequest);
+        void RegisterExpedition(ProtoModel.ExpeditionRegistry request);
+        ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest expeditionCheckRequest);
 
-        Task ReceiveNewYearCard(ReceiveNewYearCardRequest receiveNewYearCardRequest);
-        Task SendNewYearCard(SendNewYearCardRequest sendNewYearCardRequest);
-        Task SendDiscardNewYearCard(DiscardNewYearCardRequest discardNewYearCardRequest);
+        Task ReceiveNewYearCard(ProtoService.ReceiveNewYearCardRequest receiveNewYearCardRequest);
+        Task SendNewYearCard(ProtoService.SendNewYearCardRequest sendNewYearCardRequest);
+        Task SendDiscardNewYearCard(ProtoService.DiscardNewYearCardRequest discardNewYearCardRequest);
 
-        ConfigProto.SetFlyResponse SendSetFly(ConfigProto.SetFlyRequest setFlyRequest);
-        Task SendReloadEvents(ReloadEventsRequest reloadEventsRequest);
-        CreateTVMessageResponse BroadcastTV(CreateTVMessageRequest request);
-        UseItemMegaphoneResponse SendItemMegaphone(ItemProto.UseItemMegaphoneRequest request);
-        Dto.DropAllDto RequestDropData();
-        BaseProto.QueryMonsterCardDataResponse RequestMonsterCardData();
-        GuildProto.QueryRankedGuildsResponse RequestRankedGuilds();
-        LifeProto.GetAllPLifeResponse GetAllPLife(LifeProto.GetAllPLifeRequest request);
-        LifeProto.GetPLifeByMapIdResponse RequestPLifeByMapId(LifeProto.GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
-        Task SendCreatePLife(LifeProto.CreatePLifeRequest createPLifeRequest);
-        Task SendRemovePLife(LifeProto.RemovePLifeRequest removePLifeRequest);
-        BuyCashItemResponse SendBuyCashItem(BuyCashItemRequest buyCashItemRequest);
+        ProtoService.SetFlyResponse SendSetFly(ProtoService.SetFlyRequest setFlyRequest);
+        Task SendReloadEvents(ProtoService.ReloadEventsRequest reloadEventsRequest);
+        ProtoService.CreateTVMessageResponse BroadcastTV(ProtoService.CreateTVMessageRequest request);
+        ProtoService.UseItemMegaphoneResponse SendItemMegaphone(ProtoService.UseItemMegaphoneRequest request);
+        ProtoModel.DropAllProto RequestDropData();
+        ProtoService.QueryMonsterCardDataResponse RequestMonsterCardData();
+        ProtoService.QueryRankedGuildsResponse RequestRankedGuilds();
+        ProtoService.GetAllPLifeResponse GetAllPLife(ProtoService.GetAllPLifeRequest request);
+        ProtoService.GetPLifeByMapIdResponse RequestPLifeByMapId(ProtoService.GetPLifeByMapIdRequest requestPLifeByMapIdRequest);
+        Task SendCreatePLife(ProtoService.CreatePLifeRequest createPLifeRequest);
+        Task SendRemovePLife(ProtoService.RemovePLifeRequest removePLifeRequest);
+        ProtoService.BuyCashItemResponse SendBuyCashItem(ProtoService.BuyCashItemRequest buyCashItemRequest);
 
-        RemoteHiredMerchantDto LoadPlayerHiredMerchant(GetPlayerHiredMerchantRequest getPlayerShopRequest);
-        void SyncPlayerShop(SyncPlayerShopRequest request);
-        CommitRetrievedResponse CommitRetrievedFromFredrick(CommitRetrievedRequest commitRetrievedRequest);
-        Task BatchSyncPlayerShop(BatchSyncPlayerShopRequest request);
+        ProtoModel.RemoteHiredMerchantProto LoadPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest getPlayerShopRequest);
+        void SyncPlayerShop(ProtoService.SyncPlayerShopRequest request);
+        ProtoService.CommitRetrievedResponse CommitRetrievedFromFredrick(ProtoService.CommitRetrievedRequest commitRetrievedRequest);
+        Task BatchSyncPlayerShop(ProtoService.BatchSyncPlayerShopRequest request);
 
-        Task BatchSyncMap(List<MapSyncDto> data);
-        Task SendReport(SendReportRequest sendReportRequest);
-        Task SetMonitor(ToggleMonitorPlayerRequest toggleMonitorPlayerRequest);
-        MonitorDataWrapper LoadMonitor();
-        Task SetAutoBanIgnored(ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest);
-        AutoBanIgnoredWrapper LoadAutobanIgnoreData();
+        Task BatchSyncMap(List<ProtoModel.MapSyncProto> data);
+        Task SendReport(ProtoService.SendReportRequest sendReportRequest);
+        Task SetMonitor(ProtoService.ToggleMonitorPlayerRequest toggleMonitorPlayerRequest);
+        ProtoModel.MonitorDataWrapperProto LoadMonitor();
+        Task SetAutoBanIgnored(ProtoService.ToggleAutoBanIgnoreRequest toggleAutoBanIgnoreRequest);
+        ProtoModel.AutoBanIgnoredWrapperProto LoadAutobanIgnoreData();
 
-        Task AntiMacroNotify(AntiMacroNotifyMessage message);
-        Task Ban(BanRequest banRequest);
-        Task Unban(UnbanRequest unbanRequest);
-        Task SetGmLevel(SetGmLevelRequest setGmLevelRequest);
-        ShowOnlinePlayerResponse GetOnlinedPlayers();
-        Task WarpPlayerByName(WrapPlayerByNameRequest wrapPlayerByNameRequest);
-        Task SummonPlayerByName(SummonPlayerByNameRequest summonPlayerByNameRequest);
-        Task DisconnectPlayerByName(DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
-        GetAllClientInfo GetOnliendClientInfo();
-        Task ShutdownMaster(ShutdownMasterRequest shutdownMasterRequest);
+        Task AntiMacroNotify(ProtoModel.AntiMacroNotifyMessageProto message);
+        Task Ban(ProtoService.BanRequest banRequest);
+        Task Unban(ProtoService.UnbanRequest unbanRequest);
+        Task SetGmLevel(ProtoService.SetGmLevelRequest setGmLevelRequest);
+        ProtoService.ShowOnlinePlayerResponse GetOnlinedPlayers();
+        Task WarpPlayerByName(ProtoService.WrapPlayerByNameRequest wrapPlayerByNameRequest);
+        Task SummonPlayerByName(ProtoService.SummonPlayerByNameRequest summonPlayerByNameRequest);
+        Task DisconnectPlayerByName(ProtoService.DisconnectPlayerByNameRequest disconnectPlayerByNameRequest);
+        ProtoModel.GetAllClientInfo GetOnliendClientInfo();
+        Task ShutdownMaster(ProtoService.ShutdownMasterRequest shutdownMasterRequest);
         Task CompleteChannelShutdown();
-        ServerStateDto GetServerState();
+        ProtoModel.ServerStateProto GetServerState();
 
-        ItemProto.GacheponDataDto GetGachaponData();
-        NameChangeResponse ReigsterNameChange(NameChangeRequest nameChangeRequest);
-        Task SyncPlayer(PlayerSaveDto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false);
-        Task BatchSyncPlayer(List<PlayerSaveDto> data, bool saveDB = false);
+        ProtoModel.GacheponDataProto GetGachaponData();
+        ProtoService.NameChangeResponse ReigsterNameChange(ProtoService.NameChangeRequest nameChangeRequest);
+        Task SyncPlayer(ProtoModel.PlayerSaveProto data, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown, bool saveDB = false);
+        Task BatchSyncPlayer(List<ProtoModel.PlayerSaveProto> data, bool saveDB = false);
         #region Buddy
-        Task SendAddBuddyRequest(BuddyProto.AddBuddyRequest request);
-        Task SendAddBuddyRequest(BuddyProto.AddBuddyByIdRequest request);
-        Task SendBuddyMessage(BuddyProto.SendBuddyNoticeMessageDto request);
-        Task SendDeleteBuddy(BuddyProto.DeleteBuddyRequest deleteBuddyRequest);
+        Task SendAddBuddyRequest(ProtoService.AddBuddyRequest request);
+        Task SendAddBuddyRequest(ProtoService.AddBuddyByIdRequest request);
+        Task SendBuddyMessage(ProtoModel.SendBuddyNoticeMessageProto request);
+        Task SendDeleteBuddy(ProtoService.DeleteBuddyRequest deleteBuddyRequest);
 
-        Task GetLocation(BuddyProto.GetLocationRequest getLocationRequest);
+        Task GetLocation(ProtoService.GetLocationRequest getLocationRequest);
         #endregion
 
-        Task SendWhisper(SendWhisperMessageRequest sendWhisperMessageRequest);
+        Task SendWhisper(ProtoService.SendWhisperMessageRequest sendWhisperMessageRequest);
 
 
-        UseCdkResponse UseCdk(UseCdkRequest useCdkRequest);
+        ProtoService.UseCdkResponse UseCdk(ProtoService.UseCdkRequest useCdkRequest);
         bool GainCharacterSlot(int accountId);
-        Task SendGuildPacket(GuildPacketRequest guildPacketRequest);
+        Task SendGuildPacket(ProtoService.GuildPacketRequest guildPacketRequest);
         Task SendMultiChatAsync(int type, string fromName, string msg, int[] receivers);
         Task SaveAllNotifyAsync();
         Task DisconnectAllNotifyAsync();
 
         #region Duey
-        Task<CreatePackageResponse> CreateDueyPackage(CreatePackageRequest request);
-        Task TakeDueyPackage(TakeDueyPackageRequest request);
-        Task RequestRemovePackage(RemovePackageRequest request);
-        Task GetDueyPackagesByPlayerId(GetPlayerDueyPackageRequest request);
-        Task TakeDueyPackageCommit(TakeDueyPackageCommit takeDueyPackageCommit);
+        Task<ProtoService.CreatePackageResponse> CreateDueyPackage(ProtoService.CreatePackageRequest request);
+        Task TakeDueyPackage(ProtoService.TakeDueyPackageRequest request);
+        Task RequestRemovePackage(ProtoService.RemovePackageRequest request);
+        Task GetDueyPackagesByPlayerId(ProtoService.GetPlayerDueyPackageRequest request);
+        Task TakeDueyPackageCommit(ProtoService.TakeDueyPackageCommitRequest takeDueyPackageCommit);
         #endregion
 
-        Task JailPlayer(CreateJailRequest request);
-        Task UnjailPlayer(CreateUnjailRequest request);
+        Task JailPlayer(ProtoService.CreateJailRequest request);
+        Task UnjailPlayer(ProtoService.CreateUnjailRequest request);
 
         Task SendRemoveDoor(int ownerId);
-        Task<ItemProto.GetRewardsResponseProto> GetActiveRewards(ItemProto.GetRewardsRequestProto request);
-        Task<ItemProto.UseCdkResponse> TakeReward(ItemProto.UseIdRequest request);
+        Task<ProtoModel.GetRewardsResponse> GetActiveRewards(ProtoModel.GetRewardsRequest request);
+        Task<ProtoService.UseCdkResponse> TakeReward(ProtoService.UseIdRequest request);
     }
 }

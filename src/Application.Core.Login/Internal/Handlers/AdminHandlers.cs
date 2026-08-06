@@ -1,18 +1,13 @@
 using Application.Core.Login.Services;
 using Application.Shared.Message;
-using Config;
-using Dto;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using JailProto;
-using MessageProto;
-using SystemProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class AdminHandlers
     {
-        internal class SetGmLevelHandler : InternalSessionMasterHandler<SetGmLevelRequest>
+        internal class SetGmLevelHandler : InternalSessionMasterHandler<ProtoService.SetGmLevelRequest>
         {
             public SetGmLevelHandler(MasterServer server) : base(server)
             {
@@ -20,14 +15,14 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetGmLevel;
 
-            protected override Task HandleMessage(SetGmLevelRequest message)
+            protected override Task HandleMessage(ProtoService.SetGmLevelRequest message)
             {
                 return _server.AccountManager.SetGmLevel(message);
             }
 
-            protected override SetGmLevelRequest Parse(ByteString content) => SetGmLevelRequest.Parser.ParseFrom(content);
+            protected override ProtoService.SetGmLevelRequest Parse(ByteString content) => ProtoService.SetGmLevelRequest.Parser.ParseFrom(content);
         }
-        internal class BanHandler : InternalSessionMasterHandler<BanRequest>
+        internal class BanHandler : InternalSessionMasterHandler<ProtoService.BanRequest>
         {
             public BanHandler(MasterServer server) : base(server)
             {
@@ -35,15 +30,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Ban;
 
-            protected override Task HandleMessage(BanRequest message)
+            protected override Task HandleMessage(ProtoService.BanRequest message)
             {
                 return _server.AccountBanManager.Ban(message);
             }
 
-            protected override BanRequest Parse(ByteString content) => BanRequest.Parser.ParseFrom(content);
+            protected override ProtoService.BanRequest Parse(ByteString content) => ProtoService.BanRequest.Parser.ParseFrom(content);
         }
 
-        internal class UnbanHandler : InternalSessionMasterHandler<UnbanRequest>
+        internal class UnbanHandler : InternalSessionMasterHandler<ProtoService.UnbanRequest>
         {
             public UnbanHandler(MasterServer server) : base(server)
             {
@@ -51,15 +46,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.Unban;
 
-            protected override Task HandleMessage(UnbanRequest message)
+            protected override Task HandleMessage(ProtoService.UnbanRequest message)
             {
                 return _server.AccountBanManager.Unban(message);
             }
 
-            protected override UnbanRequest Parse(ByteString content) => UnbanRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UnbanRequest Parse(ByteString content) => ProtoService.UnbanRequest.Parser.ParseFrom(content);
         }
 
-        internal class WarpPlayerHandler : InternalSessionMasterHandler<WrapPlayerByNameRequest>
+        internal class WarpPlayerHandler : InternalSessionMasterHandler<ProtoService.WrapPlayerByNameRequest>
         {
             public WarpPlayerHandler(MasterServer server) : base(server)
             {
@@ -67,15 +62,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.WarpPlayer;
 
-            protected override Task HandleMessage(WrapPlayerByNameRequest message)
+            protected override Task HandleMessage(ProtoService.WrapPlayerByNameRequest message)
             {
                 return _server.CrossServerService.WarpPlayerByName(message);
             }
 
-            protected override WrapPlayerByNameRequest Parse(ByteString content) => WrapPlayerByNameRequest.Parser.ParseFrom(content);
+            protected override ProtoService.WrapPlayerByNameRequest Parse(ByteString content) => ProtoService.WrapPlayerByNameRequest.Parser.ParseFrom(content);
         }
 
-        internal class SummonPlayerHandler : InternalSessionMasterHandler<SummonPlayerByNameRequest>
+        internal class SummonPlayerHandler : InternalSessionMasterHandler<ProtoService.SummonPlayerByNameRequest>
         {
             public SummonPlayerHandler(MasterServer server) : base(server)
             {
@@ -83,15 +78,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SummonPlayer;
 
-            protected override Task HandleMessage(SummonPlayerByNameRequest message)
+            protected override Task HandleMessage(ProtoService.SummonPlayerByNameRequest message)
             {
                 return _server.CrossServerService.SummonPlayerByName(message);
             }
 
-            protected override SummonPlayerByNameRequest Parse(ByteString content) => SummonPlayerByNameRequest.Parser.ParseFrom(content);
+            protected override ProtoService.SummonPlayerByNameRequest Parse(ByteString content) => ProtoService.SummonPlayerByNameRequest.Parser.ParseFrom(content);
         }
 
-        internal class SendReportPlayerHandler : InternalSessionMasterHandler<SendReportRequest>
+        internal class SendReportPlayerHandler : InternalSessionMasterHandler<ProtoService.SendReportRequest>
         {
             readonly ReportService _messageService;
             public SendReportPlayerHandler(MasterServer server, ReportService messageService) : base(server)
@@ -101,15 +96,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SendReport;
 
-            protected override Task HandleMessage(SendReportRequest message)
+            protected override Task HandleMessage(ProtoService.SendReportRequest message)
             {
                 return _messageService.AddReport(message);
             }
 
-            protected override SendReportRequest Parse(ByteString content) => SendReportRequest.Parser.ParseFrom(content);
+            protected override ProtoService.SendReportRequest Parse(ByteString content) => ProtoService.SendReportRequest.Parser.ParseFrom(content);
         }
 
-        internal class SetAutobanIgnoreHandler : InternalSessionMasterHandler<ToggleAutoBanIgnoreRequest>
+        internal class SetAutobanIgnoreHandler : InternalSessionMasterHandler<ProtoService.ToggleAutoBanIgnoreRequest>
         {
             public SetAutobanIgnoreHandler(MasterServer server) : base(server)
             {
@@ -117,57 +112,57 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.SetAutobanIgnore;
 
-            protected override Task HandleMessage(ToggleAutoBanIgnoreRequest message)
+            protected override Task HandleMessage(ProtoService.ToggleAutoBanIgnoreRequest message)
             {
                 return _server.SystemManager.ToggleAutoBanIgnored(message);
             }
 
-            protected override ToggleAutoBanIgnoreRequest Parse(ByteString content) => ToggleAutoBanIgnoreRequest.Parser.ParseFrom(content);
+            protected override ProtoService.ToggleAutoBanIgnoreRequest Parse(ByteString content) => ProtoService.ToggleAutoBanIgnoreRequest.Parser.ParseFrom(content);
         }
 
-        internal class SetMonitorHandler : InternalSessionMasterHandler<ToggleMonitorPlayerRequest>
+        internal class SetMonitorHandler : InternalSessionMasterHandler<ProtoService.ToggleMonitorPlayerRequest>
         {
             public SetMonitorHandler(MasterServer server) : base(server)
             { }
 
             public override int MessageId => (int)ChannelSendCode.SetMonitor;
 
-            protected override Task HandleMessage(ToggleMonitorPlayerRequest message)
+            protected override Task HandleMessage(ProtoService.ToggleMonitorPlayerRequest message)
             {
                 return _server.SystemManager.ToggleMonitor(message);
             }
 
-            protected override ToggleMonitorPlayerRequest Parse(ByteString content) => ToggleMonitorPlayerRequest.Parser.ParseFrom(content);
+            protected override ProtoService.ToggleMonitorPlayerRequest Parse(ByteString content) => ProtoService.ToggleMonitorPlayerRequest.Parser.ParseFrom(content);
         }
 
-        internal class ReloadWorldEventsHandler : InternalSessionMasterHandler<ReloadEventsRequest>
+        internal class ReloadWorldEventsHandler : InternalSessionMasterHandler<ProtoService.ReloadEventsRequest>
         {
             public ReloadWorldEventsHandler(MasterServer server) : base(server)
             { }
 
             public override int MessageId => (int)ChannelSendCode.ReloadWorldEvents;
 
-            protected override Task HandleMessage(ReloadEventsRequest message)
+            protected override Task HandleMessage(ProtoService.ReloadEventsRequest message)
             {
                 return _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleWorldEventReload, message);
             }
 
-            protected override ReloadEventsRequest Parse(ByteString content) => ReloadEventsRequest.Parser.ParseFrom(content);
+            protected override ProtoService.ReloadEventsRequest Parse(ByteString content) => ProtoService.ReloadEventsRequest.Parser.ParseFrom(content);
         }
 
-        internal class SetTimerHandler : InternalSessionMasterHandler<SetTimer>
+        internal class SetTimerHandler : InternalSessionMasterHandler<ProtoModel.SetTimer>
         {
             public SetTimerHandler(MasterServer server) : base(server)
             { }
 
             public override int MessageId => (int)ChannelSendCode.SetTimer;
 
-            protected override Task HandleMessage(SetTimer message)
+            protected override Task HandleMessage(ProtoModel.SetTimer message)
             {
                 return _server.Transport.BroadcastMessageN(ChannelRecvCode.HandleSetTimer, message);
             }
 
-            protected override SetTimer Parse(ByteString content) => SetTimer.Parser.ParseFrom(content);
+            protected override ProtoModel.SetTimer Parse(ByteString content) => ProtoModel.SetTimer.Parser.ParseFrom(content);
         }
 
         internal class RemoveTimerHandler : InternalSessionMasterEmptyHandler
@@ -183,35 +178,35 @@ namespace Application.Core.Login.Internal.Handlers
             }
         }
 
-        internal class JailHandler : InternalSessionMasterHandler<CreateJailRequest>
+        internal class JailHandler : InternalSessionMasterHandler<ProtoService.CreateJailRequest>
         {
             public JailHandler(MasterServer server) : base(server)
             { }
 
             public override int MessageId => (int)ChannelSendCode.Jail;
 
-            protected override Task HandleMessage(CreateJailRequest message)
+            protected override Task HandleMessage(ProtoService.CreateJailRequest message)
             {
                 return _server.CharacterManager.JailPlayer(message);
             }
-            protected override CreateJailRequest Parse(ByteString content) => CreateJailRequest.Parser.ParseFrom(content);
+            protected override ProtoService.CreateJailRequest Parse(ByteString content) => ProtoService.CreateJailRequest.Parser.ParseFrom(content);
         }
 
-        internal class UnjailHandler : InternalSessionMasterHandler<CreateUnjailRequest>
+        internal class UnjailHandler : InternalSessionMasterHandler<ProtoService.CreateUnjailRequest>
         {
             public UnjailHandler(MasterServer server) : base(server)
             { }
 
             public override int MessageId => (int)ChannelSendCode.Unjail;
 
-            protected override Task HandleMessage(CreateUnjailRequest message)
+            protected override Task HandleMessage(ProtoService.CreateUnjailRequest message)
             {
                 return _server.CharacterManager.UnjailPlayer(message);
             }
-            protected override CreateUnjailRequest Parse(ByteString content) => CreateUnjailRequest.Parser.ParseFrom(content);
+            protected override ProtoService.CreateUnjailRequest Parse(ByteString content) => ProtoService.CreateUnjailRequest.Parser.ParseFrom(content);
         }
 
-        internal class AntiMacroNotifyHandler : InternalSessionMasterHandler<AntiMacroNotifyMessage>
+        internal class AntiMacroNotifyHandler : InternalSessionMasterHandler<ProtoModel.AntiMacroNotifyMessageProto>
         {
             public AntiMacroNotifyHandler(MasterServer server) : base(server)
             {
@@ -219,12 +214,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.AntiMacroNotify;
 
-            protected override Task HandleMessage(AntiMacroNotifyMessage message)
+            protected override Task HandleMessage(ProtoModel.AntiMacroNotifyMessageProto message)
             {
                 return _server.ProcessAntiMacroPenalty(message);
             }
 
-            protected override AntiMacroNotifyMessage Parse(ByteString content) => AntiMacroNotifyMessage.Parser.ParseFrom(content);
+            protected override ProtoModel.AntiMacroNotifyMessageProto Parse(ByteString content) => ProtoModel.AntiMacroNotifyMessageProto.Parser.ParseFrom(content);
         }
     }
 }

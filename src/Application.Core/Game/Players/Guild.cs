@@ -1,5 +1,3 @@
-using AllianceProto;
-using GuildProto;
 
 namespace Application.Core.Game.Players
 {
@@ -15,7 +13,7 @@ namespace Application.Core.Game.Players
             return GuildRank;
         }
 
-        public GuildDto? GetGuild()
+        public ProtoModel.GuildProto? GetGuild()
         {
             if (GuildId <= 0)
             {
@@ -24,7 +22,7 @@ namespace Application.Core.Game.Players
             return Client.CurrentServer.NodeService.GuildManager.GetGuild(GuildId);
         }
 
-        public AllianceDto? GetAlliance()
+        public ProtoModel.AllianceProto? GetAlliance()
         {
             var guild = GetGuild();
             if (guild == null)

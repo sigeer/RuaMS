@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+
+package ProtoService;
+
+
+
+message ToggleMonitorPlayerRequest {
+	string targetName = 1;
+	int32 masterId = 2;
+}
+
+
+
+message ToggleMonitorPlayerResponse {
+	int32 code = 1;
+	ToggleMonitorPlayerRequest request = 2;
+	bool isMonitored = 3;
+}

@@ -2,8 +2,6 @@ using Application.Core.Login.Models.Items;
 using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
-using CashProto;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,18 +20,18 @@ namespace Application.Core.Login.ServerData
         }
 
         protected override int GetKey(GiftModel model) => model.Id;
-        public CreateGiftResponse CreateGift(int fromId, string toName, int sn, int cashItemId, string message, bool createRing)
+        public ProtoService.CreateGiftResponse CreateGift(int fromId, string toName, int sn, int cashItemId, string message, bool createRing)
         {
             var receiver = _server.CharacterManager.FindPlayerByName(toName);
             if (receiver == null)
             {
-                return new CreateGiftResponse { Code = 0xA9, Recipient = toName };
+                return new ProtoService.CreateGiftResponse { Code = 0xA9, Recipient = toName };
             }
 
             var sender = _server.CharacterManager.FindPlayerById(fromId)!;
             if (sender.Character.AccountId == receiver.Character.AccountId)
             {
-                return new CreateGiftResponse { Code = 0xA8, Recipient = toName };
+                return new ProtoService.CreateGiftResponse { Code = 0xA8, Recipient = toName };
             }
 
             var ringModel = createRing ? _server.RingManager.CreateRing(cashItemId, sender.Character.Id, receiver.Character.Id) : null;
@@ -56,23 +54,23 @@ namespace Application.Core.Login.ServerData
 
 
 
-            return new CreateGiftResponse { Recipient = toName, RingSource = ringDto };
+            return new ProtoService.CreateGiftResponse { Recipient = toName, RingSource = ringDto };
         }
 
-        public GetMyGiftsResponse LoadGifts(GetMyGiftsRequest request)
+        public ProtoService.GetMyGiftsResponse LoadGifts(ProtoService.GetMyGiftsRequest request)
         {
             var gifts = Query(x => x.ToId == request.MasterId && x.ClaimTime == null, x => x.ToId == request.MasterId && x.ClaimTime == null);
-            var res = new GetMyGiftsResponse();
+            var res = new ProtoService.GetMyGiftsResponse();
             res.List.AddRange(MapDto(gifts));
             return res;
         }
 
-        List<ItemProto.GiftDto> MapDto(List<GiftModel> model)
+        List<ProtoModel.GiftProto> MapDto(List<GiftModel> model)
         {
             var ringIdList = model.Select(x => x.RingSourceId).ToList();
             var rings = _server.RingManager.Query(x => ringIdList.Contains(x.Id), x => ringIdList.Contains(x.Id)).ToList();
 
-            var list = _mapper.Map<List<ItemProto.GiftDto>>(model);
+            var list = _mapper.Map<List<ProtoModel.GiftProto>>(model);
             foreach (var item in list)
             {
                 item.FromName = _server.CharacterManager.GetPlayerName(item.From);

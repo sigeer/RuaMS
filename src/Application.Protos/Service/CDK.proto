@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "Model/CDK.proto";
+
+package ProtoService;
+
+
+
+message UseCdkRequest {
+	int32 masterId =1;
+	string cdk = 2;
+}
+
+
+
+message UseCdkResponse {
+	int32 code = 1;
+	repeated  ProtoModel.CdkRewordPackageProto items = 2;
+}
+
+
+
+message UseIdRequest  {
+	int32 masterId =1;
+	int32 id = 2;
+}

@@ -1,24 +1,23 @@
 using Application.Shared.Message;
-using Config;
 using Google.Protobuf;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
-    internal class RegisterChannelServerHandler : InternalSessionChannelHandler<RegisterServerResult>
+    internal class RegisterChannelServerHandler : InternalSessionChannelHandler<ProtoModel.RegisterServerResultProto>
     {
         public override int MessageId => (int)ChannelRecvCode.RegisterChannel;
         public RegisterChannelServerHandler(WorldChannelServer server) : base(server)
         {
         }
 
-        protected override Task HandleMessage(RegisterServerResult data)
+        protected override Task HandleMessage(ProtoModel.RegisterServerResultProto data)
         {
             return _server.HandleServerRegistered(data);
         }
 
-        protected override RegisterServerResult Parse(ByteString content)
+        protected override ProtoModel.RegisterServerResultProto Parse(ByteString content)
         {
-            return RegisterServerResult.Parser.ParseFrom(content);
+            return ProtoModel.RegisterServerResultProto.Parser.ParseFrom(content);
         }
     }
 }

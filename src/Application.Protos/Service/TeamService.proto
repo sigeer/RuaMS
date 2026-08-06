@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Service/Team.proto";
+
+package ProtoService;
+
+
+
+service TeamService {
+	rpc GetTeamModel(GetTeamRequest) returns (GetTeamResponse);
+}

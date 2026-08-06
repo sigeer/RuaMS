@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+
+package ProtoService;
+
+
+
+message ToggleAutoBanIgnoreRequest {
+	string targetName = 1;
+	int32 masterId = 2;
+}
+
+
+
+message ToggleAutoBanIgnoreResponse {
+	int32 code = 1;
+	ToggleAutoBanIgnoreRequest request = 2;
+	bool isIgnored = 3;
+	repeated int32 gmId = 4;
+}

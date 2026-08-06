@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message IPEndPointProto {
+	bytes address = 1;
+	int32 port = 2;
+}

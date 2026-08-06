@@ -8,7 +8,6 @@ using Application.Shared.Message;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
@@ -140,7 +139,7 @@ namespace Application.Core.Login.Datas
             SetDirty(obj);
         }
 
-        public ConfigProto.SetFlyResponse SetFly(ConfigProto.SetFlyRequest request)
+        public ProtoService.SetFlyResponse SetFly(ProtoService.SetFlyRequest request)
         {
             var chr = _server.CharacterManager.FindPlayerById(request.CId);
             if (chr != null)
@@ -149,10 +148,10 @@ namespace Application.Core.Login.Datas
                 if (acc != null)
                 {
                     acc.GmMode = request.SetStatus;
-                    return new ConfigProto.SetFlyResponse { Code = 0, Request = request };
+                    return new ProtoService.SetFlyResponse { Code = 0, Request = request };
                 }
             }
-            return new ConfigProto.SetFlyResponse() { Code = 1 };
+            return new ProtoService.SetFlyResponse() { Code = 1 };
         }
 
         public int[] GetOnlinedGmAccId()
@@ -160,9 +159,9 @@ namespace Application.Core.Login.Datas
             return Query(x => x.GMLevel > 1, x => x.IsGmAccount()).Select(x => x.Id).ToArray();
         }
 
-        public async Task SetGmLevel(SystemProto.SetGmLevelRequest request)
+        public async Task SetGmLevel(ProtoService.SetGmLevelRequest request)
         {
-            var res = new SystemProto.SetGmLevelResponse { Request = request };
+            var res = new ProtoService.SetGmLevelResponse { Request = request };
             var targetChr = _server.CharacterManager.FindPlayerByName(request.TargetName);
             if (targetChr == null)
             {
@@ -192,13 +191,13 @@ namespace Application.Core.Login.Datas
             return false;
         }
 
-        public GetAllClientInfo GetOnliendClientInfo()
+        public ProtoModel.GetAllClientInfo GetOnliendClientInfo()
         {
             var onlinedPlayerAccounts = _server.CharacterManager.GetOnlinedPlayerAccountId();
             var accountInfo = Query(x => onlinedPlayerAccounts.Contains(x.Id), x => onlinedPlayerAccounts.Contains(x.Id));
 
-            var res = new GetAllClientInfo();
-            res.List.AddRange(accountInfo.Select(x => new ClientInfo { AccountName = x.Name, CharacterName = "", CurrentHWID = x.CurrentHwid, CurrentIP = x.CurrentIP, CurrentMAC = x.CurrentMac }));
+            var res = new ProtoModel.GetAllClientInfo();
+            res.List.AddRange(accountInfo.Select(x => new ProtoModel.ClientInfo { AccountName = x.Name, CharacterName = "", CurrentHWID = x.CurrentHwid, CurrentIP = x.CurrentIP, CurrentMAC = x.CurrentMac }));
             return res;
         }
 

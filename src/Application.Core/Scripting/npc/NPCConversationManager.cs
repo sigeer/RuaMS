@@ -19,9 +19,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-using AllianceProto;
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
@@ -30,7 +27,6 @@ using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using GuildProto;
 using server;
 using server.partyquest;
 using System.Threading.Channels;
@@ -1123,8 +1119,8 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     }
 
     #region Guild/Alliance Operation
-    public GuildDto? GetGuild() => getPlayer().GetGuild();
-    public AllianceDto? GetAlliance() => getPlayer().GetAlliance();
+    public ProtoModel.GuildProto? GetGuild() => getPlayer().GetGuild();
+    public ProtoModel.AllianceProto? GetAlliance() => getPlayer().GetAlliance();
 
     public async Task upgradeAlliance()
     {

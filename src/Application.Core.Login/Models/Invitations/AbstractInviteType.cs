@@ -49,11 +49,11 @@ namespace Application.Core.Login.Models.Invitations
             Type = type;
         }
 
-        public abstract Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request);
-        public async Task HandleInvitationAnswered(InvitationProto.AnswerInviteRequest request)
+        public abstract Task HandleInvitationCreated(ProtoService.CreateInviteRequest request);
+        public async Task HandleInvitationAnswered(ProtoService.AnswerInviteRequest request)
         {
             var result = _server.InvitationManager.AnswerInvite(Type, request.MasterId, request.CheckKey, request.Ok);
-            var response = new InvitationProto.AnswerInviteResponse
+            var response = new ProtoService.AnswerInviteResponse
             {
                 Result = (int)result.Result,
                 Type = request.Type,
@@ -117,7 +117,7 @@ namespace Application.Core.Login.Models.Invitations
                 }
             }
 
-            var response = new InvitationProto.CreateInviteResponse
+            var response = new ProtoService.CreateInviteResponse
             {
                 Code = (int)responseCode,
                 SenderPlayerId = fromPlayer.Character.Id,

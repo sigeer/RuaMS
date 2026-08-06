@@ -1,7 +1,6 @@
 using Application.Core.Game.Life;
 using Application.Shared.Message;
 using Google.Protobuf;
-using LifeProto;
 using server.life;
 using tools;
 
@@ -10,7 +9,7 @@ namespace Application.Core.Channel.Internal.Handlers
     internal class PLifeHandlers
     {
 
-        public class Create : InternalSessionChannelHandler<CreatePLifeRequest>
+        public class Create : InternalSessionChannelHandler<ProtoService.CreatePLifeRequest>
         {
             public Create(WorldChannelServer server) : base(server)
             {
@@ -18,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlifeCreated;
 
-            protected override Task HandleMessage(CreatePLifeRequest data)
+            protected override Task HandleMessage(ProtoService.CreatePLifeRequest data)
             {
                 _server.Broadcast(async w =>
                 {
@@ -72,10 +71,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override CreatePLifeRequest Parse(ByteString data) => CreatePLifeRequest.Parser.ParseFrom(data);
+            protected override ProtoService.CreatePLifeRequest Parse(ByteString data) => ProtoService.CreatePLifeRequest.Parser.ParseFrom(data);
         }
 
-        public class Remove : InternalSessionChannelHandler<RemovePLifeResponse>
+        public class Remove : InternalSessionChannelHandler<ProtoService.RemovePLifeResponse>
         {
             public Remove(WorldChannelServer server) : base(server)
             {
@@ -83,7 +82,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnPlifeRemoved;
 
-            protected override Task HandleMessage(RemovePLifeResponse res)
+            protected override Task HandleMessage(ProtoService.RemovePLifeResponse res)
             {
                 _server.Broadcast(async w =>
                 {
@@ -124,7 +123,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 return Task.CompletedTask;
             }
 
-            protected override RemovePLifeResponse Parse(ByteString data) => RemovePLifeResponse.Parser.ParseFrom(data);
+            protected override ProtoService.RemovePLifeResponse Parse(ByteString data) => ProtoService.RemovePLifeResponse.Parser.ParseFrom(data);
         }
     }
 }

@@ -1541,11 +1541,11 @@ public partial class Player
     }
 
 
-    public List<ItemProto.RingDto> getCrushRings()
+    public List<ProtoModel.RingProto> getCrushRings()
     {
         return Rings.Where(x => x.ItemId <= 1112012 && !ItemId.isWeddingRing(x.ItemId)).ToList();
     }
-    public List<ItemProto.RingDto> getFriendshipRings()
+    public List<ProtoModel.RingProto> getFriendshipRings()
     {
         return Rings.Where(x => x.ItemId > 1112012 && !ItemId.isWeddingRing(x.ItemId)).ToList();
     }
@@ -2577,7 +2577,7 @@ public partial class Player
                     .Select(x => x.getItemId()).ToList();
     }
 
-    public void addPlayerRing(ItemProto.RingDto ring)
+    public void addPlayerRing(ProtoModel.RingProto ring)
     {
         Rings.Add(ring);
     }

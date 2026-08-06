@@ -4,7 +4,6 @@ using Application.EF.Entities;
 using Application.Shared.Items;
 using Application.Shared.Message;
 using Application.Utility;
-using DueyDto;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ using System.Reflection;
 
 namespace Application.Core.Login.ServerData
 {
-    public class DueyManager : DataStorageBase<int, DueyDto.DueyPackageDto, DueyPackageEntity>
+    public class DueyManager : DataStorageBase<int, ProtoModel.DueyPackageProto, DueyPackageEntity>
     {
         readonly MasterServer _server;
 
@@ -24,9 +23,9 @@ namespace Application.Core.Login.ServerData
             _server = server;
         }
 
-        protected override int GetKey(DueyPackageDto model) => model.PackageId;
+        protected override int GetKey(ProtoModel.DueyPackageProto model) => model.PackageId;
 
-        DueyDto.DueyPackageDto? FindById(int id)
+        ProtoModel.DueyPackageProto? FindById(int id)
         {
             var dayBefore30 = _server.GetCurrentTimeDateTimeOffset().AddDays(-30);
             var dayBefore30_l = dayBefore30.ToTimestamp();
@@ -35,7 +34,7 @@ namespace Application.Core.Login.ServerData
                 x => x.CreateTime > dayBefore30_l && x.ClaimTime == null && x.PackageId == id);
         }
 
-        List<DueyDto.DueyPackageDto> QueryByReceiver(int receiverId)
+        List<ProtoModel.DueyPackageProto> QueryByReceiver(int receiverId)
         {
             var dayBefore30 = _server.GetCurrentTimeDateTimeOffset().AddDays(-30);
             var dayBefore30_l = dayBefore30.ToTimestamp();
@@ -44,9 +43,9 @@ namespace Application.Core.Login.ServerData
                 x => x.CreateTime > dayBefore30_l && x.ClaimTime == null && x.ReceiverId == receiverId);
         }
 
-        public async Task TakeDueyPackage(DueyDto.TakeDueyPackageRequest request)
+        public async Task TakeDueyPackage(ProtoService.TakeDueyPackageRequest request)
         {
-            var res = new DueyDto.TakeDueyPackageResponse { Request = request };
+            var res = new ProtoService.TakeDueyPackageResponse { Request = request };
             var package = FindById(request.PackageId);
             if (package == null)
             {
@@ -85,7 +84,7 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.TakeDueyPackage, res, [request.MasterId]);
         }
 
-        DueyDto.DueyPackageDto MapToDto(DueyDto.DueyPackageDto dto)
+        ProtoModel.DueyPackageProto MapToDto(ProtoModel.DueyPackageProto dto)
         {
             dto.SenderName = _server.CharacterManager.GetPlayerName(dto.SenderId);
             return dto;
@@ -101,11 +100,11 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        public async Task TakeDueyPackageCommit(DueyDto.TakeDueyPackageCommit request)
+        public async Task TakeDueyPackageCommit(ProtoService.TakeDueyPackageCommitRequest request)
         {
             if (request.Success)
             {
-                await RemovePackage(new DueyDto.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
+                await RemovePackage(new ProtoService.RemovePackageRequest { MasterId = request.MasterId, PackageId = request.PackageId, ByReceived = true });
             }
             else
             {
@@ -119,9 +118,9 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public async Task<CreatePackageResponse> CreateDueyPackage(DueyDto.CreatePackageRequest request)
+        public async Task<ProtoService.CreatePackageResponse> CreateDueyPackage(ProtoService.CreatePackageRequest request)
         {
-            var res = new CreatePackageResponse();
+            var res = new ProtoService.CreatePackageResponse();
             var target = _server.CharacterManager.FindPlayerByName(request.ReceiverName);
             var sender = _server.CharacterManager.FindPlayerById(request.SenderId);
             if (target == null || sender == null)
@@ -143,14 +142,14 @@ namespace Application.Core.Login.ServerData
             }
         }
 
-        DueyDto.DueyPackageDto CreateDueyPackageModel(int senderId, int reciverId, Dto.ItemDto? item, int meso, bool quick, string? message)
+        ProtoModel.DueyPackageProto CreateDueyPackageModel(int senderId, int reciverId, ProtoModel.ItemProto? item, int meso, bool quick, string? message)
         {
             // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
             var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
             if (quick)
                 time = time.AddDays(-1);
 
-            var model = new DueyDto.DueyPackageDto()
+            var model = new ProtoModel.DueyPackageProto()
             {
                 PackageId = Interlocked.Increment(ref _localId),
                 ReceiverId = reciverId,
@@ -166,19 +165,19 @@ namespace Application.Core.Login.ServerData
         }
 
 
-        public async Task SendDueyPackage(int senderId, int reciverId, Dto.ItemDto? item, int meso, bool quick, string? message)
+        public async Task SendDueyPackage(int senderId, int reciverId, ProtoModel.ItemProto? item, int meso, bool quick, string? message)
         {
             var model = CreateDueyPackageModel(senderId, reciverId, item, meso, quick, message);
 
             SetDirty(model);
 
-            var data = new CreatePackageBroadcast { Package = model };
+            var data = new ProtoService.CreatePackageNotifyResponse { Package = model };
             await _server.Transport.SendMessageN(ChannelRecvCode.CreateDueyPackage, data, [model.ReceiverId]);
         }
 
-        public async Task RemovePackage(DueyDto.RemovePackageRequest request)
+        public async Task RemovePackage(ProtoService.RemovePackageRequest request)
         {
-            var res = new DueyDto.RemovePackageResponse { Code = 0, Request = request };
+            var res = new ProtoService.RemovePackageResponse { Code = 0, Request = request };
             var package = FindById(request.PackageId);
             if (package == null || package.ReceiverId != request.MasterId)
             {
@@ -192,9 +191,9 @@ namespace Application.Core.Login.ServerData
             await _server.Transport.SendMessageN(ChannelRecvCode.DeleteDueyPackage, res, [request.MasterId]);
         }
 
-        public async Task GetPlayerDueyPackages(GetPlayerDueyPackageRequest request)
+        public async Task GetPlayerDueyPackages(ProtoService.GetPlayerDueyPackageRequest request)
         {
-            var res = new GetPlayerDueyPackageResponse();
+            var res = new ProtoService.GetPlayerDueyPackageResponse();
             res.List.AddRange(QueryByReceiver(request.ReceiverId));
             res.ReceiverId = request.ReceiverId;
 
@@ -213,7 +212,7 @@ namespace Application.Core.Login.ServerData
 
                     SetDirty(item);
                 }
-                await _server.Transport.SendMessageN(ChannelRecvCode.LoginNotifyDueyPackage, new DueyDto.DueyNotifyDto { Type = data.Type, ReceiverId = data.ReceiverId }, [data.ReceiverId]);
+                await _server.Transport.SendMessageN(ChannelRecvCode.LoginNotifyDueyPackage, new ProtoModel.DueyNotifyProto { Type = data.Type, ReceiverId = data.ReceiverId }, [data.ReceiverId]);
             }
         }
     }

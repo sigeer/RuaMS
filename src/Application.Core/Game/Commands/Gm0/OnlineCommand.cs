@@ -21,7 +21,7 @@ public class OnlineCommand : CommandBase
 
         StringBuilder sb = new StringBuilder();
 
-        List<SystemProto.OnlinedPlayerInfoDto> list = [];
+        List<ProtoModel.OnlinedPlayerInfoProto> list = [];
         int i = 0;
         foreach (var item in channelGroup)
         {

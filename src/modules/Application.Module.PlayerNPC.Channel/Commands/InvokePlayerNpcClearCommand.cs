@@ -3,7 +3,6 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Shared.MapObjects;
-using LifeProto;
 using Microsoft.AspNetCore.Hosting.Server;
 using System;
 using System.Collections.Generic;
@@ -14,9 +13,9 @@ namespace Application.Module.PlayerNPC.Channel.Commands
     internal class InvokePlayerNpcClearCommand: IWorldChannelCommand
     {
         public string Name => nameof(InvokePlayerNpcClearCommand);
-        RemoveAllPlayerNPCResponse data;
+        ProtoService.RemoveAllPlayerNPCResponse data;
 
-        public InvokePlayerNpcClearCommand(RemoveAllPlayerNPCResponse data)
+        public InvokePlayerNpcClearCommand(ProtoService.RemoveAllPlayerNPCResponse data)
         {
             this.data = data;
         }

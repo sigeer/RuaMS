@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "Model/Gift.proto";
+
+package ProtoService;
+
+
+
+message GetMyGiftsRequest {
+	int32 masterId = 1;
+}
+
+
+
+message GetMyGiftsResponse {
+	repeated ProtoModel.GiftProto list = 1;
+}
+
+
+
+message CommitRetrieveGiftRequest {
+	int32 masterId = 1;
+	repeated int32 idList = 2;
+}

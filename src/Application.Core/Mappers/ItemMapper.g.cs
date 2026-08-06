@@ -2,13 +2,13 @@ using System;
 using Application.Core.Game.Items;
 using Application.Core.Mappers;
 using client.inventory;
-using Dto;
+using ProtoModel;
 
 namespace Application.Core.Mappers
 {
     public partial class ItemMapper : IItemMapper
     {
-        public ItemDto MapToDto(Item p1)
+        public ItemProto MapToDto(Item p1)
         {
             Pet p2 = p1 as Pet;
             
@@ -27,7 +27,7 @@ namespace Application.Core.Mappers
             {
                 return null;
             }
-            ItemDto result = new ItemDto();
+            ItemProto result = new ItemProto();
             
             result.UniqueId = p1.UniqueId;
             result.Itemid = p1.getItemId();
@@ -41,18 +41,18 @@ namespace Application.Core.Mappers
             return result;
             
         }
-        public Item MapToObject(ItemDto src)
+        public Item MapToObject(ItemProto src)
         {
             return ProtoMapper.MapItem(src);
         }
         
-        private ItemDto funcMain1(Pet p4)
+        private ItemProto funcMain1(Pet p4)
         {
             if (p4 == null)
             {
                 return null;
             }
-            ItemDto result = new ItemDto();
+            ItemProto result = new ItemProto();
             
             result.UniqueId = p4.UniqueId;
             result.Itemid = ((Item)p4).getItemId();
@@ -62,7 +62,7 @@ namespace Application.Core.Mappers
             result.Flag = (int)((Item)p4).getFlag();
             result.Expiration = ((Item)p4).getExpiration();
             result.GiftFrom = ((Item)p4).getGiftFrom();
-            result.PetInfo = funcMain2(new PetDto()
+            result.PetInfo = funcMain2(new PetProto()
             {
                 Closeness = Math.Min(30000, p4.Tameness),
                 Fullness = Math.Min(100, p4.Fullness),
@@ -77,13 +77,13 @@ namespace Application.Core.Mappers
             
         }
         
-        private ItemDto funcMain3(Equip p6)
+        private ItemProto funcMain3(Equip p6)
         {
             if (p6 == null)
             {
                 return null;
             }
-            ItemDto result = new ItemDto();
+            ItemProto result = new ItemProto();
             
             result.UniqueId = p6.UniqueId;
             result.Itemid = ((Item)p6).getItemId();
@@ -93,7 +93,7 @@ namespace Application.Core.Mappers
             result.Flag = (int)((Item)p6).getFlag();
             result.Expiration = ((Item)p6).getExpiration();
             result.GiftFrom = ((Item)p6).getGiftFrom();
-            result.EquipInfo = p6 == null ? null : new EquipDto()
+            result.EquipInfo = p6 == null ? null : new EquipProto()
             {
                 Level = (int)p6.getLevel(),
                 Upgradeslots = (int)p6.getUpgradeSlots(),
@@ -121,9 +121,9 @@ namespace Application.Core.Mappers
             
         }
         
-        private PetDto funcMain2(PetDto p5)
+        private PetProto funcMain2(PetProto p5)
         {
-            return p5 == null ? null : new PetDto()
+            return p5 == null ? null : new PetProto()
             {
                 Petid = p5.Petid,
                 Name = p5.Name,

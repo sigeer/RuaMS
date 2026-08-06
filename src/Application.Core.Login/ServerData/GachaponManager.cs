@@ -6,7 +6,6 @@ using Application.EF.Entities;
 using Application.Shared.Message;
 using Application.Templates.Reader;
 using Application.Templates.String;
-using ItemProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -26,13 +25,13 @@ namespace Application.Core.Login.ServerData
             _dbContextFactory = dbContextFactory;
         }
 
-        public GacheponDataDto GetGachaponData()
+        public ProtoModel.GacheponDataProto GetGachaponData()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
-            var _pools = _mapper.Map<List<ItemProto.GachaponPoolDto>>(dbContext.GachaponPools.AsNoTracking().ToList());
-            var _itemChance = _mapper.Map<List<ItemProto.GachaponPoolChanceDto>>(dbContext.GachaponPoolLevelChances.AsNoTracking().ToList());
-            var _item = _mapper.Map<List<ItemProto.GachaponPoolItemDto>>(dbContext.GachaponPoolItems.AsNoTracking().ToList());
-            var res = new GacheponDataDto();
+            var _pools = _mapper.Map<List<ProtoModel.GachaponPoolProto>>(dbContext.GachaponPools.AsNoTracking().ToList());
+            var _itemChance = _mapper.Map<List<ProtoModel.GachaponPoolChanceProto>>(dbContext.GachaponPoolLevelChances.AsNoTracking().ToList());
+            var _item = _mapper.Map<List<ProtoModel.GachaponPoolItemProto>>(dbContext.GachaponPoolItems.AsNoTracking().ToList());
+            var res = new ProtoModel.GacheponDataProto();
             res.Pools.AddRange(_pools);
             res.Items.AddRange(_item);
             res.Chances.AddRange(_itemChance);

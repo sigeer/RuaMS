@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+
+package ProtoService;
+
+
+
+message StoreItemsRequest {
+	int32 key = 1;
+	int32 itemFactory = 2;
+	repeated ProtoModel.ItemProto items = 3;
+}
+
+
+
+message StoreItemsResponse {
+	int32 code = 1;
+}
+
+
+message LoadItemsFromStoreRequest {
+	int32 key = 1;
+	int32 itemFactory = 2;
+}
+
+
+message LoadItemsFromStoreResponse {
+	int32 key = 1;
+	int32 itemFactory = 2;
+	repeated ProtoModel.ItemProto items = 3;
+}

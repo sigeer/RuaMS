@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "Service/ItemMegaphone.proto";
+import "Service/ItemStorage.proto";
+import "Service/OwlSearch.proto";
+import "Service/TVMessage.proto";
+
+
+import "google/protobuf/empty.proto";
+package ProtoService;
+
+
+
+service ItemService {
+	rpc LoadOwlSearchRecords(google.protobuf.Empty) returns(OwlSearchRecordResponse);
+	rpc UseOwlSearch(OwlSearchRequest) returns(OwlSearchResponse);
+
+	rpc SaveItems(StoreItemsRequest) returns(StoreItemsResponse);
+	rpc LoadItemFromStore(LoadItemsFromStoreRequest) returns(LoadItemsFromStoreResponse);
+
+	rpc UseTVMessage(CreateTVMessageRequest) returns (CreateTVMessageResponse);
+	rpc UseMegaPhone(UseItemMegaphoneRequest) returns (UseItemMegaphoneResponse);
+}

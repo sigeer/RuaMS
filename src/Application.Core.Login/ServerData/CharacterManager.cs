@@ -15,8 +15,6 @@ using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Application.Utility.Extensions;
-using Dto;
-using JailProto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -44,7 +42,7 @@ namespace Application.Core.Login.Datas
 
         protected override int GetKey(CharacterLiveObject model) => model.Character.Id;
 
-        CharacterLiveObject _sysChr = new CharacterLiveObject(new Dto.CharacterDto { Id = ServerConstants.SystemCId, Name = "系统" });
+        CharacterLiveObject _sysChr = new CharacterLiveObject(new ProtoModel.CharacterProto { Id = ServerConstants.SystemCId, Name = "系统" });
         public CharacterLiveObject? FindPlayerById(int id)
         {
             if (id == ServerConstants.SystemCId)
@@ -103,14 +101,14 @@ namespace Application.Core.Login.Datas
             _nameDataSource[model.Character.Name] = new StoreUnit<CharacterLiveObject>(StoreFlag.Remove, model);
         }
 
-        public List<Dto.CharacterDto> GetAllCachedPlayers()
+        public List<ProtoModel.CharacterProto> GetAllCachedPlayers()
         {
             return QueryLocal().Select(x => x.Character).ToList();
         }
 
         protected override CharacterLiveObject MapModel(CharacterEntity entity)
         {
-            return new CharacterLiveObject(_mapper.Map<Dto.CharacterDto>(entity));
+            return new CharacterLiveObject(_mapper.Map<ProtoModel.CharacterProto>(entity));
         }
 
         protected override CharacterEntity MapEntity(CharacterLiveObject localModel)
@@ -128,7 +126,7 @@ namespace Application.Core.Login.Datas
             return FindPlayerById(id)?.Character?.Name ?? StringConstants.CharacterUnknown;
         }
 
-        public async Task Update(SyncProto.PlayerSaveDto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
+        public async Task Update(ProtoModel.PlayerSaveProto obj, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var origin = FindPlayerById(obj.Character.Id);
             if (origin != null)
@@ -224,7 +222,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        async Task BatchUpdateCore(List<SyncProto.PlayerSaveDto> list)
+        async Task BatchUpdateCore(List<ProtoModel.PlayerSaveProto> list)
         {
             foreach (var item in list)
             {
@@ -232,7 +230,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public async Task BatchUpdateOrSave(List<SyncProto.PlayerSaveDto> list, bool saveDB)
+        public async Task BatchUpdateOrSave(List<ProtoModel.PlayerSaveProto> list, bool saveDB)
         {
             await BatchUpdateCore(list);
             if (saveDB)
@@ -241,7 +239,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public async Task UpdateOrSave(SyncProto.PlayerSaveDto data, SyncCharacterTrigger trigger, bool saveDB)
+        public async Task UpdateOrSave(ProtoModel.PlayerSaveProto data, SyncCharacterTrigger trigger, bool saveDB)
         {
             await Update(data, trigger);
             if (saveDB)
@@ -252,7 +250,7 @@ namespace Application.Core.Login.Datas
 
         public void FlushCharacter(CharacterLiveObject o)
         {
-            List<BuddyProto.BuddyDto> chrBuddies = [];
+            List<ProtoModel.BuddyProto> chrBuddies = [];
             var allMembers = o.Character.Data.BuddyList;
             foreach (var m in o.Character.Data.BuddyList)
             {
@@ -321,7 +319,7 @@ namespace Application.Core.Login.Datas
             }
         }
 
-        public async Task BatchUpdateMap(List<SyncProto.MapSyncDto> data)
+        public async Task BatchUpdateMap(List<ProtoModel.MapSyncProto> data)
         {
             foreach (var item in data)
             {
@@ -393,29 +391,29 @@ namespace Application.Core.Login.Datas
             return QueryLocal(x => x.ChannelNode != null).Select(x => x.Character.AccountId).ToList();
         }
 
-        public SystemProto.ShowOnlinePlayerResponse GetOnlinedPlayers()
+        public ProtoService.ShowOnlinePlayerResponse GetOnlinedPlayers()
         {
-            var res = new SystemProto.ShowOnlinePlayerResponse();
-            res.List.AddRange(QueryLocal(x => x.ChannelNode != null).Select(x => new SystemProto.OnlinedPlayerInfoDto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
+            var res = new ProtoService.ShowOnlinePlayerResponse();
+            res.List.AddRange(QueryLocal(x => x.ChannelNode != null).Select(x => new ProtoModel.OnlinedPlayerInfoProto { Id = x.Character.Id, Channel = x.Channel, MapId = x.Character.Map, Name = x.Character.Name }));
             return res;
         }
 
-        public Dto.NameChangeResponse ChangeName(Dto.NameChangeRequest request)
+        public ProtoService.NameChangeResponse ChangeName(ProtoService.NameChangeRequest request)
         {
             if (!_masterServer.CharacterManager.CheckCharacterName(request.NewName))
             {
-                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.InvalidName };
+                return new ProtoService.NameChangeResponse() { Code = (int)ChangeNameResponseCode.InvalidName };
             }
 
             var chr = FindPlayerById(request.MasterId);
             if (chr == null)
             {
-                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.CharacterNotFound };
+                return new ProtoService.NameChangeResponse() { Code = (int)ChangeNameResponseCode.CharacterNotFound };
             }
 
             if (chr.Character.Level < 10)
             {
-                return new NameChangeResponse() { Code = (int)ChangeNameResponseCode.Level };
+                return new ProtoService.NameChangeResponse() { Code = (int)ChangeNameResponseCode.Level };
             }
 
             if (chr != null)
@@ -423,12 +421,12 @@ namespace Application.Core.Login.Datas
                 chr.Character.Name = request.NewName;
             }
 
-            return new NameChangeResponse();
+            return new ProtoService.NameChangeResponse();
         }
 
-        public async Task JailPlayer(CreateJailRequest request)
+        public async Task JailPlayer(ProtoService.CreateJailRequest request)
         {
-            var res = new CreateJailResponse { Request = request };
+            var res = new ProtoService.CreateJailResponse { Request = request };
             var targetChr = FindPlayerByName(request.TargetName);
             if (targetChr == null)
             {
@@ -452,9 +450,9 @@ namespace Application.Core.Login.Datas
             await _masterServer.Transport.SendMessageN(Application.Shared.Message.ChannelRecvCode.Jail, res, [request.MasterId, res.TargetId]);
         }
 
-        public async Task UnjailPlayer(CreateUnjailRequest request)
+        public async Task UnjailPlayer(ProtoService.CreateUnjailRequest request)
         {
-            var res = new CreateUnjailResponse { Request = request };
+            var res = new ProtoService.CreateUnjailResponse { Request = request };
             var targetChr = FindPlayerByName(request.TargetName);
             if (targetChr == null)
             {

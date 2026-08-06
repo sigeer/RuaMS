@@ -3,13 +3,12 @@ using Application.Core.Channel.Net.Packets;
 using Application.Shared.Message;
 using Application.Shared.Team;
 using Google.Protobuf;
-using TeamProto;
 
 namespace Application.Core.Channel.Internal.Handlers
 {
     internal class TeamHandlers
     {
-        public class Update : InternalSessionChannelHandler<UpdateTeamResponse>
+        public class Update : InternalSessionChannelHandler<ProtoService.UpdateTeamResponse>
         {
             public Update(WorldChannelServer server) : base(server)
             {
@@ -17,7 +16,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnTeamUpdate;
 
-            protected override Task HandleMessage(UpdateTeamResponse res)
+            protected override Task HandleMessage(ProtoService.UpdateTeamResponse res)
             {
                 if (res.Code == 0)
                 {
@@ -34,10 +33,10 @@ namespace Application.Core.Channel.Internal.Handlers
                 return _server.PushChannelCommandAsync(new InvokeTeamUpdateCommand(res));
             }
 
-            protected override UpdateTeamResponse Parse(ByteString data) => UpdateTeamResponse.Parser.ParseFrom(data);
+            protected override ProtoService.UpdateTeamResponse Parse(ByteString data) => ProtoService.UpdateTeamResponse.Parser.ParseFrom(data);
         }
 
-        public class Create : InternalSessionChannelHandler<CreateTeamResponse>
+        public class Create : InternalSessionChannelHandler<ProtoService.CreateTeamResponse>
         {
             public Create(WorldChannelServer server) : base(server)
             {
@@ -45,7 +44,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
             public override int MessageId => (int)ChannelRecvCode.OnTeamCreated;
 
-            protected override Task HandleMessage(CreateTeamResponse res)
+            protected override Task HandleMessage(ProtoService.CreateTeamResponse res)
             {
                 if (res.Code != 0)
                 {
@@ -66,7 +65,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 });
             }
 
-            protected override CreateTeamResponse Parse(ByteString data) => CreateTeamResponse.Parser.ParseFrom(data);
+            protected override ProtoService.CreateTeamResponse Parse(ByteString data) => ProtoService.CreateTeamResponse.Parser.ParseFrom(data);
         }
     }
 }

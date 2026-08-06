@@ -8,7 +8,6 @@ using Application.Module.Marriage.Common;
 using Application.Module.Marriage.Common.Models;
 using Application.Shared.Constants.Item;
 using Application.Shared.Net;
-using Dto;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Module.Marriage.Channel

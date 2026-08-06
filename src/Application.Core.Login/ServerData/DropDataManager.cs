@@ -5,7 +5,6 @@ using Application.Shared.Message;
 using Application.Templates.Reader;
 using Application.Templates.String;
 using Application.Utility.Extensions;
-using Dto;
 using Microsoft.EntityFrameworkCore;
 using XmlWzReader;
 
@@ -200,23 +199,23 @@ namespace Application.Core.Login.ServerData
         }
         #endregion
 
-        public Dto.DropAllDto LoadMobDropDto()
+        public ProtoModel.DropAllProto LoadMobDropDto()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var mobDrop = dbContext.DropData.Where(x => x.Chance >= 0).AsNoTracking().ToList();
             var globalDrop = dbContext.DropDataGlobals.Where(x => x.Chance >= 0).AsNoTracking().ToList();
-            var data = new DropAllDto();
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(mobDrop));
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(globalDrop));
+            var data = new ProtoModel.DropAllProto();
+            data.Items.AddRange(_mapper.Map<ProtoModel.DropItemProto[]>(mobDrop));
+            data.Items.AddRange(_mapper.Map<ProtoModel.DropItemProto[]>(globalDrop));
             return data;
         }
 
-        public Dto.DropAllDto LoadAllReactorDrops()
+        public ProtoModel.DropAllProto LoadAllReactorDrops()
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
             var dbData = dbContext.Reactordrops.Where(x => x.Chance >= 0).AsNoTracking().ToList();
-            var data = new DropAllDto();
-            data.Items.AddRange(_mapper.Map<Dto.DropItemDto[]>(dbData));
+            var data = new ProtoModel.DropAllProto();
+            data.Items.AddRange(_mapper.Map<ProtoModel.DropItemProto[]>(dbData));
             return data;
         }
     }

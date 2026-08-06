@@ -1,6 +1,5 @@
 using Application.Core.Login;
 using Application.Core.Login.ServerTransports;
-using LifeProto;
 
 namespace Application.Module.PlayerNPC.Master
 {
@@ -10,17 +9,17 @@ namespace Application.Module.PlayerNPC.Master
         {
         }
 
-        internal void BroadcastRemoveAllPlayerNpc(RemoveAllPlayerNPCResponse res)
+        internal void BroadcastRemoveAllPlayerNpc(ProtoService.RemoveAllPlayerNPCResponse res)
         {
             // BroadcastMessage(Common.BroadcastMessage.OnClearPlayerNpc, res);
         }
 
-        internal void BroadcastRemovePlayerNpc(RemovePlayerNPCResponse res)
+        internal void BroadcastRemovePlayerNpc(ProtoService.RemovePlayerNPCResponse res)
         {
             // BroadcastMessage(Common.BroadcastMessage.OnRemovePlayerNpc, res);
         }
 
-        internal void BroadcastRefreshMapData(UpdateMapPlayerNPCResponse res)
+        internal void BroadcastRefreshMapData(ProtoService.UpdateMapPlayerNPCResponse res)
         {
             // BroadcastMessage(Common.BroadcastMessage.OnMapPlayerNpcUpdate, res);
         }

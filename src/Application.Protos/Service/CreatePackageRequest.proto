@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "Model/DueyPackage.proto";
+import "Model/Item.proto";
+
+
+import "google/protobuf/wrappers.proto";
+package ProtoService;
+
+
+
+message CreatePackageRequest {
+	int32 senderId = 1;
+	int32 sendMeso = 2;
+	google.protobuf.StringValue sendMessage = 3;
+	string receiverName = 4;
+	bool quick = 5;
+	ProtoModel.ItemProto item = 6;
+}
+
+
+
+message CreatePackageResponse {
+	int32 code = 1;
+	ProtoModel.DueyPackageProto package = 2;
+}
+
+message CreatePackageNotifyResponse {
+	ProtoModel.DueyPackageProto package = 2;
+}

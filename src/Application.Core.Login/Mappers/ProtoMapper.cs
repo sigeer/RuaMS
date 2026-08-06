@@ -24,21 +24,21 @@ namespace Application.Core.Login.Mappers
             config.NewConfig<DateTime, Timestamp>().MapWith(src => Timestamp.FromDateTime(src.ToUniversalTime()));
             config.NewConfig<Timestamp, DateTime>().MapWith(src => src.ToDateTime());
 
-            config.NewConfig<AccountCtrl, AccountDto.AccountInfoProto>();
+            config.NewConfig<AccountCtrl, ProtoModel.AccountInfoProto>();
 
 
-            config.NewConfig<CharacterLiveObject, SyncProto.PlayerGetterDto>();
+            config.NewConfig<CharacterLiveObject, ProtoModel.PlayerGetterProto>();
 
-            config.NewConfig<CharacterLiveObject, Dto.PlayerViewDto>();
+            config.NewConfig<CharacterLiveObject, ProtoModel.PlayerViewProto>();
 
-            config.NewConfig<CharacterLiveObject, TeamProto.TeamMemberDto>()
+            config.NewConfig<CharacterLiveObject, ProtoModel.TeamMemberProto>()
                 .Map(dest => dest.Channel, src => src.Channel)
                 .Map(dest => dest.Id, src => src.Character.Id)
                 .Map(dest => dest.Name, src => src.Character.Name)
                 .Map(dest => dest.Job, src => src.Character.JobId)
                 .Map(dest => dest.Level, src => src.Character.Level);
 
-            config.NewConfig<CharacterLiveObject, GuildProto.GuildMemberDto>()
+            config.NewConfig<CharacterLiveObject, ProtoModel.GuildMemberProto>()
                 .Map(dest => dest.Channel, src => src.Channel)
                 .Map(dest => dest.Id, src => src.Character.Id)
                 .Map(dest => dest.Name, src => src.Character.Name)
@@ -48,18 +48,18 @@ namespace Application.Core.Login.Mappers
                 .Map(dest => dest.AllianceRank, src => src.Character.AllianceRank)
                 .Map(dest => dest.GuildId, src => src.Character.GuildId);
 
-            config.NewConfig<ChatRoomModel, Dto.ChatRoomDto>()
+            config.NewConfig<ChatRoomModel, ProtoModel.ChatRoomProto>()
                 .Map(dest => dest.RoomId, src => src.Id)
                 .Ignore(dest => dest.Members);
 
 
-            config.NewConfig<ItemQuantity, BaseProto.ItemQuantity>();
+            config.NewConfig<ItemQuantity, ProtoModel.ItemQuantity>();
 
 
-            config.NewConfig<CallbackModel, Dto.RemoteCallDto>();
-            config.NewConfig<CallbackParamModel, Dto.RemoteCallParamDto>();
+            config.NewConfig<CallbackModel, ProtoModel.RemoteCallProto>();
+            config.NewConfig<CallbackParamModel, ProtoModel.RemoteCallParamProto>();
 
-            config.NewConfig<CdkItemModel, ItemProto.CdkRewordPackageDto>();
+            config.NewConfig<CdkItemModel, ProtoModel.CdkRewordPackageProto>();
         }
     }
 }

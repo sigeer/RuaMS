@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+
+
+import "google/protobuf/timestamp.proto";
+package ProtoModel;
+
+
+
+message AccountLoginStateProto {
+	int32 accId = 1;
+	int32 state = 2;
+	google.protobuf.Timestamp time = 3;
+}

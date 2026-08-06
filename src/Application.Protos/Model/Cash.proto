@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message GiftInfoProto {
+	string recipient = 1;
+	string message = 2;
+	bool createRing = 3;
+}

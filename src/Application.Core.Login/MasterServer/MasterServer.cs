@@ -23,7 +23,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using SystemProto;
 
 
 namespace Application.Core.Login
@@ -492,7 +491,7 @@ namespace Application.Core.Login
             queuedGuilds.Remove(guildId);
         }
 
-        public async Task UpdateWorldConfig(Config.WorldConfig updatePatch)
+        public async Task UpdateWorldConfig(ProtoModel.WorldConfig updatePatch)
         {
             // 修改值
             if (updatePatch.MobRate.HasValue)
@@ -618,9 +617,9 @@ namespace Application.Core.Login
             currentTime.set(forceTime);
         }
 
-        public ServerStateDto GetServerStats()
+        public ProtoModel.ServerStateProto GetServerStats()
         {
-            return new ServerStateDto { IsDevRoomAvailable = IsDevRoomAvailable };
+            return new ProtoModel.ServerStateProto { IsDevRoomAvailable = IsDevRoomAvailable };
         }
 
         public Task Send(ICommand command) => CommandLoop.Register(command);
@@ -632,7 +631,7 @@ namespace Application.Core.Login
         /// <summary>
         /// 处理测谎惩罚。由 AntiMacroNotifyHandler 和 LocalChannelServerTransport 直接调用。
         /// </summary>
-        public async Task ProcessAntiMacroPenalty(AntiMacroNotifyMessage message)
+        public async Task ProcessAntiMacroPenalty(ProtoModel.AntiMacroNotifyMessageProto message)
         {
             var victim = CharacterManager.FindPlayerById(message.VictimId);
             if (victim == null)

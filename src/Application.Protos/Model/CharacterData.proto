@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+import "Model/Area.proto";
+import "Model/Buddy.proto";
+import "Model/CoolDown.proto";
+import "Model/Event.proto";
+import "Model/Fame.proto";
+import "Model/Item.proto";
+import "Model/KeyMap.proto";
+import "Model/Monsterbook.proto";
+import "Model/PetIgnore.proto";
+import "Model/PlayerTimerQuest.proto";
+import "Model/QuestStatus.proto";
+import "Model/SavedLocation.proto";
+import "Model/Skill.proto";
+import "Model/SkillMacro.proto";
+import "Model/Storage.proto";
+import "Model/TrockLocation.proto";
+
+package ProtoModel;
+
+
+
+message CharacterDataProto {
+  CharacterBagDataProto bag = 1; // 背包
+  repeated MonsterbookProto monsterBooks = 3; // 怪物卡片
+  repeated PetIgnoreProto petIgnores = 4; // 宠物忽略设置
+  repeated TrockLocationProto trockLocations = 5; // 缩地石记录
+  repeated AreaProto areas = 6; // 已访问区域记录
+  repeated EventProto events = 7; // ？
+  repeated QuestStatusProto questStatuses = 8; // 任务记录
+  repeated SkillProto skills = 9; // 技能
+  repeated SkillMacroProto skillMacros = 10; // 技能宏
+  repeated CoolDownProto coolDowns = 11; // 冷却
+  repeated KeyMapProto keyMaps = 12; // 快捷键
+  repeated SavedLocationProto savedLocations = 13; // 最近地图保存点
+  repeated int32 wishItems = 14;	// 愿望单
+  repeated FameLogRecordProto fameLogs = 15;	// 被加人气记录
+  repeated PlayerTimerQuestProto runningTimerQuests = 16;	// 计时任务
+  StorageProto gachaponStorage = 17;	// 奖品仓库
+  repeated BuddyProto buddyList = 18; // 好友
+}
+
+
+
+message CharacterBagDataProto {
+	repeated ItemProto equipInv = 1;
+	repeated ItemProto useInv = 2;
+	repeated ItemProto setupInv = 3;
+	repeated ItemProto etcInv = 4;
+	repeated ItemProto cashInv = 5;
+	repeated ItemProto equippedInv = 6;
+}

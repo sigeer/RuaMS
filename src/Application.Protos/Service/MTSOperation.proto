@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+import "Model/Item.proto";
+import "Model/MTS.proto";
+
+import "google/protobuf/wrappers.proto";
+package ProtoService;
+
+
+
+message MTSQueryResponse {
+	ProtoModel.PagedItemsProto pageData = 1;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 2;
+}
+
+
+
+message SaleItemRequest {
+	int32 masterId = 1;
+	ProtoModel.ItemProto item = 2;
+	int32 price = 3;
+}
+
+
+
+message SaleItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 4;
+	ProtoModel.PagedItemsProto pageData = 5;
+}
+
+
+
+message CancelSaleItemRequest {
+	int32 masterId = 1;
+	int32 productId = 2;
+}
+
+
+
+message CancelSaleItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 3;
+	ProtoModel.PagedItemsProto pageData = 4;
+}
+
+
+
+message AddItemToCartRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+}
+
+
+
+message AddItemToCartResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 3;
+	ProtoModel.PagedItemsProto pageData = 4;
+}
+
+
+
+message RemoveItemFromCartRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+}
+
+
+
+message RemoveItemFromCartResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 3;
+	ProtoModel.PagedItemsProto pageData = 4;
+}
+
+
+
+message ChangePageRequest {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 searchType = 5;
+	google.protobuf.StringValue searchText = 6;
+	repeated int32 filterItemId = 7;
+}
+
+
+
+message ChangePageResponse {
+	int32 masterId = 1;
+	int32 tab = 2;
+	int32 type = 3;
+	int32 page = 4;
+	int32 totalPages = 5;
+	repeated ProtoModel.MTSItemProto items = 6;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 7;
+}
+
+
+
+message TakeItemRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+}
+
+
+
+message TakeItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.ItemProto item = 3;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 4;
+	ProtoModel.PagedItemsProto cartItems = 5;
+	ProtoModel.PagedItemsProto pageData = 6;
+}
+
+
+
+message BuyRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+}
+
+
+
+message BuyResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.ItemProto item = 3;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 4;
+	ProtoModel.PagedItemsProto cartItems = 5;
+	ProtoModel.PagedItemsProto pageData = 6;
+	int32 updatedValue = 7;
+}

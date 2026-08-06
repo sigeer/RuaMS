@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ProtoModel;
+
+
+
+message SkillProto {
+  int32 skillid = 1;
+  int32 skilllevel = 2;
+  int32 masterlevel = 3;
+  int64 expiration = 4;
+}

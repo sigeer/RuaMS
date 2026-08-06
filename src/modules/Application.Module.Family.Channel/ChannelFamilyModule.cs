@@ -44,7 +44,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public override void OnPlayerLevelUp(SyncProto.PlayerFieldChange arg)
+        public override void OnPlayerLevelUp(ProtoModel.PlayerFieldChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family == null)
@@ -67,7 +67,7 @@ namespace Application.Module.Family.Channel
             }
         }
 
-        public override void OnPlayerChangeJob(SyncProto.PlayerFieldChange arg)
+        public override void OnPlayerChangeJob(ProtoModel.PlayerFieldChange arg)
         {
             var family = _familyManager.GetFamilyByPlayerId(arg.Id);
             if (family != null)

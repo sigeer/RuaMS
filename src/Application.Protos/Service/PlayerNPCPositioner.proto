@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+
+package ProtoService;
+
+
+
+message GetPositionerRequest {
+	int32 mapId = 1;
+	int32 type = 2;
+}

@@ -11,7 +11,7 @@ using Application.Shared.MapObjects;
 using Application.Utility.Configs;
 using Application.Utility.Extensions;
 using client.inventory;
-using LifeProto;
+using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -145,7 +145,7 @@ namespace Application.Module.PlayerNPC.Channel
                 int branchLen = (branch < 26) ? 100 : 400;
                 int branchSid = NpcId.PLAYER_NPC_BASE + (branch * 100);
                 int nextBranchSid = branchSid + branchLen;
-                var request = new LifeProto.CreatePlayerNPCPreRequest
+                var request = new ProtoService.CreatePlayerNPCPreRequest
                 {
                     MapId = mapId,
                     BranchSidStart = branchSid,
@@ -186,12 +186,12 @@ namespace Application.Module.PlayerNPC.Channel
                     _logger.LogDebug("GOT SID {ScriptId}, POS {Position}", scriptId, pos);
                 }
 
-                var createRequest = new CreatePlayerNPCRequest { };
+                var createRequest = new ProtoService.CreatePlayerNPCRequest { };
                 createRequest.NextStepData = playerPositioner?.NextPositionData ?? -1;
                 createRequest.MapId = mapId;
 
                 int jobId = (chr.getJob().getId() / 100) * 100;
-                var newData = new PlayerNPCDto()
+                var newData = new ProtoModel.PlayerNPCProto()
                 {
                     PlayerId = chr.Id,
                     Name = chr.getName(),
@@ -217,7 +217,7 @@ namespace Application.Module.PlayerNPC.Channel
                     int position = Math.Abs(equip.getPosition());
                     if ((position < 12 && position > 0) || (position > 100 && position < 112))
                     {
-                        newData.Equips.Add(new PlayerNPCEquip()
+                        newData.Equips.Add(new ProtoModel.PlayerNPCEquipProto()
                         {
                             ItemId = equip.getItemId(),
                             Position = equip.getPosition()
@@ -228,7 +228,7 @@ namespace Application.Module.PlayerNPC.Channel
                 createRequest.NewData = newData;
 
                 // 可能会刷新已存在的playernpc坐标
-                var existed = _mapper.Map<PlayerNPCDto[]>(map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>());
+                var existed = _mapper.Map<ProtoModel.PlayerNPCProto[]>(map.GetMapObjects(x => x.getType() == MapObjectType.PLAYER_NPC).OfType<PlayerNpc>());
                 createRequest.UpdatedList.AddRange(existed);
                 _transport.CreatePlayerNPC(createRequest);
 
@@ -237,7 +237,7 @@ namespace Application.Module.PlayerNPC.Channel
 
         public void RemovePlayerNPC(string target)
         {
-            _transport.RemovePlayerNPC(new RemovePlayerNPCRequest { TargetName = target });
+            _transport.RemovePlayerNPC(new ProtoService.RemovePlayerNPCRequest { TargetName = target });
         }
 
         public void RemoveAllPlayerNPC()

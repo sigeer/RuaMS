@@ -18,14 +18,14 @@ namespace Application.Core.Channel.DueyService
 
         void CreateDueyPackageFromSystem(int sendMesos, Item? item, string? sendMessage, string recipient, bool quick)
         {
-            _ = _transport.CreateDueyPackage(new DueyDto.CreatePackageRequest
+            _ = _transport.CreateDueyPackage(new ProtoService.CreatePackageRequest
             {
                 SenderId = ServerConstants.SystemCId,
                 SendMeso = sendMesos,
                 SendMessage = sendMessage,
                 ReceiverName = recipient,
                 Quick = quick,
-                Item = _mapper.Map<Dto.ItemDto>(item),
+                Item = _mapper.Map<ProtoModel.ItemProto>(item),
             });
         }
         public async Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)

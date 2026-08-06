@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package Dto;
-
-message PetIgnoreDto {
-  int64 petId = 1;
-  repeated int32 excludedItems = 2;
-}

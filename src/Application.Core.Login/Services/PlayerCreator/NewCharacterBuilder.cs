@@ -67,7 +67,7 @@ public class NewCharacterBuilder
 
     public virtual NewCharacterPreview Build(AccountCtrl account)
     {
-        var newCharacter = new Dto.CharacterDto()
+        var newCharacter = new ProtoModel.CharacterProto()
         {
             AccountId = account.Id,
             Hp = MaxHP,
@@ -102,29 +102,29 @@ public class NewCharacterBuilder
             Setupslots = DefaultConfigs.BagSize,
         };
 
-        var data = new Dto.CharacterDataProto() { GachaponStorage = new Dto.StorageDto(), Bag = new Dto.CharacterBagDataProto() };
-        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        var data = new ProtoModel.CharacterDataProto() { GachaponStorage = new ProtoModel.StorageProto(), Bag = new ProtoModel.CharacterBagDataProto() };
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto
         {
             Position = -5,
             Quantity = 1,
             Expiration = -1,
             Itemid = Top,
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto
         {
             Position = -6,
             Quantity = 1,
             Expiration = -1,
             Itemid = Bottom,
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto
         {
             Position = -7,
             Quantity = 1,
             Expiration = -1,
             Itemid = Shoes,
         });
-        data.Bag.EquippedInv.Add(new Dto.ItemDto
+        data.Bag.EquippedInv.Add(new ProtoModel.ItemProto
         {
             Position = -11,
             Quantity = 1,

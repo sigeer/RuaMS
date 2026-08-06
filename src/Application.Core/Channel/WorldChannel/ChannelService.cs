@@ -26,7 +26,7 @@ namespace Application.Core.Channel
             return _mapper.Map<List<List<int>>>(_tranport.GetMostSellerCashItems());
         }
 
-        internal ItemProto.OwlSearchRecordDto[] GetOwlSearchedItems()
+        internal ProtoModel.OwlSearchRecordProto[] GetOwlSearchedItems()
         {
             return _tranport.GetOwlSearchedItems().Items.ToArray();
         }

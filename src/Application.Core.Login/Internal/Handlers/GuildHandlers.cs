@@ -1,12 +1,11 @@
 using Application.Shared.Message;
 using Google.Protobuf;
-using GuildProto;
 
 namespace Application.Core.Login.Internal.Handlers
 {
     internal class GuildHandlers
     {
-        internal class GuildDisbandHandler : InternalSessionMasterHandler<GuildDisbandRequest>
+        internal class GuildDisbandHandler : InternalSessionMasterHandler<ProtoService.GuildDisbandRequest>
         {
             public GuildDisbandHandler(MasterServer server) : base(server)
             {
@@ -14,14 +13,14 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DisbandGuild;
 
-            protected override Task HandleMessage(GuildDisbandRequest message)
+            protected override Task HandleMessage(ProtoService.GuildDisbandRequest message)
             {
                 return _server.GuildManager.DisbandGuild(message);
             }
 
-            protected override GuildDisbandRequest Parse(ByteString content) => GuildDisbandRequest.Parser.ParseFrom(content);
+            protected override ProtoService.GuildDisbandRequest Parse(ByteString content) => ProtoService.GuildDisbandRequest.Parser.ParseFrom(content);
         }
-        internal class GuildMemberLeaveHandler : InternalSessionMasterHandler<GuildProto.LeaveGuildRequest>
+        internal class GuildMemberLeaveHandler : InternalSessionMasterHandler<ProtoService.LeaveGuildRequest>
         {
             public GuildMemberLeaveHandler(MasterServer server) : base(server)
             {
@@ -29,15 +28,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.LeaveGuild;
 
-            protected override Task HandleMessage(LeaveGuildRequest message)
+            protected override Task HandleMessage(ProtoService.LeaveGuildRequest message)
             {
                 return _server.GuildManager.PlayerLeaveGuild(message);
             }
 
-            protected override LeaveGuildRequest Parse(ByteString content) => LeaveGuildRequest.Parser.ParseFrom(content);
+            protected override ProtoService.LeaveGuildRequest Parse(ByteString content) => ProtoService.LeaveGuildRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildJoinHandler : InternalSessionMasterHandler<GuildProto.JoinGuildRequest>
+        internal class GuildJoinHandler : InternalSessionMasterHandler<ProtoService.JoinGuildRequest>
         {
             public GuildJoinHandler(MasterServer server) : base(server)
             {
@@ -45,15 +44,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.JoinGuild;
 
-            protected override Task HandleMessage(JoinGuildRequest message)
+            protected override Task HandleMessage(ProtoService.JoinGuildRequest message)
             {
                 return _server.GuildManager.PlayerJoinGuild(message);
             }
 
-            protected override JoinGuildRequest Parse(ByteString content) => JoinGuildRequest.Parser.ParseFrom(content);
+            protected override ProtoService.JoinGuildRequest Parse(ByteString content) => ProtoService.JoinGuildRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildExpelMemberHandler : InternalSessionMasterHandler<ExpelFromGuildRequest>
+        internal class GuildExpelMemberHandler : InternalSessionMasterHandler<ProtoService.ExpelFromGuildRequest>
         {
             public GuildExpelMemberHandler(MasterServer server) : base(server)
             {
@@ -61,15 +60,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.ExpelGuildMember;
 
-            protected override Task HandleMessage(ExpelFromGuildRequest message)
+            protected override Task HandleMessage(ProtoService.ExpelFromGuildRequest message)
             {
                 return _server.GuildManager.GuildExpelMember(message);
             }
 
-            protected override ExpelFromGuildRequest Parse(ByteString content) => ExpelFromGuildRequest.Parser.ParseFrom(content);
+            protected override ProtoService.ExpelFromGuildRequest Parse(ByteString content) => ProtoService.ExpelFromGuildRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildGpUpdateHandler : InternalSessionMasterHandler<UpdateGuildGPRequest>
+        internal class GuildGpUpdateHandler : InternalSessionMasterHandler<ProtoService.UpdateGuildGPRequest>
         {
             public GuildGpUpdateHandler(MasterServer server) : base(server)
             {
@@ -77,15 +76,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateGuildGp;
 
-            protected override Task HandleMessage(UpdateGuildGPRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildGPRequest message)
             {
                 return _server.GuildManager.UpdateGuildGPAsync(message);
             }
 
-            protected override UpdateGuildGPRequest Parse(ByteString content) => UpdateGuildGPRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildGPRequest Parse(ByteString content) => ProtoService.UpdateGuildGPRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildEmblemUpdateHandler : InternalSessionMasterHandler<GuildProto.UpdateGuildEmblemRequest>
+        internal class GuildEmblemUpdateHandler : InternalSessionMasterHandler<ProtoService.UpdateGuildEmblemRequest>
         {
             public GuildEmblemUpdateHandler(MasterServer server) : base(server)
             {
@@ -93,15 +92,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateGuildEmblem;
 
-            protected override Task HandleMessage(UpdateGuildEmblemRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildEmblemRequest message)
             {
                 return _server.GuildManager.UpdateGuildEmblem(message);
             }
 
-            protected override UpdateGuildEmblemRequest Parse(ByteString content) => UpdateGuildEmblemRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildEmblemRequest Parse(ByteString content) => ProtoService.UpdateGuildEmblemRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildNoticeUpdateHandler : InternalSessionMasterHandler<UpdateGuildNoticeRequest>
+        internal class GuildNoticeUpdateHandler : InternalSessionMasterHandler<ProtoService.UpdateGuildNoticeRequest>
         {
             public GuildNoticeUpdateHandler(MasterServer server) : base(server)
             {
@@ -109,15 +108,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateGuildNotice;
 
-            protected override Task HandleMessage(UpdateGuildNoticeRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildNoticeRequest message)
             {
                 return _server.GuildManager.UpdateGuildNotice(message);
             }
 
-            protected override UpdateGuildNoticeRequest Parse(ByteString content) => UpdateGuildNoticeRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildNoticeRequest Parse(ByteString content) => ProtoService.UpdateGuildNoticeRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildRankChangeHandler : InternalSessionMasterHandler<UpdateGuildMemberRankRequest>
+        internal class GuildRankChangeHandler : InternalSessionMasterHandler<ProtoService.UpdateGuildMemberRankRequest>
         {
             public GuildRankChangeHandler(MasterServer server) : base(server)
             {
@@ -125,15 +124,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.ChangeGuildMemberRank;
 
-            protected override Task HandleMessage(UpdateGuildMemberRankRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildMemberRankRequest message)
             {
                 return _server.GuildManager.ChangePlayerGuildRank(message);
             }
 
-            protected override UpdateGuildMemberRankRequest Parse(ByteString content) => UpdateGuildMemberRankRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildMemberRankRequest Parse(ByteString content) => ProtoService.UpdateGuildMemberRankRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildRankTitleUpdateHandler : InternalSessionMasterHandler<UpdateGuildRankTitleRequest>
+        internal class GuildRankTitleUpdateHandler : InternalSessionMasterHandler<ProtoService.UpdateGuildRankTitleRequest>
         {
             public GuildRankTitleUpdateHandler(MasterServer server) : base(server)
             {
@@ -141,15 +140,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateGuildRankTitle;
 
-            protected override Task HandleMessage(UpdateGuildRankTitleRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildRankTitleRequest message)
             {
                 return _server.GuildManager.UpdateGuildRankTitle(message);
             }
 
-            protected override UpdateGuildRankTitleRequest Parse(ByteString content) => UpdateGuildRankTitleRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildRankTitleRequest Parse(ByteString content) => ProtoService.UpdateGuildRankTitleRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildUpdateCapacity : InternalSessionMasterHandler<UpdateGuildCapacityRequest>
+        internal class GuildUpdateCapacity : InternalSessionMasterHandler<ProtoService.UpdateGuildCapacityRequest>
         {
             public GuildUpdateCapacity(MasterServer server) : base(server)
             {
@@ -157,15 +156,15 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.UpdateGuildCapacity;
 
-            protected override Task HandleMessage(UpdateGuildCapacityRequest message)
+            protected override Task HandleMessage(ProtoService.UpdateGuildCapacityRequest message)
             {
                 return _server.GuildManager.IncreseGuildCapacity(message);
             }
 
-            protected override UpdateGuildCapacityRequest Parse(ByteString content) => UpdateGuildCapacityRequest.Parser.ParseFrom(content);
+            protected override ProtoService.UpdateGuildCapacityRequest Parse(ByteString content) => ProtoService.UpdateGuildCapacityRequest.Parser.ParseFrom(content);
         }
 
-        internal class GuildDropMessage : InternalSessionMasterHandler<GuildDropMessageRequest>
+        internal class GuildDropMessage : InternalSessionMasterHandler<ProtoService.GuildDropMessageRequest>
         {
             public GuildDropMessage(MasterServer server) : base(server)
             {
@@ -173,12 +172,12 @@ namespace Application.Core.Login.Internal.Handlers
 
             public override int MessageId => (int)ChannelSendCode.DropGuildMessage;
 
-            protected override Task HandleMessage(GuildDropMessageRequest message)
+            protected override Task HandleMessage(ProtoService.GuildDropMessageRequest message)
             {
                 return _server.GuildManager.SendGuildMessage(message.GuildId, message.Type, message.Message);
             }
 
-            protected override GuildDropMessageRequest Parse(ByteString content) => GuildDropMessageRequest.Parser.ParseFrom(content);
+            protected override ProtoService.GuildDropMessageRequest Parse(ByteString content) => ProtoService.GuildDropMessageRequest.Parser.ParseFrom(content);
         }
     }
 }

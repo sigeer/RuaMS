@@ -16,7 +16,7 @@ public class NoblesseCreator : NoviceCreator
     public override NewCharacterPreview CreateCharacter(AccountCtrl account, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
     {
         var model = base.CreateCharacter(account, name, face, hair, skin, top, bottom, shoes, weapon, gender);
-        model.Character.Data.Bag.EtcInv.Add((new Dto.ItemDto { Itemid = ItemId.NOBLESSE_GUIDE, Position = 1 }));
+        model.Character.Data.Bag.EtcInv.Add((new ProtoModel.ItemProto { Itemid = ItemId.NOBLESSE_GUIDE, Position = 1 }));
         return model;
     }
 }

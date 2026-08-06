@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "Model/MonsterCardData.proto";
+
+package ProtoService;
+
+
+
+message QueryMonsterCardDataResponse {
+	repeated ProtoModel.MonsterCardDataProto list = 1;
+}

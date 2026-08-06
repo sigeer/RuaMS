@@ -1,9 +1,9 @@
 using Application.Shared.MapObjects;
-using Application.Templates.Providers;
+using Application.Templates.Map;
+using Application.Templates.Reader;
+using Application.Templates.Reader.Xml;
 using Application.Templates.Reader.Xml.Provider;
-using Application.Utility;
 using BenchmarkDotNet.Attributes;
-using Microsoft.Extensions.Configuration;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
@@ -25,17 +25,13 @@ namespace Application.Benchmark
         [GlobalSetup]
         public void Setup()
         {
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["BaseDir"] = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"))
-            });
-            var configuration = configurationBuilder.Build();
-            var providerFactory = new ProviderSource(configuration)
-                .RegisterProvider<MapProvider>(o => new MapProvider(o));
+            var wzDir = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"));
+            var resolver = new ServerXmlResolver(wzDir);
+            var providerFactory = new ProviderSource(resolver)
+                .RegisterProvider(() => new MapProvider(resolver));
 
-            oldTree = FootholdTreeOld.FromTemplate(providerFactory.GetProvider<MapProvider>().GetItem(211040101)!);
-            newTree = FootholdTree.FromTemplate(providerFactory.GetProvider<MapProvider>().GetItem(211040101)!);
+            oldTree = FootholdTreeOld.FromTemplate(providerFactory.GetProvider<IProvider<MapTemplate>>(ProviderType.Map).GetItem(211040101)!);
+            newTree = FootholdTree.FromTemplate(providerFactory.GetProvider<IProvider<MapTemplate>>(ProviderType.Map).GetItem(211040101)!);
             p = new Point(-179, -678);
         }
 

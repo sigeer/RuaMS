@@ -7,7 +7,6 @@ using Application.Shared.Message;
 using Application.Shared.Team;
 using Application.Utility.Configs;
 using Application.Utility.Tasks;
-using Dto;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
@@ -136,7 +135,7 @@ namespace Application.Core.Login.ServerData
             await _server.TeamManager.UpdateParty(request.Key, PartyOperation.JOIN, request.FromPlayerId, request.ToPlayerId);
         }
 
-        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
 
@@ -162,7 +161,7 @@ namespace Application.Core.Login.ServerData
             var team = _server.TeamManager.GetTeamModel(fromPlayer.Character.Party);
             if (team == null)
             {
-                var res = _server.TeamManager.CreateTeam(new TeamProto.CreateTeamRequest { LeaderId = fromPlayer.Character.Id });
+                var res = _server.TeamManager.CreateTeam(new ProtoService.CreateTeamRequest { LeaderId = fromPlayer.Character.Id });
                 if (res.Code == 0)
                     await _server.Transport.SendMessageN(ChannelRecvCode.OnTeamCreated, res, [res.Request.LeaderId]);
             }
@@ -186,10 +185,10 @@ namespace Application.Core.Login.ServerData
 
         protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            await _server.GuildManager.PlayerJoinGuild(new GuildProto.JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
+            await _server.GuildManager.PlayerJoinGuild(new ProtoService.JoinGuildRequest { PlayerId = request.ToPlayerId, GuildId = request.Key });
         }
 
-        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -214,10 +213,10 @@ namespace Application.Core.Login.ServerData
 
         protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            await _server.GuildManager.GuildJoinAlliance(new AllianceProto.GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
+            await _server.GuildManager.GuildJoinAlliance(new ProtoService.GuildJoinAllianceRequest { MasterId = request.ToPlayerId, AllianceId = request.Key });
         }
 
-        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
@@ -271,10 +270,10 @@ namespace Application.Core.Login.ServerData
 
         protected override async Task OnInvitationAccepted(InviteRequest request)
         {
-            await _server.ChatRoomManager.JoinChatRoom(new JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
+            await _server.ChatRoomManager.JoinChatRoom(new ProtoService.JoinChatRoomRequest { RoomId = request.Key, MasterId = request.ToPlayerId });
         }
 
-        public override async Task HandleInvitationCreated(InvitationProto.CreateInviteRequest request)
+        public override async Task HandleInvitationCreated(ProtoService.CreateInviteRequest request)
         {
             InviteResponseCode responseCode = InviteResponseCode.Success;
             var fromPlayer = _server.CharacterManager.FindPlayerById(request.FromId)!;
