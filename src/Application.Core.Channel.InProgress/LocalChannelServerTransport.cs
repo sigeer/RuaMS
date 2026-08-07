@@ -1,6 +1,7 @@
 using Application.Core.Channel.Internal;
 using Application.Core.Login;
 using Application.Core.Login.ServerData;
+using Application.Core.Login.ServerData.ExpeditionBossLog;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
@@ -29,7 +30,7 @@ namespace Application.Core.Channel.InProgress
         readonly ReportService _msgService;
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
-        readonly IExpeditionService _expeditionService;
+        readonly ExpeditionManager _expeditionService;
         readonly PLifeDataManager _resourceService;
         readonly IMapper _mapper;
         readonly IServiceProvider _sp;
@@ -43,7 +44,7 @@ namespace Application.Core.Channel.InProgress
             ReportService messageService,
             RankService rankService,
             InvitationService invitationService,
-            IExpeditionService expeditionService,
+            ExpeditionManager expeditionService,
             PLifeDataManager resourceDataService,
             IMapper mapper)
         {

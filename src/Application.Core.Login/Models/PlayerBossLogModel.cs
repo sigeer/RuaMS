@@ -1,4 +1,4 @@
-namespace Application.Module.ExpeditionBossLog.Master
+namespace Application.Core.Login.Models
 {
     public class PlayerBossLogModel
     {

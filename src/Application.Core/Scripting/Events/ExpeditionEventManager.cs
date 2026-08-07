@@ -16,7 +16,5 @@ namespace Application.Core.Scripting.Events
             return new ExpeditionEventInstanceManager(this, instanceName);
         }
 
-
-
     }
 }

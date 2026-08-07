@@ -1,3 +1,4 @@
+using Application.Core.Channel.Maker;
 using Application.Core.Channel.Net;
 using Application.Core.Client;
 using Application.Shared.Constants.Inventory;
@@ -7,7 +8,7 @@ using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using tools;
 
-namespace Application.Module.Maker.Channel.Net.Handlers
+namespace Application.Core.Channel.Maker.Net.Handlers
 {
     public class MakerSkillHandler : ChannelHandlerBase
     {

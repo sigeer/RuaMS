@@ -1,7 +1,8 @@
+using Application.Core.Login.ServerData.ExpeditionBossLog;
 using Application.Core.Login.Services;
-using ItemService = Application.Core.Login.Services.ItemService;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using ItemService = Application.Core.Login.Services.ItemService;
 
 namespace Application.Core.Login.Servers
 {
@@ -11,9 +12,9 @@ namespace Application.Core.Login.Servers
         readonly ItemService _itemService;
         readonly ShopManager _shopService;
         readonly InvitationService _invitationService;
-        readonly IExpeditionService _expeditionService;
+        readonly ExpeditionManager _expeditionService;
         readonly RankService _rankService;
-        public GameGrpcService(MasterServer server, ItemService itemService, ShopManager shopService, InvitationService invitationService, IExpeditionService expeditionService, RankService rankService)
+        public GameGrpcService(MasterServer server, ItemService itemService, ShopManager shopService, InvitationService invitationService, ExpeditionManager expeditionService, RankService rankService)
         {
             _server = server;
             _itemService = itemService;

@@ -1,22 +1,24 @@
 using Application.Core.EF.Entities;
 using Application.Core.Login;
+using Application.Core.Login.Models;
 using Application.Core.Login.Shared;
 using Application.EF;
+using Application.Shared.Battle;
 using Application.Utility;
 using Application.Utility.Configs;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Module.ExpeditionBossLog.Master
+namespace Application.Core.Login.ServerData.ExpeditionBossLog
 {
-    public class ExpeditionBossLogManager : DataStorageBase<int, PlayerBossLogModel, BossLogEntity>
+    public class ExpeditionManager : DataStorageBase<int, PlayerBossLogModel, BossLogEntity>
     {
         readonly MasterServer _server;
 
-        List<BossLogEntry> _allTypes = EnumClassUtils.GetValues<BossLogEntry>();
+        List<ExpeditionEntryType> _allTypes = EnumClassUtils.GetValues<ExpeditionEntryType>();
 
-        public ExpeditionBossLogManager(ILogger<ExpeditionBossLogManager> logger, MasterServer server, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper)
+        public ExpeditionManager(ILogger<ExpeditionManager> logger, MasterServer server, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper)
             : base(StorageCategory.ExpeditionRecord, dbContextFactory, mapper, logger)
         {
             _server = server;
@@ -61,7 +63,7 @@ namespace Application.Module.ExpeditionBossLog.Master
             var now = _server.GetCurrentTimeDateTimeOffset().ToLocalTime();
             var diff = (int)now.DayOfWeek - (int)DayOfWeek.Monday;
             if (diff < 0) diff += 7;
-            var monday = now.Date.AddDays(-diff); // 注意：Date 返回 DateTime，需要转回 DateTimeOffset
+            var monday = now.Date.AddDays(-diff);
             var mondayOffset = new DateTimeOffset(monday, now.Offset);
             var nextMondayOffset = mondayOffset.AddDays(7);
 
@@ -100,9 +102,22 @@ namespace Application.Module.ExpeditionBossLog.Master
             return true;
         }
 
-        public BossLogEntry? getBossEntryByName(string name)
+        public ExpeditionEntryType? getBossEntryByName(string name)
         {
             return _allTypes.FirstOrDefault(x => x.name() == name);
+        }
+
+        public ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest request)
+        {
+            return new ProtoService.ExpeditionCheckResponse { IsSuccess = AttemptBoss(request.Cid, request.Channel, request.BossName, false) };
+        }
+
+        public void RegisterExpedition(ProtoModel.ExpeditionRegistry request)
+        {
+            foreach (var cid in request.CidList)
+            {
+                AttemptBoss(cid, request.Channel, request.BossName, true);
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 using Application.Shared.Items;
 
-namespace Application.Module.Maker.Channel
+namespace Application.Core.Channel.Maker
 {
     public class MakerItemCreateEntry
     {

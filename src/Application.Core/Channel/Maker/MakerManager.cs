@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using server.life;
 
-namespace Application.Module.Maker.Channel
+namespace Application.Core.Channel.Maker
 {
     public class MakerManager
     {

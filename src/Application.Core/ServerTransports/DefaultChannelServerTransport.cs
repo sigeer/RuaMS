@@ -716,6 +716,7 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.DisconnectAll);
         }
 
+        #region Duey
         public async Task<ProtoService.CreatePackageResponse> CreateDueyPackage(ProtoService.CreatePackageRequest request)
         {
             return await _dueyClient.CreateDueyPackageAsync(request);
@@ -740,6 +741,9 @@ namespace Application.Core.ServerTransports
         {
             await InternalSession.SendAsync(ChannelSendCode.TakeDueyPackageCallback);
         }
+
+        #endregion
+
 
         public async Task JailPlayer(ProtoService.CreateJailRequest request)
         {

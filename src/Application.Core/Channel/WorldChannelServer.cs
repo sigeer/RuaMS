@@ -286,9 +286,6 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            if (!Directory.Exists(ScriptSource.Instance.BaseDir))
-                throw new DirectoryNotFoundException("没有找到Script目录");
-
             CommandLoop.Start();
 
             foreach (var item in ServerConfig.ChannelConfig)
@@ -389,6 +386,8 @@ namespace Application.Core.Channel
             timeoutTask = await TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
 
+            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
+            _logger.LogInformation("共安装了{PluginCount}个额外模块", Modules.Count);
 
             foreach (var module in Modules)
             {

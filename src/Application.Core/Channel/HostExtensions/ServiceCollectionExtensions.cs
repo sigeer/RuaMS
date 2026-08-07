@@ -2,6 +2,7 @@ using Application.Core.Channel.AntiMacro;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
+using Application.Core.Channel.Maker;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
@@ -102,6 +103,7 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<TeamManager>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<ChatRoomService>();
+
             services.AddSingleton<ExpeditionService>();
             services.AddSingleton<NewYearCardService>();
             services.AddSingleton<PlayerShopService>();
@@ -155,6 +157,10 @@ namespace Application.Core.Channel.HostExtensions
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ProtoService.DueyService.DueyServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
             return services;
         }
 
@@ -162,15 +168,19 @@ namespace Application.Core.Channel.HostExtensions
         {
             builder.AddDataSource();
 
+            builder.Services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
+
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();
 
             builder.Services.AddMemoryCache();
             builder.Services.AddChannelGrpcClient();
+
             builder.Services.TryAddSingleton<IChannelServerTransport, DefaultChannelServerTransport>();
             builder.Services.AddSingleton<AbstractChannelModule, ChannelModule>();
 
-            builder.Services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
+            builder.Services.AddSingleton<MakerManager>();
+
             builder.Services.AddSingleton<WorldChannelServer>();
             builder.Services.AddChannelService();
 

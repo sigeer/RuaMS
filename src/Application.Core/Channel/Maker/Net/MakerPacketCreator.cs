@@ -2,7 +2,7 @@ using Application.Shared.Items;
 using Application.Shared.Net;
 using client.inventory;
 
-namespace Application.Module.Maker.Channel.Net
+namespace Application.Core.Channel.Maker.Net
 {
     internal class MakerPacketCreator
     {
