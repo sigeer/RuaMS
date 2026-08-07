@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Configs;
 using Application.Core.Channel.Internal;
 using Application.Shared.Events;
 using Application.Shared.Login;
@@ -29,11 +30,11 @@ namespace Application.Core.ServerTransports
         Lazy<InternalSession> _internalSession;
         public InternalSession InternalSession => _internalSession.Value;
 
-        readonly ChannelServerConfig _config;
+        readonly ChannelNodeConfig _config;
         IServiceProvider _sp;
         public DefaultChannelServerTransport(
             IServiceProvider sp,
-            IOptions<ChannelServerConfig> options,
+            IOptions<ChannelNodeConfig> options,
             ProtoService.SystemService.SystemServiceClient systemClient,
             ProtoService.GameService.GameServiceClient gameClient,
             ProtoService.SyncService.SyncServiceClient syncClient,

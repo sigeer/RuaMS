@@ -22,7 +22,7 @@ namespace Application.Core.Channel.Maker
         readonly ItemInformationProvider ii;
         readonly IMapper _mapper;
         readonly IProvider<ItemMakeTemplate> _provider;
-        readonly IProvider<EtcMakeItemTemplate> _itemProvider;
+        readonly IItemProvider _itemProvider;
 
         #region
 
@@ -34,7 +34,7 @@ namespace Application.Core.Channel.Maker
             this.ii = ii;
             _mapper = mapper;
             _provider = ProviderSource.Instance.GetProvider<IProvider<ItemMakeTemplate>>(ProviderType.EtcItemMake);
-            _itemProvider = ProviderSource.Instance.GetProvider<IProvider<EtcMakeItemTemplate>>(ProviderType.Item);
+            _itemProvider = ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item);
         }
 
         private int getCrystalForLevel(int level)
@@ -486,7 +486,7 @@ namespace Application.Core.Channel.Maker
 
                 foreach (var r in reagentids)
                 {
-                    var reagent = _itemProvider.GetItem(r.Key);
+                    var reagent = _itemProvider.GetRequiredItem<EtcMakeItemTemplate>(r.Key);
                     if (reagent != null)
                     {
                         if (reagent.RandOption != 0 || reagent.RandStat != 0)

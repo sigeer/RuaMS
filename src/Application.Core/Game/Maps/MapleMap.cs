@@ -172,8 +172,8 @@ public class MapleMap : IMap, INamedInstance
         droppedItems = new(YamlConfig.config.server.ITEM_LIMIT_ON_MAP);
         droppedItems.OnOverWrite += async (s, o) => await makeDisappearItemFromMap(o);
 
-        IsLargeMap = mapArea.Width >= ChannelServer.NodeService.ServerConfig.SystemConfig.ClientWidth * 2
-            || mapArea.Height >= ChannelServer.NodeService.ServerConfig.SystemConfig.ClientHeight * 2;
+        IsLargeMap = mapArea.Width >= ChannelServer.NodeService.NodeConfig.SystemConfig.ClientWidth * 2
+            || mapArea.Height >= ChannelServer.NodeService.NodeConfig.SystemConfig.ClientHeight * 2;
 
         CommandLoop = new CommandLoop<IMap>(this);
         CommandLoop.Start();
@@ -1487,7 +1487,7 @@ public class MapleMap : IMap, INamedInstance
 
     private Task broadcastItemDropMessage(MapItem mdrop, Point dropperPos, Point dropPos, byte mod, Point? rangedFrom = null, short dropDelay = 0)
     {
-        return Broadcast(-1, rangedFrom == null ? double.PositiveInfinity : ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), rangedFrom, async chr =>
+        return Broadcast(-1, rangedFrom == null ? double.PositiveInfinity : ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance(), rangedFrom, async chr =>
         {
             await chr.SendPacket(PacketCreator.dropItemFromMapObject(chr, mdrop, dropperPos, dropPos, mod, dropDelay));
         });
@@ -1495,7 +1495,7 @@ public class MapleMap : IMap, INamedInstance
 
     public Task DropItemDestroy(int itemId, Point dropperPos)
     {
-        return Broadcast(-1, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), dropperPos, async chr =>
+        return Broadcast(-1, ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance(), dropperPos, async chr =>
         {
             await chr.SendPacket(PacketCreator.DropItemDestroy(itemId, dropperPos));
         });
@@ -1583,7 +1583,7 @@ public class MapleMap : IMap, INamedInstance
      */
     public Task broadcastMessage(Player source, Packet packet, bool repeatToSource, bool ranged = false)
     {
-        return broadcastMessage(repeatToSource ? null : source, packet, ranged ? ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance() : double.PositiveInfinity, source.getPosition());
+        return broadcastMessage(repeatToSource ? null : source, packet, ranged ? ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance() : double.PositiveInfinity, source.getPosition());
     }
 
 
@@ -1596,7 +1596,7 @@ public class MapleMap : IMap, INamedInstance
      */
     public async Task broadcastMessage(Player? source, Packet packet, Point rangedFrom)
     {
-        await broadcastMessage(source, packet, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), rangedFrom);
+        await broadcastMessage(source, packet, ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance(), rangedFrom);
     }
 
     private async Task broadcastMessage(Player? source, Packet packet, double rangeSq, Point? rangedFrom)
@@ -1621,7 +1621,7 @@ public class MapleMap : IMap, INamedInstance
 
     public async Task broadcastBossHpMessage(Monster mm, int bossHash, Packet packet, Point? rangedFrom = null)
     {
-        await Broadcast(-1, ChannelServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance(), rangedFrom, async chr =>
+        await Broadcast(-1, ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance(), rangedFrom, async chr =>
         {
             await chr.announceBossHpBar(mm, bossHash, packet);
         });

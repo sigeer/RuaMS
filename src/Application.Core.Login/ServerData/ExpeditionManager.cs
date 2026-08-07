@@ -104,7 +104,7 @@ namespace Application.Core.Login.ServerData.ExpeditionBossLog
 
         public ExpeditionEntryType? getBossEntryByName(string name)
         {
-            return _allTypes.FirstOrDefault(x => x.name() == name);
+            return _allTypes.FirstOrDefault(x => x.Name == name);
         }
 
         public ProtoService.ExpeditionCheckResponse CanStartExpedition(ProtoService.ExpeditionCheckRequest request)

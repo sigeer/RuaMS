@@ -1,4 +1,5 @@
 using Application.Core.Channel.AntiMacro;
+using Application.Core.Channel.Configs;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Internal;
@@ -168,7 +169,8 @@ namespace Application.Core.Channel.HostExtensions
         {
             builder.AddDataSource();
 
-            builder.Services.AddOptions<ChannelServerConfig>().BindConfiguration("ChannelServerConfig");
+            builder.Services.AddOptions<ChannelNodeConfig>()
+                .BindConfiguration("ChannelServerConfig");
 
             builder.Services.AddChannelCommands();
             builder.Services.AddChannelHandlers();

@@ -20,7 +20,7 @@ namespace Application.Core.Login.Models
         /// <summary>
         /// 玩家所在的频道服务器节点
         /// </summary>
-        public ChannelServerNode? ChannelNode { get; set; }
+        public AbstractChannelNodeServer? ChannelNode { get; set; }
         public int ActualChannel => ChannelNode == null ? 0 : Channel;
 
         /// <summary>

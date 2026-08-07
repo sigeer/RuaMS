@@ -134,7 +134,7 @@ namespace Application.Templates.Reader.Xml.Provider
                         else if (groupId == 425)
                         {
                             var p = new EtcMakeItemTemplate(itemId);
-                            EtcItemTemplateGenerated.ApplyProperties(p, itemNode);
+                            EtcMakeItemTemplateGenerated.ApplyProperties(p, itemNode);
                             template = p;
                         }
                         else

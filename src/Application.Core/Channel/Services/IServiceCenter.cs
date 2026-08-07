@@ -1,3 +1,4 @@
+using Application.Core.Channel.Configs;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
@@ -14,7 +15,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public interface IServiceCenter: IScriptableNpcConfig
     {
-        ChannelServerConfig ServerConfig { get; }
+        ChannelNodeConfig NodeConfig { get; }
         PluginManager PluginManager { get; }
         ITimerManager TimerManager { get; }
         IServiceProvider ServiceProvider { get; }

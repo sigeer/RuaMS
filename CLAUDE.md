@@ -34,7 +34,7 @@ dotnet build "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 dotnet ef migrations add <Name> --output-dir Migrations --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 
 # Remove last EF migration
-dotnet ef migrations remove --startup-project ../Application.Host
+dotnet ef migrations remove --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
 
 # Run benchmarks
 dotnet run --project ./src/Application.Benchmark/Application.Benchmark.csproj -c Release
@@ -80,14 +80,11 @@ src/
 ├── Application.Benchmark/         — BenchmarkDotNet performance benchmarks
 ├── modules/                       — Feature modules (each: Master + Channel + Common + InProgress)
 │   ├── Application.Module.BBS/    — Bulletin Board System
-│   ├── Application.Module.Duey/   — In-game mail system
 │   ├── Application.Module.Family/ — Family system
 │   ├── Application.Module.Fishing/ — Fishing system
 │   ├── Application.Module.MTS/    — Meso Transfer System
-│   ├── Application.Module.Maker/  — Item crafting
 │   ├── Application.Module.Marriage/ — Marriage system
 │   ├── Application.Module.PlayerNPC/ — Player NPC system
-│   └── Application.Module.ExpeditionBossLog/ — Boss expedition logging
 └── app/
     └── RuaMS.AppHost/             — .NET Aspire app host for orchestration
         RuaMS.ServiceDefaults/     — .NET Aspire service defaults
