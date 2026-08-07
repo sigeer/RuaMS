@@ -117,7 +117,7 @@ namespace Application.Templates.Reader.Img.Provider
                         else if (groupId == 425)
                         {
                             var p = new EtcMakeItemTemplate(itemId);
-                            EtcItemTemplateGenerated_Duey.ApplyProperties(p, itemNode);
+                            EtcMakeItemTemplateGenerated_Duey.ApplyProperties(p, itemNode);
                             template = p;
                         }
                         else

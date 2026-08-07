@@ -5,13 +5,13 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Application.Core.Channel.InProgress
 {
-    public sealed class InProgressWorldChannel : ChannelServerNode
+    public sealed class InProgressNodeServer : AbstractChannelNodeServer
     {
-        public InProgressWorldChannel(WorldChannelServer worldChannel, List<ChannelConfig> channels)
+        public InProgressNodeServer(WorldChannelServer worldChannel, List<ChannelConfig> channels)
         {
-            ServerName = worldChannel.InstanceName;
-            ServerHost = worldChannel.ServerConfig.ServerHost;
-            ServerConfigs = channels;
+            ServerName = worldChannel.NodeConfig.ServerName;
+            ServerHost = worldChannel.NodeConfig.ServerHost;
+            ChannelConfigs = channels;
             ChannelServer = worldChannel;
         }
 

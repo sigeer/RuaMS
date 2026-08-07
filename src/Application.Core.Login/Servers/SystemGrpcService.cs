@@ -23,7 +23,7 @@ namespace Application.Core.Login.Servers
 
         public override async Task Connect(IAsyncStreamReader<ProtoModel.PacketWrapper> requestStream, IServerStreamWriter<ProtoModel.PacketWrapper> responseStream, ServerCallContext context)
         {
-            RemoteChannelServerNode? serverNode = null;
+            RemoteChannelNodeServer? serverNode = null;
             try
             {
                 var lastHeartbeat = DateTime.UtcNow;
@@ -48,7 +48,7 @@ namespace Application.Core.Login.Servers
 
                     if (msg.EventId == (int)ChannelSendCode.RegisterChannel)
                     {
-                        serverNode = new RemoteChannelServerNode(_server, responseStream, ProtoService.RegisterServerRequest.Parser.ParseFrom(msg.Data));
+                        serverNode = new RemoteChannelNodeServer(_server, responseStream, ProtoService.RegisterServerRequest.Parser.ParseFrom(msg.Data));
                         var channelId = _server.AddChannel(serverNode);
                         if (channelId > 0)
                         {
@@ -140,7 +140,7 @@ namespace Application.Core.Login.Servers
         public override Task<Empty> HealthCheck(ProtoModel.MonitorData request, ServerCallContext context)
         {
             var serverName = context.RequestHeaders.Get("x-server-name")?.Value;
-            if (serverName != null && _server.ChannelServerList.TryGetValue(serverName, out var node))
+            if (serverName != null && _server.ChannelNodeList.TryGetValue(serverName, out var node))
             {
                 node.HealthCheck(request);
             }

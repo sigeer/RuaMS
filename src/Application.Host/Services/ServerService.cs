@@ -18,12 +18,12 @@ namespace Application.Host.Services
             return new ServerDashboard
             {
                 IsRunning = _server.IsRunning,
-                Nodes = _server.ChannelServerList.Values.Select(x => new ServerNodeInfo
+                Nodes = _server.ChannelNodeList.Values.Select(x => new ServerNodeInfo
                 {
-                    Type = x is RemoteChannelServerNode ? Shared.Servers.NodeType.Remote : Shared.Servers.NodeType.InProgress,
+                    Type = x is RemoteChannelNodeServer ? Shared.Servers.NodeType.Remote : Shared.Servers.NodeType.InProgress,
                     Name = x.ServerName,
                     WanHost = x.ServerHost,
-                    Channels = x.ServerConfigs.Select(y => new NodeChannelInfo
+                    Channels = x.ChannelConfigs.Select(y => new NodeChannelInfo
                     {
                         Port = y.Port
                     }).ToList()

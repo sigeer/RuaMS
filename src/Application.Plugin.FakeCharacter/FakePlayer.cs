@@ -496,7 +496,7 @@ namespace Application.Plugin.FakeCharacter
         {
             var currentPos = getPosition();
             // Long-distance warp: 如果目标超出视野范围（≈一个屏幕），直接传送
-            double rangedDistSq = Client.CurrentServer.NodeService.ServerConfig.SystemConfig.GetRangedDistance();
+            double rangedDistSq = Client.CurrentServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance();
             int dx = target.X - currentPos.X;
             int dy = target.Y - currentPos.Y;
             if (dx * dx + dy * dy > rangedDistSq)

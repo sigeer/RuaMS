@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Application.Core.Login\Application.Core.Login.csproj" />
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
-    <ProjectReference Include="..\modules\Application.Module.ExpeditionBossLog.Master\Application.Module.ExpeditionBossLog.Master.csproj" />
   </ItemGroup>
 
 </Project>

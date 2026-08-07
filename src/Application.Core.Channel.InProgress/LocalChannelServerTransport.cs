@@ -1,6 +1,7 @@
 using Application.Core.Channel.Internal;
 using Application.Core.Login;
 using Application.Core.Login.ServerData;
+using Application.Core.Login.ServerData.ExpeditionBossLog;
 using Application.Core.Login.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
@@ -29,7 +30,7 @@ namespace Application.Core.Channel.InProgress
         readonly ReportService _msgService;
         readonly RankService _rankService;
         readonly InvitationService _invitationService;
-        readonly IExpeditionService _expeditionService;
+        readonly ExpeditionManager _expeditionService;
         readonly PLifeDataManager _resourceService;
         readonly IMapper _mapper;
         readonly IServiceProvider _sp;
@@ -43,7 +44,7 @@ namespace Application.Core.Channel.InProgress
             ReportService messageService,
             RankService rankService,
             InvitationService invitationService,
-            IExpeditionService expeditionService,
+            ExpeditionManager expeditionService,
             PLifeDataManager resourceDataService,
             IMapper mapper)
         {
@@ -73,7 +74,7 @@ namespace Application.Core.Channel.InProgress
         public async Task RegisterServer(List<ChannelConfig> channels, CancellationToken cancellationToken = default)
         {
             var channelServer = _server.ServiceProvider.GetRequiredService<WorldChannelServer>();
-            var serverNode = new InProgressWorldChannel(channelServer, channels);
+            var serverNode = new InProgressNodeServer(channelServer, channels);
             if (!_server.IsRunning)
             {
                 await channelServer.HandleServerRegistered(new ProtoModel.RegisterServerResultProto
@@ -95,7 +96,7 @@ namespace Application.Core.Channel.InProgress
 
         public Task CompleteChannelShutdown()
         {
-            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().ServerConfig.ServerName);
+            _server.OnChannelShutdown(_sp.GetRequiredService<WorldChannelServer>().NodeConfig.ServerName);
             return Task.CompletedTask;
         }
 
@@ -686,7 +687,7 @@ namespace Application.Core.Channel.InProgress
 
         public void HealthCheck(ProtoModel.MonitorData data)
         {
-            _server.ChannelServerList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().InstanceName].HealthCheck(data);
+            _server.ChannelNodeList[_server.ServiceProvider.GetRequiredService<WorldChannelServer>().InstanceName].HealthCheck(data);
         }
 
         public bool GainCharacterSlot(int accountId)

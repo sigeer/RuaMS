@@ -1,3 +1,4 @@
+using Application.Core.Channel.Maker.Net.Handlers;
 using Application.Core.Channel.Net.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -95,6 +96,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.NOTE_ACTION, sp.GetRequiredService<NoteActionHandler>()},
                 {(short)RecvOpcode.CLOSE_CHALKBOARD, sp.GetRequiredService<CloseChalkboardHandler>()},
                 {(short)RecvOpcode.USE_MOUNT_FOOD, sp.GetRequiredService<UseMountFoodHandler>()},
+                {(short)RecvOpcode.MAKER_SKILL, sp.GetRequiredService<MakerSkillHandler>()},
 
                 {(short)RecvOpcode.PET_AUTO_POT, sp.GetRequiredService<PetAutoPotHandler>()},
                 {(short)RecvOpcode.PET_EXCLUDE_ITEMS, sp.GetRequiredService<PetExcludeItemsHandler>()},

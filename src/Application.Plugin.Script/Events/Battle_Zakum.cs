@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Shared.Battle;
 using Application.Shared.Constants.Mob;
 using Application.Shared.Quest;
 
@@ -10,7 +11,7 @@ namespace Application.Plugin.Script.Events
 {
     internal class Battle_Zakum : AbstractExpeditionEventTemplate
     {
-        public Battle_Zakum() : base(nameof(Battle_Zakum), MobId.ZAKUM_3)
+        public Battle_Zakum() : base(MobId.ZAKUM_3, nameof(Battle_Zakum), ExpeditionEntryType.ZAKUM)
         {
             MinCount = 6;
             MaxCount = 30;

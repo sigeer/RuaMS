@@ -2,6 +2,7 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Shared.Battle;
 using server.life;
 using System.Drawing;
 
@@ -9,7 +10,7 @@ namespace Application.Plugin.Script.Events
 {
     internal class Battle_Balrog : AbstractExpeditionEventTemplate
     {
-        public Battle_Balrog() : base(nameof(Battle_Balrog), 8830003)
+        public Battle_Balrog() : base(8830003, nameof(Battle_Balrog), ExpeditionEntryType.BALROG_NORMAL)
         {
             MinCount = 6;
             MaxCount = 30;

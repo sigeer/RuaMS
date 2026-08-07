@@ -24,10 +24,11 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net;
 using tools;
+using Application.Core.Channel.Configs;
 
 namespace Application.Core.Channel
 {
-    public class WorldChannelServer : IServerBase<IChannelServerTransport>, INodeServer, IServiceCenter, ITickable
+    public class WorldChannelServer : IServerBase<IChannelServerTransport>, Services.INodeServer, IServiceCenter, ITickable
     {
         public IServiceProvider ServiceProvider { get; }
         public IChannelServerTransport Transport { get; }
@@ -36,9 +37,9 @@ namespace Application.Core.Channel
 
         public bool IsRunning { get; private set; }
 
-        public ChannelServerConfig ServerConfig { get; }
+        public ChannelNodeConfig NodeConfig { get; }
 
-        public string InstanceName => ServerConfig.ServerName;
+        public string InstanceName => NodeConfig.ServerName;
         Lazy<SkillbookInformationProvider> _skillbookInformationProvider;
         public SkillbookInformationProvider SkillbookInformationProvider => _skillbookInformationProvider.Value;
         public CashItemProvider CashItemProvider { get; }
@@ -130,7 +131,7 @@ namespace Application.Core.Channel
         public IMapper Mapper { get; }
         public WorldChannelServer(IServiceProvider sp,
             IChannelServerTransport transport,
-            IOptions<ChannelServerConfig> serverConfigOptions,
+            IOptions<ChannelNodeConfig> serverConfigOptions,
             ILogger<WorldChannelServer> logger,
             CashItemProvider cashItemProvider,
             IMapper mapper
@@ -144,7 +145,7 @@ namespace Application.Core.Channel
             Modules = new();
             Servers = new();
             ServerConfigMapping = new();
-            ServerConfig = serverConfigOptions.Value;
+            NodeConfig = serverConfigOptions.Value;
 
             _skillbookInformationProvider = new(() => ServiceProvider.GetRequiredService<SkillbookInformationProvider>());
             CashItemProvider = cashItemProvider;
@@ -286,12 +287,9 @@ namespace Application.Core.Channel
             if (IsRunning)
                 return;
 
-            if (!Directory.Exists(ScriptSource.Instance.BaseDir))
-                throw new DirectoryNotFoundException("没有找到Script目录");
-
             CommandLoop.Start();
 
-            foreach (var item in ServerConfig.ChannelConfig)
+            foreach (var item in NodeConfig.ChannelConfigs)
             {
                 var nettyServer = new NettyChannelServer(this, item);
                 try
@@ -330,7 +328,7 @@ namespace Application.Core.Channel
             foreach (var server in effectChannels)
             {
                 var scope = ServiceProvider.CreateScope();
-                var worldChannel = new WorldChannel(channel, this, scope, ServerConfig.ServerHost, server.Key, server.Value);
+                var worldChannel = new WorldChannel(channel, this, scope, NodeConfig.ServerHost, server.Key, server.Value);
                 await worldChannel.Initialize(configs);
 
                 Servers[channel] = worldChannel;
@@ -389,6 +387,8 @@ namespace Application.Core.Channel
             timeoutTask = await TimerManager.register(new net.server.task.TimeoutTask(this), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 #endif
 
+            Modules = ServiceProvider.GetServices<AbstractChannelModule>().ToList();
+            _logger.LogInformation("共安装了{PluginCount}个额外模块", Modules.Count);
 
             foreach (var module in Modules)
             {

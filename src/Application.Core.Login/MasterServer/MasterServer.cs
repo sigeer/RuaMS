@@ -41,11 +41,11 @@ namespace Application.Core.Login
         /// <summary>
         /// 频道服务器，Key：频道服务器名, node.ServerName
         /// </summary>
-        public Dictionary<string, ChannelServerNode> ChannelServerList { get; }
+        public Dictionary<string, AbstractChannelNodeServer> ChannelNodeList { get; }
         /// <summary>
         /// 频道（一个频道服务器上可能运行多个频道）
         /// </summary>
-        public List<RegisteredChannelConfig> Channels { get; }
+        public List<RegisteredChannelInfo> Channels { get; }
 
         public string InstanceName { get; }
 
@@ -169,7 +169,7 @@ namespace Application.Core.Login
             _logger = ServiceProvider.GetRequiredService<ILogger<MasterServer>>();
             Modules = new();
 
-            ChannelServerList = new();
+            ChannelNodeList = new();
             Channels = new();
             StartupTime = DateTimeOffset.UtcNow;
             Transport = new MasterServerTransport(this);
@@ -301,7 +301,7 @@ namespace Application.Core.Login
             _shutdownTcs = new TaskCompletionSource();
 
             await Transport.BroadcastShutdown();
-            if (ChannelServerList.Count == 0)
+            if (ChannelNodeList.Count == 0)
                 _shutdownTcs.SetResult();
 
             await CompleteMasterShutdown();
@@ -315,7 +315,7 @@ namespace Application.Core.Login
             {
                 RemoveChannel(serverName);
 
-                if (ChannelServerList.Count == 0 && isShuttingdown)
+                if (ChannelNodeList.Count == 0 && isShuttingdown)
                     _shutdownTcs.SetResult();
 
                 if (!safe)
@@ -323,7 +323,7 @@ namespace Application.Core.Login
             }
         }
 
-        public void RemoveChanelServerNode(ChannelServerNode? node, bool safe = true)
+        public void RemoveChanelServerNode(AbstractChannelNodeServer? node, bool safe = true)
         {
             var serverName = node?.ServerName;
             if (serverName != null)
@@ -395,14 +395,14 @@ namespace Application.Core.Login
         }
 
 
-        public int AddChannel(ChannelServerNode node)
+        public int AddChannel(AbstractChannelNodeServer node)
         {
-            if (IsRunning && ChannelServerList.TryAdd(node.ServerName, node))
+            if (IsRunning && ChannelNodeList.TryAdd(node.ServerName, node))
             {
                 var started = Channels.Count;
-                foreach (var item in node.ServerConfigs)
+                foreach (var item in node.ChannelConfigs)
                 {
-                    Channels.Add(new RegisteredChannelConfig
+                    Channels.Add(new RegisteredChannelInfo
                     {
                         ServerHost = node.ServerHost,
                         Port = item.Port,
@@ -418,17 +418,17 @@ namespace Application.Core.Login
 
         bool RemoveChannel(string instanceId)
         {
-            if (ChannelServerList.Remove(instanceId, out var channelServer))
+            if (ChannelNodeList.Remove(instanceId, out var channelServer))
             {
                 _logger.LogInformation("移除{Type}服务器{ChannelServerName}", channelServer.GetType().Name, instanceId);
-                return Channels.RemoveAll(x => x.ServerName == channelServer.ServerName) == channelServer.ServerConfigs.Count;
+                return Channels.RemoveAll(x => x.ServerName == channelServer.ServerName) == channelServer.ChannelConfigs.Count;
             }
             return false;
         }
 
-        public HashSet<ChannelServerNode> GroupPlayer(IEnumerable<int> cidList)
+        public HashSet<AbstractChannelNodeServer> GroupPlayer(IEnumerable<int> cidList)
         {
-            var result = new HashSet<ChannelServerNode>();
+            var result = new HashSet<AbstractChannelNodeServer>();
 
             foreach (var cid in cidList)
             {
@@ -441,9 +441,9 @@ namespace Application.Core.Login
             return result;
         }
 
-        public HashSet<ChannelServerNode> GroupPlayer(IEnumerable<CharacterLiveObject> cList)
+        public HashSet<AbstractChannelNodeServer> GroupPlayer(IEnumerable<CharacterLiveObject> cList)
         {
-            var result = new HashSet<ChannelServerNode>();
+            var result = new HashSet<AbstractChannelNodeServer>();
 
             foreach (var player in cList)
             {
@@ -455,9 +455,9 @@ namespace Application.Core.Login
             return result;
         }
 
-        public ChannelServerNode? GetChannelServer(int channelId)
+        public AbstractChannelNodeServer? GetChannelServer(int channelId)
         {
-            return ChannelServerList.GetValueOrDefault(Channels[channelId - 1].ServerName);
+            return ChannelNodeList.GetValueOrDefault(Channels[channelId - 1].ServerName);
         }
 
         public ChannelConfig? GetChannel(int channelId)
@@ -569,7 +569,7 @@ namespace Application.Core.Login
 
         public int GetWorldCapacityStatus()
         {
-            int worldCap = ChannelServerList.Sum(x => x.Value.ServerConfigs.Sum(y => y.MaxSize));
+            int worldCap = ChannelNodeList.Sum(x => x.Value.ChannelConfigs.Sum(y => y.MaxSize));
             int num = CharacterManager.GetOnlinedPlayerCount();
 
             int status;

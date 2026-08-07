@@ -1,5 +1,4 @@
 using Application.Core.Channel.HostExtensions;
-using Application.Module.Maker.Channel;
 using Application.Utility;
 using Google.Protobuf.Collections;
 using Mapster;
@@ -47,7 +46,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
 builder.AddChannelServer();
-builder.Services.AddMakerChannel();
 
 var app = builder.Build();
 

@@ -4,11 +4,11 @@ using Grpc.Core;
 
 namespace Application.Core.Login.Servers
 {
-    public abstract class ChannelServerNode
+    public abstract class AbstractChannelNodeServer: INodeServer
     {
         public string ServerHost { get; protected set; } = null!;
         public string ServerName { get; protected set; } = null!;
-        public List<ChannelConfig> ServerConfigs { get; protected set; } = null!;
+        public List<ChannelConfig> ChannelConfigs { get; protected set; } = null!;
 
         public ProtoModel.MonitorData? MonitorData { get; protected set; }
         public DateTimeOffset LastPingTime { get; set; }
@@ -23,11 +23,11 @@ namespace Application.Core.Login.Servers
     }
 
 
-    public class RemoteChannelServerNode : ChannelServerNode
+    public class RemoteChannelNodeServer : AbstractChannelNodeServer
     {
         private readonly IServerStreamWriter<ProtoModel.PacketWrapper> _writer;
         readonly MasterServer _server;
-        public RemoteChannelServerNode(
+        public RemoteChannelNodeServer(
             MasterServer server,
             IServerStreamWriter<ProtoModel.PacketWrapper> writer,
             ProtoService.RegisterServerRequest request)
@@ -37,7 +37,7 @@ namespace Application.Core.Login.Servers
 
             ServerHost = request.ServerHost;
             ServerName = request.ServerName;
-            ServerConfigs = request.Channels.Select(x => new ChannelConfig { Port = x.Port, MaxSize = x.MaxSize }).ToList();
+            ChannelConfigs = request.Channels.Select(x => new ChannelConfig { Port = x.Port, MaxSize = x.MaxSize }).ToList();
         }
 
 

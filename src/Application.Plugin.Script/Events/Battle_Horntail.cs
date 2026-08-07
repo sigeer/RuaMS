@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Shared.Battle;
 using Application.Shared.Constants.Mob;
 using Application.Shared.Quest;
 
@@ -10,7 +11,7 @@ namespace Application.Plugin.Script.Events
 {
     internal class Battle_Horntail : AbstractExpeditionEventTemplate
     {
-        public Battle_Horntail() : base(nameof(Battle_Horntail), MobId.HORNTAIL)
+        public Battle_Horntail() : base(MobId.HORNTAIL, nameof(Battle_Horntail), ExpeditionEntryType.HORNTAIL)
         {
             MinCount = 6;
             MaxCount = 30;

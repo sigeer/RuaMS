@@ -43,9 +43,6 @@
     <Project Path="src/modules/Application.Module.BBS.Common/Application.Module.BBS.Common.csproj" />
     <Project Path="src/modules/Application.Module.BBS.Master/Application.Module.BBS.Master.csproj" />
   </Folder>
-  <Folder Name="/src/Modules/ExpeditionBossLog/">
-    <Project Path="src/modules/Application.Module.ExpeditionBossLog.Master/Application.Module.ExpeditionBossLog.Master.csproj" />
-  </Folder>
   <Folder Name="/src/Modules/Family/">
     <Project Path="src/modules/Application.Module.Family.Channel/Application.Module.Family.Channel.csproj" />
     <Project Path="src/modules/Application.Module.Family.Common/Application.Module.Family.Common.csproj" />
@@ -53,9 +50,6 @@
   </Folder>
   <Folder Name="/src/Modules/Fishing/">
     <Project Path="src/modules/Application.Module.Fishing.Channel/Application.Module.Fishing.Channel.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Maker/">
-    <Project Path="src/modules/Application.Module.Maker.Channel/Application.Module.Maker.Channel.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Marriage/">
     <Project Path="src/modules/Application.Module.Marriage.Channel.InProgress/Application.Module.Marriage.Channel.InProgress.csproj" />

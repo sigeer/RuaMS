@@ -25,14 +25,14 @@ namespace Application.Core.Login.ServerTransports
 
         public async Task BroadcastMessageN<TMessage>(int messageType, TMessage message) where TMessage : IMessage
         {
-            await Task.WhenAll(_server.ChannelServerList.Values.Select(server => server.SendMessage(messageType, message)));
+            await Task.WhenAll(_server.ChannelNodeList.Values.Select(server => server.SendMessage(messageType, message)));
         }
 
         public Task BroadcastMessageN<TMessage>(ChannelRecvCode messageType, TMessage message) where TMessage : IMessage
             => BroadcastMessageN((int)messageType, message);
         public async Task BroadcastMessageN(int messageType)
         {
-            await Task.WhenAll(_server.ChannelServerList.Values.Select(server => server.SendMessage(messageType)));
+            await Task.WhenAll(_server.ChannelNodeList.Values.Select(server => server.SendMessage(messageType)));
         }
 
         public Task BroadcastMessageN(ChannelRecvCode messageType)

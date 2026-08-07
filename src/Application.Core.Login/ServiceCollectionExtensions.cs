@@ -6,6 +6,7 @@ using Application.Core.Login.Models.Invitations;
 using Application.Core.Login.Modules;
 using Application.Core.Login.Net;
 using Application.Core.Login.ServerData;
+using Application.Core.Login.ServerData.ExpeditionBossLog;
 using Application.Core.Login.Services;
 using Application.Core.Login.Session;
 using Application.Core.Login.Shared;
@@ -115,6 +116,9 @@ namespace Application.Core.Login
             services.AddSingleton<AccountManager>();
             services.AddSingleton<IDataStorage, AccountManager>(sp => sp.GetRequiredService<AccountManager>());
 
+            services.AddSingleton<ExpeditionManager>();
+            services.AddSingleton<IDataStorage, ExpeditionManager>(sp => sp.GetRequiredService<ExpeditionManager>());
+
             services.TryAddSingleton<IPlayerNPCManager, DefaultPlayerNPCManager>();
 
             services.AddSingleton<BuddyManager>();
@@ -142,7 +146,6 @@ namespace Application.Core.Login
             services.AddSingleton<RankService>();
             services.AddSingleton<CreatePlayerService>();
 
-            services.TryAddSingleton<IExpeditionService, DefaultExpeditionService>();
             services.AddInvitationService();
             services.AddSingleton<CrossServerService>();
 

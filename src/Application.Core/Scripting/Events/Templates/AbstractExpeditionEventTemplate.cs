@@ -3,15 +3,19 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
+using Application.Shared.Battle;
+using System.Threading.Channels;
 
 namespace Application.Core.scripting.Events.Templates
 {
     public abstract class AbstractExpeditionEventTemplate : AbstractBehindPartyQuestEventTemplate
     {
+        public ExpeditionEntryType ExpeditionType { get; }
         public int BossId { get; }
-        public AbstractExpeditionEventTemplate(string name, int bossId) : base(name)
+        public AbstractExpeditionEventTemplate(int bossId, string name, ExpeditionEntryType type) : base(name)
         {
             BossId = bossId;
+            ExpeditionType = type;
         }
 
         public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
@@ -100,6 +104,8 @@ namespace Application.Core.scripting.Events.Templates
                 {
                     s.SendDropMessage(6, "[Expedition] " + Name + " Expedition started with leader: " + eim.getLeader().getName(), true);
                 });
+
+            eim.ChannelServer.NodeService.ExpeditionService.RegisterExpedition(eim.getPlayers().Select(x => x.getId()).ToArray(), eim.ChannelServer.Id, ExpeditionType.Name);
             await base.OnBattleStarted(eim);
         }
 
