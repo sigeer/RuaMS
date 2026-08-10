@@ -1628,6 +1628,11 @@ public class PacketCreator
         p.writeInt(0); // dropper oid, found thanks to Li Jixue
         p.writePos(dropfrom);
         p.writeShort(0);//Fh?
+        if (itemId > 0)
+        {
+            p.skip(8);
+        }
+        p.writeBool(false);
         return p;
     }
 

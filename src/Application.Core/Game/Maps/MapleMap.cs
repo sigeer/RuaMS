@@ -1082,7 +1082,7 @@ public class MapleMap : IMap, INamedInstance
         spos = calcedPos.Value;
         spos.Y--;
 
-        var mob = CreateMonster(mobData, pos);
+        var mob = CreateMonster(mobData, spos);
         handleMob?.Invoke(mob);
         await spawnMonster(mob);
         return mob;
@@ -2650,9 +2650,10 @@ public class MapleMap : IMap, INamedInstance
 
         if (!string.IsNullOrEmpty(SourceTemplate.OnFirstUserEnter))
         {
-            if (!chr.hasEntered(Id))
+            if (!chr.hasEntered(Id) || getEventInstance() != null)
             {
                 await chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
+
                 chr.enteredScript(Id);
             }
         }
