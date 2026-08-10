@@ -10,11 +10,11 @@ namespace Application.Core.Channel.Net.Packets
     /// </summary>
     public class FieldEffectPacket
     {
-        public static Packet Summon(int summonType, int x, int y)
+        public static Packet Summon(int name, int x, int y)
         {
             OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
             p.writeByte(0);
-            p.writeInt(summonType);     // SP_1590_EFFECT_SUMMONIMG_D
+            p.writeInt(name);     // SP_1590_EFFECT_SUMMONIMG_D
             p.writeInt(x);
             p.writeInt(y);
             return p;

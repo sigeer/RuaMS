@@ -3,6 +3,7 @@ using Application.Core.Game.ContiMove;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
@@ -2373,7 +2374,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1300012 
         public async Task TD_MC_bossEnter()
         {
-            await SayOK(GetDefault0());
+            await TD_MC_violetaEnter();
         }
 
 
@@ -2383,39 +2384,51 @@ namespace Application.Plugin.Script.Npc
             var mapId = getMapId();
             if (mapId == 106021402)
             {
-                if (!isQuestCompleted(2331))
+                // TD_MC_enterboss2
+                if (IsQuestNotStarted(2332))
                 {
+                    // if (!haveItem(4032388))
+                    await SayOK("门似乎已经被锁住了，需要找到开启门的钥匙……");
                     return;
                 }
 
-                var choice = await AskMenu("#L0#进入战斗 #b企鹅王#k 和 #b雪人#k。#l\r\n#L1#进入战斗 #b蘑菇大臣#k。#l");
-                if (choice == 0)
-                {
-                    var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
-                    var r = await pepe.StartInstance(getPlayer());
-                    await SayOK(pepe.HandleCreateInstanceResult(r, c));
-                }
-                else if (choice == 1)
-                {
-                    var em = GetEventManager<PartyQuestEventManager>("MK_PrimeMinister2");
-                    var r = await em.StartInstance(getPlayer());
-                    await SayOK(em.HandleCreateInstanceResult(r, c));
-                }
+                var em = GetEventManager<PartyQuestEventManager>(nameof(MK_PrimeMinister));
+                var r = await em.StartInstance(getPlayer());
+                await SayOK(em.HandleCreateInstanceResult(r, c));
             }
             else
             {
-                var qp = getQuestProgressInt(2330, 3300005) + getQuestProgressInt(2330, 3300006) + getQuestProgressInt(2330, 3300007);
-                if (!(isQuestStarted(2330) && qp < 3))
+                // TD_MC_enterboss1
+                if (IsQuestNotStarted(2330))
                 {
+                    await SayOK("……");
                     return;
                 }
 
-                var sel = await AskMenu("#L1#进入挑战 #b企鹅王#k 和 #b雪人#k。#l");
-                if (sel == 1)
+                Dictionary<int, string> allOptions = new() { 
+                    { 0, "挑战 企鹅王 和 雪人。" },
+                };
+
+                if (haveItem(4032388) && !isQuestCompleted(2332))
                 {
-                    var pepe = GetEventManager<PartyQuestEventManager>("KingPepeAndYetis");
+                    allOptions[1] = "拯救 #p1300002#。";
+                }
+                else if (isQuestCompleted(2332))
+                {
+                    allOptions[2] = "挑战 #b蘑菇大臣#k。";
+                }
+
+                var option = await AskMenu("你要去哪？", allOptions);
+                if (option == 0)
+                {
+                    var pepe = GetEventManager<PartyQuestEventManager>(nameof(MK_PepeKing));
                     var r = await pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
+                }
+                else
+                {
+                    await getPlayer().PortalSound();
+                    await warp(106021401, "out00");
                 }
             }
         }
@@ -2431,10 +2444,13 @@ namespace Application.Plugin.Script.Npc
                 //蘑菇森林深处
                 if (isQuestActive(2314) && getQuestProgressInt(2314) == 0)
                 {
-                    await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
+                    // i sense an overwhelming force of magic here
+                    await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon1");
                     await SayNext("这里...似乎有点奇怪...？！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                     await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                     await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
+                    await SayNext("看来还是得先回去跟 #e#b#p1300003##k#n 报告一下了。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
+                    await setQuestProgress(2314, 1);
                 }
                 else if (haveItem(2430014))
                 {

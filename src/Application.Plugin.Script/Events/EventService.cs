@@ -109,7 +109,9 @@ namespace Application.Plugin.Events
 
                 new RockSpirit(),
                 new Puppeteer(),
+
                 new MK_PrimeMinister(),
+                new MK_PepeKing()
                 ];
 
         }

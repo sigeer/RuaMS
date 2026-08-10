@@ -11,6 +11,7 @@ using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
 using Application.Templates.Mob;
+using Application.Utility;
 using Application.Utility.Exceptions;
 using scripting.portal;
 using server.life;
@@ -5614,11 +5615,10 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 106021500
         public async Task<bool> out_pepeking()
         {
-
-            var eim = GetEventInstanceTrust();
+            var eim = getEventInstance();
             if (eim != null)
             {
                 await eim.stopEventTimer();
@@ -7652,32 +7652,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-        /// <summary>
-        /// MapId: 106020601
-        /// </summary>
-        /// <returns></returns>
-        public async Task<bool> TD_MC_faild()
-        {
-            await ShowDirectionEffect("Effect/Direction2.img/mushCatle/nugu");
-            await Pink("你被警卫发现了，现在将被送到悬崖底部。");
-
-            var chrId = getPlayer().Id;
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(2000);
-                await getMap().Send(async m =>
-                {
-                    var chr = m.getCharacterById(chrId);
-                    if (chr?.getMapId() == 106020601)
-                    {
-                        await chr.changeMap(106020403);
-                    }
-                });
-            });
-            return true;
-        }
-
-
         public async Task<bool> TD_Boss_enter()
         {
 
@@ -7732,91 +7706,15 @@ namespace Application.Plugin.Script
 
         public async Task<bool> TD_MC_enterboss1()
         {
-
-            var questProgress = getQuestProgressInt(2330, 3300005) + getQuestProgressInt(2330, 3300006) + getQuestProgressInt(2330, 3300007); //3 Yetis
-
-            if (isQuestStarted(2330) && questProgress < 3)
-            {
-                await openNpc(1300013);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(106021401, 1);
-            }
-
-            return true;
+            await openNpc(1300013);
+            return false;
         }
 
 
         public async Task<bool> TD_MC_enterboss2()
         {
-
-            if (isQuestCompleted(2331))
-            {
-                await openNpc(1300013);
-                return false;
-            }
-
-            if (isQuestCompleted(2333) && isQuestStarted(2331) && !hasItem(4001318))
-            {
-                await Pink("玉玺丢失了？嗯，不用担心！凯文会帮您保密。");
-                if (canHold(4001318))
-                {
-                    await gainItem(4001318, 1);
-                }
-                else
-                {
-                    await Pink("嘿，你背包空间已经满了，如何拿取蘑菇王国玉玺？");
-                }
-            }
-
-            if (isQuestCompleted(2333))
-            {
-                await playPortalSound();
-                await warp(106021600, 1);
-                return true;
-            }
-            else if (isQuestStarted(2332) && hasItem(4032388))
-            {
-                await forceCompleteQuest(2332, 1300002);
-                await Pink("找到了公主！");
-                await giveCharacterExp(4400, getPlayer());
-
-                var em = GetEventManager(nameof(MK_PrimeMinister));
-                var r = await em.StartInstance(getPlayer());
-                if (r == CreateInstanceResult.Success)
-                {
-                    await playPortalSound();
-                    return true;
-                }
-                else
-                {
-                    await Pink(em.HandleCreateInstanceResult(r, c) ?? "");
-                    return false;
-                }
-            }
-            else if (isQuestStarted(2333) || (isQuestCompleted(2332) && !isQuestStarted(2333)))
-            {
-                var em = GetEventManager(nameof(MK_PrimeMinister));
-
-                var r = await em.StartInstance(getPlayer());
-                if (r == CreateInstanceResult.Success)
-                {
-                    await playPortalSound();
-                    return true;
-                }
-                else
-                {
-                    await Pink(em.HandleCreateInstanceResult(r, c) ?? "");
-                    return false;
-                }
-            }
-            else
-            {
-                await Pink("门似乎已经被锁住了，需要找到开启门的钥匙……");
-                return false;
-            }
+            await openNpc(1300013);
+            return false;
         }
 
 
@@ -7840,19 +7738,43 @@ namespace Application.Plugin.Script
                 await warp(106020000, 0);
                 return true;
             }
-            await Pink("A strange force is blocking you from entering.");
+            await Pink("一股神秘力量阻挡了你的进入。");
             return false;
         }
 
-
+        // Map: 106020403
         public async Task<bool> TD_MC_jump()
         {
-
-            await playPortalSound();
-            await warp(106020501, 0);
+            await warp(106020600 + Randomizer.NextInt(0, 2));
+            //await playPortalSound();
+            //await warp(106020501, 0);
             return true;
         }
 
+        /// <summary>
+        /// MapId: 106020601
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> TD_MC_faild()
+        {
+            await ShowDirectionEffect("Effect/Direction2.img/mushCatle/nugu");
+            await Pink("你被警卫发现了，现在将被送到悬崖底部。");
+
+            var chrId = getPlayer().Id;
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                await getMap().Send(async m =>
+                {
+                    var chr = m.getCharacterById(chrId);
+                    if (chr != null)
+                    {
+                        await chr.changeMap(106020403);
+                    }
+                });
+            });
+            return true;
+        }
 
         public async Task<bool> TD_neo_inTree()
         {
@@ -8218,8 +8140,5 @@ namespace Application.Plugin.Script
             await warp(211042400, "west00");
             return true;
         }
-
-
-
     }
 }

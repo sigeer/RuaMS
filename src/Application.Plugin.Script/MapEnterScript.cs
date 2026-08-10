@@ -302,11 +302,9 @@ namespace Application.Plugin.Script
 
 
         // Map: 106020000 
-        public async Task TD_MC_title()
+        public Task TD_MC_title()
         {
-            // TODO
-
-
+            return mapEffect("temaD/enter/mushCatle");
         }
 
 
@@ -324,16 +322,24 @@ namespace Application.Plugin.Script
         {
             // TODO
 
-
         }
 
 
         // Map: 106020502 
         public async Task TD_MC_gasi()
         {
-            // TODO
-
-
+            await lockUI();
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi1");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi2");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi22");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi3");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi4");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi5");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi6");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi7");
+            await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi8");
+            await unlockUI();
+            // 最终会跳转 106020501
         }
 
 
@@ -358,21 +364,25 @@ namespace Application.Plugin.Script
         // Map: 106021500, 106021501, 106021502, 106021503, 106021504, 106021505, 106021506, 106021507, 106021508, 106021509 
         public async Task pepeking_effect()
         {
-            // TODO
-            var mobId = 3300000 + (Random.Shared.Next(3) + 5);
-            var player = getPlayer();
-            var map = player.getMap();
-            await map.spawnMonsterOnGroundBelow(mobId, -28, -67);
-
+            var eim = GetEventInstanceTrust();
+            var bossId = eim.getIntProperty("BossId");
+            var type = bossId == 3300005 ? "B" : (bossId == 3300006 ? "G" : "W");
+            await mapEffect("pepeKing/frame/W");
+            await mapEffect("pepeKing/pepe/pepe" + type);
+            await mapEffect("pepeKing/frame/B");
+            await mapEffect("pepeKing/chat/nugu");
         }
 
 
         // Map: 106021600, 106021601, 106021602, 106021603, 106021604, 106021605, 106021606, 106021607, 106021608, 106021609 
         public async Task findvioleta()
         {
-            // TODO
-
-
+            if (isQuestStarted(2332))
+            {
+                await getPlayer().ForceCompleteQuest(2332, 1300002);
+                // QuestInfo中描述了奖励，但是相关的Act.img没有数据，不能使用completeQuest
+                await giveCharacterExp(4400, getPlayer());
+            }
         }
 
 
@@ -723,13 +733,10 @@ namespace Application.Plugin.Script
                 await dojoEnergy();
 
                 await playSound("Dojang/start");
-                await showEffect("dojang/start/stage");
-                await showEffect("dojang/start/number/" + realstage);
+                await mapEffect("dojang/start/stage");
+                await mapEffect("dojang/start/number/" + realstage);
             }
 
         }
-
-
-
     }
 }

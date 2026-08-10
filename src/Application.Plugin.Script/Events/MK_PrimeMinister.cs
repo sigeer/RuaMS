@@ -1,10 +1,12 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using CommunityToolkit.HighPerformance.Helpers;
 using server.life;
 using System.Drawing;
-using System.Threading.Tasks;
 
 namespace Application.Plugin.Script.Events
 {
@@ -27,12 +29,34 @@ namespace Application.Plugin.Script.Events
 
         }
 
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+            await base.OnSetup(eim, level, lobbyId);
+
+            var weddinghall = await eim.getMapInstance(EntryMap);
+            weddinghall.getPortal(1)?.setPortalState(false);
+        }
+
+        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        {
+            await base.OnPlayerEntry(eim, chr);
+
+            if (chr.Id == eim.getLeaderId())
+            {
+                var questStatus = chr.GetOrAddQuest(2333);
+                if (questStatus.getStatus() != client.QuestStatus.Status.NOT_STARTED)
+                {
+                    await SpawnBoss(eim);
+                }
+            }
+        }
+
         int mobId = 3300008;
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == mobId)
             {
-                var map = await eim.getMapInstance(EntryPortal);
+                var map = await eim.getMapInstance(EntryMap);
                 map.getPortal(1)?.setPortalState(true);
 
                 await eim.showClearEffect();
@@ -40,33 +64,12 @@ namespace Application.Plugin.Script.Events
             }
         }
 
-        async Task<bool> primeMinisterCheck(AbstractEventInstanceManager eim)
+        public async Task SpawnBoss(AbstractEventInstanceManager eim)
         {
-            var map = await eim.getMapInstance(EntryMap);
-
-            foreach (var player in map.getAllPlayers())
-            {
-                if (player.getQuestStatus(2333) == 1 && player.GetQuestProgressInt(2333, mobId) == 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public override async Task respawnStages(AbstractEventInstanceManager eim)
-        {
-            if (await primeMinisterCheck(eim))
-            {
-                var weddinghall = await eim.getMapInstance(EntryMap);
-                weddinghall.getPortal(1)?.setPortalState(false);
-                await weddinghall.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), new Point(292, 143));
-            }
-            else
-            {
-                eim.Schedule(respawnStages, 10000);
-            }
+            var weddinghall = await eim.getMapInstance(EntryMap);
+            var pos = new Point(292, 143);
+            await weddinghall.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), pos);
+            await weddinghall.broadcastMessage(FieldEffectPacket.Summon(23, pos.X, pos.Y)); // name=23一样？
         }
     }
 }
