@@ -382,7 +382,7 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 510)
         {
-            await player.getMap().broadcastMessage(PacketCreator.musicChange("Jukebox/Congratulation"));
+            await player.MapModel.broadcastMessage(FieldEffectPacket.Bgm("Jukebox/Congratulation"));
             await player.MapModel.broadcastMessage(PacketCreator.PlayerJuke(itemId, player.Name));
             await remove(c, position, itemId);
         }

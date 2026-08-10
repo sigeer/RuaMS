@@ -57,18 +57,18 @@ public class MapScriptMethods : AbstractPlayerInteraction
             case MapId.CYGNUS_INTRO_LEAD:
                 {
                     await lockUI();
-                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene0"));
+                    await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene0");
                     break;
                 }
-            case MapId.CYGNUS_INTRO_WARRIOR: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene1")); break;
-            case MapId.CYGNUS_INTRO_BOWMAN: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene2")); break;
-            case MapId.CYGNUS_INTRO_MAGE: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene3")); break;
-            case MapId.CYGNUS_INTRO_PIRATE: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene4")); break;
-            case MapId.CYGNUS_INTRO_THIEF: await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene5")); break;
+            case MapId.CYGNUS_INTRO_WARRIOR: await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene1"); break;
+            case MapId.CYGNUS_INTRO_BOWMAN: await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene2"); break;
+            case MapId.CYGNUS_INTRO_MAGE: await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene3"); break;
+            case MapId.CYGNUS_INTRO_PIRATE: await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene4"); break;
+            case MapId.CYGNUS_INTRO_THIEF: await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene5"); break;
             case MapId.CYGNUS_INTRO_CONCLUSION:
                 {
                     await lockUI();
-                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction.img/cygnusJobTutorial/Scene6"));
+                    await ShowDirectionEffect("Effect/Direction.img/cygnusJobTutorial/Scene6");
                     break;
                 }
         }
@@ -81,20 +81,20 @@ public class MapScriptMethods : AbstractPlayerInteraction
             case MapId.ARAN_TUTO_1:
                 {
                     await lockUI();
-                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene0"));
+                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene0");
                     break;
                 }
             case MapId.ARAN_TUTO_2:
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender());
                 break;
             case MapId.ARAN_TUTO_3:
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender());
                 break;
-            case MapId.ARAN_TUTO_4: await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/Scene3")); break;
+            case MapId.ARAN_TUTO_4: await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene3"); break;
             case MapId.ARAN_POLEARM:
                 {
                     await lockUI();
-                    await c.SendPacket(PacketCreator.showIntro("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender()));
+                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender());
                     break;
                 }
         }
@@ -105,19 +105,19 @@ public class MapScriptMethods : AbstractPlayerInteraction
         switch (c.OnlinedCharacter.getMapId())
         {
             case 1020100: //Swordman
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/swordman/Scene" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction3.img/swordman/Scene" + c.OnlinedCharacter.getGender());
                 break;
             case 1020200: //Magician
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/magician/Scene" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction3.img/magician/Scene" + c.OnlinedCharacter.getGender());
                 break;
             case 1020300: //Archer
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/archer/Scene" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction3.img/archer/Scene" + c.OnlinedCharacter.getGender());
                 break;
             case 1020400: //Rogue
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/rogue/Scene" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction3.img/rogue/Scene" + c.OnlinedCharacter.getGender());
                 break;
             case 1020500: //Pirate
-                await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/pirate/Scene" + c.OnlinedCharacter.getGender()));
+                await ShowDirectionEffect("Effect/Direction3.img/pirate/Scene" + c.OnlinedCharacter.getGender());
                 break;
         }
     }
@@ -125,13 +125,13 @@ public class MapScriptMethods : AbstractPlayerInteraction
     public async Task goAdventure()
     {
         await lockUI();
-        await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender()));
+        await ShowDirectionEffect("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender());
     }
 
     public async Task goLith()
     {
         await lockUI();
-        await c.SendPacket(PacketCreator.showIntro("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender()));
+        await ShowDirectionEffect("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender());
     }
 
     public async Task explorerQuest(short questid)

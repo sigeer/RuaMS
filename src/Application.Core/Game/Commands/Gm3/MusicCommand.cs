@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm3;
@@ -194,7 +195,7 @@ public class MusicCommand : CommandBase
         {
             if (s.Equals(song, StringComparison.OrdinalIgnoreCase))
             {    // thanks Masterrulax for finding an issue here
-                await player.getMap().broadcastMessage(PacketCreator.musicChange(s));
+                await player.MapModel.broadcastMessage(FieldEffectPacket.Bgm(s));
                 await player.Yellow("Now playing song " + s + ".");
                 return;
             }

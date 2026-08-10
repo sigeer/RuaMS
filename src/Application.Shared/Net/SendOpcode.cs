@@ -313,10 +313,25 @@ public enum SendOpcode
     PLAYER_HINT = 0xD6,
     MAKER_RESULT = 0xD9,
     KOREAN_EVENT = 0xDB,
+    /// <summary>
+    /// CUserLocal::OnOpenUI
+    /// </summary>
     OPEN_UI = 0xDC,
+    /// <summary>
+    /// CUserLocal::SetDirectionMode
+    /// </summary>
     LOCK_UI = 0xDD,
+    /// <summary>
+    /// sub_95FFA2 CUserLocal::OnSetStandAloneMode
+    /// </summary>
     DISABLE_UI = 0xDE,
+    /// <summary>
+    /// CUserLocal::OnHireTutor
+    /// </summary>
     SPAWN_GUIDE = 0xDF,
+    /// <summary>
+    /// CUserLocal::OnTutorMsg
+    /// </summary>
     TALK_GUIDE = 0xE0,
     SHOW_COMBO = 0xE1,
     /// <summary>

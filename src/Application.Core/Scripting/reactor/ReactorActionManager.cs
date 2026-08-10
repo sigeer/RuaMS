@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
@@ -288,7 +289,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
              reactor.getMap().Send(async map =>
              {
                  await map.spawnMonsterOnGroundBelow(mobId, x, y);
-                 await map.broadcastMessage(PacketCreator.musicChange(bgm));
+                 await map.broadcastMessage(FieldEffectPacket.Bgm(bgm));
                  await map.LightBlue(summonMessage);
              });
          }, delayMs);

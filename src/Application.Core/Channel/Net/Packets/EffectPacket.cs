@@ -142,7 +142,12 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
-        public static Packet UsePath1(string str)
+        /// <summary>
+        /// Effect Direction*.img
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static Packet DirectionEffect(string str)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
             p.writeByte(18);
@@ -168,7 +173,12 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
-        public static Packet UsePath2(string path)
+        /// <summary>
+        /// Effect: OnUserEff
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Packet UIEffect(string path)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
             p.writeByte(23);

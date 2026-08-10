@@ -23,7 +23,7 @@ namespace Application.Plugin.Script
                         await startQuest(100202);
                     }
                     await removeAll(2430014);
-                    await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon2");
+                    await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon2");
                     await Pink("好像有什么动静...嗯？是结界被消除了");
                 }
                 else

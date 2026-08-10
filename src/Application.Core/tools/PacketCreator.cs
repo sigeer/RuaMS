@@ -3628,18 +3628,6 @@ public class PacketCreator
     }
 
 
-    public static Packet showBossHP(int oid, int currHP, int maxHP, byte tagColor, byte tagBgColor)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
-        p.writeByte(5);
-        p.writeInt(oid);
-        p.writeInt(currHP);
-        p.writeInt(maxHP);
-        p.writeByte(tagColor);
-        p.writeByte(tagBgColor);
-        return p;
-    }
-
     private static HpMpPair normalizedCustomMaxHP(long currHP, long maxHP)
     {
         int sendHP, sendMaxHP;
@@ -4027,21 +4015,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet musicChange(string song)
-    {
-        return environmentChange(song, 6);
-    }
-
-    public static Packet showEffect(string effect)
-    {
-        return environmentChange(effect, 3);
-    }
-
-    public static Packet playSound(string sound)
-    {
-        return environmentChange(sound, 4);
-    }
-
     public static Packet environmentChange(string env, int mode)
     {
         OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
@@ -4097,21 +4070,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet mapEffect(string path)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
-        p.writeByte(3);
-        p.writeString(path);
-        return p;
-    }
-
-    public static Packet mapSound(string path)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
-        p.writeByte(4);
-        p.writeString(path);
-        return p;
-    }
 
     public static Packet skillEffect(Player from, int skillId, int level, byte flags, int speed, byte direction)
     {
@@ -5645,22 +5603,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showIntro(string path)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-        p.writeByte(0x12);
-        p.writeString(path);
-        return p;
-    }
-
-    public static Packet showInfo(string path)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-        p.writeByte(0x17);
-        p.writeString(path);
-        p.writeInt(1);
-        return p;
-    }
 
     public static Packet showForeignInfo(int cid, string path)
     {
@@ -5705,17 +5647,26 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 进入演出模式
+    /// </summary>
+    /// <param name="enable">true: 销毁所有窗口，false: 重建所有窗口</param>
+    /// <returns></returns>
     public static Packet lockUI(bool enable)
     {
         OutPacket p = OutPacket.create(SendOpcode.LOCK_UI);
-        p.writeByte(enable ? 1 : 0);
+        p.writeBool(enable);
         return p;
     }
-
+    /// <summary>
+    /// 进入独处模式
+    /// </summary>
+    /// <param name="enable">true: 忽略其他玩家，false: 恢复加载</param>
+    /// <returns></returns>
     public static Packet disableUI(bool enable)
     {
         OutPacket p = OutPacket.create(SendOpcode.DISABLE_UI);
-        p.writeByte(enable ? 1 : 0);
+        p.writeBool(enable);
         return p;
     }
 
@@ -6140,19 +6091,6 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * @param type  - (0:Light&long 1:Heavy&short)
-     * @param delay - seconds
-     * @return
-     */
-    public static Packet trembleEffect(int type, int delay)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
-        p.writeByte(1);
-        p.writeByte(type);
-        p.writeInt(delay);
-        return p;
-    }
 
     public static Packet getEnergy(string info, int amount)
     {

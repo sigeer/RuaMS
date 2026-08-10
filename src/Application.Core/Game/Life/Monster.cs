@@ -1006,8 +1006,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             if (stats.getRevives().Contains(MobId.TRANSPARENT_ITEM) && MapModel.getId() > 925000000 && MapModel.getId() < 926000000)
             {
-                await MapModel.broadcastMessage(PacketCreator.playSound("Dojang/clear"));
-                await MapModel.broadcastMessage(PacketCreator.showEffect("dojang/end/clear"));
+                await MapModel.broadcastMessage(FieldEffectPacket.Sound("Dojang/clear"));
+                await MapModel.broadcastMessage(FieldEffectPacket.Screen("dojang/end/clear"));
             }
 
             await MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
@@ -1169,7 +1169,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public Packet makeBossHPBarPacket()
     {
-        return PacketCreator.showBossHP(getId(), getHp(), getMaxHp(), getTagColor(), getTagBgColor());
+        return FieldEffectPacket.ShowBossHP(getId(), getHp(), getMaxHp(), getTagColor(), getTagBgColor());
     }
 
     public bool hasBossHPBar()

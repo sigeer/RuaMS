@@ -207,7 +207,8 @@ public class Quest
             foreach (AbstractQuestAction a in acts)
             {
                 if (!await a.check(chr, null))
-                { // would null be good ?
+                { 
+                    // would null be good ?
                     return;
                 }
             }

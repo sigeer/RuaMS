@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.ContiMove;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
@@ -2430,7 +2431,7 @@ namespace Application.Plugin.Script.Npc
                 //蘑菇森林深处
                 if (isQuestActive(2314) && getQuestProgressInt(2314) == 0)
                 {
-                    await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
+                    await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
                     await SayNext("这里...似乎有点奇怪...？！", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                     await SayNext("嗯...似乎有一种无形的力量在阻止我通过入口。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                     await SayNext("显然这不是普通的障碍，否则我不可能过不去，也许...这应该是 #e#b#p1300003##k#n 提到的结界了。", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
@@ -2607,7 +2608,7 @@ namespace Application.Plugin.Script.Npc
         {
             string[] harpSounds = ["do", "re", "mi", "pa", "sol", "la", "si"];   // musical order detected thanks to Arufonsu
             var harpSong = "CCGGAAGFFEEDDC|GGFFEED|GGFFEED|CCGGAAGFFEEDDC|";
-            await getMap().broadcastMessage(PacketCreator.playSound("orbis/" + harpSounds[getNpc() - 2012027]));
+            await getMap().broadcastMessage(FieldEffectPacket.Sound("orbis/" + harpSounds[getNpc() - 2012027]));
 
             if (isQuestStarted(3114))
             {
@@ -2621,8 +2622,8 @@ namespace Application.Plugin.Script.Npc
                     {
                         await setQuestProgress(3114, 0);
 
-                        await getPlayer().SendPacket(PacketCreator.showEffect("quest/party/wrong_kor"));
-                        await getPlayer().SendPacket(PacketCreator.playSound("Party1/Failed"));
+                        await getPlayer().SendPacket(FieldEffectPacket.Screen("quest/party/wrong_kor"));
+                        await getPlayer().SendPacket(FieldEffectPacket.Sound("Party1/Failed"));
 
                         await Pink("You've missed the note... Start over again.");
                     }
@@ -2640,8 +2641,8 @@ namespace Application.Plugin.Script.Npc
                                 await Pink("Twinkle, twinkle, little star, how I wonder what you are.");
                                 await setQuestProgress(3114, 42);
 
-                                await getPlayer().SendPacket(PacketCreator.showEffect("quest/party/clear"));
-                                await getPlayer().SendPacket(PacketCreator.playSound("Party1/Clear"));
+                                await getPlayer().SendPacket(FieldEffectPacket.Screen("quest/party/clear"));
+                                await getPlayer().SendPacket(FieldEffectPacket.Sound("Party1/Clear"));
 
                             }
                             else

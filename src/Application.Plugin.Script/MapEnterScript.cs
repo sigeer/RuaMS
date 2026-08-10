@@ -426,7 +426,7 @@ namespace Application.Plugin.Script
             if (containsAreaInfo(21019, "miss=o;helper=clear"))
             {
                 await updateAreaInfo(21019, "miss=o;arr=o;helper=clear");
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
 
         }
@@ -451,7 +451,7 @@ namespace Application.Plugin.Script
             await teachSkill(20000017, -1, 0, -1);
             await teachSkill(20000018, -1, 0, -1);
             await unlockUI();
-            await showIntro("Effect/Direction1.img/aranTutorial/ClickLilin");
+            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickLilin");
 
         }
 

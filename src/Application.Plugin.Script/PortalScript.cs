@@ -240,7 +240,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "arr0=o;mo1=o;mo2=o;mo3=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             return true;
         }
 
@@ -254,7 +254,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;mo2=o;mo3=o;mo4=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             return true;
         }
 
@@ -268,7 +268,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             return true;
         }
 
@@ -282,7 +282,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;arr3=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             return true;
         }
 
@@ -295,7 +295,7 @@ namespace Application.Plugin.Script
             {
                 return false;
             }
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide1");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide1");
             await Pink("按一下Ctrl键，能够对怪兽进行一般攻击。");
             await updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o");
             return true;
@@ -310,7 +310,7 @@ namespace Application.Plugin.Script
             {
                 return false;
             }
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide2");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide2");
             await Pink("按住Ctrl键，能够进行连续攻击。");
             await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return true;
@@ -325,7 +325,7 @@ namespace Application.Plugin.Script
             {
                 return false;
             }
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide3");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide3");
             await Pink("连续攻击后，通过方向键和攻击键可以实现命令攻击。");
             await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return true;
@@ -341,7 +341,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;arr3=o;fin=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await showIntro("Effect/Direction1.img/aranTutorial/ClickChild");
+            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickChild");
             return true;
         }
 
@@ -355,7 +355,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "mo1=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon1");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon1");
             return true;
         }
 
@@ -370,7 +370,7 @@ namespace Application.Plugin.Script
             }
             await playSound("Aran/balloon");
             await updateAreaInfo(21002, "mo1=o;mo2=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon2");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon2");
             return true;
         }
 
@@ -384,7 +384,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "mo1=o;mo2=o;mo3=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon3");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon3");
             return true;
         }
 
@@ -398,7 +398,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o;mo4=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon6");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon6");
             return true;
         }
 
@@ -2009,7 +2009,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(22014, "mo30=o");
-            await showInfo("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon30");
+            await ShowEffect("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon30");
             return true;
         }
 
@@ -2927,7 +2927,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(1035))
             {
-                await showInfo("UI/tutorial.img/20");
+                await ShowEffect("UI/tutorial.img/20");
             }
 
             await blockPortal();
@@ -2940,7 +2940,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(1031))
             {
-                await showInfo("UI/tutorial.img/25");
+                await ShowEffect("UI/tutorial.img/25");
             }
 
             await blockPortal();
@@ -2953,7 +2953,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(1035))
             {
-                await showInfo("UI/tutorial.img/21");
+                await ShowEffect("UI/tutorial.img/21");
             }
 
             await blockPortal();
@@ -2966,11 +2966,11 @@ namespace Application.Plugin.Script
 
             if (isQuestCompleted(1008))
             {
-                await showInfo("UI/tutorial.img/22");
+                await ShowEffect("UI/tutorial.img/22");
             }
             else if (isQuestCompleted(1020))
             {
-                await showInfo("UI/tutorial.img/27");
+                await ShowEffect("UI/tutorial.img/27");
             }
 
             await blockPortal();
@@ -2983,7 +2983,7 @@ namespace Application.Plugin.Script
 
             if (isQuestCompleted(1035))
             {
-                await showInfo("UI/tutorial.img/23");
+                await ShowEffect("UI/tutorial.img/23");
             }
 
             await blockPortal();
@@ -2994,7 +2994,7 @@ namespace Application.Plugin.Script
         public async Task<bool> infoWorldmap()
         {
 
-            await showInfo("UI/tutorial.img/26");
+            await ShowEffect("UI/tutorial.img/26");
             await blockPortal();
             return true;
         }
@@ -5216,7 +5216,7 @@ namespace Application.Plugin.Script
         public async Task<bool> metro_Chat00()
         {
 
-            await showIntro("Effect/Direction2.img/metro/Im");
+            await ShowDirectionEffect("Effect/Direction2.img/metro/Im");
             //showWZEffect("Effect/Direction2.img/metro/Im");
             return true;
         }
@@ -5422,7 +5422,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon1");
+                await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon1");
                 await Pink("似乎有一个魔力强大的结界阻止你进入。");
             }
             return false;
@@ -7658,7 +7658,7 @@ namespace Application.Plugin.Script
         /// <returns></returns>
         public async Task<bool> TD_MC_faild()
         {
-            await showIntro("Effect/Direction2.img/mushCatle/nugu");
+            await ShowDirectionEffect("Effect/Direction2.img/mushCatle/nugu");
             await Pink("你被警卫发现了，现在将被送到悬崖底部。");
 
             var chrId = getPlayer().Id;

@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
@@ -869,8 +870,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public async Task showWrongEffect(int mapId)
     {
         IMap map = await getMapInstance(mapId);
-        await map.broadcastMessage(PacketCreator.showEffect("quest/party/wrong_kor"));
-        await map.broadcastMessage(PacketCreator.playSound("Party1/Failed"));
+        await map.broadcastMessage(FieldEffectPacket.Screen("quest/party/wrong_kor"));
+        await map.broadcastMessage(FieldEffectPacket.Sound("Party1/Failed"));
     }
 
     public async Task showClearEffect()
@@ -905,8 +906,8 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public async Task showClearEffect(bool hasGate, int mapId, string mapObj, int newState)
     {
         IMap map = await getMapInstance(mapId);
-        await map.broadcastMessage(PacketCreator.showEffect("quest/party/clear"));
-        await map.broadcastMessage(PacketCreator.playSound("Party1/Clear"));
+        await map.broadcastMessage(FieldEffectPacket.Screen("quest/party/clear"));
+        await map.broadcastMessage(FieldEffectPacket.Sound("Party1/Clear"));
         if (hasGate)
         {
             await map.broadcastMessage(PacketCreator.environmentChange(mapObj, newState));

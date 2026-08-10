@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Actor;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
@@ -2608,7 +2609,7 @@ public class MapleMap : IMap, INamedInstance
 
         if (IsPirateDocked)
         {
-            await chr.SendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await chr.SendPacket(FieldEffectPacket.Bgm("Bgm04/ArabPirate"));
             await chr.SendPacket(PacketCreator.crogBoatPacket(true));
         }
 

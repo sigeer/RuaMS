@@ -14,7 +14,7 @@ namespace Application.Plugin.Script.Npc
                 "战神的同伴们？他们……已经去找黑魔法师了。在我们避难的时候，他们打算阻止黑魔法师的进攻……什么？你也要去找黑魔法师？不行！你伤得太重，跟我们一起吧！"
                 ]);
             await setQuestProgress(21000, 21002, 1);
-            await showIntro("Effect/Direction1.img/aranTutorial/Trio");
+            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Trio");
         }
 
         // Npc: 1202000 
@@ -31,8 +31,8 @@ namespace Application.Plugin.Script.Npc
                         new SpeechText("……你在说什么？你到底是谁？", NpcTalkSpeaker.PlayerRight),
                         new SpeechText("等等……我是谁？我怎么什么都想不起来……啊……！头好疼！", NpcTalkSpeaker.PlayerRight),
                         ]);
-                    await showIntro("Effect/Direction1.img/aranTutorial/face");
-                    await showIntro("Effect/Direction1.img/aranTutorial/ClickLilin");
+                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/face");
+                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickLilin");
                     await updateAreaInfo(21019, "helper=clear");
                 }
                 else
