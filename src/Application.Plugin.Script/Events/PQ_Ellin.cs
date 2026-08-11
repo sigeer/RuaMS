@@ -9,6 +9,8 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_Ellin() : base(nameof(PQ_Ellin))
         {
+            QuestId = 1206;
+
             MinCount = 4;
             MaxCount = 6;
             MinLevel = 44;

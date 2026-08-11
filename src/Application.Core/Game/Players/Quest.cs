@@ -94,6 +94,10 @@ namespace Application.Core.Game.Players
         public async Task setQuestProgress(int id, int infoNumber, string progress)
         {
             QuestStatus qs = GetOrAddQuest(id);
+            if (qs.getStatus() == QuestStatus.Status.NOT_STARTED)
+            {
+                return;
+            }
 
             if (infoNumber > 0 && qs.getInfoNumber() == infoNumber)
             {

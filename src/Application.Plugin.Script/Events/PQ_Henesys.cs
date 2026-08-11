@@ -17,6 +17,8 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_Henesys() : base(nameof(PQ_Henesys))
         {
+            QuestId = 1200;
+
             MinCount = 3;
             MaxCount = 6;
 

@@ -8,6 +8,8 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_CPQ1(string name, int recruitMap) : base(name, recruitMap + 1)
         {
+            QuestId = 1301;
+
             RecruitMap = recruitMap;
             EntryMap = recruitMap + 1;
 

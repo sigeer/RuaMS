@@ -69,7 +69,14 @@ namespace Application.Plugin.Script.Events
             var weddinghall = await eim.getMapInstance(EntryMap);
             var pos = new Point(292, 143);
             await weddinghall.spawnMonsterOnGroundBelow(LifeFactory.Instance.getMonster(mobId), pos);
-            await weddinghall.broadcastMessage(FieldEffectPacket.Summon(23, pos.X, pos.Y)); // name=23一样？
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                await weddinghall.Send(async m =>
+                {
+                    await m.broadcastMessage(FieldEffectPacket.Summon(23, pos.X, pos.Y));
+                });
+            });
         }
     }
 }

@@ -8,6 +8,8 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_Pirate() : base(nameof(PQ_Pirate))
         {
+            QuestId = 1204;
+
             MinCount = 3;
             MaxCount = 6;
             MinLevel = 55;

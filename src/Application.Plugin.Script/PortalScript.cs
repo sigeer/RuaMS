@@ -7759,7 +7759,7 @@ namespace Application.Plugin.Script
                 return false;
             }
 
-            // await playPortalSound();
+            await playPortalSound();
             await warp(106020600 + Randomizer.NextInt(0, 2), 0);
             return true;
         }
