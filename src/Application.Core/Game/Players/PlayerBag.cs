@@ -174,7 +174,7 @@ namespace Application.Core.Game.Players
             foreach (var p in inv.LoadAllItem())
             {
                 if (toRemoveCount <= 0)
-                    return;
+                    break;
 
                 if (filter == null || filter(p.Item))
                 {

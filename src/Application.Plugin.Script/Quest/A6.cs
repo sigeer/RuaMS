@@ -26,7 +26,7 @@ namespace Application.Plugin.Script.Quest
                     "关键是不要慌张，战神。如果你要查看任务状态，按#bQ键#k就能在任务栏中查看。",
                     "拜托了，战神！救救孩子吧！我们不能再有人因为黑魔法师而牺牲了！"
                     ]);
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             }
             else
             {
@@ -237,7 +237,7 @@ namespace Application.Plugin.Script.Quest
                 await forceStartQuest();
 
                 await SayNext("在这个几乎全是企鹅的岛上，也有几只怪兽。去村子右边的#b#m140020000##k，就能看到许多#o0100131#。请消灭#r10只#o0100131##k。我们这些笨拙的企鹅用喙都能抓到的#o0100131#，你总不能还抓不到吧？");
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -251,7 +251,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await forceStartQuest();
                 await SayNext("很好。先从比#o0100131#稍微厉害一点的怪兽#r#o0100132##k，开始狩猎吧。去#b#m140020100##k抓获#r15只#k左右就行，这将对你的体能提高大有帮助。体力就是冒险的根本！赶紧出发吧！");
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -277,7 +277,7 @@ namespace Application.Plugin.Script.Quest
                     new SpeechText("那就拜托你消灭20只#o0100133#。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
                 ]);
 
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
             }
             else
             {
@@ -292,7 +292,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await forceStartQuest();
                 await SayNext("#o0100134#在岛的较深处。村子左边的路一直走，就能看到#b#m140010200##k，请去那里消灭#r5只#o0100134##k。");
-                await showInfo("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
+                await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
             }
             else
             {
@@ -314,7 +314,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await forceStartQuest();
                 await SayOK("如果#p1201001#有反应，就说明你是使用过#p1201001#的英雄，是#b战神#k。", 8);
-                await showIntro("Effect/Direction1.img/aranTutorial/ClickPoleArm");
+                await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickPoleArm");
             }
             else
             {

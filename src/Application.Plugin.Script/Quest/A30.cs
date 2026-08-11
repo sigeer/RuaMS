@@ -1,7 +1,11 @@
 using Application.Core.scripting.Infrastructure;
+using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
+using Application.Shared.Constants.Mob;
+using server.life;
+using System.Drawing;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -677,10 +681,16 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2333 
         public async Task q2333s()
         {
-            if (await SayAcceptDecline("勇士，拜托你了！请你一定要拯救菇菇王国"))
+            var eim = GetEventInstanceTrust();
+
+            if (await SayAcceptDecline("勇士，拜托你了！请你一定要拯救蘑菇王国"))
             {
                 await SayNext("#b蘑菇大臣#k是幕后策划的黑手！哦，不！他来了。。。");
                 await forceStartQuest();
+
+
+                var template = eim.EventManager.GetTemplate as MK_PrimeMinister;
+                await template.SpawnBoss(eim);
             }
         }
         // Quest: 2333 
@@ -711,8 +721,8 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2335 
         public async Task q2335s()
         {
-            await SayNext("这还不是结束，#b#h ##k。 #b首相#k 的手下仍然散布在城堡中。");
-            if (await SayAcceptDecline("据我所知，靠近#b天空高楼 3#k附近有一群首相的手下。前几天我捡到了首相掉落的一把钥匙。拿去吧，用这把钥匙。"))
+            await SayNext("这还不是结束，#b#h ##k。 #b蘑菇大臣#k 的手下仍然散布在城堡中。");
+            if (await SayAcceptDecline("据我所知，靠近#b天空高楼 3#k附近有一群蘑菇大臣的手下。前几天我捡到了蘑菇大臣掉落的一把钥匙。拿去吧，用这把钥匙。"))
             {
                 if (canHold(4032405))
                 {

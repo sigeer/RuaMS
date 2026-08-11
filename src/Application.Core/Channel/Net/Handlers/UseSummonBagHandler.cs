@@ -53,13 +53,14 @@ public class UseSummonBagHandler : ChannelHandlerBase
             if (toUse.SourceTemplate is not SummonMobItemTemplate itemTemplate)
                 return;
 
-            var item = new LotteryMachine<SummonData, int>(itemTemplate.SummonData, x => x.Prob).GetRandomItem();
-            if (item == null)
+            foreach (var item in itemTemplate.SummonData)
             {
-                return;
+                if (Randomizer.nextInt(100) < item.Prob)
+                {
+                    await c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Mob), c.OnlinedCharacter.getPosition());
+                }
             }
 
-            await c.OnlinedCharacter.getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(item.Mob), c.OnlinedCharacter.getPosition());
             await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
 
         }

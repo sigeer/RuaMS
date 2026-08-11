@@ -362,11 +362,49 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public async Task<bool> StartQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
+        {
+            try
+            {
+                var quest = Quest.getInstance(id);
+                if (await quest.canStart(this, npc))
+                {
+                    await quest.start(this, npc);
+                    return true;
+                }
+                return false;
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+        }
+
         public async Task<bool> ForceCompleteQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
         {
             try
             {
                 return await Quest.getInstance(id).forceComplete(this, npc);
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> CompleteQuest(int id, int npc = NpcId.MAPLE_ADMINISTRATOR)
+        {
+            try
+            {
+                var quest = Quest.getInstance(id);
+                if (await quest.canComplete(this, npc))
+                {
+                    await quest.complete(this, npc);
+                    return true;
+                }
+                return false;
             }
             catch (NullReferenceException ex)
             {

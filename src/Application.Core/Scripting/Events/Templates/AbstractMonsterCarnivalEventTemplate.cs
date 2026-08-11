@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
@@ -208,13 +209,13 @@ namespace Application.Core.scripting.Events.Templates
                             var effect = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.EffectWin : MapMonsterCarnivalTemplate.EffectLose;
                             if (!string.IsNullOrEmpty(effect))
                             {
-                                await chr.SendPacket(PacketCreator.showEffect(effect));
+                                await chr.SendPacket(FieldEffectPacket.Screen(effect));
                             }
 
                             var sound = e.IsWinner(chr) ? MapMonsterCarnivalTemplate.SoundWin : MapMonsterCarnivalTemplate.SoundLose;
                             if (!string.IsNullOrEmpty(sound))
                             {
-                                await chr.SendPacket(PacketCreator.playSound(sound));
+                                await chr.SendPacket(FieldEffectPacket.Sound(sound));
                             }
 
                             await chr.dispelDebuffs();

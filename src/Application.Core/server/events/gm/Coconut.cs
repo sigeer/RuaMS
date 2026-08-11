@@ -22,6 +22,7 @@
 
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
 using tools;
@@ -92,13 +93,13 @@ public class Coconut
                 {
                     if (chr.getTeam() == winnerTeam)
                     {
-                        await chr.SendPacket(PacketCreator.showEffect(Map.EffectWin));
-                        await chr.SendPacket(PacketCreator.playSound(Map.SoundWin));
+                        await chr.SendPacket(FieldEffectPacket.Screen(Map.EffectWin));
+                        await chr.SendPacket(FieldEffectPacket.Sound(Map.SoundWin));
                     }
                     else
                     {
-                        await chr.SendPacket(PacketCreator.showEffect(Map.EffectLose));
-                        await chr.SendPacket(PacketCreator.playSound(Map.SoundLose));
+                        await chr.SendPacket(FieldEffectPacket.Screen(Map.EffectLose));
+                        await chr.SendPacket(FieldEffectPacket.Sound(Map.SoundLose));
                     }
                 }
                 await warpOut();

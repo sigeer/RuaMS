@@ -57,8 +57,12 @@ namespace Application.Plugin.Script
         // Map: 106021500, 106021501, 106021502, 106021503, 106021504, 106021505, 106021506, 106021507, 106021508, 106021509 
         public async Task summon_pepeking()
         {
-            // TODO
+            var eim = GetEventInstanceTrust();
 
+            var subBossId = 3300005 + (Random.Shared.Next(3));
+            eim.setIntProperty("BossId", subBossId);
+
+            await getMap().spawnMonsterOnGroundBelow(subBossId, -28, -68);
         }
 
 

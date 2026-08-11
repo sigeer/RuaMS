@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
 using tools;
 
@@ -114,7 +115,7 @@ namespace Application.Core.Game.ContiMove
         {
             await TransportAMap.broadcastEnemyShip(true);
             // 更改背景音乐
-            await TransportAMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await TransportAMap.broadcastMessage(FieldEffectPacket.Bgm("Bgm04/ArabPirate"));
 
             _summonADelay = now + GetTransportationTime(5_000);
             _summonAFlag = true;
@@ -135,7 +136,7 @@ namespace Application.Core.Game.ContiMove
         {
             await TransportBMap.broadcastEnemyShip(true);
             // 更改背景音乐
-            await TransportBMap.broadcastMessage(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await TransportBMap.broadcastMessage(FieldEffectPacket.Bgm("Bgm04/ArabPirate"));
 
             _summonBDelay = now + GetTransportationTime(5_000);
             _summonBFlag = true;

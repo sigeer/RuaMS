@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Actor;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
@@ -1081,7 +1082,7 @@ public class MapleMap : IMap, INamedInstance
         spos = calcedPos.Value;
         spos.Y--;
 
-        var mob = CreateMonster(mobData, pos);
+        var mob = CreateMonster(mobData, spos);
         handleMob?.Invoke(mob);
         await spawnMonster(mob);
         return mob;
@@ -2608,7 +2609,7 @@ public class MapleMap : IMap, INamedInstance
 
         if (IsPirateDocked)
         {
-            await chr.SendPacket(PacketCreator.musicChange("Bgm04/ArabPirate"));
+            await chr.SendPacket(FieldEffectPacket.Bgm("Bgm04/ArabPirate"));
             await chr.SendPacket(PacketCreator.crogBoatPacket(true));
         }
 
@@ -2649,9 +2650,10 @@ public class MapleMap : IMap, INamedInstance
 
         if (!string.IsNullOrEmpty(SourceTemplate.OnFirstUserEnter))
         {
-            if (!chr.hasEntered(Id))
+            if (!chr.hasEntered(Id) || getEventInstance() != null)
             {
                 await chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
+
                 chr.enteredScript(Id);
             }
         }

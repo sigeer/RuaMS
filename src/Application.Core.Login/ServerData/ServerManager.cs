@@ -17,8 +17,13 @@ namespace Application.Core.Login.Datas
         readonly MasterServer _masterServer;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
+#if DEBUG
+        static TimeSpan Period = TimeSpan.FromHours(1);
+#else
+        static TimeSpan Period = TimeSpan.FromMinutes(5);
+#endif
         public ServerManager(ILogger<ServerManager> logger, IDbContextFactory<DBContext> dbContextFactory, MasterServer masterServer)
-            : base(nameof(ServerManager), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5))
+            : base(nameof(ServerManager), Period, Period)
         {
             _logger = logger;
             _dbContextFactory = dbContextFactory;

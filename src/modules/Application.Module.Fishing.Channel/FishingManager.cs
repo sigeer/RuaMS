@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Players;
 using Application.Shared.Constants.Item;
@@ -158,7 +159,7 @@ namespace Application.Module.Fishing.Channel
                 await chr.getMap().LightBlue(chr.getName() + " found " + rewardStr);
             }
 
-            await chr.SendPacket(PacketCreator.showInfo(fishingEffect));
+            await chr.SendPacket(EffectPacket.UIEffect(fishingEffect));
             await chr.getMap().broadcastMessage(chr, PacketCreator.showForeignInfo(chr.getId(), fishingEffect), false);
         }
 

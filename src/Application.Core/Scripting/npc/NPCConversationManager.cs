@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
@@ -224,11 +225,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public virtual async Task gainExp(int gain)
     {
         await getPlayer().gainExp(gain, true, true);
-    }
-
-    public override async Task showEffect(string effect)
-    {
-        await getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(effect, 3));
     }
 
     public async Task setHair(int hair)

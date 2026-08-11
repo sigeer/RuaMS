@@ -23,7 +23,7 @@ namespace Application.Plugin.Script
                         await startQuest(100202);
                     }
                     await removeAll(2430014);
-                    await showInfo("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon2");
+                    await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
                     await Pink("好像有什么动静...嗯？是结界被消除了");
                 }
                 else
@@ -50,7 +50,7 @@ namespace Application.Plugin.Script
                     await forceCompleteQuest(2324);
                     await removeAll(2430015);
                     await LightBlue("使用尖刺消除剂清除道路上的荆棘。");
-                    await warp(106020501);
+                    await warp(106020502);
                 }
                 else
                 {
