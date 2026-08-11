@@ -9,6 +9,8 @@ namespace Application.Plugin.Script.Events
         public PQ_Orbis()
             : base(nameof(PQ_Orbis))
         {
+            QuestId = 1203;
+
             MinCount = 5;
             MaxCount = 6;
             MinLevel = 51;

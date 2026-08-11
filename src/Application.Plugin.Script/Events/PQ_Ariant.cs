@@ -16,6 +16,8 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_Ariant(string name, int recruitMap) : base(name)
         {
+            QuestId = 1300;
+
             MinCount = 2;
             MaxCount = 7;
 

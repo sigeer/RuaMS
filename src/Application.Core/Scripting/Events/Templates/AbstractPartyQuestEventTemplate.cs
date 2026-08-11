@@ -5,6 +5,7 @@ namespace Application.Core.scripting.Events.Templates
 {
     public abstract class AbstractPartyQuestEventTemplate : AbstractEventTemplate
     {
+        public short QuestId { get; init; }
         public bool PartyLeaderRequired { get; init; }
         public int RecruitMap { get; init; }
 

@@ -13,6 +13,7 @@ namespace Application.Plugin.Script.Events
         public PQ_Kerning()
             : base(nameof(PQ_Kerning))
         {
+            QuestId = 1201;
             MinCount = 3;
             MaxCount = 6;
             MinLevel = 21;

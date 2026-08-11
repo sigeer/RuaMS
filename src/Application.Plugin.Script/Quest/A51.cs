@@ -37,6 +37,24 @@ namespace Application.Plugin.Script.Quest
         public Task q29503s() => HandleMedalQuest();
         // Quest: 29503 
         public Task q29503e() => HandleMedalQuest();
+        // Quest: 29505 
+        public Task q29505s() => HandleMedalQuest();
+        // Quest: 29505 
+        public Task q29505e()
+        {
+            // TODO
+
+            return Task.CompletedTask;
+        }
+        // Quest: 29506 
+        public Task q29506s() => HandleMedalQuest();
+        // Quest: 29506 
+        public Task q29506e()
+        {
+            // TODO
+
+            return Task.CompletedTask;
+        }
         // Quest: 29508 
         public Task q29508e() => HandleMedalQuest();
         // Quest: 29900 

@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Net.Packets
         {
             OutPacket p = OutPacket.create(SendOpcode.FIELD_EFFECT);
             p.writeByte(0);
-            p.writeInt(name);     // SP_1590_EFFECT_SUMMONIMG_D
+            p.writeByte(name);     // SP_1590_EFFECT_SUMMONIMG_D
             p.writeInt(x);
             p.writeInt(y);
             return p;

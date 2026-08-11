@@ -53,7 +53,7 @@ namespace Application.Plugin.Script.Events
 
             if (eim.isEventCleared())
             {
-                await chr.ForceCompleteQuest(QuestId.ZakumBattle, 2030010);
+                await chr.ForceCompleteQuest(Application.Shared.Quest.QuestId.ZakumBattle, 2030010);
             }
         }
     }

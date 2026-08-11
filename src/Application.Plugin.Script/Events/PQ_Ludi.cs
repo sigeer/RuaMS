@@ -12,6 +12,8 @@ namespace Application.Plugin.Script.Events
         public PQ_Ludi()
             : base(nameof(PQ_Ludi))
         {
+            QuestId = 1202;
+
             MinCount = 5;
             MaxCount = 6;
             MinLevel = 35;

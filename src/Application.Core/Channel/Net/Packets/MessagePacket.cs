@@ -175,6 +175,21 @@ namespace Application.Core.Channel.Net.Packets
         }
 
         /// <summary>
+        /// CWvsContext::OnQuestRecordExMessage
+        /// </summary>
+        /// <param name="questId"></param>
+        /// <param name="value">#jXXX#</param>
+        /// <returns></returns>
+        public static Packet QuestRecordEx(int questId, string value)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
+            p.writeByte(0x0A);
+            p.writeShort(questId);
+            p.writeString(value);
+            return p;
+        }
+
+        /// <summary>
         /// 
         /// CWvsContext::OnItemProtectExpireMessage 
         /// SP_5015_SS_SEAL_HAS_EXPIRED

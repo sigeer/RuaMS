@@ -10,24 +10,7 @@ namespace Application.Plugin.Script.Quest
 
             return Task.CompletedTask;
         }
-        // Quest: 29505 
-        public Task q29505s() => HandleMedalQuest();
-        // Quest: 29505 
-        public Task q29505e()
-        {
-            // TODO
 
-            return Task.CompletedTask;
-        }
-        // Quest: 29506 
-        public Task q29506s() => HandleMedalQuest();
-        // Quest: 29506 
-        public Task q29506e()
-        {
-            // TODO
-
-            return Task.CompletedTask;
-        }
         // Quest: 6030 
         public async Task q6030e()
         {
@@ -80,8 +63,8 @@ namespace Application.Plugin.Script.Quest
                 await forceCompleteQuest();
 
                 var skillid = (int)Math.Floor(getPlayer().getJob().getId() / 1000.0) * 10000000 + 1007;
-                teachSkill(skillid, 2, 3, -1);
-                gainExp(230000);
+                await teachSkill(skillid, 2, 3, -1);
+                await gainExp(230000);
             }
             else
             {
@@ -102,8 +85,8 @@ namespace Application.Plugin.Script.Quest
 
                 await gainItem(4031980, -1);
                 var skillid = (int)Math.Floor(getPlayer().getJob().getId() / 1000.0) * 10000000 + 1007;
-                teachSkill(skillid, 3, 3, -1);
-                gainExp(300000);
+                await teachSkill(skillid, 3, 3, -1);
+                await gainExp(300000);
             }
             else
             {
