@@ -689,20 +689,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         await c.SendPacket(FieldEffectPacket.Sound(path));
     }
 
-    public virtual async Task displayAranIntro()
-    {
-        string intro = (c.OnlinedCharacter.getMapId()) switch
-        {
-            MapId.ARAN_TUTO_1 => "Effect/Direction1.img/aranTutorial/Scene0",
-            MapId.ARAN_TUTO_2 => "Effect/Direction1.img/aranTutorial/Scene1" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-            MapId.ARAN_TUTO_3 => "Effect/Direction1.img/aranTutorial/Scene2" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-            MapId.ARAN_TUTO_4 => "Effect/Direction1.img/aranTutorial/Scene3",
-            MapId.ARAN_POLEARM => "Effect/Direction1.img/aranTutorial/HandedPoleArm" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-            MapId.ARAN_MAHA => "Effect/Direction1.img/aranTutorial/Maha",
-            _ => ""
-        };
-        await ShowDirectionEffect(intro);
-    }
 
     public async Task ShowDirectionEffect(string path)
     {
@@ -1161,7 +1147,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         await getPlayer().SendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
         if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
         {
-            await showInfoText("T站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
+            await showInfoText("站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
             await getPlayer().SendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else

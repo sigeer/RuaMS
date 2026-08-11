@@ -342,6 +342,7 @@ namespace Application.Plugin.Script
                 return false;
             }
             await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;arr3=o;fin=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
+            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Child");
             await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickChild");
             return true;
         }
@@ -7721,6 +7722,13 @@ namespace Application.Plugin.Script
         public async Task<bool> TD_MC_first()
         {
 
+            if (IsQuestNotStarted(2300))
+            {
+                await playPortalSound();
+                await warp(106020001, 0);
+                return true;
+            }
+
             if (isQuestCompleted(2260) ||
         isQuestStarted(2300) || isQuestCompleted(2300) ||
         isQuestStarted(2301) || isQuestCompleted(2301) ||
@@ -7745,9 +7753,14 @@ namespace Application.Plugin.Script
         // Map: 106020403
         public async Task<bool> TD_MC_jump()
         {
-            await warp(106020600 + Randomizer.NextInt(0, 2));
-            //await playPortalSound();
-            //await warp(106020501, 0);
+            if (!isQuestCompleted(2324))
+            {
+                await Pink("城墙上仍然长满了荆棘。");
+                return false;
+            }
+
+            // await playPortalSound();
+            await warp(106020600 + Randomizer.NextInt(0, 2), 0);
             return true;
         }
 

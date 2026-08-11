@@ -5,6 +5,7 @@ using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
+using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Skill;
 using Application.Utility.Configs;
 using scripting.map;
@@ -390,9 +391,9 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await AskYesNo("说声不好意思就能算了？！几百年来就我一个人孤苦伶仃地，有多寂寞你知道吗？不管怎样，你快点给我想起来！"))
             {
-                await completeQuest();
-
                 await SayNext("#b（一口一个自己是#p1201001#、#p1201002#的，还越说越生气了。再这么说下去也不会有啥进展，还是先走到 #p1201000#跟前，好好商量商量。）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
+                await warp(MapId.ARAN_MAHA);
+                await completeQuest();
             }
 
         }

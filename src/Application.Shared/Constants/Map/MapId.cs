@@ -29,7 +29,15 @@ public class MapId
     public const int ELLINIA = 101000000;
     public const int PERION = 102000000;
     public const int KERNING_CITY = 103000000;
+    /// <summary>
+    /// 明珠港
+    /// </summary>
     public const int LITH_HARBOUR = 104000000;
+    /// <summary>
+    /// 首次从彩虹岛到明珠港 
+    /// <para>onUserEnter=goLith -> Effect/Direction3.img/goLith -> 104000000</para>
+    /// </summary>
+    public const int LITH_HARBOUR_Animation = 2010000;
     public const int SLEEPYWOOD = 105040300;
     public const int MUSHROOM_KINGDOM = 106020000;
     public const int FLORINA_BEACH = 110000000;

@@ -74,32 +74,6 @@ public class MapScriptMethods : AbstractPlayerInteraction
         }
     }
 
-    public override async Task displayAranIntro()
-    {
-        switch (c.OnlinedCharacter.getMapId())
-        {
-            case MapId.ARAN_TUTO_1:
-                {
-                    await lockUI();
-                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene0");
-                    break;
-                }
-            case MapId.ARAN_TUTO_2:
-                await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene1" + c.OnlinedCharacter.getGender());
-                break;
-            case MapId.ARAN_TUTO_3:
-                await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene2" + c.OnlinedCharacter.getGender());
-                break;
-            case MapId.ARAN_TUTO_4: await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Scene3"); break;
-            case MapId.ARAN_POLEARM:
-                {
-                    await lockUI();
-                    await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/HandedPoleArm" + c.OnlinedCharacter.getGender());
-                    break;
-                }
-        }
-    }
-
     public async Task startExplorerExperience()
     {
         switch (c.OnlinedCharacter.getMapId())
