@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Shared.Constants.Map;
 using Application.Utility;
 using scripting.map;
 using server.life;
@@ -311,9 +312,18 @@ namespace Application.Plugin.Script
         // Map: 106020001 
         public async Task TD_MC_Openning()
         {
-            // TODO
-
-
+            await lockUI();
+            await ShowDirectionEffect("Effect/Direction2.img/open/back0");
+            await ShowDirectionEffect("Effect/Direction2.img/open/back1");
+            await ShowDirectionEffect("Effect/Direction2.img/open/light");
+            await ShowDirectionEffect("Effect/Direction2.img/open/pepeKing");
+            await ShowDirectionEffect("Effect/Direction2.img/open/line");
+            await ShowDirectionEffect("Effect/Direction2.img/open/violeta0");
+            await ShowDirectionEffect("Effect/Direction2.img/open/violeta1");
+            await ShowDirectionEffect("Effect/Direction2.img/open/frame");
+            await ShowDirectionEffect("Effect/Direction2.img/open/chat");
+            await ShowDirectionEffect("Effect/Direction2.img/open/out");
+            // Effect/Direction2.img/open/out/0 = type=2, field=106020000
         }
 
 
@@ -338,8 +348,8 @@ namespace Application.Plugin.Script
             await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi6");
             await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi7");
             await ShowDirectionEffect("Effect/Direction2.img/gasi/gasi8");
-            await unlockUI();
             // 最终会跳转 106020501
+            // Effect/Direction2.img/gasi/gasi6/0 = type=2, field=106020501
         }
 
 
@@ -647,9 +657,18 @@ namespace Application.Plugin.Script
         // Map: 914090000, 914090001, 914090002, 914090003, 914090004, 914090005, 914090006, 914090007, 914090010, 914090011, 914090012, 914090013, 914090014, 914090015, 914090100, 914090200, 914090201 
         public async Task aranDirection()
         {
-            // TODO
-            await displayAranIntro();
-
+            string intro = (c.OnlinedCharacter.getMapId()) switch
+            {
+                MapId.ARAN_TUTO_1 => "Effect/Direction1.img/aranTutorial/Scene0",
+                MapId.ARAN_TUTO_2 => "Effect/Direction1.img/aranTutorial/Scene1" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
+                MapId.ARAN_TUTO_3 => "Effect/Direction1.img/aranTutorial/Scene2" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
+                MapId.ARAN_TUTO_4 => "Effect/Direction1.img/aranTutorial/Scene3",
+                MapId.ARAN_POLEARM => "Effect/Direction1.img/aranTutorial/HandedPoleArm" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
+                MapId.ARAN_MAHA => "Effect/Direction1.img/aranTutorial/Maha",
+                _ => ""
+            };
+            await lockUI();
+            await ShowDirectionEffect(intro);
         }
 
 

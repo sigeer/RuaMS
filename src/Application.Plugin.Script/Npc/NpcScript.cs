@@ -207,7 +207,7 @@ namespace Application.Plugin.Script.Npc
                     else
                     {
                         await gainItem(4031801, -1);
-                        await warp(104000000, 0);
+                        await warp(MapId.LITH_HARBOUR_Animation, 0);
                     }
                 }
                 else if (getLevel() > 6)
@@ -221,7 +221,7 @@ namespace Application.Plugin.Script.Npc
                     else
                     {
                         await gainMeso(-150);
-                        await warp(104000000, 0);
+                        await warp(MapId.LITH_HARBOUR_Animation, 0);
                     }
                 }
                 else
@@ -6456,7 +6456,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
                 {
-                    await warp(104000000, 0);
+                    await warp(MapId.LITH_HARBOUR, 0);
                 }
                 else
                 {

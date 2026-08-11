@@ -535,7 +535,7 @@ namespace Application.Plugin.Script.Quest
                             await gainItem(4032375, 1);
                         }
 
-                        await warp(106020000, 0);
+                        await warp(106020001, 0);
                         await forceStartQuest();
                     }
                     else
