@@ -1,3 +1,8 @@
+using Application.Core.Channel.DataProviders;
+using Application.Core.Game.Items;
+using Application.Shared.Constants.Inventory;
+using Application.Templates.Item.Cash;
+
 namespace Application.Plugin.Script.Npc
 {
     internal partial class NpcScript
@@ -178,76 +183,38 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1032102
         public async Task pet_life()
         {
-            if (await AskYesNo("我是仙女玛尔。如果你有一只等级达到15级或更高的龙和一块进化之石，我可以帮你进化你的龙。如果你幸运的话，甚至可能会得到一只黑色的龙！你想让我这样做吗？"))
+            var waterOfLife = 5180000;
+            if (await AskYesNo($"我是#p{npc}#。你有#b#t{waterOfLife}##k...有了这个，我可以用我的魔法让玩偶复活。你觉得怎么样？你想要使用这个物品来唤醒你的宠物吗...？"))
             {
-                if (haveItem(5000028, 1))
+                if (!haveItem(waterOfLife))
                 {
-                    await gainItem(5000028, -1);
-                    await gainItem(5000029, 1);
-                    await SayOK("我不知道你是怎么得到那个蛋的，但显然它已经孵化了！");
+                    await SayOK($"没有#i{waterOfLife}#");
+                    return;
                 }
-                else if (getPlayer().getPet(0) == null)
+
+                var cashInv = getPlayer().getInventory(InventoryType.CASH);
+                var canRevivePets = cashInv
+                    .OfType<Pet>()
+                    .Where(x => !x.SourceTemplate.NoRevive && x.getExpiration() == -1)
+                    .ToList();
+                if (canRevivePets.Count == 0)
                 {
-                    await SayOK("确保你的宠物装备在第一个槽位上。");
+                    await SayOK("您目前没有宠物需要使用生命之水进行治疗。");
+                    return;
                 }
-                else if (getPlayer().getPet(0).getItemId() < 5000029 || getPlayer().getPet(0).getItemId() > 5000033 || !haveItem(5380000, 1))
-                {
-                    await SayOK("你不符合要求。你需要 #i5380000##t5380000#，以及 #d#i5000029##t5000029##k, #g#i5000030##t5000030##k, #r#i5000031##t5000031##k, #b#i5000032##t5000032##k, 或者 #e#i5000033##t5000033##n 中的任意一个装备在槽位1上。请在符合条件后再来。");
-                }
-                else if (getPlayer().getPet(0).Level < 15)
-                {
-                    await SayOK("你的宠物必须达到15级或以上才能进化。");
-                }
-                else if (haveItem(5000029, 2) || haveItem(5000030, 2) || haveItem(5000031, 2) || haveItem(5000032, 2) || haveItem(5000033, 2))
-                {
-                    var selection = await AskMenu("你有一只还没有出来的龙，还有一只已经出来的龙。我可以帮你移除其中一只。请记住，我移除的龙的数据将会丢失。\r\n#r#L0#移除我的现金第一个槽位。#l#k\r\n#b#L1#移除我背包中的第一只龙。#l#k\r\n#g#L2#不用了，谢谢。#l#k");
-                    if (selection == 0)
-                    {
-                        await SayOK("您的现金第一个槽位已被移除。");
-                    }
-                    else if (selection == 1)
-                    {
-                        if (haveItem(5000029, 2))
-                        {
-                            await gainItem(5000029, -1);
-                        }
-                        else if (haveItem(5000030, 2))
-                        {
-                            await gainItem(5000030, -1);
-                        }
-                        else if (haveItem(5000031, 2))
-                        {
-                            await gainItem(5000031, -1);
-                        }
-                        else if (haveItem(5000032, 2))
-                        {
-                            await gainItem(5000032, -1);
-                        }
-                        else if (haveItem(5000033, 2))
-                        {
-                            await gainItem(5000033, -1);
-                        }
-                        await SayOK("你的库存中的第一只龙被移除。");
-                    }
-                }
-                else
-                {
-                    var id = 5000029;
-                    var petSlot = getPlayer().getPetIndexByItemId(id);
-                    if (petSlot == -1)
-                    {
-                        await SayOK("你要么没有准备好进化的宠物龙，要么缺少#b#t5380000##k。");
-                    }
-                    else
-                    {
-                        var after = await evolvePet(petSlot);
-                        if (after != null)
-                        {
-                            await gainItem(5380000, -1);
-                            await SayOK($"你的龙现在进化了！它以前是一个 #i{id}# #t{id}#，现在它是一个 #i{after.getItemId()}# #t{after.getItemId()}#！");
-                        }
-                    }
-                }
+
+                var index = await AskMenu("所以你打算复活哪个宠物？",
+                    canRevivePets.Select(x => $"{x.Name}  等级：{x.Level} 亲密度：{x.Tameness}"));
+
+                var item = canRevivePets[index];
+
+                var waterInfo = ItemInformationProvider.getInstance().GetTemplate(waterOfLife) as WaterOfLifeItemTemplate;
+                item.setExpiration(c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(waterInfo!.Life).ToUnixTimeMilliseconds());
+                await getPlayer().forceUpdateItem(item);
+                await getPlayer().GainItem(waterOfLife, -1);
+
+                await SayNext("你的玩偶现在已经苏醒，成为了你的宠物！不过，我的魔法并不完美，所以我不能保证你的宠物会永生……请在生命之水干涸之前好好照顾你的宠物。那么，再见……");
+
             }
             else
             {
@@ -397,7 +364,7 @@ namespace Application.Plugin.Script.Npc
             if (haveItem(4031128))
             {
                 await SayNext("嗯，那是我哥的信！可能是在责备我觉得自己没在工作之类的事情...嗯？啊...你听从我哥的建议，训练了你的宠物并且到了这里，是吧？太棒了！既然你为了到这里努力了，我会提高你和宠物的亲密度等级。");
-                
+
                 if (getPlayer().getNoPets() == 0)
                 {
                     await SayNext("嗯... 你真的带着你的宠物来到这里吗？这些障碍是为宠物准备的。你没有宠物来这里干什么？滚出去！");

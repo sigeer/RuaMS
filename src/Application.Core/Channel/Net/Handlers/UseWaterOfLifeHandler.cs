@@ -27,6 +27,6 @@ public class UseWaterOfLifeHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        await c.OnlinedCharacter.OpenNpc(NpcId.MAR_THE_FAIRY, "waterOfLife");
+        await c.OnlinedCharacter.OpenNpc(NpcId.MAR_THE_FAIRY);
     }
 }
