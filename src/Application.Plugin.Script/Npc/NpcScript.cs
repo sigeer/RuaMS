@@ -4910,25 +4910,25 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var menu = "#b";
+            var menu = "";
             if (level >= 20 && level <= 30)
             {
-                menu += "#0# Ariant Coliseum#l";
+                menu += "#0# Ariant Coliseum";
             }
 
             if (level >= 25)
             {
-                menu += "#1# Mu Lung Dojo#l";
+                menu += "#1# Mu Lung Dojo";
             }
 
             if (level >= 30 && level <= 50)
             {
-                menu += "#2# Monster Carnival 1#l";
+                menu += "#2# Monster Carnival 1";
             }
 
             if (level >= 51 && level <= 70)
             {
-                menu += "#3# Monster Carnival 2#l";
+                menu += "#3# Monster Carnival 2";
             }
 
             int selection = await AskDimensionalMirror(menu);

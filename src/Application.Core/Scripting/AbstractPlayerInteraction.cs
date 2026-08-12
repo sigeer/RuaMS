@@ -902,7 +902,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task updateAreaInfo(short area, string info)
     {
-        await c.OnlinedCharacter.updateAreaInfo(area, info);
+        c.OnlinedCharacter.updateAreaInfo(area, info);
         await c.SendPacket(PacketCreator.enableActions());//idk, nexon does the same :P
     }
 

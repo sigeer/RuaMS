@@ -3547,10 +3547,10 @@ public partial class Player
         return false;
     }
 
-    public async Task updateAreaInfo(int area, string info)
+    public void updateAreaInfo(int area, string info)
     {
         AreaInfo.AddOrUpdate((short)area, info);
-        await SendPacket(PacketCreator.updateAreaInfo(area, info));
+        // await SendPacket(PacketCreator.updateAreaInfo(area, info));
     }
 
     public string? getAreaInfo(int area)

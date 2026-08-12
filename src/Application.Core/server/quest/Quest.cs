@@ -70,7 +70,7 @@ public class Quest
         if (template.Check?.StartDemand != null)
         {
             var data = template.Check.StartDemand;
-            repeatable = data.Interval > 0;
+            repeatable = data.Interval.HasValue;
             if (data.DemandMob.Length > 0)
                 relevantMobs.AddRange(data.DemandMob.Select(x => x.MobID));
             startReqs = GetRequirement(this, data);
