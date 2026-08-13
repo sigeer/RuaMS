@@ -143,7 +143,7 @@ public class PacketCreator
             p.writeShort(chr.getRemainingSp()); // remaining sp
         }
         p.writeInt(chr.getExp()); // current exp
-        p.writeShort(chr.getFame()); // fame
+        p.writeShort(chr.Fame); // fame
         p.writeInt(chr.getGachaExp()); //Gacha Exp
         p.writeInt(chr.getMapId()); // current map id
         p.writeByte(chr.getInitialSpawnpoint()); // spawnpoint
@@ -762,7 +762,7 @@ public class PacketCreator
     /// <param name="enableActions">Allows actions after the update.</param>
     /// <param name="chr">The update target.</param>
     /// <returns>The stat update packet.</returns>
-    public static Packet updatePlayerStats(ICollection<KeyValuePair<Stat, int>> stats, bool enableActions, Player? chr)
+    public static Packet updatePlayerStats(IEnumerable<KeyValuePair<Stat, int>> stats, bool enableActions, Player? chr)
     {
         OutPacket p = OutPacket.create(SendOpcode.STAT_CHANGED);
         p.writeBool(enableActions);
@@ -1458,19 +1458,6 @@ public class PacketCreator
         p.writeInt(equip); //equip bonus
         p.writeInt(0); //Internet Cafe Bonus
         p.writeInt(0); //Rainbow Week Bonus
-        return p;
-    }
-
-    /// <summary>
-    /// Gets a packet telling the client to show a fame gain.
-    /// </summary>
-    /// <param name="gain">How many fame gained.</param>
-    /// <returns>The meso gain packet.</returns>
-    public static Packet getShowFameGain(int gain)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(4);
-        p.writeInt(gain);
         return p;
     }
 
@@ -2718,7 +2705,7 @@ public class PacketCreator
         p.writeInt(chr.getId());
         p.writeByte(chr.getLevel());
         p.writeShort(chr.getJob().getId());
-        p.writeShort(chr.getFame());
+        p.writeShort(chr.Fame);
         p.writeByte(chr.getMarriageRing() != null ? 1 : 0);
         p.writeString(chr.GetGuild()?.Name ?? "");
         p.writeString(chr.GetAlliance()?.Name ?? "");  // does not seem to work
@@ -2780,7 +2767,7 @@ public class PacketCreator
             p.writeInt(0);
         }
 
-        var medalQuests = chr.getCompletedQuests().Where(x => x.getQuestID() >= 29000).Select(x => x.getQuestID()).OrderBy(x => x).ToList();
+        var medalQuests = chr.getCompletedQuests().Where(x => x.getQuest().ViewMedalItem > 0).Select(x => x.getQuestID()).OrderBy(x => x).ToList();
         p.writeShort(medalQuests.Count);
         foreach (short s in medalQuests)
         {

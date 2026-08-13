@@ -36,6 +36,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public int LobbyId { get; set; } = -1;
     public InstanceStatus InstanceStatus { get; set; }
+    public long InstanceStartTime { get; private set; }
 
 
     // forces deletion of items not supposed to be held outside of the event, dealt on a player's leaving moment.
@@ -335,6 +336,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public virtual async Task startEvent()
     {
         InstanceStatus = InstanceStatus.InProgress;
+        InstanceStartTime = EventManager.ChannelServer.Node.getCurrentTime();
 
         await EventManager.Template.AfterSeup(this);
     }

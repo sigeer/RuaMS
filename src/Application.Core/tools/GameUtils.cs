@@ -15,10 +15,6 @@ namespace Application.Core.tools
             return provider.LoadAll().Select(t => t.MobDamage).DefaultIfEmpty(0).Max();
         }
 
-        public static bool isMedalQuest(short questid)
-        {
-            return QuestFactory.Instance.GetMedalRequirement(questid) != -1;
-        }
 
         public static bool isMerchantLocked(IMap map)
         {

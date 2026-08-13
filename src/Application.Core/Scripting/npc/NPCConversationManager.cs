@@ -230,6 +230,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public async Task setHair(int hair)
     {
         getPlayer().setHair(hair);
+        await setQuestProgress(29020, getQuestProgressInt(29020) + 1);
         await getPlayer().updateSingleStat(Stat.HAIR, hair);
         await getPlayer().equipChanged();
     }

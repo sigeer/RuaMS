@@ -25,6 +25,11 @@ namespace Application.Core.Game.Players
         {
             return getQuests().Where(x => x.getStatus() == QuestStatus.Status.COMPLETED).ToList();
         }
+
+        public QuestStatus.Status GetQuestStatus(short questId)
+        {
+            return Quests.GetValueOrDefault(questId)?.getStatus() ?? QuestStatus.Status.NOT_STARTED;
+        }
         public sbyte getQuestStatus(int quest)
         {
             QuestStatus? mqs = Quests.GetValueOrDefault((short)quest);

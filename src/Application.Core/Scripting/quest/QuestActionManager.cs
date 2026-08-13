@@ -89,11 +89,6 @@ public class QuestActionManager : NPCConversationManager
         await MesoAction.runAction(getPlayer(), gain);
     }
 
-    public string? getMedalName()
-    {
-        // usable only for medal quests (id 299XX)
-        return c.CurrentCulture.GetItemName(QuestFactory.Instance.GetMedalRequirement((short)quest));
-    }
 
     public async Task<bool> CanCompleteQuest()
     {

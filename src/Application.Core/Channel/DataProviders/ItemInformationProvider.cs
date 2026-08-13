@@ -1165,7 +1165,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
          } catch (SQLException ex) {
             Log.Logger.Error(ex.ToString());
          }*/
-        int tdex = chr.getDex(), tstr = chr.getStr(), tint = chr.getInt(), tluk = chr.getLuk(), fame = chr.getFame();
+        int tdex = chr.getDex(), tstr = chr.getStr(), tint = chr.getInt(), tluk = chr.getLuk(), fame = chr.Fame;
         // 是不是有问题？
         if (chr.getJob() != Job.SUPERGM || chr.getJob() != Job.GM)
         {
@@ -1296,7 +1296,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         var reqPOP = equip.SourceTemplate.ReqPOP;
         if (reqPOP > 0)
         {
-            if (reqPOP > chr.getFame())
+            if (reqPOP > chr.Fame)
             {
                 i++;
             }

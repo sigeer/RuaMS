@@ -5,6 +5,7 @@ namespace Application.Core.Game.Commands.Gm6;
 
 public class DevtestCommand : ParamsCommandBase
 {
+    static string devtestPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Devtest.txt");
     public DevtestCommand() : base(["<script>"], 6, "devtest")
     {
         Description = "直接执行代码";
@@ -14,7 +15,7 @@ public class DevtestCommand : ParamsCommandBase
     {
         try
         {
-            await CSharpScript.EvaluateAsync<int>(GetParam("script"), globals: client.OnlinedCharacter);
+            await CSharpScript.EvaluateAsync<int>(File.ReadAllText(devtestPath), globals: new { chr = client.OnlinedCharacter });
         }
         catch (CompilationErrorException)
         {

@@ -101,7 +101,7 @@ namespace Application.Core.Channel.Net.Packets
         /// </summary>
         /// <param name="fame"></param>
         /// <returns></returns>
-        public static Packet IncSPMessage(int fame)
+        public static Packet IncFameMessage(int fame)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
             p.writeByte(4);
@@ -178,7 +178,7 @@ namespace Application.Core.Channel.Net.Packets
         /// CWvsContext::OnQuestRecordExMessage
         /// </summary>
         /// <param name="questId"></param>
-        /// <param name="value">#jXXX#</param>
+        /// <param name="value">k0=v0;k1=v1;k2=v;...  用于替换#j[k0..kn]#</param>
         /// <returns></returns>
         public static Packet QuestRecordEx(int questId, string value)
         {

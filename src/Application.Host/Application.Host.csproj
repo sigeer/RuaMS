@@ -54,6 +54,12 @@
 	<ItemGroup>
 		<FilesToDelete Include="$(OutputPath)cache\**" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Devtest.txt">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 	<Target Name="DeleteFile" BeforeTargets="Clean">
 		<Message Importance="high" Text="Output Path: @(FilesToDelete)" />
 		<Delete Files="@(FilesToDelete)" />

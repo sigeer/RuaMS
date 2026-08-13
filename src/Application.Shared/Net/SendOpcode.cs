@@ -93,6 +93,9 @@ public enum SendOpcode
     TRADE_MONEY_LIMIT = 0x39,
     SET_GENDER = 0x3A,
     GUILD_BBS_PACKET = 0x3B,
+    /// <summary>
+    /// CWvsContext::OnCharacterInfo
+    /// </summary>
     CHAR_INFO = 0x3D,
     /// <summary>
     /// CWvsContext::OnPartyResult
