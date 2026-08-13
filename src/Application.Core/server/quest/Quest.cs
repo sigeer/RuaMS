@@ -64,8 +64,6 @@ public class Quest
         timeLimit2 = template.Info.TimeLimit2;
 
         ViewMedalItem = template.Info.ViewMedalItem;
-        if (template.Info.ViewMedalItem > 0)
-            QuestFactory.Instance.AddMedal(id, template.Info.ViewMedalItem);
 
         if (template.Check?.StartDemand != null)
         {
@@ -301,7 +299,7 @@ public class Quest
         }
         if (timeLimit2 > 0)
         {
-            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddMilliseconds(timeLimit2).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
             await chr.questTimeLimit2(this, newStatus.getExpirationTime());
         }
 

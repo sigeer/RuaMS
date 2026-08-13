@@ -101,7 +101,7 @@ namespace Application.Core.Channel.Net.Packets
         /// </summary>
         /// <param name="fame"></param>
         /// <returns></returns>
-        public static Packet IncSPMessage(int fame)
+        public static Packet IncFameMessage(int fame)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
             p.writeByte(4);

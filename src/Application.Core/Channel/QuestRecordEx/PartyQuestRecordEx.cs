@@ -1,21 +1,21 @@
-using Application.Core.Channel.Net.Packets;
-
 namespace Application.Core.Channel.QuestRecordEx
 {
-    public class PartyQuestRecordEx: IQuestRecordEx
+    public class PartyQuestRecordEx : AbstractQuestRecordEx
     {
-        public short QuestId { get; }
         /// <summary>
         /// 当前评分
         /// </summary>
+        [QuestRecordExKey("rank")]
         public string Rank { get; set; } = "F";
         /// <summary>
         /// 完成次数
         /// </summary>
+        [QuestRecordExKey("cmp")]
         public int Cmp { get; set; }
         /// <summary>
         /// 参与次数
         /// </summary>
+        [QuestRecordExKey("try")]
         public int Try { get; set; }
 
         /// <summary>
@@ -27,23 +27,17 @@ namespace Application.Core.Channel.QuestRecordEx
         /// </summary>
         public long CompleteTime { get; set; }
 
-        public PartyQuestRecordEx(short questId, string rawContent) : this(questId)
+        public PartyQuestRecordEx(short questId, string? rawContent) : base(questId, rawContent)
         {
-            var dic = KeyValueStringParser.Parse(rawContent);
-            Try = int.Parse(dic.GetValueOrDefault("Try", "0"));
-            Cmp = int.Parse(dic.GetValueOrDefault("Cmp", "0"));
-            Rank = dic.GetValueOrDefault("Rank") ?? Rank;
-            CompleteTime = long.Parse(dic.GetValueOrDefault("CompleteTime", "0"));
-            TotalCost = long.Parse(dic.GetValueOrDefault("TotalCost", "0"));
         }
-        public PartyQuestRecordEx(short questId)
+        public PartyQuestRecordEx(short questId) : this(questId, null)
         {
-            QuestId = questId;
         }
 
-        public override string ToString()
+        protected override IEnumerable<string> GenerateData()
         {
             List<string> arr = [];
+            arr.AddRange(base.GenerateData());
             if (TotalCost > 0)
             {
                 var ts = TimeSpan.FromMilliseconds(TotalCost);
@@ -55,60 +49,39 @@ namespace Application.Core.Channel.QuestRecordEx
                     arr.Add($"sec={secs}");
             }
             if (CompleteTime > 0)
-                arr.Add($"date={DateTimeOffset.FromUnixTimeMilliseconds(CompleteTime).ToLocalTime()}");
-            if (Cmp > 0)
-                arr.Add($"cmp={Cmp}");
-
-            return string.Join(';', arr);
-        }
-
-        public async Task Flush(Player chr)
-        {
-            var value = ToString();
-            chr.AreaInfo[QuestId] = value;
-            await chr.SendPacket(MessagePacket.QuestRecordEx(QuestId, value));
+                arr.Add($"date={DateTimeOffset.FromUnixTimeMilliseconds(CompleteTime).ToLocalTime():yyyy-MM-dd HH:mm:ss}");
+            return arr;
         }
     }
 
-    /// <summary>
-    /// 竞技类型组队任务
-    /// </summary>
-    public class ConfrontQuestEx
-    {
-        public int Try { get; set; }
-        public int VicCount { get; set; }
-        public int LoseCount { get; set; }
-        public int DrawCount { get; set; }
-        public int GiveUpCount { get; set; }
+    ///// <summary>
+    ///// 竞技类型组队任务
+    ///// </summary>
+    //public class ConfrontQuestEx
+    //{
+    //    public int Try { get; set; }
+    //    public int VicCount { get; set; }
+    //    public int LoseCount { get; set; }
+    //    public int DrawCount { get; set; }
+    //    public int GiveUpCount { get; set; }
 
-        public ConfrontQuestEx(string rawContent)
-        {
-            var dic = KeyValueStringParser.Parse(rawContent);
-            Try = int.Parse(dic["try"]);
-            VicCount = int.Parse(dic["vic"]);
-            DrawCount = int.Parse(dic["draw"]);
-            LoseCount = int.Parse(dic["lose"]);
-            GiveUpCount = int.Parse(dic["gvup"]);
-        }
-        public ConfrontQuestEx()
-        {
+    //    public ConfrontQuestEx(string rawContent)
+    //    {
+    //        var dic = KeyValueStringParser.Parse(rawContent);
+    //        Try = GetInt(dic, "try");
+    //        VicCount = GetInt(dic, "vic");
+    //        DrawCount = GetInt(dic, "draw");
+    //        LoseCount = GetInt(dic, "lose");
+    //        GiveUpCount = GetInt(dic, "gvup");
+    //    }
 
-        }
-        public override string ToString()
-        {
-            List<string> arr = [];
-            if (Try > 0)
-                arr.Add($"try={Try}");
-            if (VicCount > 0)
-                arr.Add($"vic={VicCount}");
-            if (DrawCount > 0)
-                arr.Add($"draw={DrawCount}");
-            if (LoseCount > 0)
-                arr.Add($"lose={LoseCount}");
-            if (GiveUpCount > 0)
-                arr.Add($"gvup={GiveUpCount}");
+    //    static int GetInt(IReadOnlyDictionary<string, string> dic, string key)
+    //    {
+    //        return dic.TryGetValue(key, out var value) && int.TryParse(value, out var result) ? result : 0;
+    //    }
+    //    public ConfrontQuestEx()
+    //    {
 
-            return string.Join(';', arr);
-        }
-    }
+    //    }
+    //}
 }

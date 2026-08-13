@@ -1142,12 +1142,14 @@ public class AbstractPlayerInteraction : IClientMessenger
             return;
         }
         string status = qs.getMedalProgress().ToString();
+        await getPlayer().setQuestProgress(quest.getId(), quest.getInfoNumber(qs.getStatus()), status);
+
         await getPlayer().announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
-        await getPlayer().SendPacket(PacketCreator.earnTitleMessage(status + "/5 已完成"));
-        await getPlayer().SendPacket(PacketCreator.earnTitleMessage("站在巅峰的人 勋章挑战正在进行中"));
+
+        await getPlayer().EarnTitle("站在巅峰的人 勋章挑战正在进行中。 " + status + "/5 已完成");
         if (qs.getMedalProgress().ToString() == qs.getInfoEx(0))
         {
-            await showInfoText("站在巅峰的人 勋章挑战正在进行中。 勋章挑战已完成！请找勋章老人领取你的勋章。");
+            await showInfoText("站在巅峰的人 勋章挑战已完成！请找勋章老人领取你的勋章。");
             await getPlayer().SendPacket(PacketCreator.getShowQuestCompletion(quest.getId()));
         }
         else

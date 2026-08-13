@@ -152,7 +152,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
             etm.Append("Trying for the ").Append(questName).Append(" title.");
             smp.Append("You made progress on the ").Append(questName).Append(" title. ").Append(status).Append("/").Append(infoex);
         }
-        await getPlayer().SendPacket(PacketCreator.earnTitleMessage(etm.ToString()));
+        await getPlayer().EarnTitle(etm.ToString());
         await showInfoText(smp.ToString());
     }
 }

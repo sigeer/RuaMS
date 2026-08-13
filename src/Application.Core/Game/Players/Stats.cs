@@ -1,3 +1,5 @@
+using Application.Core.Channel.QuestRecordEx;
+using client;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -357,7 +359,7 @@ namespace Application.Core.Game.Players
         {
             if (statUpdates.Count > 0)
             {
-                await SendPacket(PacketCreator.updatePlayerStats(statUpdates, true, this));
+                await UpdateStats(statUpdates, true);
                 // PrintStatsUpdated();
             }
         }
@@ -396,6 +398,20 @@ namespace Application.Core.Game.Players
             }
         }
 
+        public async Task<TOut> UpdateStatsChunk<TOut>(Func<Dictionary<Stat, int>, TOut> action)
+        {
+            try
+            {
+                statUpdates.Clear();
+
+                return action(statUpdates);
+            }
+            finally
+            {
+                await SendStats();
+            }
+        }
+
         public async Task<TOut> UpdateStatsChunk<TOut>(Func<Task<TOut>> action)
         {
             try
@@ -413,16 +429,32 @@ namespace Application.Core.Game.Players
         public async Task MaxStat()
         {
             await loseExp(getExp(), false, false);
-            setLevel(NumericConfig.MaxLevel);
+
             await updateStrDexIntLuk(NumericConfig.MaxStat);
-            setFame(NumericConfig.MaxFame);
-            await UpdateStatsChunk(async () =>
+            await UpdateStatsChunk(async (kv) =>
             {
                 await SetMaxHP(NumericConfig.MaxHP);
                 SetMaxMP(NumericConfig.MaxMP);
+
+                setLevel(NumericConfig.MaxLevel);
+                kv[Stat.LEVEL] = Level;
+
+                await SetFame(NumericConfig.MaxFame);
+                kv[Stat.FAME] = Fame;
             });
-            await updateSingleStat(Stat.LEVEL, NumericConfig.MaxLevel);
-            await updateSingleStat(Stat.FAME, NumericConfig.MaxFame);
+        }
+
+        public async Task SetFame(int value)
+        {
+            Fame = value;
+
+            if (GetQuestStatus(29002) == QuestStatus.Status.STARTED)
+            {
+                var questEx = new MedalQuest29002Ex(AreaInfo.GetValueOrDefault((short)29002));
+                questEx.Popgap = Fame - questEx.PopG;
+                await questEx.Flush(this);
+            }
+
         }
     }
 }

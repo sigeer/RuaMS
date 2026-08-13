@@ -51,16 +51,6 @@ namespace Application.Core.Channel.DataProviders
             provider.Release();
         }
 
-        private Dictionary<short, int> medals = new();
-        public int GetMedalRequirement(short questId)
-        {
-            return medals.GetValueOrDefault(questId, -1);
-        }
-
-        public void AddMedal(short questId, int medalId)
-        {
-            medals[questId] = medalId;
-        }
 
         private Dictionary<int, Quest> quests = new();
         public Quest GetInstance(int id)

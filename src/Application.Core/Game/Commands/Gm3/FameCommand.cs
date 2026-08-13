@@ -26,8 +26,8 @@ public class FameCommand : CommandBase
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(paramsValue[0]);
         if (victim != null && victim.IsOnlined)
         {
-            victim.setFame(fame);
-            await victim.updateSingleStat(Stat.FAME, victim.getFame());
+            await victim.SetFame(fame);
+            await victim.updateSingleStat(Stat.FAME, victim.Fame);
             await player.Pink(nameof(ClientMessage.FameCommand_FameGiven));
         }
         else

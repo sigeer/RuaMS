@@ -23,6 +23,7 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -54,6 +55,7 @@ using server.events.gm;
 using server.maps;
 using server.partyquest;
 using server.quest;
+using server.quest.actions;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using tools;
@@ -257,10 +259,6 @@ public partial class Player
         return pts;
     }
 
-    public void addFame(int famechange)
-    {
-        this.Fame += famechange;
-    }
 
     public void addMesosTraded(int gain)
     {
@@ -863,7 +861,7 @@ public partial class Player
         statup.Add(new(Stat.AVAILABLEAP, Ap));
         statup.Add(new(Stat.AVAILABLESP, RemainingSp[GameConstants.getSkillBook(JobId)]));
         statup.Add(new(Stat.JOB, JobId));
-        await SendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+        await UpdateStats(statup, true);
 
 
         await SyncCharAsync(trigger: SyncCharacterTrigger.JobChanged);
@@ -1296,7 +1294,13 @@ public partial class Player
         }
     }
 
-    private KeyValuePair<int, int> applyFame(int delta)
+
+    public async Task gainFame(int delta)
+    {
+        await gainFame(delta, null, 0);
+    }
+
+    public async Task<bool> gainFame(int delta, Player? fromPlayer, int mode)
     {
         int newFame = Fame + delta;
         if (newFame < -30000)
@@ -1308,22 +1312,10 @@ public partial class Player
             delta = 30000 - Fame;
         }
 
-        Fame += delta;
-        return new(Fame, delta);
-    }
-
-    public async Task gainFame(int delta)
-    {
-        await gainFame(delta, null, 0);
-    }
-
-    public async Task<bool> gainFame(int delta, Player? fromPlayer, int mode)
-    {
-        KeyValuePair<int, int> fameRes = applyFame(delta);
-        delta = fameRes.Value;
+        int thisFame = Fame + delta;
         if (delta != 0)
         {
-            int thisFame = fameRes.Key;
+            await SetFame(thisFame);
             await updateSingleStat(Stat.FAME, thisFame);
 
             if (fromPlayer != null)
@@ -1333,7 +1325,7 @@ public partial class Player
             }
             else
             {
-                await SendPacket(PacketCreator.getShowFameGain(delta));
+                await SendPacket(MessagePacket.IncFameMessage(delta));
             }
 
             return true;
@@ -1792,10 +1784,6 @@ public partial class Player
         return Face;
     }
 
-    public int getFame()
-    {
-        return Fame;
-    }
 
     public int getFamilyId()
     {
@@ -2484,7 +2472,7 @@ public partial class Player
         statup.Add(new(Stat.STR, Str));
         statup.Add(new(Stat.DEX, Dex));
 
-        await SendPacket(PacketCreator.updatePlayerStats(statup, true, this));
+        await UpdateStats(statup, true);
 
 
         await SyncCharAsync(trigger: SyncCharacterTrigger.LevelChanged);
@@ -3028,10 +3016,6 @@ public partial class Player
         this.Face = face;
     }
 
-    public void setFame(int fame)
-    {
-        this.Fame = fame;
-    }
 
     public void setFamilyId(int familyId)
     {
@@ -3434,16 +3418,12 @@ public partial class Player
     }
 
 
-    public async Task updateSingleStat(Stat stat, int newval)
-    {
-        await updateSingleStat(stat, newval, false);
-    }
+    public Task updateSingleStat(Stat stat, int newval, bool itemReaction = false) => UpdateStats([new(stat, newval)], itemReaction);
 
-    private async Task updateSingleStat(Stat stat, int newval, bool itemReaction)
+    public async Task UpdateStats(IEnumerable<KeyValuePair<Stat, int>> setStats, bool enableAction = false)
     {
-        await SendPacket(PacketCreator.updatePlayerStats(Collections.singletonList(new KeyValuePair<Stat, int>(stat, newval)), itemReaction, this));
+        await SendPacket(PacketCreator.updatePlayerStats(setStats, enableAction, this));
     }
-
 
     public Task SendPacket(Packet packet) => Client.SendPacket(packet);
 

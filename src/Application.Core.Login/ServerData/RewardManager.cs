@@ -129,7 +129,7 @@ namespace Application.Core.Login.ServerData
         public ProtoService.UseCdkResponse TakeReward(CdkCodeModel data, int playerId)
         {
             var chr = _server.CharacterManager.FindPlayerById(playerId);
-            if (chr == null || chr.Channel != -1)
+            if (chr == null)
                 return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.FetalError };
 
             var now = _server.GetCurrentTimeDateTimeOffset();
