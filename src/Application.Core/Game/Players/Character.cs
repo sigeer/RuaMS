@@ -1315,7 +1315,7 @@ public partial class Player
         int thisFame = Fame + delta;
         if (delta != 0)
         {
-            await SetFame(thisFame);
+            SetFame(thisFame);
             await updateSingleStat(Stat.FAME, thisFame);
 
             if (fromPlayer != null)

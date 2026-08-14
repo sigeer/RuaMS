@@ -1,4 +1,5 @@
 using Application.Core.Channel.QuestRecordEx;
+using Application.Shared.Quest;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -18,39 +19,49 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29002 
         public async Task q29002s()
         {
-            await startQuest();
-
-            var chr = getPlayer();
-            var questEx = new MedalQuest29002Ex(null);
-            questEx.PopG = 1000;
-            questEx.Popgap = 0;
-            await questEx.Flush(chr);
+            if (await HandleMedalQuestStart())
+            {
+                var chr = getPlayer();
+                var questEx = chr.GetMedalQuestInfo((MedalQuestId)getQuest()) as MedalQuest29002Ex;
+                if (questEx != null)
+                {
+                    questEx.PopG = 1000;
+                    questEx.PopS = chr.Fame;
+                    await questEx.Flush(chr);
+                }
+            }
         }
         // Quest: 29002 
         public async Task q29002e()
         {
             var chr = getPlayer();
-            var questEx = new MedalQuest29002Ex(chr.AreaInfo.GetValueOrDefault((short)getQuest()));
-
-            if (questEx.Popgap >= questEx.PopG)
+            var questEx = (chr.GetMedalQuestInfo((MedalQuestId)getQuest()) as MedalQuest29002Ex)!;
+            if (chr.Fame - questEx.PopS >= questEx.PopG)
             {
                 await HandleMedalQuestComplete();
             }
             else
             {
-                await SayOK($"要想获得人气王称号，必须在限定时间内使人气度提高1000。如果你觉得太困难，可以放弃任务，挑战其他称号。");
+                await SayOK("要想获得人气王称号，必须在限定时间内使人气度提高1000。如果你觉得太困难，可以放弃任务，挑战其他称号。");
             }
         }
         // Quest: 29400 
-        public Task q29400s() => HandleMedalQuestStart();
+        public async Task q29400s()
+        {
+            if (await HandleMedalQuestStart("30天内击杀100000只符合等级条件的怪物"))
+            {
+                await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
+            }
+        }
         // Quest: 29400 
         public Task q29400e() => HandleMedalQuestComplete();
         // Quest: 29500 
         public async Task q29500s()
         {
-            await SayNext("#v1142006:# #e#b#t1142006##k\n\n - 人气达到 1000\n\n#n你想挑战这枚勋章吗？");
-            await startQuest();
-            await SayOK("人气达到 1000 后，请再来找我接受审查。");
+            if (await HandleMedalQuestStart("人气达到 1000"))
+            {
+                await SayOK("人气达到 1000 后，请再来找我接受审查。");
+            }
         }
         // Quest: 29500 
         public async Task q29500e()
@@ -71,19 +82,77 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29502 
         public Task q29502e() => HandleMedalQuestComplete();
         // Quest: 29503 
-        public Task q29503s() => HandleMedalQuestStart();
+        public async Task q29503s()
+        {
+            if (await HandleMedalQuestStart("贡献 10000000 金币"))
+            {
+                await SayOK("准备好 10000000 金币后，请再来找我。");
+            }
+        }
         // Quest: 29503 
-        public Task q29503e() => HandleMedalQuestComplete();
+        public async Task q29503e()
+        {
+            var chr = getPlayer();
+
+            if (await chr.TryGainMeso(-10000000))
+            {
+                await HandleMedalQuestComplete();
+            }
+            else
+            {
+                await SayOK("完成这次公益贡献需要 10000000 金币。");
+            }
+
+        }
         // Quest: 29505 
-        public Task q29505s() => HandleMedalQuestStart();
+        public async Task q29505s()
+        {
+            if (await HandleMedalQuestStart("怪物嘉年华2胜利 100 场"))
+            {
+                await SayOK("在怪物嘉年华2中取得 100 场胜利后，请回来接受审查。");
+            }
+        }
         // Quest: 29505 
-        public Task q29505e() => HandleMedalQuestComplete();
+        public async Task q29505e()
+        {
+            var chr = getPlayer();
+
+            var questEx = chr.GetPartyQuestRecord(QuestId.PQ_MC2) as ConfrontQuestEx;
+            if (questEx != null)
+            {
+                if (questEx.VicCount > 100)
+                {
+                    await HandleMedalQuestComplete();
+                }
+            }
+        }
         // Quest: 29506 
-        public Task q29506s() => HandleMedalQuestStart();
+        public async Task q29506s()
+        {
+            if (await HandleMedalQuestStart("怪物嘉年华2至少 50 场\n - 胜率至少 70%"))
+            {
+                await SayOK("保持稳定的胜率，才是真正的嘉年华天才。符合条件后，请回来接受审查。");
+            }
+        }
         // Quest: 29506 
-        public Task q29506e() => HandleMedalQuestComplete();
+        public async Task q29506e()
+        {
+            if (await AskYesNo("让我看看你是否达到了怪物嘉年华2的场次和胜率要求。"))
+            {
+                var chr = getPlayer();
+
+                var questEx = chr.GetPartyQuestRecord(QuestId.PQ_MC2) as ConfrontQuestEx;
+                if (questEx != null)
+                {
+                    if (questEx.Try > 50 && (float)questEx.VicCount / questEx.Try > 0.7)
+                    {
+                        await HandleMedalQuestComplete();
+                    }
+                }
+            }
+        }
         // Quest: 29508 
-        public Task q29508e() => HandleMedalQuestComplete();
+        public Task q29508e() => NotImplement();
         // Quest: 29900 
         public Task q29900s() => HandleMedalQuestStart();
         // Quest: 29900 
@@ -142,15 +211,15 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29923 
         public Task q29923s() => HandleMedalQuestStart();
         // Quest: 29924 
-        public Task q29924s() => HandleMedalQuestStart();
+        public Task q29924s() => HandleMedalQuestStart("成为 10 级以上战神后");
         // Quest: 29925 
-        public Task q29925s() => HandleMedalQuestStart();
+        public Task q29925s() => HandleMedalQuestStart("成为 30 级以上战神后");
         // Quest: 29926 
-        public Task q29926s() => HandleMedalQuestStart();
+        public Task q29926s() => HandleMedalQuestStart("成为 70 级以上战神后");
         // Quest: 29927 
-        public Task q29927s() => HandleMedalQuestStart();
+        public Task q29927s() => HandleMedalQuestStart("成为 120 级以上战神后");
         // Quest: 29928 
-        public Task q29928s() => HandleMedalQuestStart();
+        public Task q29928s() => HandleMedalQuestStart("成为 200 级战神后");
         // Quest: 29933 
         public Task q29933s() => HandleMedalQuestStart();
 
@@ -159,9 +228,31 @@ namespace Application.Plugin.Script.Quest
             await SayNext("尚未实现");
         }
 
-        async Task HandleMedalQuestStart()
+        string GetQuestMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能获得本勋章，不想挑战一下试试吗？";
+
+        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string>? slotFunc = null)
         {
-            await startQuest();
+            var questObj = server.quest.Quest.getInstance(getQuest());
+            if (questObj == null)
+            {
+                return false;
+            }
+
+            if (questObj.IsAutoAccept)
+            {
+                await startQuest();
+                return true;
+            }
+
+            if (questObj?.ViewMedalItem > 0)
+            {
+                if (await SayAcceptDecline(slotFunc == null ? GetQuestMessage(questObj.ViewMedalItem, slot) : slotFunc(questObj.ViewMedalItem)))
+                {
+                    await startQuest();
+                    return true;
+                }
+            }
+            return false;
         }
 
         async Task HandleMedalQuestComplete()

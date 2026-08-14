@@ -31,10 +31,12 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
 using Application.Core.tools.RandomUtils;
 using Application.Resources.Messages;
+using Application.Shared.Quest;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
+using client;
 using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
@@ -1056,6 +1058,14 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         var dieAni = getAnimationTime("die1");
         OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, dieAni));
         MapModel.ChannelServer.NodeService.PluginManager.OnMobKilled(this, killer);
+
+        if (killer is Player chr && chr.GetQuestStatus((short)MedalQuestId.VeteranHunter) == QuestStatus.Status.STARTED)
+        {
+            if (chr.Level < 120 ? getLevel() > chr.Level : getLevel() >= 120)
+            {
+                await chr.setQuestProgress((short)MedalQuestId.VeteranHunter, 294001, (chr.GetQuestProgressInt((short)MedalQuestId.VeteranHunter, 294001) + 1).ToString());
+            }
+        }
 
         if (getStats().isFriendly())
         {

@@ -22,7 +22,9 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
+using Application.Shared.Quest;
 using Application.Templates.Quest;
 using client;
 using server.quest.actions;
@@ -52,6 +54,7 @@ public class Quest
     public bool IsValid { get; } = true;
 
     public int ViewMedalItem { get; }
+    public bool IsAutoAccept { get; }
 
     public Quest(QuestTemplate template)
     {
@@ -59,11 +62,13 @@ public class Quest
         autoComplete = template.Info.AutoComplete;
         autoStart = template.Info.AutoStart;
         autoPreComplete = template.Info.AutoPreComplete;
+        IsAutoAccept = template.Info.AutoAccept;
 
         timeLimit = template.Info.TimeLimit;
         timeLimit2 = template.Info.TimeLimit2;
 
         ViewMedalItem = template.Info.ViewMedalItem;
+        IsValid = template.Check != null && template.Act != null;
 
         if (template.Check?.StartDemand != null)
         {
@@ -326,6 +331,18 @@ public class Quest
 
         await chr.SendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
         await chr.BroadcastMap(PacketCreator.showForeignEffect(chr.getId(), 9), chr.Id); //use 9 instead of 12 for both
+
+        // wz 中真正存在的任务
+        if (IsValid)
+        {
+            var questEx = chr.GetMedalQuestInfo(MedalQuestId.Quest) as MedalQuest29001Ex;
+            if (questEx != null)
+            {
+                questEx.Count++;
+                await questEx.Flush(chr);
+            }
+        }
+
         return true;
     }
 

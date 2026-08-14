@@ -1,5 +1,7 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
+using Application.Shared.Quest;
 using client;
 using server.quest;
 using ZLinq;
@@ -420,6 +422,43 @@ namespace Application.Core.Game.Players
                 Log.Error(ex.ToString());
                 return false;
             }
+        }
+
+        public AbstractQuestRecordEx GetPartyQuestRecord(short questId)
+        {
+            var data = AreaInfo.GetValueOrDefault(questId);
+
+            if (questId >= 1300)
+            {
+                return new ConfrontQuestEx(questId, data);
+            }
+            return new PartyQuestRecordEx(questId, data);
+        }
+
+        public AbstractQuestRecordEx? GetMedalQuestInfo(MedalQuestId quest)
+        {
+            var questId = (short)quest;
+            if (GetQuestStatus(questId) != QuestStatus.Status.STARTED)
+            {
+                return null;
+            }
+
+            var data = AreaInfo.GetValueOrDefault(questId);
+            switch (quest)
+            {
+                case MedalQuestId.PartyQuest:
+                    return new MedalQuest29000Ex(data);
+                case MedalQuestId.Quest:
+                    return new MedalQuest29001Ex(data);
+                case MedalQuestId.Pop:
+                    return new MedalQuest29002Ex(data);
+                case MedalQuestId.Online:
+                    break;
+                default:
+                    break;
+            }
+
+            return null;
         }
 
     }

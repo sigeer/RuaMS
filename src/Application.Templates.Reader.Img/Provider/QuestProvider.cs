@@ -44,6 +44,7 @@ namespace Application.Templates.Reader.Img.Provider
                                     if (propName == "name") quest.Name = questProp.GetStringValue() ?? "";
                                     else if (propName == "parent") quest.Parent = questProp.GetStringValue();
                                     else if (propName == "autoStart") quest.AutoStart = questProp.ResolveBool() ?? false;
+                                    else if (propName == "autoAccept") quest.AutoAccept = questProp.ResolveBool() ?? false;
                                     else if (propName == "autoPreComplete") quest.AutoPreComplete = questProp.ResolveBool() ?? false;
                                     else if (propName == "autoComplete") quest.AutoComplete = questProp.ResolveBool() ?? false;
                                     else if (propName == "viewMedalItem") quest.ViewMedalItem = questProp.GetIntValue();

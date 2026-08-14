@@ -54,34 +54,27 @@ namespace Application.Core.Channel.QuestRecordEx
         }
     }
 
-    ///// <summary>
-    ///// 竞技类型组队任务
-    ///// </summary>
-    //public class ConfrontQuestEx
-    //{
-    //    public int Try { get; set; }
-    //    public int VicCount { get; set; }
-    //    public int LoseCount { get; set; }
-    //    public int DrawCount { get; set; }
-    //    public int GiveUpCount { get; set; }
+    /// <summary>
+    /// 竞技类型组队任务
+    /// </summary>
+    public class ConfrontQuestEx : AbstractQuestRecordEx
+    {
+        [QuestRecordExKey("rank")]
+        public string Rank { get; set; } = "F";
 
-    //    public ConfrontQuestEx(string rawContent)
-    //    {
-    //        var dic = KeyValueStringParser.Parse(rawContent);
-    //        Try = GetInt(dic, "try");
-    //        VicCount = GetInt(dic, "vic");
-    //        DrawCount = GetInt(dic, "draw");
-    //        LoseCount = GetInt(dic, "lose");
-    //        GiveUpCount = GetInt(dic, "gvup");
-    //    }
+        [QuestRecordExKey("try")]
+        public int Try { get; set; }
+        [QuestRecordExKey("vic")]
+        public int VicCount { get; set; }
+        [QuestRecordExKey("lose")]
+        public int LoseCount { get; set; }
+        [QuestRecordExKey("draw")]
+        public int DrawCount { get; set; }
+        [QuestRecordExKey("gvup")]
+        public int GiveUpCount { get; set; }
 
-    //    static int GetInt(IReadOnlyDictionary<string, string> dic, string key)
-    //    {
-    //        return dic.TryGetValue(key, out var value) && int.TryParse(value, out var result) ? result : 0;
-    //    }
-    //    public ConfrontQuestEx()
-    //    {
-
-    //    }
-    //}
+        public ConfrontQuestEx(short questId, string? rawContent) : base(questId, rawContent)
+        {
+        }
+    }
 }
