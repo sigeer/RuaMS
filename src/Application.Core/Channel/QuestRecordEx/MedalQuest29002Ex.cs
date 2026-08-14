@@ -6,12 +6,9 @@ namespace Application.Core.Channel.QuestRecordEx
         {
         }
 
-        /// <summary>
-        /// 4479;"#jpopgap#"
-        /// </summary>
-        [QuestRecordExKey("popgap")]
-        public int Popgap { get; set; }
         [QuestRecordExKey("popG")]
         public int PopG { get; set; }
+        [QuestRecordExKey("popS")]
+        public int PopS { get; set; }
     }
 }

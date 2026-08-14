@@ -48,5 +48,16 @@ namespace Application.Shared.Quest
         {
             return 500000 + job.GetJobNiche() * 10000 + 3000;
         }
+
+        public const int PQ_MoonBunny = 1200;
+        public const int PQ_Kerning = 1201;
+        public const int PQ_Ludi = 1202;
+        public const int PQ_Oribis = 1203;
+        public const int PQ_Pirate = 1204;
+        public const int PQ_Magatia = 1205;
+        public const int PQ_Ellin = 1206;
+        public const int PQ_Ariant = 1300;
+        public const int PQ_MC1 = 1301;
+        public const int PQ_MC2 = 1302;
     }
 }

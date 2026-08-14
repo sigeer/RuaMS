@@ -49,6 +49,8 @@ namespace Application.Templates.Reader.Xml.Provider
                                         quest.Parent = questProp.GetStringValue();
                                     else if (propName == "autoStart")
                                         quest.AutoStart = questProp.GetBoolValue();
+                                    else if (propName == "autoAccept")
+                                        quest.AutoAccept = questProp.GetBoolValue();
                                     else if (propName == "autoPreComplete")
                                         quest.AutoPreComplete = questProp.GetBoolValue();
                                     else if (propName == "autoComplete")

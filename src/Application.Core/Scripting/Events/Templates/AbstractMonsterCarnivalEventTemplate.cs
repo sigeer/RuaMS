@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
@@ -249,6 +250,51 @@ namespace Application.Core.scripting.Events.Templates
                     chr.setTeam(-1);
                     await chr.dispelDebuffs();
                 }
+            }
+        }
+
+        protected override async Task StartPartyQuest(Player chr)
+        {
+            if (QuestId <= 0)
+                return;
+
+            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            {
+                model.Try++;
+
+                await model.Flush(chr);
+            }
+        }
+
+        protected override async Task AbortPartyQuest(Player chr)
+        {
+            await base.AbortPartyQuest(chr);
+
+            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            {
+                model.GiveUpCount++;
+                await model.Flush(chr);
+            }
+        }
+
+        protected override async Task CompletePartyQuest(AbstractEventInstanceManager eim, Player chr, long now)
+        {
+            if (QuestId <= 0)
+                return;
+
+            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            {
+                var pEim = eim as MonsterCarnivalEventInstanceManager;
+                if (pEim.IsWinner(chr))
+                {
+                    model.VicCount++;
+                }
+                else
+                {
+                    model.LoseCount++;
+                }
+
+                await model.Flush(chr);
             }
         }
     }

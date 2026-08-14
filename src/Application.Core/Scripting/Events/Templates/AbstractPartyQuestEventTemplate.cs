@@ -65,7 +65,7 @@ namespace Application.Core.scripting.Events.Templates
             var now = eim.EventManager.ChannelServer.Node.getCurrentTime();
             foreach (var chr in eim.getPlayers())
             {
-                await CompletePartyQuest(chr, now, eim.InstanceStartTime);
+                await CompletePartyQuest(eim, chr, now);
             }
 
             await base.ClearPQ(eim);
@@ -75,57 +75,42 @@ namespace Application.Core.scripting.Events.Templates
             if (QuestId <= 0)
                 return;
 
-            var now = chr.Client.CurrentServer.Node.getCurrentTime();
+            if (chr.GetPartyQuestRecord(QuestId) is PartyQuestRecordEx model)
+            {
+                model.Try++;
 
-            PartyQuestRecordEx model;
-            if (chr.AreaInfo.TryGetValue(QuestId, out var info))
-            {
-                model = new(QuestId, info);
-            }
-            else
-            {
-                model = new(QuestId);
-                await chr.ForceStartQuest(QuestId);
+                await model.Flush(chr);
             }
 
-            model.Try++;
-
-            await model.Flush(chr);
         }
 
         protected virtual Task AbortPartyQuest(Player chr)
         {
             return Task.CompletedTask;
         }
-        protected virtual async Task CompletePartyQuest(Player chr, long now, long startTime)
+        protected virtual async Task CompletePartyQuest(AbstractEventInstanceManager eim, Player chr, long now)
         {
             if (QuestId <= 0)
                 return;
 
-            PartyQuestRecordEx model;
-            if (chr.AreaInfo.TryGetValue(QuestId, out var info))
+            if (chr.GetPartyQuestRecord(QuestId) is PartyQuestRecordEx model)
             {
-                model = new(QuestId, info);
-            }
-            else
-            {
-                model = new(QuestId);
-            }
-            model.Cmp++;
+                model.Cmp++;
 
-            var cost = now - startTime;
-            if (model.TotalCost <= 0)
-            {
-                model.TotalCost = cost;
-                model.CompleteTime = now;
-            }
-            else if(cost < model.TotalCost)
-            {
-                model.TotalCost = cost;
-                model.CompleteTime = now;
-            }
+                var cost = now - eim.InstanceStartTime;
+                if (model.TotalCost <= 0)
+                {
+                    model.TotalCost = cost;
+                    model.CompleteTime = now;
+                }
+                else if (cost < model.TotalCost)
+                {
+                    model.TotalCost = cost;
+                    model.CompleteTime = now;
+                }
 
-            await model.Flush(chr);
+                await model.Flush(chr);
+            }
         }
     }
 }

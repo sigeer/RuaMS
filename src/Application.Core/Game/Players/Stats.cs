@@ -439,22 +439,14 @@ namespace Application.Core.Game.Players
                 setLevel(NumericConfig.MaxLevel);
                 kv[Stat.LEVEL] = Level;
 
-                await SetFame(NumericConfig.MaxFame);
+                SetFame(NumericConfig.MaxFame);
                 kv[Stat.FAME] = Fame;
             });
         }
 
-        public async Task SetFame(int value)
+        public void SetFame(int value)
         {
             Fame = value;
-
-            if (GetQuestStatus(29002) == QuestStatus.Status.STARTED)
-            {
-                var questEx = new MedalQuest29002Ex(AreaInfo.GetValueOrDefault((short)29002));
-                questEx.Popgap = Fame - questEx.PopG;
-                await questEx.Flush(this);
-            }
-
         }
     }
 }
