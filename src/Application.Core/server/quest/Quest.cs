@@ -306,6 +306,7 @@ public class Quest
         {
             newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
             await chr.questTimeLimit2(this, newStatus.getExpirationTime());
+            newStatus.setProgress(0, newStatus.getExpirationTime().ToString("yyyyMMddHHmmss"));
         }
 
         await chr.updateQuestStatus(newStatus);
@@ -331,17 +332,6 @@ public class Quest
 
         await chr.SendPacket(PacketCreator.showSpecialEffect(9)); // Quest completion
         await chr.BroadcastMap(PacketCreator.showForeignEffect(chr.getId(), 9), chr.Id); //use 9 instead of 12 for both
-
-        // wz 中真正存在的任务
-        if (IsValid)
-        {
-            var questEx = chr.GetMedalQuestInfo(MedalQuestId.Quest) as MedalQuest29001Ex;
-            if (questEx != null)
-            {
-                questEx.Count++;
-                await questEx.Flush(chr);
-            }
-        }
 
         return true;
     }

@@ -454,6 +454,8 @@ namespace Application.Core.Game.Players
                     return new MedalQuest29002Ex(data);
                 case MedalQuestId.Online:
                     break;
+                case MedalQuestId.VeteranHunter:
+                    return new MedalQuest29400Ex(data);
                 default:
                     break;
             }

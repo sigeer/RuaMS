@@ -81601,7 +81601,7 @@
       <string name="startscript" value="q29500s"/>
       <imgdir name="item">
         <imgdir name="0">
-          <int name="id" value="1142003"/>
+          <int name="id" value="1142006"/>
           <int name="count" value="1"/>
         </imgdir>
       </imgdir>
