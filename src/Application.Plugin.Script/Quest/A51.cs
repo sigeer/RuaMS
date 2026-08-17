@@ -50,11 +50,31 @@ namespace Application.Plugin.Script.Quest
         {
             if (await HandleMedalQuestStart("30天内击杀100000只符合等级条件的怪物"))
             {
+                var chr = getPlayer();
+                var questEx = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+                if (questEx != null)
+                {
+                    questEx.Mg = 100000;
+                    await questEx.Flush(chr);
+                }
                 await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
             }
         }
         // Quest: 29400 
-        public Task q29400e() => HandleMedalQuestComplete();
+        public async Task q29400e()
+        {
+            var chr = getPlayer();
+            var questEx = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+            if (questEx != null && questEx.Mon >= questEx.Mg)
+            {
+                await HandleMedalQuestComplete();
+            }
+            else
+            {
+                await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
+            }
+
+        }
         // Quest: 29500 
         public async Task q29500s()
         {

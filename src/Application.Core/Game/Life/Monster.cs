@@ -25,6 +25,7 @@ using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -1063,7 +1064,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             if (chr.Level < 120 ? getLevel() > chr.Level : getLevel() >= 120)
             {
-                await chr.setQuestProgress((short)MedalQuestId.VeteranHunter, 294001, (chr.GetQuestProgressInt((short)MedalQuestId.VeteranHunter, 294001) + 1).ToString());
+                var info = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+                if (info != null && info.Mon <= info.Mg)
+                {
+                    info.Mon++;
+                    await info.Flush(chr);
+                }
             }
         }
 
