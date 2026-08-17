@@ -306,7 +306,7 @@ public class Quest
         {
             newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
             await chr.questTimeLimit2(this, newStatus.getExpirationTime());
-            newStatus.setProgress(0, newStatus.getExpirationTime().ToString("yyyyMMddHHmmss"));
+            newStatus.setProgress(0, DateTimeOffset.FromUnixTimeMilliseconds(newStatus.getExpirationTime()).ToLocalTime().ToString("yyyyMMddHHmmss"));
         }
 
         await chr.updateQuestStatus(newStatus);
