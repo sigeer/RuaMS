@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Gameplay.Plugins;
+using Application.Core.Gameplay.Plugins.Services;
 using Application.Shared.Models;
 using System.Reflection;
 

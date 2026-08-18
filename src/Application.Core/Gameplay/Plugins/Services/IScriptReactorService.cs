@@ -1,10 +1,13 @@
 using System.Reflection;
 
-namespace Application.Core.Gameplay.Plugins
+using Application.Core.Gameplay.Plugins;
+
+namespace Application.Core.Gameplay.Plugins.Services
 {
     /// <summary>
     /// Reactor 脚本服务
     /// </summary>
+    [PluginInvocation(PluginInvocationMode.FirstMatch)]
     public interface IScriptReactorService : IPluginServiceBase
     {
         Dictionary<string, (Type ObjType, MethodInfo Method)> ReactorHitScripts { get; }

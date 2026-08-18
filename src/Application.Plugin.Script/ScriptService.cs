@@ -26,8 +26,7 @@ namespace Application.Plugin.Script
 
         public ScriptService(WorldChannelServer node, string pluginName):base(node, pluginName)
         {
-            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript));
-            _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
+            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript));            _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
             _questSource = TypeUtils.LoadFromType(typeof(QuestScript));
 
             _portalSource = TypeUtils.LoadFromType(typeof(PortalScript));
@@ -39,6 +38,10 @@ namespace Application.Plugin.Script
             _reactorUntouchSource = TypeUtils.LoadFromType(typeof(ReactorUntouchScript));
         }
 
+        /// <summary>
+        /// 默认脚本插件使用最低优先级，使第三方插件以默认优先级即可覆盖同名脚本
+        /// </summary>
+        public override PluginPriority Priority => PluginPriority.Low;
 
         public Dictionary<string, (Type ObjType, MethodInfo Method)> NpcScripts => _npcSource;
         public Dictionary<string, (Type ObjType, MethodInfo Method)> QuestScripts => _questSource;
