@@ -1536,10 +1536,10 @@
     <string name="demandSummary" value="#i4001168:# #t4001168:# #c4001168# / 1"/>
   </imgdir>
   <imgdir name="1029">
-    <string name="name" value="山姆&apos;的建议"/>
-    <string name="0" value="在冒险大陆上，有个善良的人#bSam#k想给我一些初学者的建议……谁说初学者不是幸运的？"/>
+    <string name="name" value="山姆的建议"/>
+    <string name="0" value="在冒险大陆上，有个善良的人#b山姆#k想给我一些初学者的建议……谁说初学者不是幸运的？"/>
     <string name="1" value="山姆教会了我#b如何使用AP#k，每当我的等级提升时就可以获得。AP的投资决定了我的力量（STR）、智力（INT）、敏捷（DEX）和运气（LUK）。我对AP的投资选择将增加我的HP和MP。\n\n哇……太棒了！多亏了他，我学到了很多。山姆说还有一件事要告诉我。"/>
-    <string name="2" value="山姆告诉我，如果我想通过职业晋升成为更强的冒险者，就得去维多利亚岛。我可以选择战士、法师、弓箭手、盗贼和海盗这五个职业。每个职业都有加入和训练该职业所需的属性要求：#b战士需要35点STR，法师需要20点INT，弓箭手需要25点DEX，盗贼需要25点DEX#k。我会记住这些，并在我想要的职业上投入相应的AP！"/>
+    <string name="2" value="山姆告诉我，如果我想通过职业晋升成为更强的冒险者，就得去金银岛。我可以选择战士、法师、弓箭手、盗贼和海盗这五个职业。每个职业都有加入和训练该职业所需的属性要求：#b战士需要35点STR，法师需要20点INT，弓箭手需要25点DEX，盗贼需要25点DEX#k。我会记住这些，并在我想要的职业上投入相应的AP！"/>
     <int name="area" value="20"/>
     <int name="autoStart" value="1"/>
   </imgdir>
@@ -4562,7 +4562,7 @@
     <string name="name" value="封印住神秘危险之力的仪式 1"/>
     <string name="parent" value="封印住神秘危险之力的仪式"/>
     <int name="order" value="1"/>
-    <string name="0" value="听说维多利亚的迷宫深处有一股不寻常的力量存在… 找到无意义存在者问清楚详细的事情。"/>
+    <string name="0" value="听说金银岛的迷宫深处有一股不寻常的力量存在… 找到无意义存在者问清楚详细的事情。"/>
     <string name="1" value="为了只有无意义存在者才能举行的仪式，必须收集来冰独眼兽的阴森气息33个。\n\n#t4031212# #b#c4031212#/33#k"/>
     <string name="2" value="无意义存在者终于给了我机会，仪式中要用到的那些重要物品到底能在哪里找到呢？"/>
     <int name="area" value="30"/>
@@ -15655,7 +15655,7 @@
     <string name="name" value="酋长的失误"/>
     <string name="0" value="酋长以前修房子时也许和鲍勃有过交集。带着鲍勃的蜗牛壳去问问他吧。"/>
     <string name="1" value="酋长看到蜗牛壳后想起了过去的失误。他似乎曾经把鲍勃当成普通蜗牛看待。"/>
-    <string name="2" value="酋长承认自己过去误会过鲍勃。看来鲍勃在维多利亚岛上留下过不少不为人知的故事。"/>
+    <string name="2" value="酋长承认自己过去误会过鲍勃。看来鲍勃在金银岛上留下过不少不为人知的故事。"/>
     <int name="area" value="30"/>
   </imgdir>
   <imgdir name="4936">
@@ -17730,7 +17730,7 @@
     <string name="1" value="能听懂波斯猫的话… 听说要想从#b波斯猫#k那里要回 #b雨珠子#k，还要满足它的要求。"/>
     <string name="2" value="要正确回答波斯猫所提的全部问题!为了挑战问题还要带来 #b炸鸡 300个#k。"/>
     <int name="area" value="30"/>
-    <string name="0" value="Now I must try to talk with the Boss Kitty to propose a deal for that Orange Marble..."/>
+    <string name="0" value="现在得去和波斯猫谈谈，商量拿回雨珠子的交易……"/>
   </imgdir>
   <imgdir name="8012">
     <string name="name" value="美代子，猫和雨珠子"/>
@@ -17739,13 +17739,13 @@
     <string name="1" value=" 收集#b炸鸡 300个#k， 正确回答全部的波斯猫所提的问题就可以得到雨珠子。 马上还给美代子。"/>
     <string name="2" value="将雨珠子安全地送给美代子。"/>
     <int name="area" value="30"/>
-    <string name="0" value="Hmm, I could understand what he is saying. Well, time to make that trade proposal into action."/>
+    <string name="0" value="嗯，我听得懂它在说什么。那就开始谈这笔交易吧。"/>
   </imgdir>
   <imgdir name="8013">
-    <string name="name" value="Upgrading Zakum Armor"/>
-    <string name="0" value="Tsuri, the gregarious fish merchant, claims to have knowledge of the way to awaken the Zakum Armor&apos;s dormant power. I can&apos;t imagine this armor at its full strength. Such power!"/>
-    <string name="1" value="According to Tsuri, in order to reawaken the dormant power, I&apos;ll have to eliminate #b20 Maladies#k and #b20 Wild Kargo&apos;s#k within the time limit. nnNo. of Maladies Left: #r#a80131##knNo. of Wild Kargos Left : #r#a80132##k"/>
-    <string name="2" value="I tried on the Zakum Armor that has been reawaken by Tsuri. I can literally feel the armor&apos;s strength, coursing through my veins...as if the fearsome power of Zakum is mine to wield and control...I feel invincible wearing this. This is awesome!"/>
+    <string name="name" value="唤醒神炎战装"/>
+    <string name="0" value="健谈的鱼贩勇助声称，自己知道如何唤醒神炎战装沉睡的力量。完全觉醒后的盔甲会有多强呢？真令人期待！"/>
+    <string name="1" value="据勇助说，要重新唤醒那股力量，必须在时限内打倒#b20只巫婆#k和#b20只怪猫#k。\n\n剩余巫婆数量：#r#a80131##k\n剩余怪猫数量：#r#a80132##k"/>
+    <string name="2" value="穿上勇助唤醒后的神炎战装，能真切感受到力量在体内流淌……仿佛扎昆那令人畏惧的力量已为我所用。穿上它简直所向披靡，太厉害了！"/>
     <int name="area" value="30"/>
   </imgdir>
   <imgdir name="8018">
@@ -17990,66 +17990,66 @@
     <int name="area" value="48"/>
   </imgdir>
   <imgdir name="8053">
-    <string name="name" value="Traveling Around Maple 1"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 1"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="1"/>
-    <string name="0" value="Olaf of Lith Harbor offered to take me to numerous famous spots in the Maple World."/>
-    <string name="1" value="According to Olaf, Riel will take me to the next stop. Where must that be?"/>
-    <string name="2" value="I was able to meet up with Riel. Where will I go next?"/>
+    <string name="0" value="明珠港的坤提出，可以带我去枫之世界的许多著名景点。"/>
+    <string name="1" value="据坤说，下一站会由丽尔带我前往。会是哪里呢？"/>
+    <string name="2" value="我见到了丽尔。接下来要去哪里呢？"/>
     <int name="area" value="30"/>
   </imgdir>
   <imgdir name="8054">
-    <string name="name" value="Traveling Around Maple 2"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 2"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="2"/>
-    <string name="0" value="After soaking up the sun at Florina Beach, I should start up a conversation with Riel."/>
-    <string name="1" value="Riel offered to take me to Showa Town. Once I get there, she advised me to look for Skye..."/>
-    <string name="2" value="I was able to meet up with Skye. Where will I go next?"/>
+    <string name="0" value="在黄金海滩晒够了太阳，该去找丽尔聊聊了。"/>
+    <string name="1" value="丽尔提议送我去昭和村。到了那里之后，她让我去找绘里香……"/>
+    <string name="2" value="我见到了绘里香。接下来要去哪里呢？"/>
     <int name="area" value="30"/>
   </imgdir>
   <imgdir name="8055">
-    <string name="name" value="Traveling Around Maple 3"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 3"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="3"/>
-    <string name="0" value=" After taking a stroll around Showa Town, I should start up a conversation with Skye."/>
-    <string name="1" value="Skye offered to take me to Orbis. Once I get there, she advised me to look for Elma..."/>
-    <string name="2" value="I was able to meet up with Elma. Where will I go next?"/>
+    <string name="0" value="在昭和村逛了一圈后，该去找绘里香聊聊了。"/>
+    <string name="1" value="绘里香提议送我去天空之城。到了那里之后，她让我去找保姆珥玛……"/>
+    <string name="2" value="我见到了保姆珥玛。接下来要去哪里呢？"/>
     <int name="area" value="40"/>
   </imgdir>
   <imgdir name="8056">
-    <string name="name" value="Traveling Around Maple 4"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 4"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="4"/>
-    <string name="0" value="After observing the stunning scenery of Orbis, I should start up a conversation with Elma."/>
-    <string name="1" value="Elma offered to take me to Ludibrium. Once I get there, she advised me to look for Marcel..."/>
-    <string name="2" value="I was able to meet up with Marcel. Where will I go next?"/>
+    <string name="0" value="欣赏完天空之城的美景后，该去找保姆珥玛聊聊了。"/>
+    <string name="1" value="保姆珥玛提议送我去玩具城。到了那里之后，她让我去找马勒萨里……"/>
+    <string name="2" value="我见到了马勒萨里。接下来要去哪里呢？"/>
     <int name="area" value="40"/>
   </imgdir>
   <imgdir name="8057">
-    <string name="name" value="Traveling Around Maple 5"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 5"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="5"/>
-    <string name="0" value=" After I get done touring around Ludibrium, I should start up a conversation with Marcel"/>
-    <string name="1" value="Marcel offered to take me to El Nath. Once I get there, he advised me to look for Scadur..."/>
-    <string name="2" value="I was able to meet up with Scadur. Where will I go next?"/>
+    <string name="0" value="在玩具城游览结束后，该去找马勒萨里聊聊了。"/>
+    <string name="1" value="马勒萨里提议送我去冰峰雪域。到了那里之后，他让我去找斯卡德……"/>
+    <string name="2" value="我见到了斯卡德。接下来要去哪里呢？"/>
     <int name="area" value="40"/>
   </imgdir>
   <imgdir name="8058">
-    <string name="name" value="Traveling Around Maple 6"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 6"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="6"/>
-    <string name="0" value=" After observing the magnificent view of El Nath, I should start up a conversation with Scadur"/>
-    <string name="1" value="Scadur offered to take me to Omega Sector. Once I get there, he advised me to look for Jr. Officer Medin..."/>
-    <string name="2" value="I was able to meet up with Jr. Officer Medin. Where will I go next?"/>
+    <string name="0" value="欣赏完冰峰雪域的壮丽景色后，该去找斯卡德聊聊了。"/>
+    <string name="1" value="斯卡德提议送我去地球防御本部。到了那里之后，他让我去找参谋美得恩……"/>
+    <string name="2" value="我见到了参谋美得恩。接下来要去哪里呢？"/>
     <int name="area" value="40"/>
   </imgdir>
   <imgdir name="8059">
-    <string name="name" value="Traveling Around Maple 7"/>
-    <string name="parent" value="Traveling Around Maple"/>
+    <string name="name" value="环游冒险岛 7"/>
+    <string name="parent" value="环游冒险岛"/>
     <int name="order" value="7"/>
-    <string name="0" value="After carefully observing Omega Sector, I should start up a conversation with Jr. Officer Medin."/>
-    <string name="1" value="Scadur offered to take me back to Lith Harbor. Once I get there, I better get back to Olaf..."/>
-    <string name="2" value="I met up with Olaf again. What&apos;s this creepy scroll for...?"/>
+    <string name="0" value="仔细参观完地球防御本部后，该去找参谋美得恩聊聊了。"/>
+    <string name="1" value="参谋美得恩提议送我回明珠港。到了那里之后，最好再去找坤……"/>
+    <string name="2" value="我又见到了坤。这卷看起来怪怪的卷轴是什么……？"/>
     <int name="area" value="30"/>
   </imgdir>
   <imgdir name="8060">
@@ -18063,7 +18063,7 @@
     <string name="name" value="黑暗中的娃娃 1"/>
     <string name="parent" value="黑暗中的娃娃"/>
     <int name="order" value="1"/>
-    <string name="0" value="维多利亚岛#m100000000#的#b#p1012109##k似乎开始撰写一本新书。"/>
+    <string name="0" value="金银岛#m100000000#的#b#p1012109##k似乎开始撰写一本新书。"/>
     <string name="1" value="#m100000000#的#p1012109#拜托我协助他撰写新书。为了获得更多资料，他建议我去玩具城#m220000400#找#b#p2041022##k谈谈。要去看看吗？"/>
     <string name="2" value="#b#p2041022##k让我寻找适合写进书里的研究对象。调查结束后，再去找他谈谈吧。"/>
     <int name="area" value="30"/>
@@ -23209,7 +23209,7 @@
   </imgdir>
   <imgdir name="4422">
     <string name="0" value="又有新的讯息了，他建议我去找最近刚抵达的水上市场的船长。 "/>
-    <string name="1" value="史巴特建议我去找最近刚从维多利亚港刚抵达的 纳雷斯船长，但听说又去旅行了，不晓得有没有机会遇见…"/>
+    <string name="1" value="史巴特建议我去找刚抵达的 纳雷斯船长，但听说又去旅行了，不晓得有没有机会遇见…"/>
     <string name="2" value="又有新的讯息了，他建议我去找最近刚抵达的水上市场的船长。"/>
     <int name="area" value="45"/>
     <string name="name" value="事前的情报收集 4"/>
@@ -23695,11 +23695,11 @@
     <string name="name" value="宝藏猎人的麻烦"/>
   </imgdir>
   <imgdir name="8163">
-    <string name="0" value="维多利亚港口的#b#p1002101##k似乎想让第一次转职的冒险者了解维多利亚港口有多好。听听他怎么说。"/>
-    <string name="1" value="#b#p1002101##k说要在利斯港口的周围练功，最适合的就是缎带肥肥。打败缎带肥肥，并且拿到证据的话，就能够取得对今后有所助益的东西。挑战看看吧！，\n\n#t4000017# #b#c4000017#/1#k\n#t04000002# #b#c04000002##k/20"/>
+    <string name="0" value="明珠港的#b#p1002101##k似乎想让第一次转职的冒险者了解明珠港有多好。听听他怎么说。"/>
+    <string name="1" value="#b#p1002101##k说要在明珠港的周围练功，最适合的就是漂漂猪。打败漂漂猪，并且拿到猪头的话，就能够取得对今后有所助益的东西。挑战看看吧！，\n\n#t4000017# #b#c4000017#/1#k\n#t04000002# #b#c04000002##k/20"/>
     <string name="2" value="#b#p1002101##k褒奖我们变强了，还给了两种药丸。将有助于今后的冒险。有空可以去古代神社看看#b#p9110002##k。"/>
     <int name="area" value="45"/>
-    <string name="name" value="维多利亚港周边探索"/>
+    <string name="name" value="明珠港周边探索"/>
     <int name="order" value="1"/>
     <string name="parent" value="枫之谷的种种"/>
   </imgdir>
@@ -24343,32 +24343,32 @@
     <string name="name" value="王健民的字母搜集"/>
   </imgdir>
   <imgdir name="8640">
-    <string name="0" value="请到维多利亚港寻找特奥，目前他正为了培训冒险勇者在寻找人才。"/>
+    <string name="0" value="请到明珠港寻找特奥，目前他正为了培训冒险勇者在寻找人才。"/>
     <string name="1" value="几位这岛上的长老们安排许多的狩猎任务来训练我的成长，聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，绿水灵原本是魔法森林赛恩在进行魔法实验时发明的，调皮捣蛋的绿水灵在某天晚上集体出走，我要到魔法森林的#r南方森林训练场Ｉ#k附近狩猎#r100只绿水灵#k，并把结果告知魔法森林的赛恩，他将会告诉我下一步指示。"/>
-    <string name="2" value="己经照维多利亚港特奥的指示去狩猎绿水灵，并且也把消息告诉魔法森林的赛恩，赛恩对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
+    <string name="2" value="己经照明珠港特奥的指示去狩猎绿水灵，并且也把消息告诉魔法森林的赛恩，赛恩对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
     <int name="area" value="30"/>
     <string name="name" value="狩猎绿水灵"/>
   </imgdir>
   <imgdir name="8641">
     <string name="0" value="请到魔法森林寻找赛恩，他好像还有什么事要对你说。"/>
-    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，菇菇宝贝是只活泼讨喜的黄色菇菇，听说与菇菇仔是兄弟的菇菇宝贝居然是偷喝神奇药水后突然变胖的，我需要狩猎#r100只菇菇宝贝#k，并把结果告知堕落城市的阿勒斯，他将会给我下一步指示，对了！我想到菇菇宝贝在#r堕落城市北方工地#k那有很多。"/>
-    <string name="2" value="己经照魔法森林赛恩的指示去狩猎菇菇宝贝，并且也把消息告诉堕落城市的阿勒斯，阿勒斯对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
+    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，花蘑菇是只活泼讨喜的黄色蘑菇，听说与蘑菇仔是兄弟的花蘑菇居然是偷喝神奇药水后突然变胖的，我需要狩猎#r100只花蘑菇#k，并把结果告知废弃都市的阿勒斯，他将会给我下一步指示，对了！我想到花蘑菇在#r废弃都市北方工地#k那有很多。"/>
+    <string name="2" value="已经照魔法森林赛恩的指示去狩猎花蘑菇，并且也把消息告诉废弃都市的阿勒斯，阿勒斯对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
     <int name="area" value="30"/>
-    <string name="name" value="狩猎菇菇宝贝"/>
+    <string name="name" value="狩猎花蘑菇"/>
   </imgdir>
   <imgdir name="8642">
-    <string name="0" value="请到堕落城市寻找阿勒斯，听说他打听到让你成长的好方法。"/>
-    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，缎带肥肥是个爱美的肥肥，总喜欢与众不同并且在自己的身上绑上缎带，需要狩猎#r150只缎带肥肥#k，并把结果告知弓箭手村的长老斯坦，他将会给我下一步指示，对了！缎带肥肥个性冲动喜欢乱跑，冒险者要隔外小心，记得牠们常出没在#r弓箭手村东部草丛#k。"/>
-    <string name="2" value="己经照堕落城市阿勒斯的指示去狩猎缎带肥肥，并且也把消息告诉弓箭手村的长老斯坦，长老斯坦对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
+    <string name="0" value="请到废弃都市寻找阿勒斯，听说他打听到让你成长的好方法。"/>
+    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，漂漂猪是个爱美的猪，总喜欢与众不同并且在自己的身上绑上缎带，需要狩猎#r150只漂漂猪#k，并把结果告知弓箭手村的长老斯坦，他将会给我下一步指示，对了！漂漂猪个性冲动喜欢乱跑，冒险者要隔外小心，记得牠们常出没在#r弓箭手村东部草丛#k。"/>
+    <string name="2" value="已经照废弃都市阿勒斯的指示去漂漂猪，并且也把消息告诉弓箭手村的长老斯坦，长老斯坦对我的表现很满意给了我奖励，看来我还要多加努力好好成长啰！"/>
     <int name="area" value="30"/>
-    <string name="name" value="狩猎缎带肥肥"/>
+    <string name="name" value="狩猎漂漂猪"/>
   </imgdir>
   <imgdir name="8643">
     <string name="0" value="请到弓箭手村寻找长老斯坦，听说他有重要的事情要找你。"/>
-    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，在维多利亚岛上有四大村庄，象征战士坚强不畏坚难的村子就是勇士之村，不料村子附近居然出现大量的黑肥肥危害了村民的安危，需要狩猎#r200只黑肥肥#k，并把结果告知勇士之村的麦吉，我就能完成狩猎的训练了，勇士之村附近的#r黑肥肥领土II#k有著大量的黑肥肥，可到此处来进行狩猎。"/>
-    <string name="2" value="己经照弓箭手村长老斯坦的指示去狩猎黑肥肥，并且也把消息告诉勇士之村的麦吉，麦吉对我的表现很满意给了我奖励，狩猎的任务训练到此结束，下阶段的旅程是否会更加困难呢？"/>
+    <string name="1" value="聪明的冒险者勇于接受训练，我在成长的过程中将受到指导而顺利无碍，在金银岛上有四大村庄，象征战士坚强不畏坚难的村子就是勇士部落，不料部落附近居然出现大量的野猪危害了村民的安危，需要狩猎#r200只野猪#k，并把结果告知勇士部落的麦吉，我就能完成狩猎的训练了，勇士部落附近的#r野猪的领土II#k有著大量的野猪，可到此处来进行狩猎。"/>
+    <string name="2" value="已经照弓箭手村长老斯坦的指示去狩猎野猪，并且也把消息告诉勇士部落的麦吉，麦吉对我的表现很满意给了我奖励，狩猎的任务训练到此结束，下阶段的旅程是否会更加困难呢？"/>
     <int name="area" value="30"/>
-    <string name="name" value="狩猎黑肥肥"/>
+    <string name="name" value="狩猎野猪"/>
   </imgdir>
   <imgdir name="8644">
     <string name="0" value="请到不夜城寻找珍珍！"/>
@@ -24571,20 +24571,20 @@
   </imgdir>
   <imgdir name="8667">
     <string name="0" value="魔法森林的张良在找你"/>
-    <string name="1" value="魔法森林的张良说我上次为他带去的年菜是他一生中吃过最好吃的东西，如此销魂的滋味他也想分享给他在堕落城市的管仲，我得快替他给管仲带去#r年年有余10份#k跟#r吉祥如意10份#k。"/>
+    <string name="1" value="魔法森林的张良说我上次为他带去的年菜是他一生中吃过最好吃的东西，如此销魂的滋味他也想分享给他在废弃都市的管仲，我得快替他给管仲带去#r年年有余10份#k跟#r吉祥如意10份#k。"/>
     <string name="2" value="替张良给管仲带去美味的年菜，管仲吃了之后直呼好吃，还送了我一个小礼物，原来帮人送礼这么有趣。"/>
     <int name="area" value="30"/>
     <string name="name" value="年菜好礼相送(1)"/>
   </imgdir>
   <imgdir name="8668">
-    <string name="0" value="快到堕落城市(废弃都市)找管仲"/>
-    <string name="1" value="堕落城市的管仲居然想吃财神做的年菜，听说财神会做以发菜做成的羹，像征发财哦，还有外表像金元宝的饺子，我得赶快替管仲带去#r恭喜发财1份#k和#r招财进宝1份#k吧、相传过年吃了这些东西就会财运连连哦！"/>
+    <string name="0" value="快到废弃都市找管仲"/>
+    <string name="1" value="废弃都市的管仲居然想吃财神做的年菜，听说财神会做以发菜做成的羹，像征发财哦，还有外表像金元宝的饺子，我得赶快替管仲带去#r恭喜发财1份#k和#r招财进宝1份#k吧、相传过年吃了这些东西就会财运连连哦！"/>
     <string name="2" value="替管仲带去了恭喜发财1份和招财进宝1份，他吃完年菜后居然感动到流眼泪，难道财神的年菜真有加了什么特别的东西。"/>
     <int name="area" value="30"/>
     <string name="name" value="美味的年菜(2)"/>
   </imgdir>
   <imgdir name="8669">
-    <string name="0" value="堕落城市(废弃都市)的管仲有事相求"/>
+    <string name="0" value="废弃都市的管仲有事相求"/>
     <string name="1" value="上次我替管仲带去财神做的年菜好吃得让管仲感动落泪，如此的美味他也想分享给在魔森林的张良吃看看，所以请我再帮忙替他送去#r恭喜发财10份#k和#r招财进宝10份#k给张良，也希望他吃了财神的年菜可以财运连连!"/>
     <string name="2" value="替管仲给张良带去美味的年菜，张良吃了之后也流下感动的眼泪，还送了我一个小礼物，春节帮人送礼的感觉真是不错呢!"/>
     <int name="area" value="30"/>
@@ -24633,49 +24633,49 @@
     <string name="parent" value="艾斯达(胡小姐)的礼物"/>
   </imgdir>
   <imgdir name="8677">
-    <string name="0" value="到东方岩石山Ⅱ送礼物给温斯顿(芳博士)。 "/>
-    <string name="1" value="温斯顿很感谢艾斯达送给他的灵芝礼盒，所以正在写信感谢她，我就等他一下吧。"/>
-    <string name="2" value="己经帮艾斯达送了灵芝礼盒给温斯顿，并且给我一封信要带回去给艾斯达，我得等礼物送完才能送信啰！第二站要去堕落城市南方工地送礼物给千吉，动作要再快一点了。 "/>
+    <string name="0" value="到东方岩石山Ⅱ送礼物给芳博士。 "/>
+    <string name="1" value="芳博士很感谢胡小姐送给他的灵芝礼盒，所以正在写信感谢她，我就等他一下吧。"/>
+    <string name="2" value="已经帮胡小姐送了灵芝礼盒给废弃都市，并且给我一封信要带回去给胡小姐，我得等礼物送完才能送信啰！第二站要去废弃都市南方工地送礼物给千吉，动作要再快一点了。 "/>
     <int name="area" value="30"/>
-    <string name="name" value="温斯顿(芳博士)的灵芝礼盒 "/>
+    <string name="name" value="芳博士的灵芝礼盒 "/>
     <int name="order" value="3"/>
-    <string name="parent" value="艾斯达(胡小姐)的礼物"/>
+    <string name="parent" value="胡小姐的礼物"/>
   </imgdir>
   <imgdir name="8678">
-    <string name="0" value="到堕落城市南方工地送礼物给千吉。 "/>
-    <string name="1" value="千吉很感谢艾斯达送给他的阿麻尼墨镜，所以正在写信感谢她，我就等他一下吧。"/>
-    <string name="2" value="已经帮艾斯达把阿麻尼墨镜送给千吉了，看起来他还蛮喜欢的，千吉也交给我一封信要给艾斯达，怎么大家都流行写信？现在还是得快快把送完礼物。下一站是到西门町街道III送礼物给周杰轮。 "/>
+    <string name="0" value="到废弃都市南方工地送礼物给千吉。 "/>
+    <string name="1" value="千吉很感谢胡小姐送给他的阿麻尼墨镜，所以正在写信感谢她，我就等他一下吧。"/>
+    <string name="2" value="已经帮胡小姐把阿麻尼墨镜送给千吉了，看起来他还蛮喜欢的，千吉也交给我一封信要给胡小姐，怎么大家都流行写信？现在还是得快快把送完礼物。下一站是到西门町街道III送礼物给周杰轮。 "/>
     <int name="area" value="30"/>
     <string name="name" value="千吉的阿麻尼墨镜 "/>
     <int name="order" value="4"/>
-    <string name="parent" value="艾斯达(胡小姐)的礼物"/>
+    <string name="parent" value="胡小姐的礼物"/>
   </imgdir>
   <imgdir name="8679">
     <string name="0" value="到西门町街道III送礼物给周杰轮。 "/>
-    <string name="1" value="周杰轮很感谢艾斯达送给他的酷吉手表，所以正在写信感谢她，我就等他一下吧。"/>
-    <string name="2" value="原来艾斯达是周杰轮的头号粉丝，帮忙送个礼物还能见到明星这种经验真是特别，这次也收到周杰轮要给艾斯达的信。接下来得先去送完最后一站，再把信一起带给艾斯达。最后一站是送礼物给在夜市徒步区4的胡须老张(小摊老板吴)。 "/>
+    <string name="1" value="周杰轮很感谢胡小姐送给他的酷吉手表，所以正在写信感谢她，我就等他一下吧。"/>
+    <string name="2" value="原来胡小姐是周杰轮的头号粉丝，帮忙送个礼物还能见到明星这种经验真是特别，这次也收到周杰轮要给胡小姐的信。接下来得先去送完最后一站，再把信一起带给胡小姐。最后一站是送礼物给在夜市徒步区4的胡须老张(小摊老板吴)。 "/>
     <int name="area" value="30"/>
     <string name="name" value="周杰轮的酷吉手表"/>
     <int name="order" value="5"/>
-    <string name="parent" value="艾斯达(胡小姐)的礼物"/>
+    <string name="parent" value="胡小姐的礼物"/>
   </imgdir>
   <imgdir name="8680">
-    <string name="0" value="到夜市徒步区4，送礼物给胡须老张(小摊老板吴)。 "/>
-    <string name="1" value="胡须老张很感谢艾斯达送给他的水晶花瓶，所以正在写信感谢他，我就等他一下吧。"/>
-    <string name="2" value="呼呼～终于送完所有的礼物啰！胡须老张看起来好像很喜欢那个花瓶，原本收到三张感谢函再加刚刚胡须老张给我的信一共有四封。现在得快去跟艾斯达报告了，顺便跟他说已经帮他付了礼物的钱...。 "/>
+    <string name="0" value="到夜市徒步区4，送礼物给小摊老板吴。 "/>
+    <string name="1" value="小摊老板吴很感谢胡小姐送给他的水晶花瓶，所以正在写信感谢他，我就等他一下吧。"/>
+    <string name="2" value="呼呼～终于送完所有的礼物啰！胡须老张看起来好像很喜欢那个花瓶，原本收到三张感谢函再加刚刚胡须老张给我的信一共有四封。现在得快去跟胡小姐报告了，顺便跟他说已经帮他付了礼物的钱...。 "/>
     <int name="area" value="30"/>
-    <string name="name" value="胡须老张(小摊老板吴)的水晶花瓶 "/>
+    <string name="name" value="小摊老板吴的水晶花瓶 "/>
     <int name="order" value="6"/>
-    <string name="parent" value="艾斯达(胡小姐)的礼物"/>
+    <string name="parent" value="胡小姐的礼物"/>
   </imgdir>
   <imgdir name="8681">
-    <string name="0" value="快把送好礼物的消息带回给艾斯达(胡小姐)。 "/>
-    <string name="1" value="顺利完成了艾斯达(胡小姐)托付给我的任务，不知道她会送我什么礼物耶。"/>
-    <string name="2" value="帮艾斯达到弓箭手村东部小山找小安买回礼物，并且按照顺序送礼物给温斯顿、千吉、周杰轮、胡须老张，最后送完所有的礼物再交回四封信给艾斯达，艾斯达看起好像很寂寞要我天天来找他玩，等完成今日的送礼收到很好吃的饭团后，明天再去拜访他吧。"/>
+    <string name="0" value="快把送好礼物的消息带回给胡小姐。 "/>
+    <string name="1" value="顺利完成了胡小姐托付给我的任务，不知道她会送我什么礼物耶。"/>
+    <string name="2" value="帮胡小姐到弓箭手村东部小山找小安买回礼物，并且按照顺序送礼物给芳博士、千吉、周杰轮、小摊老板吴，最后送完所有的礼物再交回四封信给胡小姐，胡小姐看起好像很寂寞要我天天来找他玩，等完成今日的送礼收到很好吃的饭团后，明天再去拜访他吧。"/>
     <int name="area" value="30"/>
-    <string name="name" value="艾斯达(胡小姐)的礼物2"/>
+    <string name="name" value="胡小姐的礼物2"/>
     <int name="order" value="7"/>
-    <string name="parent" value="艾斯达(胡小姐)的礼物"/>
+    <string name="parent" value="胡小姐的礼物"/>
   </imgdir>
   <imgdir name="8682">
     <string name="0" value="至不夜城找大当家！"/>

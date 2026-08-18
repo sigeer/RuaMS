@@ -231,15 +231,20 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29923 
         public Task q29923s() => HandleMedalQuestStart();
         // Quest: 29924 
-        public Task q29924s() => HandleMedalQuestStart("成为 10 级以上战神后");
+        public Task q29924s() => HandleMedalQuestStart("成为 10 级以上战神后", GetQuestMessage);
+        public Task q29924e() => HandleMedalQuestComplete();
         // Quest: 29925 
-        public Task q29925s() => HandleMedalQuestStart("成为 30 级以上战神后");
+        public Task q29925s() => HandleMedalQuestStart("成为 30 级以上战神后", GetQuestMessage);
+        public Task q29925e() => HandleMedalQuestComplete();
         // Quest: 29926 
-        public Task q29926s() => HandleMedalQuestStart("成为 70 级以上战神后");
+        public Task q29926s() => HandleMedalQuestStart("成为 70 级以上战神后", GetQuestMessage);
+        public Task q29926e() => HandleMedalQuestComplete();
         // Quest: 29927 
-        public Task q29927s() => HandleMedalQuestStart("成为 120 级以上战神后");
+        public Task q29927s() => HandleMedalQuestStart("成为 120 级以上战神后", GetQuestMessage);
+        public Task q29927e() => HandleMedalQuestComplete();
         // Quest: 29928 
-        public Task q29928s() => HandleMedalQuestStart("成为 200 级战神后");
+        public Task q29928s() => HandleMedalQuestStart("成为 200 级战神后", GetQuestMessage);
+        public Task q29928e() => HandleMedalQuestComplete();
         // Quest: 29933 
         public Task q29933s() => HandleMedalQuestStart();
 
@@ -248,9 +253,10 @@ namespace Application.Plugin.Script.Quest
             await SayNext("尚未实现");
         }
 
-        string GetQuestMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能获得本勋章，不想挑战一下试试吗？";
+        string GetChanllengeMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能获得本勋章，不想挑战一下试试吗？";
+        string GetQuestMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能找#p{npc}#领取称号。";
 
-        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string>? slotFunc = null)
+        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string , string>? slotFunc = null)
         {
             var questObj = server.quest.Quest.getInstance(getQuest());
             if (questObj == null)
@@ -266,7 +272,7 @@ namespace Application.Plugin.Script.Quest
 
             if (questObj?.ViewMedalItem > 0)
             {
-                if (await SayAcceptDecline(slotFunc == null ? GetQuestMessage(questObj.ViewMedalItem, slot) : slotFunc(questObj.ViewMedalItem)))
+                if (await SayAcceptDecline(slotFunc == null ? GetChanllengeMessage(questObj.ViewMedalItem, slot) : slotFunc(questObj.ViewMedalItem, slot)))
                 {
                     await startQuest();
                     return true;
