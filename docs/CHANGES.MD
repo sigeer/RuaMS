@@ -33,7 +33,7 @@
 ### 脚本
 
 - 实现了[BeiDou](https://github.com/BeiDouMS/BeiDou-Server/wiki/%E5%8C%97%E6%96%97NextLevel%E8%84%9A%E6%9C%AC%E6%A1%86%E6%9E%B6) 的`NextLevel`框架。  
-- 尝试使用 NLua + lua。由于脚本数量较多，计划逐步更新，但是在两种脚本混用时出现非托管错误，暂时搁置。
+- 使用C#重写了脚本，并扩展插件功能，插件支持热更新
 
 ### 登录
 
@@ -70,21 +70,18 @@
 ### 模块
 
 将一些可选择使用的功能，作为模块提取出来（`Application.Modules.XXX`），已被提取的模块有
-- Duey * 
 - BBS
 - Family
 - Fishing
-- Maker * 
 - Marriage
 - PlayerNPC * 
-- ExpeditionBossLog * 
 
 ### 扭蛋机
 
 奖池数据移到了数据库。
 调整`storage`表用于扩展存放奖品，解决抽奖的背包空间验证BUG，使用仓库的UI展示奖品
 
-### 婚姻系统
+### 婚姻系统（未修复）
 
 大部分流程与原先一致
 
@@ -100,7 +97,6 @@
 
 重构`EventManager`和`EventInstanceManager`，对各种事件进行分类。目的是自定义事件时方便扩展。
 
-- `EventManager` 不会创建副本的事件（比如各种传送）
 - `AbstractInstancedEventManager` 会创建副本的事件的抽象类
 - `GuildQuestEventManager`：家族任务
 - `ExpeditionEventManager`：远征队

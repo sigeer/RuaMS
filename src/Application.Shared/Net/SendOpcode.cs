@@ -308,6 +308,9 @@ public enum SendOpcode
     LUCKSACK_PASS = 0xD0,
     LUCKSACK_FAIL = 0xD1,
     MESO_BAG_MESSAGE = 0xD2,
+    /// <summary>
+    /// CUserLocal::OnQuestResult
+    /// </summary>
     UPDATE_QUEST_INFO = 0xD3,
     /// <summary>
     /// CUserLocal::OnNotifyHPDecByField

@@ -4,7 +4,6 @@
     <File Path="DevLog.MD" />
     <File Path="docs/CHANGES.MD" />
     <File Path="docs/CodeMigration.MD" />
-    <File Path="docs/Replacement.md" />
     <File Path="docs/UseItem.md" />
     <File Path="README.MD" />
   </Folder>
