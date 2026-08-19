@@ -36646,7 +36646,6 @@
       <imgdir name="item">
         <imgdir name="0">
           <int name="id" value="1142129"/>
-          <int name="count" value="1"/>
         </imgdir>
       </imgdir>
       <imgdir name="job">
@@ -36670,7 +36669,6 @@
       <imgdir name="item">
         <imgdir name="0">
           <int name="id" value="1142130"/>
-          <int name="count" value="1"/>
         </imgdir>
       </imgdir>
       <imgdir name="job">
@@ -36693,7 +36691,6 @@
       <imgdir name="item">
         <imgdir name="0">
           <int name="id" value="1142131"/>
-          <int name="count" value="1"/>
         </imgdir>
       </imgdir>
       <imgdir name="job">
@@ -36715,7 +36712,6 @@
       <imgdir name="item">
         <imgdir name="0">
           <int name="id" value="1142132"/>
-          <int name="count" value="1"/>
         </imgdir>
       </imgdir>
       <imgdir name="job">
@@ -36736,7 +36732,6 @@
       <imgdir name="item">
         <imgdir name="0">
           <int name="id" value="1142133"/>
-          <int name="count" value="1"/>
         </imgdir>
       </imgdir>
       <imgdir name="job">
