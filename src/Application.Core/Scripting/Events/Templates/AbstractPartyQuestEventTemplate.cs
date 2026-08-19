@@ -75,11 +75,11 @@ namespace Application.Core.scripting.Events.Templates
             if (QuestId <= 0)
                 return;
 
-            if (chr.GetPartyQuestRecord(QuestId) is PartyQuestRecordEx model)
+            if (chr.GetQuestRecordEx(QuestId) is PartyQuestRecordEx model)
             {
                 model.Try++;
 
-                await model.Flush(chr);
+                await chr.FlushQuestRecordEx(model);
             }
 
         }
@@ -93,7 +93,7 @@ namespace Application.Core.scripting.Events.Templates
             if (QuestId <= 0)
                 return;
 
-            if (chr.GetPartyQuestRecord(QuestId) is PartyQuestRecordEx model)
+            if (chr.GetQuestRecordEx(QuestId) is PartyQuestRecordEx model)
             {
                 model.Cmp++;
 
@@ -109,7 +109,7 @@ namespace Application.Core.scripting.Events.Templates
                     model.CompleteTime = now;
                 }
 
-                await model.Flush(chr);
+                await chr.FlushQuestRecordEx(model);
             }
         }
     }

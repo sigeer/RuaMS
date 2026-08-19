@@ -1060,15 +1060,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         OnKilled?.Invoke(this, new MonsterKilledEventArgs(killer, dieAni));
         MapModel.ChannelServer.NodeService.PluginManager.OnMobKilled(this, killer);
 
-        if (killer is Player chr && chr.GetQuestStatus((short)MedalQuestId.VeteranHunter) == QuestStatus.Status.STARTED)
+        if (killer is Player chr && chr.GetQuestStatus((short)ExQuestId.VeteranHunter) == QuestStatus.Status.STARTED)
         {
             if (chr.Level < 120 ? getLevel() > chr.Level : getLevel() >= 120)
             {
-                var info = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+                var info = chr.GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
                 if (info != null && info.Mon <= info.Mg)
                 {
                     info.Mon++;
-                    await info.Flush(chr);
+                    await chr.FlushQuestRecordEx(info);
                 }
             }
         }

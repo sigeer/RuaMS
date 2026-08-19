@@ -1,6 +1,7 @@
 using Application.Core.Game.Players;
 using Application.Core.model;
 using Application.Core.scripting.Events.Templates;
+using Application.Shared.Quest;
 
 namespace Application.Plugin.Script.Events
 {
@@ -8,7 +9,7 @@ namespace Application.Plugin.Script.Events
     {
         public PQ_CPQ1(string name, int recruitMap) : base(name, recruitMap + 1)
         {
-            QuestId = Application.Shared.Quest.QuestId.PQ_MC1;
+            QuestId = (short)ExQuestId.PQ_MC1;
 
             RecruitMap = recruitMap;
             EntryMap = recruitMap + 1;

@@ -69,13 +69,6 @@ namespace Application.Core.Channel.QuestRecordEx
             }
 
         }
-
-        public async Task Flush(Player chr)
-        {
-            var value = ToString();
-            chr.AreaInfo[QuestId] = value;
-            await chr.SendPacket(MessagePacket.QuestRecordEx(QuestId, value));
-        }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]

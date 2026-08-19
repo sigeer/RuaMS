@@ -22,12 +22,12 @@ namespace Application.Plugin.Script.Quest
             if (await HandleMedalQuestStart())
             {
                 var chr = getPlayer();
-                var questEx = chr.GetMedalQuestInfo((MedalQuestId)getQuest()) as MedalQuest29002Ex;
+                var questEx = chr.GetQuestRecordEx((ExQuestId)getQuest()) as MedalQuest29002Ex;
                 if (questEx != null)
                 {
                     questEx.PopG = 1000;
                     questEx.PopS = chr.Fame;
-                    await questEx.Flush(chr);
+                    await chr.FlushQuestRecordEx(questEx);
                 }
             }
         }
@@ -35,7 +35,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q29002e()
         {
             var chr = getPlayer();
-            var questEx = (chr.GetMedalQuestInfo((MedalQuestId)getQuest()) as MedalQuest29002Ex)!;
+            var questEx = (chr.GetQuestRecordEx((ExQuestId)getQuest()) as MedalQuest29002Ex)!;
             if (chr.Fame - questEx.PopS >= questEx.PopG)
             {
                 await HandleMedalQuestComplete();
@@ -51,11 +51,11 @@ namespace Application.Plugin.Script.Quest
             if (await HandleMedalQuestStart("30天内击杀100000只符合等级条件的怪物"))
             {
                 var chr = getPlayer();
-                var questEx = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+                var questEx = chr.GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
                 if (questEx != null)
                 {
                     questEx.Mg = 100000;
-                    await questEx.Flush(chr);
+                    await chr.FlushQuestRecordEx(questEx);
                 }
                 await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
             }
@@ -64,7 +64,7 @@ namespace Application.Plugin.Script.Quest
         public async Task q29400e()
         {
             var chr = getPlayer();
-            var questEx = chr.GetMedalQuestInfo(MedalQuestId.VeteranHunter) as MedalQuest29400Ex;
+            var questEx = chr.GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
             if (questEx != null && questEx.Mon >= questEx.Mg)
             {
                 await HandleMedalQuestComplete();
@@ -137,7 +137,7 @@ namespace Application.Plugin.Script.Quest
         {
             var chr = getPlayer();
 
-            var questEx = chr.GetPartyQuestRecord(QuestId.PQ_MC2) as ConfrontQuestEx;
+            var questEx = chr.GetQuestRecordEx(ExQuestId.PQ_MC2) as ConfrontQuestEx;
             if (questEx != null)
             {
                 if (questEx.VicCount > 100)
@@ -161,7 +161,7 @@ namespace Application.Plugin.Script.Quest
             {
                 var chr = getPlayer();
 
-                var questEx = chr.GetPartyQuestRecord(QuestId.PQ_MC2) as ConfrontQuestEx;
+                var questEx = chr.GetQuestRecordEx(ExQuestId.PQ_MC2) as ConfrontQuestEx;
                 if (questEx != null)
                 {
                     if (questEx.Try > 50 && (float)questEx.VicCount / questEx.Try > 0.7)

@@ -258,11 +258,11 @@ namespace Application.Core.scripting.Events.Templates
             if (QuestId <= 0)
                 return;
 
-            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            if (chr.GetQuestRecordEx(QuestId) is ConfrontQuestEx model)
             {
                 model.Try++;
 
-                await model.Flush(chr);
+                await chr.FlushQuestRecordEx(model);
             }
         }
 
@@ -270,10 +270,10 @@ namespace Application.Core.scripting.Events.Templates
         {
             await base.AbortPartyQuest(chr);
 
-            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            if (chr.GetQuestRecordEx(QuestId) is ConfrontQuestEx model)
             {
                 model.GiveUpCount++;
-                await model.Flush(chr);
+                await chr.FlushQuestRecordEx(model);
             }
         }
 
@@ -282,7 +282,7 @@ namespace Application.Core.scripting.Events.Templates
             if (QuestId <= 0)
                 return;
 
-            if (chr.GetPartyQuestRecord(QuestId) is ConfrontQuestEx model)
+            if (chr.GetQuestRecordEx(QuestId) is ConfrontQuestEx model)
             {
                 var pEim = eim as MonsterCarnivalEventInstanceManager;
                 if (pEim.IsWinner(chr))
@@ -294,7 +294,7 @@ namespace Application.Core.scripting.Events.Templates
                     model.LoseCount++;
                 }
 
-                await model.Flush(chr);
+                await chr.FlushQuestRecordEx(model);
             }
         }
     }
