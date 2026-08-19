@@ -16,7 +16,7 @@ public class BeginnerCreator : NoviceCreator
     public override NewCharacterPreview CreateCharacter(AccountCtrl account, string name, int face, int hair, int skin, int top, int bottom, int shoes, int weapon, int gender)
     {
         var model = base.CreateCharacter(account, name, face, hair, skin, top, bottom, shoes, weapon, gender);
-        model.Character.Data.Bag.EtcInv.Add(new ProtoModel.ItemProto { Itemid = ItemId.BEGINNERS_GUIDE, Position = 1 });
+        model.Character.Data.Bag.EtcInv.Add(new ProtoModel.ItemProto { Itemid = ItemId.BEGINNERS_GUIDE, Position = 1, Quantity = 1, Expiration = -1 });
         return model;
     }
 }

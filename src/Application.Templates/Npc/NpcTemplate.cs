@@ -29,9 +29,9 @@ namespace Application.Templates.Npc
         }
         public void CloneLink(NpcTemplate sourceTemplate)
         {
-            sourceTemplate.Script = Script;
-            sourceTemplate.TrunkPut = TrunkPut;
-            sourceTemplate.TrunkGet = TrunkGet;
+            sourceTemplate.Script ??=  Script;
+            sourceTemplate.TrunkPut ??= TrunkPut;
+            sourceTemplate.TrunkGet ??= TrunkGet;
             sourceTemplate.MapleTV = MapleTV;
             sourceTemplate.Parcel = Parcel;
             sourceTemplate.GuildRank = GuildRank;
