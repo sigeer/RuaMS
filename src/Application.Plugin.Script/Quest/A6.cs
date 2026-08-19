@@ -1,15 +1,8 @@
-using Application.Core.Client;
-using Application.Core.Game.Maps;
 using Application.Core.scripting.Infrastructure;
-using Application.Core.Scripting.Events;
-using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.Constants.Skill;
-using Application.Utility.Configs;
-using scripting.map;
-using System.Reflection.Metadata;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -145,7 +138,7 @@ namespace Application.Plugin.Script.Quest
                     await gainExp(35);
                     await forceCompleteQuest();
 
-                    await SayNext("#b（看自己这技能水平没一点英雄的样子……这把剑感觉也很陌生。以前的我是用剑的吗？这把剑怎么用呢？）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd );
+                    await SayNext("#b（看自己这技能水平没一点英雄的样子……这把剑感觉也很陌生。以前的我是用剑的吗？这把剑怎么用呢？）", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd);
                     await guideHint(16);
                 }
                 else
@@ -194,7 +187,7 @@ namespace Application.Plugin.Script.Quest
             else
             {
                 await Popup("背包满了");
-                
+
             }
         }
         // Quest: 21013 
@@ -350,12 +343,6 @@ namespace Application.Plugin.Script.Quest
                 await changeJobById(JobId.ARAN1);
                 await resetStats();
 
-                if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
-                {
-                    await teachSkill(21000000, 0, 10, -1);   //combo ability
-                    await teachSkill(21001003, 0, 20, -1);   //polearm booster
-                }
-
                 await completeQuest();
 
                 //getPlayer().changeSkillLevel(SkillFactory.getSkill(20009000), 0, -1);
@@ -414,14 +401,6 @@ namespace Application.Plugin.Script.Quest
                 if (!isQuestCompleted(21201))
                 {
                     await changeJobById(JobId.ARAN2);
-
-                    if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
-                    {
-                        await teachSkill(Aran.POLEARM_MASTERY, 0, 20, -1);   //polearm mastery
-                        await teachSkill(Aran.FINAL_CHARGE, 0, 30, -1);   //final charge
-                        await teachSkill(Aran.COMBO_SMASH, 0, 20, -1);   //combo smash
-                        await teachSkill(Aran.COMBO_DRAIN, 0, 20, -1);   //combo drain
-                    }
 
                     await completeQuest();
 
@@ -505,10 +484,6 @@ namespace Application.Plugin.Script.Quest
                     }
 
                     await changeJobById(JobId.ARAN3);
-                    if (YamlConfig.config.server.USE_FULL_ARAN_SKILLSET)
-                    {
-                        await teachSkill(21110002, 0, 20, -1);   //full swing
-                    }
 
                     await completeQuest();
                 }
@@ -696,7 +671,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("什么？你不愿意？打算一个人修炼？有人指导的效果可比自己慢慢摸索的效果好很多哦。再说，你也该学习学习如何与人打交道了。");
             }
-            
+
         }
         // Quest: 21703 
         public async Task q21703s()
@@ -811,7 +786,7 @@ namespace Application.Plugin.Script.Quest
                 if (getQuestStatus(21720) == 1)
                 {
                     await forceCompleteQuest();
-                    await teachSkill(21001003, (sbyte)getPlayer().getSkillLevel(21001003), 20, -1);
+                    await teachSkill(Aran.POLEARM_BOOSTER, (sbyte)getPlayer().getSkillLevel(Aran.POLEARM_BOOSTER), 20, -1);
                     await gainExp(3900);
                 }
 
@@ -857,7 +832,7 @@ namespace Application.Plugin.Script.Quest
             if (await AskYesNo("别担心。这次我为了拿利琳寄过来的文件才出去的，没想到中了敌人的招。平时我不会这么不小心的。好歹也是个情报商人，总会为自己准备一条退路的。现在关键的是#b精准矛#k这个技能你知道吗？"))
             {
                 await gainExp(8000);
-                await teachSkill(21100000, 0, 20, -1); // polearm mastery
+                await teachSkill(Aran.POLEARM_MASTERY, 0, 20, -1); // polearm mastery
 
                 await forceCompleteQuest();
 
@@ -886,7 +861,6 @@ namespace Application.Plugin.Script.Quest
             await forceCompleteQuest();
 
             await gainExp(12500);
-            await teachSkill(21100005, 0, 20, -1); // combo drain
         }
         // Quest: 21735 
         public async Task q21735s()
@@ -900,7 +874,7 @@ namespace Application.Plugin.Script.Quest
                 if (!canHold(4032323, 1))
                 {
                     await SayNext("背包中的其他栏至少需要一个空位来接受任务。");
-                    
+
                     return;
                 }
 
@@ -921,7 +895,12 @@ namespace Application.Plugin.Script.Quest
                 {
                     await gainItem(4032323, -1);
                     await gainExp(6037);
+                    await teachSkill(Aran.COMBO_DRAIN, 0, 20, -1); // combo drain
                     await forceCompleteQuest();
+                }
+                else
+                {
+                    await SayOK("你还没去找#b#p1201000##k吗？别担心，别担心。即便是情报商人，对#m140000000#岛的情况也几乎一无所知。如果不想让黑色之翼找到，最安全的地方就是#b#m140000000##k。请放心，把封印石交给#p1201000#保管吧。");
                 }
             }
         }
@@ -980,7 +959,7 @@ namespace Application.Plugin.Script.Quest
                         new SpeechText("#b（对利琳讲述有关天空之城封印石的事情。）#k", NpcTalkSpeaker.PlayerRight)
                 ]);
             await forceCompleteQuest();
-            await teachSkill(21100004, 0, 20, -1); // combo smash
+            await teachSkill(Aran.COMBO_SMASH, 0, 20, -1); // combo smash
         }
         // Quest: 21741 
         public async Task q21741s()
@@ -1054,7 +1033,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 21747 
         public async Task q21747s()
         {
-            if (await SayAcceptDecline("没想到在数百年的岁月之后，英雄的后裔又重新出现了......也不知道对冒险岛世界师傅还是祸......怎样都无所谓了。好吧......我告诉你有关武陵封印石的事情。"))
+            if (await SayAcceptDecline("没想到在数百年的岁月之后，英雄的后裔又重新出现了......也不知道对冒险岛世界是福还是祸......怎样都无所谓了。好吧......我告诉你有关武陵封印石的事情。"))
             {
                 await SayNext("武陵的封印石所在的地方叫做封印的寺院。那里的入口被隐藏在武陵寺院内。你去仔细观察武陵寺院入口处熊猫提着的灯盏。如果能从中找出#b刻有入口字样的灯盏#k，就可以进入封印的寺院了。暗号是#b道可道非常道。#k");
                 await forceStartQuest();
@@ -1075,7 +1054,7 @@ namespace Application.Plugin.Script.Quest
             await SayNext("战神，你平安回来了！在武陵的任务完成的如何了？#r影子武士#k偷袭了武陵并再次偷走了封印石？那真不幸。至少你没有受伤，我很高兴。");
             await SayNext("我研究了一些新的技能，试图帮你找回记忆。好消息的是，我想起了其中一个：#r战神突进#k！有了它，你将能够击退前面的敌人。对你的能力来说是一个很好的提升，对吧？");
             await gainExp(20000);
-            await teachSkill(21100002, 0, 30, -1); // final charge
+            await teachSkill(Aran.FINAL_CHARGE, 0, 30, -1); // final charge
 
             await forceCompleteQuest();
         }

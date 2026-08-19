@@ -171,7 +171,6 @@ public class ServerConfig
     public bool USE_ULTRA_THREE_SNAILS;
 
     //Other Skills Configuration
-    public bool USE_FULL_ARAN_SKILLSET;
     public bool USE_FAST_REUSE_HERO_WILL;
     public bool USE_ANTI_IMMUNITY_CRASH;
     public bool USE_UNDISPEL_HOLY_SHIELD;
