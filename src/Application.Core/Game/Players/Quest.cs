@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
 using Application.Shared.Quest;
@@ -10,6 +11,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
+        public Dictionary<short, AbstractQuestRecordEx> QuestRecordEx { get; set; } = new();
         private List<KeyValuePair<DelayedQuestUpdate, object[]>> npcUpdateQuests = new();
 
         public Dictionary<short, QuestStatus> Quests { get; set; } = new Dictionary<short, QuestStatus>();
@@ -419,18 +421,16 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public AbstractQuestRecordEx GetPartyQuestRecord(short questId)
+        public AbstractQuestRecordEx? GetQuestRecordEx(short quest)
         {
-            var data = AreaInfo.GetValueOrDefault(questId);
-
-            if (questId >= 1300)
+            if (Enum.TryParse<ExQuestId>(quest.ToString(), out var d))
             {
-                return new ConfrontQuestEx(questId, data);
+                return GetQuestRecordEx(d);
             }
-            return new PartyQuestRecordEx(questId, data);
+            return null;
         }
 
-        public AbstractQuestRecordEx? GetMedalQuestInfo(MedalQuestId quest)
+        public AbstractQuestRecordEx? GetQuestRecordEx(ExQuestId quest)
         {
             var questId = (short)quest;
             if (GetQuestStatus(questId) != QuestStatus.Status.STARTED)
@@ -438,25 +438,51 @@ namespace Application.Core.Game.Players
                 return null;
             }
 
-            var data = AreaInfo.GetValueOrDefault(questId);
+            if (QuestRecordEx.TryGetValue(questId, out var data))
+            {
+                return data;
+            }
+
             switch (quest)
             {
-                case MedalQuestId.PartyQuest:
-                    return new MedalQuest29000Ex(data);
-                case MedalQuestId.Quest:
-                    return new MedalQuest29001Ex(data);
-                case MedalQuestId.Pop:
-                    return new MedalQuest29002Ex(data);
-                case MedalQuestId.Online:
+                case ExQuestId.PQ_MoonBunny:
+                case ExQuestId.PQ_Kerning:
+                case ExQuestId.PQ_Ludi:
+                case ExQuestId.PQ_Oribis:
+                case ExQuestId.PQ_Pirate:
+                case ExQuestId.PQ_Magatia:
+                case ExQuestId.PQ_Ellin:
+                    return QuestRecordEx[questId] = new PartyQuestRecordEx(questId, null);
+                case ExQuestId.PQ_Ariant:
+                case ExQuestId.PQ_MC1:
+                case ExQuestId.PQ_MC2:
+                    return QuestRecordEx[questId] = new ConfrontQuestEx(questId, null);
+
+                case ExQuestId.PartyQuest:
+                    return QuestRecordEx[questId] = new MedalQuest29000Ex(null);
+                case ExQuestId.Quest:
+                    return QuestRecordEx[questId] = new MedalQuest29001Ex(null);
+                case ExQuestId.Pop:
+                    return QuestRecordEx[questId] = new MedalQuest29002Ex(null);
+                case ExQuestId.Online:
                     break;
-                case MedalQuestId.VeteranHunter:
-                    return new MedalQuest29400Ex(data);
+                case ExQuestId.VeteranHunter:
+                    return QuestRecordEx[questId] = new MedalQuest29400Ex(null);
                 default:
                     break;
             }
-
             return null;
         }
 
+        public async Task FlushQuestRecordEx(AbstractQuestRecordEx? data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            var value = data.ToString();
+            await SendPacket(MessagePacket.QuestRecordEx(data.QuestId, value));
+        }
     }
 }

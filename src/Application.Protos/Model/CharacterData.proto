@@ -39,6 +39,7 @@ message CharacterDataProto {
   repeated PlayerTimerQuestProto runningTimerQuests = 16;	// 计时任务
   StorageProto gachaponStorage = 17;	// 奖品仓库
   repeated BuddyProto buddyList = 18; // 好友
+  repeated AreaProto questRecordEx = 19; // QuestRecordEx记录
 }
 
 

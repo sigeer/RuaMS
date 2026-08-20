@@ -4,7 +4,7 @@ namespace Application.Core.Channel.QuestRecordEx
 {
     public class MedalQuest29400Ex : AbstractQuestRecordEx
     {
-        public MedalQuest29400Ex(string? rawContent) : base((short)MedalQuestId.VeteranHunter, rawContent)
+        public MedalQuest29400Ex(string? rawContent) : base((short)ExQuestId.VeteranHunter, rawContent)
         {
         }
 

@@ -10,6 +10,7 @@ using Application.Core.Models;
 using Application.Core.ServerTransports;
 using Application.Scripting.JS;
 using Application.Shared.Events;
+using Application.Shared.Quest;
 using client;
 using client.inventory;
 using client.keybind;
@@ -191,6 +192,7 @@ namespace Application.Core.Channel.Services
 
             player.PlayerTrockLocation.LoadData(o.Character.Data.TrockLocations);
             player.AreaInfo = o.Character.Data.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
+            player.QuestRecordEx = o.Character.Data.QuestRecordEx.ToDictionary(x => (short)x.Area, x => player.GetQuestRecordEx((ExQuestId)x.Area)!);
             player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
 
             var statusFromDB = o.Character.Data.QuestStatuses;
@@ -350,6 +352,7 @@ namespace Application.Core.Channel.Services
 
             data.FameLogs.AddRange(_mapper.Map<ProtoModel.FameLogRecordProto[]>(player.FameLogs));
             data.Areas.AddRange(player.AreaInfo.Select(x => new ProtoModel.AreaProto() { Area = x.Key, Info = x.Value }));
+            data.QuestRecordEx.AddRange(player.QuestRecordEx.Select(x => new ProtoModel.AreaProto() { Area = x.Key, Info = x.Value.ToString() }));
             data.MonsterBooks.AddRange(player.Monsterbook.ToDto());
             data.SavedLocations.AddRange(player.SavedLocations.ToDto());
             data.Events.AddRange(player.Events.Select(x => new ProtoModel.EventProto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
