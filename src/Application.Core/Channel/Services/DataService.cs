@@ -192,7 +192,7 @@ namespace Application.Core.Channel.Services
 
             player.PlayerTrockLocation.LoadData(o.Character.Data.TrockLocations);
             player.AreaInfo = o.Character.Data.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
-            player.QuestRecordEx = o.Character.Data.QuestRecordEx.ToDictionary(x => (short)x.Area, x => player.GetQuestRecordEx((ExQuestId)x.Area)!);
+
             player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
 
             var statusFromDB = o.Character.Data.QuestStatuses;
@@ -226,6 +226,8 @@ namespace Application.Core.Channel.Services
                     status.addMedalMap(medalMap.MapId);
                 }
             }
+            player.QuestRecordEx = o.Character.Data.QuestRecordEx.Select(x => (x.Area, player.GetQuestRecordEx((ExQuestId)x.Area, x.Info)))
+                .Where(x => x.Item2 != null).ToDictionary(x => (short)x.Area, x => x.Item2!);
 
             player.Skills.LoadData(o.Character.Data.Skills);
 

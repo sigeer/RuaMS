@@ -323,7 +323,7 @@ namespace Application.Core.Game.Players
 
         public async Task forfeitExpirableQuests()
         {
-            var expirableQuests = Quests.Values.Where(x => x.getExpirationTime() > 0).ToArray();
+            var expirableQuests = Quests.Values.Where(x => x.getQuest().getTimeLimit() > 0 && x.getExpirationTime() > 0).ToArray();
             foreach (var quest in expirableQuests)
             {
                 await quest.getQuest().forfeit(this);
@@ -430,7 +430,7 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public AbstractQuestRecordEx? GetQuestRecordEx(ExQuestId quest)
+        public AbstractQuestRecordEx? GetQuestRecordEx(ExQuestId quest, string? initialContent = null)
         {
             var questId = (short)quest;
             if (GetQuestStatus(questId) != QuestStatus.Status.STARTED)
@@ -452,22 +452,22 @@ namespace Application.Core.Game.Players
                 case ExQuestId.PQ_Pirate:
                 case ExQuestId.PQ_Magatia:
                 case ExQuestId.PQ_Ellin:
-                    return QuestRecordEx[questId] = new PartyQuestRecordEx(questId, null);
+                    return QuestRecordEx[questId] = new PartyQuestRecordEx(questId, initialContent);
                 case ExQuestId.PQ_Ariant:
                 case ExQuestId.PQ_MC1:
                 case ExQuestId.PQ_MC2:
-                    return QuestRecordEx[questId] = new ConfrontQuestEx(questId, null);
+                    return QuestRecordEx[questId] = new ConfrontQuestEx(questId, initialContent);
 
                 case ExQuestId.PartyQuest:
-                    return QuestRecordEx[questId] = new MedalQuest29000Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29000Ex(initialContent);
                 case ExQuestId.Quest:
-                    return QuestRecordEx[questId] = new MedalQuest29001Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29001Ex(initialContent);
                 case ExQuestId.Pop:
-                    return QuestRecordEx[questId] = new MedalQuest29002Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29002Ex(initialContent);
                 case ExQuestId.Online:
                     break;
                 case ExQuestId.VeteranHunter:
-                    return QuestRecordEx[questId] = new MedalQuest29400Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29400Ex(initialContent);
                 default:
                     break;
             }
