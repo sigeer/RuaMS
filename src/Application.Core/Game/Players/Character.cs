@@ -3533,16 +3533,6 @@ public partial class Player
         // await SendPacket(PacketCreator.updateAreaInfo(area, info));
     }
 
-    public string? getAreaInfo(int area)
-    {
-        return AreaInfo.GetValueOrDefault((short)area);
-    }
-
-    public Dictionary<short, string> getAreaInfos()
-    {
-        return AreaInfo;
-    }
-
     public async Task Autoban(string reason)
     {
         if (this.isGM() || this.isBanned())

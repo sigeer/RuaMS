@@ -187,8 +187,17 @@ public class PacketCreator
         addTeleportInfo(p, chr);
         addMonsterBookInfo(p, chr);
         addNewYearInfo(p, chr);
-        addAreaInfo(p, chr);//assuming it stayed here xd
-        p.writeShort(0);
+
+        // 0x80000
+        p.writeShort(chr.QuestRecordEx.Count);
+        foreach (var item in chr.QuestRecordEx)
+        {
+            p.writeShort(item.Key);
+            p.writeString(item.Value.ToString());
+        }
+
+        // 0x100000
+        p.writeShort(0);    // count
     }
 
     private static void addNewYearInfo(OutPacket p, Player chr)
@@ -228,16 +237,6 @@ public class PacketCreator
          }*/
     }
 
-    private static void addAreaInfo(OutPacket p, Player chr)
-    {
-        Dictionary<short, string> areaInfos = chr.getAreaInfos();
-        p.writeShort(areaInfos.Count);
-        foreach (short area in areaInfos.Keys)
-        {
-            p.writeShort(area);
-            p.writeString(areaInfos[area]);
-        }
-    }
 
     private static void addCharEquips(OutPacket p, Player chr)
     {
@@ -485,6 +484,7 @@ public class PacketCreator
         {
             p.writeByte(chr.getInventory(InventoryTypeUtils.getByType(i)).getSlotLimit());
         }
+        // 0x100000
         p.writeLong(PacketCommon.getTime(-2));
         var iv = chr.getInventory(InventoryType.EQUIPPED);
         var equippedC = iv.list();
