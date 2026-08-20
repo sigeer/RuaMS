@@ -4,12 +4,15 @@ using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.item;
 using Application.Core.tools.RandomUtils;
 using Application.Shared.Constants.Inventory;
+using Application.Shared.Constants.Map;
 using Application.Templates.Character;
+using Application.Templates.Item.Consume;
 using Application.Templates.Reader;
 using Application.Utility;
 using Application.Utility.Extensions;
 using client.inventory.manipulator;
 using server.life;
+using System.Collections.Concurrent;
 using System.Drawing;
 
 namespace Application.Plugin.TreasureMap
@@ -78,7 +81,7 @@ namespace Application.Plugin.TreasureMap
             switch (result)
             {
                 case TreasureMapRewardType.Mob:
-                    var mobId = new LotteryMachine<int>([new(5250001, 95), new(8150000, 5)]).GetRandomItem();
+                    var mobId = new LotteryMachine<int>([new(5250001, 90), new(8150000, 10)]).GetRandomItem();
                     var mobTemplate = LifeFactory.Instance.GetMonsterTrust(mobId);
                     var count = mobId == 5250001 ? Randomizer.NextInt(2, 8) : 2;
                     for (int i = 0; i < count; i++)
@@ -99,10 +102,16 @@ namespace Application.Plugin.TreasureMap
                     await getPlayer().ChangeHP(-(int)(getPlayer().HP * 0.2));
                     break;
                 //case TreasureMapRewardType.Skill:
-                //    // 可以根据不同地图掉落不同
+                //    // 根据地图掉落不同职业的能手册或者母本
                 //    break;
-                //case TreasureMapRewardType.Scroll:
-                //    break;
+                case TreasureMapRewardType.Scroll:
+                    var itemId = GetScrollPool(getMapId()).GetRandomItem();
+                    if (itemId > 0)
+                    {
+                        var item = ItemInformationProvider.getInstance().GenerateVirtualItemById(itemId, 1, true);
+                        await getMap().spawnItemDrop(getPlayer(), getPlayer(), item, getPlayer().getPosition(), false, true);
+                    }
+                    break;
                 default:
                     await SayOK("这里什么也没有...");
                     break;
@@ -132,10 +141,72 @@ namespace Application.Plugin.TreasureMap
             EquipSlot.Face
         };
 
-        static LotteryMachine<int> ScrollPool = new LotteryMachine<int>([
-            new (2040804, 2),
-            new (2040805, 1)
-            ]);
+        static ConcurrentDictionary<int, LotteryMachine<int>> _scrollPool = new();
+        static LotteryMachine<int> GetScrollPool(int mapId)
+        {
+            if (!Settings.Maps.Contains(mapId))
+            {
+                return new([]);
+            }
+
+            if (_scrollPool.TryGetValue(mapId, out var data))
+            {
+                return data;
+            }
+
+            if (mapId == MapId.HENESYS)
+            {
+                // 敏捷 闪避
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncDEX > 0 || x.IncEVA > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            else if (mapId == MapId.KERNING_CITY)
+            {
+                // 运气 命中
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncLUK > 0 || x.IncACC > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            else if (mapId == MapId.PERION)
+            {
+                // 力量 蓝量
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncSTR > 0 || x.IncMMP > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            else if (mapId == MapId.ELLINIA)
+            {
+                // 智力 跳跃
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncINT > 0 || x.IncJump > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            else if (mapId == MapId.LITH_HARBOUR)
+            {
+                // 攻击 魔防
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncPAD > 0 || x.IncMDD > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+
+            }
+            else if (mapId == MapId.SLEEPYWOOD)
+            {
+                // 魔力 物防
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                    .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat).Where(x => x.IncMAD > 0 || x.IncPDD > 0)
+                    .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            else if (mapId == MapId.SLEEPYWOOD)
+            {
+                // 移动 气血
+                return _scrollPool[mapId] = new LotteryMachine<int>(ProviderSource.Instance.GetProvider<IItemProvider>(ProviderType.Item)
+                        .LoadAll().OfType<ScrollItemTemplate>().Where(x => x.Req.Length == 0 && !x.Recover && !x.RandStat)
+                        .Where(x => x.IncSpeed > 0 || x.IncMHP > 0)
+                        .Select(x => new LotteryMachinItem<int>(x.TemplateId, x.Cursed > 0 ? 5 : x.Success)).ToArray());
+            }
+            return new LotteryMachine<int>([]);
+        }
 
         private static string? GetDirection(double ax, double ay, double bx, double by, bool yDown)
         {
