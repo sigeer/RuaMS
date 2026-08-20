@@ -95,22 +95,38 @@ namespace Application.Templates.Character
         public int Fs { get; set; }
         [WZPath("info/level/info/-")]
         public EquipLevelData[] LevelData { get; set; }
-        /// <summary>
-        /// 等级数据（LevelData）中有增加属性（有不止Exp的其他项存在）
-        /// </summary>
-        [GenerateIgnoreProperty]
-        public bool IsElemental => LevelData.Length > 0 && LevelData[0].FieldCount > 1;
+        [WZPath("info/level/case/-")]
+        public EquipLevelCase[] LevelCase { get; set; }
+
+        public int MaxLevel => Math.Min(30, (LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1);
+        // public bool IsUpgradeable => MaxLevel > 0;
         public EquipTemplate(int templateId)
             : base(templateId)
         {
             LevelData = Array.Empty<EquipLevelData>();
+            LevelCase = [];
         }
 
         public bool IsUpgradeable()
         {
-            return TUC > 0 || IncSTR > 0 || IncDEX > 0 || IncINT > 0 || IncLUK > 0 ||
-                IncPAD > 0 || IncMAD > 0 || IncPDD > 0 || IncMDD > 0 ||
-                IncACC > 0 || IncEVA > 0 || IncSpeed > 0 || IncJump > 0 || IncMHP > 0 || IncMMP > 0;
+            return MaxLevel > 1;
+        }
+
+        public EquipLevelCase? GetActiveCase()
+        {
+            if (LevelCase.Length == 0)
+                return null;
+
+            var sum = LevelCase.Sum(x => x.Prob);
+            var value = Random.Shared.Next(sum);
+            foreach (var item in LevelCase)
+            {
+                if (value < item.Prob)
+                    return item;
+                value -= item.Prob;
+            }
+            return LevelCase[^1];
+
         }
     }
 }

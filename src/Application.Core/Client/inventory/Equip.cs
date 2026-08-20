@@ -23,7 +23,6 @@
 
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
-using Application.Core.Game.Relation;
 using Application.Templates.Character;
 using tools;
 
@@ -55,10 +54,12 @@ public class Equip : Item
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
     private bool _wear = false;
-    private bool isUpgradeable;    // timeless or reverse, or any equip that could levelup on GMS for all effects
-    public bool IsElemental { get; }
-    public int MaxLevel { get; }
 
+    public int MaxLevel => SourceTemplate.MaxLevel;
+    /// <summary>
+    /// 为什么不用bool，实际取skill时从template取：可支持装备在不同等级获得技能
+    /// </summary>
+    public Dictionary<int, int> Skills { get; set; } = new();
     public override EquipTemplate SourceTemplate { get; }
 
     public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
@@ -69,13 +70,6 @@ public class Equip : Item
         this.itemLevel = 1;
         this.quantity = 1;
 
-        IsElemental = SourceTemplate.IsElemental;
-        MaxLevel = Math.Min(30,
-            Math.Max(
-                (SourceTemplate.LevelData.Where(x => x.FieldCount > 1).Max(x => (int?)x.Level) ?? 0) + 1,
-                YamlConfig.config.server.USE_EQUIPMNT_LVLUP
-                )
-            );
     }
 
     public override Item copy()
@@ -101,6 +95,7 @@ public class Equip : Item
         ret.itemLevel = itemLevel;
         ret.itemExp = itemExp;
         ret.level = level;
+        ret.Skills = Skills.ToDictionary();
 
         CopyItemProps(ret);
         return ret;
@@ -296,219 +291,6 @@ public class Equip : Item
         this.level = level;
     }
 
-    private static int getStatModifier(bool isAttribute)
-    {
-        // each set of stat points grants a chance for a bonus stat point upgrade at equip level up.
-
-        if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_POWER)
-        {
-            if (isAttribute)
-            {
-                return 2;
-            }
-            else
-            {
-                return 4;
-            }
-        }
-        else
-        {
-            if (isAttribute)
-            {
-                return 4;
-            }
-            else
-            {
-                return 16;
-            }
-        }
-    }
-
-    private static int randomizeStatUpgrade(int top)
-    {
-        int limit = Math.Min(top, YamlConfig.config.server.MAX_EQUIPMNT_LVLUP_STAT_UP);
-
-        int poolCount = (limit * (limit + 1) / 2) + limit;
-        int rnd = Randomizer.rand(0, poolCount);
-
-        int stat = 0;
-        if (rnd >= limit)
-        {
-            rnd -= limit;
-            stat = 1 + (int)Math.Floor((-1 + Math.Sqrt((8 * rnd) + 1)) / 2);    // optimized randomizeStatUpgrade author: David A.
-        }
-
-        return stat;
-    }
-
-    private bool isPhysicalWeapon()
-    {
-        return SourceTemplate.IncPAD >= SourceTemplate.IncMAD;
-    }
-
-    private bool isNotWeaponAffinity(StatUpgrade name)
-    {
-        // Vcoc's idea - WATK/MATK expected gains lessens outside of weapon affinity (physical/magic)
-
-        if (ItemConstants.isWeapon(this.getItemId()))
-        {
-            if (name.Equals(StatUpgrade.incPAD))
-            {
-                return !isPhysicalWeapon();
-            }
-            else if (name.Equals(StatUpgrade.incMAD))
-            {
-                return isPhysicalWeapon();
-            }
-        }
-
-        return false;
-    }
-
-    private void getUnitStatUpgrade(List<KeyValuePair<StatUpgrade, int>> stats, StatUpgrade name, int curStat, bool isAttribute)
-    {
-        isUpgradeable = true;
-
-        int maxUpgrade = randomizeStatUpgrade((int)(1 + (curStat / (getStatModifier(isAttribute) * (isNotWeaponAffinity(name) ? 2.7 : 1)))));
-        if (maxUpgrade == 0)
-        {
-            return;
-        }
-
-        stats.Add(new(name, maxUpgrade));
-    }
-
-    private static void getUnitSlotUpgrade(List<KeyValuePair<StatUpgrade, int>> stats, StatUpgrade name)
-    {
-        if (Randomizer.nextDouble() < 0.1)
-        {
-            stats.Add(new(name, 1));  // 10% success on getting a slot upgrade.
-        }
-    }
-
-    private void improveDefaultStats(List<KeyValuePair<StatUpgrade, int>> stats)
-    {
-        if (dex > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incDEX, dex, true);
-        }
-        if (str > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incSTR, str, true);
-        }
-        if (_int > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incINT, _int, true);
-        }
-        if (luk > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incLUK, luk, true);
-        }
-        if (hp > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incMHP, hp, false);
-        }
-        if (mp > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incMMP, mp, false);
-        }
-        if (watk > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incPAD, watk, false);
-        }
-        if (matk > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incMAD, matk, false);
-        }
-        if (wdef > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incPDD, wdef, false);
-        }
-        if (mdef > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incMDD, mdef, false);
-        }
-        if (avoid > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incEVA, avoid, false);
-        }
-        if (acc > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incACC, acc, false);
-        }
-        if (speed > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incSpeed, speed, false);
-        }
-        if (jump > 0)
-        {
-            getUnitStatUpgrade(stats, StatUpgrade.incJump, jump, false);
-        }
-    }
-
-    public Dictionary<StatUpgrade, int> getStats()
-    {
-        Dictionary<StatUpgrade, int> stats = new(5);
-
-        if (dex > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incDEX, dex);
-        }
-        if (str > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incSTR, str);
-        }
-        if (_int > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incINT, _int);
-        }
-        if (luk > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incLUK, luk);
-        }
-        if (hp > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incMHP, hp);
-        }
-        if (mp > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incMMP, mp);
-        }
-        if (watk > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incPAD, watk);
-        }
-        if (matk > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incMAD, matk);
-        }
-        if (wdef > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incPDD, wdef);
-        }
-        if (mdef > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incMDD, mdef);
-        }
-        if (avoid > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incEVA, avoid);
-        }
-        if (acc > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incACC, acc);
-        }
-        if (speed > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incSpeed, speed);
-        }
-        if (jump > 0)
-        {
-            stats.AddOrUpdate(StatUpgrade.incJump, jump);
-        }
-
-        return stats;
-    }
 
     public KeyValuePair<string, KeyValuePair<bool, bool>> gainStats(List<KeyValuePair<StatUpgrade, int>> stats)
     {
@@ -520,12 +302,12 @@ public class Equip : Item
             switch (stat.Key)
             {
                 case StatUpgrade.incDEX:
-                    statUp = Math.Min(stat.Value, maxStat - dex);
+                    statUp = stat.Value;
                     dex += statUp;
                     lvupStr += "+" + statUp + "DEX ";
                     break;
                 case StatUpgrade.incSTR:
-                    statUp = Math.Min(stat.Value, maxStat - str);
+                    statUp = stat.Value;
                     str += statUp;
                     lvupStr += "+" + statUp + "STR ";
                     break;
@@ -604,66 +386,35 @@ public class Equip : Item
         return new(lvupStr, new(gotSlot, gotVicious));
     }
 
+    public void ImproveSlot(int slot = 1)
+    {
+        List<KeyValuePair<StatUpgrade, int>> stats = [];
+        if (vicious > 0)
+        {
+            stats.Add(new(StatUpgrade.incVicious, slot));
+        }
+        stats.Add(new(StatUpgrade.incSlot, slot));
+
+        gainStats(stats);
+    }
+
     private async Task gainLevel(IChannelClient c)
     {
-        List<KeyValuePair<StatUpgrade, int>> stats = new();
-
-        if (IsElemental)
-        {
-            var elementalStats = ItemInformationProvider.getInstance().getItemLevelupStats(SourceTemplate, itemLevel);
-
-            foreach (KeyValuePair<string, int> p in elementalStats)
-            {
-                if (p.Value > 0)
-                {
-                    stats.Add(new(Enum.Parse<StatUpgrade>(p.Key), p.Value));
-                }
-            }
-        }
-
-        if (stats.Count > 0)
-        {
-            if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_SLOTS)
-            {
-                if (vicious > 0)
-                {
-                    getUnitSlotUpgrade(stats, StatUpgrade.incVicious);
-                }
-                getUnitSlotUpgrade(stats, StatUpgrade.incSlot);
-            }
-        }
-        else
-        {
-            isUpgradeable = false;
-
-            improveDefaultStats(stats);
-            if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_SLOTS)
-            {
-                if (vicious > 0)
-                {
-                    getUnitSlotUpgrade(stats, StatUpgrade.incVicious);
-                }
-                getUnitSlotUpgrade(stats, StatUpgrade.incSlot);
-            }
-
-            if (isUpgradeable)
-            {
-                while (stats.Count == 0)
-                {
-                    improveDefaultStats(stats);
-                    if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_SLOTS)
-                    {
-                        if (vicious > 0)
-                        {
-                            getUnitSlotUpgrade(stats, StatUpgrade.incVicious);
-                        }
-                        getUnitSlotUpgrade(stats, StatUpgrade.incSlot);
-                    }
-                }
-            }
-        }
-
         itemLevel++;
+
+        var stats = ItemInformationProvider.getInstance().getItemLevelupStats(SourceTemplate, itemLevel - 1)
+            .Where(x => x.Value > 0)
+            .ToList();
+
+        var skillData = SourceTemplate.GetActiveCase()?.SkillData?.FirstOrDefault(x => x.Level == itemLevel);
+        if (skillData != null && skillData.Skills.Length > 0)
+        {
+            foreach (var skill in skillData.Skills)
+            {
+                var exsited = Skills.GetValueOrDefault(skill.SkillId);
+                Skills[skill.SkillId] = exsited + skill.Level;
+            }
+        }
 
         string lvupStr = "'" + c.CurrentCulture.GetItemName(this.getItemId()) + "' is now level " + itemLevel + "! ";
         string showStr = "#e'" + c.CurrentCulture.GetItemName(this.getItemId()) + "'#b is now #elevel #r" + itemLevel + "#k#b!";
@@ -739,7 +490,7 @@ public class Equip : Item
         int reqLevel = SourceTemplate.ReqLevel;
 
         float masteryModifier = (float)(YamlConfig.config.server.EQUIP_EXP_RATE * ExpTable.getExpNeededForLevel(1)) / (float)normalizedMasteryExp(reqLevel);
-        float elementModifier = (IsElemental) ? 0.85f : 0.6f;
+        float elementModifier = 0.6f;
 
         float baseExpGain = gain * elementModifier * masteryModifier;
 

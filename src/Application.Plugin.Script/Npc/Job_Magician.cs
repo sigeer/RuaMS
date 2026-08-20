@@ -230,41 +230,41 @@ namespace Application.Plugin.Script.Npc
                 await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.FP_ARCHMAGE)
                 {
-                    if (getPlayer().getSkillLevel(2121007) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2121007) == 0)
                     {
                         await teachSkill(2121007, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(2121005) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2121005) == 0)
                     {
                         await teachSkill(2121005, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(2121003) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2121003) == 0)
                     {
                         await teachSkill(2121003, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.IL_ARCHMAGE)
                 {
-                    if (getPlayer().getSkillLevel(2221007) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2221007) == 0)
                     {
                         await teachSkill(2221007, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(2221005) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2221005) == 0)
                     {
                         await teachSkill(2221005, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(2221003) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2221003) == 0)
                     {
                         await teachSkill(2221003, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.BISHOP)
                 {
-                    if (getPlayer().getSkillLevel(2321008) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2321008) == 0)
                     {
                         await teachSkill(2321008, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(2321006) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(2321006) == 0)
                     {
                         await teachSkill(2321006, 0, 10, -1);
                     }

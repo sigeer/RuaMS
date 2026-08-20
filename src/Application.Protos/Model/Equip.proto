@@ -26,4 +26,5 @@ message EquipProto {
   int32 vicious = 19;
   int32 itemlevel = 20;
   int32 itemexp = 21;
+  map<int32, int32> skills = 22;
 }

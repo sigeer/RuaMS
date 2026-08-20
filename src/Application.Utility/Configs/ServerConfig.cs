@@ -197,12 +197,8 @@ public class ServerConfig
     public int EXPAND_GUILD_MAX_COST;
 
     //Equipment Configuration
-    public bool USE_EQUIPMNT_LVLUP_SLOTS;
-    public bool USE_EQUIPMNT_LVLUP_POWER;
-    public bool USE_EQUIPMNT_LVLUP_CASH;
-    public int MAX_EQUIPMNT_LVLUP_STAT_UP;
     public int MAX_EQUIPMNT_STAT;
-    public int USE_EQUIPMNT_LVLUP;
+
 
     //Map-Chair Configuration
     public bool USE_CHAIR_EXTRAHEAL;
