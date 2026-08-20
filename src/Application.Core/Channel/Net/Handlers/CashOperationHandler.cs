@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Items;
 using Application.Core.Managers;
@@ -267,6 +268,31 @@ public class CashOperationHandler : ChannelHandlerBase
                     {
                         cs.Buy(cash, cItem);
                         await c.SendPacket(PacketCreator.showBoughtCharacterSlot(++c.AccountEntity!.Characterslots));
+                        await c.SendPacket(PacketCreator.showCash(chr));
+                    }
+                    else
+                    {
+                        await chr.Popup("You have already used up all 12 extra character slots.");
+                        await c.OnlinedCharacter.enableCSActions();
+                        return;
+                    }
+                }
+                else if (action == 0xA)
+                {
+                    // 购买额外槽
+                    int cashType = p.readInt();
+                    var cItem = _cashItemProvider.getItem(p.readInt());
+
+                    if (!canBuy(chr, cItem, cs.getCash(cashType)))
+                    {
+                        await c.OnlinedCharacter.enableCSActions();
+                        return;
+                    }
+
+                    if (c.GainCharacterSlot())
+                    {
+                        cs.Buy(cashType, cItem);
+                        await c.SendPacket(CashPackets.BoughtEquipExtraSlotSuccess(30, false));
                         await c.SendPacket(PacketCreator.showCash(chr));
                     }
                     else

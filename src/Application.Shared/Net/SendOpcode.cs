@@ -466,7 +466,13 @@ public enum SendOpcode
 
     CHARGE_PARAM_RESULT = 0x143,
     QUERY_CASH_RESULT = 0x144,
+    /// <summary>
+    /// CCashShop::OnCashItemResult
+    /// </summary>
     CASHSHOP_OPERATION = 0x145,
+    /// <summary>
+    /// sub_479070
+    /// </summary>
     CASHSHOP_PURCHASE_EXP_CHANGED = 0x146,   // found thanks to Arnah =Vertisy
     CASHSHOP_GIFT_INFO_RESULT = 0x147,
     CASHSHOP_CHECK_NAME_CHANGE = 0x148,

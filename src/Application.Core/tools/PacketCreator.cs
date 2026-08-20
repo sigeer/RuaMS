@@ -6518,6 +6518,11 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// SP_532_YOU_HAVE_ADDED_A_NEW_CHARACTER_SLOT
+    /// </summary>
+    /// <param name="slots"></param>
+    /// <returns></returns>
     public static Packet showBoughtCharacterSlot(short slots)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
