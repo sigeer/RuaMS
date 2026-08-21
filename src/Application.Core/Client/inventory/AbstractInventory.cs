@@ -144,7 +144,10 @@ namespace Application.Core.Client.inventory
 
                     else if (item is Pet pet)
                     {
-                        pet.MapPet?.Recall(2);
+                        if (pet.MapPet != null)
+                        {
+                            await pet.MapPet.Recall(2);
+                        }
 
                         if (pet.SourceTemplate.NoRevive)
                         {

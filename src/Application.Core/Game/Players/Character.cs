@@ -1278,7 +1278,7 @@ public partial class Player
         if (op == null)
             return;
 
-        await SyncClientInventory([op], true);
+        await SyncClientInventory([op], updateTick);
     }
 
     public async Task SyncClientInventory(IEnumerable<IInventoryOperationCommand> ops, bool updateTick = true)
