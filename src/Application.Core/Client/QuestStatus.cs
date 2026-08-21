@@ -23,6 +23,7 @@
 
 using server.quest;
 using tools;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace client;
 
@@ -35,7 +36,7 @@ public class QuestStatus
     private short questID;
     private Status status;
     //private bool updated;   //maybe this can be of use for someone?
-    private Dictionary<int, string> _progress = new();
+    private OrderedDictionary<int, string> _progress = new();
     private List<int> medalProgress = new();
     private int npc;
     private long completionTime, expirationTime;
@@ -134,22 +135,28 @@ public class QuestStatus
 
     public bool progress(int id)
     {
-        string? currentStr = _progress.GetValueOrDefault(id);
+        var mobNeeded = getQuest().getMobAmountNeeded(id);
+        if (mobNeeded <= 0)
+            return false;
+
+        var currentStr = _progress.GetValueOrDefault(id);
         if (currentStr == null)
         {
             return false;
         }
 
-        int current = int.Parse(currentStr);
-        if (current >= this.getQuest().getMobAmountNeeded(id))
+        if (int.TryParse(currentStr, out var current))
         {
-            return false;
+            if (current >= mobNeeded)
+            {
+                return false;
+            }
+
+            _progress[id] = (++current).ToString("D3");
+            return true;
         }
 
-        string str = StringUtil.getLeftPaddedStr((++current).ToString(), '0', 3);
-        _progress.AddOrUpdate(id, str);
-        //this.setUpdated();
-        return true;
+        return false;
     }
 
     public void setProgress(int id, string pr)
