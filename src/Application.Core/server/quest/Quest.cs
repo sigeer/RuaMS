@@ -358,18 +358,12 @@ public class Quest
 
     public int getCompleteItemAmountNeeded(int itemid)
     {
-        var req = completeReqs.GetValueOrDefault(QuestRequirementType.ITEM);
-        if (req is ItemRequirement ireq)
-            return ireq.getItemAmountNeeded(itemid, true);
-        return int.MaxValue;
+        return GetItemRequirement()?.getItemAmountNeeded(itemid, true) ?? int.MaxValue;
     }
 
     public int getMobAmountNeeded(int mid)
     {
-        var req = completeReqs.GetValueOrDefault(QuestRequirementType.MOB);
-        if (req is MobRequirement mreq)
-            return mreq.getRequiredMobCount(mid);
-        return 0;
+        return GetMobRequirement()?.getRequiredMobCount(mid) ?? 0;
     }
 
     public short getInfoNumber(Status qs)
