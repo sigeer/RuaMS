@@ -4,6 +4,7 @@ using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
 using Application.Shared.Quest;
 using client;
+using server.life;
 using server.quest;
 using ZLinq;
 
@@ -186,6 +187,8 @@ namespace Application.Core.Game.Players
                 await raiseQuestMobCount(MobId.GHOST_STUMP_QUEST);
             }
 
+            var mobLevel = LifeFactory.Instance.getMonsterLevel(id);
+
             int lastQuestProcessed = 0;
             try
             {
@@ -203,6 +206,19 @@ namespace Application.Core.Game.Players
                         if (qs.getInfoNumber() > 0)
                         {
                             await announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
+                        }
+                    }
+
+                    if (qs.getQuestID() == (short)ExQuestId.VeteranHunter)
+                    {
+                        if (Level < 120 ? mobLevel > Level : mobLevel >= 120)
+                        {
+                            var info = GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
+                            if (info != null && info.Mon <= info.Mg)
+                            {
+                                info.Mon++;
+                                await FlushQuestRecordEx(info);
+                            }
                         }
                     }
                 }
