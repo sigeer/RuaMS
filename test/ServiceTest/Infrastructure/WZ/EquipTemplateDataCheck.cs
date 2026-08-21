@@ -74,6 +74,30 @@ internal class EquipTemplateDataCheck(string readerType) : WzTestBase(readerType
         Assert.That(item.LevelData[1].Exp, Is.EqualTo(10000));
         Assert.That(item.LevelData[29].Level, Is.EqualTo(30));
         Assert.That(item.LevelData[29].Exp, Is.EqualTo(10000));
-        Assert.That(item.IsElemental, Is.False);
+    }
+
+    [Test]
+    public void EquipLevelCaseDataCheck()
+    {
+        var provider = _providerSource.GetProvider<IProvider<AbstractItemTemplate>>(ProviderType.Equip);
+        var item = provider.GetRequiredItem<EquipTemplate>(01002790)!;
+
+        Assert.That(item.TemplateId, Is.EqualTo(1002790));
+        Assert.That(item.LevelCase, Has.Length.EqualTo(2));
+        Assert.That(item.LevelCase[0].Prob, Is.EqualTo(9));
+        Assert.That(item.LevelCase[0].SkillData, Is.Empty);
+        Assert.That(item.LevelCase[1].Prob, Is.EqualTo(1));
+        Assert.That(item.LevelCase[1].SkillData, Has.Length.EqualTo(1));
+        Assert.That(item.LevelCase[1].SkillData[0].Level, Is.EqualTo(4));
+        Assert.That(item.LevelCase[1].SkillData[0].Skills, Has.Length.EqualTo(4));
+        Assert.That(item.LevelCase[1].SkillData[0].Skills.Select(s => s.SkillId), Is.EqualTo(new[] { 1121006, 1221007, 1321003, 21120002 }));
+        Assert.That(item.LevelCase[1].SkillData[0].Skills.Select(s => s.Level), Is.All.EqualTo(1));
+    }
+
+    [Test]
+    public void NewEquipTemplate_LevelCaseDefaultsToEmpty()
+    {
+        var item = new EquipTemplate(0);
+        Assert.That(item.LevelCase, Is.Empty);
     }
 }

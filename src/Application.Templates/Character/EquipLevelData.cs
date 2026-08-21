@@ -36,4 +36,37 @@ namespace Application.Templates.Character
         public int IncSpeedMax { get; set; }
         public int IncJumpMax { get; set; }
     }
+
+    public class EquipLevelCase
+    {
+        public int Prob { get; set; }
+        [WZPath("~/-")]
+        public EquipLevelSkillTemplate[] SkillData { get; set; }
+        public EquipLevelCase()
+        {
+            SkillData = [];
+        }
+
+    }
+
+    public class EquipLevelSkillTemplate
+    {
+        [WZPath("~/$name")]
+        public int Level { get; set; }
+        [WZPath("~/Skill/-")]
+        public EquipLevelSkillInfo[] Skills { get; set; }
+
+        public EquipLevelSkillTemplate()
+        {
+            Skills = [];
+        }
+    }
+
+
+    public class EquipLevelSkillInfo
+    {
+        public int Level { get; set; }
+        [WZPath("~/id")]
+        public int SkillId { get; set; }
+    }
 }

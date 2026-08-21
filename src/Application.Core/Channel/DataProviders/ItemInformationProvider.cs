@@ -39,6 +39,7 @@ using client.inventory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using server;
+using static client.inventory.Equip;
 
 namespace Application.Core.Channel.DataProviders;
 
@@ -1311,40 +1312,26 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return true;
     }
 
-    public List<KeyValuePair<string, int>> getItemLevelupStats(EquipTemplate template, int level)
+    public List<KeyValuePair<StatUpgrade, int>> getItemLevelupStats(EquipTemplate template, int level)
     {
-        List<KeyValuePair<string, int>> list = new();
+        List<KeyValuePair<StatUpgrade, int>> list = new();
         var levelData = template.LevelData.FirstOrDefault(x => x.Level == level);
         if (levelData != null)
         {
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incDEX", Randomizer.rand(levelData.IncDEXMin, levelData.IncDEXMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incSTR", Randomizer.rand(levelData.IncSTRMin, levelData.IncSTRMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incINT", Randomizer.rand(levelData.IncINTMin, levelData.IncINTMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incLUK", Randomizer.rand(levelData.IncLUKMin, levelData.IncLUKMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incMHP", Randomizer.rand(levelData.IncMHPMin, levelData.IncMHPMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incMMP", Randomizer.rand(levelData.IncMMPMin, levelData.IncMMPMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incPAD", Randomizer.rand(levelData.IncPADMin, levelData.IncPADMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incMAD", Randomizer.rand(levelData.IncMADMin, levelData.IncMADMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incPDD", Randomizer.rand(levelData.IncPDDMin, levelData.IncPDDMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incMDD", Randomizer.rand(levelData.IncMDDMin, levelData.IncMDDMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incACC", Randomizer.rand(levelData.IncACCMin, levelData.IncACCMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incEVA", Randomizer.rand(levelData.IncEVAMin, levelData.IncEVAMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incSpeed", Randomizer.rand(levelData.IncSpeedMin, levelData.IncSpeedMax)));
-            if (Randomizer.nextDouble() < 0.9)
-                list.Add(new("incJump", Randomizer.rand(levelData.IncJumpMin, levelData.IncJumpMax)));
+            list.Add(new(StatUpgrade.incDEX, Randomizer.rand(levelData.IncDEXMin, levelData.IncDEXMax)));
+            list.Add(new(StatUpgrade.incSTR, Randomizer.rand(levelData.IncSTRMin, levelData.IncSTRMax)));
+            list.Add(new(StatUpgrade.incINT, Randomizer.rand(levelData.IncINTMin, levelData.IncINTMax)));
+            list.Add(new(StatUpgrade.incLUK, Randomizer.rand(levelData.IncLUKMin, levelData.IncLUKMax)));
+            list.Add(new(StatUpgrade.incMHP, Randomizer.rand(levelData.IncMHPMin, levelData.IncMHPMax)));
+            list.Add(new(StatUpgrade.incMMP, Randomizer.rand(levelData.IncMMPMin, levelData.IncMMPMax)));
+            list.Add(new(StatUpgrade.incPAD, Randomizer.rand(levelData.IncPADMin, levelData.IncPADMax)));
+            list.Add(new(StatUpgrade.incMAD, Randomizer.rand(levelData.IncMADMin, levelData.IncMADMax)));
+            list.Add(new(StatUpgrade.incPDD, Randomizer.rand(levelData.IncPDDMin, levelData.IncPDDMax)));
+            list.Add(new(StatUpgrade.incMDD, Randomizer.rand(levelData.IncMDDMin, levelData.IncMDDMax)));
+            list.Add(new(StatUpgrade.incACC, Randomizer.rand(levelData.IncACCMin, levelData.IncACCMax)));
+            list.Add(new(StatUpgrade.incEVA, Randomizer.rand(levelData.IncEVAMin, levelData.IncEVAMax)));
+            list.Add(new(StatUpgrade.incSpeed, Randomizer.rand(levelData.IncSpeedMin, levelData.IncSpeedMax)));
+            list.Add(new(StatUpgrade.incJump, Randomizer.rand(levelData.IncJumpMin, levelData.IncJumpMax)));
         }
 
         return list;
@@ -1364,8 +1351,8 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return false;
         }
 
-        var skill2 = SkillFactory.getSkill(targetSkillId);
-        return (player.getSkillLevel(skill2) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
+        var skill2 = SkillFactory.getSkill(targetSkillId)!;
+        return (player.GetPlayerSkillLevel(skill2.getId()) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
             && player.getMasterLevel(skill2) < template.MasterLevel;
     }
 

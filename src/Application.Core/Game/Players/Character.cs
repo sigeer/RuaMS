@@ -3211,142 +3211,6 @@ public partial class Player
     }
 
 
-    private List<Equip> getUpgradeableEquipped()
-    {
-        List<Equip> list = new();
-
-        var ii = ItemInformationProvider.getInstance();
-        return Bag[InventoryType.EQUIPPED].OfType<Equip>().Where(x => x.SourceTemplate.IsUpgradeable()).ToList();
-    }
-
-    public async Task<bool> mergeAllItemsFromName(string name)
-    {
-        InventoryType type = InventoryType.EQUIP;
-
-        var inv = getInventory(type);
-        var it = inv.findByName(name);
-        if (it == null)
-        {
-            return false;
-        }
-
-        Dictionary<StatUpgrade, float> statups = new();
-        await mergeAllItemsFromPosition(statups, it.getPosition());
-
-        List<KeyValuePair<Equip, Dictionary<StatUpgrade, int>>> upgradeableEquipped = new();
-        Dictionary<Equip, List<KeyValuePair<StatUpgrade, int>>> equipUpgrades = new();
-        foreach (Equip eq in getUpgradeableEquipped())
-        {
-            upgradeableEquipped.Add(new(eq, eq.getStats()));
-            equipUpgrades.AddOrUpdate(eq, new());
-        }
-
-        /*
-        foreach(Entry<StatUpgrade, float> es in statups) {
-            Console.WriteLine(es);
-        }
-        */
-
-        foreach (var e in statups)
-        {
-            double ev = Math.Sqrt(e.Value);
-
-            HashSet<Equip> extraEquipped = new(equipUpgrades.Keys);
-            List<Equip> statEquipped = ItemManager.GetEquipsWithStat(upgradeableEquipped, e.Key);
-            float extraRate = (float)(0.2 * Randomizer.nextDouble());
-
-            if (statEquipped.Count > 0)
-            {
-                float statRate = 1.0f - extraRate;
-
-                int statup = (int)Math.Ceiling((ev * statRate) / statEquipped.Count);
-                foreach (Equip statEq in statEquipped)
-                {
-                    equipUpgrades.GetValueOrDefault(statEq)?.Add(new(e.Key, statup));
-                    extraEquipped.Remove(statEq);
-                }
-            }
-
-            if (extraEquipped.Count > 0)
-            {
-                int statup = (int)Math.Round((ev * extraRate) / extraEquipped.Count);
-                if (statup > 0)
-                {
-                    foreach (Equip extraEq in extraEquipped)
-                    {
-                        equipUpgrades.GetValueOrDefault(extraEq)?.Add(new(e.Key, statup));
-                    }
-                }
-            }
-        }
-
-        await LightBlue("EQUIPMENT MERGE operation results:");
-        foreach (var eqpUpg in equipUpgrades)
-        {
-            List<KeyValuePair<StatUpgrade, int>> eqpStatups = eqpUpg.Value;
-            if (eqpStatups.Count > 0)
-            {
-                Equip eqp = eqpUpg.Key;
-                ItemManager.SetMergeFlag(eqp);
-
-                string showStr = " '" + Client.CurrentCulture.GetItemName(eqp.getItemId()) + "': ";
-                string upgdStr = eqp.gainStats(eqpStatups).Key;
-
-                await this.forceUpdateItem(eqp);
-
-                showStr += upgdStr;
-                await LightBlue(showStr);
-            }
-        }
-
-        return true;
-    }
-
-    public async Task mergeAllItemsFromPosition(Dictionary<StatUpgrade, float> statups, short pos)
-    {
-        var inv = getInventory(InventoryType.EQUIP);
-        for (short i = pos; i <= inv.getSlotLimit(); i++)
-        {
-            await standaloneMerge(statups, InventoryType.EQUIP, i, inv.getItem(i) as Equip);
-        }
-    }
-
-    private async Task standaloneMerge(Dictionary<StatUpgrade, float> statups, InventoryType type, short slot, Equip? e)
-    {
-        short quantity;
-        if (e == null || (quantity = e.getQuantity()) < 1 || e.SourceTemplate.Cash || !e.SourceTemplate.IsUpgradeable() || ItemManager.HasMergeFlag(e))
-        {
-            return;
-        }
-
-        foreach (var s in e.getStats())
-        {
-            float incVal = s.Value;
-            switch (s.Key)
-            {
-                case StatUpgrade.incPAD:
-                case StatUpgrade.incMAD:
-                case StatUpgrade.incPDD:
-                case StatUpgrade.incMDD:
-                    incVal = (float)Math.Log(incVal);
-                    break;
-            }
-
-            if (statups.TryGetValue(s.Key, out var newVal))
-            {
-                newVal += incVal;
-            }
-            else
-            {
-                newVal = incVal;
-            }
-
-            statups.AddOrUpdate(s.Key, newVal);
-        }
-
-        await InventoryManipulator.removeFromSlot(Client, type, (byte)slot, quantity, false);
-    }
-
     public void setShop(Shop? shop)
     {
         this.shop = shop;
@@ -3625,15 +3489,9 @@ public partial class Player
         }
     }
 
-    private ICollection<Item> getUpgradeableEquipList()
+    private IEnumerable<Equip> getUpgradeableEquipList()
     {
-        var fullList = getInventory(InventoryType.EQUIPPED).list();
-        if (YamlConfig.config.server.USE_EQUIPMNT_LVLUP_CASH)
-        {
-            return fullList;
-        }
-
-        return fullList.Where(x => !x.SourceTemplate.Cash).ToList();
+        return getInventory(InventoryType.EQUIPPED).OfType<Equip>().Where(x => x.SourceTemplate.IsUpgradeable()).ToList();
     }
 
     public async Task increaseEquipExp(int expGain)
@@ -3646,9 +3504,8 @@ public partial class Player
             }
 
             ItemInformationProvider ii = ItemInformationProvider.getInstance();
-            foreach (Item item in getUpgradeableEquipList())
+            foreach (var nEquip in getUpgradeableEquipList())
             {
-                Equip nEquip = (Equip)item;
                 if (!ii.HasTemplate(nEquip.getItemId()))
                 {
                     continue;

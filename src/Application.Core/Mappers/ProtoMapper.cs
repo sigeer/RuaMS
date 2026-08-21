@@ -9,6 +9,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
 using client.inventory;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
 using server;
@@ -143,6 +144,7 @@ namespace Application.Core.Mappers
                         dest.setLevel((byte)rs.EquipInfo!.Level);
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
+                        dest.Skills = rs.EquipInfo.Skills.ToDictionary();
                     });
 
             config.NewConfig<Equip, ProtoModel.ItemProto>()
@@ -169,7 +171,8 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Upgradeslots, source => source.getUpgradeSlots())
                 .Map(dest => dest.Level, source => source.getLevel())
                 .Map(dest => dest.Itemlevel, source => source.getItemLevel())
-                .Map(dest => dest.Itemexp, source => source.getItemExp());
+                .Map(dest => dest.Itemexp, source => source.getItemExp())
+                .Map(dest => dest.Skills, source => MapMapField(source.Skills));
             #endregion 
 
             config.NewConfig<ProtoModel.SkillMacroProto, SkillMacro>()
@@ -298,6 +301,18 @@ namespace Application.Core.Mappers
             if (src.Type == (int)DropFromType.GlobalDrop)
                 return DropEntry.Global(src.DropperId, src.ItemId, src.Chance, src.MinCount, src.MaxCount, (short)src.QuestId);
             throw new BusinessFatalException("不支持的掉落类型");
+        }
+
+        public static MapField<int, int> MapMapField(Dictionary<int, int> src)
+        {
+            var mapField = new MapField<int, int>();
+            if (src == null) return mapField;
+
+            foreach (var kvp in src)
+            {
+                mapField.Add(kvp.Key, kvp.Value);
+            }
+            return mapField;
         }
     }
 }
