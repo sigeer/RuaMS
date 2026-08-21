@@ -305,7 +305,10 @@ public class Inventory : AbstractInventory
         }
         else if (item is Pet pet)
         {
-            pet.MapPet?.Recall();
+            if (pet.MapPet != null)
+            {
+                await pet.MapPet.Recall();
+            }
         }
         await base.OnItemLeave(item);
     }

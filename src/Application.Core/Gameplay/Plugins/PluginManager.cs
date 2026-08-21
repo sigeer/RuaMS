@@ -473,7 +473,7 @@ namespace Application.Core.Gameplay.Plugins
             return false;
         }
 
-        public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, int selection, string? inputText = null)
+        public async Task MoreNpcConversation(IChannelClient c, sbyte mode, sbyte type, long selection, string? inputText = null)
         {
             if (c.NPCConversationManager != null)
             {

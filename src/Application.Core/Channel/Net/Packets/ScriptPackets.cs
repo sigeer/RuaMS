@@ -161,29 +161,29 @@ namespace Application.Core.Channel.Net.Packets
         //    return p;
         //}
 
-        public static Packet AskPet(int npc, string talk, IReadOnlyList<long> petIds)
+        public static Packet AskPet(int npc, string talk, IEnumerable<long> petIds)
         {
             OutPacket p = CreateNpcTalk(npc, 9, 0);
             p.writeString(talk);
-            p.writeByte(petIds.Count);
+            p.writeByte(petIds.Count());
             foreach (long petId in petIds)
             {
                 p.writeLong(petId);
-                p.writeByte(0);
+                p.writeByte(0); // 客户端未使用
             }
             return p;
         }
 
-        public static Packet AskPetAll(int npc, string talk, IReadOnlyList<long> petIds)
+        public static Packet AskPetAll(int npc, string talk, IEnumerable<long> petIds)
         {
             OutPacket p = CreateNpcTalk(npc, 10, 0);
             p.writeString(talk);
-            p.writeByte(petIds.Count);
+            p.writeByte(petIds.Count());
             p.writeByte(0);
             foreach (long petId in petIds)
             {
                 p.writeLong(petId);
-                p.writeByte(0);
+                p.writeByte(0); // 客户端未使用
             }
             return p;
         }

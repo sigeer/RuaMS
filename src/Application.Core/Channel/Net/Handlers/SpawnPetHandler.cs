@@ -22,9 +22,7 @@
 
 
 using Application.Core.Game.Items;
-using Application.Core.Game.Skills;
 using client.inventory.manipulator;
-using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -44,62 +42,47 @@ public class SpawnPetHandler : ChannelHandlerBase
             {
                 var chr = c.OnlinedCharacter;
                 var item = chr.getInventory(InventoryType.CASH).getItem(slot);
-                if (item == null || item is not Pet pet)
+                if (item == null || item is not Pet petItem)
                     return;
 
-                int petItemId = pet.getItemId();
-                if (petItemId == ItemId.DRAGON_PET || petItemId == ItemId.ROBO_PET)
+                var mapPet = chr.GetPetById(petItem.UniqueId);
+                if (mapPet != null)
                 {
-                    var evolveid = pet.SourceTemplate.Evol1;
-                    if (chr.haveItem(evolveid))
-                    {
-                        await chr.dropMessage(5, "You can't hatch your " + (petItemId == ItemId.DRAGON_PET ? "Dragon egg" : "Robo egg") + " if you already have a Baby " + (petItemId == ItemId.DRAGON_PET ? "Dragon." : "Robo."));
-                        await c.SendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-                    else
-                    {
-                        long expiration = item.getExpiration();
-                        await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
-                        await chr.GainItem(evolveid, 1, nextSetter: i => i.setExpiration(expiration));
-                        await c.SendPacket(PacketCreator.enableActions());
-                        return;
-                    }
+                    // 已经召唤了，召回
+                    await mapPet.Recall();
                 }
                 else
                 {
-                    await TogglePet(chr, pet, lead);
+                    var defaultPet = chr.getPet(0);
+                    if (chr.getSkillLevel(chr.JobModel.Type.GetMultiPetSkillId()) == 0 && defaultPet != null)
+                    {
+                        // 已经召唤主宠，但是没有学习群宠，召回主宠
+                        await defaultPet.Recall();
+                    }
+
+                    int petItemId = petItem.getItemId();
+                    if (petItemId == ItemId.DRAGON_PET || petItemId == ItemId.ROBO_PET)
+                    {
+                        var nextPetItem = petItem.EvolvePet(chr);
+                        if (nextPetItem != null)
+                        {
+                            await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, slot, 1, false, false);
+                            await InventoryManipulator.addFromDrop(c, nextPetItem, false);
+                            petItem = nextPetItem;
+                        }
+                    }
+
+                    if (lead)
+                    {
+                        chr.shiftPetsRight();
+                    }
+
+                    await chr.SummonPet(petItem);
                 }
-
-
             }
             finally
             {
                 c.releaseClient();
-            }
-        }
-
-        static async Task TogglePet(Player chr, Pet pet, bool lead)
-        {
-            var mapPet = chr.GetPetById(pet.UniqueId);
-            if (mapPet != null)
-            {
-                await mapPet.Recall();
-            }
-            else
-            {
-                var defaultPet = chr.getPet(0);
-                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(8)) == 0 && defaultPet != null)
-                {
-                    await defaultPet.Recall();
-                }
-
-                if (lead)
-                {
-                    chr.shiftPetsRight();
-                }
-
-                await chr.SummonPet(pet);
             }
         }
     }
