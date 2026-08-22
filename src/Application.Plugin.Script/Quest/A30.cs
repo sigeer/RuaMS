@@ -4,8 +4,10 @@ using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Mob;
+using Application.Shared.Constants.Skill;
 using server.life;
 using System.Drawing;
+using System.Runtime.ConstrainedExecution;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -810,7 +812,7 @@ namespace Application.Plugin.Script.Quest
             if (haveItem(5460000))
             {
                 await completeQuest();
-                await teachSkill(8, 1, 1, -1);
+                await teachSkill(getPlayer().JobModel.Type.GetMultiPetSkillId(), 1, 1, -1);
                 await gainItem(5460000, -1, false);
 
                 await SayOK("你获得了宠物点心！谢谢，现在你可以同时携带多只宠物了！");

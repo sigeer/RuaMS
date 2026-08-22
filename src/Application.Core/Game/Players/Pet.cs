@@ -25,34 +25,13 @@ namespace Application.Core.Game.Players
 
         public sbyte getPetIndex(long petId)
         {
-            for (sbyte i = 0; i < 3; i++)
-            {
-                if (pets[i] != null)
-                {
-                    if (pets[i]!.getUniqueId() == petId)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
+            int index = Array.FindIndex(pets, p => p != null && p.getUniqueId() == petId);
+            return (sbyte)index;
         }
 
         public MapPet? GetPetById(long petId)
         {
             return pets.AsValueEnumerable().FirstOrDefault(x => x?.getUniqueId() == petId);
-        }
-
-        public sbyte getPetIndexByItemId(int itemId)
-        {
-            for (sbyte i = 0; i < 3; i++)
-            {
-                if (pets[i]?.getItemId() == itemId)
-                {
-                    return i;
-                }
-            }
-            return -1;
         }
 
         public MapPet? addPet(Pet pet)
@@ -67,24 +46,43 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public async Task SummonPet(Pet pet)
+        public MapPet? SetPet(sbyte slot, Pet? pet)
         {
-            var mapPet = addPet(pet);
-            if (mapPet != null)
-            {
-                await MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
+            if (slot < 0)
+                return null;
 
-                await SendPacket(PacketCreator.petStatUpdate(this));
-                await SendPacket(PacketCreator.enableActions());
+            if (pet == null)
+                return pets[slot] = null;
 
-                await commitExcludedItems();
-            }
+            return pets[slot] = new MapPet(pet);
         }
+
+        public async Task SummonPet(Pet? petItem, sbyte petSlot = -1)
+        {
+            var oldPet = getPet(petSlot);
+            if (oldPet != null)
+            {
+                await MapModel.RemoveMapObject(this, mapChr => mapChr.SendPacket(oldPet.EncodeHidePet(0)));
+            }
+
+            if (petItem != null)
+            {
+                var mapPet = petSlot == -1 ? addPet(petItem) : SetPet(petSlot, petItem);
+                if (mapPet != null)
+                    await MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
+            }
+
+            await commitExcludedItems();
+
+            await SendPacket(PacketCreator.petStatUpdate(this));
+            await SendPacket(PacketCreator.enableActions());
+        }
+
 
         public void removePet(long petId, bool shift_left)
         {
-            int slot = -1;
-            for (int i = 0; i < 3; i++)
+            sbyte slot = -1;
+            for (sbyte i = 0; i < 3; i++)
             {
                 if (pets[i] != null)
                 {
@@ -100,7 +98,7 @@ namespace Application.Core.Game.Players
             {
                 if (slot > -1)
                 {
-                    for (int i = slot; i < 3; i++)
+                    for (sbyte i = slot; i < 3; i++)
                     {
                         if (i != 2)
                         {

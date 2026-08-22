@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Items;
 using Application.Templates.Item.Pet;
 using Application.Utility.Tickables;
@@ -8,14 +9,14 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 {
     public class MapPet : AbstractAnimatedMapObject, ILoopTickable
     {
-        public Player Owner => PetItem.PlayerInventory!.Owner;
+        public Player? Owner => PetItem.PlayerInventory?.Owner;
         public Pet PetItem { get; }
         public int Fullness { get => PetItem.Fullness; set => PetItem.Fullness = value; }
         public int Tameness { get => PetItem.Tameness; set => PetItem.Tameness = value; }
         public byte Level { get => PetItem.Level; set => PetItem.Level = value; }
         public string Name { get => PetItem.Name; set => PetItem.Name = value; }
         public PetItemTemplate SourceTemplate => PetItem.SourceTemplate;
-        public sbyte Index => Owner.getPetIndex(PetId);
+        public sbyte Index => Owner?.getPetIndex(PetId) ?? -1;
 
         public MapPet(Pet sourceItem)
             : base(
@@ -43,7 +44,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public override string GetReadableName(IChannelClient c)
         {
-            return base.GetReadableName(c) + $" Owner {Owner.GetReadableName(c)}";
+            return base.GetReadableName(c) + $" Owner {Owner?.GetReadableName(c)}";
         }
 
         public override async Task sendSpawnData(IChannelClient client)
@@ -56,13 +57,13 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             await client.SendPacket(EncodeHidePet(0));
         }
 
-        public bool HasChatBalloon => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].ChatBalloon);
-        public bool HasNameTag => Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].NameTag);
+        public bool HasChatBalloon => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].ChatBalloon);
+        public bool HasNameTag => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].NameTag);
 
         public override async Task OnMounted(IMap map)
         {
             await base.OnMounted(map);
-            setPosition(Owner.getPosition());
+            setPosition(Owner!.getPosition());
         }
 
         public short GetFoothold() => (short)MapModel.Footholds.FindBelowFoothold(getPosition())!.getId();
@@ -84,11 +85,11 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             p.writeBool(HasChatBalloon); // chatBalloon
         }
 
-        Packet EncodeHidePet(byte recallReason)
+        public Packet EncodeHidePet(byte recallReason)
         {
             // CUserLocal::OnPetActivated
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeByte(Index);
             p.writeByte(0);
             p.writeByte(recallReason);
@@ -98,7 +99,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         Packet EncodeShowPet()
         {
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeByte(Index);
             p.writeByte(1);
             //   if ( CInPacket::Decode1(a2) )
@@ -111,7 +112,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         Packet EncodeFoodResponse(bool success)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeSByte(Index);
             p.writeByte(1);
             p.writeBool(success);
@@ -122,7 +123,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         Packet EncodeCommandResponse(int command, bool success)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeSByte(Index);
             p.writeByte(0);
             p.writeByte(command);
@@ -134,7 +135,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public async Task ActionRemote(sbyte act, string text)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_ACTION);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeSByte(Index);
             p.writeByte(0); // nType
             p.writeByte(act); // nAction
@@ -147,7 +148,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public async Task BroadcastNameChanged(bool exceptOwer = true)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
-            p.writeInt(Owner.Id);
+            p.writeInt(Owner!.Id);
             p.writeByte(Index);
             p.writeString(Name);
 
@@ -162,7 +163,9 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         {
             PetItem.Name = name;
 
-            await Owner.forceUpdateItem(PetItem);
+            if (Owner != null)
+                await Owner.forceUpdateItem(PetItem);
+
             await BroadcastNameChanged(false);
         }
         /// <summary>
@@ -173,11 +176,14 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         {
             await MapModel.RemoveMapObject(this, mapChr => mapChr.SendPacket(EncodeHidePet(recallReason)));
 
-            Owner.removePet(PetId, true);
-            await Owner.commitExcludedItems();
+            if (Owner != null)
+            {
+                Owner.removePet(PetId, true);
+                await Owner.commitExcludedItems();
 
-            await Owner.SendPacket(PacketCreator.petStatUpdate(Owner));
-            await Owner.SendPacket(PacketCreator.enableActions());
+                await Owner.SendPacket(PacketCreator.petStatUpdate(Owner));
+                await Owner.SendPacket(PacketCreator.enableActions());
+            }
         }
 
         public int getItemId()
@@ -218,7 +224,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         Level += 1;
 
-                        await Owner.SendPacket(PacketCreator.showOwnPetLevelUp(Index));
+                        await Owner!.SendPacket(EffectPacket.PetLevelUp(Index));
                         await BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
                     }
                 }
@@ -244,13 +250,13 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
             if (forceEnjoy)
             {
-                await Owner.SendPacket(EncodeFoodResponse(true));
+                await Owner!.SendPacket(EncodeFoodResponse(true));
                 // 没观察到任何效果
                 await Owner.SendPacket(PacketCreator.PetEatCashFoodSuccess(Index));
             }
             else
             {
-                await Owner.SendPacket(EncodeFoodResponse(enjoyed));
+                await Owner!.SendPacket(EncodeFoodResponse(enjoyed));
             }
 
 
@@ -269,11 +275,11 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             if (Randomizer.nextInt(100) < petCommand.Prob)
             {
                 await gainTamenessFullness(petCommand.Inc, 0, command);
-                await Owner.SendPacket(EncodeCommandResponse(command, true));
+                await Owner!.SendPacket(EncodeCommandResponse(command, true));
             }
             else
             {
-                await Owner.SendPacket(EncodeCommandResponse(command, false));
+                await Owner!.SendPacket(EncodeCommandResponse(command, false));
             }
         }
 
@@ -321,7 +327,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                         PetItem.Fullness = 15;
 
                         await Recall(1);
-                        await PetItem.PlayerInventory.Owner.dropMessage(6, "Your pet grew hungry! Treat it some pet food to keep it healthy!");
+                        await PetItem.PlayerInventory.Owner.LightBlue("Your pet grew hungry! Treat it some pet food to keep it healthy!");
                     }
                     else
                     {

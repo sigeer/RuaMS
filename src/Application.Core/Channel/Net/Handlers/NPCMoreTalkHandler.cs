@@ -49,12 +49,16 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
         }
         else
         {
-            int selection = -1;
-            if (p.available() >= 4)
+            long selection = -1;
+            if (p.available() >= sizeof(long))
+            {
+                selection = p.readLong();
+            }
+            else if (p.available() >= sizeof(int))
             {
                 selection = p.readInt();
             }
-            else if (p.available() > 0)
+            else if (p.available() >= sizeof(byte))
             {
                 selection = p.readByte();
             }

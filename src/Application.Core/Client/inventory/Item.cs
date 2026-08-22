@@ -62,6 +62,9 @@ public class Item : IComparable<Item>
             return _sourceTemplate;
         }
     }
+    /// <summary>
+    /// 不在背包里时为null
+    /// </summary>
     public IItemStore? PlayerInventory { get; set; }
     public Item(int id, short position, short quantity, long uniqueId)
     {

@@ -27,6 +27,7 @@ namespace Application.Shared.Constants.Skill;
 public class Noblesse
 {
     public const int BLESSING_OF_THE_FAIRY = 10000012;
+    public const int FOLLOW_THE_LEADER = 10000018;
     public const int MAP_CHAIR = 10000100;
     public const int THREE_SNAILS = 10001000;
     public const int RECOVERY = 10001001;

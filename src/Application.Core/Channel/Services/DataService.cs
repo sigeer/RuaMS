@@ -153,9 +153,9 @@ namespace Application.Core.Channel.Services
 
                     if (itemObj is Pet petObj)
                     {
-                        if (item.PetInfo.Summoned)
+                        if (item.PetInfo.PetSlot >= 0)
                         {
-                            player.addPet(petObj);
+                            player.SetPet((sbyte)item.PetInfo.PetSlot, petObj);
                         }
                     }
                 }

@@ -69,8 +69,8 @@ namespace Application.Core.Mappers
                 Level = Math.Min(30, (int)p4.Level),
                 Flag = p4.PetAttribute,
                 Name = p4.Name,
-                Summoned = p4.Summoned,
-                Petid = p4.getUniqueId()
+                Petid = p4.getUniqueId(),
+                PetSlot = p4.MapPet == null ? -1 : (int)p4.MapPet.Index
             });
             result.Properties = p4.Properties;
             return result;
@@ -130,8 +130,8 @@ namespace Application.Core.Mappers
                 Level = p5.Level,
                 Closeness = p5.Closeness,
                 Fullness = p5.Fullness,
-                Summoned = p5.Summoned,
-                Flag = p5.Flag
+                Flag = p5.Flag,
+                PetSlot = p5.PetSlot
             };
         }
     }

@@ -116,6 +116,16 @@ public class Pet : Item
         if (!SourceTemplate.CanEvol)
             return null;
 
+        if (SourceTemplate.EvolRequireLevel > 0 && Level < SourceTemplate.EvolRequireLevel)
+        {
+            return null;
+        }
+
+        if (SourceTemplate.EvolRequireItem > 0 && !owner.haveItem(SourceTemplate.EvolRequireItem))
+        {
+            return null;
+        }
+
         var nextPet = new LotteryMachine<int>(SourceTemplate.Evols.Select((x, idx) => new LotteryMachinItem<int>(x, SourceTemplate.EvolProbs[idx])))
             .GetRandomItem();
         var nextPetTemplate = ItemInformationProvider.getInstance().GetItemTemplate(nextPet) as PetItemTemplate;

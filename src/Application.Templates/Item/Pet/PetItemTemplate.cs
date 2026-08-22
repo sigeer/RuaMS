@@ -33,9 +33,9 @@ namespace Application.Templates.Item.Pet
         [WZPath("info/evol")]
         public bool CanEvol { get; set; }
         [WZPath("info/evolReqPetLvl")]
-        public bool EvolRequireLevel { get; set; }
+        public int EvolRequireLevel { get; set; }
         [WZPath("info/evolReqItemID")]
-        public bool EvolRequireItem { get; set; }
+        public int EvolRequireItem { get; set; }
         [GenerateIgnoreProperty]
         public int[] Evols { get; set; }
         [GenerateIgnoreProperty]
