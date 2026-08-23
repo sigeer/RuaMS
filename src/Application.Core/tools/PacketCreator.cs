@@ -4290,7 +4290,7 @@ public class PacketCreator
         OutPacket p = OutPacket.create(SendOpcode.STAT_CHANGED);
         int mask = 0;
         mask |= Stat.PET.getValue();
-        p.writeByte(0);
+        p.writeBool(true);
         p.writeInt(mask);
         var pets = chr.getPets();
         for (int i = 0; i < 3; i++)

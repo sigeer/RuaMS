@@ -92,8 +92,8 @@ namespace Application.Core.Mappers
                     Level = Math.Min(Limits.MaxPetLevel, (int)x.Level),
                     Flag = x.PetAttribute,
                     Name = x.Name,
-                    Summoned = x.Summoned,
-                    Petid = x.getUniqueId()
+                    Petid = x.getUniqueId(),
+                    PetSlot = x.MapPet == null ? -1 : x.MapPet.Index
                 });
 
             config.NewConfig<ProtoModel.ItemProto, Item>()

@@ -23,6 +23,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
@@ -659,7 +660,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     #region New Talk
     Channel<TalkMoreAction> _talkChannel = System.Threading.Channels.Channel.CreateBounded<TalkMoreAction>(1);
 
-    public async Task Response(sbyte mode, sbyte type, int selection, string? inputText = null)
+    public async Task Response(sbyte mode, sbyte type, long selection, string? inputText = null)
     {
         await _talkChannel.Writer.WriteAsync(new TalkMoreAction(mode, type, selection, inputText));
     }
@@ -675,17 +676,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return action.Mode > 0;
     }
 
-    async Task<int> WaitingForOption()
-    {
-        var action = await _talkChannel.Reader.ReadAsync();
-        if (action.Mode <= 0)
-        {
-            throw new ConversationInterruptException();
-        }
-        return action.selection;
-    }
-
-    async Task<int> WaitingForInputNumber()
+    async Task<long> WaitingForOption()
     {
         var action = await _talkChannel.Reader.ReadAsync();
         if (action.Mode <= 0)
@@ -838,13 +829,13 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public async Task<int> AskMenu(string text, byte speaker = 0)
     {
         await sendSimple(text, speaker);
-        return await WaitingForOption();
+        return (int)await WaitingForOption();
     }
 
     public async Task<int> AskDimensionalMirror(string text)
     {
         await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
-        return await WaitingForOption();
+        return (int)await WaitingForOption();
     }
 
     public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
@@ -861,7 +852,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             finalContent += $"#L{i}#{options.ElementAt(i)}#l\r\n";
         }
         finalContent += "#k";
-        return await AskMenu(finalContent, speaker);
+        return (int)(await AskMenu(finalContent, speaker));
     }
 
     public async Task<int> AskMenu(string mainContent, Dictionary<int, string> options, byte speaker = 0)
@@ -878,7 +869,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             finalContent += $"#L{item.Key}#{item.Value}#l\r\n";
         }
         finalContent += "#k";
-        return await AskMenu(finalContent, speaker);
+        return (int)await AskMenu(finalContent, speaker);
     }
 
     public async Task<int> AskAvatar(string text, int[] styles)
@@ -886,7 +877,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         if (styles.Length > 0)
         {
             await sendStyle(text, styles);
-            return await WaitingForOption();
+            return (int)await WaitingForOption();
         }
         else
         {
@@ -899,13 +890,32 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public async Task<int> AskNumber(string text, int def, int min, int max, byte speaker = 0)
     {
         await sendGetNumber(text, def, min, max, speaker);
-        return await WaitingForInputNumber();
+        return (int)await WaitingForOption();
     }
 
     public async Task<string?> AskText(string text, byte speaker = 0)
     {
         await sendGetText(text, speaker);
         return await WaitingForInputText();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mainContent"></param>
+    /// <param name="activePets"></param>
+    /// <returns>被选择的PetId</returns>
+    /// <exception cref="ConversationInterruptException"></exception>
+    public async Task<long> AskPet(string mainContent, IEnumerable<MapPet> activePets)
+    {
+        if (activePets.Count() == 0)
+        {
+            await SayOK(mainContent);
+            throw new ConversationInterruptException();
+        }
+
+        await getClient().SendPacket(ScriptPackets.AskPet(npc, mainContent, activePets.Select(x => x.PetId)));
+        return await WaitingForOption();
     }
     #endregion
 

@@ -1701,20 +1701,22 @@ namespace Application.Plugin.Script.Quest
         // Quest: 4659 
         public async Task q4659e()
         {
-            if (!await CanCompleteQuest())
+            var canEvolvedPets = getPlayer().getPets().Where(x => x?.getItemId() == 5000048 && x.Level >= 15).ToList();
+            if (canEvolvedPets.Count == 0)
             {
-                await SayOK("需要的材料都拿来了吗？需要1个#t5380000#和50个#t4000111#。");
+                await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000048#");
                 return;
             }
 
-            var petSlot = getPlayer().getPetIndexByItemId(5000048);
+            var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+            var petSlot = getPlayer().getPetIndex(petId);
             if (petSlot == -1)
             {
-                await Pink("Pet could not be evolved.");
+                await SayOK("未选择宠物。");
                 return;
             }
 
-            var after = evolvePet(petSlot);
+            var after = await evolvePet(petSlot);
             if (after != null)
             {
                 await gainItem(5380000, -1);
@@ -1756,11 +1758,17 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("好的，我们开始吧...！ #rHYAHH!#k");
 
-                var petSlot = getPlayer().getPetIndexByItemId(5000029);
+                var canEvolvedPets = getPlayer().getPets().Where(x => x?.getItemId() == 5000029 && x.Level >= 15).ToList();
+                if (canEvolvedPets.Count == 0)
+                {
+                    await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000029#");
+                    return;
+                }
+                var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+                var petSlot = getPlayer().getPetIndex(petId);
                 if (petSlot == -1)
                 {
-                    await getPlayer().Pink("宠物无法进化。");
-    
+                    await SayOK("未选择宠物。");
                     return;
                 }
                 //unequipPet(getClient());
@@ -1795,42 +1803,38 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("好的，我们开始吧...！ #rHYAHH!#k");
             }
-
-            sbyte petidx = -1;
-            var id = -1;
-            for (sbyte i = 0; i < 3; i++)
+            else
             {
-                var pet = getPlayer().getPet(i);
-                if (pet != null)
-                {
-                    id = pet.getItemId();
-                    if (id >= 5000029 && id <= 5000033)
-                    {
-                        petidx = i;
-                        break;
-                    }
-                    else if (id >= 5000048 && id <= 5000053)
-                    {    // thanks Conrad for noticing Robo pets not being able to re-evolve
-                        petidx = i;
-                        break;
-                    }
-                }
-            }
-
-            if (petidx == -1)
-            {
-                await SayOK("出现了一些问题 请重试.");
                 return;
             }
 
-            var after = await evolvePet(petidx);
+            var canEvolvedPets = getPlayer().getPets()
+                    .Where(x => (x?.getItemId() >= 5000030 && x?.getItemId() <= 5000033
+                    || x?.getItemId() >= 5000049 && x?.getItemId() <= 5000052) && x?.Level >= 15).ToList();
+            if (canEvolvedPets.Count == 0)
+            {
+                await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000029#");
+                return;
+            }
+
+            var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+
+            var petSlot = getPlayer().getPetIndex(petId);
+            if (petSlot == -1)
+            {
+                await SayOK("未选择宠物。");
+                return;
+            }
+
+            var oPet = getPlayer().getPet(petSlot)!;
+            var after = await evolvePet(petSlot);
             if (after != null)
             {
                 await gainMeso(-10000);
                 await gainItem(5380000, -1);
                 await completeQuest();
 
-                await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + id + "##t" + id + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
+                await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + oPet.getItemId() + "##t" + oPet.getItemId() + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
             }
         }
         // Quest: 8247 

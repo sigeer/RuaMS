@@ -599,15 +599,14 @@ public class AbstractPlayerInteraction : IClientMessenger
             var pet = target.PetItem.EvolvePet(getPlayer());
             if (pet != null)
             {
-                await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.PetItem.getPosition(), 1, false);
-
                 await InventoryManipulator.addFromDrop(getClient(), pet, false);
-                await getPlayer().SummonPet(pet);
+                await getPlayer().SummonPet(pet, slot, true);
+                await InventoryManipulator.removeFromSlot(c, InventoryType.CASH, target.PetItem.getPosition(), 1, false);
                 return pet;
             }
         }
 
-        await getPlayer().Pink("Pet could not be evolved...");
+        await getPlayer().Pink("宠物进化失败，未满足进化条件。");
         return null;
 
         /*
