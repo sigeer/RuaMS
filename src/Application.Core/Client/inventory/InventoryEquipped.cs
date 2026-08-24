@@ -108,10 +108,13 @@ public class InventoryEquipped : AbstractInventory
             _timedItems.Add(new TimedItemWrapper(item, 0));
         }
 
-        foreach (var skill in equip.Skills)
+        if (equip.HasSkill)
         {
-            var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
-            Owner.TempSkillCache[skill.Key] = skill.Value + e;
+            foreach (var skill in equip.SourceTemplate.ExtraSkills)
+            {
+                var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
+                Owner.TempSkillCache[skill.Key] = skill.Value + e;
+            }
         }
 
         if (!fromLogin)
@@ -142,10 +145,13 @@ public class InventoryEquipped : AbstractInventory
             await Owner.CalculateSpiritPendant(Owner.Client.CurrentServer.Node.getCurrentTime(), false);
         }
 
-        foreach (var skill in equip.Skills)
+        if (equip.HasSkill)
         {
-            var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
-            Owner.TempSkillCache[skill.Key] = e - skill.Value;
+            foreach (var skill in equip.SourceTemplate.ExtraSkills)
+            {
+                var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
+                Owner.TempSkillCache[skill.Key] = e - skill.Value;
+            }
         }
 
         var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());

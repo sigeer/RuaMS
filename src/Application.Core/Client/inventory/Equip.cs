@@ -57,9 +57,9 @@ public class Equip : Item
 
     public int MaxLevel => SourceTemplate.MaxLevel;
     /// <summary>
-    /// 为什么不用bool，实际取skill时从template取：可支持装备在不同等级获得技能
+    /// 服务端只会返回给客户端true/false，也就是不会存在一件装备在不同等级多次获得技能的情况
     /// </summary>
-    public Dictionary<int, int> Skills { get; set; } = new();
+    public bool HasSkill { get; set; }
     public override EquipTemplate SourceTemplate { get; }
 
     public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
@@ -95,7 +95,7 @@ public class Equip : Item
         ret.itemLevel = itemLevel;
         ret.itemExp = itemExp;
         ret.level = level;
-        ret.Skills = Skills.ToDictionary();
+        ret.HasSkill = HasSkill;
 
         CopyItemProps(ret);
         return ret;
@@ -409,11 +409,7 @@ public class Equip : Item
         var skillData = SourceTemplate.GetActiveCase()?.SkillData?.FirstOrDefault(x => x.Level == itemLevel);
         if (skillData != null && skillData.Skills.Length > 0)
         {
-            foreach (var skill in skillData.Skills)
-            {
-                var exsited = Skills.GetValueOrDefault(skill.SkillId);
-                Skills[skill.SkillId] = exsited + skill.Level;
-            }
+            HasSkill = true;
         }
 
         string lvupStr = "'" + c.CurrentCulture.GetItemName(this.getItemId()) + "' is now level " + itemLevel + "! ";

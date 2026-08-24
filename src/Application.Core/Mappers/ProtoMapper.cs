@@ -144,7 +144,7 @@ namespace Application.Core.Mappers
                         dest.setLevel((byte)rs.EquipInfo!.Level);
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
-                        dest.Skills = rs.EquipInfo.Skills.ToDictionary();
+                        dest.HasSkill = rs.EquipInfo.HasSkill;
                     });
 
             config.NewConfig<Equip, ProtoModel.ItemProto>()
@@ -172,7 +172,7 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Level, source => source.getLevel())
                 .Map(dest => dest.Itemlevel, source => source.getItemLevel())
                 .Map(dest => dest.Itemexp, source => source.getItemExp())
-                .Map(dest => dest.Skills, source => MapMapField(source.Skills));
+                .Map(dest => dest.HasSkill, source => source.HasSkill);
             #endregion 
 
             config.NewConfig<ProtoModel.SkillMacroProto, SkillMacro>()

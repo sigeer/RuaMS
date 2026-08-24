@@ -126,7 +126,15 @@ namespace Application.Templates.Character
                 value -= item.Prob;
             }
             return LevelCase[^1];
-
+        }
+        Dictionary<int, int>? _extraSkills;
+        [GenerateIgnoreProperty]
+        public Dictionary<int, int> ExtraSkills 
+        {
+            get
+            {
+                return _extraSkills ??= LevelCase.SelectMany(x => x.SkillData).SelectMany(x => x.Skills).ToDictionary(x => x.SkillId, x => x.Level);
+            }
         }
     }
 }
