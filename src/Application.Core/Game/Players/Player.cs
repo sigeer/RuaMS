@@ -107,10 +107,7 @@ namespace Application.Core.Game.Players
             }
             else if (type == -3)
             {
-                await TempConversation.CreateScope(Client, async ctx =>
-                {
-                    await ctx.SayOK(GetMessageByKey(messageKey, param));
-                });
+                await Dialog(messageKey, param: param);
             }
             else if (type == 4)
             {
@@ -133,7 +130,13 @@ namespace Application.Core.Game.Players
 
         public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
         public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-        public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+        public async Task Dialog(string key, int npcId = NpcId.MAPLE_ADMINISTRATOR, params string[] param)
+        {
+            await TempConversation.CreateScope(Client, async ctx =>
+            {
+                await ctx.SayOK(GetMessageByKey(key, param));
+            }, npcId);
+        }
 
         public Task LightBlue(Func<ClientCulture, string> action)
         {

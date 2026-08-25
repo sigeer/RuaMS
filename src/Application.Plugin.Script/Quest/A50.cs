@@ -1813,7 +1813,7 @@ namespace Application.Plugin.Script.Quest
                     || x?.getItemId() >= 5000049 && x?.getItemId() <= 5000052) && x?.Level >= 15).ToList();
             if (canEvolvedPets.Count == 0)
             {
-                await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000029#");
+                await SayOK("没有找到符合条件的宠物。");
                 return;
             }
 

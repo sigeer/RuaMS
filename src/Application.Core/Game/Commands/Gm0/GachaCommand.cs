@@ -76,6 +76,6 @@ public class GachaCommand : CommandBase
         }
         sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message2)));
 
-        await c.OnlinedCharacter.Dialog(sb.ToString());
+        await c.OnlinedCharacter.Dialog(sb.ToString(), NpcId.GACHAPON_HENESYS);
     }
 }

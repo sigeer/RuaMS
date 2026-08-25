@@ -30,7 +30,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                if (!canHold(2000005))
+                if (!canHold(2000005, 10))
                 {
                     await SayOK("抱歉，你的背包里没有空位来存放这个物品！");
                     return;

@@ -51,7 +51,7 @@ namespace Application.Core.Game.Maps.Mists
 
         public Skill getSourceSkill()
         {
-            return SkillFactory.getSkill(Source.getSourceId());
+            return SkillFactory.GetSkillTrust(Source.getSourceId());
         }
 
         public override Packet makeSpawnData()
