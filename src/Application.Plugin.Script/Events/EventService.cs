@@ -49,8 +49,10 @@ namespace Application.Plugin.Events
                 new PQ_Kerning(),
                 new PQ_Ellin(),
                 new PQ_Ludi(),
-                new PQ_WuGong(),
                 new PQ_Orbis(),
+                new PQ_Pirate(),
+
+                new PQ_WuGong(),
 
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "1", 980000100),
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "2", 980000200),
@@ -63,8 +65,10 @@ namespace Application.Plugin.Events
                 new PQ_Zakum(),
                 new Battle_Zakum(),
 
+                new PQ_Balrog(),
                 new Battle_Balrog(),
 
+                new PQ_Horntail(),
                 new Battle_Horntail(),
 
                 new PrivateContiMove( "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
@@ -87,6 +91,7 @@ namespace Application.Plugin.Events
                 new SoloQuestEventTemplate(QuestId.Get2ndJobQuest(Job.MAGICIAN), 20 * 60, 108000200, 101020000, 108000200, 108000200) { MaxLobbys = 3, ExitPortal = 9 },
                 new SoloQuestEventTemplate(QuestId.Get2ndJobQuest(Job.BOWMAN), 20 * 60, 108000100, 106010000, 108000100, 108000100) { MaxLobbys = 3, ExitPortal = 9 },
                 new SoloQuestEventTemplate(QuestId.Get2ndJobQuest(Job.THIEF), 20 * 60, 108000400, 102040000, 108000400, 108000400) { MaxLobbys = 3, ExitPortal = 9 },
+
                 new SoloQuestEventTemplate(2191, 20 * 60, 108000502, 120000101, 108000502, 108000502) { MaxLobbys = 2 },
                 new SoloQuestEventTemplate(2192, 20 * 60, 108000501, 120000101, 108000501, 108000501) { MaxLobbys = 2 },
                 new SoloQuestEventTemplate(3230, 10 * 60, 922000010,221024400,922000010,922000010 ),

@@ -785,12 +785,7 @@ public class StatEffect
         return hwResult;
     }
 
-    public async Task<bool> applyTo(Player chr)
-    {
-        return await applyTo(chr, chr, true, null, false, 1);
-    }
-
-    public async Task<bool> applyTo(Player chr, bool useMaxRange)
+    public async Task<bool> applyTo(Player chr, bool useMaxRange = false)
     {
         return await applyTo(chr, chr, true, null, useMaxRange, 1);
     }

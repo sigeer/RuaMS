@@ -27,6 +27,7 @@ namespace Application.Shared.Constants.Skill;
 public class Legend
 {
     public const int THREE_SNAILS = 20001000;
+    public const int FOLLOW_THE_LEADER = 20000024;
     public const int RECOVERY = 20001001;
     public const int AGILE_BODY = 20001002;
     public const int LEGENDARY_SPIRIT = 20001003;

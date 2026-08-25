@@ -8,6 +8,31 @@ using System.Drawing;
 
 namespace Application.Plugin.Script.Events
 {
+    public class PQ_Balrog : AbstractSoloEventTemplate
+    {
+        public PQ_Balrog() : base(nameof(PQ_Balrog))
+        {
+            EntryMap = 910520000;
+            EntryPortal = 1;
+
+            ExitMap = 105100100;
+
+            MinMap = 910520000;
+            MaxMap = 910520000;
+
+            EventTime = 10 * 60;
+            MaxLobbys = 7;
+        }
+
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+            if (mob.getId() == 9300326)
+            {
+                await mob.MapModel.SpawnNpc(1061015, new Point(0, 115));
+            }
+        }
+    }
+
     internal class Battle_Balrog : AbstractExpeditionEventTemplate
     {
         public Battle_Balrog() : base(8830003, nameof(Battle_Balrog), ExpeditionEntryType.BALROG_NORMAL)
@@ -38,7 +63,7 @@ namespace Application.Plugin.Script.Events
             var mapObj = await eim.getInstanceMap(EntryMap)!;
 
             var mob0 = LifeFactory.Instance.GetMonsterTrust(8830000);
-           await  mapObj.spawnFakeMonsterOnGroundBelow(mob0, new Point(412, 258));
+            await mapObj.spawnFakeMonsterOnGroundBelow(mob0, new Point(412, 258));
 
             // 8830002 -> 8830005
             var mob2 = LifeFactory.Instance.GetMonsterTrust(8830002);
@@ -60,7 +85,7 @@ namespace Application.Plugin.Script.Events
 
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            var mapObj = await eim.getInstanceMap(EntryMap)!;
+            var mapObj = (await eim.getInstanceMap(EntryMap))!;
             if (mob.getId() == 8830001 || mob.getId() == 8830002)
             {
                 var count = eim.getIntProperty("boss");

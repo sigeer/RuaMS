@@ -44,7 +44,7 @@ namespace Application.Core.Channel.Net.Packets
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
             p.writeByte(4);
-            p.writeByte(0);
+            p.writeByte(effect);
 
             // if ( *(this[1975] + 8 * CInPacket::Decode1(v2) + 4) )
             p.writeSByte(petIndex); // Pet Index
@@ -57,6 +57,16 @@ namespace Application.Core.Channel.Net.Packets
 
         // SP_1689_EFFECT_PETEFFIMG_BASIC_EVOLUTION
         public static Packet PetEvolution(sbyte petIndex) => Pet(3, petIndex);
+
+        public static Packet ForeignPetEvolution(int chrId, sbyte petIndex)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
+            p.writeInt(chrId);
+            p.writeByte(4);
+            p.writeByte(3);
+            p.writeSByte(petIndex);
+            return p;
+        }
 
 
         // SP_2967_THE_EXP_DID_NOT_DROP_AFTER_USING_S_ITEM

@@ -88,10 +88,4 @@ public class QuestActionManager : NPCConversationManager
     {
         await MesoAction.runAction(getPlayer(), gain);
     }
-
-
-    public async Task<bool> CanCompleteQuest()
-    {
-        return await QuestFactory.Instance.GetInstance(quest).canComplete(getPlayer(), npc);
-    }
 }

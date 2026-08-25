@@ -5,10 +5,30 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Shared.Battle;
 using Application.Shared.Constants.Mob;
-using Application.Shared.Quest;
 
 namespace Application.Plugin.Script.Events
 {
+    internal class PQ_Zakum : AbstractPartyQuestEventTemplate
+    {
+        public PQ_Zakum() : base(nameof(PQ_Zakum))
+        {
+            MinCount = 1;
+            MaxCount = 6;
+
+            MinLevel = 50;
+            MaxLevel = 255;
+
+            EntryMap = 280010000;
+            ExitMap = 211042300;
+            RecruitMap = 211042300;
+            ClearMap = 211042300;
+
+            MinMap = 280010000;
+            MaxMap = 280011006;
+
+            EventTime = 30 * 60;
+        }
+    }
     internal class Battle_Zakum : AbstractExpeditionEventTemplate
     {
         public Battle_Zakum() : base(MobId.ZAKUM_3, nameof(Battle_Zakum), ExpeditionEntryType.ZAKUM)
@@ -37,7 +57,7 @@ namespace Application.Plugin.Script.Events
             {
                 eim.setIntProperty("defeatedBoss", 1);
                 await eim.showClearEffect(mob.getMap().getId());
-                await  eim.clearPQ();
+                await eim.clearPQ();
 
                 await eim.EventManager.ChannelServer.NodeActor.Send(s =>
                 {

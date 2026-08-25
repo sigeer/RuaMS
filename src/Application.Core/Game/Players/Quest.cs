@@ -4,6 +4,7 @@ using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
 using Application.Shared.Quest;
 using client;
+using server.life;
 using server.quest;
 using ZLinq;
 
@@ -186,6 +187,8 @@ namespace Application.Core.Game.Players
                 await raiseQuestMobCount(MobId.GHOST_STUMP_QUEST);
             }
 
+            var mobLevel = LifeFactory.Instance.getMonsterLevel(id);
+
             int lastQuestProcessed = 0;
             try
             {
@@ -203,6 +206,19 @@ namespace Application.Core.Game.Players
                         if (qs.getInfoNumber() > 0)
                         {
                             await announceUpdateQuest(DelayedQuestUpdate.UPDATE, qs, true);
+                        }
+                    }
+
+                    if (qs.getQuestID() == (short)ExQuestId.VeteranHunter)
+                    {
+                        if (Level < 120 ? mobLevel > Level : mobLevel >= 120)
+                        {
+                            var info = GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
+                            if (info != null && info.Mon <= info.Mg)
+                            {
+                                info.Mon++;
+                                await FlushQuestRecordEx(info);
+                            }
                         }
                     }
                 }
@@ -323,7 +339,7 @@ namespace Application.Core.Game.Players
 
         public async Task forfeitExpirableQuests()
         {
-            var expirableQuests = Quests.Values.Where(x => x.getExpirationTime() > 0).ToArray();
+            var expirableQuests = Quests.Values.Where(x => x.getQuest().getTimeLimit() > 0 && x.getExpirationTime() > 0).ToArray();
             foreach (var quest in expirableQuests)
             {
                 await quest.getQuest().forfeit(this);
@@ -430,7 +446,7 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public AbstractQuestRecordEx? GetQuestRecordEx(ExQuestId quest)
+        public AbstractQuestRecordEx? GetQuestRecordEx(ExQuestId quest, string? initialContent = null)
         {
             var questId = (short)quest;
             if (GetQuestStatus(questId) != QuestStatus.Status.STARTED)
@@ -452,22 +468,22 @@ namespace Application.Core.Game.Players
                 case ExQuestId.PQ_Pirate:
                 case ExQuestId.PQ_Magatia:
                 case ExQuestId.PQ_Ellin:
-                    return QuestRecordEx[questId] = new PartyQuestRecordEx(questId, null);
+                    return QuestRecordEx[questId] = new PartyQuestRecordEx(questId, initialContent);
                 case ExQuestId.PQ_Ariant:
                 case ExQuestId.PQ_MC1:
                 case ExQuestId.PQ_MC2:
-                    return QuestRecordEx[questId] = new ConfrontQuestEx(questId, null);
+                    return QuestRecordEx[questId] = new ConfrontQuestEx(questId, initialContent);
 
                 case ExQuestId.PartyQuest:
-                    return QuestRecordEx[questId] = new MedalQuest29000Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29000Ex(initialContent);
                 case ExQuestId.Quest:
-                    return QuestRecordEx[questId] = new MedalQuest29001Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29001Ex(initialContent);
                 case ExQuestId.Pop:
-                    return QuestRecordEx[questId] = new MedalQuest29002Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29002Ex(initialContent);
                 case ExQuestId.Online:
                     break;
                 case ExQuestId.VeteranHunter:
-                    return QuestRecordEx[questId] = new MedalQuest29400Ex(null);
+                    return QuestRecordEx[questId] = new MedalQuest29400Ex(initialContent);
                 default:
                     break;
             }

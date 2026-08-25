@@ -2999,7 +2999,10 @@ public class MapleMap : IMap, INamedInstance
 
     public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
     public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public Task Dialog(string key, int npc, params string[] param)
+    {
+        return BroadcastAll(chr => chr.Dialog(key, npc, param));
+    }
 
     public Task LightBlue(Func<ClientCulture, string> action)
     {

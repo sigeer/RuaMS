@@ -115,7 +115,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     }
 
     public AbstractTemplate? GetTemplate(int itemId) => GetItemTemplate(itemId);
-    public AbstractItemTemplate GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
+    public AbstractItemTemplate? GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
     public EquipTemplate? GetEquipTemplate(int equipId) => _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
     public bool noCancelMouse(int itemId)
     {
@@ -1029,11 +1029,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return monsterBookID.GetValueOrDefault(id);
     }
 
-    public int[] getCardTierSize()
-    {
-        return monsterBookID.Keys.GroupBy(x => (int)(Math.Floor(x / 1000d))).Select(x => x.Count()).ToArray();
-    }
-
     public ScriptItemTemplate? GetScriptItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<ScriptItemTemplate>(itemId);
 
     public bool isKarmaAble(int itemId)
@@ -1397,36 +1392,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             items = template.ConsumeItems.GroupBy(x => x.ItemId).ToDictionary(x => x.Key, x => x.Sum(u => u.Value)),
             questid = template.QuestID
         };
-    }
-
-    public class ScriptedItem
-    {
-
-        private bool _runOnPickup;
-        private int npc;
-        private string script;
-
-        public ScriptedItem(int npc, string script, bool rop)
-        {
-            this.npc = npc;
-            this.script = script;
-            _runOnPickup = rop;
-        }
-
-        public int getNpc()
-        {
-            return npc;
-        }
-
-        public string getScript()
-        {
-            return script;
-        }
-
-        public bool runOnPickup()
-        {
-            return _runOnPickup;
-        }
     }
 
     public class RewardItem

@@ -42,7 +42,8 @@ namespace server.quest;
 public class Quest
 {
     protected short id;
-    protected int timeLimit, timeLimit2;
+    protected int timeLimit;
+    public int TimeLimit2 { get; }
     protected Dictionary<QuestRequirementType, AbstractQuestRequirement> startReqs = new();
     protected Dictionary<QuestRequirementType, AbstractQuestRequirement> completeReqs = new();
     protected Dictionary<QuestActionType, AbstractQuestAction> startActs = new();
@@ -65,7 +66,7 @@ public class Quest
         IsAutoAccept = template.Info.AutoAccept;
 
         timeLimit = template.Info.TimeLimit;
-        timeLimit2 = template.Info.TimeLimit2;
+        TimeLimit2 = template.Info.TimeLimit2;
 
         ViewMedalItem = template.Info.ViewMedalItem;
         IsValid = template.Check != null && template.Act != null;
@@ -302,9 +303,9 @@ public class Quest
             newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit).ToUnixTimeMilliseconds());
             await chr.questTimeLimit(this, timeLimit);
         }
-        if (timeLimit2 > 0)
+        if (TimeLimit2 > 0)
         {
-            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(timeLimit2).ToUnixTimeMilliseconds());
+            newStatus.setExpirationTime(chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddSeconds(TimeLimit2).ToUnixTimeMilliseconds());
             await chr.questTimeLimit2(this, newStatus.getExpirationTime());
             newStatus.setProgress(0, DateTimeOffset.FromUnixTimeMilliseconds(newStatus.getExpirationTime()).ToLocalTime().ToString("yyyyMMddHHmmss"));
         }
@@ -357,18 +358,12 @@ public class Quest
 
     public int getCompleteItemAmountNeeded(int itemid)
     {
-        var req = completeReqs.GetValueOrDefault(QuestRequirementType.ITEM);
-        if (req is ItemRequirement ireq)
-            return ireq.getItemAmountNeeded(itemid, true);
-        return int.MaxValue;
+        return GetItemRequirement()?.getItemAmountNeeded(itemid, true) ?? int.MaxValue;
     }
 
     public int getMobAmountNeeded(int mid)
     {
-        var req = completeReqs.GetValueOrDefault(QuestRequirementType.MOB);
-        if (req is MobRequirement mreq)
-            return mreq.getRequiredMobCount(mid);
-        return 0;
+        return GetMobRequirement()?.getRequiredMobCount(mid) ?? 0;
     }
 
     public short getInfoNumber(Status qs)

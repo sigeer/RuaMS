@@ -49,7 +49,7 @@ namespace Application.Core.Channel
         /// 对话框
         /// </summary>
         /// <param name="key"></param>
-        Task Dialog(string key, params string[] param);
+        Task Dialog(string key, int npc, params string[] param);
 
         /// <summary>
         /// type = 6 聊天框蓝色
