@@ -11,7 +11,7 @@ namespace Application.Core.Game.Commands.Gm3
             var skillId = GetIntParam("skillid");
             var skillLevel = TryGetIntParam("skilllevel", -1);
 
-            await client.OnlinedCharacter.LearnSkill(skillId);
+            await client.OnlinedCharacter.LearnSkill(skillId, skillLevel);
         }
     }
 }
