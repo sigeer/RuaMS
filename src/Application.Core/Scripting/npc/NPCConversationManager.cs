@@ -1120,11 +1120,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     }
     #endregion
 
-    public int[] getCardTierSize()
-    {
-        return ItemInformationProvider.getInstance().getCardTierSize();
-    }
-
     #region Guild/Alliance Operation
     public ProtoModel.GuildProto? GetGuild() => getPlayer().GetGuild();
     public ProtoModel.AllianceProto? GetAlliance() => getPlayer().GetAlliance();

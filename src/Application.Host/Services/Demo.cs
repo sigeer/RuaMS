@@ -39,7 +39,7 @@ namespace Application.Host.Services
         {
             var allWzData = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor)
                 .LoadAll().OfType<ReactorTemplate>().Where(x => !string.IsNullOrEmpty(x.Action)).Select(y => new { ReactorId = y.TemplateId, y.Action })
-                .GroupBy(x => x.Action).ToDictionary(x => x.Key, x => x.ToList());
+                .GroupBy(x => x.Action).ToDictionary(x => x.Key!, x => x.ToList());
 
             var allExsitedScripts = ScriptSource.Instance.GetSubScriptsPath("reactor")
                 .ToArray()
@@ -83,7 +83,7 @@ namespace Application.Host.Services
         {
             var allWzData = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor)
                 .LoadAll().OfType<ReactorTemplate>().Where(x => !string.IsNullOrEmpty(x.Action)).Select(y => new { ReactorId = y.TemplateId, y.Action })
-                .GroupBy(x => x.Action).ToDictionary(x => x.Key, x => x.ToList());
+                .GroupBy(x => x.Action).ToDictionary(x => x.Key!, x => x.ToList());
 
             var allExsitedScripts = ScriptSource.Instance.GetSubScriptsPath("reactor")
                 .ToArray()

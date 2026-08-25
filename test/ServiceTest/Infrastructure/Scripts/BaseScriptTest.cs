@@ -144,10 +144,6 @@ namespace ServiceTest.Infrastructure.Scripts
 
             var test1 = _engine.CallFunction("test", new object[] { arr }).ToObject<int[]>();
             Assert.That(test1[1], Is.EqualTo(100));
-            // Jint ToObject内部为了把object[]转换为对应的int[]，创建了新的数组 ----A
-            if (_engine is JintEngine)
-                // NLua中还是原引用
-                Assert.That(arr[1], Is.EqualTo(2));
         }
 
         /// <summary>

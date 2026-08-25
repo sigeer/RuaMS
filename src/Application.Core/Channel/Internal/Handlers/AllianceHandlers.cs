@@ -63,7 +63,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                 if (masterChr != null)
                                 {
                                     await masterChr.GainMeso(res.Request.Cost);
-                                    await masterChr.Dialog("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。");
+                                    await masterChr.Dialog("请检查一下你和另一个公会领袖是否都在这个房间里，确保两个公会目前都没有在联盟中注册。在这个过程中，除了你们两个，不应该有其他公会领袖在场。", 2010009);
                                 }
                             });
                         return;
@@ -81,7 +81,7 @@ namespace Application.Core.Channel.Internal.Handlers
                                     await chr.SendPacket(GuildPackets.allianceNotice(res.Model.AllianceId, res.Model.Notice));
                                     if (chr.Id == res.Request.Members[0])
                                     {
-                                        await chr.Dialog("已成功组建了家族联盟。");
+                                        await chr.Dialog("已成功组建了家族联盟。", 2010009);
                                     }
                                 }
                             });

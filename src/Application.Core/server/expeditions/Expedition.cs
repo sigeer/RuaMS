@@ -527,7 +527,13 @@ public class Expedition : IClientMessenger
 
     public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
     public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public Task Dialog(string key, params string[] param) => TypedMessage(-3, key, param);
+    public async Task Dialog(string key, int npcId, params string[] param)
+    {
+        foreach (var chr in getActiveMembers())
+        {
+            await chr.Dialog(key, npcId, param);
+        }
+    }
 
     public async Task LightBlue(Func<ClientCulture, string> action)
     {
