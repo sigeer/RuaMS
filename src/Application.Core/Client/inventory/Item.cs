@@ -26,6 +26,7 @@ using Application.Core.Client.inventory;
 using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
+using System.Runtime.ConstrainedExecution;
 
 namespace client.inventory;
 
@@ -40,8 +41,13 @@ public class Item : IComparable<Item>
     protected string owner = "";
     protected List<string> itemLog;
     protected short flag;
+    public ItemFlag Flag { get; set; }
     protected long expiration = -1;
     protected string giftFrom = "";
+    /// <summary>
+    /// 封印过期时间
+    /// </summary>
+    public long LockExpiration { get; set; }
 
     public long UniqueId { get; private set; }
     public string? Properties { get; set; }
@@ -63,9 +69,9 @@ public class Item : IComparable<Item>
         }
     }
     /// <summary>
-    /// 不在背包里时为null
+    /// MapItem 时为null
     /// </summary>
-    public IItemStore? PlayerInventory { get; set; }
+    public IItemStore? Store { get; set; }
     public Item(int id, short position, short quantity, long uniqueId)
     {
         log = LogFactory.GetLogger(LogType.Item);
@@ -73,13 +79,19 @@ public class Item : IComparable<Item>
         this.position = position;
         this.quantity = quantity;
         this.itemLog = new();
-        this.flag = 0;
+
+        Flag = ItemFlag.Empty;
+        if (SourceTemplate.TradeBlock)
+            Flag |= ItemFlag.UNTRADEABLE;
+        if (SourceTemplate.AccountSharable)
+            Flag |= ItemFlag.ACCOUNT_SHARING;
+
         UniqueId = uniqueId <= 0 ? Yitter.IdGenerator.YitIdHelper.NextId() : uniqueId;
     }
 
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity, CannotStack ? UniqueId : Yitter.IdGenerator.YitIdHelper.NextId());
+        Item ret = new Item(id, position, quantity, UniqueId);
         CopyItemProps(ret);
         return ret;
     }
@@ -193,19 +205,48 @@ public class Item : IComparable<Item>
         return itemLog.ToList();
     }
 
-    public virtual short getFlag()
+    public short getFlag()
     {
         return flag;
     }
 
-    public virtual void setFlag(short b)
+    public void setFlag(short b)
     {
-        if (SourceTemplate.AccountSharable)
-        {
-            b |= ItemConstants.ACCOUNT_SHARING; // thanks Shinigami15 for noticing ACCOUNT_SHARING flag not being applied properly to items server-side
-        }
-
         this.flag = b;
+    }
+
+    void LockItemInner(long expire)
+    {
+        Flag |= ItemFlag.LOCK;
+        LockExpiration = expire;
+    }
+    public void LockItem(long expire)
+    {
+        if (Store is AbstractInventory inv)
+        {
+            inv.ForceUpdate(this, i => i.LockItemInner(expire));
+        }
+        else
+        {
+            LockItemInner(expire);
+        }
+    }
+
+    void UnlockInner()
+    {
+        Flag &= ~ItemFlag.LOCK;
+        LockExpiration = 0;
+    }
+    public void Unlock()
+    {
+        if (Store is AbstractInventory inv)
+        {
+            inv.ForceUpdate(this, i => i.UnlockInner());
+        }
+        else
+        {
+            UnlockInner();
+        }
     }
 
     public long getExpiration()
@@ -213,9 +254,21 @@ public class Item : IComparable<Item>
         return expiration;
     }
 
-    public virtual void setExpiration(long expire)
+    protected virtual void SetExpirationInner(long expire)
     {
-        this.expiration = expire;
+        expiration = expire;
+    }
+
+    public void setExpiration(long expire)
+    {
+        if (Store is AbstractInventory inv)
+        {
+            inv.ForceUpdate(this, i => SetExpirationInner(expire));
+        }
+        else
+        {
+            SetExpirationInner(expire);
+        }
     }
 
     public int getSN()
@@ -239,7 +292,7 @@ public class Item : IComparable<Item>
     }
     public bool isUntradeable()
     {
-        return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
+        return Flag.HasFlag(ItemFlag.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
     }
 
@@ -264,6 +317,8 @@ public class Item : IComparable<Item>
             && !ItemConstants.isRechargeable(getItemId())
             && getQuantity() < ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId())
             && getOwner() == anotherItem.getOwner()
-            && getFlag() == anotherItem.getFlag();
+            && getExpiration() == anotherItem.getExpiration()
+            && Flag == anotherItem.Flag
+            && !Flag.HasFlag(ItemFlag.LOCK);
     }
 }

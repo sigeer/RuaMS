@@ -22,6 +22,7 @@
 
 
 using Application.Shared.Constants.Inventory;
+using Application.Shared.Items;
 using Application.Utility.Configs;
 
 namespace Application.Shared.Constants.Item;
@@ -45,18 +46,6 @@ public class ItemConstants
     public const short ACCOUNT_SHARING = 0x100;
     public const short MERGE_UNTRADEABLE = 0x200;
 
-    public static int getFlagByInt(int type)
-    {
-        if (type == 128)
-        {
-            return PET_COME;
-        }
-        else if (type == 256)
-        {
-            return ACCOUNT_SHARING;
-        }
-        return 0;
-    }
 
     public static bool isThrowingStar(int itemId)
     {
@@ -168,13 +157,13 @@ public class ItemConstants
         return scrollId == ItemId.SPIKES_SCROLL || scrollId == ItemId.COLD_PROTECTION_SCROLl;
     }
 
-    public static bool isFlagModifier(int scrollId, short flag)
+    public static bool isFlagModifier(int scrollId, ItemFlag flag)
     {
-        if (scrollId == ItemId.COLD_PROTECTION_SCROLl && ((flag & ItemConstants.COLD) == ItemConstants.COLD))
+        if (scrollId == ItemId.COLD_PROTECTION_SCROLl && flag.HasFlag(ItemFlag.COLD))
         {
             return true;
         }
-        return scrollId == ItemId.SPIKES_SCROLL && ((flag & ItemConstants.SPIKES) == ItemConstants.SPIKES);
+        return scrollId == ItemId.SPIKES_SCROLL && flag.HasFlag(ItemFlag.SPIKES);
     }
     /// <summary>
     /// 混沌卷轴

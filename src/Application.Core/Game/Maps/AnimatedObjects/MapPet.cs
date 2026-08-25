@@ -9,7 +9,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 {
     public class MapPet : AbstractAnimatedMapObject, ILoopTickable
     {
-        public Player? Owner => PetItem.PlayerInventory?.Owner;
+        public Player? Owner => PetItem.Store?.Owner;
         public Pet PetItem { get; }
         public int Fullness { get => PetItem.Fullness; set => PetItem.Fullness = value; }
         public int Tameness { get => PetItem.Tameness; set => PetItem.Tameness = value; }
@@ -20,9 +20,9 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public MapPet(Pet sourceItem)
             : base(
-                sourceItem.PlayerInventory!.Owner.MapModel,
-                sourceItem.PlayerInventory!.Owner.MapModel.getGroundBelow(
-                    sourceItem.PlayerInventory!.Owner.getPosition()
+                sourceItem.Store!.Owner.MapModel,
+                sourceItem.Store!.Owner.MapModel.getGroundBelow(
+                    sourceItem.Store!.Owner.getPosition()
                 ),
                 0
             )
@@ -307,12 +307,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public TickableStatus Status { get; private set; }
         public async Task OnTick(long now)
         {
-            if (!this.IsAvailable() || PetItem.PlayerInventory == null)
+            if (!this.IsAvailable() || PetItem.Store == null)
             {
                 return;
             }
 
-            if (PetItem.PlayerInventory.Owner.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
+            if (PetItem.Store.Owner.isGM() && YamlConfig.config.server.GM_PETS_NEVER_HUNGRY || YamlConfig.config.server.PETS_NEVER_HUNGRY)
             {
                 return;
             }
@@ -327,12 +327,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                         PetItem.Fullness = 15;
 
                         await Recall(1);
-                        await PetItem.PlayerInventory.Owner.LightBlue("Your pet grew hungry! Treat it some pet food to keep it healthy!");
+                        await PetItem.Store.Owner.LightBlue("Your pet grew hungry! Treat it some pet food to keep it healthy!");
                     }
                     else
                     {
                         PetItem.Fullness = newFullness;
-                        await PetItem.PlayerInventory.Owner.forceUpdateItem(PetItem);
+                        await PetItem.Store.Owner.forceUpdateItem(PetItem);
                     }
                 }
                 else

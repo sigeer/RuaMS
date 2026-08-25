@@ -376,7 +376,7 @@ public class PacketCreator
         {
             p.writeShort(item.getQuantity());
             p.writeString(item.getOwner());
-            p.writeShort(item.getFlag()); // flag
+            p.writeShort((short)item.Flag); // flag
 
             if (ItemConstants.isRechargeable(item.getItemId()))
             {
@@ -403,7 +403,7 @@ public class PacketCreator
         p.writeShort(equip.getSpeed()); // speed
         p.writeShort(equip.getJump()); // jump
         p.writeString(equip.getOwner()); // owner name
-        p.writeShort(equip.getFlag()); //Item Flags
+        p.writeShort((short)equip.Flag); //Item Flags
 
         if (isCash)
         {

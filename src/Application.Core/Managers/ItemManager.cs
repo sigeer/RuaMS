@@ -49,9 +49,7 @@ namespace Application.Core.Managers
             equip.setHp(stat);
             equip.setMp(stat);
 
-            short flag = equip.getFlag();
-            flag |= ItemConstants.UNTRADEABLE;
-            equip.setFlag(flag);
+            equip.Flag |= ItemFlag.UNTRADEABLE;
         }
 
         public static bool HasMergeFlag(Item item)

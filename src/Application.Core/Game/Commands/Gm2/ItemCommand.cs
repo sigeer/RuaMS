@@ -85,14 +85,11 @@ public class ItemCommand : CommandBase
             pet.setExpiration(c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(quantity).ToUnixTimeMilliseconds());
         }
 
-        short flag = 0;
         if (player.gmLevel() < 3)
         {
-            flag |= ItemConstants.ACCOUNT_SHARING;
-            flag |= ItemConstants.UNTRADEABLE;
+            item.Flag = ItemFlag.ACCOUNT_SHARING | ItemFlag.UNTRADEABLE;
         }
 
-        item.setFlag(flag);
         item.setOwner(player.getName());
 
         await InventoryManipulator.addFromDrop(c, item, false);

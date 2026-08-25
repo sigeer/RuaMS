@@ -106,11 +106,6 @@ public class Equip : Item
         return ret;
     }
 
-    public override short getFlag()
-    {
-        return flag;
-    }
-
     public override sbyte getItemType()
     {
         return 1;
@@ -199,11 +194,6 @@ public class Equip : Item
     public int getVicious()
     {
         return vicious;
-    }
-
-    public override void setFlag(short flag)
-    {
-        this.flag = flag;
     }
 
     public void setStr(int str)

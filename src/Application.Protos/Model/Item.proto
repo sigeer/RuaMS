@@ -21,4 +21,5 @@ message ItemProto {
   EquipProto equipInfo = 9;
   PetProto petInfo = 10;
   google.protobuf.StringValue properties = 11;
+  int64 lockExpiration = 12;
 }

@@ -84,10 +84,7 @@ public class InventoryManipulator
 
                     short oldQ = eItem.getQuantity();
                     // 相同属性才能叠加
-                    if (oldQ < slotMax
-                        && item.getFlag() == eItem.getFlag()
-                        && item.getOwner().Equals(eItem.getOwner())
-                        && item.getExpiration() == eItem.getExpiration())
+                    if (eItem.CanStack(item, chr))
                     {
                         short newQ = (short)Math.Min(oldQ + quantity, slotMax);
                         quantity -= (short)(newQ - oldQ);
@@ -104,7 +101,7 @@ public class InventoryManipulator
                 var nItem = ItemInformationProvider.getInstance().GenerateVirtualItemById(itemid, newQ);
                 nItem.setExpiration(item.getExpiration());
                 nItem.setOwner(item.getOwner());
-                nItem.setFlag(item.getFlag());
+                nItem.Flag = item.Flag;
 
                 var addR = await inv.AddItem(nItem);
                 if (addR == null)
@@ -133,9 +130,6 @@ public class InventoryManipulator
                 return false;
             }
 
-            item.setExpiration(item.getExpiration());
-            item.setFlag(item.getFlag());
-            item.setOwner(item.getOwner());
             var addR = await inv.AddItem(item);
             if (addR == null)
             {
@@ -360,9 +354,7 @@ public class InventoryManipulator
         List<IInventoryOperationCommand> ops = [];
         if (source.SourceTemplate.EquipTradeBlock)
         {
-            short flag = source.getFlag();      // thanks BHB for noticing flags missing after equipping these
-            flag |= ItemConstants.UNTRADEABLE;
-            source.setFlag(flag);
+            source.Flag |= ItemFlag.UNTRADEABLE;
 
             ops.AddRange([new InventoryRemove(InventoryType.EQUIP, src), new InventoryAdd(InventoryType.EQUIP, source, src)]);
         }
@@ -596,12 +588,5 @@ public class InventoryManipulator
     }
 
 
-    public static bool isSandboxItem(Item it) => isSandboxItem(it.getFlag());
-
-    static bool isSandboxItem(short itFlag)
-    {
-        return (itFlag & ItemConstants.SANDBOX) == ItemConstants.SANDBOX;
-    }
-
-
+    public static bool isSandboxItem(Item it) => it.Flag.HasFlag(ItemFlag.SANDBOX);
 }

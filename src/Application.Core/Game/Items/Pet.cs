@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Pet;
@@ -39,7 +40,7 @@ public class Pet : Item
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
     public bool Summoned => MapPet != null;
-    public MapPet? MapPet => PlayerInventory?.Owner?.GetPetById(UniqueId);
+    public MapPet? MapPet => Store?.Owner?.GetPetById(UniqueId);
     public int PetAttribute { get; set; }
 
     public const int MaxFullness = 100;
@@ -106,9 +107,9 @@ public class Pet : Item
         }
     }
 
-    public override void setExpiration(long expire)
+    protected override void SetExpirationInner(long expire)
     {
-        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
+        expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
     }
 
     public Pet? EvolvePet(Player owner)

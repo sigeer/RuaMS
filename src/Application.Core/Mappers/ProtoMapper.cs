@@ -76,7 +76,7 @@ namespace Application.Core.Mappers
                 {
                     dest.setOwner(rs.Owner);
                     dest.setQuantity((short)rs.Quantity);
-                    dest.setFlag((short)rs.Flag);
+                    dest.Flag = (ItemFlag)rs.Flag;
                     dest.setExpiration(rs.Expiration);
                     dest.setGiftFrom(rs.GiftFrom);
 
@@ -103,7 +103,7 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Owner, source => source.getOwner())
                 .Map(dest => dest.Itemid, source => source.getItemId())
                 .Map(dest => dest.Quantity, source => source.getQuantity())
-                .Map(dest => dest.Flag, source => source.getFlag())
+                .Map(dest => dest.Flag, source => (short)source.Flag)
                 .Map(dest => dest.Expiration, source => source.getExpiration())
                 .Map(dest => dest.GiftFrom, source => source.getGiftFrom())
                 .Map(dest => dest.Position, source => source.getPosition())
@@ -119,7 +119,7 @@ namespace Application.Core.Mappers
                     {
                         dest.setOwner(rs.Owner);
                         dest.setQuantity((short)rs.Quantity);
-                        dest.setFlag((short)rs.Flag);
+                        dest.Flag = (ItemFlag)rs.Flag;
                         dest.setExpiration(rs.Expiration);
                         dest.setGiftFrom(rs.GiftFrom);
 
@@ -254,7 +254,7 @@ namespace Application.Core.Mappers
 
         public static sbyte GetInventoryType(Item src)
         {
-            return src.PlayerInventory is AbstractInventory inv
+            return src.Store is AbstractInventory inv
                         ? (sbyte)inv.getType()
                         : (sbyte)src.getInventoryType();
         }
@@ -282,10 +282,11 @@ namespace Application.Core.Mappers
 
             var dest = new Item(src.Itemid, (short)src.Position, (short)src.Quantity, src.UniqueId);
             dest.setOwner(src.Owner);
-            dest.setFlag((short)src.Flag);
+            dest.Flag = (ItemFlag)src.Flag;
             dest.setExpiration(src.Expiration);
             dest.setGiftFrom(src.GiftFrom);
             dest.Properties = src.Properties;
+            dest.LockExpiration = src.LockExpiration;
             return dest;
         }
 

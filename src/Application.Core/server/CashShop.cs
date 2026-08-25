@@ -96,7 +96,7 @@ public class CashShop: IItemStore
 
         foreach (var item in inventory)
         {
-            item.PlayerInventory = this;
+            item.Store = this;
         }
     }
 
@@ -227,13 +227,13 @@ public class CashShop: IItemStore
     public void addToInventory(Item item)
     {
         inventory.Add(item);
-        item.PlayerInventory = this;
+        item.Store = this;
     }
 
     public void removeFromInventory(Item item)
     {
         inventory.Remove(item);
-        item.PlayerInventory = null;
+        item.Store = null;
     }
 
     public List<int> getWishList()

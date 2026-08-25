@@ -34,10 +34,11 @@ namespace Application.Core.Mappers
             result.Quantity = (int)p1.getQuantity();
             result.Position = (int)p1.getPosition();
             result.Owner = p1.getOwner();
-            result.Flag = (int)p1.getFlag();
+            result.Flag = (int)p1.Flag;
             result.Expiration = p1.getExpiration();
             result.GiftFrom = p1.getGiftFrom();
             result.Properties = p1.Properties;
+            result.LockExpiration = p1.LockExpiration;
             return result;
             
         }
@@ -59,7 +60,7 @@ namespace Application.Core.Mappers
             result.Quantity = (int)((Item)p4).getQuantity();
             result.Position = (int)((Item)p4).getPosition();
             result.Owner = ((Item)p4).getOwner();
-            result.Flag = (int)((Item)p4).getFlag();
+            result.Flag = (int)p4.Flag;
             result.Expiration = ((Item)p4).getExpiration();
             result.GiftFrom = ((Item)p4).getGiftFrom();
             result.PetInfo = funcMain2(new PetProto()
@@ -73,6 +74,7 @@ namespace Application.Core.Mappers
                 PetSlot = p4.MapPet == null ? -1 : (int)p4.MapPet.Index
             });
             result.Properties = p4.Properties;
+            result.LockExpiration = p4.LockExpiration;
             return result;
             
         }
@@ -90,7 +92,7 @@ namespace Application.Core.Mappers
             result.Quantity = (int)((Item)p6).getQuantity();
             result.Position = (int)((Item)p6).getPosition();
             result.Owner = ((Item)p6).getOwner();
-            result.Flag = (int)((Item)p6).getFlag();
+            result.Flag = (int)p6.Flag;
             result.Expiration = ((Item)p6).getExpiration();
             result.GiftFrom = ((Item)p6).getGiftFrom();
             result.EquipInfo = p6 == null ? null : new EquipProto()
@@ -117,6 +119,7 @@ namespace Application.Core.Mappers
                 Itemexp = p6.getItemExp()
             };
             result.Properties = p6.Properties;
+            result.LockExpiration = p6.LockExpiration;
             return result;
             
         }

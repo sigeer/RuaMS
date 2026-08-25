@@ -143,7 +143,8 @@ namespace Application.Core.Channel.Net.Packets
 
         /// <summary>
         /// 
-        /// CWvsContext::OnGeneralItemExpireMessage SP_2886_THE_ITEM__S__HAS_BEEN_EXPIRED_AND_THEREFORE_DELETED_FROM_YOUR_INVENTORY
+        /// CWvsContext::OnGeneralItemExpireMessage 
+        /// SP_2886_THE_ITEM__S__HAS_BEEN_EXPIRED_AND_THEREFORE_DELETED_FROM_YOUR_INVENTORY
         /// </summary>
         /// <param name="itemIds"></param>
         /// <returns></returns>
@@ -208,6 +209,11 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
+        /// <summary>
+        /// CWvsContext::OnItemExpireReplaceMessage
+        /// </summary>
+        /// <param name="itemExpiraMessages"></param>
+        /// <returns></returns>
         public static Packet ItemExpireReplaceMessage(IEnumerable<string> itemExpiraMessages)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);

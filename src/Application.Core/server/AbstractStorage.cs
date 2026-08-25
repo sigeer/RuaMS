@@ -20,7 +20,7 @@ namespace Application.Core.Server
             Items.AddRange(items);
             foreach (var item in Items)
             {
-                item.PlayerInventory = this;
+                item.Store = this;
             }
 
             _typedItems = new();
@@ -179,7 +179,7 @@ namespace Application.Core.Server
         public void AddItem(Item item)
         {
             Items.Add(item);
-            item.PlayerInventory = this;
+            item.Store = this;
             _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
         }
 
@@ -187,7 +187,7 @@ namespace Application.Core.Server
         {
             if (Items.Remove(item))
             {
-                item.PlayerInventory = null;
+                item.Store = null;
                 _typedItems[item.getInventoryType()] = Items.AsValueEnumerable().Where(x => x.getInventoryType() == item.getInventoryType()).ToList();
                 return true;
             }

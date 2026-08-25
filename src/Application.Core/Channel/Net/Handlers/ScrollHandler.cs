@@ -125,7 +125,7 @@ public class ScrollHandler : ChannelHandlerBase
                 }
                 else if (scrolled.getLevel() > oldLevel
                     || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1)
-                    || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.getFlag()))
+                    || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.Flag))
                 {
                     scrollSuccess = Equip.ScrollResult.SUCCESS;
                 }

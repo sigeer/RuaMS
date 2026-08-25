@@ -51,9 +51,9 @@ public class PetSkillAction : AbstractQuestAction
         return Task.FromResult(chr.getPet(0) != null);
     }
 
-    public override Task run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        chr.getPet(0).PetItem.setFlag((byte)ItemConstants.getFlagByInt(flag));
-        return Task.CompletedTask;
+        chr.getPet(0).PetItem.Flag |= (ItemFlag)flag;
+        await chr.forceUpdateItem(chr.getPet(0).PetItem);
     }
 }

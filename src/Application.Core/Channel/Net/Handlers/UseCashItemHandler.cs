@@ -208,40 +208,22 @@ public class UseCashItemHandler : ChannelHandlerBase
             { // Sealing lock
                 InventoryType type = InventoryTypeUtils.getByType((sbyte)p.readInt());
                 eq = player.getInventory(type).getItem((short)p.readInt());
-                if (eq == null)
-                { //Check if the type is EQUIPMENT?
+                if (eq == null || eq.SourceTemplate is not ItemGuardTemplate template)
+                { 
+                    //Check if the type is EQUIPMENT?
                     return;
                 }
-                short flag = eq.getFlag();
-                if (eq.getExpiration() > -1 && (eq.getFlag() & ItemConstants.LOCK) != ItemConstants.LOCK)
+
+                if (eq.Flag.HasFlag(ItemFlag.LOCK))
                 {
                     return; //No perma items pls
                 }
-                flag |= ItemConstants.LOCK;
-                eq.setFlag(flag);
 
-                long period = 0;
-                if (itemId == 5061000)
+                if (template.ProtectTime > 0)
                 {
-                    period = 7;
-                }
-                else if (itemId == 5061001)
-                {
-                    period = 30;
-                }
-                else if (itemId == 5061002)
-                {
-                    period = 90;
-                }
-                else if (itemId == 5061003)
-                {
-                    period = 365;
-                }
-
-                if (period > 0)
-                {
-                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServer.Node.getCurrentTime();
-                    eq.setExpiration(expiration + 24 * 3600 * 1000 * (period));
+                    eq.LockItem(eq.LockExpiration <= 0
+                        ? c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().Add(TimeSpan.FromDays(template.ProtectTime)).ToUnixTimeMilliseconds()
+                        : eq.LockExpiration + (long)TimeSpan.FromDays(template.ProtectTime).TotalMilliseconds);
                 }
 
                 // double-remove found thanks to BHB

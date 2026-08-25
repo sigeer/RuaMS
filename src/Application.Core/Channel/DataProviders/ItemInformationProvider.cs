@@ -692,16 +692,13 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
             if (assertGM || rollSuccessChance(prop))
             {
-                short flag = nEquip.getFlag();
                 if (scrollTemplate.PreventSlip)
                 {
-                    flag |= ItemConstants.SPIKES;
-                    nEquip.setFlag((byte)flag);
+                    nEquip.Flag |= ItemFlag.SPIKES;
                 }
                 if (scrollTemplate.PreventSlip)
                 {
-                    flag |= ItemConstants.COLD;
-                    nEquip.setFlag((byte)flag);
+                    nEquip.Flag |= ItemFlag.COLD;
                 }
                 if (scrollTemplate.Recover)
                 {
@@ -787,17 +784,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         nEquip.setMp(equipTemplate.IncMMP);
         nEquip.setUpgradeSlots(equipTemplate.TUC);
 
-        if (equipTemplate.TradeBlock)
-        {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
-            short flag = nEquip.getFlag();
-            flag |= ItemConstants.UNTRADEABLE;
-            nEquip.setFlag(flag);
-        }
         if (equipTemplate.Fs > 0)
         {
-            short flag = nEquip.getFlag();
-            flag |= ItemConstants.SPIKES;
-            nEquip.setFlag(flag);
+            nEquip.Flag |= ItemFlag.SPIKES;
         }
         return nEquip;
         //return nEquip.copy(); // Q.为什么要用copy？
