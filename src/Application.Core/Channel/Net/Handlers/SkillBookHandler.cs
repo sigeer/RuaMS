@@ -72,8 +72,8 @@ public class SkillBookHandler : ChannelHandlerBase
                 }
                 else
                 {
-                    var skill2 = SkillFactory.getSkill(targetSkillId);
-                    if ((player.getSkillLevel(skill2) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
+                    var skill2 = SkillFactory.getSkill(targetSkillId)!;
+                    if ((player.GetPlayerSkillLevel(skill2.getId()) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
                         && player.getMasterLevel(skill2) < template.MasterLevel)
                     {
                         var used = inv.getItem(slot);
@@ -88,7 +88,7 @@ public class SkillBookHandler : ChannelHandlerBase
                         if (ItemInformationProvider.rollSuccessChance(template.SuccessRate))
                         {
                             success = true;
-                            await player.changeSkillLevel(skill2, player.getSkillLevel(skill2), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
+                            await player.changeSkillLevel(skill2, (sbyte)player.GetPlayerSkillLevel(skill2.getId()), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
                         }
                         else
                         {

@@ -419,7 +419,7 @@ public class PacketCreator
             long expNibble = (ExpTable.getExpNeededForLevel(equip.SourceTemplate.ReqLevel) * equip.getItemExp());
             expNibble /= ExpTable.getEquipExpNeededForLevel(itemLevel);
 
-            p.writeByte(0);
+            p.writeBool(equip.HasSkill);
             p.writeByte(itemLevel); //Item Level
             p.writeInt((int)expNibble);
             p.writeInt(equip.getVicious()); //WTF NEXON ARE YOU SERIOUS?
@@ -1611,7 +1611,7 @@ public class PacketCreator
         p.writeInt(itemId); // drop object ID
         p.writeInt(0); // owner charid/partyid :)
         p.writeByte(0); // 0 = timeout for non-owner, 1 = timeout for non-owner's party, 2 = FFA, 3 = explosive/FFA
-        p.writePos(Point.Empty);
+        p.writePos(dropfrom);
         p.writeInt(0); // dropper oid, found thanks to Li Jixue
         p.writePos(dropfrom);
         p.writeShort(0);//Fh?

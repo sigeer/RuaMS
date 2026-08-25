@@ -221,30 +221,30 @@ namespace Application.Plugin.Script.Npc
                 await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.BOWMASTER)
                 {
-                    if (getPlayer().getSkillLevel(3121008) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3121008) == 0)
                     {
                         await teachSkill(3121008, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(3121006) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3121006) == 0)
                     {
                         await teachSkill(3121006, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(3121004) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3121004) == 0)
                     {
                         await teachSkill(3121004, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.MARKSMAN)
                 {
-                    if (getPlayer().getSkillLevel(3221007) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3221007) == 0)
                     {
                         await teachSkill(3221007, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(3221005) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3221005) == 0)
                     {
                         await teachSkill(3221005, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(3221001) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(3221001) == 0)
                     {
                         await teachSkill(3221001, 0, 10, -1);
                     }

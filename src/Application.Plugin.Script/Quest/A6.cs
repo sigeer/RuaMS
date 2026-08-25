@@ -702,7 +702,7 @@ namespace Application.Plugin.Script.Quest
                 if (isQuestStarted(21703))
                 {
                     await forceCompleteQuest();
-                    await teachSkill(21000000, (sbyte)getPlayer().getSkillLevel(21000000), 10, -1);   // Combo Ability Skill
+                    await teachSkill(21000000, (sbyte)getPlayer().GetPlayerSkillLevel(21000000), 10, -1);   // Combo Ability Skill
                     await gainExp(2800);
                 }
 
@@ -786,7 +786,7 @@ namespace Application.Plugin.Script.Quest
                 if (getQuestStatus(21720) == 1)
                 {
                     await forceCompleteQuest();
-                    await teachSkill(Aran.POLEARM_BOOSTER, (sbyte)getPlayer().getSkillLevel(Aran.POLEARM_BOOSTER), 20, -1);
+                    await teachSkill(Aran.POLEARM_BOOSTER, (sbyte)getPlayer().GetPlayerSkillLevel(Aran.POLEARM_BOOSTER), 20, -1);
                     await gainExp(3900);
                 }
 

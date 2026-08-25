@@ -10,6 +10,7 @@ namespace Application.Core.Game.Players
     public partial class Player
     {
         public PlayerSkill Skills { get; set; }
+        public Dictionary<int, int> TempSkillCache { get; set; } = new();
         /// <summary>
         /// skillId - Cooldown
         /// </summary>
@@ -19,14 +20,36 @@ namespace Application.Core.Game.Players
             return Skills.GetDataSource();
         }
 
+        /// <summary>
+        /// 玩家技能学习等级
+        /// </summary>
+        /// <param name="skill"></param>
+        /// <returns></returns>
+        public int GetPlayerSkillLevel(int skill)
+        {
+            return getSkillLevel(SkillFactory.getSkill(skill), false);
+        }
+
         public int getSkillLevel(int skill)
         {
             return getSkillLevel(SkillFactory.getSkill(skill));
         }
 
-        public sbyte getSkillLevel(Skill? skill)
+        /// <summary>
+        /// 玩家技能等级
+        /// </summary>
+        /// <param name="skill"></param>
+        /// <param name="final">true: 取最终效果（+装备技能等级）</param>
+        /// <returns></returns>
+        public sbyte getSkillLevel(Skill? skill, bool final = true)
         {
-            return skill == null ? (sbyte)0 : (Skills.GetSkill(skill)?.skillevel ?? 0);
+            if (skill == null)
+            {
+                return 0;
+            }
+            return (sbyte)Math.Min(
+                (Skills.GetSkill(skill)?.skillevel ?? 0) + (final ? TempSkillCache.GetValueOrDefault(skill.getId()) : 0), 
+                skill.getMaxLevel());
         }
 
         public StatEffect? TryGetPlayerSkillEffect(int skillId)
