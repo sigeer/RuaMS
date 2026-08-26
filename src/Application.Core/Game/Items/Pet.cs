@@ -140,7 +140,7 @@ public class Pet : Item
         evolved.Tameness = Tameness;
         evolved.Fullness = Fullness;
         evolved.Level = Level;
-        evolved.setExpiration(owner.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(nextPetTemplate.Life).ToUnixTimeMilliseconds());
+        evolved.setExpiration(getExpiration());
 
         return evolved;
     }
