@@ -15,7 +15,7 @@ public class DevtestCommand : CommandBase
     {
         try
         {
-            await CSharpScript.EvaluateAsync<int>(File.ReadAllText(devtestPath), globals: new { chr = client.OnlinedCharacter });
+            await CSharpScript.EvaluateAsync<int>(File.ReadAllText(devtestPath), globals: new ScriptGlobals(client.OnlinedCharacter));
         }
         catch (CompilationErrorException ex)
         {
@@ -23,3 +23,14 @@ public class DevtestCommand : CommandBase
         }
     }
 }
+
+public class ScriptGlobals
+{
+    public ScriptGlobals(Player chr)
+    {
+        this.chr = chr;
+    }
+
+    public Player chr { get; set; }
+}
+
