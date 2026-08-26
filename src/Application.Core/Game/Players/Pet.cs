@@ -71,6 +71,19 @@ namespace Application.Core.Game.Players
                 var mapPet = petSlot == -1 ? addPet(petItem) : SetPet(petSlot, petItem);
                 if (mapPet != null)
                 {
+                    Point pos;
+                    if (oldPet == null)
+                    {
+                        pos = getPosition();
+                        pos.Y -= 12;
+                    }
+                    else
+                    {
+                        pos = oldPet.getPosition();
+                    }
+                    mapPet.setPosition(pos);
+                    mapPet.setStance(oldPet?.getStance() ?? 0);
+
                     await MapModel.AddMapObject(mapPet, c => mapPet.sendSpawnData(c));
 
                     if (isEvolve)
