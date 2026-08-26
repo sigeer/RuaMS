@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Pet;
@@ -39,8 +40,15 @@ public class Pet : Item
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
     public bool Summoned => MapPet != null;
-    public MapPet? MapPet => PlayerInventory?.Owner?.GetPetById(UniqueId);
+    public MapPet? MapPet => Store?.Owner?.GetPetById(UniqueId);
+    /// <summary>
+    /// <see cref="Application.Shared.Items.PetAttribute"/>
+    /// </summary>
     public int PetAttribute { get; set; }
+    /// <summary>
+    /// <see cref="PetSkillFlag"/>
+    /// </summary>
+    public short PetSkill { get; set; }
 
     public const int MaxFullness = 100;
     public const int MaxTameness = 30000;
@@ -48,7 +56,7 @@ public class Pet : Item
 
     public override PetItemTemplate SourceTemplate { get; }
 
-    public Pet(PetItemTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
+    public Pet(PetItemTemplate template, short position, long uniqueId) : base(template, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Pet);
@@ -60,6 +68,7 @@ public class Pet : Item
         var copyPet = new Pet(SourceTemplate, getPosition(), UniqueId);
         copyPet.Name = Name;
         copyPet.PetAttribute = PetAttribute;
+        copyPet.PetSkill = PetSkill;
         copyPet.Fullness = Fullness;
         copyPet.Tameness = Tameness;
         copyPet.Level = Level;
@@ -84,31 +93,17 @@ public class Pet : Item
         return 3;
     }
 
-    public async Task addPetAttribute(Player owner, PetAttribute flag)
+    public async Task addPetAttribute(PetAttribute flag)
     {
         PetAttribute |= (int)flag;
 
-        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
-        if (petz != null)
-        {
-            await owner.forceUpdateItem(petz);
-        }
+        if (Store is AbstractInventory inv)
+            await inv.Owner.forceUpdateItem(this);
     }
 
-    public async Task removePetAttribute(Player owner, PetAttribute flag)
+    protected override void SetExpirationInner(long expire)
     {
-        PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
-
-        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
-        if (petz != null)
-        {
-            await owner.forceUpdateItem(petz);
-        }
-    }
-
-    public override void setExpiration(long expire)
-    {
-        this.expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
+        expiration = SourceTemplate.Permanent ? long.MaxValue : expire;
     }
 
     public Pet? EvolvePet(Player owner)
@@ -141,9 +136,15 @@ public class Pet : Item
         evolved.Fullness = Fullness;
         evolved.Level = Level;
         evolved.setExpiration(getExpiration());
+        evolved.PetAttribute = PetAttribute;
+        evolved.PetSkill = PetSkill;
 
         return evolved;
     }
 
+    public override bool IsStackable(Player chr)
+    {
+        return false;
+    }
 }
 

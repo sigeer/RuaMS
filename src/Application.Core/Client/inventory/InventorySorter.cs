@@ -1,18 +1,25 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Server;
 using client.inventory;
+using server;
 
 namespace Application.Core.Client.inventory
 {
     public abstract class InventorySorter
     {
+        protected InventorySorter(Player owner)
+        {
+            Owner = owner;
+        }
+
+        protected Player Owner { get; }
         protected abstract Item? GetItem(short slot);
         protected abstract void Swap(short sSlot, short dSlot);
         protected abstract void RemoveSlot(short slot);
 
         protected abstract short GetSize();
 
-        protected abstract short GetSlotMax(int itemId);
+        protected short GetSlotMax(int itemId) => ItemInformationProvider.getInstance().getSlotMax(Owner.Client, itemId);
 
         protected abstract short GetNextFreeSlot();
         protected abstract List<Item?> GetAllItems();
@@ -38,20 +45,20 @@ namespace Application.Core.Client.inventory
 
                 for (short src = (short)(dst + 1); src <= GetSize(); src++)
                 {
+                    if (!dstItem.IsStackable(Owner))
+                    {
+                        break;
+                    }
+
                     srcItem = GetItem(src);
                     if (srcItem == null)
                     {
                         continue;
                     }
 
-                    if (dstItem.getItemId() != srcItem.getItemId())
+                    if (!dstItem.CanMerge(srcItem, Owner))
                     {
                         continue;
-                    }
-
-                    if (dstItem.getQuantity() == GetSlotMax(dstItem.getItemId()))
-                    {
-                        break;
                     }
 
                     allOperation.AddRange(Move(src, dst));
@@ -108,44 +115,35 @@ namespace Application.Core.Client.inventory
 
                 return [new InventoryMove(type, sSlot, dSlot)];
             }
-            else if (target.getItemId() == source.getItemId() && !ItemConstants.isRechargeable(source.getItemId()) && isSameOwner(source, target))
+            else
             {
-                var slotMax = GetSlotMax(target.getItemId());
-
-                if (type.getType() == InventoryType.EQUIP.getType() || type.getType() == InventoryType.CASH.getType())
+                if (!source.CanMerge(target, Owner))
                 {
                     Swap(dSlot, sSlot);
                     return [new InventoryMove(type, sSlot, dSlot)];
                 }
-                else if (source.getQuantity() + target.getQuantity() > slotMax)
+                else 
                 {
-                    short rest = (short)((source.getQuantity() + target.getQuantity()) - slotMax);
-                    source.setQuantity(rest);
-                    target.setQuantity(slotMax);
+                    var slotMax = GetSlotMax(target.getItemId());
+                    if (source.getQuantity() + target.getQuantity() > slotMax)
+                    {
+                        short rest = (short)((source.getQuantity() + target.getQuantity()) - slotMax);
+                        source.setQuantity(rest);
+                        target.setQuantity(slotMax);
 
-                    return [new InventoryUpdateQuantity(type, sSlot, rest), new InventoryUpdateQuantity(type, dSlot, slotMax)];
-                }
-                else
-                {
-                    var nextQuantity = (short)(source.getQuantity() + target.getQuantity());
-                    target.setQuantity(nextQuantity);
+                        return [new InventoryUpdateQuantity(type, sSlot, rest), new InventoryUpdateQuantity(type, dSlot, slotMax)];
+                    }
+                    else
+                    {
+                        var nextQuantity = (short)(source.getQuantity() + target.getQuantity());
+                        target.setQuantity(nextQuantity);
 
-                    RemoveSlot(sSlot);
+                        RemoveSlot(sSlot);
 
-                    return [new InventoryRemove(type, sSlot), new InventoryUpdateQuantity(type, dSlot, nextQuantity)];
+                        return [new InventoryRemove(type, sSlot), new InventoryUpdateQuantity(type, dSlot, nextQuantity)];
+                    }
                 }
             }
-            else
-            {
-                Swap(dSlot, sSlot);
-                return [new InventoryMove(type, sSlot, dSlot)];
-            }
-        }
-
-
-        private static bool isSameOwner(Item source, Item target)
-        {
-            return source.getOwner().Equals(target.getOwner());
         }
 
         protected List<Item?> SortInternal(List<Item?> inventoryItems, int sort, int thenSort)
@@ -242,14 +240,12 @@ namespace Application.Core.Client.inventory
     {
         Inventory _inv;
 
-        public BagInventorySorter(Inventory inv)
+        public BagInventorySorter(Inventory inv) : base(inv.Owner)
         {
             _inv = inv;
         }
 
         protected override short GetSize() => _inv.getSlotLimit();
-
-        protected override short GetSlotMax(int itemId) => ItemInformationProvider.getInstance().getSlotMax(_inv.Owner.Client, itemId);
 
         protected override Item? GetItem(short slot)
         {
@@ -296,7 +292,7 @@ namespace Application.Core.Client.inventory
         AbstractStorage _storage;
         Item?[] _items;
 
-        public StorageSorter(AbstractStorage storage)
+        public StorageSorter(AbstractStorage storage): base(storage.Owner)
         {
             _storage = storage;
 
@@ -324,8 +320,6 @@ namespace Application.Core.Client.inventory
         {
             return (short)_items.Length;
         }
-
-        protected override short GetSlotMax(int itemId) => ItemInformationProvider.getInstance().getSlotMax(_storage.Owner.Client, itemId);
 
         protected override void RemoveSlot(short slot)
         {

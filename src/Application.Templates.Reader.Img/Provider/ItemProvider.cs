@@ -197,21 +197,55 @@ namespace Application.Templates.Reader.Img.Provider
 
         private AbstractItemTemplate ProcessCashItemByGroup(int groupId, int itemId, IDataNode itemNode)
         {
-            return groupId switch
+            ItemTemplateBase result;  // 假设 CreateItem 返回类型为 CashItemTemplateBase 或其子类
+            switch (groupId)
             {
-                503 => CreateItem<HiredMerchantItemTemplate>(itemId, itemNode, HiredMerchantItemTemplateGenerated_Duey.ApplyProperties),
-                512 => CreateItem<MapBuffItemTemplate>(itemId, itemNode, MapBuffItemTemplateGenerated_Duey.ApplyProperties),
-                513 => CreateItem<SafetyCharmItemTemplate>(itemId, itemNode, SafetyCharmItemTemplateGenerated_Duey.ApplyProperties),
-                518 => CreateItem<WaterOfLifeItemTemplate>(itemId, itemNode, WaterOfLifeItemTemplateGenerated_Duey.ApplyProperties),
-                520 => CreateItem<MesoBagItemTemplate>(itemId, itemNode, MesoBagItemTemplateGenerated_Duey.ApplyProperties),
-                521 or 536 => CreateItem<CouponItemTemplate>(itemId, itemNode, CouponItemTemplateGenerated_Duey.ApplyProperties),
-                524 => CreateItem<CashPetFoodItemTemplate>(itemId, itemNode, CashPetFoodItemTemplateGenerated_Duey.ApplyProperties),
-                528 => CreateItem<AreaEffectItemTemplate>(itemId, itemNode, AreaEffectItemTemplateGenerated_Duey.ApplyProperties),
-                530 => CreateItem<MorphItemTemplate>(itemId, itemNode, MorphItemTemplateGenerated_Duey.ApplyProperties),
-                550 => CreateItem<ExtendItemTimeItemTemplate>(itemId, itemNode, ExtendItemTimeItemTemplateGenerated_Duey.ApplyProperties),
-                553 => CreateItem<CashPackagedItemTemplate>(itemId, itemNode, CashPackagedItemTemplateGenerated_Duey.ApplyProperties),
-                _ => CreateItem<CashItemTemplate>(itemId, itemNode, CashItemTemplateGenerated_Duey.ApplyProperties),
-            };
+                case 503:
+                    result = CreateItem<HiredMerchantItemTemplate>(itemId, itemNode, HiredMerchantItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 512:
+                    result = CreateItem<MapBuffItemTemplate>(itemId, itemNode, MapBuffItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 513:
+                    result = CreateItem<SafetyCharmItemTemplate>(itemId, itemNode, SafetyCharmItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 518:
+                    result = CreateItem<WaterOfLifeItemTemplate>(itemId, itemNode, WaterOfLifeItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 520:
+                    result = CreateItem<MesoBagItemTemplate>(itemId, itemNode, MesoBagItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 521:
+                case 536:
+                    result = CreateItem<CouponItemTemplate>(itemId, itemNode, CouponItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 524:
+                    result = CreateItem<CashPetFoodItemTemplate>(itemId, itemNode, CashPetFoodItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 528:
+                    result = CreateItem<AreaEffectItemTemplate>(itemId, itemNode, AreaEffectItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 530:
+                    result = CreateItem<MorphItemTemplate>(itemId, itemNode, MorphItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 550:
+                    result = CreateItem<ExtendItemTimeItemTemplate>(itemId, itemNode, ExtendItemTimeItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                case 553:
+                    result = CreateItem<CashPackagedItemTemplate>(itemId, itemNode, CashPackagedItemTemplateGenerated_Duey.ApplyProperties);
+                    break;
+                default:
+                    if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
+                    {
+                        result = CreateItem<ItemGuardTemplate>(itemId, itemNode, ItemGuardTemplateGenerated_Duey.ApplyProperties);
+                    }
+                    else
+                    {
+                        result = CreateItem<CashItemTemplate>(itemId, itemNode, CashItemTemplateGenerated_Duey.ApplyProperties);
+                    }
+                    break;
+            }
+            return result;
         }
 
         private IEnumerable<AbstractItemTemplate> IterateCashBundleItem(string imgPath)

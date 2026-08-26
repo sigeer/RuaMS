@@ -205,43 +205,28 @@ public class UseCashItemHandler : ChannelHandlerBase
                 eq?.setOwner(player.getName());
             }
             else if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
-            { // Sealing lock
+            { 
+                // Sealing lock
                 InventoryType type = InventoryTypeUtils.getByType((sbyte)p.readInt());
                 eq = player.getInventory(type).getItem((short)p.readInt());
-                if (eq == null)
-                { //Check if the type is EQUIPMENT?
+                if (eq == null || toUse.SourceTemplate is not ItemGuardTemplate template)
+                {
+                    //Check if the type is EQUIPMENT?
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
-                short flag = eq.getFlag();
-                if (eq.getExpiration() > -1 && (eq.getFlag() & ItemConstants.LOCK) != ItemConstants.LOCK)
+
+                if (eq.HasFlag(ItemFlag.LOCK))
                 {
+                    await c.SendPacket(PacketCreator.enableActions());
                     return; //No perma items pls
                 }
-                flag |= ItemConstants.LOCK;
-                eq.setFlag(flag);
 
-                long period = 0;
-                if (itemId == 5061000)
+                if (template.ProtectTime > 0)
                 {
-                    period = 7;
-                }
-                else if (itemId == 5061001)
-                {
-                    period = 30;
-                }
-                else if (itemId == 5061002)
-                {
-                    period = 90;
-                }
-                else if (itemId == 5061003)
-                {
-                    period = 365;
-                }
-
-                if (period > 0)
-                {
-                    long expiration = eq.getExpiration() > -1 ? eq.getExpiration() : c.CurrentServer.Node.getCurrentTime();
-                    eq.setExpiration(expiration + 24 * 3600 * 1000 * (period));
+                    eq.LockItem(eq.LockExpiration <= 0
+                        ? c.CurrentServer.Node.GetCurrentTimeDateTimeOffset().Add(TimeSpan.FromDays(template.ProtectTime)).ToUnixTimeMilliseconds()
+                        : eq.LockExpiration + (long)TimeSpan.FromDays(template.ProtectTime).TotalMilliseconds);
                 }
 
                 // double-remove found thanks to BHB
@@ -652,8 +637,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             int curlevel = toScroll.getLevel();
             await c.SendPacket(PacketCreator.sendVegaScroll(0x40));
 
-            var scrolled = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
-            await c.SendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
+            var result = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
+            await c.SendPacket(PacketCreator.sendVegaScroll(result == ScrollResult.SUCCESS ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 
             await InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
@@ -673,10 +658,16 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     chr.toggleBlockCashShop();
 
-                    await chr.forceUpdateItem(scrolled);
+                    if (result == ScrollResult.CURSE)
+                    {
+                        await InventoryManipulator.removeFromSlot(chr.Client, InventoryType.EQUIP, toScroll.getPosition(), 1, false);
+                    }
+                    else
+                    {
+                        await chr.forceUpdateItem(toScroll);
+                    }
 
-                    var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
-                    await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
+                    await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, result, false, false));
                     // 取背包装备栏而不是已装备栏，理论上不会出现eSlot < 0的情况？
                     //if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
                     //{

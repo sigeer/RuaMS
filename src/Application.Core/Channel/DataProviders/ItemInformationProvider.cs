@@ -645,8 +645,9 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public bool canUseCleanSlate(Equip equip)
     {
         int totalUpgradeCount = equip.SourceTemplate.TUC;
-        int freeUpgradeCount = equip.getUpgradeSlots();
         int viciousCount = equip.getVicious();
+
+        int freeUpgradeCount = equip.getUpgradeSlots();
         int appliedScrollCount = equip.getLevel();
         return freeUpgradeCount + appliedScrollCount < totalUpgradeCount + viciousCount;
     }
@@ -654,55 +655,50 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     /// <summary>
     /// 上卷轴
     /// </summary>
-    /// <param name="equip"></param>
+    /// <param name="nEquip"></param>
     /// <param name="scrollId"></param>
     /// <param name="usingWhiteScroll"></param>
-    /// <param name="vegaItemId"></param>
+    /// <param name="vegaItemId">卷轴成功提升卡</param>
     /// <param name="isGM"></param>
     /// <returns></returns>
-    public Equip? scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
+    public Equip.ScrollResult scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
     {
         bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
 
         var scrollTemplate = _itemProvider.GetRequiredItem<ScrollItemTemplate>(scrollId);
         if (scrollTemplate == null)
-            return nEquip;
+            return ScrollResult.FAIL;
 
-        if (nEquip.getUpgradeSlots() > 0 || ItemConstants.isCleanSlate(scrollId) || assertGM)
+        // 可升级 or 是gm or 是不消耗强化次数的卷轴
+        if (nEquip.getUpgradeSlots() > 0 || !ItemConstants.RequireUpgradeSlot(scrollId) || assertGM)
         {
             double prop = scrollTemplate.SuccessRate;
 
             switch (vegaItemId)
             {
                 case ItemId.VEGAS_SPELL_10:
-                    if (prop == 10.0f)
+                    if (prop == 10.0)
                     {
-                        prop = 30.0f;
+                        prop = 30.0;
                     }
                     break;
                 case ItemId.VEGAS_SPELL_60:
-                    if (prop == 60.0f)
+                    if (prop == 60.0)
                     {
-                        prop = 90.0f;
+                        prop = 90.0;
                     }
-                    break;
-                case ItemId.CHAOS_SCROll_60:
-                    prop = 100.0f;
                     break;
             }
 
             if (assertGM || rollSuccessChance(prop))
             {
-                short flag = nEquip.getFlag();
                 if (scrollTemplate.PreventSlip)
                 {
-                    flag |= ItemConstants.SPIKES;
-                    nEquip.setFlag((byte)flag);
+                    nEquip.AddFlag(ItemFlag.SPIKES);
                 }
-                if (scrollTemplate.PreventSlip)
+                if (scrollTemplate.WarmSupport)
                 {
-                    flag |= ItemConstants.COLD;
-                    nEquip.setFlag((byte)flag);
+                    nEquip.AddFlag(ItemFlag.COLD);
                 }
                 if (scrollTemplate.Recover)
                 {
@@ -719,28 +715,37 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
                 {
                     improveEquipStats(nEquip, scrollTemplate);
                 }
-                if (!ItemConstants.isCleanSlate(scrollId))
+
+                if (ItemConstants.RequireUpgradeSlot(scrollId) && !assertGM)
                 {
-                    if (!assertGM && !ItemConstants.isModifierScroll(scrollId))
-                    {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                        nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
-                    }
+                    // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
+                    nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                     nEquip.setLevel((byte)(nEquip.getLevel() + 1));
                 }
+
+                return ScrollResult.SUCCESS;
             }
             else
             {
-                if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId))
+                if (!usingWhiteScroll && ItemConstants.RequireUpgradeSlot(scrollId) && !assertGM)
                 {
                     nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
                 }
-                if (Randomizer.nextInt(100) < scrollTemplate.CursedRate)
+
+                if (Randomizer.nextInt(100) < scrollTemplate.Cursed)
                 {
-                    return null;
+                    return ScrollResult.CURSE;
                 }
+
+                return ScrollResult.FAIL;
             }
         }
-        return nEquip;
+        else
+        {
+            // 没有可升级的槽
+            return ScrollResult.FAIL;
+        }
+
     }
 
     public static void improveEquipStats(Equip nEquip, IEnhanceEquipItem scrollTemplate)
@@ -788,20 +793,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         nEquip.setMp(equipTemplate.IncMMP);
         nEquip.setUpgradeSlots(equipTemplate.TUC);
 
-        if (equipTemplate.TradeBlock)
-        {  // thanks Hyun & Thora for showing an issue with more than only "Untradeable" items being flagged as such here
-            short flag = nEquip.getFlag();
-            flag |= ItemConstants.UNTRADEABLE;
-            nEquip.setFlag(flag);
-        }
-        if (equipTemplate.Fs > 0)
-        {
-            short flag = nEquip.getFlag();
-            flag |= ItemConstants.SPIKES;
-            nEquip.setFlag(flag);
-        }
         return nEquip;
-        //return nEquip.copy(); // Q.为什么要用copy？
     }
 
     public Item GenerateVirtualItemById(int itemId, int quantity, bool randomIfEquip = false, long uniqueId = 0)
@@ -812,7 +804,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         if (quantity == 0 && !ItemConstants.isRechargeable(itemId))
             throw new BusinessResException("不能创建一个数量为0的物品");
 
-        var abTemplate = GetTemplate(itemId);
+        var abTemplate = GetItemTemplate(itemId);
         if (abTemplate == null)
             throw new BusinessResException($"ItemId={itemId}资源未找到。");
 
@@ -831,7 +823,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             return new Pet(petTemplate, 0, uniqueId);
         }
         else
-            return new Item(itemId, 0, (short)quantity, uniqueId);
+            return new Item(abTemplate, 0, (short)quantity, uniqueId);
 
 
     }

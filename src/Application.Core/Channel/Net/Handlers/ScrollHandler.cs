@@ -22,8 +22,8 @@
 
 
 using Application.Core.Channel.DataProviders;
-using Application.Core.Client.inventory;
 using Application.Core.Game.Skills;
+using Application.Templates.Item.Consume;
 using client.inventory;
 using tools;
 
@@ -56,7 +56,7 @@ public class ScrollHandler : ChannelHandlerBase
                 ItemInformationProvider ii = ItemInformationProvider.getInstance();
                 var chr = c.OnlinedCharacter;
                 var toScroll = chr.getInventory(InventoryType.EQUIPPED).getItem(equipSlot) as Equip;
-                Skill LegendarySpirit = SkillFactory.GetSkillTrust(1003);
+                Skill LegendarySpirit = SkillFactory.GetSkillTrust(Beginner.LegendarySpirit);
                 if (chr.getSkillLevel(LegendarySpirit) > 0 && equipSlot >= 0)
                 {
                     legendarySpirit = true;
@@ -69,26 +69,25 @@ public class ScrollHandler : ChannelHandlerBase
                     return;
                 }
 
-                var oldLevel = toScroll.getLevel();
-                var oldSlots = toScroll.getUpgradeSlots();
                 var useInventory = chr.getInventory(InventoryType.USE);
                 Item? scroll = useInventory.getItem(scrollSlot);
 
-                if (scroll == null)
+                if (scroll == null || scroll.getQuantity() < 1 || scroll.SourceTemplate is not ScrollItemTemplate scrollTemplate)
                 {
                     await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
 
-                Item? wscroll = null;
-
-                if (ItemConstants.isCleanSlate(scroll.getItemId()) && !ii.canUseCleanSlate(toScroll))
+                if (scrollTemplate.Recover && !ii.canUseCleanSlate(toScroll))
                 {
+                    // 检查白医是否可用
                     await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
-                else if (!ItemConstants.isModifierScroll(scroll.getItemId()) && toScroll.getUpgradeSlots() < 1)
+
+                if (ItemConstants.RequireUpgradeSlot(scroll.getItemId()) && toScroll.getUpgradeSlots() < 1)
                 {
+                    // 检查强化次数
                     await announceCannotScroll(c, legendarySpirit);   // thanks onechord for noticing zero upgrade slots freezing Legendary Scroll UI
                     return;
                 }
@@ -96,20 +95,14 @@ public class ScrollHandler : ChannelHandlerBase
                 var scrollReqs = ii.getScrollReqs(scroll.getItemId());
                 if (scrollReqs.Length > 0 && !scrollReqs.Contains(toScroll.getItemId()))
                 {
+                    // 检查卷轴是否对装备可用（专用卷轴）
                     await announceCannotScroll(c, legendarySpirit);
                     return;
                 }
-                if (whiteScroll)
-                {
-                    wscroll = useInventory.findById(ItemId.WHITE_SCROLL);
-                    if (wscroll == null)
-                    {
-                        whiteScroll = false;
-                    }
-                }
 
-                if (!ItemConstants.isChaosScroll(scroll.getItemId()) && !ItemConstants.isCleanSlate(scroll.getItemId()))
+                if (!scrollTemplate.RandStat && !scrollTemplate.Recover)
                 {
+                    // 检查卷轴是否对装备可用（部位）
                     if (!canScroll(scroll.getItemId(), toScroll.getItemId()))
                     {
                         await announceCannotScroll(c, legendarySpirit);
@@ -117,39 +110,26 @@ public class ScrollHandler : ChannelHandlerBase
                     }
                 }
 
-                var scrolled = ii.scrollEquipWithId(toScroll, scroll.getItemId(), whiteScroll, 0, chr.isGM());
-                var scrollSuccess = Equip.ScrollResult.FAIL; // fail
-                if (scrolled == null)
+                Item? wscroll = null;
+                if (whiteScroll)
                 {
-                    scrollSuccess = Equip.ScrollResult.CURSE;
-                }
-                else if (scrolled.getLevel() > oldLevel
-                    || (ItemConstants.isCleanSlate(scroll.getItemId()) && scrolled.getUpgradeSlots() == oldSlots + 1)
-                    || ItemConstants.isFlagModifier(scroll.getItemId(), scrolled.getFlag()))
-                {
-                    scrollSuccess = Equip.ScrollResult.SUCCESS;
-                }
-
-                if (scroll.getQuantity() < 1)
-                {
-                    await announceCannotScroll(c, legendarySpirit);
-                    return;
-                }
-
-                if (whiteScroll && !ItemConstants.isCleanSlate(scroll.getItemId()))
-                {
-                    if (wscroll!.getQuantity() < 1)
+                    if (!ItemConstants.RequireUpgradeSlot(scroll.getItemId()))
                     {
-                        await announceCannotScroll(c, legendarySpirit);
-                        return;
+                        // 不消耗强化次数的卷轴，不需要消耗祝福
+                        wscroll = null;
                     }
-
-                    await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
+                    else
+                    {
+                        wscroll = useInventory.findById(ItemId.WHITE_SCROLL);
+                    }
                 }
+
+                var scrollSuccess = ii.scrollEquipWithId(toScroll, scroll.getItemId(), wscroll != null, 0, chr.isGM());
 
                 await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
+                if (wscroll != null)
+                    await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
 
-                List<IInventoryOperationCommand> ops = [];
                 if (scrollSuccess == Equip.ScrollResult.CURSE)
                 {
                     if (!ItemId.isWeddingRing(toScroll.getItemId()))
@@ -171,18 +151,17 @@ public class ScrollHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        scrolled = toScroll;
                         scrollSuccess = Equip.ScrollResult.FAIL;
 
-                        await chr.forceUpdateItem(scrolled);
+                        await chr.forceUpdateItem(toScroll);
                     }
                 }
                 else
                 {
-                    await chr.forceUpdateItem(scrolled);
+                    await chr.forceUpdateItem(toScroll);
                 }
 
-                await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, whiteScroll));
+                await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, wscroll != null));
             }
             finally
             {

@@ -39,47 +39,45 @@ public class Item : IComparable<Item>
 
     protected string owner = "";
     protected List<string> itemLog;
-    protected short flag;
+    public short Flag { get; set; }
     protected long expiration = -1;
     protected string giftFrom = "";
+    /// <summary>
+    /// 封印过期时间
+    /// </summary>
+    public long LockExpiration { get; set; }
 
     public long UniqueId { get; private set; }
     public string? Properties { get; set; }
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
-    /// <summary>
-    /// 不可叠放
-    /// </summary>
-    public bool CannotStack => SourceTemplate.SlotMax <= 1 || ItemConstants.isRechargeable(getItemId());
 
-    AbstractItemTemplate? _sourceTemplate;
-    public virtual AbstractItemTemplate SourceTemplate
-    {
-        get
-        {
-            if (_sourceTemplate == null)
-                _sourceTemplate = ItemInformationProvider.getInstance().GetItemTemplate(id) ?? throw new BusinessResException($"ItemId = {id}");
-            return _sourceTemplate;
-        }
-    }
+    public virtual AbstractItemTemplate SourceTemplate { get; }
     /// <summary>
-    /// 不在背包里时为null
+    /// MapItem 时为null
     /// </summary>
-    public IItemStore? PlayerInventory { get; set; }
-    public Item(int id, short position, short quantity, long uniqueId)
+    public IItemStore? Store { get; set; }
+    public Item(AbstractItemTemplate itemTemplate, short position, short quantity, long uniqueId)
     {
+        SourceTemplate = itemTemplate;
         log = LogFactory.GetLogger(LogType.Item);
-        this.id = id;
+        this.id = itemTemplate.TemplateId;
         this.position = position;
         this.quantity = quantity;
         this.itemLog = new();
-        this.flag = 0;
+
+        Flag = 0;
+        if (itemTemplate.TradeBlock)
+            AddFlag(ItemFlag.UNTRADEABLE);
+        if (itemTemplate.AccountSharable)
+            AddFlag(ItemFlag.ACCOUNT_SHARING);
+
         UniqueId = uniqueId <= 0 ? Yitter.IdGenerator.YitIdHelper.NextId() : uniqueId;
     }
 
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity, CannotStack ? UniqueId : Yitter.IdGenerator.YitIdHelper.NextId());
+        Item ret = new Item(SourceTemplate, position, quantity, UniqueId);
         CopyItemProps(ret);
         return ret;
     }
@@ -90,7 +88,7 @@ public class Item : IComparable<Item>
         input.position = position;
         input.id = id;
 
-        input.flag = flag;
+        input.Flag = Flag;
         input.owner = owner;
         input.expiration = expiration;
         input.giftFrom = giftFrom;
@@ -193,19 +191,45 @@ public class Item : IComparable<Item>
         return itemLog.ToList();
     }
 
-    public virtual short getFlag()
+
+    void LockItemInner(long expire)
     {
-        return flag;
+        AddFlag(ItemFlag.LOCK);
+        LockExpiration = expire;
+    }
+    public void LockItem(long expire)
+    {
+        if (Store is AbstractInventory inv)
+        {
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => i.LockItemInner(expire));
+            });
+        }
+        else
+        {
+            LockItemInner(expire);
+        }
     }
 
-    public virtual void setFlag(short b)
+    void UnlockInner()
     {
-        if (SourceTemplate.AccountSharable)
+        RemoveFlag(ItemFlag.LOCK);
+        LockExpiration = 0;
+    }
+    public void Unlock()
+    {
+        if (Store is AbstractInventory inv)
         {
-            b |= ItemConstants.ACCOUNT_SHARING; // thanks Shinigami15 for noticing ACCOUNT_SHARING flag not being applied properly to items server-side
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => i.UnlockInner());
+            });
         }
-
-        this.flag = b;
+        else
+        {
+            UnlockInner();
+        }
     }
 
     public long getExpiration()
@@ -213,9 +237,24 @@ public class Item : IComparable<Item>
         return expiration;
     }
 
-    public virtual void setExpiration(long expire)
+    protected virtual void SetExpirationInner(long expire)
     {
-        this.expiration = expire;
+        expiration = expire;
+    }
+
+    public void setExpiration(long expire)
+    {
+        if (Store is AbstractInventory inv)
+        {
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => SetExpirationInner(expire));
+            });
+        }
+        else
+        {
+            SetExpirationInner(expire);
+        }
     }
 
     public int getSN()
@@ -237,9 +276,29 @@ public class Item : IComparable<Item>
     {
         this.giftFrom = giftFrom ?? "";
     }
+
+    public bool HasFlag(ItemFlag flag)
+    {
+        short flagValue = (short)flag;
+        return (Flag & flagValue) == flagValue;
+    }
+
+    public Item AddFlag(ItemFlag flag) => AddFlag((short)flag);
+
+    public Item AddFlag(short flag)
+    {
+        Flag |= flag;
+        return this;
+    }
+
+    public void RemoveFlag(ItemFlag flag)
+    {
+        Flag &= (short)~flag;
+    }
+
     public bool isUntradeable()
     {
-        return ((this.getFlag() & ItemConstants.UNTRADEABLE) == ItemConstants.UNTRADEABLE)
+        return HasFlag(ItemFlag.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
     }
 
@@ -253,17 +312,33 @@ public class Item : IComparable<Item>
     }
 
     /// <summary>
-    /// 可以堆叠
+    /// 可以将 anotherItem 合并进来
     /// </summary>
     /// <param name="anotherItem"></param>
     /// <param name="chr"></param>
     /// <returns></returns>
-    public virtual bool CanStack(Item anotherItem, Player chr)
+    public bool CanMerge(Item anotherItem, Player chr)
     {
-        return getItemId() == anotherItem.getItemId()
-            && !ItemConstants.isRechargeable(getItemId())
-            && getQuantity() < ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId())
+        return IsStackable(chr)
+            && getItemId() == anotherItem.getItemId()
             && getOwner() == anotherItem.getOwner()
-            && getFlag() == anotherItem.getFlag();
+            && getExpiration() == anotherItem.getExpiration()
+            && Flag == anotherItem.Flag;
+    }
+
+
+    /// <summary>
+    /// 是否可堆叠状态
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    public virtual bool IsStackable(Player chr)
+    {
+        var slotMax = ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId());
+        return slotMax > 1
+            && getQuantity() < slotMax
+            && !ItemConstants.isRechargeable(getItemId())
+            && getInventoryType() != InventoryType.CASH
+            && !HasFlag(ItemFlag.LOCK);    // 只有装备/镖能加锁，而这两类本身也无法叠放
     }
 }

@@ -47,7 +47,7 @@ public class PetSpeedAction : AbstractQuestAction
         await c.tryacquireClient();
         try
         {
-            await pet.PetItem.addPetAttribute(chr, PetAttribute.OWNER_SPEED);
+            await pet.PetItem.addPetAttribute(PetAttribute.OWNER_SPEED);
         }
         finally
         {

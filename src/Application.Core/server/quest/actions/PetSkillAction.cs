@@ -30,30 +30,34 @@ namespace server.quest.actions;
  */
 public class PetSkillAction : AbstractQuestAction
 {
-    int flag;
+    short flag;
 
     public PetSkillAction(Quest quest, int data) : base(QuestActionType.PETSKILL, quest)
     {
 
         questID = quest.getId();
-        flag = data;
+        flag = (short)data;
     }
 
 
     public override Task<bool> check(Player chr, int? extSelection)
     {
-        QuestStatus status = chr.getQuest(Quest.getInstance(questID));
-        if (!(status.getStatus() == QuestStatus.Status.NOT_STARTED && status.getForfeited() > 0))
+        var bossPet = chr.getPet(0);
+        if (bossPet == null)
         {
             return Task.FromResult(false);
         }
 
-        return Task.FromResult(chr.getPet(0) != null);
+        return Task.FromResult((bossPet.PetItem.PetSkill & flag) != flag);
     }
 
-    public override Task run(Player chr, int? extSelection)
+    public override async Task run(Player chr, int? extSelection)
     {
-        chr.getPet(0).PetItem.setFlag((byte)ItemConstants.getFlagByInt(flag));
-        return Task.CompletedTask;
+        var bossPet = chr.getPet(0);
+        if (bossPet != null)
+        {
+            bossPet.PetItem.PetSkill |= flag;
+            await chr.forceUpdateItem(bossPet.PetItem);
+        }
     }
 }

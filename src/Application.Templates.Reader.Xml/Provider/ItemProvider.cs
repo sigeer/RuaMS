@@ -394,9 +394,18 @@ namespace Application.Templates.Reader.Xml.Provider
                     }
                 default:
                     {
-                        var template = new CashItemTemplate(itemId);
-                        CashItemTemplateGenerated.ApplyProperties(template, itemNode);
-                        return template;
+                        if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
+                        {
+                            var template = new ItemGuardTemplate(itemId);
+                            ItemGuardTemplateGenerated.ApplyProperties(template, itemNode);
+                            return template;
+                        }
+                        else
+                        {
+                            var template = new CashItemTemplate(itemId);
+                            CashItemTemplateGenerated.ApplyProperties(template, itemNode);
+                            return template;
+                        }
                     }
             }
         }

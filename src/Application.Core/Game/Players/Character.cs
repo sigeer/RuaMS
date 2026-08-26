@@ -961,7 +961,7 @@ public partial class Player
 
         foreach (Item it in this.getInventory(InventoryType.EQUIPPED).list())
         {
-            if ((it.getFlag() & ItemConstants.COLD) == ItemConstants.COLD &&
+            if (it.HasFlag(ItemFlag.COLD) &&
                     ((returnMapid == MapId.EL_NATH && thisMapid != MapId.ORBIS_TOWER_BOTTOM) || returnMapid == MapId.INTERNET_CAFE))
             {
                 return true;        //protection from cold

@@ -130,7 +130,7 @@ public class QuestActionHandler : ChannelHandlerBase
                     }
                     if (await quest.canStart(player, npc))
                     {
-                        _ = c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, true);
+                        await c.CurrentServer.NodeService.PluginManager.ProcessQuestConversation(c, quest, npc, true);
                         // c.CurrentServer.QuestScriptManager.start(c, questid, npc);
                     }
                     break;

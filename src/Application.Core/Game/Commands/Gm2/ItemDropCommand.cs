@@ -43,12 +43,10 @@ public class ItemDropCommand : CommandBase
 
         if (player.gmLevel() < 3)
         {
-            short f = item.getFlag();
-            f |= ItemConstants.ACCOUNT_SHARING;
-            f |= ItemConstants.UNTRADEABLE;
-            f |= ItemConstants.SANDBOX;
+            item.AddFlag(ItemFlag.ACCOUNT_SHARING)
+                .AddFlag(ItemFlag.UNTRADEABLE)
+                .AddFlag(ItemFlag.SANDBOX);
 
-            item.setFlag(f);
             item.setOwner("TRIAL-MODE");
         }
 

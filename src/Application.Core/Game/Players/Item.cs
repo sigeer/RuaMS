@@ -367,7 +367,7 @@ namespace Application.Core.Game.Players
                         {
                             it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                         }
-                        item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM())!;
+                        ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
                     }
 
                     else if (randomStats)
@@ -391,16 +391,16 @@ namespace Application.Core.Game.Players
                 }
 
                 var addItemResult = await InventoryManipulator.addFromDrop(Client, item!, false);
+                if (addItemResult)
+                    await GainItemShowMessage(itemId, (short)quantity, show);
+
                 if (!addItemResult)
                     return null;
             }
             else
             {
-                await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
+                await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, show: show);
             }
-
-            await GainItemShowMessage(itemId, (short)quantity, show);
-
             return item;
         }
 

@@ -23,42 +23,33 @@ namespace client.inventory.manipulator;
 
 /// <summary>
 /// @author RonanLana
-/// --不知道什么功能  宿命剪刀？
 /// </summary>
 public class KarmaManipulator
 {
-    private static short getKarmaFlag(Item item)
+    private static ItemFlag getKarmaFlag(Item item)
     {
-        return item.getItemType() == 1 ? ItemConstants.KARMA_EQP : ItemConstants.KARMA_USE;
+        return item.getItemType() == 1 ? ItemFlag.KARMA_EQP : ItemFlag.KARMA_USE;
     }
 
     public static bool hasKarmaFlag(Item item)
     {
-        short karmaFlag = getKarmaFlag(item);
-        return (item.getFlag() & karmaFlag) == karmaFlag;
+        ItemFlag karmaFlag = getKarmaFlag(item);
+        return item.HasFlag(karmaFlag);
     }
 
     public static void toggleKarmaFlagToUntradeable(Item item)
     {
-        short karmaFlag = getKarmaFlag(item);
-        short flag = item.getFlag();
+        ItemFlag karmaFlag = getKarmaFlag(item);
 
-        if ((flag & karmaFlag) == karmaFlag)
-        {
-            flag ^= karmaFlag;
-            flag |= ItemConstants.UNTRADEABLE;
-
-            item.setFlag(flag);
-        }
+        item.AddFlag(ItemFlag.UNTRADEABLE);
+        item.RemoveFlag(karmaFlag);
     }
 
     public static void setKarmaFlag(Item item)
     {
-        short karmaFlag = getKarmaFlag(item);
-        short flag = item.getFlag();
+        ItemFlag karmaFlag = getKarmaFlag(item);
 
-        flag |= karmaFlag;
-        flag = (short)(flag & (0xFFFFFFFF ^ ItemConstants.UNTRADEABLE));
-        item.setFlag(flag);
+        item.AddFlag(karmaFlag);
+        item.RemoveFlag(ItemFlag.UNTRADEABLE);
     }
 }

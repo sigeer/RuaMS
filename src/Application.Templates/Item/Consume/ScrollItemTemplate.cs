@@ -88,6 +88,5 @@ namespace Application.Templates.Item.Consume
         /// </summary>
         [WZPath("info/randstat")]
         public bool RandStat { get; set; }
-
     }
 }

@@ -22,6 +22,7 @@
 
 
 using Application.Shared.Constants.Inventory;
+using Application.Shared.Items;
 using Application.Utility.Configs;
 
 namespace Application.Shared.Constants.Item;
@@ -45,18 +46,6 @@ public class ItemConstants
     public const short ACCOUNT_SHARING = 0x100;
     public const short MERGE_UNTRADEABLE = 0x200;
 
-    public static int getFlagByInt(int type)
-    {
-        if (type == 128)
-        {
-            return PET_COME;
-        }
-        else if (type == 256)
-        {
-            return ACCOUNT_SHARING;
-        }
-        return 0;
-    }
 
     public static bool isThrowingStar(int itemId)
     {
@@ -158,8 +147,9 @@ public class ItemConstants
     {
         return scrollId >= 2049000 && scrollId <= 2049003;
     }
+
     /// <summary>
-    /// 不消耗强化次数
+    /// 特性卷轴
     /// </summary>
     /// <param name="scrollId"></param>
     /// <returns></returns>
@@ -168,14 +158,16 @@ public class ItemConstants
         return scrollId == ItemId.SPIKES_SCROLL || scrollId == ItemId.COLD_PROTECTION_SCROLl;
     }
 
-    public static bool isFlagModifier(int scrollId, short flag)
+    /// <summary>
+    /// 需要消耗强化次数
+    /// </summary>
+    /// <param name="scrollId"></param>
+    /// <returns></returns>
+    public static bool RequireUpgradeSlot(int scrollId)
     {
-        if (scrollId == ItemId.COLD_PROTECTION_SCROLl && ((flag & ItemConstants.COLD) == ItemConstants.COLD))
-        {
-            return true;
-        }
-        return scrollId == ItemId.SPIKES_SCROLL && ((flag & ItemConstants.SPIKES) == ItemConstants.SPIKES);
+        return !isModifierScroll(scrollId) && !isCleanSlate(scrollId);
     }
+
     /// <summary>
     /// 混沌卷轴
     /// </summary>

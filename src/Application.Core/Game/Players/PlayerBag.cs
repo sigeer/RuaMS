@@ -164,7 +164,7 @@ namespace Application.Core.Game.Players
         /// <param name="fromDrop"></param>
         /// <param name="consume"></param>
         /// <param name="showMessage"></param>
-        public async Task RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, bool showMessage = false)
+        public async Task RemoveFromInventory(InventoryType invType, int toRemoveCount = int.MaxValue, Func<Item, bool>? filter = null, bool fromDrop = true, bool consume = false, GainItemShow show = GainItemShow.NotShown)
         {
             var inv = this[invType];
 
@@ -195,12 +195,12 @@ namespace Application.Core.Game.Players
                 await Owner.SyncClientInventory(ops, fromDrop);
             }
 
-            if (showMessage)
+            if (show != GainItemShow.NotShown)
             {
                 var showData = modifiedItems.GroupBy(x => x.ItemId).ToDictionary(x => x.Key, x => x.Sum(x => x.RemovedCount));
                 foreach (var data in showData)
                 {
-                    await Owner.SendPacket(PacketCreator.getShowItemGain(data.Key, (short)-data.Value, true));
+                    await Owner.SendPacket(PacketCreator.getShowItemGain(data.Key, (short)-data.Value, show == GainItemShow.ShowInChat));
                 }
             }
         }
@@ -228,7 +228,7 @@ namespace Application.Core.Game.Players
         {
             foreach (var type in inventoryTypes)
             {
-                await RemoveFromInventory(type, int.MaxValue, filter, fromDrop, consume, showMessage);
+                await RemoveFromInventory(type, int.MaxValue, filter, fromDrop, consume, showMessage ? GainItemShow.ShowInChat : GainItemShow.NotShown);
             }
         }
 

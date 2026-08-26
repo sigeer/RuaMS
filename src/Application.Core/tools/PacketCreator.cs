@@ -367,16 +367,16 @@ public class PacketCreator
             p.writeByte(petObj.Fullness);
             addExpirationTime(p, item.getExpiration());
             p.writeShort(petObj.PetAttribute); // PetAttribute noticed by lrenex & Spoon
-            p.writeShort(0); // PetSkill
+            p.writeShort(petObj.PetSkill); // PetSkill
             p.writeInt(18000); // RemainLife
-            p.writeShort(0); // attribute
+            p.writeShort(petObj.Flag); // attribute
             return;
         }
         if (equip == null)
         {
             p.writeShort(item.getQuantity());
             p.writeString(item.getOwner());
-            p.writeShort(item.getFlag()); // flag
+            p.writeShort(item.Flag); // flag
 
             if (ItemConstants.isRechargeable(item.getItemId()))
             {
@@ -403,7 +403,7 @@ public class PacketCreator
         p.writeShort(equip.getSpeed()); // speed
         p.writeShort(equip.getJump()); // jump
         p.writeString(equip.getOwner()); // owner name
-        p.writeShort(equip.getFlag()); //Item Flags
+        p.writeShort(equip.Flag); //Item Flags
 
         if (isCash)
         {

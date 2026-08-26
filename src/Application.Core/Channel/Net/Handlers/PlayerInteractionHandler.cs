@@ -559,15 +559,12 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if ((quantity <= item.getQuantity() && quantity >= 0) || ItemConstants.isRechargeable(item.getItemId()))
                     {
-                        if (ii.isDropRestricted(item.getItemId()))
+                        
+                        if (item.isUntradeable())
                         {
-                            // ensure that undroppable items do not make it to the trade window
-                            if (!KarmaManipulator.hasKarmaFlag(item))
-                            {
-                                await chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
-                                await c.SendPacket(PacketCreator.enableActions());
-                                return;
-                            }
+                            await chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
+                            await c.SendPacket(PacketCreator.enableActions());
+                            return;
                         }
 
                         var inv = chr.getInventory(ivType);

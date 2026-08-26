@@ -107,6 +107,8 @@ namespace Application.Core.Client.inventory
         List<Item> _tickToUpdate = [];
         List<IInventoryOperationCommand> _tickToSync = [];
         List<ReplaceItemTemplate> _tickToReplace = [];
+        List<Item> _tickToProtectExpireation = [];
+        bool isIterating  = false;
         public async Task OnTick(long now)
         {
             if (_timedItems.Count == 0)
@@ -118,57 +120,58 @@ namespace Application.Core.Client.inventory
             _tickToUpdate.Clear();
             _tickToSync.Clear();
             _tickToReplace.Clear();
+            _tickToProtectExpireation.Clear();
 
+            isIterating = true;
             foreach (var p in _timedItems)
             {
                 if (p.TickTime > now)
                 {
-                    // 未到时间不需要执行
+                    // 未到时间，后续也不需要执行
                     break;
                 }
 
                 var item = p.Item;
-                long expiration = item.getExpiration();
 
-                if (expiration != -1 && (expiration < now))
+                if (item.HasFlag(ItemFlag.LOCK))
                 {
-                    if ((item.getFlag() & ItemConstants.LOCK) == ItemConstants.LOCK)
-                    {
-                        short lockObj = item.getFlag();
-                        lockObj &= ~(ItemConstants.LOCK);
-                        item.setFlag(lockObj); //Probably need a check, else people can make expiring items into permanent items...
-                        item.setExpiration(-1);
+                    item.Unlock();
 
-                        _tickToUpdate.Add(item);
+                    _tickToUpdate.Add(item);
+                    _tickToProtectExpireation.Add(item);
+                }
+
+                if (item is Pet pet)
+                {
+                    if (pet.MapPet != null)
+                    {
+                        await pet.MapPet.Recall(2);
                     }
 
-                    else if (item is Pet pet)
-                    {
-                        if (pet.MapPet != null)
-                        {
-                            await pet.MapPet.Recall(2);
-                        }
-
-                        if (pet.SourceTemplate.NoRevive)
-                        {
-                            _tickToRemove.Add(item);
-                        }
-                        else
-                        {
-                            item.setExpiration(-1);
-                            _tickToUpdate.Add(item);
-                        }
-                    }
-                    else
+                    if (pet.SourceTemplate.NoRevive)
                     {
                         _tickToRemove.Add(item);
                     }
-
-
+                    else
+                    {
+                        item.setExpiration(-1);
+                        _tickToUpdate.Add(item);
+                    }
+                }
+                else
+                {
+                    _tickToRemove.Add(item);
                 }
 
                 await OnTickItem(now, item, _tickToUpdate, _tickToRemove);
             }
+            isIterating = false;
+
+            foreach (var action in _nextTickActions)
+            {
+                action.Invoke();
+            }
+            _nextTickActions.Clear();
 
             foreach (var item in _tickToUpdate)
             {
@@ -201,6 +204,11 @@ namespace Application.Core.Client.inventory
                 await Owner.SendPacket(MessagePacket.GeneralItemExpireMessage(toRemoveGeneral));
             }
 
+            if (_tickToProtectExpireation.Count > 0)
+            {
+                await Owner.SendPacket(MessagePacket.ItemProtectExpireMessage(_tickToProtectExpireation.Select(x => x.getItemId())));
+            }
+
             await Owner.SyncClientInventory(_tickToSync);
 
             foreach (var item in _tickToReplace)
@@ -222,6 +230,18 @@ namespace Application.Core.Client.inventory
             }
         }
 
+        List<Action> _nextTickActions = [];
+        public void NextTick(Action nextTickAction)
+        {
+            if (isIterating)
+            {
+                _nextTickActions.Add(nextTickAction);
+            }
+            else
+            {
+                nextTickAction();
+            }
+        }
         protected virtual Task OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove) => Task.CompletedTask;
 
         /// <summary>
@@ -232,17 +252,21 @@ namespace Application.Core.Client.inventory
         /// <param name="fromLogin"></param>
         protected virtual Task OnItemEnter(short position, Item item, bool fromLogin)
         {
-            if (item.getExpiration() != -1)
+            if (item.getExpiration() != -1 && item.getExpiration() != long.MaxValue)
             {
-                _timedItems.Add(new TimedItemWrapper(item, item.getExpiration()));
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.Expiration));
             }
-            else if (item.SourceTemplate is CouponItemTemplate c && c.TimeRangeF.Length > 0)
+            if (item.LockExpiration > 0)
+            {
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.LockExpiration));
+            }
+            if (item.SourceTemplate is CouponItemTemplate c && c.TimeRangeF.Length > 0)
             {
                 // tick > now的不会触发
-                _timedItems.Add(new TimedItemWrapper(item, 0));
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.Always));
             }
 
-            item.PlayerInventory = this;
+            item.Store = this;
             return Task.CompletedTask;
         }
         /// <summary>
@@ -252,7 +276,7 @@ namespace Application.Core.Client.inventory
         protected virtual Task OnItemLeave(Item item)
         {
             _timedItems.RemoveWhere(x => x.Item == item);
-            item.PlayerInventory = null;
+            item.Store = null;
             return Task.CompletedTask;
         }
 
@@ -319,6 +343,26 @@ namespace Application.Core.Client.inventory
             return (op, actualRemoved);
         }
         public abstract Task<IInventoryOperationCommand?> removeSlot(short slot);
+
+        public void ForceUpdate(Item item, Action<Item> updateAction)
+        {
+            _timedItems.RemoveWhere(x => x.Item == item);
+
+            updateAction(item);
+
+            if (item.getExpiration() != -1 && item.getExpiration() != long.MaxValue)
+            {
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.Expiration));
+            }
+            if (item.LockExpiration > 0)
+            {
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.LockExpiration));
+            }
+            if (item.SourceTemplate is CouponItemTemplate c && c.TimeRangeF.Length > 0)
+            {
+                _timedItems.Add(new TimedItemWrapper(item, ItemTimedProperty.Always));
+            }
+        }
         #endregion
 
         public abstract void Dispose();

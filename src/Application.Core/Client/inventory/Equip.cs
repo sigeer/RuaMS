@@ -62,7 +62,7 @@ public class Equip : Item
     public bool HasSkill { get; set; }
     public override EquipTemplate SourceTemplate { get; }
 
-    public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
+    public Equip(EquipTemplate template, short position, long uniqueId) : base(template, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Equip);
@@ -70,11 +70,13 @@ public class Equip : Item
         this.itemLevel = 1;
         this.quantity = 1;
 
+        if (template.Fs == 10)
+            AddFlag(ItemFlag.SPIKES);
     }
 
     public override Item copy()
     {
-        Equip ret = new Equip(SourceTemplate, getPosition(), getUpgradeSlots());
+        Equip ret = new Equip(SourceTemplate, getPosition(), UniqueId);
         ret.str = str;
         ret.dex = dex;
         ret._int = _int;
@@ -99,11 +101,6 @@ public class Equip : Item
 
         CopyItemProps(ret);
         return ret;
-    }
-
-    public override short getFlag()
-    {
-        return flag;
     }
 
     public override sbyte getItemType()
@@ -196,11 +193,6 @@ public class Equip : Item
         return vicious;
     }
 
-    public override void setFlag(short flag)
-    {
-        this.flag = flag;
-    }
-
     public void setStr(int str)
     {
         this.str = str;
@@ -286,6 +278,10 @@ public class Equip : Item
         return level;
     }
 
+    /// <summary>
+    /// 必须与setUpgradeSlots一同使用
+    /// </summary>
+    /// <param name="level"></param>
     public void setLevel(byte level)
     {
         this.level = level;
@@ -574,6 +570,11 @@ public class Equip : Item
     public bool NeedRecalcEffect(Equip another)
     {
         return getItemId() != another.getItemId();
+    }
+
+    public override bool IsStackable(Player chr)
+    {
+        return false;
     }
 
 }
