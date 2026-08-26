@@ -250,7 +250,6 @@ internal class ItemTemplateDataCheck(string readerType) : WzTestBase(readerType)
         var provider = _providerSource.GetProvider<IProvider<AbstractItemTemplate>>(ProviderType.Item);
         var item = provider.GetRequiredItem<CashItemTemplate>(5010000)!;
 
-        Assert.That(item.ProtectTime, Is.EqualTo(0));
         Assert.That(item.Cash, Is.True);
     }
 

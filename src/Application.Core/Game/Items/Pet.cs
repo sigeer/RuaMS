@@ -146,5 +146,9 @@ public class Pet : Item
         return evolved;
     }
 
+    public override bool IsStackable(Player chr)
+    {
+        return false;
+    }
 }
 

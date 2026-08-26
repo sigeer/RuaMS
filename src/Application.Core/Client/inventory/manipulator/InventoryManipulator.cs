@@ -84,7 +84,7 @@ public class InventoryManipulator
 
                     short oldQ = eItem.getQuantity();
                     // 相同属性才能叠加
-                    if (eItem.CanStack(item, chr))
+                    if (eItem.CanMerge(item, chr))
                     {
                         short newQ = (short)Math.Min(oldQ + quantity, slotMax);
                         quantity -= (short)(newQ - oldQ);

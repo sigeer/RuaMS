@@ -51,10 +51,6 @@ public class Item : IComparable<Item>
     public string? Properties { get; set; }
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
-    /// <summary>
-    /// 不可叠放
-    /// </summary>
-    public bool CannotStack => SourceTemplate.SlotMax <= 1 || ItemConstants.isRechargeable(getItemId());
 
     AbstractItemTemplate? _sourceTemplate;
     public virtual AbstractItemTemplate SourceTemplate
@@ -295,19 +291,33 @@ public class Item : IComparable<Item>
     }
 
     /// <summary>
-    /// 可以堆叠
+    /// 可以将 anotherItem 合并进来
     /// </summary>
     /// <param name="anotherItem"></param>
     /// <param name="chr"></param>
     /// <returns></returns>
-    public virtual bool CanStack(Item anotherItem, Player chr)
+    public bool CanMerge(Item anotherItem, Player chr)
     {
-        return getItemId() == anotherItem.getItemId()
-            && !ItemConstants.isRechargeable(getItemId())
-            && getQuantity() < ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId())
+        return IsStackable(chr)
+            && getItemId() == anotherItem.getItemId()
             && getOwner() == anotherItem.getOwner()
             && getExpiration() == anotherItem.getExpiration()
-            && Flag == anotherItem.Flag
+            && Flag == anotherItem.Flag;
+    }
+
+
+    /// <summary>
+    /// 是否可堆叠状态
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    public virtual bool IsStackable(Player chr)
+    {
+        var slotMax = ItemInformationProvider.getInstance().getSlotMax(chr.Client, getItemId());
+        return slotMax > 1
+            && getQuantity() < slotMax
+            && !ItemConstants.isRechargeable(getItemId())
+            && getInventoryType() != InventoryType.CASH
             && !Flag.HasFlag(ItemFlag.LOCK);
     }
 }

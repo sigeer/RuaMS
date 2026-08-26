@@ -566,4 +566,9 @@ public class Equip : Item
         return getItemId() != another.getItemId();
     }
 
+    public override bool IsStackable(Player chr)
+    {
+        return false;
+    }
+
 }
