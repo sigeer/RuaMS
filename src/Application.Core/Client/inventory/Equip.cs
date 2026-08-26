@@ -70,11 +70,13 @@ public class Equip : Item
         this.itemLevel = 1;
         this.quantity = 1;
 
+        if (SourceTemplate.Fs == 10)
+            AddFlag(ItemFlag.SPIKES);
     }
 
     public override Item copy()
     {
-        Equip ret = new Equip(SourceTemplate, getPosition(), getUpgradeSlots());
+        Equip ret = new Equip(SourceTemplate, getPosition(), UniqueId);
         ret.str = str;
         ret.dex = dex;
         ret._int = _int;

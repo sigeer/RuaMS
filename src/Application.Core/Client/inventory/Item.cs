@@ -39,7 +39,7 @@ public class Item : IComparable<Item>
 
     protected string owner = "";
     protected List<string> itemLog;
-    public ItemFlag Flag { get; set; }
+    public short Flag { get; set; }
     protected long expiration = -1;
     protected string giftFrom = "";
     /// <summary>
@@ -74,11 +74,11 @@ public class Item : IComparable<Item>
         this.quantity = quantity;
         this.itemLog = new();
 
-        Flag = ItemFlag.Empty;
+        Flag = 0;
         if (SourceTemplate.TradeBlock)
-            Flag |= ItemFlag.UNTRADEABLE;
+            AddFlag(ItemFlag.UNTRADEABLE);
         if (SourceTemplate.AccountSharable)
-            Flag |= ItemFlag.ACCOUNT_SHARING;
+            AddFlag(ItemFlag.ACCOUNT_SHARING);
 
         UniqueId = uniqueId <= 0 ? Yitter.IdGenerator.YitIdHelper.NextId() : uniqueId;
     }
@@ -202,7 +202,7 @@ public class Item : IComparable<Item>
 
     void LockItemInner(long expire)
     {
-        Flag |= ItemFlag.LOCK;
+        AddFlag(ItemFlag.LOCK);
         LockExpiration = expire;
     }
     public void LockItem(long expire)
@@ -219,7 +219,7 @@ public class Item : IComparable<Item>
 
     void UnlockInner()
     {
-        Flag &= ~ItemFlag.LOCK;
+        RemoveFlag(ItemFlag.LOCK);
         LockExpiration = 0;
     }
     public void Unlock()
@@ -275,9 +275,29 @@ public class Item : IComparable<Item>
     {
         this.giftFrom = giftFrom ?? "";
     }
+
+    public bool HasFlag(ItemFlag flag)
+    {
+        short flagValue = (short)flag;
+        return (Flag & flagValue) == flagValue;
+    }
+
+    public Item AddFlag(ItemFlag flag) => AddFlag((short)flag);
+
+    public Item AddFlag(short flag)
+    {
+        Flag |= flag;
+        return this;
+    }
+
+    public void RemoveFlag(ItemFlag flag)
+    {
+        Flag &= (short)~flag;
+    }
+
     public bool isUntradeable()
     {
-        return Flag.HasFlag(ItemFlag.UNTRADEABLE)
+        return HasFlag(ItemFlag.UNTRADEABLE)
             || (ItemInformationProvider.getInstance().isDropRestricted(this.getItemId()) && !KarmaManipulator.hasKarmaFlag(this));
     }
 
@@ -318,6 +338,6 @@ public class Item : IComparable<Item>
             && getQuantity() < slotMax
             && !ItemConstants.isRechargeable(getItemId())
             && getInventoryType() != InventoryType.CASH
-            && !Flag.HasFlag(ItemFlag.LOCK);
+            && !HasFlag(ItemFlag.LOCK);    // 只有装备/镖能加锁，而这两类本身也无法叠放
     }
 }

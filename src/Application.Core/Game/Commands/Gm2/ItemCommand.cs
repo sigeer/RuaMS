@@ -87,7 +87,7 @@ public class ItemCommand : CommandBase
 
         if (player.gmLevel() < 3)
         {
-            item.Flag = ItemFlag.ACCOUNT_SHARING | ItemFlag.UNTRADEABLE;
+            item.AddFlag(ItemFlag.ACCOUNT_SHARING).AddFlag(ItemFlag.UNTRADEABLE);
         }
 
         item.setOwner(player.getName());

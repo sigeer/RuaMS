@@ -30,13 +30,13 @@ namespace server.quest.actions;
  */
 public class PetSkillAction : AbstractQuestAction
 {
-    int flag;
+    short flag;
 
     public PetSkillAction(Quest quest, int data) : base(QuestActionType.PETSKILL, quest)
     {
 
         questID = quest.getId();
-        flag = data;
+        flag = (short)data;
     }
 
 
@@ -53,7 +53,11 @@ public class PetSkillAction : AbstractQuestAction
 
     public override async Task run(Player chr, int? extSelection)
     {
-        chr.getPet(0).PetItem.Flag |= (ItemFlag)flag;
-        await chr.forceUpdateItem(chr.getPet(0).PetItem);
+        var bossPet = chr.getPet(0);
+        if (bossPet != null)
+        {
+            bossPet.PetItem.PetSkill |= flag;
+            await chr.forceUpdateItem(bossPet.PetItem);
+        }
     }
 }

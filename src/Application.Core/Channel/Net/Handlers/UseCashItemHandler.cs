@@ -214,7 +214,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (eq.Flag.HasFlag(ItemFlag.LOCK))
+                if (eq.HasFlag(ItemFlag.LOCK))
                 {
                     return; //No perma items pls
                 }

@@ -41,7 +41,14 @@ public class Pet : Item
     public byte Level { get; set; } = 1;
     public bool Summoned => MapPet != null;
     public MapPet? MapPet => Store?.Owner?.GetPetById(UniqueId);
+    /// <summary>
+    /// <see cref="Application.Shared.Items.PetAttribute"/>
+    /// </summary>
     public int PetAttribute { get; set; }
+    /// <summary>
+    /// <see cref="PetSkillFlag"/>
+    /// </summary>
+    public short PetSkill { get; set; }
 
     public const int MaxFullness = 100;
     public const int MaxTameness = 30000;
@@ -61,6 +68,7 @@ public class Pet : Item
         var copyPet = new Pet(SourceTemplate, getPosition(), UniqueId);
         copyPet.Name = Name;
         copyPet.PetAttribute = PetAttribute;
+        copyPet.PetSkill = PetSkill;
         copyPet.Fullness = Fullness;
         copyPet.Tameness = Tameness;
         copyPet.Level = Level;
@@ -85,26 +93,12 @@ public class Pet : Item
         return 3;
     }
 
-    public async Task addPetAttribute(Player owner, PetAttribute flag)
+    public async Task addPetAttribute(PetAttribute flag)
     {
         PetAttribute |= (int)flag;
 
-        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
-        if (petz != null)
-        {
-            await owner.forceUpdateItem(petz);
-        }
-    }
-
-    public async Task removePetAttribute(Player owner, PetAttribute flag)
-    {
-        PetAttribute &= (int)(0xFFFFFFFF ^ (int)flag);
-
-        var petz = owner.getInventory(InventoryType.CASH).getItem(getPosition());
-        if (petz != null)
-        {
-            await owner.forceUpdateItem(petz);
-        }
+        if (Store is AbstractInventory inv)
+            await inv.Owner.forceUpdateItem(this);
     }
 
     protected override void SetExpirationInner(long expire)
@@ -142,6 +136,8 @@ public class Pet : Item
         evolved.Fullness = Fullness;
         evolved.Level = Level;
         evolved.setExpiration(owner.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().AddDays(nextPetTemplate.Life).ToUnixTimeMilliseconds());
+        evolved.PetAttribute = PetAttribute;
+        evolved.PetSkill = PetSkill;
 
         return evolved;
     }

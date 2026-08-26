@@ -131,7 +131,7 @@ namespace Application.Core.Client.inventory
 
                 var item = p.Item;
 
-                if (item.Flag.HasFlag(ItemFlag.LOCK))
+                if (item.HasFlag(ItemFlag.LOCK))
                 {
                     item.Unlock();
 

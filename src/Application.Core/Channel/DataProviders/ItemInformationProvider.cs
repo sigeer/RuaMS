@@ -695,11 +695,11 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
             {
                 if (scrollTemplate.PreventSlip)
                 {
-                    nEquip.Flag |= ItemFlag.SPIKES;
+                    nEquip.AddFlag(ItemFlag.SPIKES);
                 }
-                if (scrollTemplate.PreventSlip)
+                if (scrollTemplate.WarmSupport)
                 {
-                    nEquip.Flag |= ItemFlag.COLD;
+                    nEquip.AddFlag(ItemFlag.COLD);
                 }
                 if (scrollTemplate.Recover)
                 {
@@ -785,12 +785,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         nEquip.setMp(equipTemplate.IncMMP);
         nEquip.setUpgradeSlots(equipTemplate.TUC);
 
-        if (equipTemplate.Fs > 0)
-        {
-            nEquip.Flag |= ItemFlag.SPIKES;
-        }
         return nEquip;
-        //return nEquip.copy(); // Q.为什么要用copy？
     }
 
     public Item GenerateVirtualItemById(int itemId, int quantity, bool randomIfEquip = false, long uniqueId = 0)

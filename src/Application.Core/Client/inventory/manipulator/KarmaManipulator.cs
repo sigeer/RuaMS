@@ -34,22 +34,22 @@ public class KarmaManipulator
     public static bool hasKarmaFlag(Item item)
     {
         ItemFlag karmaFlag = getKarmaFlag(item);
-        return item.Flag.HasFlag(karmaFlag);
+        return item.HasFlag(karmaFlag);
     }
 
     public static void toggleKarmaFlagToUntradeable(Item item)
     {
         ItemFlag karmaFlag = getKarmaFlag(item);
 
-        item.Flag |= ItemFlag.UNTRADEABLE;
-        item.Flag &= ~karmaFlag;
+        item.AddFlag(ItemFlag.UNTRADEABLE);
+        item.RemoveFlag(karmaFlag);
     }
 
     public static void setKarmaFlag(Item item)
     {
         ItemFlag karmaFlag = getKarmaFlag(item);
 
-        item.Flag |= karmaFlag;
-        item.Flag &= ~ItemFlag.UNTRADEABLE;
+        item.AddFlag(karmaFlag);
+        item.RemoveFlag(ItemFlag.UNTRADEABLE);
     }
 }

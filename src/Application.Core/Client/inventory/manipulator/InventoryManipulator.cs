@@ -354,7 +354,7 @@ public class InventoryManipulator
         List<IInventoryOperationCommand> ops = [];
         if (source.SourceTemplate.EquipTradeBlock)
         {
-            source.Flag |= ItemFlag.UNTRADEABLE;
+            source.AddFlag(ItemFlag.UNTRADEABLE);
 
             ops.AddRange([new InventoryRemove(InventoryType.EQUIP, src), new InventoryAdd(InventoryType.EQUIP, source, src)]);
         }
@@ -588,5 +588,5 @@ public class InventoryManipulator
     }
 
 
-    public static bool isSandboxItem(Item it) => it.Flag.HasFlag(ItemFlag.SANDBOX);
+    public static bool isSandboxItem(Item it) => it.HasFlag(ItemFlag.SANDBOX);
 }
