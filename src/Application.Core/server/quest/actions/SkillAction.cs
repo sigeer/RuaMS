@@ -55,7 +55,7 @@ public class SkillAction : AbstractQuestAction
 
             bool shouldLearn = skill.jobsContains(chr.getJob()) || skillObject.isBeginnerSkill();
 
-            sbyte skillLevel = (sbyte)Math.Max(skill.getLevel(), chr.getSkillLevel(skillObject));
+            sbyte skillLevel = (sbyte)Math.Max(skill.getLevel(), chr.GetPlayerSkillLevel(skillObject.getId()));
             int masterLevel = Math.Max(skill.getMasterLevel(), chr.getMasterLevel(skillObject));
             if (shouldLearn)
             {

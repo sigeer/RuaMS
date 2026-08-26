@@ -219,22 +219,22 @@ namespace Application.Plugin.Script.Npc
                 await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.NIGHTLORD)
                 {
-                    if (getPlayer().getSkillLevel(4121008) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(4121008) == 0)
                     {
                         await teachSkill(4121008, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(4121004) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(4121004) == 0)
                     {
                         await teachSkill(4121004, 0, 10, -1);
                     }
                 }
                 else if (getJob() == Job.SHADOWER)
                 {
-                    if (getPlayer().getSkillLevel(4221004) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(4221004) == 0)
                     {
                         await teachSkill(4221004, 0, 10, -1);
                     }
-                    if (getPlayer().getSkillLevel(4221001) == 0)
+                    if (getPlayer().GetPlayerSkillLevel(4221001) == 0)
                     {
                         await teachSkill(4221001, 0, 10, -1);
                     }

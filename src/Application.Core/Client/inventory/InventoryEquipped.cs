@@ -108,6 +108,14 @@ public class InventoryEquipped : AbstractInventory
             _timedItems.Add(new TimedItemWrapper(item, 0));
         }
 
+        if (equip.HasSkill)
+        {
+            foreach (var skill in equip.SourceTemplate.ExtraSkills)
+            {
+                var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
+                Owner.TempSkillCache[skill.Key] = skill.Value + e;
+            }
+        }
 
         if (!fromLogin)
         {
@@ -135,6 +143,15 @@ public class InventoryEquipped : AbstractInventory
         if (itemid == ItemId.PENDANT_OF_THE_SPIRIT)
         {
             await Owner.CalculateSpiritPendant(Owner.Client.CurrentServer.Node.getCurrentTime(), false);
+        }
+
+        if (equip.HasSkill)
+        {
+            foreach (var skill in equip.SourceTemplate.ExtraSkills)
+            {
+                var e = Owner.TempSkillCache.GetValueOrDefault(skill.Key);
+                Owner.TempSkillCache[skill.Key] = e - skill.Value;
+            }
         }
 
         var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());

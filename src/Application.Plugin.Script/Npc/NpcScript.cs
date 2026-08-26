@@ -4740,20 +4740,6 @@ namespace Application.Plugin.Script.Npc
                 await SayOK(selStr);
                 return;
             }
-
-            await SayNext(selStr + "For the fee of #r" + numberWithCommas(50000) + "#k mesos, merge unnecessary equipments in your inventory into your currently equipped gears to get stat boosts into them, statups based on the attributes of the items used on the merge!");
-
-            var name = await AskText("#rWARNING#b: Make sure you have your items ready to merge at the slots #rAFTER#b the item you have selected to merge.#k Any items #bunder#k the item selected will be merged thoroughly.\r\n\r\nNote that equipments receiving bonuses from merge are going to become #rUntradeable#k thereon, and equipments that already received the merge bonus #rcannot be used for merge#k.\r\n\r\nPlease enter the name of the equipment you want to merge:");
-
-            if (await getPlayer().mergeAllItemsFromName(name))
-            {
-                await gainMeso(-50000);
-                await SayOK("合并完成！感谢您使用本服务，祝您享受新的装备属性。");
-            }
-            else
-            {
-                await SayOK($"你的#b装备#k库中没有#b'{name}'#k！");
-            }
         }
 
 

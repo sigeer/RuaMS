@@ -281,42 +281,42 @@ namespace Application.Plugin.Script.Npc
                     int jobId = getJob().Id;
                     if (jobId == 512)
                     {
-                        if (getPlayer().getSkillLevel(5121003) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5121003) == 0)
                         {
                             await teachSkill(5121003, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5121004) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5121004) == 0)
                         {
                             await teachSkill(5121004, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5121005) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5121005) == 0)
                         {
                             await teachSkill(5121005, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5121010) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5121010) == 0)
                         {
                             await teachSkill(5121010, 0, 10, -1);
                         }
                     }
                     else if (jobId == 522)
                     {
-                        if (getPlayer().getSkillLevel(5221006) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5221006) == 0)
                         {
                             await teachSkill(5221006, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5221007) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5221007) == 0)
                         {
                             await teachSkill(5221007, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5221008) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5221008) == 0)
                         {
                             await teachSkill(5221008, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5221009) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5221009) == 0)
                         {
                             await teachSkill(5221009, 0, 10, -1);
                         }
-                        if (getPlayer().getSkillLevel(5221003) == 0)
+                        if (getPlayer().GetPlayerSkillLevel(5221003) == 0)
                         {
                             await teachSkill(5221003, 0, 10, -1);
                         }

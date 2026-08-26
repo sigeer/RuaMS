@@ -116,7 +116,8 @@ namespace Application.Core.Mappers
                 Jump = p6.getJump(),
                 Vicious = p6.getVicious(),
                 Itemlevel = (int)p6.getItemLevel(),
-                Itemexp = p6.getItemExp()
+                Itemexp = p6.getItemExp(),
+                HasSkill = p6.HasSkill
             };
             result.Properties = p6.Properties;
             result.LockExpiration = p6.LockExpiration;
