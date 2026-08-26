@@ -285,7 +285,7 @@ namespace Application.Core.Mappers
             if (src.PetInfo != null)
                 return src.Adapt<Pet>();
 
-            var dest = new Item(src.Itemid, (short)src.Position, (short)src.Quantity, src.UniqueId);
+            var dest = new Item(ItemInformationProvider.getInstance().GetItemTemplate(src.Itemid)!, (short)src.Position, (short)src.Quantity, src.UniqueId);
             dest.setOwner(src.Owner);
             dest.Flag = (short)src.Flag;
             dest.setExpiration(src.Expiration);

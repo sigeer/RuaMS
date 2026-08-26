@@ -56,7 +56,7 @@ public class Pet : Item
 
     public override PetItemTemplate SourceTemplate { get; }
 
-    public Pet(PetItemTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
+    public Pet(PetItemTemplate template, short position, long uniqueId) : base(template, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Pet);

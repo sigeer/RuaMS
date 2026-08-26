@@ -52,24 +52,16 @@ public class Item : IComparable<Item>
     public bool NeedCheckSpace => !ItemId.isNxCard(getItemId())
                                 && !ItemInformationProvider.getInstance().isConsumeOnPickup(getItemId());
 
-    AbstractItemTemplate? _sourceTemplate;
-    public virtual AbstractItemTemplate SourceTemplate
-    {
-        get
-        {
-            if (_sourceTemplate == null)
-                _sourceTemplate = ItemInformationProvider.getInstance().GetItemTemplate(id) ?? throw new BusinessResException($"ItemId = {id}");
-            return _sourceTemplate;
-        }
-    }
+    public virtual AbstractItemTemplate SourceTemplate { get; }
     /// <summary>
     /// MapItem 时为null
     /// </summary>
     public IItemStore? Store { get; set; }
-    public Item(int id, short position, short quantity, long uniqueId)
+    public Item(AbstractItemTemplate itemTemplate, short position, short quantity, long uniqueId)
     {
+        SourceTemplate = itemTemplate;
         log = LogFactory.GetLogger(LogType.Item);
-        this.id = id;
+        this.id = itemTemplate.TemplateId;
         this.position = position;
         this.quantity = quantity;
         this.itemLog = new();
@@ -85,7 +77,7 @@ public class Item : IComparable<Item>
 
     public virtual Item copy()
     {
-        Item ret = new Item(id, position, quantity, UniqueId);
+        Item ret = new Item(SourceTemplate, position, quantity, UniqueId);
         CopyItemProps(ret);
         return ret;
     }

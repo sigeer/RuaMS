@@ -158,7 +158,6 @@ public class ServerConfig
     //Some Gameplay Enhancing Configurations
     //Scroll Configuration
     public bool USE_PERFECT_GM_SCROLL;
-    public bool USE_PERFECT_SCROLLING;
     public bool USE_ENHANCED_CHSCROLL;
     public bool USE_ENHANCED_CRAFTING;
     public int SCROLL_CHANCE_ROLLS;

@@ -147,8 +147,9 @@ public class ItemConstants
     {
         return scrollId >= 2049000 && scrollId <= 2049003;
     }
+
     /// <summary>
-    /// 不消耗强化次数
+    /// 特性卷轴
     /// </summary>
     /// <param name="scrollId"></param>
     /// <returns></returns>
@@ -157,14 +158,16 @@ public class ItemConstants
         return scrollId == ItemId.SPIKES_SCROLL || scrollId == ItemId.COLD_PROTECTION_SCROLl;
     }
 
-    public static bool isFlagModifier(int scrollId, ItemFlag flag)
+    /// <summary>
+    /// 需要消耗强化次数
+    /// </summary>
+    /// <param name="scrollId"></param>
+    /// <returns></returns>
+    public static bool RequireUpgradeSlot(int scrollId)
     {
-        if (scrollId == ItemId.COLD_PROTECTION_SCROLl && flag.HasFlag(ItemFlag.COLD))
-        {
-            return true;
-        }
-        return scrollId == ItemId.SPIKES_SCROLL && flag.HasFlag(ItemFlag.SPIKES);
+        return !isModifierScroll(scrollId) && !isCleanSlate(scrollId);
     }
+
     /// <summary>
     /// 混沌卷轴
     /// </summary>

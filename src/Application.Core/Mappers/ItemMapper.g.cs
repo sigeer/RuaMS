@@ -71,7 +71,8 @@ namespace Application.Core.Mappers
                 Flag = p4.PetAttribute,
                 Name = p4.Name,
                 Petid = p4.getUniqueId(),
-                PetSlot = p4.MapPet == null ? -1 : (int)p4.MapPet.Index
+                PetSlot = p4.MapPet == null ? -1 : (int)p4.MapPet.Index,
+                PetSkill = (int)p4.PetSkill
             });
             result.Properties = p4.Properties;
             result.LockExpiration = p4.LockExpiration;
@@ -135,7 +136,8 @@ namespace Application.Core.Mappers
                 Closeness = p5.Closeness,
                 Fullness = p5.Fullness,
                 Flag = p5.Flag,
-                PetSlot = p5.PetSlot
+                PetSlot = p5.PetSlot,
+                PetSkill = p5.PetSkill
             };
         }
     }

@@ -32,6 +32,7 @@ public class Beginner
     public const int THREE_SNAILS = 1001;
     public const int RECOVERY = 1001;
     public const int NIMBLE_FEET = 1002;
+    public const int LegendarySpirit = 1003;
     public const int MONSTER_RIDER = 1004;
     public const int ECHO_OF_HERO = 1005;
     public const int BAMBOO_RAIN = 1009;

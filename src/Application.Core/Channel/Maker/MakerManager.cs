@@ -475,7 +475,7 @@ namespace Application.Core.Channel.Maker
                 {
                     eqp.setUpgradeSlots(eqp.getUpgradeSlots() + 1);
                 }
-                eqp = ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
+                ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
             }
 
             if (reagentids.Count > 0)

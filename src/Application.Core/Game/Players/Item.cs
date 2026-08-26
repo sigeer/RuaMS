@@ -367,7 +367,7 @@ namespace Application.Core.Game.Players
                         {
                             it.setUpgradeSlots(it.getUpgradeSlots() + 1);
                         }
-                        item = ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM())!;
+                        ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
                     }
 
                     else if (randomStats)

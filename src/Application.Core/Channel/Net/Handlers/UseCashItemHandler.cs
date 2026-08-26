@@ -634,8 +634,8 @@ public class UseCashItemHandler : ChannelHandlerBase
             int curlevel = toScroll.getLevel();
             await c.SendPacket(PacketCreator.sendVegaScroll(0x40));
 
-            var scrolled = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
-            await c.SendPacket(PacketCreator.sendVegaScroll(scrolled.getLevel() > curlevel ? 0x41 : 0x43));
+            var result = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
+            await c.SendPacket(PacketCreator.sendVegaScroll(result == ScrollResult.SUCCESS ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 
             await InventoryManipulator.removeFromSlot(c, InventoryType.USE, uSlot, 1, false);
@@ -655,10 +655,16 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                     chr.toggleBlockCashShop();
 
-                    await chr.forceUpdateItem(scrolled);
+                    if (result == ScrollResult.CURSE)
+                    {
+                        await InventoryManipulator.removeFromSlot(chr.Client, InventoryType.EQUIP, toScroll.getPosition(), 1, false);
+                    }
+                    else
+                    {
+                        await chr.forceUpdateItem(toScroll);
+                    }
 
-                    var scrollResult = scrolled.getLevel() > curlevel ? ScrollResult.SUCCESS : ScrollResult.FAIL;
-                    await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, scrollResult, false, false));
+                    await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.Id, result, false, false));
                     // 取背包装备栏而不是已装备栏，理论上不会出现eSlot < 0的情况？
                     //if (eSlot < 0 && (scrollResult == ScrollResult.SUCCESS))
                     //{

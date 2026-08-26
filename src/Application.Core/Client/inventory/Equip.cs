@@ -62,7 +62,7 @@ public class Equip : Item
     public bool HasSkill { get; set; }
     public override EquipTemplate SourceTemplate { get; }
 
-    public Equip(EquipTemplate template, short position, long uniqueId) : base(template.TemplateId, position, 1, uniqueId)
+    public Equip(EquipTemplate template, short position, long uniqueId) : base(template, position, 1, uniqueId)
     {
         SourceTemplate = template;
         log = LogFactory.GetLogger(LogType.Equip);
@@ -278,6 +278,10 @@ public class Equip : Item
         return level;
     }
 
+    /// <summary>
+    /// 必须与setUpgradeSlots一同使用
+    /// </summary>
+    /// <param name="level"></param>
     public void setLevel(byte level)
     {
         this.level = level;
