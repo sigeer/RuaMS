@@ -26,7 +26,6 @@ using Application.Core.Client.inventory;
 using Application.Templates;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
-using System.Runtime.ConstrainedExecution;
 
 namespace client.inventory;
 
@@ -40,7 +39,6 @@ public class Item : IComparable<Item>
 
     protected string owner = "";
     protected List<string> itemLog;
-    protected short flag;
     public ItemFlag Flag { get; set; }
     protected long expiration = -1;
     protected string giftFrom = "";
@@ -102,7 +100,7 @@ public class Item : IComparable<Item>
         input.position = position;
         input.id = id;
 
-        input.flag = flag;
+        input.Flag = Flag;
         input.owner = owner;
         input.expiration = expiration;
         input.giftFrom = giftFrom;
@@ -205,15 +203,6 @@ public class Item : IComparable<Item>
         return itemLog.ToList();
     }
 
-    public short getFlag()
-    {
-        return flag;
-    }
-
-    public void setFlag(short b)
-    {
-        this.flag = b;
-    }
 
     void LockItemInner(long expire)
     {
