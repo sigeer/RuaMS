@@ -8,7 +8,6 @@ namespace Application.Shared.Items
         /// 封印之锁
         /// </summary>
         LOCK = 0x01,
-        KARMA_PET = 0x01,
         /// <summary>
         /// 防滑
         /// </summary>

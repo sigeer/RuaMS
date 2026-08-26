@@ -28,7 +28,7 @@ public class KarmaManipulator
 {
     private static ItemFlag getKarmaFlag(Item item)
     {
-        return item.getItemType() == 1 ? ItemFlag.KARMA_EQP : (item .getItemType() == 3 ? ItemFlag.KARMA_PET : ItemFlag.KARMA_USE);
+        return item.getItemType() == 1 ? ItemFlag.KARMA_EQP : ItemFlag.KARMA_USE;
     }
 
     public static bool hasKarmaFlag(Item item)

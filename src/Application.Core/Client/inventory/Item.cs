@@ -67,9 +67,9 @@ public class Item : IComparable<Item>
         this.itemLog = new();
 
         Flag = 0;
-        if (SourceTemplate.TradeBlock)
+        if (itemTemplate.TradeBlock)
             AddFlag(ItemFlag.UNTRADEABLE);
-        if (SourceTemplate.AccountSharable)
+        if (itemTemplate.AccountSharable)
             AddFlag(ItemFlag.ACCOUNT_SHARING);
 
         UniqueId = uniqueId <= 0 ? Yitter.IdGenerator.YitIdHelper.NextId() : uniqueId;
@@ -201,7 +201,10 @@ public class Item : IComparable<Item>
     {
         if (Store is AbstractInventory inv)
         {
-            inv.ForceUpdate(this, i => i.LockItemInner(expire));
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => i.LockItemInner(expire));
+            });
         }
         else
         {
@@ -218,7 +221,10 @@ public class Item : IComparable<Item>
     {
         if (Store is AbstractInventory inv)
         {
-            inv.ForceUpdate(this, i => i.UnlockInner());
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => i.UnlockInner());
+            });
         }
         else
         {
@@ -240,7 +246,10 @@ public class Item : IComparable<Item>
     {
         if (Store is AbstractInventory inv)
         {
-            inv.ForceUpdate(this, i => SetExpirationInner(expire));
+            inv.NextTick(() =>
+            {
+                inv.ForceUpdate(this, i => SetExpirationInner(expire));
+            });
         }
         else
         {

@@ -205,17 +205,20 @@ public class UseCashItemHandler : ChannelHandlerBase
                 eq?.setOwner(player.getName());
             }
             else if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
-            { // Sealing lock
+            { 
+                // Sealing lock
                 InventoryType type = InventoryTypeUtils.getByType((sbyte)p.readInt());
                 eq = player.getInventory(type).getItem((short)p.readInt());
-                if (eq == null || eq.SourceTemplate is not ItemGuardTemplate template)
-                { 
+                if (eq == null || toUse.SourceTemplate is not ItemGuardTemplate template)
+                {
                     //Check if the type is EQUIPMENT?
+                    await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
 
                 if (eq.HasFlag(ItemFlag.LOCK))
                 {
+                    await c.SendPacket(PacketCreator.enableActions());
                     return; //No perma items pls
                 }
 

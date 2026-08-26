@@ -42,13 +42,13 @@ public class PetSkillAction : AbstractQuestAction
 
     public override Task<bool> check(Player chr, int? extSelection)
     {
-        QuestStatus status = chr.getQuest(Quest.getInstance(questID));
-        if (!(status.getStatus() == QuestStatus.Status.NOT_STARTED && status.getForfeited() > 0))
+        var bossPet = chr.getPet(0);
+        if (bossPet == null)
         {
             return Task.FromResult(false);
         }
 
-        return Task.FromResult(chr.getPet(0) != null);
+        return Task.FromResult((bossPet.PetItem.PetSkill & flag) != flag);
     }
 
     public override async Task run(Player chr, int? extSelection)

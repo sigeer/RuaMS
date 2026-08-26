@@ -108,6 +108,7 @@ namespace Application.Core.Client.inventory
         List<IInventoryOperationCommand> _tickToSync = [];
         List<ReplaceItemTemplate> _tickToReplace = [];
         List<Item> _tickToProtectExpireation = [];
+        bool isIterating  = false;
         public async Task OnTick(long now)
         {
             if (_timedItems.Count == 0)
@@ -121,6 +122,7 @@ namespace Application.Core.Client.inventory
             _tickToReplace.Clear();
             _tickToProtectExpireation.Clear();
 
+            isIterating = true;
             foreach (var p in _timedItems)
             {
                 if (p.TickTime > now)
@@ -163,6 +165,13 @@ namespace Application.Core.Client.inventory
 
                 await OnTickItem(now, item, _tickToUpdate, _tickToRemove);
             }
+            isIterating = false;
+
+            foreach (var action in _nextTickActions)
+            {
+                action.Invoke();
+            }
+            _nextTickActions.Clear();
 
             foreach (var item in _tickToUpdate)
             {
@@ -221,6 +230,18 @@ namespace Application.Core.Client.inventory
             }
         }
 
+        List<Action> _nextTickActions = [];
+        public void NextTick(Action nextTickAction)
+        {
+            if (isIterating)
+            {
+                _nextTickActions.Add(nextTickAction);
+            }
+            else
+            {
+                nextTickAction();
+            }
+        }
         protected virtual Task OnTickItem(long now, Item item, List<Item> toUpdate, List<Item> toRemove) => Task.CompletedTask;
 
         /// <summary>

@@ -391,16 +391,16 @@ namespace Application.Core.Game.Players
                 }
 
                 var addItemResult = await InventoryManipulator.addFromDrop(Client, item!, false);
+                if (addItemResult)
+                    await GainItemShowMessage(itemId, (short)quantity, show);
+
                 if (!addItemResult)
                     return null;
             }
             else
             {
-                await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, showMessage: show != GainItemShow.NotShown);
+                await Bag.RemoveFromInventory(invType, -quantity, i => i.getItemId() == itemId, show: show);
             }
-
-            await GainItemShowMessage(itemId, (short)quantity, show);
-
             return item;
         }
 

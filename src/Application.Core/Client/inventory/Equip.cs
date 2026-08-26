@@ -70,7 +70,7 @@ public class Equip : Item
         this.itemLevel = 1;
         this.quantity = 1;
 
-        if (SourceTemplate.Fs == 10)
+        if (template.Fs == 10)
             AddFlag(ItemFlag.SPIKES);
     }
 
