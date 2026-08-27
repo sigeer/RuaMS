@@ -355,19 +355,16 @@ namespace Application.Core.Game.Players
 
                 if (item is Equip it)
                 {
-                    if (ItemConstants.isAccessory(item.getItemId()) && it.getUpgradeSlots() <= 0)
+                    if (ItemConstants.isAccessory(item.getItemId()) && it.EmptySlot <= 0)
                     {
-                        it.setUpgradeSlots(3);
+                        it.EmptySlot = 3;
                     }
 
                     // 手工制作时，使用提升属性（通过不消耗升级次数的混沌卷）
                     if (YamlConfig.config.server.USE_ENHANCED_CRAFTING == true && getCS() == true)
                     {
-                        if (!(isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
-                        {
-                            it.setUpgradeSlots(it.getUpgradeSlots() + 1);
-                        }
-                        ItemInformationProvider.getInstance().scrollEquipWithId(it, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, isGM());
+                        ItemInformationProvider.getInstance().scrollEquipWithId(it,
+                            ItemInformationProvider.getInstance().GetScrollTemplate(ItemId.CHAOS_SCROll_60), true, 0, true, true);
                     }
 
                     else if (randomStats)

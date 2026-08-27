@@ -78,38 +78,6 @@ public class ScrollHandler : ChannelHandlerBase
                     return;
                 }
 
-                if (scrollTemplate.Recover && !ii.canUseCleanSlate(toScroll))
-                {
-                    // 检查白医是否可用
-                    await announceCannotScroll(c, legendarySpirit);
-                    return;
-                }
-
-                if (ItemConstants.RequireUpgradeSlot(scroll.getItemId()) && toScroll.getUpgradeSlots() < 1)
-                {
-                    // 检查强化次数
-                    await announceCannotScroll(c, legendarySpirit);   // thanks onechord for noticing zero upgrade slots freezing Legendary Scroll UI
-                    return;
-                }
-
-                var scrollReqs = ii.getScrollReqs(scroll.getItemId());
-                if (scrollReqs.Length > 0 && !scrollReqs.Contains(toScroll.getItemId()))
-                {
-                    // 检查卷轴是否对装备可用（专用卷轴）
-                    await announceCannotScroll(c, legendarySpirit);
-                    return;
-                }
-
-                if (!scrollTemplate.RandStat && !scrollTemplate.Recover)
-                {
-                    // 检查卷轴是否对装备可用（部位）
-                    if (!canScroll(scroll.getItemId(), toScroll.getItemId()))
-                    {
-                        await announceCannotScroll(c, legendarySpirit);
-                        return;
-                    }
-                }
-
                 Item? wscroll = null;
                 if (whiteScroll)
                 {
@@ -124,13 +92,19 @@ public class ScrollHandler : ChannelHandlerBase
                     }
                 }
 
-                var scrollSuccess = ii.scrollEquipWithId(toScroll, scroll.getItemId(), wscroll != null, 0, chr.isGM());
+                bool useGmPrivilege = chr.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
+                var scrollResult = ii.scrollEquipWithId(toScroll, scrollTemplate, wscroll != null, 0, useGmPrivilege, useGmPrivilege);
+                if (scrollResult == Equip.ScrollResult.Interruption)
+                {
+                    await announceCannotScroll(c, legendarySpirit);
+                    return;
+                }
 
                 await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, scroll.getPosition(), 1, false);
                 if (wscroll != null)
                     await c.OnlinedCharacter.Bag.TryRemoveFromSlot(InventoryType.USE, wscroll.getPosition(), 1, false);
 
-                if (scrollSuccess == Equip.ScrollResult.CURSE)
+                if (scrollResult == Equip.ScrollResult.CURSE)
                 {
                     if (!ItemId.isWeddingRing(toScroll.getItemId()))
                     {
@@ -151,7 +125,7 @@ public class ScrollHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        scrollSuccess = Equip.ScrollResult.FAIL;
+                        scrollResult = Equip.ScrollResult.FAIL;
 
                         await chr.forceUpdateItem(toScroll);
                     }
@@ -161,7 +135,7 @@ public class ScrollHandler : ChannelHandlerBase
                     await chr.forceUpdateItem(toScroll);
                 }
 
-                await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollSuccess, legendarySpirit, wscroll != null));
+                await chr.BroadcastMap(PacketCreator.getScrollEffect(chr.getId(), scrollResult, legendarySpirit, wscroll != null));
             }
             finally
             {

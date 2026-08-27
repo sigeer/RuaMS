@@ -275,11 +275,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return GetEquipTemplate(itemId)?.ReqLevel ?? 0;
     }
 
-    public int[] getScrollReqs(int itemId)
-    {
-        return GetProvider(itemId).GetRequiredItem<ScrollItemTemplate>(itemId)?.Req ?? [];
-    }
-
     public WeaponType getWeaponType(int itemId)
     {
         int cat = itemId / 10000 % 100;
@@ -311,14 +306,15 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         return type[cat - 30];
     }
 
-    private static double testYourLuck(double prop, int dices)
-    {   // revamped testYourLuck author: David A.
-        return Math.Pow(1.0 - prop, dices);
-    }
 
-    public static bool rollSuccessChance(double propPercent)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="prop">大于1</param>
+    /// <returns></returns>
+    public static bool rollSuccessChance(int prop)
     {
-        return Randomizer.nextDouble() >= testYourLuck(propPercent / 100.0, YamlConfig.config.server.SCROLL_CHANCE_ROLLS);
+        return Randomizer.nextDouble() < prop / 100.0;
     }
 
     private static short getMaximumShortMaxIfOverflow(int value1, int value2)
@@ -638,114 +634,142 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         }
     }
 
-    /*
-        Issue with clean slate found thanks to Masterrulax
-        Vicious added in the clean slate check thanks to Crypter (CrypterDEV)
-    */
-    public bool canUseCleanSlate(Equip equip)
+    private static bool canScroll(int scrollid, int itemid)
     {
-        int totalUpgradeCount = equip.SourceTemplate.TUC;
-        int viciousCount = equip.getVicious();
+        int sid = scrollid / 100;
 
-        int freeUpgradeCount = equip.getUpgradeSlots();
-        int appliedScrollCount = equip.getLevel();
-        return freeUpgradeCount + appliedScrollCount < totalUpgradeCount + viciousCount;
+        switch (sid)
+        {
+            case 20492: //scroll for accessory (pendant, belt, ring)
+                return canScroll(ItemId.RING_STR_100_SCROLL, itemid)
+                    || canScroll(ItemId.DRAGON_STONE_SCROLL, itemid)
+                    || canScroll(ItemId.BELT_STR_100_SCROLL, itemid);
+
+            default:
+                return (scrollid / 100) % 100 == (itemid / 10000) % 100;
+        }
     }
+
+    public ScrollItemTemplate GetScrollTemplate(int itemId) => (GetItemTemplate(itemId) as ScrollItemTemplate)!;
 
     /// <summary>
     /// 上卷轴
     /// </summary>
     /// <param name="nEquip"></param>
-    /// <param name="scrollId"></param>
-    /// <param name="usingWhiteScroll"></param>
+    /// <param name="scrollTemplate"></param>
+    /// <param name="usingWhiteScroll">使用祝福卷轴（失败不消耗强化次数）</param>
     /// <param name="vegaItemId">卷轴成功提升卡</param>
-    /// <param name="isGM"></param>
+    /// <param name="noConsume">不消耗强化次数（不论成功失败）</param>
+    /// <param name="forceSuccess">必定成功</param>
     /// <returns></returns>
-    public Equip.ScrollResult scrollEquipWithId(Equip nEquip, int scrollId, bool usingWhiteScroll, int vegaItemId, bool isGM)
+    public Equip.ScrollResult scrollEquipWithId(Equip nEquip, ScrollItemTemplate scrollTemplate, bool usingWhiteScroll, int vegaItemId = 0, bool noConsume = false, bool forceSuccess = false)
     {
-        bool assertGM = isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL;
-
-        var scrollTemplate = _itemProvider.GetRequiredItem<ScrollItemTemplate>(scrollId);
-        if (scrollTemplate == null)
-            return ScrollResult.FAIL;
-
-        // 可升级 or 是gm or 是不消耗强化次数的卷轴
-        if (nEquip.getUpgradeSlots() > 0 || !ItemConstants.RequireUpgradeSlot(scrollId) || assertGM)
+        if (scrollTemplate.Recover && nEquip.FailSlot <= 0)
         {
-            double prop = scrollTemplate.SuccessRate;
+            // 检查白医是否可用（只能回复因强化失败消耗的次数）
+            return ScrollResult.Interruption;
+        }
 
-            switch (vegaItemId)
+        if (scrollTemplate.WarmSupport && nEquip.HasFlag(ItemFlag.COLD))
+        {
+            // 已有防寒效果
+            return ScrollResult.Interruption;
+        }
+
+        if (scrollTemplate.PreventSlip && nEquip.HasFlag(ItemFlag.SPIKES))
+        {
+            // 已有防滑效果
+            return ScrollResult.Interruption;
+        }
+
+        if (!noConsume && scrollTemplate.RequireSlot() && nEquip.EmptySlot < 1)
+        {
+            // 检查强化次数
+            return ScrollResult.Interruption;
+        }
+
+        if (scrollTemplate.Req.Length > 0 && !scrollTemplate.Req.Contains(nEquip.getItemId()))
+        {
+            // 检查卷轴是否对装备可用（专用卷轴）
+            return ScrollResult.Interruption;
+        }
+
+        if (!scrollTemplate.RandStat && !scrollTemplate.Recover && !canScroll(scrollTemplate.TemplateId, nEquip.getItemId()))
+        {
+            // 检查卷轴是否对装备可用（部位）
+            return ScrollResult.Interruption;
+        }
+
+        int prop = scrollTemplate.Success;
+
+        switch (vegaItemId)
+        {
+            case ItemId.VEGAS_SPELL_10:
+                if (prop == 10.0)
+                {
+                    prop = 30;
+                }
+                break;
+            case ItemId.VEGAS_SPELL_60:
+                if (prop == 60.0)
+                {
+                    prop = 90;
+                }
+                break;
+        }
+
+        if (forceSuccess || rollSuccessChance(prop))
+        {
+            if (scrollTemplate.PreventSlip)
             {
-                case ItemId.VEGAS_SPELL_10:
-                    if (prop == 10.0)
-                    {
-                        prop = 30.0;
-                    }
-                    break;
-                case ItemId.VEGAS_SPELL_60:
-                    if (prop == 60.0)
-                    {
-                        prop = 90.0;
-                    }
-                    break;
+                nEquip.AddFlag(ItemFlag.SPIKES);
             }
-
-            if (assertGM || rollSuccessChance(prop))
+            if (scrollTemplate.WarmSupport)
             {
-                if (scrollTemplate.PreventSlip)
-                {
-                    nEquip.AddFlag(ItemFlag.SPIKES);
-                }
-                if (scrollTemplate.WarmSupport)
-                {
-                    nEquip.AddFlag(ItemFlag.COLD);
-                }
-                if (scrollTemplate.Recover)
-                {
-                    if (canUseCleanSlate(nEquip))
-                    {
-                        nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() + 1);
-                    }
-                }
-                if (scrollTemplate.RandStat)
-                {
-                    scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
-                }
-                else
-                {
-                    improveEquipStats(nEquip, scrollTemplate);
-                }
-
-                if (ItemConstants.RequireUpgradeSlot(scrollId) && !assertGM)
-                {
-                    // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                    nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
-                    nEquip.setLevel((byte)(nEquip.getLevel() + 1));
-                }
-
-                return ScrollResult.SUCCESS;
+                nEquip.AddFlag(ItemFlag.COLD);
+            }
+            if (scrollTemplate.Recover && nEquip.FailSlot > 0)
+            {
+                nEquip.EmptySlot++;
+                nEquip.FailSlot--;
+            }
+            if (scrollTemplate.RandStat)
+            {
+                scrollEquipWithChaos(nEquip, YamlConfig.config.server.CHSCROLL_STAT_RANGE);
             }
             else
             {
-                if (!usingWhiteScroll && ItemConstants.RequireUpgradeSlot(scrollId) && !assertGM)
-                {
-                    nEquip.setUpgradeSlots(nEquip.getUpgradeSlots() - 1);
-                }
-
-                if (Randomizer.nextInt(100) < scrollTemplate.Cursed)
-                {
-                    return ScrollResult.CURSE;
-                }
-
-                return ScrollResult.FAIL;
+                improveEquipStats(nEquip, scrollTemplate);
             }
+
+            if (scrollTemplate.RequireSlot())
+            {
+                if (!noConsume)
+                {
+                    nEquip.EmptySlot--;
+                }
+
+                // 防寒/防滑卷轴是否有必要算入成功次数？
+                nEquip.SuccessSlot++;
+            }
+
+            return ScrollResult.SUCCESS;
         }
         else
         {
-            // 没有可升级的槽
+            if (!usingWhiteScroll && scrollTemplate.RequireSlot() && !noConsume)
+            {
+                nEquip.EmptySlot--;
+                nEquip.FailSlot++;
+            }
+
+            if (Randomizer.nextInt(100) < scrollTemplate.Cursed)
+            {
+                return ScrollResult.CURSE;
+            }
+
             return ScrollResult.FAIL;
         }
-
     }
 
     public static void improveEquipStats(Equip nEquip, IEnhanceEquipItem scrollTemplate)
@@ -791,7 +815,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
         nEquip.setJump(equipTemplate.IncJump);
         nEquip.setHp(equipTemplate.IncMHP);
         nEquip.setMp(equipTemplate.IncMMP);
-        nEquip.setUpgradeSlots(equipTemplate.TUC);
+        nEquip.EmptySlot = (byte)equipTemplate.TUC;
 
         return nEquip;
     }

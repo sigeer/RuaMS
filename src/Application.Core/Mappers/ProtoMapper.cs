@@ -142,8 +142,9 @@ namespace Application.Core.Mappers
                         dest.setStr(rs.EquipInfo!.Str);
                         dest.setWatk(rs.EquipInfo!.Watk);
                         dest.setWdef(rs.EquipInfo!.Wdef);
-                        dest.setUpgradeSlots(rs.EquipInfo!.Upgradeslots);
-                        dest.setLevel((byte)rs.EquipInfo!.Level);
+                        dest.EmptySlot = (byte)rs.EquipInfo.EmptySlot;
+                        dest.SuccessSlot = (byte)rs.EquipInfo.SuccessSlot;
+                        dest.FailSlot = (byte)rs.EquipInfo.FailSlot;
                         dest.setItemExp(rs.EquipInfo!.Itemexp);
                         dest.setItemLevel((byte)rs.EquipInfo!.Itemlevel);
                         dest.HasSkill = rs.EquipInfo.HasSkill;
@@ -170,8 +171,9 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Str, source => source.getStr())
                 .Map(dest => dest.Watk, source => source.getWatk())
                 .Map(dest => dest.Wdef, source => source.getWdef())
-                .Map(dest => dest.Upgradeslots, source => source.getUpgradeSlots())
-                .Map(dest => dest.Level, source => source.getLevel())
+                .Map(dest => dest.EmptySlot, source => source.EmptySlot)
+                .Map(dest => dest.SuccessSlot, source => source.SuccessSlot)
+                .Map(dest => dest.FailSlot, source => source.FailSlot)
                 .Map(dest => dest.Itemlevel, source => source.getItemLevel())
                 .Map(dest => dest.Itemexp, source => source.getItemExp())
                 .Map(dest => dest.HasSkill, source => source.HasSkill);

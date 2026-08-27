@@ -588,12 +588,13 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             if (equip.getVicious() >= 2 || player.getInventory(InventoryType.CASH).findById(ItemId.VICIOUS_HAMMER) == null)
             {
+                await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
             equip.setVicious(equip.getVicious() + 1);
-            equip.setUpgradeSlots(equip.getUpgradeSlots() + 1);
+            equip.EmptySlot++;
             await remove(c, position, itemId);
-            await c.SendPacket(PacketCreator.enableActions());
+            // await c.SendPacket(PacketCreator.enableActions());
             await c.SendPacket(PacketCreator.sendHammerData(equip.getVicious()));
             await player.forceUpdateItem(equip);
         }
@@ -620,7 +621,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 return;
             }
 
-            if (toScroll.getUpgradeSlots() < 1)
+            if (toScroll.EmptySlot < 1)
             {
                 await c.SendPacket(PacketCreator.getInventoryFull());
                 return;
@@ -634,10 +635,10 @@ public class UseCashItemHandler : ChannelHandlerBase
 
             player.toggleBlockCashShop();
 
-            int curlevel = toScroll.getLevel();
             await c.SendPacket(PacketCreator.sendVegaScroll(0x40));
 
-            var result = ii.scrollEquipWithId(toScroll, uitem.getItemId(), false, itemId, player.isGM())!;
+            // 如果要使用gm保护，则并不需要成功率提升，所以当使用成功率提升时，不再进行gm保护
+            var result = ii.scrollEquipWithId(toScroll, ItemInformationProvider.getInstance().GetScrollTemplate(uitem.getItemId()), false, itemId);
             await c.SendPacket(PacketCreator.sendVegaScroll(result == ScrollResult.SUCCESS ? 0x41 : 0x43));
             //opcodes 0x42, 0x44: "this item cannot be used"; 0x39, 0x45: crashes
 

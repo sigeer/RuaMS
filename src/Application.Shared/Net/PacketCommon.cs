@@ -243,8 +243,8 @@ namespace Application.Shared.Net
                 var equip = item.EquipInfo;
                 var template = (itemTemplate as EquipTemplate)!;
 
-                p.writeByte(equip.Upgradeslots); // upgrade slots
-                p.writeByte(equip.Level); // level
+                p.writeByte(equip.EmptySlot); // upgrade slots
+                p.writeByte(equip.SuccessSlot); // level
                 p.writeShort(equip.Str); // str
                 p.writeShort(equip.Dex); // dex
                 p.writeShort(equip.Int); // int

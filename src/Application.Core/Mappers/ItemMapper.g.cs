@@ -98,8 +98,8 @@ namespace Application.Core.Mappers
             result.GiftFrom = ((Item)p6).getGiftFrom();
             result.EquipInfo = p6 == null ? null : new EquipProto()
             {
-                Level = (int)p6.getLevel(),
-                Upgradeslots = (int)p6.getUpgradeSlots(),
+                SuccessSlot = (int)p6.SuccessSlot,
+                EmptySlot = (int)p6.EmptySlot,
                 Str = p6.getStr(),
                 Dex = p6.getDex(),
                 Int = p6.getInt(),
@@ -118,7 +118,8 @@ namespace Application.Core.Mappers
                 Vicious = p6.getVicious(),
                 Itemlevel = (int)p6.getItemLevel(),
                 Itemexp = p6.getItemExp(),
-                HasSkill = p6.HasSkill
+                HasSkill = p6.HasSkill,
+                FailSlot = (int)p6.FailSlot
             };
             result.Properties = p6.Properties;
             result.LockExpiration = p6.LockExpiration;

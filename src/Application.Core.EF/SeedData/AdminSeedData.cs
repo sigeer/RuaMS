@@ -126,8 +126,7 @@ public static class AdminSeedData
             Properties = null,
             EquipInfo = new ProtoModel.EquipProto
             {
-                Upgradeslots = 7,
-                Level = 0,
+                EmptySlot = 7,
                 Str = 0,
                 Dex = 0,
                 Int = 0,
@@ -162,8 +161,7 @@ public static class AdminSeedData
             Properties = null,
             EquipInfo = new ProtoModel.EquipProto()
             {
-                Upgradeslots = 7,
-                Level = 0,
+                EmptySlot = 7,
                 Str = 0,
                 Dex = 0,
                 Int = 0,
@@ -198,8 +196,7 @@ public static class AdminSeedData
             Properties = null,
             EquipInfo = new ProtoModel.EquipProto
             {
-                Upgradeslots = 5,
-                Level = 0,
+                EmptySlot = 7,
                 Str = 0,
                 Dex = 0,
                 Int = 0,
@@ -234,8 +231,7 @@ public static class AdminSeedData
             Properties = null,
             EquipInfo = new ProtoModel.EquipProto
             {
-                Upgradeslots = 7,
-                Level = 0,
+                EmptySlot = 7,
                 Str = 0,
                 Dex = 0,
                 Int = 0,

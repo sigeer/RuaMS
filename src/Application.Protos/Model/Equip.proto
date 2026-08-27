@@ -5,8 +5,8 @@ package ProtoModel;
 
 
 message EquipProto {
-  int32 level = 1;
-  int32 upgradeslots = 2;
+  int32 successSlot = 1;
+  int32 emptySlot = 2;
   int32 str = 3;
   int32 dex = 4;
   int32 int = 5;
@@ -27,4 +27,5 @@ message EquipProto {
   int32 itemlevel = 20;
   int32 itemexp = 21;
   bool hasSkill = 22;
+  int32 failSlot = 23;
 }
