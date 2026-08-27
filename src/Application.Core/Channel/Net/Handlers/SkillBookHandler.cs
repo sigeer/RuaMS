@@ -85,7 +85,7 @@ public class SkillBookHandler : ChannelHandlerBase
                         await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
 
                         canuse = true;
-                        if (ItemInformationProvider.rollSuccessChance(template.SuccessRate))
+                        if (ItemInformationProvider.rollSuccessChance(template.Success))
                         {
                             success = true;
                             await player.changeSkillLevel(skill2, (sbyte)player.GetPlayerSkillLevel(skill2.getId()), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);

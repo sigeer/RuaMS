@@ -1,7 +1,7 @@
 namespace Application.Templates.Item.Consume
 {
     /// <summary>
-    /// 228.技能册，229.能手册，以<see cref="SuccessRate"/>的概率，将等级上限达到<see cref="ReqSkillLevel"/>的技能<see cref="Skills"/>提升到<see cref="MasterLevel"/>
+    /// 228.技能册，229.能手册，以<see cref="Success"/>的概率，将等级上限达到<see cref="ReqSkillLevel"/>的技能<see cref="Skills"/>提升到<see cref="MasterLevel"/>
     /// </summary>
     [GenerateTag]
     public sealed class MasteryItemTemplate : ConsumeItemTemplate
@@ -17,7 +17,8 @@ namespace Application.Templates.Item.Consume
         [WZPath("info/reqSkillLevel")]
         public int ReqSkillLevel { get; set; }
         [WZPath("info/success")]
-        public int SuccessRate { get; set; }
+        public int Success { get; set; }
+        public double SuccessRate => Success / 100.0;
         [WZPath("info/skill/-")]
         public int[] Skills { get; set; }
     }

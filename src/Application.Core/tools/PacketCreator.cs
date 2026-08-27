@@ -385,8 +385,8 @@ public class PacketCreator
             }
             return;
         }
-        p.writeByte(equip.getUpgradeSlots()); // upgrade slots
-        p.writeByte(equip.getLevel()); // level
+        p.writeByte(equip.EmptySlot); // upgrade slots
+        p.writeByte(equip.SuccessSlot); // level
         p.writeShort(equip.getStr()); // str
         p.writeShort(equip.getDex()); // dex
         p.writeShort(equip.getInt()); // int

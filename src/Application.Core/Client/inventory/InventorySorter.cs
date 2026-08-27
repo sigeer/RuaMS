@@ -168,7 +168,7 @@ namespace Application.Core.Client.inventory
             else if (sort == 2)
                 sorted = items.OrderBy(x => ii.getName(x.getItemId()));
             else if (sort == 3)
-                sorted = items.OrderBy(x => ((Equip)x).getLevel());
+                sorted = items.OrderBy(x => ((Equip)x).SuccessSlot);
             else
                 sorted = items.OrderBy(x => x.GetSortKey()); // 默认排序
 
@@ -177,7 +177,7 @@ namespace Application.Core.Client.inventory
             else if (thenSort == 2)
                 sorted = sorted.ThenBy(x => ii.getName(x.getItemId()));
             else if (thenSort == 3)
-                sorted = sorted.ThenBy(x => ((Equip)x).getLevel());
+                sorted = sorted.ThenBy(x => ((Equip)x).SuccessSlot);
 
             var result = sorted.ToList<Item?>(); // 转为 List<Item?>
             result.AddRange(nullItems);

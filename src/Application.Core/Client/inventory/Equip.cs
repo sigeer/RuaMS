@@ -24,6 +24,7 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Templates.Character;
+using ProtoModel;
 using tools;
 
 namespace client.inventory;
@@ -34,7 +35,13 @@ public class Equip : Item
     public enum ScrollResult
     {
 
-        FAIL = 0, SUCCESS = 1, CURSE = 2
+        FAIL = 0, 
+        SUCCESS = 1, 
+        CURSE = 2,
+        /// <summary>
+        /// 不满足使用条件
+        /// </summary>
+        Interruption
     }
 
 
@@ -49,11 +56,22 @@ public class Equip : Item
     }
 
 
-    private sbyte upgradeSlots;
-    private byte level, itemLevel;
+    private byte itemLevel;
     private int str, dex, _int, luk, hp, mp, watk, matk, wdef, mdef, acc, avoid, hands, speed, jump, vicious;
     private float itemExp;
     private bool _wear = false;
+    /// <summary>
+    /// 强化成功次数
+    /// </summary>
+    public byte SuccessSlot { get; set; }
+    /// <summary>
+    /// 强化失败次数
+    /// </summary>
+    public byte FailSlot { get; set; }
+    /// <summary>
+    /// 剩余可强化次数
+    /// </summary>
+    public byte EmptySlot { get; set; }
 
     public int MaxLevel => SourceTemplate.MaxLevel;
     /// <summary>
@@ -65,6 +83,8 @@ public class Equip : Item
     public Equip(EquipTemplate template, short position, long uniqueId) : base(template, position, 1, uniqueId)
     {
         SourceTemplate = template;
+        EmptySlot = (byte)template.TUC;
+
         log = LogFactory.GetLogger(LogType.Equip);
         this.itemExp = 0;
         this.itemLevel = 1;
@@ -93,11 +113,12 @@ public class Equip : Item
         ret.speed = speed;
         ret.jump = jump;
         ret.vicious = vicious;
-        ret.upgradeSlots = upgradeSlots;
         ret.itemLevel = itemLevel;
         ret.itemExp = itemExp;
-        ret.level = level;
         ret.HasSkill = HasSkill;
+        ret.SuccessSlot = SuccessSlot;
+        ret.FailSlot = FailSlot;
+        ret.EmptySlot = EmptySlot;
 
         CopyItemProps(ret);
         return ret;
@@ -107,12 +128,6 @@ public class Equip : Item
     {
         return 1;
     }
-
-    public sbyte getUpgradeSlots()
-    {
-        return upgradeSlots;
-    }
-
     public int getStr()
     {
         return str;
@@ -273,20 +288,6 @@ public class Equip : Item
         this.vicious = vicious;
     }
 
-    public byte getLevel()
-    {
-        return level;
-    }
-
-    /// <summary>
-    /// 必须与setUpgradeSlots一同使用
-    /// </summary>
-    /// <param name="level"></param>
-    public void setLevel(byte level)
-    {
-        this.level = level;
-    }
-
 
     public KeyValuePair<string, KeyValuePair<bool, bool>> gainStats(List<KeyValuePair<StatUpgrade, int>> stats)
     {
@@ -373,7 +374,7 @@ public class Equip : Item
                     gotVicious = true;
                     break;
                 case StatUpgrade.incSlot:
-                    upgradeSlots += (sbyte)stat.Value;
+                    EmptySlot += (byte)stat.Value;
                     gotSlot = true;
                     break;
             }
@@ -540,11 +541,6 @@ public class Equip : Item
             throw new Exception("Setting the quantity to " + quantity + " on an equip (itemid: " + getItemId() + ")");
         }
         base.setQuantity(quantity);
-    }
-
-    public void setUpgradeSlots(int i)
-    {
-        this.upgradeSlots = (sbyte)i;
     }
 
     public bool isWearing()

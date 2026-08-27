@@ -158,7 +158,7 @@ internal class ItemTemplateDataCheck(string readerType) : WzTestBase(readerType)
         var skill229 = provider.GetRequiredItem<MasteryItemTemplate>(2290086)!;
         Assert.That(skill229.MasterLevel, Is.EqualTo(20));
         Assert.That(skill229.ReqSkillLevel, Is.EqualTo(5));
-        Assert.That(skill229.SuccessRate, Is.EqualTo(70));
+        Assert.That(skill229.Success, Is.EqualTo(70));
         Assert.That(skill229.Skills, Does.Contain(4121008));
 
         var catchItem = provider.GetRequiredItem<CatchMobItemTemplate>(2270005)!;

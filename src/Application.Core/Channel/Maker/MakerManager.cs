@@ -458,24 +458,21 @@ namespace Application.Core.Channel.Maker
 
         public async Task<bool> addBoostedMakerItem(IChannelClient c, int itemid, int stimulantid, Dictionary<int, short> reagentids)
         {
-            if (stimulantid != -1 && !ItemInformationProvider.rollSuccessChance(90.0))
+            if (stimulantid != -1 && !ItemInformationProvider.rollSuccessChance(90))
             {
                 return false;
             }
 
             var eqp = ii.getEquipById(itemid);
-            if (ItemConstants.isAccessory(eqp.getItemId()) && eqp.getUpgradeSlots() <= 0)
+            if (ItemConstants.isAccessory(eqp.getItemId()) && eqp.EmptySlot <= 0)
             {
-                eqp.setUpgradeSlots(3);
+                eqp.EmptySlot = 3;
             }
 
             if (YamlConfig.config.server.USE_ENHANCED_CRAFTING)
             {
-                if (!(c.OnlinedCharacter.isGM() && YamlConfig.config.server.USE_PERFECT_GM_SCROLL))
-                {
-                    eqp.setUpgradeSlots(eqp.getUpgradeSlots() + 1);
-                }
-                ItemInformationProvider.getInstance().scrollEquipWithId(eqp, ItemId.CHAOS_SCROll_60, true, ItemId.CHAOS_SCROll_60, c.OnlinedCharacter.isGM());
+                ItemInformationProvider.getInstance().scrollEquipWithId(eqp, 
+                    ItemInformationProvider.getInstance().GetScrollTemplate(ItemId.CHAOS_SCROll_60), true, 0, true ,true);
             }
 
             if (reagentids.Count > 0)
