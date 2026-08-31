@@ -4,8 +4,6 @@ using Application.Core.Channel.DueyService;
 using Application.Core.Channel.Modules;
 using Application.Core.Channel.ServerData;
 using Application.Core.Gameplay.Plugins;
-using Application.Core.Models;
-using Application.Shared.Servers;
 using System.Net;
 
 namespace Application.Core.Channel.Services
@@ -13,7 +11,7 @@ namespace Application.Core.Channel.Services
     /// <summary>
     /// 只读服务
     /// </summary>
-    public interface IServiceCenter: IScriptableNpcConfig
+    public interface IServiceCenter : IScriptableNpcConfig
     {
         ChannelNodeConfig NodeConfig { get; }
         PluginManager PluginManager { get; }

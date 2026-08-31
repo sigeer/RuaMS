@@ -1240,7 +1240,7 @@ namespace Application.Plugin.Script.Npc
             };
 
             var categoriesList = new List<RecipeCategory> { warriorGloveCat, bowmanGloveCat, mageGloveCat, thiefGloveCat };
-            await PerformRefine(greeting, new List<RecipeCategory> { categoriesList[categoryIdx] },  stimulatorId: stimulator ? stimId : 0);
+            await PerformRefine(greeting, new List<RecipeCategory> { categoriesList[categoryIdx] }, stimulatorId: stimulator ? stimId : 0);
         }
 
 

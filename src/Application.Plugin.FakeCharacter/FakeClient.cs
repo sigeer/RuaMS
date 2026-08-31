@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Shared.MapObjects.Players;
 using Application.Shared.Models;
 using Application.Shared.Net;
 using Application.Shared.Servers;
@@ -20,7 +21,7 @@ namespace Application.Plugin.FakeCharacter
 
         public Player OnlinedCharacter => Character!;
 
-        public ClientCulture CurrentCulture { get; set; } = ClientCulture.SystemCulture;
+        public IClientCulture CurrentCulture { get; set; } = ClientCulture.SystemCulture;
         public NPCConversationManager? NPCConversationManager { get; set; }
 
         public bool IsOnlined => true;

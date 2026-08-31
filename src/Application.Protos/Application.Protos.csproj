@@ -129,7 +129,6 @@
 		<Protobuf Include="Model\OwlSearch.proto" GrpcServices="None" />
 		<Protobuf Include="Model\Packet.proto" GrpcServices="None" />
 		<Protobuf Include="Model\Pet.proto" GrpcServices="None" />
-		<Protobuf Include="Model\PetIgnore.proto" GrpcServices="None" />
 		<Protobuf Include="Model\PlayerBase.proto" GrpcServices="None" />
 		<Protobuf Include="Model\PlayerBuff.proto" GrpcServices="None" />
 		<Protobuf Include="Model\PlayerFieldChange.proto" GrpcServices="None" />

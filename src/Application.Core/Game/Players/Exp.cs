@@ -82,7 +82,6 @@ namespace Application.Core.Game.Players
                     leftover = nextExp - int.MaxValue;
                 }
                 await updateSingleStat(Stat.EXP, ExpValue.addAndGet((int)total));
-                totalExpGained += total;
                 if (show)
                 {
                     await announceExpGain(gain, equip, party, inChat, white);
@@ -118,8 +117,6 @@ namespace Application.Core.Game.Players
                     //    );
                     //    ExpLogger.putExpLogRecord(expLogRecord);
                     //}
-
-                    totalExpGained = 0;
                 }
             }
 

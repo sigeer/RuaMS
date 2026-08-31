@@ -43,7 +43,7 @@ public class PetChatHandler : ChannelHandlerBase
         var petId = p.readLong();
         p.readByte();
         var act = p.ReadSByte();
-        var pet = c.OnlinedCharacter.GetPetById(petId);
+        var (petSlot, pet) = c.OnlinedCharacter.GetPetById(petId);
         if (pet == null || (act < 0 || act > 9))
         {
             return;
@@ -56,6 +56,6 @@ public class PetChatHandler : ChannelHandlerBase
             await c.Disconnect(true, false);
             return;
         }
-        await pet.ActionRemote(act, text);
+        await pet.ActionRemote(petSlot, act, text);
     }
 }

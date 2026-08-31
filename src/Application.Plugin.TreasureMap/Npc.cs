@@ -5,7 +5,7 @@ using Application.Shared.Constants.Map;
 using Application.Utility;
 using Application.Utility.Extensions;
 using Application.Utility.Tasks;
-using server.life;
+using Application.Core.Server.life;
 using System.Collections.Concurrent;
 
 namespace Application.Plugin.TreasureMap

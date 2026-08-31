@@ -1,11 +1,12 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Server;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Pet;
 using client.inventory;
 using client.inventory.manipulator;
 using scripting.item;
-using server;
 using tools;
 
 namespace Application.Core.Gameplay
@@ -14,11 +15,13 @@ namespace Application.Core.Gameplay
     {
 
         int _petIndex = -1;
-        bool IsPetPickup => _petIndex > -1;
+        bool IsPetPickup => ActivePet != null;
         public PickupCheckFlags Flags { get; set; }
+        MapPet? ActivePet { get; }
         public PlayerPickupProcessor(Player player, int petIdex = -1) : base(player)
         {
             _petIndex = petIdex;
+            ActivePet = _petIndex < 0 ? null : player.GetPetByIndex(petIdex);
             Flags = PickupCheckFlags.CoolDown | PickupCheckFlags.Owner;
         }
 
@@ -47,7 +50,7 @@ namespace Application.Core.Gameplay
 
         protected override async Task<bool> Before(MapItem mapItem)
         {
-            if (IsPetPickup)
+            if (ActivePet != null)
             {
                 if (mapItem.Item == null)
                 {
@@ -59,8 +62,7 @@ namespace Application.Core.Gameplay
 
                     if (_player.isEquippedPetItemIgnore(_petIndex))
                     {
-                        HashSet<int> petIgnore = _player.getExcludedItems();
-                        if (petIgnore.Count > 0 && petIgnore.Contains(int.MaxValue))
+                        if (ActivePet.ExcludeItems.Count > 0 && ActivePet.ExcludeItems.Contains(int.MaxValue))
                         {
                             await _player.SendPacket(PacketCreator.enableActions());
                             return false;
@@ -77,8 +79,7 @@ namespace Application.Core.Gameplay
 
                     if (_player.isEquippedPetItemIgnore(_petIndex))
                     {
-                        HashSet<int> petIgnore = _player.getExcludedItems();
-                        if (petIgnore.Count > 0 && petIgnore.Contains(mapItem.getItemId()))
+                        if (ActivePet.ExcludeItems.Count > 0 && ActivePet.ExcludeItems.Contains(mapItem.getItemId()))
                         {
                             await _player.SendPacket(PacketCreator.enableActions());
                             return false;

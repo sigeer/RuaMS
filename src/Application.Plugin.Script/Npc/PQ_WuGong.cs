@@ -1,16 +1,4 @@
-using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
-using Application.Scripting.JS;
-using Application.Shared.Constants.Item;
-using Application.Shared.Constants.Map;
-using client.inventory;
-using Microsoft.Extensions.Logging;
-using server.maps;
-using server.quest;
-using System;
-using System.Collections.Generic;
-using System.Net.ServerSentEvents;
-using System.Text;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -87,7 +75,7 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
                             {
-                                var quest = server.quest.Quest.getInstance(questId);
+                                var quest = Application.Core.Server.quest.Quest.getInstance(questId);
                                 await quest.reset(getPlayer());
                                 await warp(enterMap, "h000");
                                 return;

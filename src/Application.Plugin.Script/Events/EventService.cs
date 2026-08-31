@@ -6,7 +6,6 @@ using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.Quest;
-using Serilog;
 
 namespace Application.Plugin.Events
 {
@@ -17,7 +16,7 @@ namespace Application.Plugin.Events
         Dictionary<int, AreaBossOption> _mapBoss = [];
         HashSet<AbstractEventTemplate> _events;
 
-        public EventService(WorldChannelServer node, string pluginName):base(node, pluginName)
+        public EventService(WorldChannelServer node, string pluginName) : base(node, pluginName)
         {
             // 如果一张地图有多个BOSS还需要改造
             List<AreaBossOption> options = [

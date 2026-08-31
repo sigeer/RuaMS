@@ -21,8 +21,7 @@
 */
 
 
-using Application.Core.Game.Skills;
-using server;
+using Application.Core.Server;
 
 namespace net.server;
 

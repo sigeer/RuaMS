@@ -1,7 +1,3 @@
-using Application.Core.Client;
-using Application.Core.Game.Maps;
-using scripting.map;
-
 namespace Application.Plugin.Script.Quest
 {
     // 活动
@@ -1709,7 +1705,7 @@ namespace Application.Plugin.Script.Quest
             }
 
             var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
-            var petSlot = getPlayer().getPetIndex(petId);
+            var (petSlot, _) = getPlayer().GetPetById(petId);
             if (petSlot == -1)
             {
                 await SayOK("未选择宠物。");
@@ -1765,7 +1761,7 @@ namespace Application.Plugin.Script.Quest
                     return;
                 }
                 var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
-                var petSlot = getPlayer().getPetIndex(petId);
+                var (petSlot, _) = getPlayer().GetPetById(petId);
                 if (petSlot == -1)
                 {
                     await SayOK("未选择宠物。");
@@ -1819,14 +1815,13 @@ namespace Application.Plugin.Script.Quest
 
             var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
 
-            var petSlot = getPlayer().getPetIndex(petId);
+            var (petSlot, oPet) = getPlayer().GetPetById(petId);
             if (petSlot == -1)
             {
                 await SayOK("未选择宠物。");
                 return;
             }
 
-            var oPet = getPlayer().getPet(petSlot)!;
             var after = await evolvePet(petSlot);
             if (after != null)
             {
@@ -1834,7 +1829,7 @@ namespace Application.Plugin.Script.Quest
                 await gainItem(5380000, -1);
                 await completeQuest();
 
-                await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + oPet.getItemId() + "##t" + oPet.getItemId() + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
+                await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + oPet!.getItemId() + "##t" + oPet.getItemId() + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
             }
         }
         // Quest: 8247 

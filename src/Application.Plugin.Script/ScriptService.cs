@@ -1,5 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Gameplay.Plugins;
 using Application.Plugin.Script.Npc;
 using Application.Plugin.Script.Quest;
 using System.Reflection;
@@ -24,9 +23,9 @@ namespace Application.Plugin.Script
         Dictionary<string, (Type ObjType, MethodInfo Method)> _reactorTouchSource;
         Dictionary<string, (Type ObjType, MethodInfo Method)> _reactorUntouchSource;
 
-        public ScriptService(WorldChannelServer node, string pluginName):base(node, pluginName)
+        public ScriptService(WorldChannelServer node, string pluginName) : base(node, pluginName)
         {
-            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript));            _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
+            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript)); _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
             _questSource = TypeUtils.LoadFromType(typeof(QuestScript));
 
             _portalSource = TypeUtils.LoadFromType(typeof(PortalScript));

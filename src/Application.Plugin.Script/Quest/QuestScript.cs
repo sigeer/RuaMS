@@ -1,6 +1,5 @@
 using Application.Core.Client;
 using Application.Core.scripting.quest;
-using scripting.quest;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -9,7 +8,7 @@ namespace Application.Plugin.Script.Quest
     /// </summary>
     internal partial class QuestScript : QuestScriptBase
     {
-        public QuestScript(IChannelClient c, server.quest.Quest quest, int npc) : base(c, quest, npc)
+        public QuestScript(IChannelClient c, Application.Core.Server.quest.Quest quest, int npc) : base(c, quest, npc)
         {
         }
     }

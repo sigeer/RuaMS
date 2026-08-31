@@ -1,6 +1,6 @@
 using Application.Core.Channel;
+using Application.Core.Server.events.gm;
 using Application.Resources.Messages;
-using server.events.gm;
 
 namespace Application.Core.Game.Commands.Gm3;
 

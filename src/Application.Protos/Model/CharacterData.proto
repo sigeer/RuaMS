@@ -8,7 +8,6 @@ import "Model/Fame.proto";
 import "Model/Item.proto";
 import "Model/KeyMap.proto";
 import "Model/Monsterbook.proto";
-import "Model/PetIgnore.proto";
 import "Model/PlayerTimerQuest.proto";
 import "Model/QuestStatus.proto";
 import "Model/SavedLocation.proto";
@@ -24,7 +23,6 @@ package ProtoModel;
 message CharacterDataProto {
   CharacterBagDataProto bag = 1; // 背包
   repeated MonsterbookProto monsterBooks = 3; // 怪物卡片
-  repeated PetIgnoreProto petIgnores = 4; // 宠物忽略设置
   repeated TrockLocationProto trockLocations = 5; // 缩地石记录
   repeated AreaProto areas = 6; // 已访问区域记录
   repeated EventProto events = 7; // ？

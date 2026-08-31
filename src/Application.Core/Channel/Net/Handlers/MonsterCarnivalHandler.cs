@@ -23,8 +23,8 @@
 
 using Application.Core.Game.Maps.Specials;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Server.partyquest;
 using Microsoft.Extensions.Logging;
-using server.partyquest;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

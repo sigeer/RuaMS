@@ -1,7 +1,7 @@
 using Application.Core.Game.Life;
+using Application.Core.Server.life;
 using Application.Shared.Message;
 using Google.Protobuf;
-using server.life;
 using tools;
 
 namespace Application.Core.Channel.Internal.Handlers

@@ -1,12 +1,7 @@
-using Acornima.Ast;
-using Application.Core.Client;
-using Application.Core.Game.Maps;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
 using Application.Shared.Items;
-using scripting.map;
-using server.quest;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -117,7 +112,7 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                await dropMessage(1, "背包不足");
+                await TypedMessage(1, "背包空间不足");
             }
         }
         // Quest: 20011 

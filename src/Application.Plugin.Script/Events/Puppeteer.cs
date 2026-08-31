@@ -1,7 +1,7 @@
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using server.life;
+using Application.Core.Server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events

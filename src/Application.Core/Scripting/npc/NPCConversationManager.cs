@@ -29,11 +29,11 @@ using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Models;
 using Application.Core.scripting.Infrastructure;
-using server;
-using server.partyquest;
+using Application.Core.Server;
+using Application.Core.Server.partyquest;
 using System.Threading.Channels;
 using tools;
-using static server.partyquest.Pyramid;
+using static Application.Core.Server.partyquest.Pyramid;
 
 
 namespace scripting.npc;
@@ -348,11 +348,12 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
 
     public async Task gainTameness(int tameness)
     {
-        foreach (var pet in getPlayer().getPets())
+        for (sbyte i = 0; i < getPlayer().getPets().Length; i++)
         {
+            var pet = getPlayer().GetPetByIndex(i);
             if (pet != null)
             {
-                await pet.gainTamenessFullness(tameness, 0, 0);
+                await pet.gainTamenessFullness(i, tameness, 0, 0);
             }
         }
     }
@@ -472,7 +473,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return reward;
     }
 
-    public server.events.gm.Event? getEvent()
+    public Application.Core.Server.events.gm.Event? getEvent()
     {
         return c.CurrentServer.getEvent();
     }
@@ -1159,7 +1160,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
 
         if (getMeso() < cost)
         {
-            await dropMessage(1, "You don't have enough mesos.");
+            await TypedMessage(1, "You don't have enough mesos.");
             return;
         }
 

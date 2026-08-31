@@ -1,17 +1,14 @@
-using Application.Core.Channel.ServerData;
 using Application.Core.scripting.npc;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
-using server.maps;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2;
 
 public class WarpCommand : ParamsCommandBase
 {
-    readonly WzStringQueryService _wzManager;
-    public WarpCommand(WzStringQueryService wzManager) : base(["<mapid>"], 2, "warp")
+    public WarpCommand() : base(["<mapid>"], 2, "warp")
     {
-        _wzManager = wzManager;
     }
 
     public override async Task Execute(IChannelClient c, string[] paramsValue)
@@ -22,7 +19,7 @@ public class WarpCommand : ParamsCommandBase
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = _wzManager.FindMapIdByName(c, paramsValue[0]);
+                var findResult = c.CurrentCulture.FindMapIdByName(paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;
@@ -70,7 +67,7 @@ public class WarpCommand : ParamsCommandBase
                 return;
             }
 
-            Portal? portal = null;
+            IPortal? portal = null;
             if (paramsValue.Length == 2 && !string.IsNullOrEmpty(paramsValue[1]))
             {
                 if (int.TryParse(paramsValue[1], out var portalId))

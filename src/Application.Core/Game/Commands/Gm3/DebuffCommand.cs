@@ -1,5 +1,5 @@
+using Application.Core.Server.life;
 using Application.Resources.Messages;
-using server.life;
 
 namespace Application.Core.Game.Commands.Gm3;
 

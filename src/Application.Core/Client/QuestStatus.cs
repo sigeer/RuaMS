@@ -21,9 +21,7 @@
 */
 
 
-using server.quest;
-using tools;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Application.Core.Server.quest;
 
 namespace client;
 

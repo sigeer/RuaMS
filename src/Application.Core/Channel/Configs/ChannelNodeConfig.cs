@@ -2,7 +2,7 @@ using Application.Shared.Servers;
 
 namespace Application.Core.Channel.Configs
 {
-    public class ChannelNodeConfig: INodeServer
+    public class ChannelNodeConfig : INodeServer
     {
         public string ServerName { get; set; } = "LocalNode";
         /// <summary>

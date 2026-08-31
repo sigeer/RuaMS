@@ -1,4 +1,4 @@
-using server.life;
+using Application.Core.Server.life;
 
 namespace Application.Core.Game.Commands.Gm2;
 

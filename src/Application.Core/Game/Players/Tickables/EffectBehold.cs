@@ -1,6 +1,6 @@
 using Application.Core.Game.Skills;
+using Application.Core.Server;
 using Application.Utility.Tickables;
-using server;
 
 namespace Application.Core.Game.Players.Tickables
 {

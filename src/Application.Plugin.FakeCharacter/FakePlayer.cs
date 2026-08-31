@@ -1,7 +1,7 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Shared.Constants;
-using server.movement;
+using Application.Core.Server.movement;
 using System.Drawing;
 using tools;
 

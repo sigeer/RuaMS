@@ -6,9 +6,9 @@ using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
 using Application.Templates.Map;
-using server.maps;
 using tools;
 
 namespace Application.Core.scripting.Events.Templates

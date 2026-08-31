@@ -39,7 +39,7 @@ public class CharInfoRequestHandler : ChannelHandlerBase
             {
                 if (c.OnlinedCharacter.getId() != player.getId())
                 {
-                    await player.exportExcludedItems(c);
+                    await c.OnlinedCharacter.ExportExcludedItems(player);
                 }
                 await c.SendPacket(PacketCreator.charInfo(player));
             }

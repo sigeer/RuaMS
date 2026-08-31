@@ -26,10 +26,9 @@ using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using server.life;
-using server.maps;
-using server.partyquest;
-using tools;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
+using Application.Core.Server.partyquest;
 
 namespace scripting.reactor;
 

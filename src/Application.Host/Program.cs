@@ -1,17 +1,12 @@
 using Application.Core.Login;
-using Application.Host.Middlewares;
 using Application.Host.Services;
 using Application.Utility;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using System.Text;
 using Yitter.IdGenerator;
 using Application.Core.Channel.HostExtensions;
 using Mapster;
-using Google.Protobuf.Collections;
 
 
 

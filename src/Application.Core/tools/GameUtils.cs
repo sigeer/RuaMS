@@ -1,4 +1,3 @@
-using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Templates.Map;
 using Application.Templates.Reader;

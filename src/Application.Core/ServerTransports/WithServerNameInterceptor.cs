@@ -1,6 +1,5 @@
 using Application.Core.Channel.Configs;
 using Application.Protos;
-using Application.Shared.Servers;
 using Microsoft.Extensions.Options;
 
 namespace Application.Core.ServerTransports

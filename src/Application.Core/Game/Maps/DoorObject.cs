@@ -20,7 +20,8 @@
 
 
 using Application.Core.Channel.Net.Packets;
-using server.maps;
+using Application.Core.server.maps;
+using Application.Core.Server.maps;
 using tools;
 
 namespace Application.Core.Game.Maps;

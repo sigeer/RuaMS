@@ -1,6 +1,5 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Gameplay.Plugins;
 
 namespace Application.Core.Gameplay.Plugins.Services
 {

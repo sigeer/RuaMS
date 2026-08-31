@@ -1,15 +1,12 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ServerData;
 using Application.Resources.Messages;
 
 namespace Application.Core.Game.Commands.Gm1;
 
 public class WhoDropsCommand : CommandBase
 {
-    readonly WzStringQueryService _wzManager;
-    public WhoDropsCommand(WzStringQueryService wzManager) : base(1, "whodrops")
+    public WhoDropsCommand() : base(1, "whodrops")
     {
-        _wzManager = wzManager;
     }
 
     public override async Task Execute(IChannelClient c, string[] paramsValue)
@@ -27,7 +24,7 @@ public class WhoDropsCommand : CommandBase
             {
                 string searchString = player.getLastCommandMessage();
                 string output = "";
-                var items = _wzManager.FindItemIdByName(c, searchString).MatchedItems.Take(3);
+                var items = c.CurrentCulture.FindItemIdByName(searchString).MatchedItems.Take(3);
                 foreach (var data in items)
                 {
                     output += "#b" + data.Name + "#k is dropped by:\r\n";

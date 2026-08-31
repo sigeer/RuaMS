@@ -1,9 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Core.Server.life;
 using scripting.map;
-using server.life;
 using System.Drawing;
-using System.Security.Cryptography;
 
 namespace Application.Plugin.Script
 {

@@ -1,7 +1,6 @@
 using Application.Core.Login;
 using Application.Core.Login.Dtos.Account;
 using Application.Core.Login.Dtos.Ban;
-using Application.Core.Login.Dtos.Character;
 using Application.Host.Middlewares;
 using Application.Host.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Application.Host.Controllers
 {
     [UserAuthorize(Roles = "Admin")]
-    public class AccountManageController: BaseApiController
+    public class AccountManageController : BaseApiController
     {
         readonly MasterServer _server;
 
@@ -24,7 +23,7 @@ namespace Application.Host.Controllers
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet]
-        public PagedData<AccountResponseDto> GetAccountPagedData([FromQuery]AccountQuery query)
+        public PagedData<AccountResponseDto> GetAccountPagedData([FromQuery] AccountQuery query)
         {
             var (data, count) = _server.AccountManager.GetAccountPagedData(query.PageIndex, query.PageSize);
             return new PagedData<AccountResponseDto>(data, count);

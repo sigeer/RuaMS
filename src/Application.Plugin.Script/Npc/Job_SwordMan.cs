@@ -169,7 +169,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2020008 
         public Task warrior3()
         {
-            return Job3((int)JobStyle.WARRIOR, 
+            return Job3((int)JobStyle.WARRIOR,
                 "勇士部落", 1022000);
         }
 

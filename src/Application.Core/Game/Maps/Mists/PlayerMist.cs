@@ -1,9 +1,8 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
+using Application.Core.Server;
 using Application.Utility.Tickables;
-using client.status;
-using server;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists

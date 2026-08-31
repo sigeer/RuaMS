@@ -1,18 +1,10 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Client;
-using Application.Core.tools.RandomUtils;
-using Application.Shared.Constants.Item;
-using Application.Shared.Items;
+using Application.Core.Server.life;
 using Application.Templates.Etc;
 using Application.Templates.Item.Etc;
 using Application.Templates.Reader;
-using Application.Utility.Configs;
-using Application.Utility.Extensions;
 using client.inventory.manipulator;
-using MapsterMapper;
 using Microsoft.Extensions.Logging;
-using Serilog;
-using server.life;
 
 namespace Application.Core.Channel.Maker
 {
@@ -471,8 +463,8 @@ namespace Application.Core.Channel.Maker
 
             if (YamlConfig.config.server.USE_ENHANCED_CRAFTING)
             {
-                ItemInformationProvider.getInstance().scrollEquipWithId(eqp, 
-                    ItemInformationProvider.getInstance().GetScrollTemplate(ItemId.CHAOS_SCROll_60), true, 0, true ,true);
+                ItemInformationProvider.getInstance().scrollEquipWithId(eqp,
+                    ItemInformationProvider.getInstance().GetScrollTemplate(ItemId.CHAOS_SCROll_60), true, 0, true, true);
             }
 
             if (reagentids.Count > 0)

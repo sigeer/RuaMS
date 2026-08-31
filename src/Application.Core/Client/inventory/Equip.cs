@@ -24,7 +24,6 @@
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Templates.Character;
-using ProtoModel;
 using tools;
 
 namespace client.inventory;
@@ -35,8 +34,8 @@ public class Equip : Item
     public enum ScrollResult
     {
 
-        FAIL = 0, 
-        SUCCESS = 1, 
+        FAIL = 0,
+        SUCCESS = 1,
         CURSE = 2,
         /// <summary>
         /// 不满足使用条件

@@ -4,6 +4,11 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.server.maps;
+using Application.Core.Server.events.gm;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
+using Application.Shared.MapObjects.Players;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Templates.Mob;
@@ -12,9 +17,6 @@ using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.inventory;
 using net.server.coordinator.world;
-using server.events.gm;
-using server.life;
-using server.maps;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Core.Game.Maps
@@ -175,11 +177,11 @@ namespace Application.Core.Game.Maps
 
         void closeMapSpawnPoints();
         bool eventStarted();
-        Portal? findClosestPlayerSpawnpoint(Point from);
-        Portal? findClosestPortal(Point from);
+        IPortal? findClosestPlayerSpawnpoint(Point from);
+        IPortal? findClosestPortal(Point from);
         SpawnPoint? findClosestSpawnpoint(Point from);
-        Portal? findClosestTeleportPortal(Point from);
-        Portal? findMarketPortal();
+        IPortal? findClosestTeleportPortal(Point from);
+        IPortal? findMarketPortal();
         void generateMapDropRangeCache();
         MonsterAggroCoordinator getAggroCoordinator();
 
@@ -188,7 +190,7 @@ namespace Application.Core.Game.Maps
         List<Rectangle> getAreas();
         WorldChannel getChannelServer();
 
-        Portal? getDoorPortal(int doorid);
+        IPortal? getDoorPortal(int doorid);
         bool TryGetEffectiveDoorPortal([MaybeNullWhen(false)] out MysticDoorPortal portal);
 
 
@@ -201,13 +203,13 @@ namespace Application.Core.Game.Maps
         #endregion
 
         #region Portal
-        Portal? getPortal(int portalid);
-        Portal? getPortal(string portalname);
+        IPortal? getPortal(int portalid);
+        IPortal? getPortal(string portalname);
         #endregion
 
         Point? getPointBelow(Point pos);
 
-        Portal getRandomPlayerSpawnpoint();
+        IPortal getRandomPlayerSpawnpoint();
         int getSpawnedMonstersOnMap();
 
         Task instanceMapForceRespawn();

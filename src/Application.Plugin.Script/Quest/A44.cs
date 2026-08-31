@@ -1,6 +1,5 @@
 using Application.Shared.Constants.Inventory;
 using Application.Shared.GameProps;
-using Application.Utility;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -105,7 +104,7 @@ namespace Application.Plugin.Script.Quest
                 if (!haveItem(oreArray[selection], 2))
                 {
                     await SayNext("这是怎么回事，你没有#c#k。没有矿石就没交易。!");
-                   
+
                     return;
                 }
 
@@ -132,7 +131,7 @@ namespace Application.Plugin.Script.Quest
                 {
 
                     await SayNext("“这是什么，你没有#r宝石矿石#k。没有矿石就没有交易！”");
-                   
+
                     return;
                 }
 

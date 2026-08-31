@@ -108,7 +108,7 @@ namespace Application.Core.Client.inventory
         List<IInventoryOperationCommand> _tickToSync = [];
         List<ReplaceItemTemplate> _tickToReplace = [];
         List<Item> _tickToProtectExpireation = [];
-        bool isIterating  = false;
+        bool isIterating = false;
         public async Task OnTick(long now)
         {
             if (_timedItems.Count == 0)
@@ -143,9 +143,10 @@ namespace Application.Core.Client.inventory
 
                 if (item is Pet pet)
                 {
-                    if (pet.MapPet != null)
+                    var (petSlot, mapPet) = Owner.GetPetById(pet.UniqueId);
+                    if (mapPet != null)
                     {
-                        await pet.MapPet.Recall(2);
+                        await mapPet.Recall(petSlot, 2);
                     }
 
                     if (pet.SourceTemplate.NoRevive)
@@ -231,6 +232,10 @@ namespace Application.Core.Client.inventory
         }
 
         List<Action> _nextTickActions = [];
+        /// <summary>
+        /// 修改LockExpiration, Expiration等可能改变_timedItems顺序的，通过这个方法执行
+        /// </summary>
+        /// <param name="nextTickAction"></param>
         public void NextTick(Action nextTickAction)
         {
             if (isIterating)

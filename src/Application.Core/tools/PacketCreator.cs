@@ -32,22 +32,21 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Packets;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.model;
 using Application.Core.Models;
+using Application.Core.Server;
+using Application.Core.Server.events.gm;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
+using Application.Core.Server.movement;
 using Application.Shared.Battle;
+using Application.Shared.Battle.Skills;
 using Application.Shared.Constants.Buddy;
 using Application.Templates.Etc;
 using client;
 using client.inventory;
 using client.keybind;
-using client.status;
-using server;
-using server.events.gm;
-using server.life;
-using server.maps;
-using server.movement;
 using System.Net;
 using static Application.Core.Game.Maps.MiniGame;
 using static client.inventory.Equip;
@@ -112,15 +111,7 @@ public class PacketCreator
 
         for (int i = 0; i < 3; i++)
         {
-            var pet = chr.getPet(i);
-            if (pet != null) //Checked GMS.. and your pets stay when going into the cash shop.
-            {
-                p.writeLong(pet.getUniqueId());
-            }
-            else
-            {
-                p.writeLong(0);
-            }
+            p.writeLong(chr.GetPetByIndex(i)?.getUniqueId() ?? 0);
         }
 
         p.writeByte(chr.getLevel()); // level
@@ -282,14 +273,7 @@ public class PacketCreator
         p.writeInt(cWeapon != null ? cWeapon.getItemId() : 0);
         for (int i = 0; i < 3; i++)
         {
-            if (chr.getPet(i) != null)
-            {
-                p.writeInt(chr.getPet(i)!.getItemId());
-            }
-            else
-            {
-                p.writeInt(0);
-            }
+            p.writeInt(chr.GetPetByIndex(i)?.getItemId() ?? 0);
         }
     }
 
@@ -1791,12 +1775,12 @@ public class PacketCreator
         p.writeShort(0);    // chr.getFh()
         p.writeByte(0);     // admin？
         var pet = chr.getPets();
-        for (int i = 0; i < 3; i++)
+        for (sbyte i = 0; i < 3; i++)
         {
             if (pet[i] != null)
             {
                 p.writeByte(1);
-                pet[i]!.EncodeData(p);
+                pet[i]!.EncodeData(i, p);
             }
         }
         p.writeByte(0); //end of pets
@@ -4295,14 +4279,7 @@ public class PacketCreator
         var pets = chr.getPets();
         for (int i = 0; i < 3; i++)
         {
-            if (pets[i] != null)
-            {
-                p.writeLong(pets[i]!.getUniqueId());
-            }
-            else
-            {
-                p.writeLong(0);
-            }
+            p.writeLong(pets[i]?.getUniqueId() ?? 0);
         }
         p.writeByte(0);
         return p;

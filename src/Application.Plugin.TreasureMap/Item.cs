@@ -2,7 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
 using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.item;
-using Application.Core.tools.RandomUtils;
+using Application.Core.Server.life;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Map;
 using Application.Templates.Character;
@@ -11,7 +11,6 @@ using Application.Templates.Reader;
 using Application.Utility;
 using Application.Utility.Extensions;
 using client.inventory.manipulator;
-using server.life;
 using System.Collections.Concurrent;
 using System.Drawing;
 

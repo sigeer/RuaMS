@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Channel.ServerData;
 using Application.Core.Game.Items;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
@@ -10,10 +9,9 @@ namespace Application.Core.Game.Commands.Gm2;
 
 public class ItemCommand : CommandBase
 {
-    readonly WzStringQueryService _wzManager;
-    public ItemCommand(WzStringQueryService wzManager) : base(2, "item")
+
+    public ItemCommand() : base(2, "item")
     {
-        _wzManager = wzManager;
     }
 
     public override async Task Execute(IChannelClient c, string[] paramsValue)
@@ -28,7 +26,7 @@ public class ItemCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var itemId))
         {
-            var findResult = _wzManager.FindItemIdByName(c, paramsValue[0]);
+            var findResult = c.CurrentCulture.FindItemIdByName(paramsValue[0]);
             if (findResult.BestMatch != null)
                 itemId = findResult.BestMatch.Id;
             else if (findResult.MatchedItems.Count > 0)

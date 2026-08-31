@@ -1,7 +1,3 @@
-using Application.Shared.Items;
-using Application.Shared.Net;
-using client.inventory;
-
 namespace Application.Core.Channel.Maker.Net
 {
     internal class MakerPacketCreator

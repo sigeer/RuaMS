@@ -2,7 +2,6 @@ using Application.Core.Client.inventory;
 using Application.Utility;
 using Application.Utility.Compatible;
 using Application.Utility.Extensions;
-using DotNetty.Common.Utilities;
 
 namespace ServiceTest.Infrastructure
 {

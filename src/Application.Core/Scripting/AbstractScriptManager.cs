@@ -26,13 +26,13 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Managers;
+using Application.Core.Server.life;
 using Application.Scripting.JS;
 using Application.Scripting.Lua;
 using Application.Shared.Events;
 using client;
 using client.inventory;
 using Microsoft.Extensions.Logging;
-using server.life;
 using System.Collections.Concurrent;
 using tools;
 

@@ -21,7 +21,8 @@
 */
 
 
-using server;
+using Application.Core.Server;
+using Application.Shared.Battle.Skills;
 
 namespace Application.Core.Game.Skills;
 

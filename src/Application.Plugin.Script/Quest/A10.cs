@@ -92,7 +92,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayNext("...请让开，如果我每时每刻都被打扰，我无法完成这项工作。");
             }
-            
+
         }
         // Quest: 6700 
         public Task q6700e()

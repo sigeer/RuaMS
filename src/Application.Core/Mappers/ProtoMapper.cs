@@ -4,15 +4,15 @@ using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Relation;
-using Application.Core.Game.Skills;
 using Application.Core.Game.Trades;
 using Application.Core.Model;
 using Application.Core.Models;
+using Application.Core.Server;
+using Application.Shared.Battle.Skills;
 using client.inventory;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using net.server;
-using server;
 
 namespace Application.Core.Mappers
 {
@@ -74,6 +74,7 @@ namespace Application.Core.Mappers
                 .Map(x => x.Tameness, x => Math.Min(Limits.MaxTameness, x.PetInfo!.Closeness))
                 .Map(x => x.PetAttribute, x => x.PetInfo!.Flag)
                 .Map(x => x.PetSkill, x => x.PetInfo!.PetSkill)
+                .Map(dest => dest.ExcludeItems, src => src.PetInfo.ExcludedItems.ToHashSet())
                 .AfterMapping((rs, dest) =>
                 {
                     dest.setOwner(rs.Owner);
@@ -95,8 +96,12 @@ namespace Application.Core.Mappers
                     Flag = x.PetAttribute,
                     Name = x.Name,
                     Petid = x.getUniqueId(),
-                    PetSlot = x.MapPet == null ? -1 : x.MapPet.Index,
-                    PetSkill = x.PetSkill
+                    PetSlot = x.PetSlot,
+                    PetSkill = x.PetSkill,
+                })
+                .AfterMapping((src, dest) =>
+                {
+                    dest.PetInfo!.ExcludedItems.AddRange(src.ExcludeItems);
                 });
 
             config.NewConfig<ProtoModel.ItemProto, Item>()

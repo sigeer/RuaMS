@@ -7,11 +7,12 @@ using Application.Core.scripting.Infrastructure;
 using Application.Core.scripting.item;
 using Application.Core.scripting.npc;
 using Application.Core.scripting.quest;
+using Application.Core.Server.maps;
+using Application.Core.Server.quest;
 using client.inventory;
 using scripting.map;
 using scripting.portal;
 using scripting.reactor;
-using server.maps;
 using System.Collections.Concurrent;
 using System.Reflection;
 using tools;
@@ -481,7 +482,7 @@ namespace Application.Core.Gameplay.Plugins
             }
         }
 
-        public async Task<bool> ProcessQuestConversation(IChannelClient c, server.quest.Quest questObj, int npcId, bool isStart)
+        public async Task<bool> ProcessQuestConversation(IChannelClient c, Quest questObj, int npcId, bool isStart)
         {
             if (c.NPCConversationManager != null)
             {
@@ -507,7 +508,7 @@ namespace Application.Core.Gameplay.Plugins
                 async (s, container) =>
                 {
                     var p = s.QuestScripts[scriptName];
-                    await using var talk = (QuestScriptBase)DynamicObjectFactory.Create<IChannelClient, server.quest.Quest, int>(p.ObjType, c, questObj, npcId)!;
+                    await using var talk = (QuestScriptBase)DynamicObjectFactory.Create<IChannelClient, Quest, int>(p.ObjType, c, questObj, npcId)!;
                     try
                     {
                         c.OnlinedCharacter.setClickedNPC();
@@ -556,7 +557,7 @@ namespace Application.Core.Gameplay.Plugins
             return handled;
         }
 
-        public async Task<bool> EnterPortal(IChannelClient c, Portal p)
+        public async Task<bool> EnterPortal(IChannelClient c, IPortal p)
         {
             return await InvokeScriptAsync<IScriptPortalService>(
                 p.getScriptName()!,

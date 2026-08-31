@@ -1,6 +1,5 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
-using client.status;
 using tools;
 
 namespace Application.Core.Channel.Commands

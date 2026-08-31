@@ -1,5 +1,6 @@
 using Application.Core.Channel.Commands;
 using Application.Resources.Messages;
+using Application.Shared.MapObjects.Players;
 using Application.Shared.Net.Logging;
 using Application.Utility.Performance;
 using DotNetty.Transport.Channels;
@@ -34,7 +35,7 @@ namespace Application.Core.Channel.Net
 
         public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
-        public ClientCulture CurrentCulture { get; set; } = new ClientCulture(0);
+        public IClientCulture CurrentCulture { get; set; } = new ClientCulture(0);
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;

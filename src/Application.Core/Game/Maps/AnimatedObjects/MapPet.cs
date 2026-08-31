@@ -1,8 +1,8 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Items;
+using Application.Core.Server.movement;
 using Application.Templates.Item.Pet;
 using Application.Utility.Tickables;
-using server.movement;
 using tools;
 
 namespace Application.Core.Game.Maps.AnimatedObjects
@@ -15,8 +15,9 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public int Tameness { get => PetItem.Tameness; set => PetItem.Tameness = value; }
         public byte Level { get => PetItem.Level; set => PetItem.Level = value; }
         public string Name { get => PetItem.Name; set => PetItem.Name = value; }
+        public HashSet<int> ExcludeItems { get => PetItem.ExcludeItems; set => PetItem.ExcludeItems = value; }
         public PetItemTemplate SourceTemplate => PetItem.SourceTemplate;
-        public sbyte Index => Owner?.getPetIndex(PetId) ?? -1;
+        public sbyte PetSlot => Owner?.GetPetById(PetId).PetSlot ?? -1;
 
         public MapPet(Pet sourceItem)
             : base(
@@ -49,16 +50,16 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public override async Task sendSpawnData(IChannelClient client)
         {
-            await client.SendPacket(EncodeShowPet());
+            await client.SendPacket(EncodeShowPet(PetSlot));
         }
 
         public override async Task sendDestroyData(IChannelClient client)
         {
-            await client.SendPacket(EncodeHidePet(0));
+            await client.SendPacket(EncodeHidePet(PetSlot, 0));
         }
 
-        public bool HasChatBalloon => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].ChatBalloon);
-        public bool HasNameTag => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[Index].NameTag);
+        public bool HasChatBalloon(sbyte index) => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[index].ChatBalloon);
+        public bool HasNameTag(sbyte index) => Owner == null ? false : Owner.GetEquipped().HasEquipped(EquipSlot.PetEquipSlots[index].NameTag);
 
         public override async Task OnMounted(IMap map)
         {
@@ -73,7 +74,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             return Owner == chr || base.IsVisibleForPlayer(chr) && !chr.HidePet;
         }
 
-        public void EncodeData(OutPacket p)
+        public void EncodeData(sbyte index, OutPacket p)
         {
             p.writeInt(PetItem.getItemId());
             p.writeString(PetItem.Name);
@@ -81,105 +82,105 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             p.writePos(getPosition());
             p.writeByte(getStance());
             p.writeShort(GetFoothold()); // fh
-            p.writeBool(HasNameTag); // nameTag
-            p.writeBool(HasChatBalloon); // chatBalloon
+            p.writeBool(HasNameTag(index)); // nameTag
+            p.writeBool(HasChatBalloon(index)); // chatBalloon
         }
 
-        public Packet EncodeHidePet(byte recallReason)
+        public Packet EncodeHidePet(sbyte index, byte recallReason)
         {
             // CUserLocal::OnPetActivated
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
             p.writeInt(Owner!.Id);
-            p.writeByte(Index);
+            p.writeByte(index);
             p.writeByte(0);
             p.writeByte(recallReason);
             return p;
         }
 
-        Packet EncodeShowPet()
+        Packet EncodeShowPet(sbyte index)
         {
             OutPacket p = OutPacket.create(SendOpcode.SPAWN_PET);
             p.writeInt(Owner!.Id);
-            p.writeByte(Index);
+            p.writeByte(index);
             p.writeByte(1);
             //   if ( CInPacket::Decode1(a2) )
             //     CUser::SetActivePet(v2, v3, 0);
             p.writeByte(0);
-            EncodeData(p);
+            EncodeData(index, p);
             return p;
         }
 
-        Packet EncodeFoodResponse(bool success)
+        Packet EncodeFoodResponse(sbyte index, bool success)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
             p.writeInt(Owner!.Id);
-            p.writeSByte(Index);
+            p.writeSByte(index);
             p.writeByte(1);
             p.writeBool(success);
-            p.writeBool(HasChatBalloon);
+            p.writeBool(HasChatBalloon(index));
             return p;
         }
 
-        Packet EncodeCommandResponse(int command, bool success)
+        Packet EncodeCommandResponse(sbyte index, int command, bool success)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_COMMAND);
             p.writeInt(Owner!.Id);
-            p.writeSByte(Index);
+            p.writeSByte(index);
             p.writeByte(0);
             p.writeByte(command);
             p.writeBool(success);
-            p.writeBool(HasChatBalloon);
+            p.writeBool(HasChatBalloon(index));
             return p;
         }
 
-        public async Task ActionRemote(sbyte act, string text)
+        public async Task ActionRemote(sbyte index, sbyte act, string text)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_ACTION);
             p.writeInt(Owner!.Id);
-            p.writeSByte(Index);
+            p.writeSByte(index);
             p.writeByte(0); // nType
             p.writeByte(act); // nAction
             p.writeString(text);
-            p.writeBool(HasChatBalloon); // bChatBalloon
+            p.writeBool(HasChatBalloon(index)); // bChatBalloon
 
             await BroadcastMap(p, Owner.Id);
         }
 
-        public async Task BroadcastNameChanged(bool exceptOwer = true)
+        public async Task BroadcastNameChanged(sbyte index, bool exceptOwer = true)
         {
             OutPacket p = OutPacket.create(SendOpcode.PET_NAMECHANGE);
             p.writeInt(Owner!.Id);
-            p.writeByte(Index);
+            p.writeByte(index);
             p.writeString(Name);
 
             //   if ( CInPacket::Decode1(v3) )
             //     nNameTag = this->m_pTemplate->nNameTag;
-            p.writeBool(HasNameTag);
+            p.writeBool(HasNameTag(index));
 
             await BroadcastMap(p, exceptOwer ? Owner.Id : -1);
         }
 
-        public async Task UpdateName(string name)
+        public async Task UpdateName(sbyte index, string name)
         {
             PetItem.Name = name;
 
             if (Owner != null)
                 await Owner.forceUpdateItem(PetItem);
 
-            await BroadcastNameChanged(false);
+            await BroadcastNameChanged(index, false);
         }
         /// <summary>
         /// 召回
         /// </summary>
         /// <param name="recallReason">0. 无，1. 饱食度过低 2. 过期</param>
-        public async Task Recall(byte recallReason = 0)
+        public async Task Recall(sbyte index, byte recallReason = 0)
         {
-            await MapModel.RemoveMapObject(this, mapChr => mapChr.SendPacket(EncodeHidePet(recallReason)));
+            await MapModel.RemoveMapObject(this, mapChr => mapChr.SendPacket(EncodeHidePet(index, recallReason)));
 
             if (Owner != null)
             {
                 Owner.removePet(PetId, true);
-                await Owner.commitExcludedItems();
+                await Owner.CommitExcludedItemsAll();
 
                 await Owner.SendPacket(PacketCreator.petStatUpdate(Owner));
                 // await Owner.SendPacket(PacketCreator.enableActions());
@@ -204,7 +205,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         }
 
 
-        public async Task gainTamenessFullness(int incTameness, int incFullness, int type, bool forceEnjoy = false)
+        public async Task gainTamenessFullness(sbyte index, int incTameness, int incFullness, int type, bool forceEnjoy = false)
         {
             bool enjoyed;
 
@@ -224,8 +225,8 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         Level += 1;
 
-                        await Owner!.SendPacket(EffectPacket.PetLevelUp(Index));
-                        await BroadcastMap(PacketCreator.showPetLevelUp(Owner, Index), Owner.Id);
+                        await Owner!.SendPacket(EffectPacket.PetLevelUp(index));
+                        await BroadcastMap(PacketCreator.showPetLevelUp(Owner, index), Owner.Id);
                     }
                 }
 
@@ -250,20 +251,20 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
             if (forceEnjoy)
             {
-                await Owner!.SendPacket(EncodeFoodResponse(true));
+                await Owner!.SendPacket(EncodeFoodResponse(index, true));
                 // 没观察到任何效果
-                await Owner.SendPacket(PacketCreator.PetEatCashFoodSuccess(Index));
+                await Owner.SendPacket(PacketCreator.PetEatCashFoodSuccess(index));
             }
             else
             {
-                await Owner!.SendPacket(EncodeFoodResponse(enjoyed));
+                await Owner!.SendPacket(EncodeFoodResponse(index, enjoyed));
             }
 
 
             await Owner.forceUpdateItem(PetItem);
         }
 
-        public async Task HandleCommand(byte command)
+        public async Task HandleCommand(sbyte index, byte command)
         {
             var petCommand = SourceTemplate.InterActsDict.GetValueOrDefault(command);
             if (petCommand == null)
@@ -274,12 +275,12 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             // 客户端再根据成功/失败触发petchat
             if (Randomizer.nextInt(100) < petCommand.Prob)
             {
-                await gainTamenessFullness(petCommand.Inc, 0, command);
-                await Owner!.SendPacket(EncodeCommandResponse(command, true));
+                await gainTamenessFullness(index, petCommand.Inc, 0, command);
+                await Owner!.SendPacket(EncodeCommandResponse(index, command, true));
             }
             else
             {
-                await Owner!.SendPacket(EncodeCommandResponse(command, false));
+                await Owner!.SendPacket(EncodeCommandResponse(index, command, false));
             }
         }
 
@@ -326,7 +327,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
                     {
                         PetItem.Fullness = 15;
 
-                        await Recall(1);
+                        await Recall(PetSlot, 1);
                         await PetItem.Store.Owner.LightBlue("Your pet grew hungry! Treat it some pet food to keep it healthy!");
                     }
                     else

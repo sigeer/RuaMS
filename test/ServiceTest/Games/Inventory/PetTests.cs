@@ -1,12 +1,9 @@
 using Application.Core.Game.Items;
 using Application.Core.Login;
 using Application.Core.Login.Datas;
-using Application.Core.Login.ServerData;
-using Application.Core.Login.Services;
 using Application.Shared.Constants.Inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceTest.Games;
 
 namespace ServiceTest.Games.Inventory
 {

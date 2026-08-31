@@ -1,12 +1,7 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Specials;
-using Application.Core.Managers;
-using Application.Shared.Constants.Inventory;
-using Application.Shared.MapObjects;
-using client.inventory;
-using server.maps;
-using System.Threading.Tasks;
+using Application.Core.Server.maps;
 using tools;
 
 namespace ServiceTest.Games.Gameplay

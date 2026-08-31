@@ -1,4 +1,3 @@
-using Application.Core.Channel.ServerData;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using System.Text;
@@ -7,10 +6,8 @@ namespace Application.Core.Game.Commands.Gm3;
 
 public class WarpMapCommand : CommandBase
 {
-    readonly WzStringQueryService _wzManager;
-    public WarpMapCommand(WzStringQueryService wzManager) : base(3, "warpmap")
+    public WarpMapCommand() : base(3, "warpmap")
     {
-        _wzManager = wzManager;
     }
 
     public override async Task Execute(IChannelClient c, string[] paramsValue)
@@ -26,7 +23,7 @@ public class WarpMapCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[0], out var mapId))
             {
-                var findResult = _wzManager.FindMapIdByName(c, paramsValue[0]);
+                var findResult = c.CurrentCulture.FindMapIdByName(paramsValue[0]);
                 if (findResult.BestMatch != null)
                 {
                     mapId = findResult.BestMatch.Id;

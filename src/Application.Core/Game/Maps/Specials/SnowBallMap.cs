@@ -1,7 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Server.events.gm;
 using Application.Templates.Map;
-using server.events.gm;
 
 namespace Application.Core.Game.Maps.Specials
 {

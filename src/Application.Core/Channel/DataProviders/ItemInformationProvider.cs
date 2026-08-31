@@ -24,6 +24,7 @@
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Items;
 using Application.Core.Game.Skills;
+using Application.Core.Server;
 using Application.Templates;
 using Application.Templates.Character;
 using Application.Templates.Exceptions;
@@ -38,7 +39,6 @@ using client.autoban;
 using client.inventory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using server;
 using static client.inventory.Equip;
 
 namespace Application.Core.Channel.DataProviders;

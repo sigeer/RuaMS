@@ -1,7 +1,6 @@
 using Application.Host.Models;
 using Application.Host.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Application.Host.Controllers
 {

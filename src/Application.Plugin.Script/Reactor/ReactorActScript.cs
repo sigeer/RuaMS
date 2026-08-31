@@ -1,10 +1,10 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
 using Application.Shared.Constants.Item;
 using Application.Shared.Constants.Mob;
 using scripting.reactor;
-using server.life;
-using server.maps;
 using System.Drawing;
 
 namespace Application.Plugin.Script
@@ -2323,7 +2323,7 @@ namespace Application.Plugin.Script
         // Reactor: 3001000 
         public async Task pFBoss()
         {
-            await playerMessage(5, "Poison Golem has been spawned.");
+            await Pink("Poison Golem has been spawned.");
             await spawnMonster(9300180, 1);
 
 
@@ -3069,7 +3069,7 @@ namespace Application.Plugin.Script
         public async Task halloweenbox()
         {
             //wtf is this?
-            await playerMessage(5, "Enjoy Halloween!");
+            await Pink("Enjoy Halloween!");
             await spawnMonster(9400202, 10);
 
 

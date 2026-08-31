@@ -29,7 +29,7 @@ namespace Application.Host.Controllers
         }
 
         [HttpPost]
-        public bool CreateAccount([FromBody]LoginForm form )
+        public bool CreateAccount([FromBody] LoginForm form)
         {
             _server.AccountManager.CreateAccount(form.UserName, form.Password);
             return true;

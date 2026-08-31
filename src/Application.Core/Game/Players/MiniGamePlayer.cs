@@ -1,5 +1,5 @@
 using Application.Core.Game.Maps;
-using server.minigame;
+using Application.Core.Server.minigame;
 using static Application.Core.Game.Maps.MiniGame;
 
 namespace Application.Core.Game.Players

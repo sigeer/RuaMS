@@ -50,6 +50,11 @@ namespace Application.Templates.Mob
         public Dictionary<string, int> AnimateDelay { get; set; } = [];
         public int? Stand0OriginX { get; set; }
         public MobAttackTemplate[] AttackInfos { get; set; } = [];
+        IReadOnlyDictionary<int, MobAttackTemplate>? _attackInfoDict = null;
+        public IReadOnlyDictionary<int, MobAttackTemplate> AttackInfoDict
+        {
+            get => _attackInfoDict ??= AttackInfos.ToDictionary(x => x.Index);
+        }
         public int Link { get; set; }
         /// <summary>
         /// info下的speak
@@ -93,7 +98,7 @@ namespace Application.Templates.Mob
             [WZPath("info/ban/banMap/0/field")]
             public int Map { get; set; }
             [WZPath("info/ban/banMap/0/portal")]
-            public string? PortalName { get; set; } = "sp";
+            public string PortalName { get; set; } = "sp";
         }
 
         public sealed class MobAttackTemplate

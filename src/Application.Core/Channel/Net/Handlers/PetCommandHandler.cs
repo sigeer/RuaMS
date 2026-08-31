@@ -20,6 +20,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Application.Core.Game.Commands.Gm2;
+
 namespace Application.Core.Channel.Net.Handlers;
 
 public class PetCommandHandler : ChannelHandlerBase
@@ -29,13 +31,13 @@ public class PetCommandHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
         var petId = p.readLong();
-        var pet = chr.GetPetById(petId);
+        var (petSlot, pet) = chr.GetPetById(petId);
         if (pet == null)
             return;
 
         p.readByte();
         byte command = p.readByte();
 
-        await pet.HandleCommand(command);
+        await pet.HandleCommand(petSlot, command);
     }
 }

@@ -1,5 +1,5 @@
 using Application.Core.Game.Maps;
-using server.life;
+using Application.Core.Server.life;
 
 namespace Application.Core.Game.Life;
 

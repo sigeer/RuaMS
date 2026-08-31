@@ -1,8 +1,8 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.scripting.npc;
+using Application.Core.Server.life;
 using Application.Resources.Messages;
 using Application.Templates.String;
-using server.life;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm2

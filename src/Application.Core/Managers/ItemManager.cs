@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using client.inventory;
-using static client.inventory.Equip;
 
 namespace Application.Core.Managers
 {

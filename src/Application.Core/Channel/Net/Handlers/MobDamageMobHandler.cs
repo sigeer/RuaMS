@@ -25,7 +25,6 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using client.autoban;
-using client.status;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -82,25 +81,26 @@ public class MobDamageMobHandler : ChannelHandlerBase
 
     private static int calcMaxDamage(Monster attacker, Monster damaged, bool magic)
     {
-        int attackerAtk, damagedDef, attackerLevel = attacker.getLevel();
+        int attackerLevel = attacker.getLevel();
+        double attackerAtk, damagedDef;
         double maxDamage;
         if (magic)
         {
             int atkRate = calcModifier(attacker, MonsterStatus.MAGIC_ATTACK_UP, MonsterStatus.MATK);
-            attackerAtk = (attacker.getStats().getMADamage() * atkRate) / 100;
+            attackerAtk = (attacker.SourceTemplate.MAD * atkRate) / 100.0;
 
             int defRate = calcModifier(damaged, MonsterStatus.MAGIC_DEFENSE_UP, MonsterStatus.MDEF);
-            damagedDef = (damaged.getStats().getMDDamage() * defRate) / 100;
+            damagedDef = (damaged.SourceTemplate.MDD * defRate) / 100.0;
 
             maxDamage = ((attackerAtk * (1.15 + (0.025 * attackerLevel))) - (0.75 * damagedDef)) * (Math.Log(Math.Abs(damagedDef - attackerAtk)) / Math.Log(12));
         }
         else
         {
             int atkRate = calcModifier(attacker, MonsterStatus.WEAPON_ATTACK_UP, MonsterStatus.WATK);
-            attackerAtk = (attacker.getStats().getPADamage() * atkRate) / 100;
+            attackerAtk = (attacker.SourceTemplate.PAD * atkRate) / 100.0;
 
             int defRate = calcModifier(damaged, MonsterStatus.WEAPON_DEFENSE_UP, MonsterStatus.WDEF);
-            damagedDef = (damaged.getStats().getPDDamage() * defRate) / 100;
+            damagedDef = (damaged.SourceTemplate.PDD * defRate) / 100.0;
 
             maxDamage = ((attackerAtk * (1.15 + (0.025 * attackerLevel))) - (0.75 * damagedDef)) * (Math.Log(Math.Abs(damagedDef - attackerAtk)) / Math.Log(17));
         }

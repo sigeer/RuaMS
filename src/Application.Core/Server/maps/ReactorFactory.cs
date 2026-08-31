@@ -1,0 +1,127 @@
+/*
+	This file is part of the OdinMS Maple Story Server
+    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
+		       Matthias Butz <matze@odinms.de>
+		       Jan Christian Meyer <vimes@odinms.de>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation version 3 as published by
+    the Free Software Foundation. You may not use, modify or distribute
+    this program under any other version of the GNU Affero General Public
+    License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+using Application.Templates.Reactor;
+using Application.Templates.Reader;
+using static Application.Core.Server.maps.ReactorStats;
+
+namespace Application.Core.Server.maps;
+
+
+public class ReactorFactory
+{
+    private static IProvider<ReactorTemplate> data = ProviderSource.Instance.GetProvider<IProvider<ReactorTemplate>>(ProviderType.Reactor);
+    private static Dictionary<int, ReactorStats> reactorStats = new();
+
+    public static ReactorStats getReactorS(int rid)
+    {
+        if (reactorStats.TryGetValue(rid, out var stats))
+            return stats;
+
+        stats = new ReactorStats();
+        var reactorData = data.GetItem(rid);
+        if (reactorData == null)
+        {
+            return stats;
+        }
+
+        bool areaSet = false;
+        bool foundState = false;
+        foreach (var stateInfo in reactorData.StateInfoList)
+        {
+            if (stateInfo.EventInfos.Length == 0)
+                stats.addState((sbyte)stateInfo.State, 999, null, (sbyte)(foundState ? -1 : (stateInfo.State + 1)), 0);
+            else
+            {
+                var evt = stateInfo.EventInfos[0];
+                ItemQuantity? reactItem = null;
+                int type = evt.EventType;
+                if (type == 100)
+                {
+                    //reactor waits for item
+                    reactItem = new(evt.Int0Value, evt.Int1Value);
+                    if (!areaSet)
+                    {
+                        //only set area of effect for item-triggered reactors once
+                        stats.setTL(evt.Lt);
+                        stats.setBR(evt.Rb);
+                        areaSet = true;
+                    }
+                }
+                foundState = true;
+                stats.addState((sbyte)stateInfo.State,
+                    type,
+                    reactItem,
+                    (sbyte)evt.NextState,
+                    stateInfo.TimeOut);
+            }
+        }
+        stats.SetAction(reactorData.Action);
+        return stats;
+    }
+
+
+    public static ReactorStats getReactor(int rid)
+    {
+        var stats = reactorStats.GetValueOrDefault(rid);
+        if (stats == null)
+        {
+            stats = new ReactorStats();
+            var reactorData = data.GetItem(rid);
+            if (reactorData == null)
+                return stats;
+
+            bool areaSet = false;
+            bool loadArea = reactorData.ActivateByTouch;
+            if (reactorData.StateInfoList.Length == 0)
+            {
+                stats.addState(0, [new StateData(999, null, null, 0)], -1);
+            }
+            foreach (var item in reactorData.StateInfoList.Where(x => x.EventInfos.Length > 0))
+            {
+                List<StateData> statedatas = new();
+                foreach (var evt in item.EventInfos)
+                {
+                    ItemQuantity? reactItem = null;
+                    if (evt.EventType == 100)
+                    {
+                        //reactor waits for item
+                        reactItem = new(evt.Int0Value, evt.Int1Value);
+                        if (!areaSet || loadArea)
+                        {
+                            //only set area of effect for item-triggered reactors once
+                            stats.setTL(evt.Lt);
+                            stats.setBR(evt.Rb);
+                            areaSet = true;
+                        }
+                    }
+                    statedatas.Add(new StateData(evt.EventType, reactItem, evt.ActiveSkillId?.ToList(), (sbyte)evt.NextState));
+                }
+                stats.addState((sbyte)item.State, statedatas, item.TimeOut);
+            }
+            stats.SetAction(reactorData.Action);
+            reactorStats[rid] = stats;
+        }
+        return stats;
+    }
+}

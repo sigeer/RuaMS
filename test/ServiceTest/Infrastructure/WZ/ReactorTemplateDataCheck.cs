@@ -1,4 +1,3 @@
-using Application.Templates.Reader.Img.Provider;
 using Application.Templates.Reactor;
 using Application.Templates.Reader;
 using System.Drawing;

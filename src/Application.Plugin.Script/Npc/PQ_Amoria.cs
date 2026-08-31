@@ -1,5 +1,4 @@
 using Application.Core.scripting.Events.Instances;
-using server.maps;
 
 namespace Application.Plugin.Script.Npc
 {

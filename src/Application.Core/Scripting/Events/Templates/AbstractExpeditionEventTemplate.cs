@@ -4,7 +4,6 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Battle;
-using System.Threading.Channels;
 
 namespace Application.Core.scripting.Events.Templates
 {

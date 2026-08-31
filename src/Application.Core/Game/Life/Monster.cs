@@ -21,27 +21,26 @@
  */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.Commands;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Skills;
-using Application.Core.tools.RandomUtils;
+using Application.Core.Server.life;
 using Application.Resources.Messages;
-using Application.Shared.Quest;
+using Application.Shared.Battle.Skills;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
+using Application.Templates.Reader;
+using Application.Templates.UI;
 using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
-using client;
-using client.status;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
-using server.life;
 using tools;
 using ZLinq;
 using static Application.Templates.Mob.MobTemplate;
@@ -52,7 +51,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 {
     private ILogger log;
 
-    private ChangeableStats? ostats = null;  //unused, v83 WZs offers no support for changeable stats.
     private MonsterStats stats;
     private AtomicInteger hp = new AtomicInteger(1);
     private AtomicLong maxHpPlusHeal = new AtomicLong(1);
@@ -114,7 +112,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// </summary>
     public List<Monster> RevivingMonsters { get; }
 
-    public Dictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
+    public IReadOnlyDictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
     public HashSet<int> HasSaid { get; }
     public long Period { get; private set; } = -1;
 
@@ -136,15 +134,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     {
         SourceTemplate = mobTemplate;
         this.stats = LifeFactory.Instance.GetMonsterStats(mobTemplate);
-        hp.set(stats.getHp());
-        mp = stats.getMp();
+        hp.set(stats.MaxHP);
+        mp = stats.MaxMP;
 
         maxHpPlusHeal.set(hp.get());
 
         log = LogFactory.GetLogger(LogType.Monster);
 
         RevivingMonsters = new();
-        AttackInfoHolders = mobTemplate.AttackInfos.ToDictionary(x => x.Index);
+        AttackInfoHolders = mobTemplate.AttackInfoDict;
         HasSaid = new();
     }
 
@@ -240,15 +238,20 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         this.hp.addAndGet(hp);
     }
 
-    public void setStartingHp(int hp)
+    public void SetStartingHp(int hp)
     {
-        stats.setHp(hp);    // refactored mob stats after non-static HP pool suggestion thanks to twigs
+        stats.SetMaxHP(hp);    // refactored mob stats after non-static HP pool suggestion thanks to twigs
         this.hp.set(hp);
     }
 
     public int getMaxHp()
     {
-        return stats.getHp();
+        return stats.MaxHP;
+    }
+    public void SetStartingMP(int mp)
+    {
+        stats.SetMaxMP(mp);    // refactored mob stats after non-static HP pool suggestion thanks to twigs
+        this.mp = mp;
     }
 
     public int getMp()
@@ -267,8 +270,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public int getMaxMp()
     {
-        return stats.getMp();
+        return stats.MaxMP;
     }
+
+    public void SetExp(int exp) => stats.setExp(exp);
 
     public int getExp()
     {
@@ -317,18 +322,24 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public int getAnimationTime(string name)
     {
-        return stats.getAnimationTime(name);
+        return SourceTemplate.AnimateDelay.GetValueOrDefault(name, 500);
     }
 
 
     private byte getTagColor()
     {
-        return stats.getTagColor();
+        return ProviderSource.Instance.GetProvider<IProvider<MobWithBossHpBarTemplate>>(ProviderType.UIMobWithBossHpBar).LoadAll()
+            .Any(x => x.TemplateId == getId())
+             ? (byte)SourceTemplate.HpTagColor
+             : (byte)0;
     }
 
     private byte getTagBgColor()
     {
-        return stats.getTagBgColor();
+        return ProviderSource.Instance.GetProvider<IProvider<MobWithBossHpBarTemplate>>(ProviderType.UIMobWithBossHpBar).LoadAll()
+            .Any(x => x.TemplateId == getId())
+             ? (byte)SourceTemplate.HpTagBgColor
+             : (byte)0;
     }
 
     public void setHpZero()
@@ -1211,10 +1222,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return MapObjectType.MONSTER;
     }
 
-    public bool isMobile()
-    {
-        return stats.isMobile();
-    }
 
     public override bool isFacingLeft()
     {
@@ -1590,11 +1597,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return stats.getSkills();
     }
 
-    public bool hasSkill(int skillId, int level)
-    {
-        return stats.hasSkill(skillId, level);
-    }
-
     public bool canUseSkill(MobSkill? toUse, bool apply)
     {
         if (toUse == null || isBuffed(MonsterStatus.SEAL_SKILL))
@@ -1733,11 +1735,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return Randomizer.Select(skills);
     }
 
-    public bool isFirstAttack()
-    {
-        return this.stats.isFirstAttack();
-    }
-
     public int getBuffToGive()
     {
         return this.stats.getBuffToGive();
@@ -1771,7 +1768,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public string getName()
     {
-        return stats.getName();
+        return ClientCulture.SystemCulture.GetMobName(getId());
     }
 
     public void addStolen(int itemId)
@@ -1803,10 +1800,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return new List<MonsterStatus>(alreadyBuffed);
     }
 
-    public BanishInfo? getBanish()
-    {
-        return stats.getBanishInfo();
-    }
 
     public void setBoss(bool boss)
     {
@@ -1820,7 +1813,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public int getPADamage()
     {
-        return stats.getPADamage();
+        return SourceTemplate.PAD;
     }
 
     public Dictionary<MonsterStatus, MonsterStatusEffect> getStati()
@@ -1835,36 +1828,17 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     // ---- one can always have fun trying these pieces of codes below in-game rofl ----
 
-    public ChangeableStats? getChangedStats()
-    {
-        return ostats;
-    }
-
-    public int getMobMaxHp()
-    {
-        if (ostats != null)
-        {
-            return ostats.hp;
-        }
-        return stats.getHp();
-    }
-
-    public void setOverrideStats(OverrideMonsterStats ostats)
-    {
-        this.ostats = new ChangeableStats(stats, ostats);
-        this.hp.set(ostats.getHp());
-        this.mp = ostats.getMp();
-    }
-
     public void changeLevel(int newLevel, bool pqMob = true)
     {
-        if (!stats.isChangeable())
+        if (!stats.IsChangeable)
         {
             return;
         }
-        this.ostats = new ChangeableStats(stats, newLevel, pqMob);
-        this.hp.set(ostats.getHp());
-        this.mp = ostats.getMp();
+        var oStats = new ChangeableStats(stats, newLevel, pqMob);
+        stats.setLevel(newLevel);
+        SetStartingHp(oStats.Mp);
+        SetStartingMP(oStats.Mp);
+        SetExp(oStats.Exp);
     }
 
     private float getDifficultyRate(int difficulty)
@@ -2497,6 +2471,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             await reviveMap.spawnMonster(mob);
             OnRevive?.Invoke(curMob, new MonsterReviveEventArgs(mob, killer));
             mob.RevivedFrom = curMob;
+            RevivingMonsters.Add(mob);
 
             if (controller != null)
             {

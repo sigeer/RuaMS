@@ -2,11 +2,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Core.Server;
 using Application.Templates.Etc;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 using System.Diagnostics;
 using tools;
 

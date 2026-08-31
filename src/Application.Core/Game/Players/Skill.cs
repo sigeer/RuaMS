@@ -1,8 +1,9 @@
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Skills;
+using Application.Core.Server;
+using Application.Shared.Battle.Skills;
 using Application.Shared.KeyMaps;
 using net.server;
-using server;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -14,7 +15,7 @@ namespace Application.Core.Game.Players
         /// <summary>
         /// skillId - Cooldown
         /// </summary>
-        private Dictionary<int, CooldownValueHolder> coolDowns = new();
+        private Dictionary<int, PlayerCoolDownValueHolder> coolDowns = new();
         public Dictionary<Skill, SkillEntry> getSkills()
         {
             return Skills.GetDataSource();
@@ -48,7 +49,7 @@ namespace Application.Core.Game.Players
                 return 0;
             }
             return (sbyte)Math.Min(
-                (Skills.GetSkill(skill)?.skillevel ?? 0) + (final ? TempSkillCache.GetValueOrDefault(skill.getId()) : 0), 
+                (Skills.GetSkill(skill)?.skillevel ?? 0) + (final ? TempSkillCache.GetValueOrDefault(skill.getId()) : 0),
                 skill.getMaxLevel());
         }
 
@@ -151,14 +152,7 @@ namespace Application.Core.Game.Players
         #region skill cooldown
         public List<PlayerCoolDownValueHolder> getAllCooldowns()
         {
-            List<PlayerCoolDownValueHolder> ret = new();
-
-            foreach (CooldownValueHolder mcdvh in coolDowns.Values)
-            {
-                ret.Add(new PlayerCoolDownValueHolder(mcdvh.skillId, mcdvh.startTime, mcdvh.length));
-            }
-
-            return ret;
+            return coolDowns.Values.ToList();
         }
         public bool skillIsCooling(int skillId)
         {
@@ -167,7 +161,7 @@ namespace Application.Core.Game.Players
 
         public async Task ClearExpiredSkillCooldown(long now)
         {
-            HashSet<KeyValuePair<int, CooldownValueHolder>> es = new(coolDowns);
+            var es = coolDowns.ToHashSet();
 
             foreach (var bel in es)
             {
@@ -176,7 +170,7 @@ namespace Application.Core.Game.Players
                     continue;
                 }
 
-                CooldownValueHolder mcdvh = bel.Value;
+                var mcdvh = bel.Value;
                 if (now >= mcdvh.startTime + mcdvh.length)
                 {
                     removeCooldown(mcdvh.skillId);
@@ -187,8 +181,8 @@ namespace Application.Core.Game.Players
 
         public async Task removeAllCooldownsExcept(int id, bool packet)
         {
-            List<CooldownValueHolder> list = new(coolDowns.Values);
-            foreach (CooldownValueHolder mcvh in list)
+            var list = coolDowns.Values.ToList();
+            foreach (var mcvh in list)
             {
                 if (mcvh.skillId != id)
                 {
@@ -207,7 +201,7 @@ namespace Application.Core.Game.Players
         }
         public void addCooldown(int skillId, long startTime, long length)
         {
-            this.coolDowns.AddOrUpdate(skillId, new CooldownValueHolder(skillId, startTime, length));
+            this.coolDowns.AddOrUpdate(skillId, new(skillId, startTime, length));
         }
         public void giveCoolDowns(int skillid, long starttime, long length)
         {

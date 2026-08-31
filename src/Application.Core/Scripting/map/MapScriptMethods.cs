@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Game.Maps;
+using Application.Core.Server.quest;
 using client;
-using server.quest;
 using System.Text;
 using tools;
 
@@ -148,7 +148,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
         }
         else
         {
-            await getPlayer().SendPacket(PacketCreator.earnTitleMessage(status + "/" + infoex + " regions explored."));
+            await getPlayer().EarnTitle(status + "/" + infoex + " regions explored.");
             etm.Append("Trying for the ").Append(questName).Append(" title.");
             smp.Append("You made progress on the ").Append(questName).Append(" title. ").Append(status).Append("/").Append(infoex);
         }

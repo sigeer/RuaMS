@@ -256,9 +256,9 @@ namespace Application.Plugin.Script.Quest
         string GetChanllengeMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能获得本勋章，不想挑战一下试试吗？";
         string GetQuestMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能找#p{npc}#领取称号。";
 
-        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string , string>? slotFunc = null)
+        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string, string>? slotFunc = null)
         {
-            var questObj = server.quest.Quest.getInstance(getQuest());
+            var questObj = Application.Core.Server.quest.Quest.getInstance(getQuest());
             if (questObj == null)
             {
                 return false;
@@ -283,7 +283,8 @@ namespace Application.Plugin.Script.Quest
 
         async Task HandleMedalQuestComplete()
         {
-            var questObj = server.quest.Quest.getInstance(getQuest());
+            var questObj = Application.Core.Server.quest.Quest.getInstance(getQuest());
+
             if (questObj?.ViewMedalItem > 0)
             {
                 var medalname = c.CurrentCulture.GetItemName(questObj.ViewMedalItem);
@@ -292,7 +293,7 @@ namespace Application.Plugin.Script.Quest
                 if (canHold(questObj.ViewMedalItem))
                 {
                     await gainItem(questObj.ViewMedalItem);
-                    await earnTitle("<" + medalname + "> 奖励已获取.");
+                    await EarnTitle("<" + medalname + "> 奖励已获取.");
 
                     await forceCompleteQuest();
                 }

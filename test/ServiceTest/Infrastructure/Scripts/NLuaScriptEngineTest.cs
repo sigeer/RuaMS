@@ -2,7 +2,6 @@ using Application.Scripting.JS;
 using Application.Scripting.Lua;
 using Application.Utility.Extensions;
 using System.Drawing;
-using System.Text;
 
 namespace ServiceTest.Infrastructure.Scripts
 {

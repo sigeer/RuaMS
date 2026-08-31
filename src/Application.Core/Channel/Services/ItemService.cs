@@ -1,36 +1,32 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Items;
-using Application.Core.Game.Relation;
 using Application.Core.Mappers;
 using Application.Core.Model;
+using Application.Core.Server;
 using Application.Core.ServerTransports;
 using Application.Templates.Etc;
 using client.inventory;
 using Microsoft.Extensions.Logging;
-using server;
 using tools;
-using static server.CashShop;
+using static Application.Core.Server.CashShop;
 
 namespace Application.Core.Channel.Services
 {
     public class ItemService
     {
         readonly IMapper _mapper;
-        readonly IItemMapper _itemMapper;
         readonly IChannelServerTransport _transport;
         readonly ILogger<ItemService> _logger;
         readonly WorldChannelServer _server;
         readonly CashItemProvider _cashItemProvider;
 
         public ItemService(IMapper mapper,
-            IItemMapper itemMapper,
             IChannelServerTransport transport,
             ILogger<ItemService> logger,
             WorldChannelServer server,
             CashItemProvider cashItemProvider)
         {
             _mapper = mapper;
-            _itemMapper = itemMapper;
             _transport = transport;
             _logger = logger;
             _server = server;
@@ -210,7 +206,7 @@ namespace Application.Core.Channel.Services
             {
                 MasterId = player.Id,
                 Message = message,
-                Item = _itemMapper.MapToDto(item),
+                Item = _server.Mapper.Map<ProtoModel.ItemProto>(item),
                 IsWishper = isWishper,
             };
             var r = _transport.SendItemMegaphone(request);

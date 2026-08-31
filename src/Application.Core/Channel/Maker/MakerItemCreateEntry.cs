@@ -1,5 +1,3 @@
-using Application.Shared.Items;
-
 namespace Application.Core.Channel.Maker
 {
     public class MakerItemCreateEntry

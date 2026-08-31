@@ -1,5 +1,4 @@
 using Application.Core.scripting.Events.Abstraction;
-using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 

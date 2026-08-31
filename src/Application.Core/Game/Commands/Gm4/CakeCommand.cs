@@ -1,4 +1,4 @@
-using server.life;
+using Application.Core.Server.life;
 
 namespace Application.Core.Game.Commands.Gm4;
 
@@ -23,7 +23,7 @@ public class CakeCommand : CommandBase
         {
             if (newHp != 0)
             {
-                mob.setStartingHp(newHp);
+                mob.SetStartingHp(newHp);
             }
         });
     }

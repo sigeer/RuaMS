@@ -1,5 +1,5 @@
 using Application.Core.Game.Life;
-using server.life;
+using Application.Core.Server.life;
 
 namespace Application.Core.Channel.Commands
 {

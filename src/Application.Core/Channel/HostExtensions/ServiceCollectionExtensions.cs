@@ -8,16 +8,15 @@ using Application.Core.Channel.Modules;
 using Application.Core.Channel.Net;
 using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
-using Application.Core.Client.inventory;
 using Application.Core.Game.Commands;
 using Application.Core.Mappers;
+using Application.Core.Server.maps;
 using Application.Core.Servers.Services;
 using Application.Core.ServerTransports;
 using Application.Shared.Servers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using server.maps;
 
 namespace Application.Core.Channel.HostExtensions
 {
@@ -78,8 +77,6 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<QuestFactory>();
             services.AddSingleton<IStaticService, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
             services.AddSingleton<DataBootstrap, QuestFactory>(sp => sp.GetRequiredService<QuestFactory>());
-
-            services.AddSingleton<WzStringQueryService>();
 
             services.AddSingleton<ShopManager>();
             services.AddSingleton<MonitorManager>();
@@ -192,8 +189,8 @@ namespace Application.Core.Channel.HostExtensions
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             builder.Services.AddSingleton(mapperConfig);
             builder.Services.AddSingleton<IMapper, ServiceMapper>();
-            builder.Services.AddSingleton<IItemMapper, ItemMapper>();
-            builder.Services.AddSingleton<IPlayerMapper, PlayerMapper>();
+            //builder.Services.AddSingleton<IItemMapper, ItemMapper>();
+            //builder.Services.AddSingleton<IPlayerMapper, PlayerMapper>();
 
             builder.Services.AddHostedService<ChannelHost>();
 

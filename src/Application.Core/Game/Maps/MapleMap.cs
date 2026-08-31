@@ -30,9 +30,15 @@ using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
-using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.server.maps;
+using Application.Core.Server;
+using Application.Core.Server.events.gm;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
+using Application.Shared.MapObjects.Players;
+using Application.Shared.MapObjects.Portals;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Templates.Mob;
@@ -42,12 +48,7 @@ using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using client.autoban;
 using client.inventory;
-using client.status;
 using net.server.coordinator.world;
-using server;
-using server.events.gm;
-using server.life;
-using server.maps;
 using System.Diagnostics.CodeAnalysis;
 using tools;
 using ZLinq;
@@ -67,7 +68,7 @@ public class MapleMap : IMap, INamedInstance
     protected Dictionary<string, AreaBossSpawnPoint> _bossSp = [];
     private AtomicInteger spawnedMonstersOnMap = new AtomicInteger(0);
 
-    private Dictionary<int, Portal> portals;
+    private Dictionary<int, IPortal> portals;
     private Dictionary<string, int> environment = new();
 
 
@@ -1181,9 +1182,9 @@ public class MapleMap : IMap, INamedInstance
         await AddMapObject(door, c => door.sendSpawnData(c, false));
     }
 
-    public Portal? getDoorPortal(int doorid)
+    public IPortal? getDoorPortal(int doorid)
     {
-        Portal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
+        IPortal? doorPortal = portals.GetValueOrDefault(0x80 + doorid);
         if (doorPortal == null)
         {
             log.Warning("does not contain door portalid {DoorId}", doorid);
@@ -1514,13 +1515,13 @@ public class MapleMap : IMap, INamedInstance
         await broadcastMessage(MapEffect.makeStartData());
     }
 
-    public Portal getRandomPlayerSpawnpoint()
+    public IPortal getRandomPlayerSpawnpoint()
     {
         var portal = Randomizer.Select(portals.Values.Where(x => x.getType() >= 0 && x.getType() <= 1 && x.getTargetMapId() == MapId.NONE));
         return portal ?? getPortal(0)!;
     }
 
-    public Portal? findClosestTeleportPortal(Point from)
+    public IPortal? findClosestTeleportPortal(Point from)
     {
         return portals.Values.AsValueEnumerable()
             .OrderBy(x => x.getPosition().distanceSq(from))
@@ -1528,7 +1529,7 @@ public class MapleMap : IMap, INamedInstance
             .FirstOrDefault();
     }
 
-    public Portal? findClosestPlayerSpawnpoint(Point from)
+    public IPortal? findClosestPlayerSpawnpoint(Point from)
     {
         return portals.Values.AsValueEnumerable()
             .OrderBy(x => x.getPosition().distanceSq(from))
@@ -1536,12 +1537,12 @@ public class MapleMap : IMap, INamedInstance
             .FirstOrDefault();
     }
 
-    public Portal? findClosestPortal(Point from)
+    public IPortal? findClosestPortal(Point from)
     {
         return portals.Values.AsValueEnumerable().OrderBy(x => x.getPosition().distanceSq(from)).FirstOrDefault();
     }
 
-    public Portal? findMarketPortal()
+    public IPortal? findMarketPortal()
     {
         return portals.Values.AsValueEnumerable().FirstOrDefault(x => x.getScriptName()?.Contains("market") == true);
     }
@@ -1693,12 +1694,12 @@ public class MapleMap : IMap, INamedInstance
         return ret;
     }
 
-    public Portal? getPortal(string portalname)
+    public IPortal? getPortal(string portalname)
     {
         return portals.Values.AsValueEnumerable().FirstOrDefault(x => x.getName() == portalname);
     }
 
-    public Portal? getPortal(int portalid)
+    public IPortal? getPortal(int portalid)
     {
         return portals.GetValueOrDefault(portalid);
     }
@@ -3004,7 +3005,7 @@ public class MapleMap : IMap, INamedInstance
         return BroadcastAll(chr => chr.Dialog(key, npc, param));
     }
 
-    public Task LightBlue(Func<ClientCulture, string> action)
+    public Task LightBlue(Func<IClientCulture, string> action)
     {
         return BroadcastAll(e => e.LightBlue(action));
     }

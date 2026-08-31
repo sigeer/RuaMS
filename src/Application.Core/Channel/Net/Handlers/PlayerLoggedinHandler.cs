@@ -155,9 +155,6 @@ public class PlayerLoggedinHandler : ChannelHandlerBase
                 player.createDragon();
             }
 
-            await player.commitExcludedItems();
-
-
             if (newcomer)
             {
                 await c.CurrentServer.EventRecallManager.recallEventInstance(player);

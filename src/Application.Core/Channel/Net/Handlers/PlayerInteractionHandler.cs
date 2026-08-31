@@ -559,7 +559,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if ((quantity <= item.getQuantity() && quantity >= 0) || ItemConstants.isRechargeable(item.getItemId()))
                     {
-                        
+
                         if (item.isUntradeable())
                         {
                             await chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));

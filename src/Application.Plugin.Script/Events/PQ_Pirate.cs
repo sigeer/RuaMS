@@ -1,6 +1,4 @@
-using Application.Core.Channel;
 using Application.Core.scripting.Events.Templates;
-using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Events
 {

@@ -1,4 +1,4 @@
-using server.life;
+using Application.Core.Server.life;
 using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Life.Monsters

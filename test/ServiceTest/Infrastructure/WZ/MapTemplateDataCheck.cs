@@ -1,9 +1,8 @@
-using System.Text;
 using Application.Shared.Constants.Map;
 using Application.Templates;
 using Application.Templates.Map;
 using Application.Templates.Reader;
-using Newtonsoft.Json;
+using System.Text;
 using XmlWzReader;
 using XmlWzReader.wz;
 

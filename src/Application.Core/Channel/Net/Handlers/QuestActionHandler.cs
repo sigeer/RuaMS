@@ -21,7 +21,7 @@
 */
 
 
-using server.quest;
+using Application.Core.Server.quest;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

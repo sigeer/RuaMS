@@ -1,4 +1,4 @@
-using server.minigame;
+using Application.Core.Server.minigame;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

@@ -24,7 +24,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.tools.RandomUtils;
 using Application.Templates.Item.Pet;
 using client.inventory;
 
@@ -39,8 +38,8 @@ public class Pet : Item
     public int Fullness { get; set; } = MaxFullness;
     public int Tameness { get; set; }
     public byte Level { get; set; } = 1;
-    public bool Summoned => MapPet != null;
-    public MapPet? MapPet => Store?.Owner?.GetPetById(UniqueId);
+    public bool Summoned => PetSlot > -1;
+    public sbyte PetSlot => Store?.Owner?.GetPetById(UniqueId).PetSlot ?? -1;
     /// <summary>
     /// <see cref="Application.Shared.Items.PetAttribute"/>
     /// </summary>
@@ -49,6 +48,7 @@ public class Pet : Item
     /// <see cref="PetSkillFlag"/>
     /// </summary>
     public short PetSkill { get; set; }
+    public HashSet<int> ExcludeItems { get; set; } = new();
 
     public const int MaxFullness = 100;
     public const int MaxTameness = 30000;

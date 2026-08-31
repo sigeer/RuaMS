@@ -1,17 +1,14 @@
-using Application.Core.Channel.ServerData;
 using Application.Core.scripting.npc;
+using Application.Core.Server.life;
 using Application.Resources.Messages;
-using server.life;
 using System.Text;
 
 namespace Application.Core.Game.Commands.Gm3;
 
 public class SpawnCommand : CommandBase
 {
-    readonly WzStringQueryService _wzManager;
-    public SpawnCommand(WzStringQueryService wzManager) : base(3, "spawn")
+    public SpawnCommand() : base(3, "spawn")
     {
-        _wzManager = wzManager;
     }
 
     public override async Task Execute(IChannelClient c, string[] paramsValue)
@@ -25,7 +22,7 @@ public class SpawnCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out var mobId))
         {
-            var list = _wzManager.FindMobIdByName(c, paramsValue[0]);
+            var list = c.CurrentCulture.FindMobIdByName(paramsValue[0]);
             if (list.BestMatch != null)
             {
                 mobId = list.BestMatch.Id;
