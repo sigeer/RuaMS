@@ -22,9 +22,9 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Server;
 using client.inventory;
 using client.inventory.manipulator;
-using server;
 using tools;
 
 namespace client.processor.action;

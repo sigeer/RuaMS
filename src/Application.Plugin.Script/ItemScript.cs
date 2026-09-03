@@ -59,7 +59,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await playerMessage(5, "这里没有荆棘需要清除");
+                await TypedMessage(5, "这里没有荆棘需要清除");
             }
         }
     }

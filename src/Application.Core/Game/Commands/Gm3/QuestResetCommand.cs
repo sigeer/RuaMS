@@ -1,4 +1,4 @@
-using server.quest;
+using Application.Core.Server.quest;
 
 namespace Application.Core.Game.Commands.Gm3;
 

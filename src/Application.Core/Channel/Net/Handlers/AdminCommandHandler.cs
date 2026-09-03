@@ -25,11 +25,11 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Server.life;
+using Application.Core.Server.quest;
 using Application.Shared.Login;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
-using server.life;
-using server.quest;
 using System.Text;
 using tools;
 
@@ -155,7 +155,7 @@ public class AdminCommandHandler : ChannelHandlerBase
                     {
                         if (monster.getId() == mobHp)
                         {
-                            await c.OnlinedCharacter.Notice(monster.getName() + ": " + monster.getHp());
+                            await c.OnlinedCharacter.Notice(c.CurrentCulture.GetMobName(monster.getId()) + ": " + monster.getHp());
                         }
                     });
                 break;

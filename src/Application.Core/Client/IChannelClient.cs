@@ -1,4 +1,5 @@
 using Application.Core.Channel;
+using Application.Shared.MapObjects.Players;
 using scripting.npc;
 
 namespace Application.Core.Client
@@ -9,7 +10,7 @@ namespace Application.Core.Client
         int Channel { get; }
         Player? Character { get; }
         Player OnlinedCharacter { get; }
-        ClientCulture CurrentCulture { get; set; }
+        IClientCulture CurrentCulture { get; set; }
 
         NPCConversationManager? NPCConversationManager { get; set; }
         Task Disconnect(bool isShutdown, bool fromCashShop = false);

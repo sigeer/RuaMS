@@ -269,6 +269,9 @@ public enum SendOpcode
     MOVE_PET = 0xAA,
     PET_ACTION = 0xAB,
     PET_NAMECHANGE = 0xAC,
+    /// <summary>
+    /// CPet::OnLoadExceptionList
+    /// </summary>
     PET_EXCEPTION_LIST = 0xAD,
     PET_COMMAND = 0xAE,
     SPAWN_SPECIAL_MAPOBJECT = 0xAF,

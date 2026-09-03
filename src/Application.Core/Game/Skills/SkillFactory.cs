@@ -21,9 +21,9 @@
 */
 
 
+using Application.Core.Server;
 using Application.Templates.Reader;
 using Application.Templates.Skill;
-using server;
 
 namespace Application.Core.Game.Skills;
 

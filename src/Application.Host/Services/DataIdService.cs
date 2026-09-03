@@ -64,7 +64,7 @@ namespace Application.Host.Services
 
     public class IdName
     {
-        public IdName(int id, string name): this(id, name, null)
+        public IdName(int id, string name) : this(id, name, null)
         {
         }
 

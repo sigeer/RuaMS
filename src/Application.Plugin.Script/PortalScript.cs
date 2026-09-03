@@ -5,7 +5,8 @@ using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
-using Application.Plugin.Script.Events;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
@@ -14,15 +15,13 @@ using Application.Templates.Mob;
 using Application.Utility;
 using Application.Utility.Exceptions;
 using scripting.portal;
-using server.life;
-using server.maps;
 using System.Drawing;
 
 namespace Application.Plugin.Script
 {
     internal class PortalScript : PortalPlayerInteraction
     {
-        public PortalScript(IChannelClient c, Portal p) : base(c, p)
+        public PortalScript(IChannelClient c, IPortal p) : base(c, p)
         {
         }
 
@@ -1767,7 +1766,7 @@ namespace Application.Plugin.Script
                 var rand = Random.Shared.Next(maps.Length);
                 await playPortalSound();
                 await warp(maps[rand], 0);
-                await playerMessage(0, "重新进入第2演武场时将会清空背包里所有考试的证物，请务必注意。");
+                await TypedMessage(0, "重新进入第2演武场时将会清空背包里所有考试的证物，请务必注意。");
                 return true;
             }
             else
@@ -2656,7 +2655,7 @@ namespace Application.Plugin.Script
             int nextMap;
             AbstractEventInstanceManager eim;
             IMap target;
-            Portal? targetPortal;
+            IPortal? targetPortal;
             string? avail;
 
             if (getPlayer().getMapId() == 240050101)

@@ -1,7 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Server;
 using client.inventory;
-using server;
 
 namespace Application.Core.Client.inventory
 {
@@ -122,7 +121,7 @@ namespace Application.Core.Client.inventory
                     Swap(dSlot, sSlot);
                     return [new InventoryMove(type, sSlot, dSlot)];
                 }
-                else 
+                else
                 {
                     var slotMax = GetSlotMax(target.getItemId());
                     if (source.getQuantity() + target.getQuantity() > slotMax)
@@ -292,7 +291,7 @@ namespace Application.Core.Client.inventory
         AbstractStorage _storage;
         Item?[] _items;
 
-        public StorageSorter(AbstractStorage storage): base(storage.Owner)
+        public StorageSorter(AbstractStorage storage) : base(storage.Owner)
         {
             _storage = storage;
 

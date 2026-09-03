@@ -1,9 +1,9 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Core.Server.life;
 using Application.Shared.Constants.Map;
 using Application.Utility;
 using scripting.map;
-using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script

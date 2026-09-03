@@ -1,4 +1,5 @@
 using Application.Core.Game.Skills;
+using Application.Shared.Battle.Skills;
 using Google.Protobuf.Collections;
 
 namespace Application.Core.Game.Players.PlayerProps

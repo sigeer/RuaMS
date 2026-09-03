@@ -2,10 +2,10 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.model;
+using Application.Core.Server;
+using Application.Core.Server.maps;
 using Application.Utility.Tickables;
 using net.server;
-using server;
-using server.maps;
 using tools;
 
 namespace Application.Core.Game.Players

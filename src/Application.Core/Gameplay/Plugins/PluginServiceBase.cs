@@ -5,7 +5,7 @@ namespace Application.Core.Gameplay.Plugins
     /// <summary>
     /// 插件服务优先级（数值越小优先级越高），用于 FirstMatch（首次命中）模式下同名脚本的裁决
     /// </summary>
-    public enum PluginPriority: byte
+    public enum PluginPriority : byte
     {
         /// <summary>最高优先级：优先于所有常规插件命中</summary>
         High = 0,

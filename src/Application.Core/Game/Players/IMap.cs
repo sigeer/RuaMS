@@ -1,6 +1,6 @@
 using Application.Core.Game.Maps;
+using Application.Core.Server.maps;
 using Application.Shared.WzEntity;
-using server.maps;
 
 namespace Application.Core.Game.Players
 {
@@ -9,20 +9,20 @@ namespace Application.Core.Game.Players
 
         void changeMap(int map);
         void changeMap(int map, int portal);
-        void changeMap(int map, Portal portal);
+        void changeMap(int map, IPortal portal);
         void changeMap(int map, string portal);
         void changeMap(IMap to, int portal = 0);
         void changeMap(IMap target, Point pos);
-        void changeMap(IMap target, Portal? pto);
+        void changeMap(IMap target, IPortal? pto);
 
         void changeMapBanish(BanishInfo banishInfo);
 
         /// <summary>
-        /// 和<see cref="changeMap(IMap target, Portal? pto)"/>的区别：不会走EventInstance的MapManager
+        /// 和<see cref="changeMap(IMap target, IPortal? pto)"/>的区别：不会走EventInstance的MapManager
         /// </summary>
         /// <param name="target"></param>
         /// <param name="pto"></param>
-        void forceChangeMap(IMap target, Portal? pto = null);
+        void forceChangeMap(IMap target, IPortal? pto = null);
 
         void visitMap(IMap map);
 

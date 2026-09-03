@@ -1,10 +1,8 @@
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
-using Application.Shared.Events;
 using Application.Shared.GameProps;
 using Application.Utility.Configs;
-using server.expeditions;
 
 namespace Application.Plugin.Script.Npc
 {

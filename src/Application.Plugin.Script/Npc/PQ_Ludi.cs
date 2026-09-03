@@ -1,6 +1,5 @@
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 
 namespace Application.Plugin.Script.Npc

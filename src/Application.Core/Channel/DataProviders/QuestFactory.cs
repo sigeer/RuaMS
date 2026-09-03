@@ -1,8 +1,8 @@
+using Application.Core.Server.quest;
 using Application.Templates.Quest;
 using Application.Templates.Reader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using server.quest;
 using static client.QuestStatus;
 
 namespace Application.Core.Channel.DataProviders

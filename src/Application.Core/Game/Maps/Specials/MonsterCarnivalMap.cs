@@ -1,11 +1,11 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Instances;
+using Application.Core.Server.maps;
+using Application.Core.Server.partyquest;
 using Application.Shared.Events;
 using Application.Templates.Map;
-using server.maps;
-using server.partyquest;
-using static server.partyquest.CarnivalFactory;
+using static Application.Core.Server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Game.Maps.Specials
 {

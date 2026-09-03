@@ -1,9 +1,3 @@
-using Application.Core.Login.Client;
-using Application.Shared.Login;
-using Application.Shared.Models;
-using Microsoft.Extensions.DependencyInjection;
-using ServiceTest.Games;
-
 namespace ServiceTest.Games.Account
 {
     public class ServerClientTests

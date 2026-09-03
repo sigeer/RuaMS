@@ -1,6 +1,4 @@
-using Application.Core.Scripting.Events;
-using server.life;
-using server.maps;
+using Application.Core.Server.life;
 using System.Drawing;
 
 

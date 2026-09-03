@@ -1,5 +1,4 @@
 using Application.Core.Channel;
-using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.QuestRecordEx;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;

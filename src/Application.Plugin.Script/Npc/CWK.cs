@@ -1,5 +1,4 @@
-using Application.Core.Gameplay.Plugins;
-using server.life;
+using Application.Core.Server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Npc

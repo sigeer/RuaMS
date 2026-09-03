@@ -1,8 +1,5 @@
 using Application.Shared.Constants.Map;
 using Application.Utility.Configs;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -13,8 +10,8 @@ namespace Application.Plugin.Script.Npc
         {
             var belts = new[] { 1132000, 1132001, 1132002, 1132003, 1132004 };
             var belt_level = new[] { 25, 35, 45, 60, 75 };
-            var belt_points = YamlConfig.config.server.USE_FAST_DOJO_UPGRADE 
-                ? new[] { 10, 90, 200, 460, 850 } 
+            var belt_points = YamlConfig.config.server.USE_FAST_DOJO_UPGRADE
+                ? new[] { 10, 90, 200, 460, 850 }
                 : new[] { 200, 1800, 4000, 9200, 17000 };
 
             var belt_on_inventory = new bool[belts.Length];
@@ -43,7 +40,7 @@ namespace Application.Plugin.Script.Npc
                     var hasParty = getParty() != null;
                     bool firstEnter = false;
                     var avDojo = getClient().getChannelServer().lookupPartyDojo(getParty());
-                    
+
                     if (avDojo < 0)
                     {
                         if (hasParty)
@@ -79,12 +76,12 @@ namespace Application.Plugin.Script.Npc
                         var baseStg = hasParty ? 925030000 : 925020000;
                         var nextStg = (getMapId() + 100) / 100 % 100;
                         var dojoWarpMap = baseStg + (nextStg * 100) + avDojo;
-                        
+
                         if (firstEnter)
                         {
                             await getClient().getChannelServer().resetDojoMap(dojoWarpMap);
                         }
-                        
+
                         getPlayer().setDojoStage(0);
                         if (!hasParty || !isLeader())
                         {
@@ -165,7 +162,7 @@ namespace Application.Plugin.Script.Npc
                             dojoWarp = getPlayer().getDojoStage();
                             getPlayer().setDojoStage(0);
                             var stageWarp = (dojoWarp / 6) * 5;
-                            
+
                             if (await AskYesNo($"上次你独自挑战时，你一直走到了第#b{stageWarp}#k关。我现在可以带你去那里。你想去那里吗？（选择#rNo#k来删除这个记录。）"))
                             {
                                 var avDojo = await getClient().getChannelServer().ingressDojo(false, dojoWarp);
@@ -326,7 +323,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         if (getPlayer().getVanquisherStage() <= 0)
                         {
-                            if (await AskYesNo($"你还没有尝试过勋章吗？如果你在勇士部落道场中打败某种类型的怪物#b100次#k，你就可以获得一个称号，叫做#b#t{1142033 + getPlayer().getVanquisherStage()}##k。看起来你甚至还没有获得#b#t{1142033 + getPlayer().getVanquisherStage()}##k... 你想尝试一下#b#t{1142033 +getPlayer().getVanquisherStage()}##k吗？"))
+                            if (await AskYesNo($"你还没有尝试过勋章吗？如果你在勇士部落道场中打败某种类型的怪物#b100次#k，你就可以获得一个称号，叫做#b#t{1142033 + getPlayer().getVanquisherStage()}##k。看起来你甚至还没有获得#b#t{1142033 + getPlayer().getVanquisherStage()}##k... 你想尝试一下#b#t{1142033 + getPlayer().getVanquisherStage()}##k吗？"))
                             {
                                 if (getPlayer().getDojoStage() > 37)
                                 {
@@ -413,7 +410,7 @@ namespace Application.Plugin.Script.Npc
         public async Task dojang_move()
         {
             var selection = await AskMenu("#e< 注意 >#n\r\n如果有人有勇气挑战武陵道场，请来武陵道场。 - 武功 -\r\n\r\n\r\n#b#L0#挑战武陵道场。#l\r\n#L1#更详细地阅读通知。#l");
-            
+
             if (selection == 1)
             {
                 await SayNext("#e< 注意：接受挑战！ >#n\r\n我的名字是慕容，慕龙道场的主人。自古以来，我一直在慕龙修炼，直到我的技能达到了巅峰。从今天开始，我将接受所有对慕龙道场的申请者。慕龙道场的权利将只赋予最强大的人。\r\n如果有人希望向我学习，随时来挑战吧！如果有人希望挑战我，也欢迎。我会让你充分意识到自己的弱点。");

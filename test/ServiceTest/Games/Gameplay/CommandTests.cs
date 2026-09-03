@@ -1,6 +1,5 @@
 using Application.Core.Client;
 using Application.Core.Game.Commands;
-using Application.Scripting.JS;
 
 namespace ServiceTest.Games.Gameplay
 {

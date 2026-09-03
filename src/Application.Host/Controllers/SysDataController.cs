@@ -7,7 +7,6 @@ using Application.Core.Login.Dtos.Shop;
 using Application.Core.Login.Services;
 using Application.Host.Middlewares;
 using Application.Host.Models;
-using Application.Host.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Host.Controllers

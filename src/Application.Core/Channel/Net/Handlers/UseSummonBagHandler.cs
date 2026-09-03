@@ -21,10 +21,9 @@
  */
 
 
-using Application.Core.tools.RandomUtils;
+using Application.Core.Server.life;
 using Application.Templates.Item.Consume;
 using client.inventory.manipulator;
-using server.life;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

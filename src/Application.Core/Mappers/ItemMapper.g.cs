@@ -8,6 +8,8 @@ namespace Application.Core.Mappers
 {
     public partial class ItemMapper : IItemMapper
     {
+        private Action<Pet, ItemProto> Action1;
+        
         public ItemProto MapToDto(Item p1)
         {
             Pet p2 = p1 as Pet;
@@ -71,11 +73,12 @@ namespace Application.Core.Mappers
                 Flag = p4.PetAttribute,
                 Name = p4.Name,
                 Petid = p4.getUniqueId(),
-                PetSlot = p4.MapPet == null ? -1 : (int)p4.MapPet.Index,
+                PetSlot = (int)p4.PetSlot,
                 PetSkill = (int)p4.PetSkill
             });
             result.Properties = p4.Properties;
             result.LockExpiration = p4.LockExpiration;
+            Action1.Invoke(p4, result);
             return result;
             
         }

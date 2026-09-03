@@ -1,5 +1,4 @@
 using Application.Core.Login.Dtos.Item;
-using Application.Shared.Items;
 
 namespace Application.Host.Models
 {

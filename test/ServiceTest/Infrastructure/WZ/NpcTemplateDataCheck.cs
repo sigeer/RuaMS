@@ -1,4 +1,3 @@
-using Application.Templates.Reader.Img.Provider;
 using Application.Templates.Npc;
 using Application.Templates.Reader;
 

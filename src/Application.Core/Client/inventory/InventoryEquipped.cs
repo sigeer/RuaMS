@@ -120,12 +120,12 @@ public class InventoryEquipped : AbstractInventory
         if (!fromLogin)
         {
             // 登录后进入地图时会广播
-            var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+            var petIndex = (sbyte)EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
             if (petIndex != -1)
             {
-                var mapPet = Owner.getPet(petIndex);
+                var mapPet = Owner.GetPetByIndex(petIndex);
                 if (mapPet != null)
-                    await mapPet.BroadcastNameChanged();
+                    await mapPet.BroadcastNameChanged(petIndex);
             }
         }
 
@@ -154,12 +154,12 @@ public class InventoryEquipped : AbstractInventory
             }
         }
 
-        var petIndex = EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
+        var petIndex = (sbyte)EquipSlot.PetsNameTag.IndexOf(equip.getPosition());
         if (petIndex != -1)
         {
-            var mapPet = Owner.getPet(petIndex);
+            var mapPet = Owner.GetPetByIndex(petIndex);
             if (mapPet != null)
-                await mapPet.BroadcastNameChanged();
+                await mapPet.BroadcastNameChanged(petIndex);
         }
         await base.OnItemLeave(item);
     }

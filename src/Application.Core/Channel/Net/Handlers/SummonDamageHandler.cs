@@ -25,11 +25,10 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
+using Application.Core.Server;
 using Application.Shared.Battle;
 using client.autoban;
-using client.inventory;
 using Microsoft.Extensions.Logging;
-using server;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;

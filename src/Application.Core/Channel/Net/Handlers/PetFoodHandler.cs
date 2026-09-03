@@ -47,9 +47,9 @@ public class PetFoodHandler : ChannelHandlerBase
             return;
         }
         int previousFullness = 100;
-        byte slot = 0;
+        sbyte slot = 0;
         var pets = chr.getPets();
-        for (byte i = 0; i < 3; i++)
+        for (sbyte i = 0; i < 3; i++)
         {
             var petObj = pets[i];
             if (petObj != null)
@@ -62,7 +62,7 @@ public class PetFoodHandler : ChannelHandlerBase
             }
         }
 
-        var pet = chr.getPet(slot);
+        var pet = chr.GetPetByIndex(slot);
         if (pet == null)
         {
             return;
@@ -83,7 +83,7 @@ public class PetFoodHandler : ChannelHandlerBase
                     return;
                 }
 
-                await pet.gainTamenessFullness((pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
+                await pet.gainTamenessFullness(slot, (pet.Fullness <= 75) ? 1 : 0, 30, 1);   // 25+ "emptyness" to get +1 tameness
                 await InventoryManipulator.removeFromSlot(c, InventoryType.USE, pos, 1, false);
             }
             finally

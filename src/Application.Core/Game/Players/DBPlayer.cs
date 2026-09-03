@@ -1,4 +1,3 @@
-using Application.Core.Channel.QuestRecordEx;
 using Application.Shared.Events;
 
 namespace Application.Core.Game.Players

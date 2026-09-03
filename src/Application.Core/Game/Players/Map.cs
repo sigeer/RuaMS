@@ -1,9 +1,10 @@
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Trades;
+using Application.Core.Server.maps;
 using Application.Shared.WzEntity;
-using server.maps;
 using tools;
+using static Application.Templates.Mob.MobTemplate;
 
 namespace Application.Core.Game.Players
 {
@@ -26,7 +27,7 @@ namespace Application.Core.Game.Players
                     await MapModel.SetPlayerVisibleObject(this, pet, false);
                 }
             }
-            await commitExcludedItems();
+            await CommitExcludedItemsAll();
         }
 
         public override async Task OnUnmounted()
@@ -96,18 +97,18 @@ namespace Application.Core.Game.Players
             }
         }
 
-        public async Task changeMapBanish(BanishInfo? banishInfo)
+        public async Task ChangeMapBanish(MobBanTemplate? banishInfo)
         {
             if (banishInfo == null)
                 return;
 
-            if (banishInfo.msg != null)
+            if (banishInfo.Message != null)
             {
-                await Pink(banishInfo.msg);
+                await Pink(banishInfo.Message);
             }
 
-            IMap map_ = await getWarpMap(banishInfo.map);
-            var portal_ = map_.getPortal(banishInfo.portal);
+            IMap map_ = await getWarpMap(banishInfo.Map);
+            var portal_ = map_.getPortal(banishInfo.PortalName);
             await changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
         }
 
@@ -129,7 +130,7 @@ namespace Application.Core.Game.Players
             await changeMap(warpMap, warpMap.getPortal(portal));
         }
 
-        public async Task changeMap(int map, Portal? portal)
+        public async Task changeMap(int map, IPortal? portal)
         {
             await changeMap(await getWarpMap(map), portal);
         }
@@ -139,7 +140,7 @@ namespace Application.Core.Game.Players
             await changeMap(to, to.getPortal(portal));
         }
 
-        public async Task changeMap(IMap to, Portal? pto)
+        public async Task changeMap(IMap to, IPortal? pto)
         {
             await eventChangedMap(to.getId());
             pto ??= to.getPortal(0)!;
@@ -196,7 +197,7 @@ namespace Application.Core.Game.Players
         }
 
 
-        public async Task forceChangeMap(IMap target, Portal? pto = null)
+        public async Task forceChangeMap(IMap target, IPortal? pto = null)
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 

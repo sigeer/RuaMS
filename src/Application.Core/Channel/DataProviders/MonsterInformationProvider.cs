@@ -21,10 +21,10 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Server.life;
 using Application.Core.ServerTransports;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using server.life;
 using System.Collections.Concurrent;
 
 namespace Application.Core.Channel.DataProviders;

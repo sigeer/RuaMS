@@ -1,5 +1,5 @@
 using Application.Core.Game.Skills;
-using server;
+using Application.Core.Server;
 using tools;
 
 namespace Application.Core.Game.Players.Tickables

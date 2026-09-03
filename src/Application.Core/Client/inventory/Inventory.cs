@@ -305,9 +305,10 @@ public class Inventory : AbstractInventory
         }
         else if (item is Pet pet)
         {
-            if (pet.MapPet != null)
+            var (petSlot, mapPet) = Owner.GetPetById(pet.UniqueId);
+            if (mapPet != null)
             {
-                await pet.MapPet.Recall();
+                await mapPet.Recall(petSlot);
             }
         }
         await base.OnItemLeave(item);

@@ -1,5 +1,6 @@
 using Application.Resources.Messages;
 using Application.Shared.Languages;
+using Application.Shared.MapObjects.Players;
 using Application.Templates.Exceptions;
 using Application.Templates.Reader;
 using Application.Templates.String;
@@ -8,7 +9,7 @@ using System.Globalization;
 
 namespace Application.Core.Channel
 {
-    public class ClientCulture
+    public class ClientCulture : IClientCulture
     {
         public CultureInfo CultureInfo { get; }
         public ClientCulture(int language) : this(SupportedCultureManager.GetCulture(language))
@@ -131,6 +132,27 @@ namespace Application.Core.Channel
         public string Number(int i)
         {
             return i.ToString("N", CultureInfo);
+        }
+
+        public WzFindResult<WzFindMapResultItem> FindMapIdByName(string name)
+        {
+            var filtered = StringProvider.Search(StringCategory.Map, name).OfType<StringMapTemplate>()
+                .Select(x => new WzFindMapResultItem(x.TemplateId, x.MapName!, x.StreetName!)).ToList();
+            return new WzFindResult<WzFindMapResultItem>(filtered, name);
+        }
+
+        public WzFindResult<WzFindResultItem> FindItemIdByName(string name)
+        {
+            var list = StringProvider.Search(StringCategory.Item, name).OfType<StringTemplate>()
+                .Select(x => new WzFindResultItem(x.TemplateId, x.Name)).ToList();
+            return new WzFindResult<WzFindResultItem>(list, name);
+        }
+
+        public WzFindResult<WzFindResultItem> FindMobIdByName(string name)
+        {
+            var list = StringProvider.Search(StringCategory.Mob, name).OfType<StringTemplate>()
+                .Select(x => new WzFindResultItem(x.TemplateId, x.Name)).ToList();
+            return new WzFindResult<WzFindResultItem>(list, name);
         }
         public static ClientCulture SystemCulture = new ClientCulture();
     }

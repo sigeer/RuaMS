@@ -1,8 +1,6 @@
-using Application.Core.Game.Maps.Mists;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Constants.Job;
 using Application.Shared.Quest;
-using static Application.Templates.Quest.QuestAct;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -203,7 +201,7 @@ namespace Application.Plugin.Script.Npc
                 {
                     await SayNext("你准备好了吗？现在试着忍受我的攻击2分钟。我不会手下留情的。祝你好运，因为你会需要的。");
                     var em = GetSoloQuestEventManager(questId);
-                    var r =  await em.StartInstance(getPlayer());
+                    var r = await em.StartInstance(getPlayer());
                     await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else if (getEventInstance() != null)
@@ -233,13 +231,13 @@ namespace Application.Plugin.Script.Npc
                 await SayOK("请不要现在打扰我，我正在集中精力。");
                 return;
             }
-            
+
             if (!isQuestCompleted(6944))
             {
                 await SayOK("你还没有通过我的考验。在你通过考验之前，我无法提升你的等级。");
                 return;
             }
-            
+
             if (getJob().Rank == 3)
             {
                 if (await AskYesNo("你通过了我的测试，做得非常出色。你准备好晋升到第四职业了吗？"))
@@ -248,7 +246,7 @@ namespace Application.Plugin.Script.Npc
                     {
                         int jobId = getJob().Id;
                         await changeJobById(jobId + 1);
-                        
+
                         jobId = getJob().Id;
                         if (jobId == 512)
                         {
@@ -264,7 +262,7 @@ namespace Application.Plugin.Script.Npc
                             await teachSkill(5221004, 0, 10, -1);
                             await teachSkill(5220011, 0, 10, -1);
                         }
-                        
+
                         await gainItem(2280003, 1);
                     }
                     else
@@ -321,7 +319,7 @@ namespace Application.Plugin.Script.Npc
                             await teachSkill(5221003, 0, 10, -1);
                         }
                     }
-                    
+
                     await SayOK("事情已经完成。现在离开我。");
                 }
             }

@@ -34,13 +34,13 @@ public class TimedItemWrapper : IComparable<TimedItemWrapper>
     {
         if (other == null) return 1;
         var r = TickTime.CompareTo(other.TickTime);
-        if (r == 0) 
+        if (r == 0)
             return Item.CompareTo(other.Item);
         return r;
     }
 }
 
-public enum ItemTimedProperty: byte
+public enum ItemTimedProperty : byte
 {
     Always = 0,
     Expiration = 1,

@@ -7,9 +7,13 @@ using Application.Core.Channel.Tasks;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
-using Application.Core.Models;
+using Application.Core.Server.events.gm;
+using Application.Core.Server.expeditions;
+using Application.Core.Server.life;
+using Application.Core.Server.maps;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
+using Application.Shared.MapObjects.Players;
 using Application.Shared.Servers;
 using Application.Utility.Performance;
 using Application.Utility.Pipeline;
@@ -19,10 +23,6 @@ using net.server.services.task.channel;
 using scripting.Event;
 using scripting.npc;
 using scripting.reactor;
-using server.events.gm;
-using server.expeditions;
-using server.life;
-using server.maps;
 using System.Net;
 using tools;
 
@@ -802,7 +802,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         }
     }
 
-    public async Task LightBlue(Func<ClientCulture, string> action)
+    public async Task LightBlue(Func<IClientCulture, string> action)
     {
         foreach (var chr in Players.getAllCharacters())
         {

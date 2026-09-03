@@ -35,11 +35,6 @@ public class MobBanishPlayerHandler : ChannelHandlerBase
             return;
         }
 
-        var banishInfo = mob.getBanish();
-        if (banishInfo == null)
-        {
-            return;
-        }
-        await chr.changeMapBanish(banishInfo);
+        await chr.ChangeMapBanish(mob.SourceTemplate.Ban);
     }
 }

@@ -21,7 +21,6 @@
  */
 
 
-using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
@@ -34,14 +33,15 @@ using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Core.Server.expeditions;
+using Application.Core.Server.life;
+using Application.Core.Server.partyquest;
+using Application.Core.Server.quest;
 using Application.Shared.Events;
+using Application.Shared.MapObjects.Players;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
-using server.expeditions;
-using server.life;
-using server.partyquest;
-using server.quest;
 using tools;
 using static Application.Core.Game.Players.Player;
 
@@ -593,7 +593,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task<Item?> evolvePet(sbyte slot)
     {
-        var target = getPlayer().getPet(slot);
+        var target = getPlayer().GetPetByIndex(slot);
         if (target != null)
         {
             var pet = target.PetItem.EvolvePet(getPlayer());
@@ -658,20 +658,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         await getPlayer().getMap().broadcastMessage(FieldEffectPacket.Bgm(songName));
     }
 
-    public async Task playerMessage(int type, string message)
-    {
-        await getPlayer().dropMessage(type, message);
-    }
-
-    public async Task message(string message)
-    {
-        await Pink(message);
-    }
-
-    public async Task dropMessage(int type, string message)
-    {
-        await TypedMessage(type, message);
-    }
 
     public async Task mapMessage(int type, string message)
     {
@@ -794,7 +780,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     public async Task useItem(int id)
     {
         await ItemInformationProvider.getInstance().GetItemEffectTrust(id).applyTo(c.OnlinedCharacter);
-        await c.SendPacket(PacketCreator.getItemMessage(id));//Useful shet :3
+        await c.SendPacket(MessagePacket.GiveBuffMessage(id));//Useful shet :3
     }
 
     public async Task cancelItem(int id)
@@ -908,11 +894,6 @@ public class AbstractPlayerInteraction : IClientMessenger
     public bool containsAreaInfo(short area, string info)
     {
         return c.OnlinedCharacter.containsAreaInfo(area, info);
-    }
-
-    public async Task earnTitle(string msg)
-    {
-        await c.SendPacket(PacketCreator.earnTitleMessage(msg));
     }
 
     public async Task showInfoText(string msg)
@@ -1119,7 +1100,7 @@ public class AbstractPlayerInteraction : IClientMessenger
     public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
     public Task Dialog(string key, int npcId, params string[] param) => getPlayer().Dialog(key, npcId, param);
 
-    public Task LightBlue(Func<ClientCulture, string> action)
+    public Task LightBlue(Func<IClientCulture, string> action)
     {
         return getPlayer().LightBlue(action);
     }

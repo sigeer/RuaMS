@@ -37,7 +37,7 @@ public class PetLootHandler : ChannelHandlerBase
     {
         var chr = c.OnlinedCharacter;
 
-        var pet = chr.GetPetById(p.readLong());
+        var (petSlot, pet) = chr.GetPetById(p.readLong());
         if (pet == null)
         {
             await c.SendPacket(PacketCreator.enableActions());
@@ -49,7 +49,7 @@ public class PetLootHandler : ChannelHandlerBase
         var ob = chr.getMap().getMapObject(oid)!;
         try
         {
-            await chr.pickupItem(ob, pet.Index);
+            await chr.pickupItem(ob, petSlot);
         }
         catch (Exception)
         {

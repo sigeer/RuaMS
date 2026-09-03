@@ -20,14 +20,14 @@ namespace ServiceTest.Infrastructure.Scripts
 
     public enum ScriptTestEnmu
     {
-        A,B,C
+        A, B, C
     }
 
     public class ScriptTestStaticClass
     {
         public static ScriptTestClass GetObject()
         {
-            return new ScriptTestClass() { IntValue = 1};
+            return new ScriptTestClass() { IntValue = 1 };
         }
 
         public static int CheckOptional(short s, bool b = true)

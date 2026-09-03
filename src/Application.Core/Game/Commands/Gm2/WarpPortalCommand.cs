@@ -1,4 +1,4 @@
-using server.maps;
+using Application.Core.Server.maps;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm2;
@@ -15,7 +15,7 @@ public class WarpPortalCommand : ParamsCommandBase
         var mapFactory = c.CurrentServer.getMapFactory();
 
         var input = GetParam("portalInput");
-        Portal? portal = null;
+        IPortal? portal = null;
         if (int.TryParse(input, out var portalId))
         {
             portal = player.MapModel.getPortal(portalId);

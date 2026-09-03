@@ -1,5 +1,4 @@
 using Application.Scripting;
-using Application.Scripting.JS;
 
 namespace ServiceTest.Infrastructure.Scripts
 {

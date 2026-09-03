@@ -1,4 +1,4 @@
-using server.maps;
+using Application.Core.Server.maps;
 
 namespace Application.Core.Game.Commands.Gm1;
 
@@ -149,7 +149,7 @@ public class GotoCommand : CommandBase
             var target = await c.getChannelServer().getMapFactory().getMap(map);
 
             // expedition issue with this command detected thanks to Masterrulax
-            Portal targetPortal = target.getRandomPlayerSpawnpoint();
+            IPortal targetPortal = target.getRandomPlayerSpawnpoint();
             player.saveLocationOnWarp();
             await player.changeMap(target, targetPortal);
         }

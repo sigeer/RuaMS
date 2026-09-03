@@ -1,9 +1,5 @@
-using Application.Core.Channel.DataProviders;
-using Application.Core.Managers;
 using Application.Resources.Messages;
-using Application.Templates.Character;
 using client.inventory;
-using client.inventory.manipulator;
 
 namespace Application.Core.Game.Commands.Gm4;
 

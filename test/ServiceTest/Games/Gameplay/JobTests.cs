@@ -1,7 +1,4 @@
 using Application.Shared.Constants.Job;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ServiceTest.Games.Gameplay
 {

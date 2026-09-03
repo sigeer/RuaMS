@@ -2,6 +2,7 @@ using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
 using Application.Core.Scripting.Infrastructure;
+using Application.Shared.MapObjects.Players;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
 using scripting.npc;
@@ -54,7 +55,7 @@ namespace Application.Core.Game
         NPCConversationManager? IChannelClient.NPCConversationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public int Language { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public ClientCulture CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IClientCulture CurrentCulture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         IChannel ISocketClient.NettyChannel => throw new NotImplementedException();
 

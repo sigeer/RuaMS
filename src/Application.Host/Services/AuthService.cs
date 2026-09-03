@@ -21,15 +21,15 @@ namespace Application.Host.Services
             var acc = _server.AccountManager.Find(x => x.Name == loginForm.UserName, x => x.Name.Equals(loginForm.UserName, StringComparison.OrdinalIgnoreCase));
             if (acc == null)
                 return null;
-            if (acc.Password.Equals(loginForm.Password,  StringComparison.OrdinalIgnoreCase))
+            if (acc.Password.Equals(loginForm.Password, StringComparison.OrdinalIgnoreCase))
             {
                 return TokenModel.CreateToken(
                     2 * 3600,
-                    30 * 24 * 3600, 
-                    "ruams", 
-                    _server.Name, 
-                    acc.Id, 
-                    acc.GetRole(), 
+                    30 * 24 * 3600,
+                    "ruams",
+                    _server.Name,
+                    acc.Id,
+                    acc.GetRole(),
                     IssuerSigningKey);
             }
 

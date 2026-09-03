@@ -174,7 +174,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2020009 
         public Task wizard3()
         {
-            return Job3((int)JobStyle.MAGICIAN, 
+            return Job3((int)JobStyle.MAGICIAN,
                 "魔法密林", 1032001);
         }
 

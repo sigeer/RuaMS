@@ -2,10 +2,10 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.QuestRecordEx;
 using Application.Core.Game.Packets;
+using Application.Core.Server.life;
+using Application.Core.Server.quest;
 using Application.Shared.Quest;
 using client;
-using server.life;
-using server.quest;
 using ZLinq;
 
 namespace Application.Core.Game.Players

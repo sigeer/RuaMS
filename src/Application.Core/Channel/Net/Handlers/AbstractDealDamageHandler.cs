@@ -28,11 +28,11 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
+using Application.Core.Server;
+using Application.Core.Server.life;
+using Application.Shared.Battle.Skills;
 using client.autoban;
-using client.status;
 using Microsoft.Extensions.Logging;
-using server;
-using server.life;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -477,7 +477,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             if (skillLevel > 0)
                             {
                                 StatEffect mortal = mortalBlow.getEffect(skillLevel);
-                                if (monster.getHp() <= (int)(monster.getStats().getHp() * mortal.getX() / 100.0))
+                                if (monster.getHp() <= (int)(monster.getStats().MaxHP * mortal.getX() / 100.0))
                                 {
                                     if (Randomizer.rand(1, 100) <= mortal.getY())
                                     {

@@ -1,4 +1,4 @@
-using Application.Core.Channel;
+using Application.Shared.MapObjects.Players;
 
 namespace Application.Core.Game.Players
 {

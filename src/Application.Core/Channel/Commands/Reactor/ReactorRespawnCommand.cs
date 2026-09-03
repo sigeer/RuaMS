@@ -1,4 +1,4 @@
-using server.maps;
+using Application.Core.Server.maps;
 
 namespace Application.Core.Channel.Commands
 {

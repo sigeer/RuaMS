@@ -1,5 +1,5 @@
 using Application.Core.Game.Life;
-using server.life;
+using Application.Core.Server.life;
 using tools;
 
 namespace Application.Core.Game.Maps.Mists

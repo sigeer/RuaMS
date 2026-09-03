@@ -44,20 +44,20 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
         var petId = p.readLong();
 
         var chr = c.OnlinedCharacter;
-        var pet = chr.GetPetById(petId);
+        var (petSlot, pet) = chr.GetPetById(petId);
         if (pet == null)
         {
             return;
         }
 
-        chr.resetExcluded(petId);
+        pet.ExcludeItems.Clear();
         byte amount = p.readByte();
         for (int i = 0; i < amount; i++)
         {
             int itemId = p.readInt();
             if (itemId >= 0)
             {
-                chr.addExcluded(petId, itemId);
+                pet.ExcludeItems.Add(itemId);
             }
             else
             {
@@ -65,6 +65,6 @@ public class PetExcludeItemsHandler : ChannelHandlerBase
                 return;
             }
         }
-        await chr.commitExcludedItems();
+        await chr.CommitExcludedItems(petSlot);
     }
 }

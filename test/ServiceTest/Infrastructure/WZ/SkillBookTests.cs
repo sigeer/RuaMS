@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Templates.Reader.Img.Provider;
 using Application.Templates.Quest;
 using Application.Templates.Reader;
 using Newtonsoft.Json;

@@ -6,9 +6,10 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Scripting.Events;
+using Application.Core.Server;
+using Application.Core.Server.maps;
+using Application.Shared.MapObjects.Players;
 using Application.Utility.Tickables;
-using server;
-using server.maps;
 using tools;
 using ZLinq;
 
@@ -90,12 +91,12 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task applyEventPlayersItemBuff(int itemId)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
         var mse = ItemInformationProvider.getInstance().getItemEffect(itemId);
 
         if (mse != null)
         {
-            foreach (Player player in players)
+            foreach (var player in players)
             {
                 await mse.applyTo(player);
             }
@@ -109,7 +110,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task applyEventPlayersSkillBuff(int skillId, int skillLv)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
         var skill = SkillFactory.getSkill(skillId);
 
         if (skill != null)
@@ -117,7 +118,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
             StatEffect mse = skill.getEffect(Math.Min(skillLv, skill.getMaxLevel()));
             if (mse != null)
             {
-                foreach (Player player in players)
+                foreach (var player in players)
                 {
                     await mse.applyTo(player);
                 }
@@ -130,19 +131,19 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         if (gain <= 0)
             return;
 
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
         var eventExpRate = EventManager.Template.GetExpRate();
         if (mapId == -1)
         {
-            foreach (Player mc in players)
+            foreach (var mc in players)
             {
                 await mc.gainExp((int)(gain * mc.getExpRate() * eventExpRate), true, true);
             }
         }
         else
         {
-            foreach (Player mc in players)
+            foreach (var mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -160,18 +161,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
             return;
         }
 
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
         if (mapId == -1)
         {
-            foreach (Player mc in players)
+            foreach (var mc in players)
             {
                 await mc.GainMeso((int)(gain * mc.getMesoRate()), GainItemShow.ShowInChat);
             }
         }
         else
         {
-            foreach (Player mc in players)
+            foreach (var mc in players)
             {
                 if (mc.getMapId() == mapId)
                 {
@@ -345,7 +346,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     {
         InstanceStatus = InstanceStatus.Cleared;
 
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
         }
@@ -376,7 +377,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task dropMessage(int type, string message)
     {
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.TypedMessage(type, message);
         }
@@ -397,7 +398,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         {
             eventTime = time;
 
-            foreach (Player chr in getPlayers())
+            foreach (var chr in getPlayers())
             {
                 await chr.SendPacket(PacketCreator.getClock((int)(time / 1000)));
             }
@@ -416,7 +417,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     private async Task dismissEventTimer()
     {
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.SendPacket(PacketCreator.removeClock());
         }
@@ -515,7 +516,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         InstanceStatus = InstanceStatus.Disposed;
         await stopEventTimer();
 
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await exitPlayer(chr);
         }
@@ -638,13 +639,13 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
             map = await this.getMapFactory().getMap(towarp);
         }
 
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
         try
         {
             if (players.Count < size)
             {
-                foreach (Player chr in players)
+                foreach (var chr in players)
                 {
                     if (chr == null)
                     {
@@ -683,9 +684,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         var mapChars = map.getMapPlayers() ?? [];
         if (mapChars.Count > 0)
         {
-            List<Player> eventMembers = getPlayers();
+            var eventMembers = getPlayers();
 
-            foreach (Player evChr in eventMembers)
+            foreach (var evChr in eventMembers)
             {
                 var chr = mapChars.GetValueOrDefault(evChr.getId());
 
@@ -800,9 +801,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task warpEventTeam(int warpFrom, int warpTo)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
-        foreach (Player chr in players)
+        foreach (var chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -813,9 +814,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task warpEventTeam(int warpTo)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
-        foreach (Player chr in players)
+        foreach (var chr in players)
         {
             await chr.changeMap(warpTo);
         }
@@ -823,9 +824,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task warpEventTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
-        foreach (Player chr in players)
+        foreach (var chr in players)
         {
             if (chr.getMapId() == warpFrom)
             {
@@ -836,9 +837,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task warpEventTeamToMapSpawnPoint(int warpTo, int toSp)
     {
-        List<Player> players = getPlayerList();
+        var players = getPlayerList();
 
-        foreach (Player chr in players)
+        foreach (var chr in players)
         {
             await chr.changeMap(warpTo, toSp);
         }
@@ -1037,7 +1038,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     public async Task TypedMessage(int type, string messageKey, params string[] param)
     {
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.TypedMessage(type, messageKey, param);
         }
@@ -1056,14 +1057,14 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
     public async Task Dialog(string key, int npc, params string[] param)
     {
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.Dialog(key, npc, param);
         }
     }
-    public async Task LightBlue(Func<ClientCulture, string> action)
+    public async Task LightBlue(Func<IClientCulture, string> action)
     {
-        foreach (Player chr in getPlayers())
+        foreach (var chr in getPlayers())
         {
             await chr.LightBlue(action);
         }

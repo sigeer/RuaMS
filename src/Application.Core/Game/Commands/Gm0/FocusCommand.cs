@@ -1,4 +1,3 @@
-using Application.Core.Game.Skills;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0

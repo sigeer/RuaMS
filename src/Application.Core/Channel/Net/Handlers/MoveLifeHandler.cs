@@ -22,8 +22,9 @@
 
 
 using Application.Core.Game.Life;
+using Application.Core.Server.life;
+using Application.Shared.Battle.Skills;
 using Microsoft.Extensions.Logging;
-using server.life;
 using tools;
 using tools.exceptions;
 
@@ -187,7 +188,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         {
             foreach (var chr in banishPlayers)
             {
-                await chr.changeMapBanish(monster.getBanish());
+                await chr.ChangeMapBanish(monster.SourceTemplate.Ban);
             }
         }
     }

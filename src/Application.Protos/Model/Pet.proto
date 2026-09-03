@@ -13,4 +13,5 @@ message PetProto {
   int32 flag = 7;
   int32 petSlot = 8;
   int32 petSkill = 9;
+  repeated int32 excludedItems = 10;
 }

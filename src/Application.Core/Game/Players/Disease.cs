@@ -1,5 +1,5 @@
 using Application.Core.Game.Players.PlayerProps;
-using server.life;
+using Application.Core.Server.life;
 using tools;
 using ZLinq;
 

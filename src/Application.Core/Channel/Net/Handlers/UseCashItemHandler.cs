@@ -205,7 +205,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                 eq?.setOwner(player.getName());
             }
             else if (itemId == 5060001 || itemId == 5061000 || itemId == 5061001 || itemId == 5061002 || itemId == 5061003)
-            { 
+            {
                 // Sealing lock
                 InventoryType type = InventoryTypeUtils.getByType((sbyte)p.readInt());
                 eq = player.getInventory(type).getItem((short)p.readInt());
@@ -385,14 +385,14 @@ public class UseCashItemHandler : ChannelHandlerBase
         }
         else if (itemType == 517)
         {
-            var pet = player.getPet(0);
+            var pet = player.GetPetByIndex(0);
             if (pet == null)
             {
                 await c.SendPacket(PacketCreator.enableActions());
                 return;
             }
             string newName = p.readString();
-            await pet.UpdateName(newName);
+            await pet.UpdateName(0, newName);
             await c.SendPacket(PacketCreator.enableActions());
             await remove(c, position, itemId);
         }
@@ -420,14 +420,14 @@ public class UseCashItemHandler : ChannelHandlerBase
                 return;
             }
 
-            for (byte i = 0; i < 3; i++)
+            for (sbyte i = 0; i < 3; i++)
             {
-                var pet = player.getPet(i);
+                var pet = player.GetPetByIndex(i);
                 if (pet != null)
                 {
                     if (template.Pet.Contains(pet.getItemId()))
                     {
-                        await pet.gainTamenessFullness(template.PetfoodInc, 100, 1, true);
+                        await pet.gainTamenessFullness(i, template.PetfoodInc, 100, 1, true);
                         await remove(c, position, itemId);
 
                         return;

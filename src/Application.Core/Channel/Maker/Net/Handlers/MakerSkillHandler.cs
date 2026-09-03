@@ -1,9 +1,4 @@
-using Application.Core.Channel.Maker;
 using Application.Core.Channel.Net;
-using Application.Core.Client;
-using Application.Shared.Constants.Inventory;
-using Application.Shared.Constants.Item;
-using Application.Shared.Net;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using tools;

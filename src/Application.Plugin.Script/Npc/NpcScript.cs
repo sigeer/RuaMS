@@ -3,6 +3,8 @@ using Application.Core.Game.ContiMove;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
+using Application.Core.Server.events;
+using Application.Core.Server.life;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants;
@@ -17,9 +19,6 @@ using Application.Utility;
 using Application.Utility.Configs;
 using Application.Utility.Exceptions;
 using Humanizer;
-using scripting.npc;
-using server.events;
-using server.life;
 using System.Drawing;
 using tools;
 
@@ -2405,7 +2404,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                Dictionary<int, string> allOptions = new() { 
+                Dictionary<int, string> allOptions = new() {
                     { 0, "挑战 企鹅王 和 雪人。" },
                 };
 
@@ -4948,6 +4947,7 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayNext("哇~ 你成功收集了5个#b#t4031508##k和#b#t4031507##k。好的，那么我会送你去动物园。到了之后请再和我交谈。");
                 //
+                await getEventInstance()!.clearPQ();
             }
             else
             {

@@ -2,11 +2,10 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
 using Application.Shared.GameProps;
-using scripting.npc;
 
 namespace Application.Plugin.Script.Npc
 {
-    internal partial class NpcScript: NpcScriptBase
+    internal partial class NpcScript : NpcScriptBase
     {
         public NpcScript(IChannelClient c, int npc, NPC? npcObj) : base(c, npc, npcObj)
         {

@@ -21,21 +21,21 @@
  */
 
 
-using server.maps;
+using Application.Core.Server.maps;
 using tools;
 
 namespace scripting.portal;
 
 public class PortalPlayerInteraction : AbstractPlayerInteraction
 {
-    private Portal portal;
+    private IPortal portal;
 
-    public PortalPlayerInteraction(IChannelClient c, Portal portal) : base(c)
+    public PortalPlayerInteraction(IChannelClient c, IPortal portal) : base(c)
     {
         this.portal = portal;
     }
 
-    public Portal getPortal()
+    public IPortal getPortal()
     {
         return portal;
     }

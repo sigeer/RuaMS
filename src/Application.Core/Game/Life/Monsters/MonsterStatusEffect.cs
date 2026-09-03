@@ -1,6 +1,6 @@
-﻿using Application.Core.Game.Skills;
-using client.status;
-using server.life;
+using Application.Core.Game.Skills;
+using Application.Core.Server.life;
+using Application.Shared.Battle.Skills;
 
 namespace Application.Core.Game.Life.Monsters
 {

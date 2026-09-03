@@ -22,7 +22,7 @@
 
 
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Skills;
+using Application.Shared.Battle.Skills;
 using client.autoban;
 
 namespace Application.Core.Channel.Net.Handlers;

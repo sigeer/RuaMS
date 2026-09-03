@@ -1,8 +1,5 @@
-using Application.Core.Channel;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Core.Scripting.Events;
-using Application.Shared.Constants.Npc;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events

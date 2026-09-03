@@ -1,6 +1,6 @@
 using Application.Core.Client;
+using Application.Core.Server.maps;
 using scripting.reactor;
-using server.maps;
 
 namespace Application.Plugin.Script
 {

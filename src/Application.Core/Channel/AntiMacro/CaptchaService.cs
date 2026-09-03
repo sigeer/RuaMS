@@ -1,6 +1,5 @@
 using SkiaSharp;
 using System.Collections.Concurrent;
-using System.Net.NetworkInformation;
 
 namespace Application.Core.Channel.AntiMacro;
 

@@ -1,5 +1,4 @@
 using Application.Core.Channel.DataProviders;
-using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
@@ -7,20 +6,19 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Mappers;
 using Application.Core.Models;
+using Application.Core.Server;
+using Application.Core.Server.events;
+using Application.Core.Server.life;
+using Application.Core.Server.quest;
 using Application.Core.ServerTransports;
-using Application.Scripting.JS;
+using Application.Shared.Battle.Skills;
 using Application.Shared.Events;
 using Application.Shared.Quest;
 using client;
 using client.inventory;
 using client.keybind;
-using Google.Protobuf;
 using Google.Protobuf.Collections;
 using net.server.guild;
-using server;
-using server.events;
-using server.life;
-using server.quest;
 using tools;
 
 namespace Application.Core.Channel.Services
@@ -28,14 +26,12 @@ namespace Application.Core.Channel.Services
     public class DataService
     {
         readonly IMapper _mapper;
-        readonly IItemMapper _itemMapper;
         readonly IChannelServerTransport _transport;
         readonly WorldChannelServer _server;
         Dictionary<int, List<ProtoModel.PLifeProto>> _plifeCache;
-        public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server, IItemMapper itemMapper)
+        public DataService(IMapper mapper, IChannelServerTransport transport, WorldChannelServer server)
         {
             _mapper = mapper;
-            _itemMapper = itemMapper;
             _transport = transport;
             _server = server;
             _plifeCache = new();
@@ -148,7 +144,7 @@ namespace Application.Core.Channel.Services
                 {
                     sandboxCheck |= item.Flag;
 
-                    var itemObj = _itemMapper.MapToObject(item);
+                    var itemObj = _server.Mapper.Map<Item>(item);
                     await chrInv.PutItem((short)item.Position, itemObj, true);
 
                     if (itemObj is Pet petObj)
@@ -176,24 +172,10 @@ namespace Application.Core.Channel.Services
             c.SetAccount(_mapper.Map<AccountInfoModel>(o.Account));
             c.SetPlayer(player);
 
-
-
-            foreach (var item in o.Character.Data.PetIgnores)
-            {
-                var petId = item.PetId;
-                player.resetExcluded(petId);
-
-                foreach (var itemId in item.ExcludedItems)
-                {
-                    player.addExcluded(petId, itemId);
-                }
-            }
-            await player.commitExcludedItems();
-
             player.PlayerTrockLocation.LoadData(o.Character.Data.TrockLocations);
             player.AreaInfo = o.Character.Data.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
 
-            player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as server.events.Events);
+            player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as Application.Core.Server.events.Events);
 
             var statusFromDB = o.Character.Data.QuestStatuses;
             foreach (var item in statusFromDB)
@@ -364,12 +346,6 @@ namespace Application.Core.Channel.Services
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
             data.QuestStatuses.AddRange(questStatusList);
 
-            data.PetIgnores.AddRange(player.getExcluded().Select(x =>
-            {
-                var m = new ProtoModel.PetIgnoreProto { PetId = x.Key };
-                m.ExcludedItems.AddRange(x.Value);
-                return m;
-            }));
             data.WishItems.AddRange(player.CashShopModel.getWishList());
             data.CoolDowns.AddRange(_mapper.Map<ProtoModel.CoolDownProto[]>(player.getAllCooldowns()));
 
@@ -386,7 +362,7 @@ namespace Application.Core.Channel.Services
             {
                 foreach (var invItem in player.Bag[kw.Key].list())
                 {
-                    kw.Value.Add(_itemMapper.MapToDto(invItem));
+                    kw.Value.Add(_server.Mapper.Map<ProtoModel.ItemProto>(invItem));
                 }
             }
             saveDto.AccountGame = new ProtoModel.AccountGameProto()
@@ -407,18 +383,18 @@ namespace Application.Core.Channel.Services
                 }
 
             };
-            saveDto.AccountGame.Data.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _itemMapper.MapToDto(x)));
+            saveDto.AccountGame.Data.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             data.GachaponStorage.Meso = player.GachaponStorage.Meso;
-            data.GachaponStorage.Items.AddRange(player.GachaponStorage.GetItems().Select(x => _itemMapper.MapToDto(x)));
+            data.GachaponStorage.Items.AddRange(player.GachaponStorage.GetItems().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             var cashFactoryType = player.CashShopModel.Factory;
             if (cashFactoryType == ItemType.CashOverall)
-                saveDto.AccountGame.Data.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             if (cashFactoryType == ItemType.CashAran)
-                saveDto.AccountGame.Data.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             if (cashFactoryType == ItemType.CashExplorer)
-                saveDto.AccountGame.Data.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             if (cashFactoryType == ItemType.CashCygnus)
-                saveDto.AccountGame.Data.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _itemMapper.MapToDto(x)));
+                saveDto.AccountGame.Data.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             return saveDto;
         }
 
@@ -430,6 +406,8 @@ namespace Application.Core.Channel.Services
                 var mapChr = map.getCharacterById(chr.Id);
                 if (mapChr != null)
                 {
+                    await mapChr.CommitExcludedItemsAll();
+
                     if (o.LoginInfo.IsNewCommer)
                     {
                         mapChr.setLoginTime(server.Node.GetCurrentTimeDateTimeOffset());

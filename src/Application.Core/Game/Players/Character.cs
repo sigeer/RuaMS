@@ -38,6 +38,11 @@ using Application.Core.Managers;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Core.Server;
+using Application.Core.Server.events;
+using Application.Core.Server.events.gm;
+using Application.Core.Server.maps;
+using Application.Core.Server.partyquest;
+using Application.Core.Server.quest;
 using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Templates.Item.Cash;
@@ -49,17 +54,9 @@ using client.inventory.manipulator;
 using client.keybind;
 using net.server.guild;
 using scripting;
-using server;
-using server.events;
-using server.events.gm;
-using server.maps;
-using server.partyquest;
-using server.quest;
-using server.quest.actions;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using tools;
-using static client.inventory.Equip;
 
 namespace Application.Core.Game.Players;
 
@@ -87,7 +84,7 @@ public partial class Player
     private int possibleReports = 10;
     private int dojoEnergy;
     private float expCoupon = 1, dropCoupon = 1;
-    private long lastUsedCashItem, lastExpression = 0, lastHealed, lastDeathtime = -1;
+    private long lastUsedCashItem, lastExpression = 0, lastHealed;
     private int localstr, localdex, localluk, localint_, localmagic, localwatk;
     private int equipstr, equipdex, equipluk, equipint_, equipmagic, equipwatk, localchairhp, localchairmp;
     private int localchairrate;
@@ -102,7 +99,6 @@ public partial class Player
 
     public AtomicInteger MesoValue { get; set; }
 
-    private long totalExpGained = 0;
 
     private AbstractEventInstanceManager? eventInstance = null;
 
@@ -141,8 +137,6 @@ public partial class Player
     private ConcurrentDictionary<Monster, int> controlled = new();
 
 
-    private Dictionary<int, CouponBuffEntry> activeCoupons = new();
-
     private Dictionary<int, Summon> summons = new();
 
 
@@ -154,14 +148,9 @@ public partial class Player
     public long PendantOfSpiritEquippedTime { get; set; } = -1;
     public byte PendantExp { get; private set; } = 0;
 
-    /// <summary>
-    /// PetId -> ItemId
-    /// </summary>
-    private Dictionary<long, HashSet<int>> excluded = new();
-    private HashSet<int> excludedItems = new();
     private HashSet<int> disabledPartySearchInvites = new();
 
-    private long portaldelay = 0, lastcombo = 0;
+    private long lastcombo = 0;
     private short combocounter = 0;
     private List<string> blockedPortals = new();
     public Dictionary<short, string> AreaInfo { get; set; } = new();
@@ -264,19 +253,6 @@ public partial class Player
     {
         this.mesosTraded += gain;
     }
-
-
-
-    public void addSummon(int Id, Summon summon)
-    {
-        summons.AddOrUpdate(Id, summon);
-
-        if (summon.isPuppet())
-        {
-            MapModel.addPlayerPuppet(this);
-        }
-    }
-
 
     public int calculateMaxBaseDamage(int watk, WeaponType weapon)
     {
@@ -1620,83 +1596,6 @@ public partial class Player
         return eventInstance;
     }
 
-
-
-    public void resetExcluded(long petId)
-    {
-        HashSet<int>? petExclude = excluded.GetValueOrDefault(petId);
-
-        if (petExclude != null)
-        {
-            petExclude.Clear();
-        }
-        else
-        {
-            excluded.AddOrUpdate(petId, new());
-        }
-    }
-
-    public void addExcluded(long petId, int x)
-    {
-        excluded.GetValueOrDefault(petId)?.Add(x);
-    }
-
-    public async Task commitExcludedItems()
-    {
-        var petExcluded = this.getExcluded();
-
-        excludedItems.Clear();
-
-        foreach (var pe in petExcluded)
-        {
-            sbyte petIndex = this.getPetIndex(pe.Key);
-            if (petIndex < 0)
-            {
-                continue;
-            }
-
-            HashSet<int> exclItems = pe.Value;
-            if (exclItems.Count > 0)
-            {
-                await SendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
-
-                foreach (int itemid in exclItems)
-                {
-                    excludedItems.Add(itemid);
-                }
-            }
-        }
-    }
-
-    public async Task exportExcludedItems(IChannelClient c)
-    {
-        var petExcluded = this.getExcluded();
-        foreach (var pe in petExcluded)
-        {
-            sbyte petIndex = this.getPetIndex(pe.Key);
-            if (petIndex < 0)
-            {
-                continue;
-            }
-
-            HashSet<int> exclItems = pe.Value;
-            if (exclItems.Count > 0)
-            {
-                await c.SendPacket(PacketCreator.loadExceptionList(this.getId(), pe.Key, petIndex, new(exclItems)));
-            }
-        }
-    }
-
-    public Dictionary<long, HashSet<int>> getExcluded()
-    {
-        return excluded.ToDictionary();
-    }
-
-    public HashSet<int> getExcludedItems()
-    {
-        return excludedItems.ToHashSet();
-    }
-
     public int getExp()
     {
         return ExpValue.get();
@@ -2090,6 +1989,15 @@ public partial class Player
         return Storage;
     }
 
+    public void addSummon(int Id, Summon summon)
+    {
+        summons.AddOrUpdate(Id, summon);
+
+        if (summon.isPuppet())
+        {
+            MapModel.addPlayerPuppet(this);
+        }
+    }
     public ICollection<Summon> getSummonsValues()
     {
         return summons.Values;
@@ -2115,10 +2023,7 @@ public partial class Player
         return trade;
     }
 
-    public int getVanquisherKills()
-    {
-        return VanquisherKills;
-    }
+
 
     public int getVanquisherStage()
     {
@@ -2941,7 +2846,7 @@ public partial class Player
 
     public void saveLocationOnWarp()
     {  // suggestion to remember the map before warp command thanks to Lei
-        Portal? closest = MapModel.findClosestPortal(getPosition());
+        IPortal? closest = MapModel.findClosestPortal(getPosition());
         int curMapid = getMapId();
 
         SavedLocations.FillData(new SavedLocation(curMapid, closest?.getId() ?? 0));
@@ -2949,13 +2854,13 @@ public partial class Player
 
     public void saveLocation(string type)
     {
-        Portal? closest = MapModel.findClosestPortal(getPosition());
+        IPortal? closest = MapModel.findClosestPortal(getPosition());
         SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
     }
 
     public void SaveLocation(SavedLocationType type)
     {
-        Portal? closest = MapModel.findClosestPortal(getPosition());
+        IPortal? closest = MapModel.findClosestPortal(getPosition());
         SavedLocations.AddOrUpdate(type, new SavedLocation(getMapId(), closest?.getId() ?? 0));
     }
 
@@ -3226,6 +3131,10 @@ public partial class Player
         this.VanquisherKills = x;
     }
 
+    public int getVanquisherKills()
+    {
+        return VanquisherKills;
+    }
     public void setVanquisherStage(int x)
     {
         this.VanquisherStage = x;
@@ -3252,7 +3161,7 @@ public partial class Player
         {
             nextWarningTime = (long)(curTime + TimeSpan.FromMinutes(1).TotalMilliseconds);   // show underlevel info again after 1 minute
 
-            await showHint("You have gained #rno experience#k from defeating #e#b" + mob.getName() + "#k#n (lv. #b" + mob.getLevel() + "#k)! Take note you must have around the same level as the mob to start earning EXP from it.");
+            await showHint("You have gained #rno experience#k from defeating #e#b" + Client.CurrentCulture.GetMobName(mob.getId()) + "#k#n (lv. #b" + mob.getLevel() + "#k)! Take note you must have around the same level as the mob to start earning EXP from it.");
         }
     }
 
@@ -3347,16 +3256,6 @@ public partial class Player
     public CashShop getCashShop()
     {
         return CashShopModel;
-    }
-
-    public void portalDelay(long delay)
-    {
-        this.portaldelay = Client.CurrentServer.Node.getCurrentTime();
-    }
-
-    public long portalDelay()
-    {
-        return portaldelay;
     }
 
     public async Task blockPortal(string? scriptName)

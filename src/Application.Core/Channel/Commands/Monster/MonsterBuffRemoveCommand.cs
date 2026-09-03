@@ -1,5 +1,4 @@
 using Application.Core.Game.Life;
-using client.status;
 using tools;
 
 namespace Application.Core.Channel.Commands

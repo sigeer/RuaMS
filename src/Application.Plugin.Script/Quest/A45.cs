@@ -45,7 +45,7 @@ namespace Application.Plugin.Script.Quest
             {
                 await SayOK("好的，那就这样吧。再见。");
             }
-            
+
         }
         // Quest: 8223 
         public async Task q8223s()

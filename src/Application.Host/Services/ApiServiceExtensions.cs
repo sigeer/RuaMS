@@ -1,8 +1,6 @@
 using Application.Host.Middlewares;
 using Application.Host.Models;
-using Application.Templates.Reader;
 using Application.Utility;
-using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -83,7 +81,7 @@ namespace Application.Host.Services
                     {
                         var errors = string.Join('|', context.ModelState
                                .Where(e => e.Value?.Errors?.Count > 0)
-                               .SelectMany(e => 
+                               .SelectMany(e =>
                                    e.Value!.Errors.Select(x => x.ErrorMessage)));
 
                         return new ObjectResult(new ResponseData<object>(null)

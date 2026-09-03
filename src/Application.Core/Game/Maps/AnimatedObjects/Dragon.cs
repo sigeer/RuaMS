@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Game.Maps;
 using tools;
 
-namespace server.maps;
+namespace Application.Core.Server.maps;
 
 
 /// <summary>

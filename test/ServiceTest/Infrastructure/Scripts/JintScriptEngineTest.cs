@@ -1,7 +1,6 @@
 using Application.Scripting.JS;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading.Tasks;
 
 namespace ServiceTest.Infrastructure.Scripts
 {

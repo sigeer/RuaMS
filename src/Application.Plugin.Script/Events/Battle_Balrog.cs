@@ -2,8 +2,8 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Core.Server.life;
 using Application.Shared.Battle;
-using server.life;
 using System.Drawing;
 
 namespace Application.Plugin.Script.Events

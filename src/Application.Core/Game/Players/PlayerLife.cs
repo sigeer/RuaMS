@@ -228,7 +228,6 @@ namespace Application.Core.Game.Players
         {
             await cancelAllBuffs(false);
             await dispelDebuffs();
-            lastDeathtime = Client.CurrentServer.Node.getCurrentTime();
 
             var eim = getEventInstance();
             if (eim != null)

@@ -40,7 +40,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
         var petId = p.readLong();
         var clientStartPos = p.readPos();
 
-        var mapPet = c.OnlinedCharacter.GetPetById(petId);
+        var (petSlot, mapPet) = c.OnlinedCharacter.GetPetById(petId);
         if (mapPet == null)
         {
             return;
@@ -56,7 +56,7 @@ public class MovePetHandler : AbstractMovementPacketHandler
             int movementDataLength = p.getPosition() - movementDataStart; //how many bytes were read by updatePosition
             p.seek(movementDataStart);
 
-            await mapPet.BroadcastMovement(PacketCreator.MovePet(c.OnlinedCharacter.Id, mapPet.Index, clientStartPos, p, movementDataLength), serverStartPos);
+            await mapPet.BroadcastMovement(PacketCreator.MovePet(c.OnlinedCharacter.Id, petSlot, clientStartPos, p, movementDataLength), serverStartPos);
             await mapPet.MapModel.MoveMapObject(mapPet);
         }
         catch (EmptyMovementException e)

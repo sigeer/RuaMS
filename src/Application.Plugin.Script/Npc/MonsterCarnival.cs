@@ -1,13 +1,9 @@
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.MapObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Plugin.Script.Npc
 {

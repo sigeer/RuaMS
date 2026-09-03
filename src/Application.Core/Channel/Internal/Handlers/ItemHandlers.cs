@@ -12,10 +12,8 @@ namespace Application.Core.Channel.Internal.Handlers
     {
         public class Megaphone : InternalSessionChannelHandler<ProtoModel.UseItemMegaphoneBroadcastProto>
         {
-            readonly IItemMapper _mapper;
-            public Megaphone(WorldChannelServer server, IItemMapper mapper) : base(server)
+            public Megaphone(WorldChannelServer server) : base(server)
             {
-                _mapper = mapper;
             }
 
             public override int MessageId => (int)ChannelRecvCode.HandleItemMegaphone;
@@ -24,7 +22,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 return _server.BroadcastAsync(async w =>
                 {
-                    var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _mapper.MapToObject(res.Request.Item));
+                    var p = PacketCreator.itemMegaphone(res.Request.Message, res.Request.IsWishper, res.MasterChannel, _server.Mapper.Map<Item>(res.Request.Item));
                     await w.broadcastPacket(p);
                 });
             }

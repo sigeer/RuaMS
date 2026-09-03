@@ -45,19 +45,19 @@ public class SpawnPetHandler : ChannelHandlerBase
                 if (item == null || item is not Pet petItem)
                     return;
 
-                var mapPet = chr.GetPetById(petItem.UniqueId);
+                var (petSlot, mapPet) = chr.GetPetById(petItem.UniqueId);
                 if (mapPet != null)
                 {
                     // 已经召唤了，召回
-                    await mapPet.Recall();
+                    await mapPet.Recall(petSlot);
                 }
                 else
                 {
-                    var defaultPet = chr.getPet(0);
+                    var defaultPet = chr.GetPetByIndex(0);
                     if (chr.getSkillLevel(chr.JobModel.Type.GetMultiPetSkillId()) == 0 && defaultPet != null)
                     {
                         // 已经召唤主宠，但是没有学习群宠，召回主宠
-                        await defaultPet.Recall();
+                        await defaultPet.Recall(0);
                     }
 
                     int petItemId = petItem.getItemId();

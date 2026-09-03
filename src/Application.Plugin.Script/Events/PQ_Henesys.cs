@@ -1,15 +1,12 @@
-using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
-using Application.Core.Scripting.Events;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Mob;
-using scripting.npc;
-using server.maps;
 
 namespace Application.Plugin.Script.Events
 {
@@ -100,7 +97,7 @@ namespace Application.Plugin.Script.Events
             {
                 var cakes = eim.getIntProperty("bunnyCake") + 1;
                 eim.setIntProperty("bunnyCake", cakes);
-               await  eim.LightBlue(nameof(ClientMessage.Event_HenesysPQ_Message1), cakes.ToString());
+                await eim.LightBlue(nameof(ClientMessage.Event_HenesysPQ_Message1), cakes.ToString());
             }
         }
 

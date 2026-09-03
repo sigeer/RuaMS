@@ -25,10 +25,9 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
+using Application.Core.Server.life;
 using client.inventory.manipulator;
-using client.status;
 using Microsoft.Extensions.Logging;
-using server.life;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -392,8 +391,9 @@ public class TakeDamageHandler : ChannelHandlerBase
         }
 
         foreach (var player in banishPlayers)
-        {  // chill, if this list ever gets non-empty an attacker does exist, trust me :)
-            await player.changeMapBanish(attacker?.getBanish());
+        {  
+            // chill, if this list ever gets non-empty an attacker does exist, trust me :)
+            await player.ChangeMapBanish(attacker?.SourceTemplate?.Ban);
         }
     }
 }

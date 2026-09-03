@@ -1,6 +1,6 @@
 using Application.Core.Game.Skills;
 using Application.Core.model;
-using server;
+using Application.Core.Server;
 using tools;
 
 namespace Application.Core.Game.Players
