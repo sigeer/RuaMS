@@ -144,7 +144,7 @@ public class Mount : ILoopTickable, IDisposable
             {
                 int tiredness = incrementAndGetTiredness();
 
-                await this.owner.BroadcastMap(PacketCreator.updateMount(this.getId(), this, false));
+                await this.owner.BroadcastMap(PacketCreator.updateMount(owner.getId(), this, false));
                 if (tiredness > 99)
                 {
                     setTiredness(99);
