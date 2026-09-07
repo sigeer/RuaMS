@@ -871,20 +871,15 @@ public class StatEffect
                 else
                 {
                     target = await applyto.getChannelServer().getMapFactory().getMap(townScroll.MoveTo);
-                    int targetid = target.getId() / 10000000;
-                    if (targetid != 60
-                        && applyto.getMapId() / 10000000 != 61
-                        && targetid != applyto.getMapId() / 10000000
-                        && targetid != 21
-                        && targetid != 20
-                        && targetid != 12
-                        && (applyto.getMapId() / 10000000 != 10
-                        && applyto.getMapId() / 10000000 != 12))
+                    if (townScroll.IgnoreContinent 
+                        || (applyto.IsSameContinent(townScroll.MoveTo)))
+                    {
+                        pt = target.getRandomPlayerSpawnpoint();
+                    }
+                    else
                     {
                         return false;
                     }
-
-                    pt = target.getRandomPlayerSpawnpoint();
                 }
 
                 await applyto.changeMap(target, pt);

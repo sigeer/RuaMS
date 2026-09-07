@@ -22,6 +22,7 @@
 
 
 using client;
+using Humanizer;
 
 namespace Application.Core.Server.quest.requirements;
 
@@ -48,16 +49,7 @@ public class IntervalRequirement : AbstractQuestRequirement
         long futureTime = chr.getQuest(Quest.getInstance(r.questID)).getCompletionTime() + r.getInterval();
         var leftTime = DateTimeOffset.FromUnixTimeMilliseconds(futureTime) - chr.Client.CurrentServer.Node.GetCurrentTimeDateTimeOffset();
 
-        List<string> messages = new List<string>();
-
-        if (leftTime.Hours > 0)
-            messages.Add($"{leftTime.Hours} hours");
-        if (leftTime.Minutes > 0)
-            messages.Add($"{leftTime.Minutes} minutes");
-        if (leftTime.Seconds > 0)
-            messages.Add($"{leftTime.Seconds} seconds");
-
-        return string.Join(", ", messages);
+        return leftTime.Humanize();
     }
 
     public override async Task<bool> check(Player chr, int? npcid)

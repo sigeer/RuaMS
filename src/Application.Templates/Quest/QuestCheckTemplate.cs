@@ -17,6 +17,9 @@ namespace Application.Templates.Quest
         public int? Npc { get; set; }
         public int? LevelMin { get; set; }
         public int? LevelMax { get; set; }
+        /// <summary>
+        /// unit. minute
+        /// </summary>
         public int? Interval { get; set; }
         /// <summary>
         /// yyyyMMddHH

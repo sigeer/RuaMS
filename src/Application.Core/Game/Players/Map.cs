@@ -331,9 +331,14 @@ namespace Application.Core.Game.Players
             await changeMap(await MapModel.getForcedReturnMap());
         }
 
-        public async Task ChangeMapAndChannel(int channel, int mapId, Point pos)
+        /// <summary>
+        /// 玩家与目标地图是否在同一大陆
+        /// </summary>
+        /// <param name="mapId"></param>
+        /// <returns></returns>
+        public bool IsSameContinent(int mapId)
         {
-            await Client.ChangeChannel(channel);
+            return Client.CurrentCulture.GetStringMapTemplate(MapModel.Id)?.Continent == Client.CurrentCulture.GetStringMapTemplate(mapId)?.Continent;
         }
     }
 }

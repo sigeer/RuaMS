@@ -24,11 +24,11 @@ namespace Application.Templates.Reader.Xml.Provider
                 .Take(maxCount);
         }
 
-        protected override StringTemplateBase? SetStringTemplate(XElement rootNode)
+        protected override StringTemplateBase? SetStringTemplate(string type, XElement rootNode)
         {
             if (int.TryParse(rootNode.GetName(), out var id))
             {
-                var template = new StringMapTemplate(id);
+                var template = new StringMapTemplate(id, type);
                 foreach (var propNode in rootNode.Elements())
                 {
                     var infoPropName = propNode.GetName();

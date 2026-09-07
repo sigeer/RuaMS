@@ -12,7 +12,7 @@ namespace Application.Templates.Reader.Xml.Provider
         {
         }
 
-        protected override StringTemplateBase? SetStringTemplate(XElement rootNode)
+        protected override StringTemplateBase? SetStringTemplate(string type, XElement rootNode)
         {
             if (int.TryParse(rootNode.GetName(), out var id))
             {

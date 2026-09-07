@@ -72,6 +72,7 @@ public class Pet : Item
         copyPet.Fullness = Fullness;
         copyPet.Tameness = Tameness;
         copyPet.Level = Level;
+        copyPet.ExcludeItems = ExcludeItems.ToHashSet();
 
         CopyItemProps(copyPet);
 
@@ -138,6 +139,7 @@ public class Pet : Item
         evolved.setExpiration(getExpiration());
         evolved.PetAttribute = PetAttribute;
         evolved.PetSkill = PetSkill;
+        evolved.ExcludeItems = ExcludeItems.ToHashSet();
 
         return evolved;
     }

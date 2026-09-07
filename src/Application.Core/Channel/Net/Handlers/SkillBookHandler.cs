@@ -73,7 +73,8 @@ public class SkillBookHandler : ChannelHandlerBase
                 else
                 {
                     var skill2 = SkillFactory.getSkill(targetSkillId)!;
-                    if ((player.GetPlayerSkillLevel(skill2.getId()) >= template.ReqSkillLevel || template.ReqSkillLevel == 0)
+                    var playerSkillLevel = player.GetPlayerSkillLevel(skill2.getId());
+                    if (playerSkillLevel >= template.ReqSkillLevel
                         && player.getMasterLevel(skill2) < template.MasterLevel)
                     {
                         var used = inv.getItem(slot);
@@ -88,12 +89,11 @@ public class SkillBookHandler : ChannelHandlerBase
                         if (ItemInformationProvider.rollSuccessChance(template.Success))
                         {
                             success = true;
-                            await player.changeSkillLevel(skill2, (sbyte)player.GetPlayerSkillLevel(skill2.getId()), Math.Max(template.MasterLevel, player.getMasterLevel(skill2)), -1);
+                            await player.changeSkillLevel(skill2, (sbyte)playerSkillLevel, template.MasterLevel, -1);
                         }
                         else
                         {
                             success = false;
-                            //player.dropMessage("The skill book lights up, but the skill winds up as if nothing happened.");
                         }
                     }
                     else

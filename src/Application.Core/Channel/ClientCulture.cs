@@ -111,12 +111,17 @@ namespace Application.Core.Channel
 
         public string GetMapName(int mapId)
         {
-            return StringProvider.GetSubProvider(StringCategory.Map)?.GetRequiredItem<StringMapTemplate>(mapId)?.MapName ?? StringConstants.WZ_NoName;
+            return GetStringMapTemplate(mapId)?.MapName ?? StringConstants.WZ_NoName;
         }
 
         public string GetMapStreetName(int mapId)
         {
-            return StringProvider.GetSubProvider(StringCategory.Map).GetRequiredItem<StringMapTemplate>(mapId)?.StreetName ?? StringConstants.WZ_NoName;
+            return GetStringMapTemplate(mapId)?.StreetName ?? StringConstants.WZ_NoName;
+        }
+
+        public StringMapTemplate? GetStringMapTemplate(int mapId)
+        {
+            return StringProvider.GetSubProvider(StringCategory.Map)?.GetRequiredItem<StringMapTemplate>(mapId);
         }
 
         public string GetJobName(Job job)

@@ -941,10 +941,6 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
 
     public SummonMobItemTemplate? GetSummonMobItemTemplate(int itemId) => GetProvider(itemId).GetRequiredItem<SummonMobItemTemplate>(itemId);
 
-    public int getWatkForProjectile(int itemId)
-    {
-        return GetProvider(itemId).GetRequiredItem<BulletItemTemplate>(itemId)?.IncPAD ?? 0;
-    }
 
     public bool HasTemplate(int itemId)
     {
@@ -1370,6 +1366,7 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public List<int> usableMasteryBooks(Player player)
     {
         List<int> masterybook = new();
+        
         for (int i = 2290000; i <= 2290139; i++)
         {
             if (canUseSkillBook(player, i))

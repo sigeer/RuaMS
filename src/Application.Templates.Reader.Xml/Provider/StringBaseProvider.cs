@@ -46,7 +46,7 @@ namespace Application.Templates.Reader.Xml.Provider
         }
 
 
-        protected virtual StringTemplateBase? SetStringTemplate(XElement rootNode)
+        protected virtual StringTemplateBase? SetStringTemplate(string type, XElement rootNode)
         {
             if (int.TryParse(rootNode.GetName(), out var id))
             {
@@ -77,7 +77,7 @@ namespace Application.Templates.Reader.Xml.Provider
                     {
                         foreach (var itemElement in typeElement.Elements())
                         {
-                            var data = SetStringTemplate(itemElement);
+                            var data = SetStringTemplate(typeElement.GetName() ?? string.Empty, itemElement);
                             if (data != null)
                                 yield return data;
                         }
@@ -90,7 +90,7 @@ namespace Application.Templates.Reader.Xml.Provider
                 {
                     foreach (var itemElement in etc.Elements())
                     {
-                        var data = SetStringTemplate(itemElement);
+                        var data = SetStringTemplate(etc.GetName() ?? string.Empty, itemElement);
                         if (data != null)
                             yield return data;
                     }
@@ -100,7 +100,7 @@ namespace Application.Templates.Reader.Xml.Provider
             {
                 foreach (var itemElement in rootNode.Elements())
                 {
-                    var data = SetStringTemplate(itemElement);
+                    var data = SetStringTemplate(string.Empty, itemElement);
                     if (data != null)
                         yield return data;
                 }

@@ -13,7 +13,7 @@ namespace Application.Templates.Reader.Img.Provider
         }
 
 
-        protected override StringTemplateBase? SetStringTemplate(IDataNode rootNode)
+        protected override StringTemplateBase? SetStringTemplate(string type, IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var questId))
             {

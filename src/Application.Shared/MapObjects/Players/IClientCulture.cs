@@ -1,5 +1,6 @@
 using Application.Shared.Constants.Job;
 using Application.Templates.Reader;
+using Application.Templates.String;
 using System.Globalization;
 
 namespace Application.Shared.MapObjects.Players
@@ -22,6 +23,7 @@ namespace Application.Shared.MapObjects.Players
         string? GetSkillName(int skillId);
         string Number(int i);
         string Ordinal(int i);
+        StringMapTemplate? GetStringMapTemplate(int mapId);
 
         WzFindResult<WzFindMapResultItem> FindMapIdByName(string name);
         WzFindResult<WzFindResultItem> FindItemIdByName(string name);

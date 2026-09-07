@@ -24,11 +24,11 @@ namespace Application.Templates.Reader.Img.Provider
                 .Take(maxCount);
         }
 
-        protected override StringTemplateBase? SetStringTemplate(IDataNode rootNode)
+        protected override StringTemplateBase? SetStringTemplate(string type, IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var id))
             {
-                var template = new StringMapTemplate(id);
+                var template = new StringMapTemplate(id, type);
                 foreach (var propNode in rootNode.Children)
                 {
                     var infoPropName = propNode.Name;

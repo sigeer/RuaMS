@@ -44,7 +44,7 @@ namespace Application.Templates.Reader.Img.Provider
             }
         }
 
-        protected virtual StringTemplateBase? SetStringTemplate(IDataNode rootNode)
+        protected virtual StringTemplateBase? SetStringTemplate(string type, IDataNode rootNode)
         {
             if (int.TryParse(rootNode.Name, out var id))
             {
@@ -73,7 +73,7 @@ namespace Application.Templates.Reader.Img.Provider
                     foreach (var typeElement in first.Children)
                         foreach (var itemElement in typeElement.Children)
                         {
-                            var data = SetStringTemplate(itemElement);
+                            var data = SetStringTemplate(typeElement.Name, itemElement);
                             if (data != null) yield return data;
                         }
             }
@@ -82,7 +82,7 @@ namespace Application.Templates.Reader.Img.Provider
                 foreach (var etc in rootNode.Children)
                     foreach (var itemElement in etc.Children)
                     {
-                        var data = SetStringTemplate(itemElement);
+                        var data = SetStringTemplate(etc.Name, itemElement);
                         if (data != null) yield return data;
                     }
             }
@@ -90,7 +90,7 @@ namespace Application.Templates.Reader.Img.Provider
             {
                 foreach (var itemElement in rootNode.Children)
                 {
-                    var data = SetStringTemplate(itemElement);
+                    var data = SetStringTemplate(string.Empty, itemElement);
                     if (data != null) yield return data;
                 }
             }

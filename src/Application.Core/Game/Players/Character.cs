@@ -2690,7 +2690,7 @@ public partial class Player
                                 if (item.getQuantity() > 0)
                                 {
                                     // Finally there!
-                                    localwatk += ii.getWatkForProjectile(item.getItemId());
+                                    localwatk += ((item.SourceTemplate as BulletItemTemplate)?.IncPAD ?? 0);
                                     break;
                                 }
                             }

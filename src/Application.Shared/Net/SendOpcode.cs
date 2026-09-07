@@ -309,7 +309,13 @@ public enum SendOpcode
     /// </summary>
     Teleport = 0xCF,
     LUCKSACK_PASS = 0xD0,
+    /// <summary>
+    /// CUserLocal::OnMesoGive_Succeeded
+    /// </summary>
     LUCKSACK_FAIL = 0xD1,
+    /// <summary>
+    /// CUserLocal::OnMesoGive_Failed
+    /// </summary>
     MESO_BAG_MESSAGE = 0xD2,
     /// <summary>
     /// CUserLocal::OnQuestResult
