@@ -67,7 +67,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             setPosition(Owner!.getPosition());
         }
 
-        public short GetFoothold() => (short)MapModel.Footholds.FindBelowFoothold(getPosition())!.getId();
+        public short GetFoothold() => (short)(MapModel.Footholds.FindBelowFoothold(getPosition())?.getId() ?? 0);
 
         public override bool IsVisibleForPlayer(Player chr)
         {
