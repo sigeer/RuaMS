@@ -197,6 +197,13 @@ namespace Application.Core.Game.Players
         }
 
 
+        /// <summary>
+        /// 意义不明
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="pto"></param>
+        /// <returns></returns>
+        [Obsolete]
         public async Task forceChangeMap(IMap target, IPortal? pto = null)
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot

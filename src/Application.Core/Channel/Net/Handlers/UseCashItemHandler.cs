@@ -27,6 +27,7 @@ using Application.Core.Channel.ServerData;
 using Application.Core.Channel.Services;
 using Application.Core.Game.Maps;
 using Application.Resources.Messages;
+using Application.Shared.Constants.Map;
 using Application.Templates.Item.Cash;
 using client.inventory;
 using client.inventory.manipulator;
@@ -97,31 +98,30 @@ public class UseCashItemHandler : ChannelHandlerBase
 
         string medal = player.getMedalText();
         if (itemType == 504)
-        { // vip teleport rock
-            string error1 = "Either the player could not be found or you were trying to teleport to an illegal location.";
-            bool vip = p.readByte() == 1 && itemId / 1000 >= 5041;
-            await remove(c, position, itemId);
+        { 
+            bool findPlayer = p.readByte() > 0;
+            bool isVip = itemId / 1000 >= 5041;
             bool success = false;
-            if (!vip)
+            if (!findPlayer)
             {
                 int mapId = p.readInt();
-                if (itemId / 1000 >= 5041 || mapId / 100000000 == player.getMapId() / 100000000)
+                if (!isVip && !player.IsSameContinent(mapId))
+                {
+                    await player.Popup("You cannot teleport between continents with this teleport rock.");
+                }
+                else
                 {
                     //check vip or same continent
                     var targetMap = await c.CurrentServer.getMapFactory().getMap(mapId);
-                    if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(mapId)))
+                    if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()))
                     {
-                        await player.forceChangeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
+                        await player.changeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
                         success = true;
                     }
                     else
                     {
-                        await player.Popup(error1);
+                        await player.Popup("You cannot teleport to this map.");
                     }
-                }
-                else
-                {
-                    await player.Popup("You cannot teleport between continents with this teleport rock.");
                 }
             }
             else
@@ -132,24 +132,23 @@ public class UseCashItemHandler : ChannelHandlerBase
                 if (victim != null)
                 {
                     var targetMap = victim.getMap();
-                    if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (targetMap.getForcedReturnId() == MapId.NONE || MapId.isMapleIsland(targetMap.getId())))
+                    if (!isVip && !player.IsSameContinent(targetMap.Id))
                     {
-                        if (!victim.isGM() || victim.gmLevel() <= player.gmLevel())
+                        await player.Popup("You cannot teleport between continents with this teleport rock.");
+                    }
+                    else
+                    {
+                        if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (victim.gmLevel() <= player.gmLevel()))
                         {
-                            // thanks Yoboes for noticing non-GM's being unreachable through rocks
-                            // forceChangeMap 可以跨事件传送，岂不是缩地石可以中途参与事件？
-                            await player.forceChangeMap(targetMap, targetMap.findClosestPlayerSpawnpoint(victim.getPosition()));
+                            await player.changeMap(targetMap, victim.getPosition());
                             success = true;
                         }
                         else
                         {
-                            await player.Popup(error1);
+                            await player.Popup("You cannot teleport to this map.");
                         }
                     }
-                    else
-                    {
-                        await player.Popup("You cannot teleport to this map.");
-                    }
+
                 }
                 else
                 {
@@ -157,11 +156,11 @@ public class UseCashItemHandler : ChannelHandlerBase
                 }
             }
 
-            if (!success)
+            if (success)
             {
-                await player.GainItem(itemId, 1);
-                await c.SendPacket(PacketCreator.enableActions());
+                await remove(c, position, itemId);
             }
+            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 505)
         {
