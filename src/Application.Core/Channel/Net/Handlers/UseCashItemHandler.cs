@@ -98,69 +98,52 @@ public class UseCashItemHandler : ChannelHandlerBase
 
         string medal = player.getMedalText();
         if (itemType == 504)
-        { 
+        {
             bool findPlayer = p.readByte() > 0;
             bool isVip = itemId / 1000 >= 5041;
-            bool success = false;
+            IMap targetMap;
+            Point targetPos = Point.Empty;
             if (!findPlayer)
             {
                 int mapId = p.readInt();
-                if (!isVip && !player.IsSameContinent(mapId))
-                {
-                    await player.Popup("You cannot teleport between continents with this teleport rock.");
-                }
-                else
-                {
-                    //check vip or same continent
-                    var targetMap = await c.CurrentServer.getMapFactory().getMap(mapId);
-                    if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()))
-                    {
-                        await player.changeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
-                        success = true;
-                    }
-                    else
-                    {
-                        await player.Popup("You cannot teleport to this map.");
-                    }
-                }
+                targetMap = await c.CurrentServer.getMapFactory().getMap(mapId);
             }
             else
             {
                 string name = p.readString();
                 var victim = c.CurrentServer.getPlayerStorage().getCharacterByName(name);
 
-                if (victim != null)
-                {
-                    var targetMap = victim.getMap();
-                    if (!isVip && !player.IsSameContinent(targetMap.Id))
-                    {
-                        await player.Popup("You cannot teleport between continents with this teleport rock.");
-                    }
-                    else
-                    {
-                        if (!FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()) && (victim.gmLevel() <= player.gmLevel()))
-                        {
-                            await player.changeMap(targetMap, victim.getPosition());
-                            success = true;
-                        }
-                        else
-                        {
-                            await player.Popup("You cannot teleport to this map.");
-                        }
-                    }
-
-                }
-                else
+                if (victim == null)
                 {
                     await player.Popup(nameof(ClientMessage.PlayerNotFoundInChannel), name);
+                    await c.SendPacket(PacketCreator.enableActions());
+                    return;
                 }
+
+                targetMap = victim.getMap();
+                targetPos = victim.getPosition();
             }
 
-            if (success)
+            if (!isVip && !player.IsSameContinent(targetMap.getId()))
+            {
+                await player.Popup("You cannot teleport between continents with this teleport rock.");
+                await c.SendPacket(PacketCreator.enableActions());
+                return;
+            }
+            else if (FieldLimit.CANNOTVIPROCK.check(targetMap.getFieldLimit()))
+            {
+                await player.Popup("You cannot teleport to this map.");
+                await c.SendPacket(PacketCreator.enableActions());
+                return;
+            }
+            else
             {
                 await remove(c, position, itemId);
+                if (targetPos == Point.Empty)
+                    await player.changeMap(targetMap, targetMap.getRandomPlayerSpawnpoint());
+                else
+                    await player.changeMap(targetMap, targetPos);
             }
-            await c.SendPacket(PacketCreator.enableActions());
         }
         else if (itemType == 505)
         {
