@@ -148,14 +148,43 @@ Each feature module follows a consistent layered structure:
 
 ## Naming & Code Style
 
-- LF line endings, UTF-8 encoding
-- 4-space indentation
-- Interface prefix `I` (PascalCase)
-- Types, methods, properties, events: PascalCase
-- `this` qualification: not used for fields/properties/methods/events
-- Expression-bodied members: properties/indexers/accessors/lambdas preferred; methods/constructors/operators use block body
-- `var` not used for built-in types or when type is apparent
-- `using` placed outside namespace
-- Prefer `using` statements over braces
-- Suppressed analyzers: IDE1006 (naming), IDE0066 (switch), IDE0290 (primary constructor)
-- **Constants and fields: PascalCase** (`SomeName` not `SOME_NAME`); local variables: camelCase
+- LF line endings, UTF-8 without BOM encoding
+- 4-space indentation, Allman braces (new line for `{`)
+- File-scoped namespaces (e.g., `namespace MyApp;`) preferred
+
+### Naming Conventions
+
+- Interfaces: `I` prefix + PascalCase (e.g., `IService`)
+- Classes, Methods, Properties, Events, Delegates, Enums: PascalCase
+- Constants (`const`) and `static readonly` fields: PascalCase
+- **Private instance fields**: `_camelCase` (e.g., `_logger`, `_config`)
+- Public/Protected/Internal instance fields (rarely used): PascalCase
+- Parameters and Local variables: camelCase
+- `this` qualification: Not used for fields/properties/methods/events
+
+### Syntax & Body Style
+
+- Expression-bodied members: Preferred for properties, indexers, accessors, and lambdas
+- Methods, constructors, destructors, operators: **Block body** (`{ }`) preferred
+- Prefer `using` statements (no braces) over `using` blocks for disposable resources
+- `using` directives: Placed **outside** the namespace
+
+### Type Inference (`var`)
+
+- **Explicit type required** for built-in types (`int`, `string`, `bool`, `double`, etc.)
+- `var` allowed only when the type is not apparent (e.g., `var result = GetComplexObject()`;)
+- (Suppress IDE0007, keep IDE0008)
+
+### Modifiers & Structure
+
+- Explicit accessibility modifiers required (always specify `private`, `public`, etc.)
+- Instance fields that are never modified after construction: **must** be marked `readonly`
+- One type per source file (exclude `partial` classes)
+
+### Suppressed Analyzers (to avoid noise)
+
+- IDE1006 (Naming) - Handled by custom rules above
+- IDE0066 (Switch expression) - Use classic switch or suppressed
+- IDE0290 (Primary constructor) - Suppress (classic constructors preferred)
+- IDE0008 (Explicit type) - Enabled (matches our rule)
+- IDE0007 (Implicit var) - Suppressed globally
