@@ -318,7 +318,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
             return false;
 
         var pMember = p.GetTeamMembers();
-        return pMember.All(x => x.Channel == c.CurrentServer.getId());
+        return pMember.All(x => x.Channel == c.CurrentServer.Id);
     }
 
     public bool CheckTeamMemberMap()

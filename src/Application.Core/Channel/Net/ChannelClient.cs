@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net
 
         public WorldChannel CurrentServer { get; }
 
-        public int Channel => CurrentServer.getId();
+        public int Channel => CurrentServer.Id;
         public NPCConversationManager? NPCConversationManager { get; set; }
 
         public override int AccountId => AccountEntity?.Id ?? -2;

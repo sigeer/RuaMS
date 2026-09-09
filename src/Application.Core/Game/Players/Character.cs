@@ -1453,7 +1453,13 @@ public partial class Player
 
     public Task enableCSActions() => Client.SendPacket(PacketCreator.enableCSUse(this));
 
-    public Task closePlayerScriptInteractions() => Task.CompletedTask;
+    public async Task closePlayerScriptInteractions()
+    {
+        if (Client.NPCConversationManager != null)
+        {
+            await Client.NPCConversationManager.DisposeAsync();
+        }
+    }
 
     AbstractPlayerInteraction? _pi;
     public AbstractPlayerInteraction getAbstractPlayerInteraction()
