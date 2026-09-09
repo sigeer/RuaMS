@@ -52,6 +52,8 @@ namespace Application.Templates.Reader.Xml
                             .ToArray()
                             : [];
                     }
+                case ProviderType.MapAreaCode:
+                    return [Path.Combine(imgDir, "Map", "AreaCode.img.xml")];
                 case ProviderType.MobSkill:
                     return [Path.Combine(imgDir, "MobSkill.img.xml")];
                 case ProviderType.Quest:
@@ -143,7 +145,7 @@ namespace Application.Templates.Reader.Xml
 
             ProviderType.OxQuiz => "Etc.wz",
 
-            ProviderType.MapObstacle => "Map.wz",
+            ProviderType.MapObstacle or ProviderType.MapAreaCode => "Map.wz",
 
             ProviderType.CarnivalSkill or
             ProviderType.CarnivalGuardian => "Skill.wz",

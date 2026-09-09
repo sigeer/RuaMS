@@ -30,6 +30,8 @@ namespace Application.Templates.Reader
         CarnivalSkill,
         CarnivalGuardian,
         MapObstacle,
-        OxQuiz
+        OxQuiz,
+
+        MapAreaCode
     }
 }

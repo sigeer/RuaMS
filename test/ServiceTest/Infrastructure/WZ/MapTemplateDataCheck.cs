@@ -263,4 +263,33 @@ internal class MapTemplateDataCheck(string readerType) : WzTestBase(readerType)
             Assert.That(all.Any(o => o.MobDamage > 0), Is.True);
         }
     }
+    [Test]
+    public void MapAreaCodeTest()
+    {
+        var provider = _providerSource.GetProvider(ProviderType.Map);
+        Dictionary<int, int> pre = new Dictionary<int, int>
+        {
+            { 40000, 0 },
+            { 100000003, 1 },
+            { 110010000, 2 },
+            { 120000000, 1 },
+            { 130000000, 1 },
+            { 140000000, 1 },
+            { 190000000, 1 },   //
+            { 200000000, 3 },   // 天空之城
+            { 211000000, 3 },   // 冰峰雪域
+            { 220000000, 4 },   // 玩具城
+            { 230000000, 5 },   // 水下世界
+            { 240000000, 6 },
+            { 250000000, 7 },
+            { 260000000, 8 },
+            { 270000000, 10 },
+            { 280010000, 3 },   // 废矿区
+        };
+
+        foreach (var item in pre)
+        {
+            Assert.That(provider.GetRequiredItem<MapTemplate>(item.Key)!.GetMapAreaCode() == item.Value);
+        }
+    }
 }

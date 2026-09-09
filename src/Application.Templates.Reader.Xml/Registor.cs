@@ -27,6 +27,7 @@ namespace Application.Templates.Reader.Xml
                 .RegisterProvider(() => new MapObstacleProvider(ps.Resolver))
                 .RegisterProvider(() => new OxQuizProvider(ps.Resolver))
                 .RegisterProvider(() => new EtcItemMakeProvider(ps.Resolver))
+                .RegisterProvider(() => new MapAreaCodeProvider(ps.Resolver))
 
                 .RegisterKeydProvider("zh-CN", () => new StringProvider(CultureInfo.GetCultureInfo("zh-CN"), ps.Resolver))
                 .RegisterKeydProvider("en-US", () => new StringProvider(CultureInfo.GetCultureInfo("en-US"), ps.Resolver));

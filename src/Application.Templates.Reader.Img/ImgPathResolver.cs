@@ -53,6 +53,8 @@ public class ImgPathResolver : IWzPathResolver
                         .ToArray()
                         : [];
                 }
+            case ProviderType.MapAreaCode:
+                return [Path.Combine(imgDir, "Map", "AreaCode.img")];
             case ProviderType.MobSkill:
                 return [Path.Combine(imgDir, "MobSkill.img")];
             case ProviderType.Quest:
@@ -144,7 +146,7 @@ public class ImgPathResolver : IWzPathResolver
 
         ProviderType.OxQuiz => "Etc",
 
-        ProviderType.MapObstacle => "Map.wz",
+        ProviderType.MapObstacle or ProviderType.MapAreaCode => "Map",
 
         ProviderType.CarnivalSkill or
         ProviderType.CarnivalGuardian => "Skill",
