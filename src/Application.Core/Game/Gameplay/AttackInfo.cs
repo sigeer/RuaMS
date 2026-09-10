@@ -6,7 +6,16 @@ namespace Application.Core.Game.Gameplay
 {
     public class AttackInfo
     {
-        public int numAttacked, numDamage, numAttackedAndDamage, skill, skilllevel, stance, direction, rangedirection, charge, display;
+        /// <summary>
+        /// 攻击到的怪物数量
+        /// </summary>
+        public int numAttacked { get; set; }
+        /// <summary>
+        /// 伤害段数
+        /// </summary>
+        public int numDamage { get; set; }
+        public int numAttackedAndDamage { get; set; }
+        public int skill, skilllevel, stance, direction, rangedirection, charge, display;
         public Dictionary<int, AttackTarget?> targets = new();
         public bool ranged, magic;
         public int speed = 4;

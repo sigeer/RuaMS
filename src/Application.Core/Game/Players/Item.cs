@@ -4,6 +4,7 @@ using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
 using Application.Core.Server;
 using Application.Templates.Etc;
+using Application.Templates.Item.Consume;
 using Application.Utility.Performance;
 using client.inventory;
 using client.inventory.manipulator;
@@ -425,6 +426,42 @@ namespace Application.Core.Game.Players
 
             CashShopModel.BuyCashItem(cashType, cItem);
             await SendPacket(PacketCreator.showCash(this));
+        }
+
+        /// <summary>
+        /// 获取当前飞镖
+        /// CUserLocal::GetProperBulletPosition
+        /// </summary>
+        /// <returns></returns>
+        public Item? GetProperBulletItem(int useCount)
+        {
+            var weapon = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
+            if (weapon == null || !ItemId.IsShootingWeapon(weapon.getItemId()))
+            {
+                return null;
+            }
+
+            var inv = getInventory(InventoryType.USE);
+            for (short i = 1; i <= inv.getSlotLimit(); i++)
+            {
+                var item = inv.getItem(i);
+                if (item != null
+                    && item.SourceTemplate is BulletItemTemplate bulletItemTemplate
+                    && Level >= bulletItemTemplate.ReqLevel
+                    && item.getQuantity() >= useCount
+                    && ItemId.IsCorrectBulletItem(weapon.getItemId(), item.getItemId()))
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        public async Task RechargeBullet(Item bulletItem)
+        {
+            var slotMax = ItemInformationProvider.getInstance().getSlotMax(Client, bulletItem.getItemId());
+            bulletItem.setQuantity(slotMax);
+            await SyncClientInventory(new InventoryUpdateQuantity(InventoryType.USE, bulletItem.getPosition(), slotMax));
         }
     }
 }

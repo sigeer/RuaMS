@@ -24,6 +24,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Resources.Messages;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace client.inventory.manipulator;
@@ -317,6 +318,20 @@ public class InventoryManipulator
         if (removeRes != null && type != InventoryType.CANHOLD)
         {
             await chr.SyncClientInventory(removeRes, fromDrop);
+        }
+    }
+
+    /// <summary>
+    /// 自动补充平衡之怒
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <param name="bulletItem"></param>
+    /// <returns></returns>
+    public static async Task RechargeBalanceFury(Player chr, Item bulletItem)
+    {
+        if (bulletItem.getItemId() == ItemId.BALANCED_FURY && bulletItem.getQuantity() <= 10)
+        {
+            await chr.RechargeBullet(bulletItem);
         }
     }
 

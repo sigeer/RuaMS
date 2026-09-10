@@ -2670,41 +2670,11 @@ public partial class Player
 
         if (JobModel.isA(Job.THIEF) || JobModel.isA(Job.BOWMAN) || JobModel.isA(Job.PIRATE) || JobModel.isA(Job.NIGHTWALKER1) || JobModel.isA(Job.WINDARCHER1))
         {
-            var weapon_item = getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Weapon);
-            if (weapon_item != null)
+            var activeBullet = GetProperBulletItem(1);
+            if (activeBullet != null)
             {
-                ItemInformationProvider ii = ItemInformationProvider.getInstance();
-                WeaponType weapon = ii.getWeaponType(weapon_item.getItemId());
-                bool bow = weapon == WeaponType.BOW;
-                bool crossbow = weapon == WeaponType.CROSSBOW;
-                bool claw = weapon == WeaponType.CLAW;
-                bool gun = weapon == WeaponType.GUN;
-                if (bow || crossbow || claw || gun)
-                {
-                    // Also calc stars into this.
-                    var inv = getInventory(InventoryType.USE);
-                    for (short i = 1; i <= inv.getSlotLimit(); i++)
-                    {
-                        var item = inv.getItem(i);
-                        if (item != null)
-                        {
-                            if ((claw && ItemConstants.isThrowingStar(item.getItemId()))
-                                || (gun && ItemConstants.isBullet(item.getItemId()))
-                                || (bow && ItemConstants.isArrowForBow(item.getItemId()))
-                                || (crossbow && ItemConstants.isArrowForCrossBow(item.getItemId())))
-                            {
-                                if (item.getQuantity() > 0)
-                                {
-                                    // Finally there!
-                                    localwatk += ((item.SourceTemplate as BulletItemTemplate)?.IncPAD ?? 0);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+                localwatk += (activeBullet.SourceTemplate as BulletItemTemplate)!.IncPAD;
             }
-            // Add throwing stars to dmg.
         }
 
     }

@@ -67,6 +67,8 @@ namespace Application.Templates.Skill
         public int ItemCon { get; set; }
         [WZPath("~/itemConNo")]
         public int ItemConNo { get; set; }
+        [WZPath("~/itemConsume")]
+        public int ItemConsume { get; set; }
 
         [GenerateIgnoreProperty]
         public int HPR { get; set; }

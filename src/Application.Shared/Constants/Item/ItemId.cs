@@ -93,30 +93,7 @@ public class ItemId
     }
 
     // Throwing star
-    public const int SUBI_THROWING_STARS = 2070000;
-    public const int HWABI_THROWING_STARS = 2070007;
     public const int BALANCED_FURY = 2070018;
-    public const int CRYSTAL_ILBI_THROWING_STARS = 2070016;
-    private static int THROWING_STAR_MIN = SUBI_THROWING_STARS;
-    private const int THROWING_STAR_MAX = 2070016;
-    public const int DEVIL_RAIN_THROWING_STAR = 2070014;
-
-    public static int[] allThrowingStarIds()
-    {
-        return Enumerable.Range(THROWING_STAR_MIN, THROWING_STAR_MAX - THROWING_STAR_MIN + 1).ToArray();
-    }
-
-    // Bullet
-    public const int BULLET = 2330000;
-    private const int BULLET_MIN = BULLET;
-    private const int BULLET_MAX = 2330005;
-    public const int BLAZE_CAPSULE = 2331000;
-    public const int GLAZE_CAPSULE = 2332000;
-
-    public static int[] allBulletIds()
-    {
-        return Enumerable.Range(BULLET_MIN, BULLET_MAX - BULLET_MIN + 1).ToArray();
-    }
 
     // Starter
     public const int BEGINNERS_GUIDE = 4161001;
@@ -491,4 +468,65 @@ public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
     public static int MITHRIL_PLATINE_PANTS = 1060091;
     public static int BLUE_CARZEN_BOOTS = 1072154;
     public static int MITHRIL_PLATINE = 1040103;
+
+    /// <summary>
+    /// int __cdecl get_weapon_type(int nItemID)
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <returns></returns>
+    public static int GetWeaponType(int nItemID)
+    {
+        int result; // eax
+
+        if (nItemID / 1000000 != 1)
+            return 0;
+        result = nItemID / 10000 % 100;
+        if (result < 30 || result > 33 && (result <= 36 || result > 49))
+            return 0;
+        return result;
+    }
+
+    /// <summary>
+    /// BOOL __cdecl is_shooting_weapon(int nItemID)
+    /// </summary>
+    /// <param name="nItemID"></param>
+    /// <returns></returns>
+    public static bool IsShootingWeapon(int nItemID)
+    {
+        int weapon_type; // eax
+
+        weapon_type = GetWeaponType(nItemID);
+        return weapon_type == 45 || weapon_type == 46 || weapon_type == 47 || weapon_type == 49;
+    }
+
+    /// <summary>
+    /// int __cdecl is_correct_bullet_item(int nWeaponItemID, int nItemID)
+    /// BOOL __cdecl sub_8C7F3C(int a1, int a2)
+    /// </summary>
+    /// <param name="nWeaponItemID"></param>
+    /// <param name="nItemID"></param>
+    /// <returns></returns>
+    public static bool IsCorrectBulletItem(int nWeaponItemID, int nItemID)
+    {
+        int weapon_type; // eax
+
+        weapon_type = GetWeaponType(nWeaponItemID);
+        if (weapon_type == 45 || nWeaponItemID == 1472063)
+            return nItemID / 1000 == 2060;
+        switch (weapon_type)
+        {
+            case 46:
+                return nItemID / 1000 == 2061;
+            case 47:
+                return nItemID / 10000 == 207;
+            case 49:
+                return IsPelletItem(nItemID);
+        }
+        return false;
+    }
+
+    public static bool IsPelletItem(int itemId)
+    {
+        return itemId / 10000 == 233;
+    }
 }
