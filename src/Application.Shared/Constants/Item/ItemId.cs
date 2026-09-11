@@ -529,4 +529,14 @@ public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
     {
         return itemId / 10000 == 233;
     }
+
+    public static bool IsIcePelletItem(int itemId)
+    {
+        return itemId / 1000 == 2332;
+    }
+
+    public static bool IsFirePelletItem(int itemId)
+    {
+        return itemId / 1000 == 2331;
+    }
 }

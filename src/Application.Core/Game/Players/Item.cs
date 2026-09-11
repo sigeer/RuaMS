@@ -449,7 +449,9 @@ namespace Application.Core.Game.Players
                     && item.SourceTemplate is BulletItemTemplate bulletItemTemplate
                     && Level >= bulletItemTemplate.ReqLevel
                     && item.getQuantity() >= useCount
-                    && ItemId.IsCorrectBulletItem(weapon.getItemId(), item.getItemId()))
+                    && ItemId.IsCorrectBulletItem(weapon.getItemId(), item.getItemId())
+                    && !ItemId.IsIcePelletItem(item.getItemId())
+                    && !ItemId.IsFirePelletItem(item.getItemId()))
                 {
                     return item;
                 }
