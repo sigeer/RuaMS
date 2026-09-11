@@ -1166,10 +1166,6 @@ namespace Application.Core.Game.Players
             {
                 return new EffectBerserk(chr, effect, startTime, expiredAt, value);
             }
-            else if (effect.isBeholder())
-            {
-                return new EffectBehold(chr, effect, startTime, expiredAt, value);
-            }
             else if (effect.isRecovery())
             {
                 return new EffectRecovery(chr, effect, startTime, expiredAt, value);
