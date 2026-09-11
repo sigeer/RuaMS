@@ -316,14 +316,7 @@ namespace Application.Core.Channel.Services
             else
             {
                 var closest = player.MapModel.findClosestPlayerSpawnpoint(player.getPosition());
-                if (closest != null)
-                {
-                    playerDto.Spawnpoint = closest.getId();
-                }
-                else
-                {
-                    playerDto.Spawnpoint = 0;
-                }
+                playerDto.Spawnpoint = closest?.getId() ?? 0;
             }
 
             var saveDto = new ProtoModel.PlayerSaveProto()

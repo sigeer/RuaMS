@@ -987,13 +987,12 @@ namespace Application.Plugin.Script
         public async Task<bool> dojang_next()
         {
 
-            var currwarp = c.CurrentServer.Node.getCurrentTime();
-
-            if (currwarp - getPlayer().getNpcCooldown() < 3000)
+            if (getPlayer().canClickNPC(3000))
             {
                 return false;
-            } // this script can be ran twice when passing the dojo portal... strange.
-            getPlayer().setNpcCooldown(currwarp);
+            }
+            // this script can be ran twice when passing the dojo portal... strange.
+            getPlayer().setClickedNPC();
 
             var gate = getPlayer().getMap().getReactorByName("door");
             if (gate != null)

@@ -191,7 +191,6 @@ public class NPCScriptManager : AbstractScriptManager
     {
         var c = cm.getClient();
         c.OnlinedCharacter.setCS(false);
-        c.OnlinedCharacter.setNpcCooldown(c.CurrentServer.Node.getCurrentTime());
         c.NPCConversationManager = null;
         _scripts.Remove(c);
         await c.OnlinedCharacter.flushDelayedUpdateQuests();

@@ -69,7 +69,6 @@ public partial class Player
     private ILogger? _log;
     public ILogger Log => _log ??= LogFactory.GetCharacterLog(AccountId, Id);
 
-    public int InitialSpawnPoint { get; set; }
     private int currentPage, currentType = 0, currentTab = 1;
 
     private int energybar;
@@ -167,7 +166,6 @@ public partial class Player
     private Dragon? dragon = null;
 
     private bool useCS;  //chaos scroll upon crafting item.
-    private long npcCd;
 
     private sbyte extraHpRec = 0, extraMpRec = 0;
     private short extraRecInterval;
@@ -214,20 +212,6 @@ public partial class Player
         useCS = cs;
     }
 
-    public long getNpcCooldown()
-    {
-        return npcCd;
-    }
-
-    public void setNpcCooldown(long d)
-    {
-        npcCd = d;
-    }
-
-    public bool CanTalkNpc()
-    {
-        return Client.CurrentServer.Node.getCurrentTime() - npcCd >= YamlConfig.config.server.BLOCK_NPC_RACE_CONDT;
-    }
 
 
 
@@ -1425,9 +1409,9 @@ public partial class Player
     }
 
     private long _lastNpcClick;
-    public bool canClickNPC()
+    public bool canClickNPC(long defaultCD = 500)
     {
-        return _lastNpcClick + 500 < Client.CurrentServer.Node.getCurrentTime();
+        return _lastNpcClick + defaultCD < Client.CurrentServer.Node.getCurrentTime();
     }
     public void setClickedNPC()
     {
@@ -1724,12 +1708,6 @@ public partial class Player
     public int getId()
     {
         return Id;
-    }
-
-
-    public int getInitialSpawnpoint()
-    {
-        return InitialSpawnPoint;
     }
 
 

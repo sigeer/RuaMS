@@ -192,13 +192,7 @@ namespace Application.Core.Channel.DueyService
                 await c.tryacquireClient();
                 try
                 {
-                    long timeNow = c.CurrentServer.Node.getCurrentTime();
-                    if (timeNow - c.OnlinedCharacter.getNpcCooldown() < YamlConfig.config.server.BLOCK_NPC_RACE_CONDT)
-                    {
-                        await c.SendPacket(PacketCreator.enableActions());
-                        return;
-                    }
-                    c.OnlinedCharacter.setNpcCooldown(timeNow);
+                    c.OnlinedCharacter.setClickedNPC();
 
                     await _server.Transport.GetDueyPackagesByPlayerId(new ProtoService.GetPlayerDueyPackageRequest { ReceiverId = c.OnlinedCharacter.Id });
                 }

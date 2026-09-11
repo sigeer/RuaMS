@@ -114,7 +114,7 @@ public class PacketCreator
             p.writeLong(chr.GetPetByIndex(i)?.getUniqueId() ?? 0);
         }
 
-        p.writeByte(chr.getLevel()); // level
+        p.writeByte(chr.Level); // level
         p.writeShort(chr.JobModel.Id); // job
         p.writeShort(chr.Str); // str
         p.writeShort(chr.Dex); // dex
@@ -137,7 +137,7 @@ public class PacketCreator
         p.writeShort(chr.Fame); // fame
         p.writeInt(chr.getGachaExp()); //Gacha Exp
         p.writeInt(chr.getMapId()); // current map id
-        p.writeByte(chr.getInitialSpawnpoint()); // spawnpoint
+        p.writeByte(0); // spawnpoint
         p.writeInt(0);
     }
 

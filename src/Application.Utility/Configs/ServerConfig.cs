@@ -128,7 +128,7 @@ public class ServerConfig
     public byte MAX_MONITORED_BUFFSTATS;
     public int MAX_AP;
     public int MAX_EVENT_LEVELS;
-    public long BLOCK_NPC_RACE_CONDT;
+
     public int TOT_MOB_QUEST_REQUIREMENT;
     public int MOB_REACTOR_REFRESH_TIME;
     public int PARTY_SEARCH_REENTRY_LIMIT;

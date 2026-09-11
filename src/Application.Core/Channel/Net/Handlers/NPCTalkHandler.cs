@@ -49,7 +49,7 @@ public class NPCTalkHandler : ChannelHandlerBase
             return;
         }
 
-        if (!c.OnlinedCharacter.CanTalkNpc())
+        if (!c.OnlinedCharacter.canClickNPC())
         {
             await c.SendPacket(PacketCreator.enableActions());
             return;
