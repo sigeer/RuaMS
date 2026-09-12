@@ -218,6 +218,6 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             await chr.cancelBuffStats(BuffStat.WIND_WALK);
         }
 
-        await applyAttack(attack, chr, attackCount);
+        await applyAttack(attack, chr);
     }
 }

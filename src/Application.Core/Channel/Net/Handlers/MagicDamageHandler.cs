@@ -89,7 +89,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
                 chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect_.getCooldown()));
             }
         }
-        await applyAttack(attack, chr, effect.getAttackCount());
+        await applyAttack(attack, chr);
         var eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
         int eaterLevel = chr.getSkillLevel(eaterSkill);
         if (eaterLevel > 0)

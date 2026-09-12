@@ -37,7 +37,7 @@ public class TouchMonsterDamageHandler : AbstractDealDamageHandler
         var chr = c.OnlinedCharacter;
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)
         {
-            await applyAttack(await parseDamage(p, chr, false, false), c.OnlinedCharacter, 1);
+            await applyAttack(await parseDamage(p, chr, false, false), c.OnlinedCharacter);
         }
     }
 }

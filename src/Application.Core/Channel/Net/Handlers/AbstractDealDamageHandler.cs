@@ -50,7 +50,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         this.autoBanDataManager = autoBanDataManager;
     }
 
-    protected async Task applyAttack(AttackInfo attack, Player player, int attackCount)
+    protected async Task applyAttack(AttackInfo attack, Player player)
     {
         var map = player.getMap();
         if (await map.isOwnershipRestricted(player))
@@ -439,13 +439,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             await player.ChangeHP((int)((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100.0));
                         });
                     }
-                    else if (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3)
+                    else if (attack.ranged && (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3))
                     {
                         Skill type = SkillFactory.GetSkillTrust(player.getJob().getId() == 412 ? 4120005 : (player.getJob().getId() == 1411 ? 14110004 : 4220005));
                         if (player.getSkillLevel(type) > 0)
                         {
                             StatEffect venomEffect = type.getEffect(player.getSkillLevel(type));
-                            for (int i = 0; i < attackCount; i++)
+                            for (int i = 0; i < attack.numDamage; i++)
                             {
                                 if (venomEffect.makeChanceResult())
                                 {

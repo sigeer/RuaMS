@@ -23,8 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
+using Application.Templates.Item.Consume;
+using Application.Templates.Skill;
+using client.inventory;
 using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -67,13 +71,13 @@ public class RangedAttackHandler : AbstractDealDamageHandler
         {
             await chr.BroadcastMap(
                 PacketCreator.rangedAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, 0, attack.targets, attack.speed, attack.direction, attack.display), chr.Id);
-            await applyAttack(attack, chr, 1);
+            await applyAttack(attack, chr);
         }
         else if (attack.skill == ThunderBreaker.SHARK_WAVE && chr.getSkillLevel(ThunderBreaker.SHARK_WAVE) > 0)
         {
             await chr.BroadcastMap(
                 PacketCreator.rangedAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, 0, attack.targets, attack.speed, attack.direction, attack.display), chr.Id);
-            await applyAttack(attack, chr, 1);
+            await applyAttack(attack, chr);
 
             for (int i = 0; i < attack.numAttacked; i++)
             {
@@ -87,17 +91,17 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             if (attack.skill == Aran.COMBO_SMASH && chr.getCombo() >= 30)
             {
                 await chr.setCombo(0);
-                await applyAttack(attack, chr, 1);
+                await applyAttack(attack, chr);
             }
             else if (attack.skill == Aran.COMBO_FENRIR && chr.getCombo() >= 100)
             {
                 await chr.setCombo(0);
-                await applyAttack(attack, chr, 2);
+                await applyAttack(attack, chr);
             }
             else if (attack.skill == Aran.COMBO_TEMPEST && chr.getCombo() >= 200)
             {
                 await chr.setCombo(0);
-                await applyAttack(attack, chr, 4);
+                await applyAttack(attack, chr);
             }
         }
         else
@@ -110,37 +114,44 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             }
             short slot = -1;
             int projectile = 0;
-            short bulletCount = 1;
+            int bulletCount = 0;
             StatEffect? effect = null;
             if (attack.skill != 0)
             {
                 effect = await attack.getAttackEffect(chr, null);
-                if (effect == null)
+                if (effect == null  || effect.EffectTemplate is not SkillLevelData skillLevelData)
                 {
                     return;
                 }
 
-                bulletCount = effect.getBulletCount();
-                if (effect.getCooldown() > 0)
+                if (skillLevelData.BulletCount > 0)
                 {
-                    await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect.getCooldown()));
+                    bulletCount += skillLevelData.BulletCount;
                 }
 
-                if (attack.skill == Hermit.SHADOW_MESO)
-                {   // shadow meso
-                    bulletCount = 0;
+                if (skillLevelData.BulletConsume > 0)
+                {
+                    // 多重飞镖、快枪手
+                    // 暗器伤人属于BUFF，不会走这里
+                    bulletCount += skillLevelData.BulletConsume;
+                }
 
-                    int money = effect.getMoneyCon();
-                    if (money != 0)
+                if (skillLevelData.ItemConsume > 0)
+                {
+                    // 使用指定子弹
+                    projectile = skillLevelData.ItemConsume;
+                }
+
+                int money = skillLevelData.MoneyCon;
+                if (money != 0)
+                {
+                    int moneyMod = money / 2;
+                    money += Randomizer.nextInt(moneyMod);
+                    if (money > chr.getMeso())
                     {
-                        int moneyMod = money / 2;
-                        money += Randomizer.nextInt(moneyMod);
-                        if (money > chr.getMeso())
-                        {
-                            money = chr.getMeso();
-                        }
-                        await chr.GainMeso(-money);
+                        money = chr.getMeso();
                     }
+                    await chr.GainMeso(-money);
                 }
             }
             bool hasShadowPartner = chr.getBuffedValue(BuffStat.SHADOWPARTNER) != null;
@@ -148,75 +159,32 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             {
                 bulletCount *= 2;
             }
-            var inv = chr.getInventory(InventoryType.USE);
-            for (short i = 1; i <= inv.getSlotLimit(); i++)
-            {
-                var item = inv.getItem(i);
-                if (item != null)
-                {
-                    int id = item.getItemId();
-                    slot = item.getPosition();
 
-                    bool bow = ItemConstants.isArrowForBow(id);
-                    bool cbow = ItemConstants.isArrowForCrossBow(id);
-                    if (item.getQuantity() >= bulletCount)
-                    { //Fixes the bug where you can't use your last arrow.
-                        if (type == WeaponType.CLAW && ItemConstants.isThrowingStar(id) && weapon.getItemId() != ItemId.MAGICAL_MITTEN)
-                        {
-                            if (((id == ItemId.HWABI_THROWING_STARS || id == ItemId.BALANCED_FURY) && chr.getLevel() < 70) || (id == ItemId.CRYSTAL_ILBI_THROWING_STARS && chr.getLevel() < 50))
-                            {
-                            }
-                            else
-                            {
-                                projectile = id;
-                                break;
-                            }
-                        }
-                        else if ((type == WeaponType.GUN && ItemConstants.isBullet(id)))
-                        {
-                            if (id == ItemId.BLAZE_CAPSULE || id == ItemId.GLAZE_CAPSULE)
-                            {
-                                if (chr.getLevel() >= 70)
-                                {
-                                    projectile = id;
-                                    break;
-                                }
-                            }
-                            else if (chr.getLevel() > (id % 10) * 20 + 9)
-                            {
-                                projectile = id;
-                                break;
-                            }
-                        }
-                        else if ((type == WeaponType.BOW && bow) || (type == WeaponType.CROSSBOW && cbow) || (weapon.getItemId() == ItemId.MAGICAL_MITTEN && (bow || cbow)))
-                        {
-                            projectile = id;
-                            break;
-                        }
-                    }
+            Item? usedBullet = null;
+            if (projectile  == 0)
+            {
+                usedBullet = chr.GetProperBulletItem(bulletCount);
+                if (usedBullet != null)
+                {
+                    slot = usedBullet.getPosition();
+                    projectile = usedBullet.getItemId();
                 }
             }
+
             bool soulArrow = chr.getBuffedValue(BuffStat.SOULARROW) != null;
             bool shadowClaw = chr.getBuffedValue(BuffStat.SHADOW_CLAW) != null;
-            if (projectile != 0)
+            if (projectile > 0 && !soulArrow && !shadowClaw)
             {
-                if (!soulArrow && !shadowClaw && attack.skill != DawnWarrior.SOUL_BLADE && attack.skill != ThunderBreaker.SHARK_WAVE && attack.skill != NightWalker.VAMPIRE)
+                if (usedBullet != null)
                 {
-                    short bulletConsume = bulletCount;
+                    // 理论上标飞没有无形箭，这里不作区分
+                    await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, (short)bulletCount, false, true);
 
-                    if (effect != null && effect.getBulletConsume() != 0)
-                    {
-                        bulletConsume = (byte)(effect.getBulletConsume() * (hasShadowPartner ? 2 : 1));
-                    }
-
-                    if (slot < 0)
-                    {
-                        _logger.LogWarning("<ERROR> Projectile to use was unable to be found.");
-                    }
-                    else
-                    {
-                        await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, bulletConsume, false, true);
-                    }
+                    await InventoryManipulator.RechargeBalanceFury(chr, usedBullet);
+                }
+                else
+                {
+                    await InventoryManipulator.removeById(c, InventoryType.USE, projectile, bulletCount, false, true);
                 }
             }
 
@@ -253,6 +221,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     || attack.skill == NightWalker.VAMPIRE
                     || attack.skill == WindArcher.STORM_BREAK)
                 {
+                    // 无形箭 / 不消耗飞镖的技能
                     visProjectile = 0;
                 }
 
@@ -271,11 +240,9 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                 }
                 await chr.BroadcastMap(packet, chr.Id);
 
-                if (attack.skill != 0)
+                if (effect != null)
                 {
-                    var skill = SkillFactory.GetSkillTrust(attack.skill);
-                    StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
-                    var effectCooldown = effect_.getCooldown();
+                    var effectCooldown = effect.getCooldown();
                     if (effectCooldown > 0)
                     {
                         if (chr.skillIsCooling(attack.skill))
@@ -306,7 +273,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     await chr.cancelBuffStats(BuffStat.WIND_WALK);
                 }
 
-                await applyAttack(attack, chr, bulletCount);
+                await applyAttack(attack, chr);
             }
         }
     }

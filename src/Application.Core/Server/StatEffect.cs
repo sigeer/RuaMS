@@ -21,6 +21,8 @@
  */
 
 
+using Application.Core.Channel.DataProviders;
+using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -37,6 +39,7 @@ using Application.Templates.Skill;
 using Application.Templates.StatEffectProps;
 using client.inventory;
 using client.inventory.manipulator;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Server;
@@ -892,22 +895,7 @@ public class StatEffect
         if (isShadowClaw())
         {
             short projectileConsume = this.getBulletConsume();  // noticed by shavit
-
-            var use = applyto.getInventory(InventoryType.USE);
-
-            Item? projectile = null;
-            for (int i = 1; i <= use.getSlotLimit(); i++)
-            { // impose order...
-                var item = use.getItem((short)i);
-                if (item != null)
-                {
-                    if (ItemConstants.isThrowingStar(item.getItemId()) && item.getQuantity() >= projectileConsume)
-                    {
-                        projectile = item;
-                        break;
-                    }
-                }
-            }
+            var projectile = applyto.GetProperBulletItem(projectileConsume);
             if (projectile == null)
             {
                 return false;
@@ -915,6 +903,8 @@ public class StatEffect
             else
             {
                 await InventoryManipulator.removeFromSlot(applyto.Client, InventoryType.USE, projectile.getPosition(), projectileConsume, false, true);
+
+                await InventoryManipulator.RechargeBalanceFury(applyto, projectile);
             }
         }
         var summonMovementType = getSummonMovementType();
