@@ -1906,6 +1906,7 @@ public class StatEffect
             case Outlaw.GAVIOTA:
                 return SummonMovementType.CIRCLE_FOLLOW;
             case DarkKnight.BEHOLDER:
+                return SummonMovementType.HealOrBuff;
             case FPArchMage.ELQUINES:
             case ILArchMage.IFRIT:
             case Bishop.BAHAMUT:

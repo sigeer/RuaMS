@@ -274,12 +274,23 @@ public enum SendOpcode
     /// </summary>
     PET_EXCEPTION_LIST = 0xAD,
     PET_COMMAND = 0xAE,
+
+    /// <summary>
+    /// sub_938DD7
+    /// </summary>
     SPAWN_SPECIAL_MAPOBJECT = 0xAF,
     REMOVE_SPECIAL_MAPOBJECT = 0xB0,
     MOVE_SUMMON = 0xB1,
     SUMMON_ATTACK = 0xB2,
-    DAMAGE_SUMMON = 0xB3,
-    SUMMON_SKILL = 0xB4,
+    /// <summary>
+    /// sub_7A6E5A
+    /// </summary>
+    SUMMON_SKILL = 0xB3,
+    /// <summary>
+    /// sub_7A6EBE
+    /// </summary>
+    DAMAGE_SUMMON = 0xB4,
+
     SPAWN_DRAGON = 0xB5,
     MOVE_DRAGON = 0xB6,
     REMOVE_DRAGON = 0xB7,

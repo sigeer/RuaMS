@@ -1,3 +1,5 @@
+using Application.Core.Game.Skills;
+
 namespace Application.Core.Channel.Net.Packets
 {
     // CUser::OnEffect
@@ -11,13 +13,51 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
-        public static Packet Skill()
+        /// <summary>
+        /// 播放 "Skill/%03d.img/skill/%07d/effect" 动画
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <param name="skillLevel"></param>
+        /// <param name="animation"></param>
+        /// <param name="show"></param>
+        /// <returns></returns>
+        public static Packet SkillEffect(int skillId, int skillLevel, sbyte animation, bool show = true)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-            p.writeInt(0);
-            p.writeByte(0);
-            p.writeByte(0);
-            p.writeByte(0);
+            p.writeByte(1);
+            p.writeInt(skillId);
+            p.writeByte(animation);
+            p.writeByte(skillLevel);
+            if (skillId == DarkKnight.BERSERK)
+            {
+                p.writeBool(show);
+            }
+            return p;
+        }
+
+        /// <summary>
+        /// 播放 "Skill/%03d.img/skill/%07d/affected" 动画
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <returns></returns>
+        public static Packet SkillAffect(int skillId)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
+            p.writeByte(2);
+            p.writeInt(skillId);
+            return p;
+        }
+
+        /// <summary>
+        /// 播放 "Skill/%03d.img/skill/%07d/special" 动画
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <returns></returns>
+        public static Packet SkillSpecial(int skillId)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
+            p.writeByte(5);
+            p.writeInt(skillId);
             return p;
         }
 
