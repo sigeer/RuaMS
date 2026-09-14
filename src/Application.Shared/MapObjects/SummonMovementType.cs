@@ -25,6 +25,7 @@ public enum SummonMovementType
 {
     STATIONARY = 0, 
     FOLLOW = 1, 
+    HealOrBuff = 2,
     CIRCLE_FOLLOW = 3
 }
 

@@ -21,43 +21,46 @@
  */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps.AnimatedObjects;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
 
 
-/**
- * @author BubblesDev
- */
+
+/// <summary>
+/// 召唤物释放技能，目前只有 灵魂助力 能够释放技能
+/// CSummoned::TryDoingHeal
+/// CSummoned::TryDoingAttack
+/// </summary>
 public class BeholderHandler : ChannelHandlerBase
 {
     //Summon Skills noobs
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        //Console.WriteLine(slea.ToString());
-        var summons = c.OnlinedCharacter.getSummonsValues();
         int oid = p.readInt();
-        Summon? summon = null;
-        foreach (Summon sum in summons)
-        {
-            if (sum.getObjectId() == oid)
-            {
-                summon = sum;
-            }
-        }
+        var summon = c.OnlinedCharacter.MapModel.getMapObject(oid) as Summon;
         if (summon != null)
         {
             int skillId = p.readInt();
-            if (skillId == DarkKnight.AURA_OF_BEHOLDER)
-            {
-                p.readShort(); //Not sure.
-            }
-            else if (skillId == DarkKnight.HEX_OF_BEHOLDER)
-            {
-                p.readByte(); //Not sure.
-            }            //show to others here
+
+            //var skillEffect = c.OnlinedCharacter.GetPlayerSkillEffect(skillId);
+            //if (skillEffect != null)
+            //{
+            //    await skillEffect.applyTo(c.OnlinedCharacter);
+            //}
+            // COutPacket::Encode1(&v19, (v13 << 7) | 6);
+            // COutPacket::Encode1(&v44, 11 & 0x7F | (v32 << 7));
+            sbyte stance = p.ReadSByte();
+
+            await c.OnlinedCharacter.BroadcastMap(
+                PacketCreator.summonSkill(c.OnlinedCharacter.Id, oid, stance),
+                c.OnlinedCharacter.Id);
+            await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill()));
+            await c.OnlinedCharacter.BroadcastMap(PacketCreator.showBuffEffect(c.OnlinedCharacter.Id, summon.getSkill(), 2), c.OnlinedCharacter.Id);
         }
         else
         {

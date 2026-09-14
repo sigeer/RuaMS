@@ -26,14 +26,19 @@ using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
+/// <summary>
+/// 召唤物被攻击
+/// CSummoned::SetDamaged
+/// </summary>
 public class DamageSummonHandler : ChannelHandlerBase
 {
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int oid = p.readInt();
-        p.skip(1);   // -1
+        var attackIdx = p.ReadSByte();
         int damage = p.readInt();
         int monsterIdFrom = p.readInt();
+        var dir = p.ReadSByte();
 
         var player = c.OnlinedCharacter;
         var mmo = player.getMap().getMapObject(oid);
@@ -45,7 +50,7 @@ public class DamageSummonHandler : ChannelHandlerBase
             {
                 await player.cancelEffectFromBuffStat(BuffStat.PUPPET);
             }
-            await summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, monsterIdFrom), player.Id);
+            await summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, attackIdx, monsterIdFrom, dir), player.Id);
         }
     }
 }

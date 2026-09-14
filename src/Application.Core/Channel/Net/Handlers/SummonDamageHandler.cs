@@ -33,6 +33,9 @@ using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
+/// <summary>
+/// 召唤物攻击
+/// </summary>
 public class SummonDamageHandler : AbstractDealDamageHandler
 {
     public SummonDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
@@ -101,7 +104,6 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                     }
                 }
                 await target.DamageBy(player, damage, attackEntry.delay);
-                // 这里怎么没有广播伤害
             }
         }
 

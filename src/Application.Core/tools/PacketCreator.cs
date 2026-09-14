@@ -711,9 +711,16 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SET_FIELD);
         p.writeInt(chr.getClient().getChannel() - 1);
+
+        // 未使用
         p.writeByte(1);
+
+        // bCharacterData 角色数据
         p.writeByte(1);
+
+        // 禁言原因
         p.writeShort(0);
+
         for (int i = 0; i < 3; i++)
         {
             //     v110 = CInPacket::Decode4(v4);
@@ -927,11 +934,13 @@ public class PacketCreator
         p.writeInt(summon.getSkill());
         p.writeByte(0x0A); //v83
         p.writeByte(summon.getSkillLevel());
+
+        // CSummoned::Init
         p.writePos(summon.getPosition());
         p.writeByte(summon.getStance());    //bMoveAction & foothold, found thanks to Rien dev team
-        p.writeShort(0);
-        p.writeByte(summon.getMovementType().getValue()); // 0 = don't move, 1 = follow (4th mage summons?), 2/4 = only tele follow, 3 = bird follow
+        p.writeShort(0);        // fh
         p.writeBool(!summon.isPuppet()); // 0 and the summon can't attack - but puppets don't attack with 1 either ^.-
+        p.writeByte(summon.getMovementType().getValue()); // 0 = don't move, 1 = follow (4th mage summons?), 2/4 = only tele follow, 3 = bird follow
         p.writeBool(!animated);
         return p;
     }
@@ -3821,15 +3830,18 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet damageSummon(int cid, int oid, int damage, int monsterIdFrom)
+    public static Packet damageSummon(int cid, int oid, int damage, sbyte attackIdx, int monsterIdFrom, sbyte dir)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_SUMMON);
         p.writeInt(cid);
         p.writeInt(oid);
-        p.writeByte(12);
+        p.writeSByte(attackIdx);
         p.writeInt(damage);         // damage display doesn't seem to work...
-        p.writeInt(monsterIdFrom);
-        p.writeByte(0);
+        if (attackIdx > -2)
+        {
+            p.writeInt(monsterIdFrom);
+            p.writeSByte(dir);
+        }
         return p;
     }
 
@@ -4301,12 +4313,12 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet summonSkill(int cid, int summonSkillId, int newStance)
+    public static Packet summonSkill(int cid, int summonOId, sbyte newStance)
     {
         OutPacket p = OutPacket.create(SendOpcode.SUMMON_SKILL);
         p.writeInt(cid);
-        p.writeInt(summonSkillId);
-        p.writeByte(newStance);
+        p.writeInt(summonOId);
+        p.writeSByte(newStance);
         return p;
     }
 

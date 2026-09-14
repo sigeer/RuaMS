@@ -187,10 +187,12 @@ public enum RecvOpcode
     PET_LOOT = 0xAA,
     PET_AUTO_POT = 0xAB,
     PET_EXCLUDE_ITEMS = 0xAC,
+
     MOVE_SUMMON = 0xAF,
     SUMMON_ATTACK = 0xB0,
     DAMAGE_SUMMON = 0xB1,
     BEHOLDER = 0xB2,
+
     MOVE_DRAGON = 0xB5,
     CHANGE_QUICKSLOT = 0xB7,//CP_QuickslotKeyMappedModified
     MOVE_LIFE = 0xBC,

@@ -66,9 +66,12 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.USE_DOOR, sp.GetRequiredService<DoorHandler>()},
                 {(short)RecvOpcode.ENTER_MTS, sp.GetRequiredService<EnterMTSHandler>()},
                 {(short)RecvOpcode.ENTER_CASHSHOP, sp.GetRequiredService<EnterCashShopHandler>()},
+
                 {(short)RecvOpcode.DAMAGE_SUMMON, sp.GetRequiredService<DamageSummonHandler>()},
                 {(short)RecvOpcode.MOVE_SUMMON, sp.GetRequiredService<MoveSummonHandler>()},
                 {(short)RecvOpcode.SUMMON_ATTACK, sp.GetRequiredService<SummonDamageHandler>()},
+                {(short)RecvOpcode.BEHOLDER, sp.GetRequiredService<BeholderHandler>()},
+
                 {(short)RecvOpcode.BUDDYLIST_MODIFY, sp.GetRequiredService<BuddylistModifyHandler>()},
                 {(short)RecvOpcode.USE_ITEMEFFECT, sp.GetRequiredService<UseItemEffectHandler>()},
                 {(short)RecvOpcode.USE_CHAIR, sp.GetRequiredService<UseChairHandler>()},
@@ -114,7 +117,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.USE_HAMMER, sp.GetRequiredService<UseHammerHandler>()},
                 {(short)RecvOpcode.SCRIPTED_ITEM, sp.GetRequiredService<ScriptedItemHandler>()},
                 {(short)RecvOpcode.TOUCHING_REACTOR, sp.GetRequiredService<TouchReactorHandler>()},
-                {(short)RecvOpcode.BEHOLDER, sp.GetRequiredService<BeholderHandler>()},
+
                 {(short)RecvOpcode.ADMIN_COMMAND, sp.GetRequiredService<AdminCommandHandler>()},
                 {(short)RecvOpcode.ADMIN_LOG, sp.GetRequiredService<AdminLogHandler>()},
                 {(short)RecvOpcode.ALLIANCE_OPERATION, sp.GetRequiredService<AllianceOperationHandler>()},
