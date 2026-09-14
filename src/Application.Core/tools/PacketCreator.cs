@@ -918,49 +918,6 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * Gets a packet to spawn a special map object.
-     *
-     * @param summon
-     * @param skillLevel The level of the skill used.
-     * @param animated   Animated spawn?
-     * @return The spawn packet for the map object.
-     */
-    public static Packet spawnSummon(Summon summon, bool animated)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SPAWN_SPECIAL_MAPOBJECT);
-        p.writeInt(summon.getOwner().getId());
-        p.writeInt(summon.getObjectId());
-        p.writeInt(summon.getSkill());
-        p.writeByte(0x0A); //v83
-        p.writeByte(summon.getSkillLevel());
-
-        // CSummoned::Init
-        p.writePos(summon.getPosition());
-        p.writeByte(summon.getStance());    //bMoveAction & foothold, found thanks to Rien dev team
-        p.writeShort(0);        // fh
-        p.writeBool(!summon.isPuppet()); // 0 and the summon can't attack - but puppets don't attack with 1 either ^.-
-        p.writeByte(summon.getMovementType().getValue()); // 0 = don't move, 1 = follow (4th mage summons?), 2/4 = only tele follow, 3 = bird follow
-        p.writeBool(!animated);
-        return p;
-    }
-
-    /**
-     * Gets a packet to remove a special map object.
-     *
-     * @param summon
-     * @param animated Animated removal?
-     * @return The packet removing the object.
-     */
-    public static Packet removeSummon(Summon summon, bool animated)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.REMOVE_SPECIAL_MAPOBJECT);
-        p.writeInt(summon.getOwner().getId());
-        p.writeInt(summon.getObjectId());
-        p.writeByte(animated ? 4 : 1); // ?
-        return p;
-    }
-
     public static Packet spawnKite(int objId, int itemId, string name, string msg, Point pos, int ft)
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_KITE);
@@ -2141,15 +2098,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet moveSummon(int cid, int oid, Point startPos, InPacket movementPacket, int movementDataLength)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.MOVE_SUMMON);
-        p.writeInt(cid);
-        p.writeInt(oid);
-        p.writePos(startPos);
-        PacketCommon.RebroadcastMovementList(p, movementPacket, movementDataLength);
-        return p;
-    }
+
 
     public static Packet MoveMonsterIdle(int oid, bool skillPossible, int skill, int skillId, int skillLevel, int pOption,
                                  Point startPos, byte[] idleMovmentBytes)
@@ -2183,24 +2132,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet summonAttack(int cid, int summonOid, byte direction, List<SummonAttackEntry> allDamage)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SUMMON_ATTACK);
-        //b2 00 29 f7 00 00 9a a3 04 00 c8 04 01 94 a3 04 00 06 ff 2b 00
-        p.writeInt(cid);
-        p.writeInt(summonOid);
-        p.writeByte(0);     // char level
-        p.writeByte(direction);
-        p.writeByte(allDamage.Count);
-        foreach (var attackEntry in allDamage)
-        {
-            p.writeInt(attackEntry.monsterOid); // oid
-            p.writeByte(6); // who knows
-            p.writeInt(attackEntry.damage); // damage
-        }
 
-        return p;
-    }
 
     /*
     public static Packet summonAttack(int cid, int summonSkillId, byte direction, List<SummonAttackEntry> allDamage) {
@@ -3830,20 +3762,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet damageSummon(int cid, int oid, int damage, sbyte attackIdx, int monsterIdFrom, sbyte dir)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.DAMAGE_SUMMON);
-        p.writeInt(cid);
-        p.writeInt(oid);
-        p.writeSByte(attackIdx);
-        p.writeInt(damage);         // damage display doesn't seem to work...
-        if (attackIdx > -2)
-        {
-            p.writeInt(monsterIdFrom);
-            p.writeSByte(dir);
-        }
-        return p;
-    }
+
 
     public static Packet damageMonster(int oid, int damage)
     {
@@ -4310,15 +4229,6 @@ public class PacketCreator
         {
             p.writeByte(team);   // 00 = red, 01 = blue
         }
-        return p;
-    }
-
-    public static Packet summonSkill(int cid, int summonOId, sbyte newStance)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SUMMON_SKILL);
-        p.writeInt(cid);
-        p.writeInt(summonOId);
-        p.writeSByte(newStance);
         return p;
     }
 

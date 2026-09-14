@@ -33,6 +33,7 @@ using Application.Core.Game.Skills;
 using Application.Core.Server.life;
 using Application.Resources.Messages;
 using Application.Shared.Battle.Skills;
+using Application.Shared.MapObjects.Summons;
 using Application.Shared.WzEntity;
 using Application.Templates.Mob;
 using Application.Templates.Reader;
@@ -2256,7 +2257,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             await chrController.SendPacket(PacketCreator.stopControllingMonster(mob.getObjectId()));
         }
-        await chrController.SendPacket(PacketCreator.removeSummon(puppet, false));
+        await chrController.SendPacket(SummonPackets.RemoveSummon(puppet, SummonRemoveType.Normal));
 
         var c = chrController.getClient();
         foreach (Monster mob in puppetControlled)
@@ -2264,7 +2265,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             // thanks BHB for noticing puppets disrupting mobstatuses for bowmans
             await aggroMonsterControl(c, mob, mob.isControllerKnowsAboutAggro());
         }
-        await chrController.SendPacket(PacketCreator.spawnSummon(puppet, false));
+        await chrController.SendPacket(SummonPackets.SpawnSummon(puppet, false));
     }
 
     public void aggroUpdatePuppetVisibility()
@@ -2529,7 +2530,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public override async Task OnUnmounted()
     {
-        await base.OnUnmounted();
         disposeMapObject();
+        await base.OnUnmounted();
     }
 }

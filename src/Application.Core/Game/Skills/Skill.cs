@@ -23,6 +23,7 @@
 
 using Application.Core.Server;
 using Application.Shared.Battle.Skills;
+using Application.Templates.Skill;
 
 namespace Application.Core.Game.Skills;
 
@@ -35,9 +36,11 @@ public class Skill : ISkill
     private int job;
     private bool action;
 
-    public Skill(int id)
+    public SkillTemplate SkillTemplate { get; }
+    public Skill(SkillTemplate skillTemplate)
     {
-        this.id = id;
+        SkillTemplate = skillTemplate;
+        this.id = skillTemplate.TemplateId;
         job = id / 10000;
         element = Element.NEUTRAL;
     }

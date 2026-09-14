@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps.AnimatedObjects;
 using tools;
 
@@ -37,6 +38,7 @@ public class DamageSummonHandler : ChannelHandlerBase
         int oid = p.readInt();
         var attackIdx = p.ReadSByte();
         int damage = p.readInt();
+        // mob TemplateId?
         int monsterIdFrom = p.readInt();
         var dir = p.ReadSByte();
 
@@ -45,12 +47,8 @@ public class DamageSummonHandler : ChannelHandlerBase
 
         if (mmo is Summon summon)
         {
-            summon.addHP(-damage);
-            if (summon.getHP() <= 0)
-            {
-                await player.cancelEffectFromBuffStat(BuffStat.PUPPET);
-            }
-            await summon.BroadcastMap(PacketCreator.damageSummon(player.getId(), oid, damage, attackIdx, monsterIdFrom, dir), player.Id);
+            await summon.BroadcastMap(SummonPackets.SummonDamaged(player.getId(), oid, damage, attackIdx, monsterIdFrom, dir), player.Id);
+            await summon.DamageBy(null, damage, 0);
         }
     }
 }

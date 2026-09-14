@@ -237,7 +237,7 @@ public class MapleMap : IMap, INamedInstance
     }
 
 
-    bool addMapObject(IMapObject mapobject, bool allocateMabObjectId = true)
+    async Task<bool> addMapObject(IMapObject mapobject, bool allocateMabObjectId = true)
     {
         if (allocateMabObjectId)
         {
@@ -263,7 +263,7 @@ public class MapleMap : IMap, INamedInstance
                 spawnedMonstersOnMap.incrementAndGet();
             }
 
-            mapobject.OnMounted(this);
+            await mapobject.OnMounted(this);
 
             return true;
         }
@@ -272,7 +272,7 @@ public class MapleMap : IMap, INamedInstance
 
     public async Task<bool> AddMapObject(IMapObject mapobject, Func<IChannelClient, Task>? packetbakery, bool allocateMabObjectId = true)
     {
-        if (addMapObject(mapobject, allocateMabObjectId))
+        if (await addMapObject(mapobject, allocateMabObjectId))
         {
             int exceptPlayerId = -1;
             if (mapobject is Player p)
@@ -321,11 +321,11 @@ public class MapleMap : IMap, INamedInstance
         return curOid;
     }
 
-    bool removeMapObject(int objectId)
+    async Task<bool> removeMapObject(int objectId)
     {
         if (mapobjects.Remove(objectId, out var mapObj))
         {
-            mapObj.OnUnmounted();
+            await mapObj.OnUnmounted();
 
             if (mapObj is MapItem mapItem)
             {
@@ -350,7 +350,7 @@ public class MapleMap : IMap, INamedInstance
 
     public async Task<bool> RemoveMapObject(IMapObject obj, Func<Player, Task>? removePacketAction)
     {
-        if (removeMapObject(obj.getObjectId()))
+        if (await removeMapObject(obj.getObjectId()))
         {
             foreach (var chr in getAllPlayers())
             {
@@ -1196,7 +1196,7 @@ public class MapleMap : IMap, INamedInstance
 
     public async Task spawnSummon(Summon summon)
     {
-        await AddMapObject(summon, c => c.SendPacket(PacketCreator.spawnSummon(summon, true)));
+        await AddMapObject(summon, c => c.SendPacket(SummonPackets.SpawnSummon(summon, true)));
     }
 
     public async Task spawnMist(Mist mist, int duration, bool poison, bool fake, bool recovery)

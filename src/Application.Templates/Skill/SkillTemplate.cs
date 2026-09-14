@@ -29,7 +29,9 @@ namespace Application.Templates.Skill
         public SkillLevelData[] LevelData { get; set; }
         [WZPath("action")]
         public SkillActionData? ActionData { get; set; }
-        [WZPath("summon/$existed")]
-        public bool HasSummonNode { get; set; }
+        public bool HasSummonNode => SummonNode != null;
+
+        [WZPath("summon")]
+        public SkillSummonData? SummonNode { get; set; }
     }
 }

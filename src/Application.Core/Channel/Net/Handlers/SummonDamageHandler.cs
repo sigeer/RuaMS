@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
@@ -72,7 +73,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
             int damage = p.readInt();
             allDamage.Add(new SummonAttackEntry(monsterOid, damage, delay));
         }
-        await summon.BroadcastMap(PacketCreator.summonAttack(player.getId(), summon.getObjectId(), direction, allDamage), player.Id);
+        await summon.BroadcastMap(SummonPackets.SummonAttack(player.getId(), summon.getObjectId(), direction, allDamage), player.Id);
 
         if (await player.getMap().isOwnershipRestricted(player))
         {

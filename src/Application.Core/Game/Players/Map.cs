@@ -2,6 +2,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Trades;
 using Application.Core.Server.maps;
+using Application.Shared.MapObjects.Summons;
 using Application.Shared.WzEntity;
 using tools;
 using static Application.Templates.Mob.MobTemplate;
@@ -39,7 +40,8 @@ namespace Application.Core.Game.Players
 
             foreach (Summon summon in getSummonsValues())
             {
-                if (summon.isStationary())
+                // 固定型召唤物完全销毁，跟随型召唤物仅在旧地图中销毁
+                if (summon.MovementType == SummonMovementType.STATIONARY)
                 {
                     await cancelEffectFromBuffStat(BuffStat.PUPPET);
                 }
@@ -62,8 +64,9 @@ namespace Application.Core.Game.Players
                     // 似乎不需要另外再销毁
                     await MapModel.RemoveMapObject(pet, null);
                 }
-
             }
+
+            await base.OnUnmounted();
         }
         public int getMapId()
         {

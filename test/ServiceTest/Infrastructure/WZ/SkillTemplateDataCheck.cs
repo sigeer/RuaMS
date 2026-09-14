@@ -1,3 +1,5 @@
+using Application.Core.Server;
+using Application.Shared.MapObjects.Summons;
 using Application.Templates.Reader;
 using Application.Templates.Skill;
 using System.Drawing;
@@ -165,5 +167,27 @@ internal class SkillDetailDataCheckTests(string readerType) : WzTestBase(readerT
     {
         var provider = _providerSource.GetProvider<IProvider<MobSkillTemplate>>(ProviderType.MobSkill);
         Assert.That(provider.GetItem(999999), Is.Null);
+    }
+
+    [Test]
+    public void SummonDataTest()
+    {
+        var provider = _providerSource.GetProvider<IProvider<SkillTemplate>>(ProviderType.Skill);
+
+        var allSummonSkills = provider.LoadAll().Where(x => x.HasSummonNode).ToList();
+
+        foreach (var item in allSummonSkills)
+        {
+            if (item.TemplateId >= 10000000 || item.TemplateId == 2321003)
+            {
+                // 当前版本不存在8位数的技能
+                continue;
+            }
+            var template = item.SummonNode!;
+            Assert.That(
+                template.GetSummonMovementType(),
+                Is.EqualTo(SummonMovementTypeExtensions.GetSummonMovementTypeFromSkillId(item.TemplateId)),
+                $"SkillId={item.TemplateId}");
+        }
     }
 }

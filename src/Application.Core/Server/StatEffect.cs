@@ -34,6 +34,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Core.Server.partyquest;
+using Application.Shared.MapObjects.Summons;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
 using Application.Templates.StatEffectProps;
@@ -874,7 +875,7 @@ public class StatEffect
                 else
                 {
                     target = await applyto.getChannelServer().getMapFactory().getMap(townScroll.MoveTo);
-                    if (townScroll.IgnoreContinent 
+                    if (townScroll.IgnoreContinent
                         || (applyto.IsSameContinent(townScroll.MoveTo)))
                     {
                         pt = target.getRandomPlayerSpawnpoint();
@@ -907,12 +908,13 @@ public class StatEffect
                 await InventoryManipulator.RechargeBalanceFury(applyto, projectile);
             }
         }
-        var summonMovementType = getSummonMovementType();
-        if (overTime || isCygnusFA() || summonMovementType != null)
+        SkillSummonData? summonData = SourceTemplate is SkillTemplate skillTemplate ? skillTemplate.SummonNode : null;
+
+        if (overTime || isCygnusFA() || summonData != null)
         {
-            if (summonMovementType != null && pos != null)
+            if (summonData != null && pos != null)
             {
-                await applyto.cancelBuffStats(summonMovementType.Value == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
+                await applyto.cancelBuffStats(SummonMovementTypeExtensions.GetSummonMovementType(summonData) == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
                 await applyto.SendPacket(PacketCreator.enableActions());
             }
 
@@ -1005,16 +1007,12 @@ public class StatEffect
             applyto.MountModel.setTiredness(applyto.MountModel.getTiredness() + mountFatigue.IncFatigue);
         }
 
-        if (summonMovementType != null && pos != null)
+        if (summonData != null && pos != null)
         {
-            Summon tosummon = new Summon(applyfrom, sourceid, pos.Value, summonMovementType.Value);
+            Summon tosummon = new Summon(applyfrom, this, pos.Value);
             await applyfrom.getMap().spawnSummon(tosummon);
             applyfrom.addSummon(sourceid, tosummon);
             tosummon.addHP(x);
-            if (isBeholder())
-            {
-                tosummon.addHP(1);
-            }
         }
         if (isMagicDoor() && !FieldLimit.DOOR.check(applyto.getMap().getFieldLimit()))
         {
@@ -1195,11 +1193,12 @@ public class StatEffect
         var expiredAt = localStartTime + localDuration;
 
         await chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
-        var summonMovementType = getSummonMovementType();
-        if (summonMovementType != null)
+
+        if (SourceTemplate is SkillTemplate skillTemplate && skillTemplate.HasSummonNode)
         {
-            Summon tosummon = new Summon(chr, sourceid, chr.getPosition(), summonMovementType.Value);
-            if (!tosummon.isStationary())
+            Summon tosummon = new Summon(chr, this, chr.getPosition());
+            // 非固定型召唤物可以在切换频道恢复buff时一起回复
+            if (tosummon.MovementType != SummonMovementType.STATIONARY)
             {
                 chr.addSummon(sourceid, tosummon);
                 tosummon.addHP(x);
@@ -1884,41 +1883,15 @@ public class StatEffect
         return 0;
     }
 
+
+    [Obsolete]
     private SummonMovementType? getSummonMovementType()
     {
         if (!skill)
         {
             return null;
         }
-        switch (sourceid)
-        {
-            case Ranger.PUPPET:
-            case Sniper.PUPPET:
-            case WindArcher.PUPPET:
-            case Outlaw.OCTOPUS:
-            case Corsair.WRATH_OF_THE_OCTOPI:
-                return SummonMovementType.STATIONARY;
-            case Ranger.SILVER_HAWK:
-            case Sniper.GOLDEN_EAGLE:
-            case Priest.SUMMON_DRAGON:
-            case Marksman.FROST_PREY:
-            case Bowmaster.PHOENIX:
-            case Outlaw.GAVIOTA:
-                return SummonMovementType.CIRCLE_FOLLOW;
-            case DarkKnight.BEHOLDER:
-                return SummonMovementType.HealOrBuff;
-            case FPArchMage.ELQUINES:
-            case ILArchMage.IFRIT:
-            case Bishop.BAHAMUT:
-            case DawnWarrior.SOUL:
-            case BlazeWizard.FLAME:
-            case BlazeWizard.IFRIT:
-            case WindArcher.STORM:
-            case NightWalker.DARKNESS:
-            case ThunderBreaker.LIGHTNING:
-                return SummonMovementType.FOLLOW;
-        }
-        return null;
+        return SummonMovementTypeExtensions.GetSummonMovementTypeFromSkillId(sourceid);
     }
 
     public bool isSkill()

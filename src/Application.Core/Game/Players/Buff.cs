@@ -1,9 +1,11 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.Server;
 using Application.Core.Server.maps;
+using Application.Shared.MapObjects.Summons;
 using Application.Utility.Tickables;
 using net.server;
 using tools;
@@ -223,12 +225,7 @@ namespace Application.Core.Game.Players
 
                         if (summons.Remove(summonId, out var summon) && summon != null)
                         {
-                            await MapModel.RemoveMapObject(summon, chr => chr.SendPacket(PacketCreator.removeSummon(summon, true)));
-
-                            if (summon.isPuppet())
-                            {
-                                await MapModel.removePlayerPuppet(this);
-                            }
+                            await MapModel.RemoveMapObject(summon, chr => chr.SendPacket(SummonPackets.RemoveSummon(summon, SummonRemoveType.Normal)));
                         }
                     }
                     else if (mbs == BuffStat.HPREC || mbs == BuffStat.MPREC)
