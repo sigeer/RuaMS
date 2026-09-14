@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -52,7 +53,7 @@ public class MoveSummonHandler : AbstractMovementPacketHandler
                 p.seek(movementDataStart);
 
                 await player.getMap().MoveMapObject(summon);
-                await summon.BroadcastMovement(PacketCreator.moveSummon(player.getId(), oid, startPos, p, movementDataLength), serverStartPos);
+                await summon.BroadcastMovement(SummonPackets.MoveSummon(player.getId(), oid, startPos, p, movementDataLength), serverStartPos);
             }
             catch (EmptyMovementException e)
             {

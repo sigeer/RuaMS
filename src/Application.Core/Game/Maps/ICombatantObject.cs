@@ -12,7 +12,7 @@ namespace Application.Core.Game.Maps
         /// <param name="damageValue"></param>
         /// <param name="delay"></param>
         /// <param name="stayAlive">true: 不致命</param>
-        /// <returns></returns>
+        /// <returns>是否有效</returns>
         Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false);
         long LastAttackTime { get; set; }
     }

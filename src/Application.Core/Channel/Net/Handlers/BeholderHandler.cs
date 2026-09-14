@@ -57,7 +57,7 @@ public class BeholderHandler : ChannelHandlerBase
             sbyte stance = p.ReadSByte();
 
             await c.OnlinedCharacter.BroadcastMap(
-                PacketCreator.summonSkill(c.OnlinedCharacter.Id, oid, stance),
+                SummonPackets.SummonSkill(c.OnlinedCharacter.Id, oid, stance),
                 c.OnlinedCharacter.Id);
             await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill()));
             await c.OnlinedCharacter.BroadcastMap(PacketCreator.showBuffEffect(c.OnlinedCharacter.Id, summon.getSkill(), 2), c.OnlinedCharacter.Id);

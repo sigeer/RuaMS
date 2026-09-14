@@ -19,7 +19,7 @@ namespace Application.Templates.Reader.Xml
                 .RegisterProvider(() => new NpcProvider(ps.Resolver))
                 .RegisterProvider(() => new MobProvider(ps.Resolver))
                 .RegisterProvider(() => new SkillProvider(ps.Resolver, false))
-                .RegisterProvider(() => new MobWithBossHpBarProvider(ps.Resolver, false))
+                .RegisterProvider(() => new MobWithBossHpBarProvider(ps.Resolver))
                 .RegisterProvider(() => new CashCommodityProvider(ps.Resolver))
                 .RegisterProvider(() => new CashPackageProvider(ps.Resolver))
                 .RegisterProvider(() => new CarnivalSkillProvider(ps.Resolver))

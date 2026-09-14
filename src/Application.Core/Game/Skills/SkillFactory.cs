@@ -47,13 +47,13 @@ public class SkillFactory
     {
         foreach (var item in SkillProvider.LoadAll())
         {
-            skills[item.TemplateId] = loadFromData(item as SkillTemplate);
+            skills[item.TemplateId] = loadFromData(item);
         }
     }
 
     private static Skill loadFromData(SkillTemplate template)
     {
-        Skill ret = new Skill(template.TemplateId);
+        Skill ret = new Skill(template);
         bool isBuff = false;
         int skillType = template.SkillType;
         var elem = template.ElemAttr;

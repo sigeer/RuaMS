@@ -21,8 +21,11 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Skills;
-using tools;
+using Application.Core.Server;
+using Application.Shared.MapObjects.Summons;
+using Application.Templates.Skill;
 
 namespace Application.Core.Game.Maps.AnimatedObjects;
 
@@ -31,34 +34,37 @@ namespace Application.Core.Game.Maps.AnimatedObjects;
 /**
  * @author Jan
  */
-public class Summon : AbstractAnimatedMapObject
+public class Summon : AbstractAnimatedMapObject, ICombatantObject
 {
     private Player owner;
-    private sbyte skillLevel;
-    private int skill;
     private int hp;
-    private SummonMovementType movementType;
+    public SummonMovementType MovementType { get; }
+    public SummonAssistantType AssistantType { get; }
 
     public override Player? Controller => owner;
 
-    public Summon(Player owner, int skill, Point pos, SummonMovementType movementType) : base(owner.MapModel, pos, 0)
+    public long LastAttackTime { get; set; }
+    public StatEffect StatEffect { get; }
+
+    public Summon(Player owner, StatEffect statEffect, Point pos) : base(owner.MapModel, pos, 0)
     {
         this.owner = owner;
-        this.skill = skill;
-        skillLevel = owner.getSkillLevel(SkillFactory.getSkill(skill));
-        if (skillLevel == 0) throw new Exception();
+        StatEffect = statEffect;
 
-        this.movementType = movementType;
+        var template = (StatEffect.SourceTemplate as SkillTemplate)!.SummonNode!;
+        MovementType = template.GetSummonMovementType();
+
+        AssistantType = template.GetSummonAssistantType();
     }
 
     public override Task sendSpawnData(IChannelClient client)
     {
-        return client.SendPacket(PacketCreator.spawnSummon(this, false));
+        return client.SendPacket(SummonPackets.SpawnSummon(this, false));
     }
 
     public override Task sendDestroyData(IChannelClient client)
     {
-        return client.SendPacket(PacketCreator.removeSummon(this, true));
+        return client.SendPacket(SummonPackets.RemoveSummon(this, SummonRemoveType.Normal));
     }
 
     public Player getOwner()
@@ -68,13 +74,13 @@ public class Summon : AbstractAnimatedMapObject
 
     public override string GetReadableName(IChannelClient c)
     {
-        return base.GetReadableName(c) + $"Owner {owner.GetReadableName(c)}";
+        return base.GetReadableName(c) + $"Owner {owner.GetReadableName(c)}, HP: {hp}, Skill: {getSkill()}, SkillLevel: {getSkillLevel()}";
     }
 
 
     public int getSkill()
     {
-        return skill;
+        return StatEffect.GetSkill()!.getId();
     }
 
     public int getHP()
@@ -86,20 +92,9 @@ public class Summon : AbstractAnimatedMapObject
     {
         hp += delta;
     }
-
-    public SummonMovementType getMovementType()
-    {
-        return movementType;
-    }
-
-    public bool isStationary()
-    {
-        return skill == 3111002 || skill == 3211002 || skill == 5211001 || skill == 13111004;
-    }
-
     public sbyte getSkillLevel()
     {
-        return skillLevel;
+        return (sbyte)StatEffect.SkillLevel;
     }
 
     public override MapObjectType getType()
@@ -109,18 +104,54 @@ public class Summon : AbstractAnimatedMapObject
 
     public bool isPuppet()
     {
-        switch (skill)
-        {
-            case 3111002:
-            case 3211002:
-            case 13111004:
-                return true;
-        }
-        return false;
+        return getSkill() == Ranger.PUPPET || getSkill() == Sniper.PUPPET || getSkill() == WindArcher.PUPPET;
     }
 
     public override bool IsVisibleForPlayer(Player chr)
     {
         return getOwner() == chr || base.IsVisibleForPlayer(chr) && !chr.HideSummon;
+    }
+
+    public override async Task OnMounted(IMap map)
+    {
+        await base.OnMounted(map);
+
+        if (isPuppet())
+        {
+            await MapModel.addPlayerPuppet(getOwner());
+        }
+    }
+
+    public override async Task OnUnmounted()
+    {
+        if (isPuppet())
+        {
+            await MapModel.removePlayerPuppet(getOwner());
+        }
+        await base.OnUnmounted();
+    }
+
+    public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
+    {
+        if (!isPuppet())
+        {
+            // 仅替身术能被造成伤害
+            return false;
+        }
+
+        if (hp <= 0)
+        {
+            return false;
+        }
+
+        hp -= damageValue;
+
+        if (hp <= 0)
+        {
+            await MapModel.RemoveMapObject(this, chr => chr.SendPacket(SummonPackets.RemoveSummon(this, SummonRemoveType.Dead)));
+            await owner.cancelEffectFromBuffStat(BuffStat.PUPPET);
+        }
+
+        return true;
     }
 }

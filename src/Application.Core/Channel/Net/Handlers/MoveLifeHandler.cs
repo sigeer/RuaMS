@@ -195,6 +195,6 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
 
     private static bool inRangeInclusive(sbyte pVal, int pMin, int pMax)
     {
-        return !(pVal < pMin) || (pVal > pMax);
+        return !((pVal < pMin) || (pVal > pMax));
     }
 }

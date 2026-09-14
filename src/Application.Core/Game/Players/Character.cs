@@ -1976,11 +1976,6 @@ public partial class Player
     public void addSummon(int Id, Summon summon)
     {
         summons.AddOrUpdate(Id, summon);
-
-        if (summon.isPuppet())
-        {
-            MapModel.addPlayerPuppet(this);
-        }
     }
     public ICollection<Summon> getSummonsValues()
     {
@@ -3182,7 +3177,7 @@ public partial class Player
 
             foreach (Summon ms in this.getSummonsValues())
             {
-                await mapChrClient.SendPacket(PacketCreator.spawnSummon(ms, false));
+                await mapChrClient.SendPacket(SummonPackets.SpawnSummon(ms, false));
             }
         }
 
