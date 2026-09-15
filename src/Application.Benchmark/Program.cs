@@ -7,7 +7,7 @@ using BenchmarkDotNet.Running;
 var config = ManualConfig.Create(DefaultConfig.Instance)
     .WithBuildTimeout(TimeSpan.FromMinutes(5));
 
-BenchmarkRunner.Run<PacketReadStringBenchmark>(config);
+BenchmarkRunner.Run<XmlWzBenchmark>(config);
 
 //BenchmarkSwitcher
 //    .FromAssembly(typeof(Program).Assembly)

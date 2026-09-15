@@ -3321,7 +3321,7 @@ namespace Application.Plugin.Script
                 if (pRow < 9)
                 {
                     await playPortalSound();
-                    await warp(getMapId(), getPortal().getId() + 4);
+                    await TeleportPortal(getPortal().getId() + 4);
                 }
                 else
                 {
@@ -3332,14 +3332,14 @@ namespace Application.Plugin.Script
                     }
 
                     await playPortalSound();
-                    await warp(getMapId(), 1);
+                    await TeleportPortal(1);
                 }
 
             }
             else
             {    //fail
                 await playPortalSound();
-                await warp(getMapId(), 2);
+                await TeleportPortal(2);
             }
 
             return true;
@@ -5773,12 +5773,12 @@ namespace Application.Plugin.Script
                 }
 
                 await playPortalSound();
-                await warp(getMapId(), nextPortal);
+                await TeleportPortal(nextPortal);
             }
             else
             {    //fail
                 await playPortalSound();
-                await warp(getMapId(), 2);
+                await TeleportPortal(2);
             }
 
             return true;
@@ -6933,7 +6933,7 @@ namespace Application.Plugin.Script
                 if (pRow < 9)
                 {
                     await playPortalSound();
-                    await warp(getMapId(), getPortal().getId() + 4);
+                    await TeleportPortal(getPortal().getId() + 4);
                 }
                 else
                 {
@@ -6944,14 +6944,14 @@ namespace Application.Plugin.Script
                     }
 
                     await playPortalSound();
-                    await warp(getMapId(), 1);
+                    await TeleportPortal(1);
                 }
 
             }
             else
             {    //fail
                 await playPortalSound();
-                await warp(getMapId(), 2);
+                await TeleportPortal(2);
             }
 
             return true;

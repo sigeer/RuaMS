@@ -1,6 +1,5 @@
-using Application.Templates.Reader.Img;
-using Application.Templates.Reader.Img.Provider;
 using BenchmarkDotNet.Attributes;
+using System.Runtime.CompilerServices;
 using System.Text;
 using XmlWzReader.wz;
 
@@ -19,10 +18,18 @@ namespace Application.Benchmark
 
         int mapId = 100000000;
 
+        //[Benchmark]
+        //public void ImgProvider_Load()
+        //{
+        //    var provider = new Application.Templates.Reader.Img.Provider.MapProvider(new Application.Templates.Reader.Img.ImgPathResolver(""));
+        //    var fullData = provider.GetItem(mapId);
+        //}
+        public static string GetCurrentSourceFile([CallerFilePath] string path = "") => path;
         [Benchmark]
-        public void NewProvider_Load()
+        public void XmlProvider_Load()
         {
-            var provider = new MapProvider(new ImgPathResolver(""));
+            var wzDir = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"));
+            var provider = new Application.Templates.Reader.Xml.Provider.MapProvider(new Application.Templates.Reader.Xml.ServerXmlResolver(wzDir));
             var fullData = provider.GetItem(mapId);
         }
 
@@ -43,9 +50,10 @@ namespace Application.Benchmark
         public void XMLDomMapleData_Load()
         {
             // 有缓存，影响结果
+            var wzDir = Path.GetFullPath(Path.Combine(GetCurrentSourceFile(), "..", "Application.Resources", "wz"));
             // var provider = DataProviderFactory.getDataProvider(XmlWzReader.wz.WZFiles.MAP);
             var provider = new XMLWZFileProvider(XmlWzReader.wz.WZFiles.MAP);
-            var fullData = provider.getData(GetMapImg(mapId));
+            var fullData = provider.getData(Path.Combine(wzDir, GetMapImg(mapId)));
         }
 
     }

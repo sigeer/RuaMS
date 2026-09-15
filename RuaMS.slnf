@@ -1,0 +1,37 @@
+{
+  "solution": {
+    "path": "RuaMS.slnx",
+    "projects": [
+      "src\\Application.Benchmark\\Application.Benchmark.csproj",
+      "src\\Application.Core.Channel.InProgress\\Application.Core.Channel.InProgress.csproj",
+      "src\\Application.Core.EF.MySQL\\Application.Core.EF.MySQL.csproj",
+      "src\\Application.Core.EF.Sqlite\\Application.Core.EF.Sqlite.csproj",
+      "src\\Application.Core.EF\\Application.Core.EF.csproj",
+      "src\\Application.Core.Login\\Application.Core.Login.csproj",
+      "src\\Application.Core\\Application.Core.csproj",
+      "src\\Application.Host.Channel\\Application.Host.Channel.csproj",
+      "src\\Application.Host\\Application.Host.csproj",
+      "src\\Application.Plugin.FakeCharacter\\Application.Plugin.FakeCharacter.csproj",
+      "src\\Application.Plugin.Script\\Application.Plugin.Script.csproj",
+      "src\\Application.Plugin.TreasureMap\\Application.Plugin.TreasureMap.csproj",
+      "src\\Application.Protos\\Application.Protos.csproj",
+      "src\\Application.Resources\\Application.Resources.csproj",
+      "src\\Application.Scripting.JS\\Application.Scripting.JS.csproj",
+      "src\\Application.Scripting.Lua\\Application.Scripting.Lua.csproj",
+      "src\\Application.Scripting\\Application.Scripting.csproj",
+      "src\\Application.Shared\\Application.Shared.csproj",
+      "src\\Application.Templates.Reader.Img\\Application.Templates.Reader.Img.csproj",
+      "src\\Application.Templates.Reader.Xml\\Application.Templates.Reader.Xml.csproj",
+      "src\\Application.Templates.Reader\\Application.Templates.Reader.csproj",
+      "src\\Application.Templates\\Application.Templates.csproj",
+      "src\\Application.Utility\\Application.Utility.csproj",
+      "src\\XmlWzReader\\XmlWzReader.csproj",
+      "src\\app\\RuaMS.AppHost\\RuaMS.AppHost.csproj",
+      "src\\app\\RuaMS.ServiceDefaults\\RuaMS.ServiceDefaults.csproj",
+      "test\\ServiceTest\\ServiceTest.csproj",
+      "tools\\CodeMigration\\CodeMigration.csproj",
+      "tools\\DueyReader.SouceGenerator\\DueyReader.SouceGenerator.csproj",
+      "tools\\XmlWzReader.SouceGenerator\\XmlWzReader.SouceGenerator.csproj"
+    ]
+  }
+}
