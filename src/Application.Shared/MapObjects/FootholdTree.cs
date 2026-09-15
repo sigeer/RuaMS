@@ -17,7 +17,7 @@ namespace Application.Shared.MapObjects
         {
             foreach (Foothold fh in footholds)
             {
-                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.TopY)
+                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.BottomY)
                 {
                     var calcY = fh.calculateFooting(p.X);
                     if (p.Y <= calcY)
@@ -33,7 +33,7 @@ namespace Application.Shared.MapObjects
         {
             foreach (Foothold fh in footholds)
             {
-                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.TopY)
+                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.BottomY)
                 {
                     var calcY = fh.calculateFooting(p.X);
                     if (p.Y <= calcY)
