@@ -1,5 +1,3 @@
-using Application.Core.Game.Skills;
-
 namespace Application.Core.Channel.Net.Packets
 {
     // CUser::OnEffect
@@ -13,25 +11,54 @@ namespace Application.Core.Channel.Net.Packets
             return p;
         }
 
+        static Packet SkillEffectInternal(OutPacket p, int skillId, int skillLevel, int chrLevel, byte show = 1)
+        {
+            p.writeByte(1);
+            p.writeInt(skillId);
+            // CharLevel. 用于绘制 Skill/%03d.img/skill/%07d/CharLevel/%d/effect 但似乎这里并没有用上 在 CUserRemote::OnAttack 中才会用上
+            p.writeByte(chrLevel);
+            p.writeByte(skillLevel);
+            if (skillId == DarkKnight.BERSERK)
+            {
+                p.writeByte(show);
+            }
+            else if (skillId == DarkKnight.MONSTER_MAGNET || skillId == Paladin.MONSTER_MAGNET || skillId == Hero.MONSTER_MAGNET)
+            {
+                // success
+                p.writeByte(show);
+            }
+            return p;
+        }
+
         /// <summary>
         /// 播放 "Skill/%03d.img/skill/%07d/effect" 动画
         /// </summary>
         /// <param name="skillId"></param>
         /// <param name="skillLevel"></param>
-        /// <param name="animation"></param>
+        /// <param name="chrLevel"></param>
         /// <param name="show"></param>
         /// <returns></returns>
-        public static Packet SkillEffect(int skillId, int skillLevel, sbyte animation, bool show = true)
+        public static Packet SkillEffect(int skillId, int skillLevel, int chrLevel, byte show = 1)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-            p.writeByte(1);
+            SkillEffectInternal(p, skillId, skillLevel, chrLevel, show);
+            return p;
+        }
+
+        public static Packet ForeignSkillEffect(int chrId, int skillId, int skillLevel, int chrLevel, byte show = 1)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
+            p.writeInt(chrId);
+            SkillEffectInternal(p, skillId, skillLevel, chrLevel, show);
+            return p;
+        }
+
+        static Packet SkillAffectInternal(OutPacket p, int skillId, int skillLevel)
+        {
+            p.writeByte(2);
             p.writeInt(skillId);
-            p.writeByte(animation);
+            // 似乎未被使用
             p.writeByte(skillLevel);
-            if (skillId == DarkKnight.BERSERK)
-            {
-                p.writeBool(show);
-            }
             return p;
         }
 
@@ -39,11 +66,26 @@ namespace Application.Core.Channel.Net.Packets
         /// 播放 "Skill/%03d.img/skill/%07d/affected" 动画
         /// </summary>
         /// <param name="skillId"></param>
+        /// <param name="skillLevel"></param>
         /// <returns></returns>
-        public static Packet SkillAffect(int skillId)
+        public static Packet SkillAffect(int skillId, int skillLevel)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-            p.writeByte(2);
+            SkillAffectInternal(p, skillId, skillLevel);
+            return p;
+        }
+
+        public static Packet ForeignSkillAffect(int chrId, int skillId, int skillLevel)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
+            p.writeInt(chrId);
+            SkillAffectInternal(p, skillId, skillLevel);
+            return p;
+        }
+
+        static Packet SkillSpecialInternal(OutPacket p, int skillId)
+        {
+            p.writeByte(5);
             p.writeInt(skillId);
             return p;
         }
@@ -56,8 +98,15 @@ namespace Application.Core.Channel.Net.Packets
         public static Packet SkillSpecial(int skillId)
         {
             OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-            p.writeByte(5);
-            p.writeInt(skillId);
+            SkillSpecialInternal(p, skillId);
+            return p;
+        }
+
+        public static Packet ForeignSkillSpecial(int chrId, int skillId)
+        {
+            OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
+            p.writeInt(chrId);
+            SkillSpecialInternal(p, skillId);
             return p;
         }
 

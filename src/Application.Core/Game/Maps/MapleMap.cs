@@ -555,19 +555,19 @@ public class MapleMap : IMap, INamedInstance
                     if (buff > -1)
                     {
                         ItemInformationProvider mii = ItemInformationProvider.getInstance();
-                        foreach (var character in getAllPlayers())
+                        var statEffect = mii.getItemEffect(buff);
+                        if (statEffect != null)
                         {
-                            if (character.isAlive())
+                            foreach (var character in getAllPlayers())
                             {
-                                var statEffect = mii.getItemEffect(buff)!;
-                                await character.SendPacket(PacketCreator.showOwnBuffEffect(buff, 1));
-                                await character.BroadcastMap(PacketCreator.showBuffEffect(character.getId(), buff, 1), character.Id);
-                                await broadcastMessage(PacketCreator.ShowConsumeItemEffect(character.Id, buff));
-                                await statEffect.applyTo(character);
+                                if (character.isAlive())
+                                {
+                                    await broadcastMessage(PacketCreator.ShowConsumeItemEffect(character.Id, buff));
+                                    await statEffect.applyTo(character);
+                                }
                             }
                         }
                     }
-
 
                     var dropOwner = await monster.killBy(chr);
                     if (withDrops && dropOwner != null)

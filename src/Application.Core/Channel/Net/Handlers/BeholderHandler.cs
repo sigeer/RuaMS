@@ -59,8 +59,8 @@ public class BeholderHandler : ChannelHandlerBase
             await c.OnlinedCharacter.BroadcastMap(
                 SummonPackets.SummonSkill(c.OnlinedCharacter.Id, oid, stance),
                 c.OnlinedCharacter.Id);
-            await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill()));
-            await c.OnlinedCharacter.BroadcastMap(PacketCreator.showBuffEffect(c.OnlinedCharacter.Id, summon.getSkill(), 2), c.OnlinedCharacter.Id);
+            await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill(), summon.getSkillLevel()));
+            await c.OnlinedCharacter.BroadcastMap(EffectPacket.ForeignSkillAffect(c.OnlinedCharacter.Id, summon.getSkill(), summon.getSkillLevel()), c.OnlinedCharacter.Id);
         }
         else
         {

@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using tools;
@@ -19,8 +20,8 @@ namespace Application.Core.Game.Players.Tickables
             {
                 if (await _chr.ChangeHP(-Effect.getX()))
                 {
-                    await _chr.SendPacket(PacketCreator.showOwnBuffEffect(Effect.getSourceId(), 5));
-                    await _chr.BroadcastMap(PacketCreator.showBuffEffect(_chr.getId(), Effect.getSourceId(), 5), _chr.Id);
+                    await _chr.SendPacket(EffectPacket.SkillSpecial(Effect.getSourceId()));
+                    await _chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(_chr.getId(), Effect.getSourceId()), _chr.Id);
                 }
                 else
                 {

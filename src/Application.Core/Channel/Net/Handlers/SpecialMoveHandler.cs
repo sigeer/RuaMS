@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using tools;
@@ -86,7 +87,8 @@ public class SpecialMoveHandler : ChannelHandlerBase
             }
         }
         if (skillid == Hero.MONSTER_MAGNET || skillid == Paladin.MONSTER_MAGNET || skillid == DarkKnight.MONSTER_MAGNET)
-        { // Monster Magnet
+        { 
+            // Monster Magnet
             int num = p.readInt();
             for (int i = 0; i < num; i++)
             {
@@ -108,16 +110,14 @@ public class SpecialMoveHandler : ChannelHandlerBase
                 }
             }
             byte direction = p.readByte();   // thanks MedicOP for pointing some 3rd-party related issues with Magnet
-            await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid), 1, direction), chr.Id);
+            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.Id, skillid, skillLevel, chr.Level, direction), chr.Id);
             await c.SendPacket(PacketCreator.enableActions());
         }
         else if (skillid == Brawler.MP_RECOVERY)
-        {// MP Recovery
-            var s = SkillFactory.GetSkillTrust(skillid);
-            StatEffect ef = s.getEffect(chr.getSkillLevel(s));
-
-            int lose = await chr.safeAddHP(-1 * (chr.ActualMaxHP / ef.getX()));
-            int gain = (int)(-lose * (ef.getY() / 100.0));
+        {
+            // MP Recovery
+            int lose = await chr.safeAddHP(-1 * (chr.ActualMaxHP / effect.getX()));
+            int gain = (int)(-lose * (effect.getY() / 100.0));
             await chr.UpdateStatsChunk(() =>
             {
                 chr.ChangeMP(gain);
@@ -126,7 +126,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {
             p.skip(11);
-            await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), skillid, chr.getSkillLevel(skillid)), chr.Id);
+            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.getId(), skillid, skillLevel, chr.Level), chr.Id);
         }
         else if (skillid % 10000000 == 1004)
         {
@@ -143,11 +143,11 @@ public class SpecialMoveHandler : ChannelHandlerBase
             {
                 if (skill.getId() % 10000000 != 1005)
                 {
-                    await skill.getEffect(skillLevel).applyTo(chr, pos);
+                    await effect.applyTo(chr, pos);
                 }
                 else
                 {
-                    await skill.getEffect(skillLevel).applyEchoOfHero(chr);
+                    await effect.applyEchoOfHero(chr);
                 }
             }
             else
@@ -159,7 +159,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                         if (chr.canDoor())
                         {
                             await chr.cancelMagicDoor();
-                            await skill.getEffect(skillLevel).applyTo(chr, pos);
+                            await effect.applyTo(chr, pos);
                         }
                         else
                         {

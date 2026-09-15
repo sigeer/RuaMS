@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Skills;
@@ -50,22 +51,21 @@ public class TakeDamageHandler : ChannelHandlerBase
         sbyte damagefrom = p.ReadSByte();
         var element = EnumClassCache<Element>.GetValues()[p.readByte()];
         int damage = p.readInt();
-        int oid = 0, monsteridfrom = 0, pgmr = 0, stance = 0, direction = 0;
+        int oid = 0, mobId = 0, pgmr = 0, stance = 0, direction = 0;
         int action = 0, pos_x = 0, pos_y = 0, fake = 0;
         bool is_pgmr = false, is_pg = true, is_deadly = false;
-        int reflectOId = 0;
         int mpattack = 0;
         Monster? attacker = null;
         var map = chr.getMap();
         if (damagefrom != -3 && damagefrom != -4)
         {
-            monsteridfrom = p.readInt();
+            mobId = p.readInt();
             oid = p.readInt();
 
             try
             {
                 attacker = map.getMonsterByOid(oid);
-                if (attacker?.getId() != monsteridfrom)
+                if (attacker?.getId() != mobId)
                 {
                     attacker = null;
                 }
@@ -153,7 +153,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             if (reflect > 0 || knockback > 1)   // if ( v175 || v189 ) 魔法反击失败也会走这里？但似乎后续没有那么多可读字节
             {
                 is_pg = p.readByte() > 0;   // COutPacket::Encode1(&v190, v189 != 0 && a10 != 0);
-                reflectOId = p.readInt();
+                var reflectOId = p.readInt();
                 action = p.readByte();
                 pos_x = p.readShort();
                 pos_y = p.readShort();
@@ -185,8 +185,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                         await attacker.DamageBy(chr, bouncedamage, 0);
                         await attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
 
-                        await chr.SendPacket(PacketCreator.showOwnBuffEffect(manaReflection.Effect.getSourceId(), 5));
-                        await chr.BroadcastMap(PacketCreator.showBuffEffect(chr.getId(), manaReflection.Effect.getSourceId(), 5), chr.Id);
+                        await chr.SendPacket(EffectPacket.SkillSpecial(manaReflection.Effect.getSourceId()));
+                        await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.getId(), manaReflection.Effect.getSourceId()), chr.Id);
                     }
                 }
 
@@ -383,7 +383,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             }
         }
 
-        await chr.BroadcastMap(PacketCreator.damagePlayer(damagefrom, monsteridfrom, chr.getId(), damage, fake, direction, is_pgmr, is_pg, reflectOId, action, pos_x, pos_y), chr.Id);
+        await chr.BroadcastMap(PacketCreator.damagePlayer(damagefrom, mobId, chr.getId(), damage, fake, direction, is_pgmr, is_pg, oid, action, pos_x, pos_y), chr.Id);
         if (MapId.isDojo(map.getId()))
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_DMG);

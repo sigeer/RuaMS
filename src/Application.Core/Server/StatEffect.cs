@@ -22,6 +22,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
@@ -736,7 +737,7 @@ public class StatEffect
      * @param obj
      * @param attack  damage done by the skill
      */
-    public async Task applyPassive(Player applyto, IMapObject obj, int attack)
+    public async Task applyPassive(Player applyto, IMapObject? obj, int attack)
     {
         if (makeChanceResult())
         {
@@ -761,8 +762,8 @@ public class StatEffect
                                 applyto.ChangeMP(absorbMp);
                             });
 
-                            await applyto.SendPacket(PacketCreator.showOwnBuffEffect(sourceid, 1));
-                            await applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1), applyto.Id);
+                            await applyto.SendPacket(EffectPacket.SkillEffect(sourceid, SkillLevel, applyto.Level));
+                            await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.getId(), sourceid, SkillLevel, applyto.Level), applyto.Id);
                         }
                     }
                     break;
@@ -1117,8 +1118,8 @@ public class StatEffect
             foreach (Player affected in affectedp)
             {
                 await applyTo(applyfrom, affected, false, null, useMaxRange, affectedc);
-                await affected.SendPacket(PacketCreator.showOwnBuffEffect(sourceid, 2));
-                await affected.BroadcastMap(PacketCreator.showBuffEffect(affected.getId(), sourceid, 2), affected.Id);
+                await affected.SendPacket(EffectPacket.SkillAffect(sourceid, SkillLevel));
+                await affected.BroadcastMap(EffectPacket.ForeignSkillAffect(affected.getId(), sourceid, SkillLevel), affected.Id);
             }
         }
 
@@ -1313,7 +1314,7 @@ public class StatEffect
         if (primary)
         {
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
-            await applyto.BroadcastMap(PacketCreator.showBuffEffect(applyto.getId(), sourceid, 1, 3), applyto.Id);
+            await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.Id, sourceid, SkillLevel, applyto.Level), applyto.Id);
         }
 
         if (localStatupList.Count > 0)

@@ -2183,7 +2183,7 @@ public class PacketCreator
     {
         p.writeInt(chr.getId());
         p.writeByte(numAttackedAndDamage);
-        p.writeByte(0x5B);//?
+        p.writeByte(chr.Level);//? chr.Level
         p.writeByte(skilllevel);
         if (skilllevel > 0)
         {
@@ -3390,68 +3390,6 @@ public class PacketCreator
             p.writeInt(nRemain);
             p.writeInt(tRemainInitialQuiz);
         }
-        return p;
-    }
-
-    public static Packet showBuffEffect(int chrId, int skillId, int effectId)
-    {
-        return showBuffEffect(chrId, skillId, effectId, 3);
-    }
-
-    public static Packet showBuffEffect(int chrId, int skillId, int effectId, byte direction)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
-        p.writeInt(chrId);
-        p.writeByte(effectId); //buff level
-        p.writeInt(skillId);
-        p.writeByte(direction);
-        p.writeByte(1);
-        p.writeLong(0);
-        return p;
-    }
-
-    public static Packet showBuffEffect(int chrId, int skillId, int skillLv, int effectId, byte direction)
-    {   // updated packet structure found thanks to Rien dev team
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
-        p.writeInt(chrId);
-        p.writeByte(effectId);
-        p.writeInt(skillId);
-        p.writeByte(0);
-        p.writeByte(skillLv);
-        p.writeByte(direction);
-        return p;
-    }
-
-    public static Packet showOwnBuffEffect(int skillId, int effectId)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-        p.writeByte(effectId);
-        p.writeInt(skillId);
-        p.writeByte(0xA9);
-        p.writeByte(1);
-        return p;
-    }
-
-    public static Packet showOwnBerserk(int skilllevel, bool Berserk)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_ITEM_GAIN_INCHAT);
-        p.writeByte(1);
-        p.writeInt(1320006);
-        p.writeByte(0xA9);
-        p.writeByte(skilllevel);
-        p.writeByte(Berserk ? 1 : 0);
-        return p;
-    }
-
-    public static Packet showBerserk(int chrId, int skillLv, bool berserk)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
-        p.writeInt(chrId);
-        p.writeByte(1);
-        p.writeInt(1320006);
-        p.writeByte(0xA9);
-        p.writeByte(skillLv);
-        p.writeBool(berserk);
         return p;
     }
 
