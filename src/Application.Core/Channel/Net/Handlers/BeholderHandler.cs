@@ -47,11 +47,11 @@ public class BeholderHandler : ChannelHandlerBase
         {
             int skillId = p.readInt();
 
-            //var skillEffect = c.OnlinedCharacter.GetPlayerSkillEffect(skillId);
-            //if (skillEffect != null)
-            //{
-            //    await skillEffect.applyTo(c.OnlinedCharacter);
-            //}
+            var skillEffect = c.OnlinedCharacter.GetPlayerSkillEffect(skillId);
+            if (skillEffect != null)
+            {
+                await skillEffect.applyTo(c.OnlinedCharacter);
+            }
             // COutPacket::Encode1(&v19, (v13 << 7) | 6);
             // COutPacket::Encode1(&v44, 11 & 0x7F | (v32 << 7));
             sbyte stance = p.ReadSByte();

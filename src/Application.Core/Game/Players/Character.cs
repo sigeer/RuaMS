@@ -3174,11 +3174,6 @@ public partial class Player
             { // mustn't effLock, chrLock sendSpawnData
                 await mapChrClient.SendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
             }
-
-            foreach (Summon ms in this.getSummonsValues())
-            {
-                await mapChrClient.SendPacket(SummonPackets.SpawnSummon(ms, false));
-            }
         }
 
         if (this.isHidden() && mapChrClient.OnlinedCharacter.isGM())

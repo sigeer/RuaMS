@@ -2732,13 +2732,6 @@ public class MapleMap : IMap, INamedInstance
             await this.AddMapObject(dragon, c => c.SendPacket(PacketCreator.spawnDragon(dragon)));
         }
 
-        StatEffect? summonStat = chr.getStatForBuff(BuffStat.SUMMON);
-        if (summonStat != null)
-        {
-            var summon = chr.getSummonByKey(summonStat.getSourceId())!;
-            summon.setPosition(chr.getPosition());
-            await spawnSummon(summon);
-        }
         if (MapEffect != null)
         {
             await MapEffect.sendStartData(chr.getClient());
