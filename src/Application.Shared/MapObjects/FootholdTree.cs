@@ -17,10 +17,10 @@ namespace Application.Shared.MapObjects
         {
             foreach (Foothold fh in footholds)
             {
-                if (!fh.isWall() && fh.getX1() <= p.X && fh.getX2() >= p.X && (p.Y <= fh.getY1() || p.Y <= fh.getY2()))
+                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.TopY)
                 {
                     var calcY = fh.calculateFooting(p.X);
-                    if (p.Y <= (int)Math.Ceiling(calcY))
+                    if (p.Y <= calcY)
                     {
                         return fh;
                     }
@@ -33,10 +33,10 @@ namespace Application.Shared.MapObjects
         {
             foreach (Foothold fh in footholds)
             {
-                if (!fh.isWall() && fh.getX1() <= p.X && fh.getX2() >= p.X && (p.Y <= fh.getY1() || p.Y <= fh.getY2()))
+                if (!fh.isWall() && fh.LeftX <= p.X && fh.RightX >= p.X && p.Y <= fh.TopY)
                 {
                     var calcY = fh.calculateFooting(p.X);
-                    if (p.Y <= (int)Math.Ceiling(calcY))
+                    if (p.Y <= calcY)
                     {
                         return new Point(p.X, (int)Math.Floor(calcY));
                     }

@@ -155,7 +155,7 @@ namespace Application.Plugin.Script
         {
 
             getPlayer().resetEnteredScript();
-            spawnMonster(9300331, -28, 0);
+            await spawnMonster(9300331, -28, 0);
         }
 
 

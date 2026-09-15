@@ -35,11 +35,22 @@ public class Foothold : IComparable<Foothold>, IEquatable<Foothold>
     private int id;
     private int next, prev;
 
+    public int TopY { get; }
+    public int BottomY { get; }
+
+    public int LeftX { get; }
+    public int RightX { get; }
+
     public Foothold(Point p1, Point p2, int id)
     {
         this.p1 = p1;
         this.p2 = p2;
         this.id = id;
+
+        TopY = Math.Min(p1.Y, p2.Y);
+        BottomY = Math.Max(p1.Y, p2.Y);
+        LeftX = Math.Min(p1.X, p2.X);
+        RightX = Math.Max(p1.X, p2.X);
     }
 
     public bool isWall()
@@ -86,21 +97,25 @@ public class Foothold : IComparable<Foothold>, IEquatable<Foothold>
 
     public int CompareTo(Foothold? other)
     {
-        if (other == null)
+        if (other == null) 
             return 1;
 
-        if (p2.Y < other.getY1())
-        {
-            return -1;
-        }
-        else if (p1.Y > other.getY2())
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        // 从上到下：TopY 小的在前
+        int yCompare = TopY.CompareTo(other.TopY);
+        if (yCompare != 0)
+            return yCompare;
+
+        // 同一行时，从左到右：LeftX 小的在前
+        int xCompare = LeftX.CompareTo(other.LeftX);
+        if (xCompare != 0)
+            return xCompare;
+
+        // 如果左上角完全相同，再按 BottomY、RightX 排
+        int bottomCompare = BottomY.CompareTo(other.BottomY);
+        if (bottomCompare != 0)
+            return bottomCompare;
+
+        return RightX.CompareTo(other.RightX);
     }
 
     public int getId()

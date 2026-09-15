@@ -2467,7 +2467,7 @@ namespace Application.Plugin.Script
                 {
                     await eim.LightBlue("The Warrior Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
-                    getMap().moveEnvironment("menhir0", 1);
+                    await getMap().moveEnvironment("menhir0", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
                         await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
@@ -2506,8 +2506,8 @@ namespace Application.Plugin.Script
                 {
                     await eim.LightBlue("The Archer Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
-                    getMap().moveEnvironment("menhir1", 1);
-                    getMap().moveEnvironment("menhir2", 1);
+                    await getMap().moveEnvironment("menhir1", 1);
+                    await getMap().moveEnvironment("menhir2", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
                         await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
@@ -2546,7 +2546,7 @@ namespace Application.Plugin.Script
                 {
                     await eim.LightBlue("The Mage Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
-                    getMap().moveEnvironment("menhir3", 1);
+                    await getMap().moveEnvironment("menhir3", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
                         await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
@@ -2585,7 +2585,7 @@ namespace Application.Plugin.Script
                 {
                     await eim.LightBlue("The Thief Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
-                    getMap().moveEnvironment("menhir4", 1);
+                    await getMap().moveEnvironment("menhir4", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
                         await mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
@@ -2624,7 +2624,7 @@ namespace Application.Plugin.Script
                 {
                     await eim.LightBlue("The Pirate Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
-                    getMap().moveEnvironment("menhir5", 1);
+                    await getMap().moveEnvironment("menhir5", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
                         await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");

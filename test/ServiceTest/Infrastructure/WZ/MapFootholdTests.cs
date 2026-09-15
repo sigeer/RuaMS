@@ -5,6 +5,7 @@ using System.Drawing;
 
 namespace ServiceTest.Infrastructure.WZ
 {
+    // 与旧代码有些差异：旧代码在计算时会丢失精度，但实际使用时，不会出现这种卡极限精度的坐标
     internal class MapFootholdTests(string readerType) : WzTestBase(readerType)
     {
         private Point[] GetRandomPoint(Rectangle rectangle, int count = 100)
