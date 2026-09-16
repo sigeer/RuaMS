@@ -1633,7 +1633,7 @@ public class MapleMap : IMap, INamedInstance
 
     public List<IMapObject> getMapObjects()
     {
-        return new(mapobjects.Values);
+        return mapobjects.Values.AsValueEnumerable().OrderBy(x => x.getType()).ThenBy(x => x.getObjectId()).ToList();
     }
     /// <summary>
     /// 
