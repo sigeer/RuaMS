@@ -75,9 +75,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             return;
         }
 
-        var skill = SkillFactory.GetSkillTrust(attack.skill);
-        var effect_ = skill.getEffect(chr.getSkillLevel(skill));
-        if (effect_.getCooldown() > 0)
+        if (effect.getCooldown() > 0)
         {
             if (chr.skillIsCooling(attack.skill))
             {
@@ -85,8 +83,8 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             }
             else
             {
-                await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
-                chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect_.getCooldown()));
+                await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect.getCooldown()));
+                chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect.getCooldown()));
             }
         }
         await applyAttack(attack, chr);
@@ -94,9 +92,10 @@ public class MagicDamageHandler : AbstractDealDamageHandler
         int eaterLevel = chr.getSkillLevel(eaterSkill);
         if (eaterLevel > 0)
         {
+            var eaterSkillEffect = eaterSkill!.getEffect(eaterLevel);
             foreach (int singleDamage in attack.targets.Keys)
             {
-                await eaterSkill!.getEffect(eaterLevel).applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
+                await eaterSkillEffect.applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
             }
         }
     }

@@ -47,11 +47,11 @@ public class BeholderHandler : ChannelHandlerBase
         {
             int skillId = p.readInt();
 
-            //var skillEffect = c.OnlinedCharacter.GetPlayerSkillEffect(skillId);
-            //if (skillEffect != null)
-            //{
-            //    await skillEffect.applyTo(c.OnlinedCharacter);
-            //}
+            var skillEffect = c.OnlinedCharacter.GetPlayerSkillEffect(skillId);
+            if (skillEffect != null)
+            {
+                await skillEffect.applyTo(c.OnlinedCharacter);
+            }
             // COutPacket::Encode1(&v19, (v13 << 7) | 6);
             // COutPacket::Encode1(&v44, 11 & 0x7F | (v32 << 7));
             sbyte stance = p.ReadSByte();
@@ -59,8 +59,8 @@ public class BeholderHandler : ChannelHandlerBase
             await c.OnlinedCharacter.BroadcastMap(
                 SummonPackets.SummonSkill(c.OnlinedCharacter.Id, oid, stance),
                 c.OnlinedCharacter.Id);
-            await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill()));
-            await c.OnlinedCharacter.BroadcastMap(PacketCreator.showBuffEffect(c.OnlinedCharacter.Id, summon.getSkill(), 2), c.OnlinedCharacter.Id);
+            await c.OnlinedCharacter.SendPacket(EffectPacket.SkillAffect(summon.getSkill(), summon.getSkillLevel()));
+            await c.OnlinedCharacter.BroadcastMap(EffectPacket.ForeignSkillAffect(c.OnlinedCharacter.Id, summon.getSkill(), summon.getSkillLevel()), c.OnlinedCharacter.Id);
         }
         else
         {

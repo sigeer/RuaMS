@@ -2020,8 +2020,8 @@ public partial class Player
     {
         // to get here energychargelevel has to be > 0
         Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
-        StatEffect ceffect;
-        ceffect = energycharge.getEffect(getSkillLevel(energycharge));
+        var skillLevel = getSkillLevel(energycharge);
+        var ceffect = energycharge.getEffect(skillLevel);
 
         if (energybar < 10000)
         {
@@ -2033,8 +2033,8 @@ public partial class Player
             var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
             setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
             await SendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-            await SendPacket(PacketCreator.showOwnBuffEffect(energycharge.getId(), 2));
-            await BroadcastMap(PacketCreator.showBuffEffect(Id, energycharge.getId(), 2), Id);
+            await SendPacket(EffectPacket.SkillAffect(energycharge.getId(), skillLevel));
+            await BroadcastMap(EffectPacket.ForeignSkillAffect(Id, energycharge.getId(), skillLevel), Id);
             await BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
                     ceffect.getDuration(), stat), Id);
         }
@@ -3173,11 +3173,6 @@ public partial class Player
             if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
             { // mustn't effLock, chrLock sendSpawnData
                 await mapChrClient.SendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
-            }
-
-            foreach (Summon ms in this.getSummonsValues())
-            {
-                await mapChrClient.SendPacket(SummonPackets.SpawnSummon(ms, false));
             }
         }
 

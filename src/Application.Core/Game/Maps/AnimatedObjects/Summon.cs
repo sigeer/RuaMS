@@ -120,6 +120,7 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
         {
             await MapModel.addPlayerPuppet(getOwner());
         }
+        setPosition(owner.getPosition());
     }
 
     public override async Task OnUnmounted()

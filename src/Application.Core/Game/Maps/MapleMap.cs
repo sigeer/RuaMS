@@ -555,19 +555,19 @@ public class MapleMap : IMap, INamedInstance
                     if (buff > -1)
                     {
                         ItemInformationProvider mii = ItemInformationProvider.getInstance();
-                        foreach (var character in getAllPlayers())
+                        var statEffect = mii.getItemEffect(buff);
+                        if (statEffect != null)
                         {
-                            if (character.isAlive())
+                            foreach (var character in getAllPlayers())
                             {
-                                var statEffect = mii.getItemEffect(buff)!;
-                                await character.SendPacket(PacketCreator.showOwnBuffEffect(buff, 1));
-                                await character.BroadcastMap(PacketCreator.showBuffEffect(character.getId(), buff, 1), character.Id);
-                                await broadcastMessage(PacketCreator.ShowConsumeItemEffect(character.Id, buff));
-                                await statEffect.applyTo(character);
+                                if (character.isAlive())
+                                {
+                                    await broadcastMessage(PacketCreator.ShowConsumeItemEffect(character.Id, buff));
+                                    await statEffect.applyTo(character);
+                                }
                             }
                         }
                     }
-
 
                     var dropOwner = await monster.killBy(chr);
                     if (withDrops && dropOwner != null)
@@ -1633,7 +1633,7 @@ public class MapleMap : IMap, INamedInstance
 
     public List<IMapObject> getMapObjects()
     {
-        return new(mapobjects.Values);
+        return mapobjects.Values.AsValueEnumerable().OrderBy(x => x.getType()).ThenBy(x => x.getObjectId()).ToList();
     }
     /// <summary>
     /// 
@@ -2732,13 +2732,6 @@ public class MapleMap : IMap, INamedInstance
             await this.AddMapObject(dragon, c => c.SendPacket(PacketCreator.spawnDragon(dragon)));
         }
 
-        StatEffect? summonStat = chr.getStatForBuff(BuffStat.SUMMON);
-        if (summonStat != null)
-        {
-            var summon = chr.getSummonByKey(summonStat.getSourceId())!;
-            summon.setPosition(chr.getPosition());
-            await spawnSummon(summon);
-        }
         if (MapEffect != null)
         {
             await MapEffect.sendStartData(chr.getClient());

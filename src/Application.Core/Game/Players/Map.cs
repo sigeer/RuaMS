@@ -1,3 +1,5 @@
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Items;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Trades;
@@ -23,12 +25,15 @@ namespace Application.Core.Game.Players
                 {
                     await MapModel.AddMapObject(pet, null);
                     await pet.sendSpawnData(Client);
-
-                    // 宠物首次进入地图是通过 spawnPlayerMapObject 此时必然会对自己显示
-                    await MapModel.SetPlayerVisibleObject(this, pet, false);
+                    // 对其他玩家显示的部分已经由 PacketCreator.spawnPlayerMapObject 完成了
                 }
             }
             await CommitExcludedItemsAll();
+
+            foreach (var summon in getSummonsValues())
+            {
+                await MapModel.spawnSummon(summon);
+            }
         }
 
         public override async Task OnUnmounted()

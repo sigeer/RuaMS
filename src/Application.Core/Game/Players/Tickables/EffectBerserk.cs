@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using tools;
@@ -17,16 +18,10 @@ namespace Application.Core.Game.Players.Tickables
         {
             if (_chr.JobModel == Job.DARKKNIGHT)
             {
-                Skill BerserkX = SkillFactory.GetSkillTrust(DarkKnight.BERSERK);
-                int skilllevel = _chr.getSkillLevel(BerserkX);
-                if (skilllevel > 0)
-                {
-                    var buffEffect = BerserkX.getEffect(skilllevel);
-                    var berserk = (_chr.HP * 100 / _chr.ActualMaxHP) < buffEffect.getX();
+                var berserk = (_chr.HP * 100 / _chr.ActualMaxHP) < Effect.getX() ? (byte)1 : (byte)0;
 
-                    await _chr.SendPacket(PacketCreator.showOwnBerserk(buffEffect.SkillLevel, berserk));
-                    await _chr.BroadcastMap(PacketCreator.showBerserk(_chr.Id, buffEffect.SkillLevel, berserk), _chr.Id);
-                }
+                await _chr.SendPacket(EffectPacket.SkillEffect(Effect.getSourceId(), Effect.SkillLevel, _chr.Level, berserk));
+                await _chr.BroadcastMap(EffectPacket.ForeignSkillEffect(_chr.Id, Effect.getSourceId(), Effect.SkillLevel, _chr.Level, berserk), _chr.Id);
             }
         }
     }
