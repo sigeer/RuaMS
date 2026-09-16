@@ -52,15 +52,24 @@ namespace Application.Core.Game.Players
                 (Skills.GetSkill(skill)?.skillevel ?? 0) + (final ? TempSkillCache.GetValueOrDefault(skill.getId()) : 0),
                 skill.getMaxLevel());
         }
-
+        /// <summary>
+        /// 获取玩家技能效果，会验证职业，技能等级
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <returns></returns>
         public StatEffect? TryGetPlayerSkillEffect(int skillId)
         {
             var skillObj = SkillFactory.GetSkillTrust(skillId);
 
-            var skillLevel = getSkillLevel(skillObj);
-            if (skillLevel == 0)
-                return null;
-            return skillObj.getEffect(skillLevel);
+            if (JobModel.CheckSkill(skillId))
+            {
+                var skillLevel = getSkillLevel(skillObj);
+                if (skillLevel == 0)
+                    return null;
+                return skillObj.getEffect(skillLevel);
+            }
+
+            return null;
         }
 
         public StatEffect GetPlayerSkillEffect(int skillId)
@@ -236,11 +245,6 @@ namespace Application.Core.Game.Players
             changeKeybinding((int)KeyCode.Equal, new KeyBinding(KeyBindingType.Skill, skillId));
             await sendKeymap();
             return true;
-        }
-
-        public bool CheckSkill(int skillId)
-        {
-            return !isGM() && JobModel.CheckSkill(skillId);
         }
 
         public bool CheckBuff(BuffStatValueHolder buff)

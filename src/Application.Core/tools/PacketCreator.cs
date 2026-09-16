@@ -2529,16 +2529,77 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet DamagePlayerFromCounter(int monsteridfrom, int cid, int damage)
+    public static Packet DamagePlayer(int cid, int attackIndex, int mobId, int damage, int finalDamage, int fake, int direction, byte pgmr, bool is_pg, int oid, int action, int pos_x, int pos_y, int stance)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
         p.writeInt(cid);
-        p.writeByte(0);
+        p.writeByte(attackIndex);
+        // v68 = CInPacket::Decode4(a2);
         p.writeInt(damage);
-        p.writeInt(monsteridfrom);
-        p.writeByte(0);
-        p.writeBool(false);
-        p.writeByte(0);
+        // if ( v4 <= -2 )
+        if (attackIndex > -2)
+        {
+            // *v69 = CInPacket::Decode4(a2);  CMobTemplate::GetMobTemplate(v69[0]) 
+            p.writeInt(mobId);
+            // v65 = CInPacket::Decode1(a2);
+            p.writeByte(direction);
+
+            // if ( v4 >= 0 )
+            //if (attackIndex >= 0)
+            //{
+            //    // 绘制攻击动画？
+            //}
+
+            // v23 = CInPacket::Decode1(a2);
+            // *v69 = v23;
+            // v30 = v68 * *v69 / 100;
+            // if ( v30 >= v29 ) 计算反击伤害是否超过怪物总血量？
+            p.writeByte(pgmr);
+            //  // if ( v23 )
+            if (pgmr > 0)
+            {
+                // v24 = CInPacket::Decode1(a2); isPowerGuard = v24;
+                p.writeBool(is_pg);
+                // v27 = CInPacket::Decode4(a2); Mob = CMobPool::GetMob(v25, v27);
+                p.writeInt(oid);
+                p.writeByte(action);
+                p.writeShort(pos_x);
+                p.writeShort(pos_y);
+            }
+
+            // if ( CInPacket::Decode1(a2) )
+            // v38 = (*(v37 + 64))(v2);
+            // Skill = CSkillInfo::GetSkill(v38);
+            // CUser::ShowSkillSpecialEffect(v2, Skill, v55, v56, v57, v58, v59);
+            p.writeByte(stance);
+        }
+        // v40 = CInPacket::Decode4(a2);
+        p.writeInt(finalDamage);
+        // if ( v40 > 0 )
+        {
+            // CAvatar::SetEmotion(v2 + 34, 1, 1500);
+            // CUser::MakeIncDecHPEffect(v56);
+        }
+        // if ( !v40 )
+        {
+            // CUser::MakeIncDecHPEffect(v56);
+        }
+        // if ( v40 == -1 )
+        if (damage == -1)
+        {
+            // v42 = CInPacket::Decode4(a2); v44 = CSkillInfo::GetSkill(v42);
+            p.writeInt(fake);
+            // CUser::ShowSkillSpecialEffect  v43 == 4120002
+        }
+        return p;
+    }
+
+    public static Packet DamagePlayerFromCounter(int cid, int damage)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
+        p.writeInt(cid);
+        p.writeByte((sbyte)AttackIndex.Obstacle);
+        p.writeInt(damage);
         p.writeInt(damage);
         return p;
     }

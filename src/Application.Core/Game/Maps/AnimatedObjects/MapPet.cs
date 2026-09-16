@@ -308,7 +308,7 @@ namespace Application.Core.Game.Maps.AnimatedObjects
         public TickableStatus Status { get; private set; }
         public async Task OnTick(long now)
         {
-            if (!this.IsAvailable() || PetItem.Store == null)
+            if (!this.IsAvailable() || PetItem.Store == null || !PetItem.Store.Owner.IsOnlined)
             {
                 return;
             }

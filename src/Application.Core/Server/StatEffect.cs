@@ -451,7 +451,7 @@ public class StatEffect
                 case FPArchMage.MANA_REFLECTION:
                 case ILArchMage.MANA_REFLECTION:
                 case Bishop.MANA_REFLECTION:
-                    statups.Add(new(BuffStat.MANA_REFLECTION, 1));
+                    statups.Add(new(BuffStat.MANA_REFLECTION, x));
                     break;
                 case Bishop.HOLY_SHIELD:
                     statups.Add(new(BuffStat.HOLY_SHIELD, x));

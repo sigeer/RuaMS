@@ -1205,6 +1205,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         else
         {
             await client.SendPacket(PacketCreator.spawnMonster(this, false));
+
+            await aggroUpdateController();
         }
 
         if (hasBossHPBar())
@@ -1647,7 +1649,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return (mobSkill.getType()) switch
         {
             MobSkillType.PHYSICAL_COUNTER or
-             MobSkillType.MAGIC_COUNTER or MobSkillType.PHYSICAL_AND_MAGIC_COUNTER => true,
+             MobSkillType.MAGIC_COUNTER or 
+             MobSkillType.PHYSICAL_AND_MAGIC_COUNTER => true,
             _ => false
         };
     }
@@ -1861,14 +1864,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    private void changeLevelByDifficulty(int difficulty, bool pqMob)
-    {
-        changeLevel((int)(this.getLevel() * getDifficultyRate(difficulty)), pqMob);
-    }
-
     public void changeDifficulty(int difficulty, bool pqMob)
     {
-        changeLevelByDifficulty(difficulty, pqMob);
+        if (difficulty > 1)
+        {
+            changeLevel((int)(this.getLevel() * getDifficultyRate(difficulty)), pqMob);
+        }
     }
 
     // ---------------------------------------------------------------------------------

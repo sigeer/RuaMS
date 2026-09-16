@@ -43,6 +43,7 @@ using Application.Core.Server.events.gm;
 using Application.Core.Server.maps;
 using Application.Core.Server.partyquest;
 using Application.Core.Server.quest;
+using Application.Shared.Battle;
 using Application.Shared.Events;
 using Application.Shared.Login;
 using Application.Templates.Item.Cash;
@@ -1196,7 +1197,7 @@ public partial class Player
              {
                  await ChangeHP(-MapModel.getHPDec(), false);
              });
-            await SendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
+            await BroadcastMap(PacketCreator.DamagePlayerFromCounter(Id, MapModel.getHPDec()));
         }
     }
 

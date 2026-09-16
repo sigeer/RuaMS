@@ -577,36 +577,37 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                         await monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
                     }
-                    if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
-                    {
-                        foreach (MobSkillId msId in monster.getSkills())
-                        {
-                            if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
-                            {
-                                MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                await player.UpdateStatsChunk(async () =>
-                                {
-                                    await player.DamageBy(monster, toUse.getX(), attack.attackDelay);
-                                });
-                                await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
-                            }
-                        }
-                    }
-                    if (monster.isBuffed(MonsterStatus.MAGIC_REFLECT) && attack.magic)
-                    {
-                        foreach (MobSkillId msId in monster.getSkills())
-                        {
-                            if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
-                            {
-                                MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                                await player.UpdateStatsChunk(async () =>
-                                {
-                                    await player.DamageBy(monster, toUse.getY(), attack.attackDelay);
-                                });
-                                await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
-                            }
-                        }
-                    }
+                    // 反击是否由TakeDamageHanlder
+                    //if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
+                    //{
+                    //    foreach (MobSkillId msId in monster.getSkills())
+                    //    {
+                    //        if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
+                    //        {
+                    //            MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
+                    //            await player.UpdateStatsChunk(async () =>
+                    //            {
+                    //                await player.DamageBy(monster, toUse.getX(), attack.attackDelay);
+                    //            });
+                    //            await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
+                    //        }
+                    //    }
+                    //}
+                    //if (monster.isBuffed(MonsterStatus.MAGIC_REFLECT) && attack.magic)
+                    //{
+                    //    foreach (MobSkillId msId in monster.getSkills())
+                    //    {
+                    //        if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
+                    //        {
+                    //            MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
+                    //            await player.UpdateStatsChunk(async () =>
+                    //            {
+                    //                await player.DamageBy(monster, toUse.getY(), attack.attackDelay);
+                    //            });
+                    //            await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
+                    //        }
+                    //    }
+                    //}
                 }
             }
         }
