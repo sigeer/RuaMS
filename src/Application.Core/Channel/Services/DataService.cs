@@ -1,4 +1,6 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Players.Models;
@@ -20,6 +22,7 @@ using client.keybind;
 using Google.Protobuf.Collections;
 using net.server.guild;
 using tools;
+using static Application.Core.Server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Channel.Services
 {
@@ -473,7 +476,7 @@ namespace Application.Core.Channel.Services
             }));
             data.Diseases.AddRange(player.Diseases.Select(x => new ProtoModel.DiseaseProto
             {
-                DiseaseOrdinal = x.Key.ordinal(),
+                DiseaseBit = (int)x.Key,
                 StartTime = x.Value.StartTime,
                 Length = x.Value.Length,
                 MobSkillId = x.Value.FromMobSkill.getId().type.getId(),
@@ -490,6 +493,7 @@ namespace Application.Core.Channel.Services
         public async Task RecoverCharacterBuff(Player player)
         {
             var buffdto = _transport.GetBuffObject(player.Id);
+            var now = player.Client.CurrentServer.Node.getCurrentTime();
 
             foreach (var x in buffdto.Buffs)
             {
@@ -498,14 +502,31 @@ namespace Application.Core.Channel.Services
                     : ItemInformationProvider.getInstance().getItemEffect(-x.SourceId);
 
                 if (statEffect != null)
-                    await statEffect.silentApplyBuff(player, x.StartTime, x.Stats.Select(y => new BuffStatValue(BuffStat.From(y.BuffStat), y.Value)).ToList());
+                {
+                    List<BuffStatValue> statups = [];
+                    foreach (var y in x.Stats)
+                    {
+                        if (BuffStatUtils.TryParse(y.BuffStat, out BuffStat stat))
+                        {
+                            statups.Add(new BuffStatValue(stat, y.Value));
+                        }
+                    }
+
+                    if (statups.Count > 0)
+                    {
+                        await statEffect.silentApplyBuff(player, x.StartTime, statups);
+                    }
+                }
             }
 
             player.silentApplyDiseases(buffdto.Diseases);
             foreach (var e in player.Diseases.Values)
             {
-                var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Disease, e.FromMobSkill.getX()));
-                await player.SendPacket(PacketCreator.giveDebuff(debuff, e.FromMobSkill));
+                var p = player.GetFromDisease(e, now);
+                if (p != null)
+                {
+                    await player.SendPacket(BuffPackets.GiveBuff(p));
+                }
             }
         }
 

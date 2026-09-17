@@ -903,7 +903,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
             int _partyExp = expValueToInteger(partyExp.Value);
 
-            if (attacker.hasDisease(Disease.CURSE))
+            if (attacker.hasDisease(BuffStat.CURSE))
             {
                 _personalExp = (int)(_personalExp * 0.5);
                 _partyExp = (int)(_partyExp * 0.5);

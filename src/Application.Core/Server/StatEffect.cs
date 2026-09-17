@@ -24,6 +24,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
@@ -35,6 +36,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Core.Server.partyquest;
+using Application.Shared.Battle.Skills;
 using Application.Shared.MapObjects.Summons;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
@@ -51,7 +53,7 @@ namespace Application.Core.Server;
  * @author Frz
  * @author Ronan
  */
-public class StatEffect
+public class StatEffect: ISkillEffect
 {
     private short watk, matk, wdef, mdef, acc, avoid, speed, jump;
     private short hp, mp;
@@ -62,8 +64,11 @@ public class StatEffect
     private int duration = -1;
     private bool overTime;
     private int sourceid;
-    private List<Disease> cureDebuffs;
+    private List<BuffStat> cureDebuffs;
     private bool skill;
+    /// <summary>
+    /// 为什么不是Dictionary?
+    /// </summary>
     private List<BuffStatValue> statups;
     private Dictionary<MonsterStatus, int> monsterStatus;
     private int x, y, mobCount = 1, moneyCon, cooldown;
@@ -88,7 +93,7 @@ public class StatEffect
     public List<ScopedEffect> ScopedEffects { get; } = [];
     public int Prob { get; private set; }
     public char DefenseAttChar { get; private set; }
-    public Disease? DefenseState { get; private set; }
+    public BuffStat? DefenseState { get; private set; }
     public char DefenseStateChar { get; private set; }
 
 
@@ -170,18 +175,18 @@ public class StatEffect
         if (template is IStatEffectCure cure)
         {
             if (cure.Cure_Poison)
-                cureDebuffs.Add(Disease.POISON);
+                cureDebuffs.Add(BuffStat.POISON);
             if (cure.Cure_Seal)
-                cureDebuffs.Add(Disease.SEAL);
+                cureDebuffs.Add(BuffStat.SEAL);
             if (cure.Cure_Darkness)
-                cureDebuffs.Add(Disease.DARKNESS);
+                cureDebuffs.Add(BuffStat.DARKNESS);
             if (cure.Cure_Weakness)
             {
-                cureDebuffs.Add(Disease.WEAKEN);
-                cureDebuffs.Add(Disease.SLOW);
+                cureDebuffs.Add(BuffStat.WEAKEN);
+                cureDebuffs.Add(BuffStat.SLOW);
             }
             if (cure.Cure_Curse)
-                cureDebuffs.Add(Disease.CURSE);
+                cureDebuffs.Add(BuffStat.CURSE);
         }
 
         statups = new();
@@ -274,7 +279,7 @@ public class StatEffect
                 if (!string.IsNullOrEmpty(mobCard.DefenseState))
                 {
                     DefenseStateChar = mobCard.DefenseState[0];
-                    DefenseState = Disease.GetDiseaseByAb(mobCard.DefenseState);
+                    DefenseState = DiseaseInfo.GetByAb(mobCard.DefenseState);
 
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
@@ -978,7 +983,7 @@ public class StatEffect
                                 else
                                 {
                                     MobSkill mobSkill = skill.getSkill();
-                                    await chrApp.giveDebuff(dis, mobSkill);
+                                    await chrApp.giveDebuff(dis.Value, mobSkill);
                                 }
                             }
                         }
@@ -995,7 +1000,7 @@ public class StatEffect
                             else
                             {
                                 MobSkill mobSkill = skill.getSkill();
-                                await chrApp.giveDebuff(dis, mobSkill);
+                                await chrApp.giveDebuff(dis.Value, mobSkill);
                             }
                         }
                     }
@@ -1061,7 +1066,7 @@ public class StatEffect
         }
         else if (cureDebuffs.Count > 0)
         { // added by Drago (Dragohe4rt)
-            foreach (Disease debuff in cureDebuffs)
+            foreach (BuffStat debuff in cureDebuffs)
             {
                 await applyfrom.dispelDebuff(debuff);
             }
@@ -1070,7 +1075,7 @@ public class StatEffect
         {
             MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkillEffect.MobSkill.MobSkill);
             MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillEffect.MobSkill.Level);
-            var dis = Disease.GetBySkillTrust(mobSkillType);
+            var dis = DiseaseInfo.GetBySkillTrust(mobSkillType);
 
             if (mobSkillEffect.MobSkill.Target > 0)
             {
@@ -1213,20 +1218,23 @@ public class StatEffect
 
     public async Task applyComboBuff(Player applyto, int combo)
     {
-        await applyto.SendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
-
         long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
         //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
         //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
+        var builder = new BuffParameterBuilder(this);
+        builder.SetBuffStats[BuffStat.ARAN_COMBO] = combo;
+        builder.Duration = 99999;
+        await applyto.SendPacket(BuffPackets.GiveBuff(builder.Build(applyto)));
+
         await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
     }
 
-    public async Task applyBeaconBuff(Player applyto, int objectid)
+    public async Task applyBeaconBuff(Player applyto, Monster mob)
     {
-        // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
-        // 按照其他调用，第一个参数应该是souceid, 第二个参数应该是有效时间（毫秒）
-        await applyto.SendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
+        var builder = new BuffParameterBuilder(this);
+        builder.ExtraValue0 = mob.getObjectId();
 
+        await applyto.SendPacket(BuffPackets.GiveBuff(builder.Build(applyto)));
         long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
         await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
     }
@@ -1235,38 +1243,37 @@ public class StatEffect
     {
         int localDuration = getBuffLocalDuration();
         localDuration = alchemistModifyVal(target, localDuration, false);
-
         long leftDuration = (starttime + localDuration) - target.Client.CurrentServer.Node.getCurrentTime();
+
         if (leftDuration > 0)
         {
-            if (isDash() || isInfusion())
+            var builder = new BuffParameterBuilder(this)
             {
-                await target.SendPacket(PacketCreator.givePirateBuff(activeStats, getBuffSourceId(), (int)leftDuration));
-            }
-            else
-            {
-                await target.SendPacket(PacketCreator.GiveBuff(this, (int)leftDuration, activeStats));
-            }
+                Duration = (int)leftDuration,
+                AllBuffStats = activeStats.ToDictionary(x => x.BuffState, x => x.Value)
+            };
+
+            await target.SendPacket(BuffPackets.GiveBuff(builder.Build(target)));
         }
     }
 
     private async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary)
     {
         if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
-        {     // last mystic door already dispelled if it has been used before.
+        {     
+            // last mystic door already dispelled if it has been used before.
             await applyto.cancelEffect(this, true);
         }
 
-        var localStatupList = statups.ToList();
-        int localDuration = getBuffLocalDuration();
-        int localsourceid = sourceid;
-        int seconds = localDuration / 1000;
+        BuffParameterBuilder buffParameterBuilder = new(this);
+
         int activeMorphId = 0;
         Mount? givemount = null;
         if (isMonsterRiding())
         {
             int ridingMountId = 0;
-            Item? mount = applyfrom.getInventory(InventoryType.EQUIPPED).getItem(-18);
+
+            var mount = applyfrom.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Mount);
             if (mount != null)
             {
                 ridingMountId = mount.getItemId();
@@ -1300,97 +1307,53 @@ public class StatEffect
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
 
-            localDuration = sourceid;
-            localsourceid = ridingMountId;
-
-            localStatupList = [new BuffStatValue(BuffStat.MONSTER_RIDING, 0)];
+            buffParameterBuilder.Duration = int.MaxValue;
+            buffParameterBuilder.SetBuffStats[BuffStat.MONSTER_RIDING] = ridingMountId;
         }
         else if (EffectTemplate is IStatEffectMorph morph && morph.Valid())
         {
             // 存在随机，实际使用时附加
             activeMorphId = getMorph(applyto);
-            localStatupList.Add(new(BuffStat.MORPH, activeMorphId));
+            buffParameterBuilder.SetBuffStats[BuffStat.MORPH] = activeMorphId;
         }
+        else if (isCombo())
+        {
+            int comboCount = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
+            buffParameterBuilder.SetBuffStats[BuffStat.COMBO] = comboCount;
+        }
+
         if (primary)
         {
-            localDuration = alchemistModifyVal(applyfrom, localDuration, false);
+            buffParameterBuilder.Duration = alchemistModifyVal(applyfrom, buffParameterBuilder.Duration, false);
             await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.Id, sourceid, SkillLevel, applyto.Level), applyto.Id);
         }
 
-        if (localStatupList.Count > 0)
+        var buffParameter = buffParameterBuilder.Build(applyto);
+        if (buffParameter.AllBuffStats.Count > 0)
         {
-            var localstatups = localStatupList.ToArray();
+            var localstatups = buffParameter.AllBuffStats.Select(x => new BuffStatValue(x.Key, x.Value)).ToArray();
             Packet? buff = null;
             Packet? mbuff = null;
             if (this.isActive(applyto))
             {
-                buff = PacketCreator.GiveBuff(this, localDuration, localstatups);
+                buff = BuffPackets.GiveBuff(buffParameter);
+                mbuff = BuffPackets.GiveRemoteBuff(applyto.Id, buffParameter);
             }
-            if (isDash())
-            {
-                buff = PacketCreator.givePirateBuff(statups, sourceid, seconds);
-                mbuff = PacketCreator.giveForeignPirateBuff(applyto.getId(), sourceid, seconds, localstatups);
-            }
-            else if (isWkCharge())
-            {
-                mbuff = PacketCreator.giveForeignWKChargeEffect(applyto.getId(), sourceid, localstatups);
-            }
-            else if (isInfusion())
-            {
-                buff = PacketCreator.givePirateBuff(localstatups, sourceid, seconds);
-                mbuff = PacketCreator.giveForeignPirateBuff(applyto.getId(), sourceid, seconds, localstatups);
-            }
-            else if (isDs())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0));
-            }
-            else if (isWw())
-            {
-                List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>());
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.WIND_WALK, 0));
-            }
-            else if (isCombo())
-            {
-                int comboCount = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
 
-                var combo = new BuffStatValue(BuffStat.COMBO, comboCount);
-                buff = PacketCreator.GiveBuff(this, localDuration, combo);
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), combo);
-            }
-            else if (isMonsterRiding())
+            if (isMonsterRiding())
             {
                 if (sourceid == Corsair.BATTLE_SHIP)
-                {//hp
+                {
+                    //hp
                     if (applyto.getBattleshipHp() <= 0)
                     {
                         applyto.resetBattleshipHp();
                     }
-
-                    localstatups = statups.ToArray();
                 }
-                buff = PacketCreator.giveBuff(localsourceid, localDuration, localstatups);
-                mbuff = PacketCreator.showMonsterRiding(applyto.getId(), givemount!);
-                localDuration = duration;
-            }
-            else if (isShadowPartner())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SHADOWPARTNER, 0));
-            }
-            else if (isSoulArrow())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SOULARROW, 0));
             }
             else if (isEnrage())
             {
                 await applyto.handleOrbconsume();
-            }
-            else if (activeMorphId > 0)
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.MORPH, activeMorphId));
-            }
-            else if (isAriantShield())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.AURA, 1));
             }
 
             if (buff != null)
@@ -1404,7 +1367,7 @@ public class StatEffect
             long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
-            await applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
+            await applyto.registerEffect(this, localstatups, starttime, starttime + buffParameterBuilder.Duration, false);
             if (mbuff != null)
             {
                 await applyto.BroadcastMap(mbuff, applyto.Id);
@@ -1431,7 +1394,7 @@ public class StatEffect
                 {
                     hpchange += hp;
                 }
-                if (applyfrom.hasDisease(Disease.ZOMBIFY))
+                if (applyfrom.hasDisease(BuffStat.ZOMBIFY))
                 {
                     hpchange /= 2;
                 }
@@ -1444,7 +1407,7 @@ public class StatEffect
                     hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
 
                 hpchange += (int)hpHeal;
-                if (applyfrom.hasDisease(Disease.ZOMBIFY))
+                if (applyfrom.hasDisease(BuffStat.ZOMBIFY))
                 {
                     hpchange = -hpchange;
                     hpCon = 0;
@@ -1453,7 +1416,7 @@ public class StatEffect
         }
         if (hpR != 0)
         {
-            hpchange += (int)(applyfrom.ActualMaxHP * hpR) / (applyfrom.hasDisease(Disease.ZOMBIFY) ? 2 : 1);
+            hpchange += (int)(applyfrom.ActualMaxHP * hpR) / (applyfrom.hasDisease(BuffStat.ZOMBIFY) ? 2 : 1);
         }
         if (primary)
         {

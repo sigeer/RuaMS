@@ -21,7 +21,9 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Microsoft.Extensions.Logging;
@@ -69,12 +71,12 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
             chr.Id);
         int numFinisherOrbs = 0;
-        var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
+        var comboBuff = chr.GetBuffStatValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))
         {
             if (comboBuff != null)
             {
-                numFinisherOrbs = comboBuff.Value - 1;
+                numFinisherOrbs = comboBuff.value - 1;
             }
             await chr.handleOrbconsume();
         }
@@ -82,10 +84,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         {
             if (attack.skill != Crusader.SHOUT && comboBuff != null)
             {
-                var orbcount = chr.getBuffedValue(BuffStat.COMBO);
-                int oid = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
+                var orbcount = comboBuff.value;
+                int oSkillId = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
                 int advcomboid = chr.isCygnus() ? DawnWarrior.ADVANCED_COMBO : Hero.ADVANCED_COMBO;
-                Skill combo = SkillFactory.GetSkillTrust(oid);
+                Skill combo = SkillFactory.GetSkillTrust(oSkillId);
                 Skill advcombo = SkillFactory.GetSkillTrust(advcomboid);
                 StatEffect? ceffect;
                 int advComboSkillLevel = chr.getSkillLevel(advcombo);
@@ -98,7 +100,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                     int comboLv = chr.getSkillLevel(combo);
                     if (comboLv <= 0 || chr.isGM())
                     {
-                        comboLv = SkillFactory.GetSkillTrust(oid).getMaxLevel();
+                        comboLv = SkillFactory.GetSkillTrust(oSkillId).getMaxLevel();
                     }
 
                     if (comboLv > 0)
@@ -114,7 +116,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 {
                     if (orbcount < ceffect.getX() + 1)
                     {
-                        int neworbcount = orbcount.Value + 1;
+                        int neworbcount = orbcount + 1;
                         if (advComboSkillLevel > 0 && ceffect.makeChanceResult())
                         {
                             if (neworbcount <= ceffect.getX())
@@ -123,19 +125,25 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                             }
                         }
 
-                        int olv = chr.getSkillLevel(oid);
+                        int olv = chr.getSkillLevel(oSkillId);
                         if (olv <= 0)
                         {
-                            olv = SkillFactory.GetSkillTrust(oid).getMaxLevel();
+                            olv = SkillFactory.GetSkillTrust(oSkillId).getMaxLevel();
                         }
 
-                        int duration = combo.getEffect(olv).getDuration();
-                        var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
-                        chr.setBuffedValue(BuffStat.COMBO, neworbcount);
-                        duration -= (int)(c.CurrentServer.Node.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
+                        var oStatEffect = combo.getEffect(olv);
+                        var builder = new BuffParameterBuilder(oStatEffect)
+                        {
+                            Duration = oStatEffect.getDuration()
+                        };
 
-                        await c.SendPacket(PacketCreator.giveBuff(oid, duration, stat));
-                        await chr.BroadcastMap(PacketCreator.giveForeignBuff(chr.getId(), stat), chr.Id);
+
+                        builder.Duration -= (int)(c.CurrentServer.Node.getCurrentTime() - comboBuff.startTime);
+                        builder.SetBuffStats[BuffStat.COMBO] = neworbcount;
+                        var buffData = builder.Build(chr);
+
+                        await chr.SendPacket(BuffPackets.GiveBuff(buffData));
+                        await chr.BroadcastMap(BuffPackets.GiveRemoteBuff(chr.Id, buffData));
                     }
                 }
             }

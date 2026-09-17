@@ -243,7 +243,13 @@ public enum SendOpcode
     PYRAMID_GAUGE = 0x9D,
     PYRAMID_SCORE = 0x9E,
     QUICKSLOT_INIT = 0x9F,//LP_QuickslotMappedInit
+    /// <summary>
+    /// CUserPool::OnUserEnterField
+    /// </summary>
     SPAWN_PLAYER = 0xA0,
+    /// <summary>
+    /// CUserPool::OnUserLeaveField
+    /// </summary>
     REMOVE_PLAYER_FROM_MAP = 0xA1,
     CHATTEXT = 0xA2, //0
     CHATTEXT1 = 0xA3, //1
@@ -314,6 +320,9 @@ public enum SendOpcode
     SHOW_CHAIR = 0xC4,
     UPDATE_CHAR_LOOK = 0xC5,
     SHOW_FOREIGN_EFFECT = 0xC6,
+    /// <summary>
+    /// sub_98385D
+    /// </summary>
     GIVE_FOREIGN_BUFF = 0xC7,
     CANCEL_FOREIGN_BUFF = 0xC8,
     UPDATE_PARTYMEMBER_HP = 0xC9,

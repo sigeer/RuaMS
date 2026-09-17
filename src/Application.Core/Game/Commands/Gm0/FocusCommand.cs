@@ -1,3 +1,4 @@
+using Application.Core.Channel.Net.Packets;
 using tools;
 
 namespace Application.Core.Game.Commands.Gm0
@@ -16,7 +17,7 @@ namespace Application.Core.Game.Commands.Gm0
                 {
                     if (mapChr.Id != client.OnlinedCharacter.Id)
                     {
-                        await client.OnlinedCharacter.SendPacket(PacketCreator.giveForeignBuff(mapChr.Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                        await client.OnlinedCharacter.SendPacket(BuffPackets.GiveRemoteHiddenBuff(mapChr.Id));
                     }
                 }
             }

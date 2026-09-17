@@ -1,5 +1,9 @@
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Server.life;
+using Application.Shared.GameProps;
+using System.Numerics;
 using tools;
 using ZLinq;
 
@@ -7,8 +11,10 @@ namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public Dictionary<Disease, PlayerDisease> Diseases { get; } = new();
-        public bool hasDisease(Disease dis)
+        /// <summary>身上的疾病，key 是 <see cref="BuffStat"/> 里对应的状态位（元数据见 <see cref="DiseaseInfo"/>）。</summary>
+        public Dictionary<BuffStat, PlayerDisease> Diseases { get; } = new();
+
+        public bool hasDisease(BuffStat dis)
         {
             return Diseases.ContainsKey(dis);
         }
@@ -19,39 +25,44 @@ namespace Application.Core.Game.Players
         {
             foreach (var item in diseaseMap)
             {
-                var disease = Disease.ordinal(item.DiseaseOrdinal);
-                Diseases[disease] = new PlayerDisease(disease, item.StartTime, item.Length, MobSkillFactory.getMobSkillOrThrow((MobSkillType)item.MobSkillId, item.MobSkillLevel));
+                var disease = BuffStatUtils.FromBit(item.DiseaseBit);
+                // 只认疾病位：旧存档里存的是 Disease 的声明序号，换算成位号后大多不是疾病位，这里直接丢弃
+                if (disease == null || !DiseaseInfo.IsDisease(disease.Value))
+                {
+                    continue;
+                }
+                Diseases[disease.Value] = new PlayerDisease(disease.Value, item.StartTime, item.Length, MobSkillFactory.getMobSkillOrThrow((MobSkillType)item.MobSkillId, item.MobSkillLevel));
             }
         }
 
-        public async Task announceDiseases()
+        /// <summary>
+        /// 向其他玩家发送自己的debuff
+        /// </summary>
+        /// <returns></returns>
+        public async Task announceDiseases(long now)
         {
             // Poison damage visibility and diseases status visibility, extended through map transitions thanks to Ronan
             if (!this.isLoggedinWorld())
             {
                 return;
             }
-
             var chrDiseases = Diseases.Values.ToList();
 
             foreach (var di in chrDiseases)
             {
-                Disease disease = di.Disease;
-                MobSkill skill = di.FromMobSkill;
-                List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
-
-                if (di.Disease != Disease.SLOW)
+                var p = GetFromDisease(di, now);
+                if (p != null)
                 {
-                    await BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, di.FromMobSkill));
-                }
-                else
-                {
-                    await BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill));
+                    await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p));
                 }
             }
         }
 
-        public async Task collectDiseases()
+        /// <summary>
+        /// 自己收取其他玩家的debuff
+        /// </summary>
+        /// <returns></returns>
+        public async Task collectDiseases(long now)
         {
             foreach (Player chr in MapModel.getAllPlayers())
             {
@@ -59,27 +70,20 @@ namespace Application.Core.Game.Players
 
                 foreach (var di in chr.Diseases.Values.ToList())
                 {
-                    Disease disease = di.Disease;
-                    MobSkill skill = di.FromMobSkill;
-                    List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
-
-                    if (disease != Disease.SLOW)
+                    var p = GetFromDisease(di, now);
+                    if (p != null)
                     {
-                        await this.SendPacket(PacketCreator.giveForeignDebuff(cid, debuff, skill));
-                    }
-                    else
-                    {
-                        await this.SendPacket(PacketCreator.giveForeignSlowDebuff(cid, debuff, skill));
+                        await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p));
                     }
                 }
             }
         }
 
-        public async Task giveDebuff(Disease disease, MobSkill skill)
+        public async Task giveDebuff(BuffStat disease, MobSkill skill)
         {
             if (!hasDisease(disease) && getDiseasesSize() < 2)
             {
-                if (!(disease == Disease.SEDUCE || disease == Disease.STUN))
+                if (!(disease == BuffStat.SEDUCE || disease == BuffStat.STUN))
                 {
                     if (hasActiveBuff(Bishop.HOLY_SHIELD))
                     {
@@ -89,37 +93,32 @@ namespace Application.Core.Game.Players
 
 
                 long curTime = Client.CurrentServer.Node.getCurrentTime();
-                Diseases[disease] = new PlayerDisease(disease, curTime, skill.getDuration(), skill);
+                var dis = new PlayerDisease(disease, curTime, skill.getDuration(), skill);
+                Diseases[disease] = dis;
 
-                if (disease == Disease.SEDUCE && chair.get() < 0)
+                if (disease == BuffStat.SEDUCE && chair.get() < 0)
                 {
                     await sitChair(-1);
                 }
 
-                List<KeyValuePair<Disease, int>> debuff = Collections.singletonList(new KeyValuePair<Disease, int>(disease, skill.getX()));
-                await SendPacket(PacketCreator.giveDebuff(debuff, skill));
-
-                if (disease != Disease.SLOW)
+                var p = GetFromDisease(dis, curTime);
+                if (p != null)
                 {
-                    await BroadcastMap(PacketCreator.giveForeignDebuff(Id, debuff, skill), Id);
-                }
-                else
-                {
-                    await BroadcastMap(PacketCreator.giveForeignSlowDebuff(Id, debuff, skill), Id);
+                    await SendPacket(BuffPackets.GiveBuff(p));
+                    await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p));
                 }
             }
         }
 
-        public async Task dispelDebuff(Disease debuff)
+        public async Task dispelDebuff(BuffStat debuff)
         {
             if (hasDisease(debuff))
             {
-                long mask = (long)debuff.getValue();
-                await SendPacket(PacketCreator.cancelDebuff(mask));
+                await SendPacket(PacketCreator.cancelDebuff(debuff));
 
-                if (debuff != Disease.SLOW)
+                if (debuff != BuffStat.SLOW)
                 {
-                    await BroadcastMap(PacketCreator.cancelForeignDebuff(Id, mask), Id);
+                    await BroadcastMap(PacketCreator.cancelForeignDebuff(Id, debuff), Id);
                 }
                 else
                 {
@@ -132,19 +131,19 @@ namespace Application.Core.Game.Players
 
         public async Task dispelDebuffs()
         {
-            await dispelDebuff(Disease.CURSE);
-            await dispelDebuff(Disease.DARKNESS);
-            await dispelDebuff(Disease.POISON);
-            await dispelDebuff(Disease.SEAL);
-            await dispelDebuff(Disease.WEAKEN);
-            await dispelDebuff(Disease.SLOW);    // thanks Conrad for noticing ZOMBIFY isn't dispellable
+            await dispelDebuff(BuffStat.CURSE);
+            await dispelDebuff(BuffStat.DARKNESS);
+            await dispelDebuff(BuffStat.POISON);
+            await dispelDebuff(BuffStat.SEAL);
+            await dispelDebuff(BuffStat.WEAKEN);
+            await dispelDebuff(BuffStat.SLOW);    // thanks Conrad for noticing ZOMBIFY isn't dispellable
         }
 
         public async Task purgeDebuffs()
         {
-            await dispelDebuff(Disease.SEDUCE);
-            await dispelDebuff(Disease.ZOMBIFY);
-            await dispelDebuff(Disease.CONFUSE);
+            await dispelDebuff(BuffStat.SEDUCE);
+            await dispelDebuff(BuffStat.ZOMBIFY);
+            await dispelDebuff(BuffStat.CONFUSE);
             await dispelDebuffs();
         }
 
@@ -156,7 +155,7 @@ namespace Application.Core.Game.Players
 
         public async Task ClearExpiredDisease(long now)
         {
-            var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= now).Select(x => x.Disease).ToList();
+            var expired = Diseases.Values.AsValueEnumerable().Where(x => x.StartTime + x.Length <= now).Select(x => x.Stat).ToList();
 
             foreach (var item in expired)
             {
@@ -167,8 +166,21 @@ namespace Application.Core.Game.Players
         public async Task DebugListAllDisease()
         {
             await Debug(6, string.Join(", ", Diseases.Values
-                      .Select(entry => $"type= {entry.Disease.name()}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
+                      .Select(entry => $"type= {entry.Stat}, active:{entry.StartTime + entry.Length >= getChannelServer().Node.getCurrentTime()}"))
               );
+        }
+
+        public BuffParameter? GetFromDisease(PlayerDisease data, long now)
+        {
+            var leftTime = data.Length - (now - data.StartTime);
+            if (leftTime <= 0)
+                return null;
+
+            var builder = new BuffParameterBuilder(data.FromMobSkill);
+
+            builder.Duration = (int)leftTime;
+            return builder.Build(this);
+
         }
     }
 }

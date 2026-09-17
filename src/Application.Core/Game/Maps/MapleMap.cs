@@ -2633,7 +2633,7 @@ public class MapleMap : IMap, INamedInstance
             await c.SendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, chr, true));
             if (isChrHidden)
             {
-                await c.SendPacket(PacketCreator.giveForeignBuff(chr.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                await c.SendPacket(BuffPackets.GiveRemoteHiddenBuff(chr.Id));
             }
         }, false))
         {

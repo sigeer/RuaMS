@@ -6,7 +6,26 @@ namespace Application.Core.Game.Skills
     public class BuffStatValueHolder : ILoopTickable, ILifedTickable
     {
         protected Player _chr;
-        public StatEffect Effect { get; }
+        StatEffect _effect;
+        public StatEffect Effect
+        {
+            get
+            {
+                if (!_effect.isSkill())
+                {
+                    return _effect;
+                }
+                else
+                {
+                    // 被动技能带来的buff，在取技能等级时，获取最新的信息
+                    if (SkillIds.IsPassiveSkill(_effect.getBuffSourceId()))
+                    {
+                        return _chr.GetPlayerSkillEffect(_effect.getBuffSourceId());
+                    }
+                    return _effect;
+                }
+            }
+        }
         public long startTime;
         public int value;
         public bool bestApplied;
@@ -16,7 +35,7 @@ namespace Application.Core.Game.Skills
         public BuffStatValueHolder(Player chr, StatEffect effect, long startTime, long expiredAt, int value)
         {
             _chr = chr;
-            this.Effect = effect;
+            _effect = effect;
             this.startTime = startTime;
             ExpiredAt = expiredAt;
             this.value = value;

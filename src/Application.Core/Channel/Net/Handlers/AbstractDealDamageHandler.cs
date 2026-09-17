@@ -333,8 +333,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
                     {
-                        StatEffect beacon = player.GetPlayerSkillEffect(attack.skill);
-                        await beacon.applyBeaconBuff(player, monster.getObjectId());
+                        await attackEffect!.applyBeaconBuff(player, monster);
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)
                     {

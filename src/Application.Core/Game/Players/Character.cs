@@ -25,6 +25,7 @@ using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -58,6 +59,7 @@ using scripting;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Game.Players;
 
@@ -463,7 +465,7 @@ public partial class Player
 
                         if (mapChr.isGM())
                         {
-                            await mapChr.SendPacket(PacketCreator.giveForeignBuff(Id, new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                            await mapChr.SendPacket(BuffPackets.GiveRemoteHiddenBuff(Id));
                         }
                         else
                         {
@@ -2032,12 +2034,16 @@ public partial class Player
                 energybar = 10000;
             }
             var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
-            setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-            await SendPacket(PacketCreator.giveBuff(energybar, 0, stat));
+
+            var builder = new BuffParameterBuilder(ceffect);
+            builder.SetBuffStats[BuffStat.ENERGY_CHARGE] = energybar;
+            var p = builder.Build(this);
+
+            await SendPacket(BuffPackets.GiveBuff(p));
+            await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p), Id);
+
             await SendPacket(EffectPacket.SkillAffect(energycharge.getId(), skillLevel));
             await BroadcastMap(EffectPacket.ForeignSkillAffect(Id, energycharge.getId(), skillLevel), Id);
-            await BroadcastMap(PacketCreator.giveForeignPirateBuff(Id, energycharge.getId(),
-                    ceffect.getDuration(), stat), Id);
         }
         if (energybar >= 10000 && energybar < 11000)
         {
@@ -2055,24 +2061,33 @@ public partial class Player
 
     public async Task ApplyEnergeCharge()
     {
+        Skill energycharge = isCygnus() ? SkillFactory.GetSkillTrust(ThunderBreaker.ENERGY_CHARGE) : SkillFactory.GetSkillTrust(Marauder.ENERGY_CHARGE);
+        var skillLevel = getSkillLevel(energycharge);
+        var ceffect = energycharge.getEffect(skillLevel);
+
         energybar = 0;
-        var stat = new BuffStatValue(BuffStat.ENERGY_CHARGE, energybar);
-        setBuffedValue(BuffStat.ENERGY_CHARGE, energybar);
-        await SendPacket(PacketCreator.giveBuff(energybar, 0, stat));
-        await MapModel.BroadcastAll(chr => chr.SendPacket(PacketCreator.cancelForeignFirstDebuff(Id, ((long)1) << 50)), Id);
+
+        var builder = new BuffParameterBuilder(ceffect);
+        builder.SetBuffStats[BuffStat.ENERGY_CHARGE] = energybar;
+        var p = builder.Build(this);
+
+        await SendPacket(BuffPackets.GiveBuff(p));
+        await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p), Id);
     }
 
     public async Task handleOrbconsume()
     {
-        int skillid = isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
-        var combo = SkillFactory.GetSkillTrust(skillid);
-        var stat = new BuffStatValue(BuffStat.COMBO, 1);
-        setBuffedValue(BuffStat.COMBO, 1);
-        await SendPacket(PacketCreator.giveBuff(
-            skillid,
-            combo.getEffect(getSkillLevel(combo)).getDuration() + (int)((getBuffedStarttime(BuffStat.COMBO) ?? 0) - Client.CurrentServer.Node.getCurrentTime()),
-            stat));
-        await BroadcastMap(PacketCreator.giveForeignBuff(getId(), stat), Id);
+        var ceffect = GetBuffStatValue(BuffStat.COMBO);
+        if (ceffect != null)
+        {
+            var builder = new BuffParameterBuilder(ceffect.Effect);
+            builder.SetBuffStats[BuffStat.COMBO] = 1;
+            builder.Duration = (int)(builder.Duration + ceffect.startTime - Client.CurrentServer.Node.getCurrentTime());
+            var p = builder.Build(this);
+
+            await SendPacket(BuffPackets.GiveBuff(p));
+            await BroadcastMap(BuffPackets.GiveRemoteBuff(Id, p), Id);
+        }
     }
 
 
@@ -2901,7 +2916,7 @@ public partial class Player
     /// <returns>ture: 使用成功，false: 使用失败</returns>
     public async Task<bool> applyHpMpChange(int hpCon, int hpchange, int mpchange)
     {
-        bool zombify = hasDisease(Disease.ZOMBIFY);
+        bool zombify = hasDisease(BuffStat.ZOMBIFY);
 
 
         int nextHp = HP + hpchange, nextMp = MP + mpchange;
@@ -3171,15 +3186,17 @@ public partial class Player
         {
             await mapChrClient.SendPacket(PacketCreator.spawnPlayerMapObject(mapChrClient, this, false));
 
-            if (buffEffects.ContainsKey(JobModel.getJobMapChair()))
-            { // mustn't effLock, chrLock sendSpawnData
-                await mapChrClient.SendPacket(PacketCreator.giveForeignChairSkillEffect(Id));
+            if (ActiveEffects.TryGetValue(BuffStat.MAP_CHAIR, out var data))
+            {
+                // mustn't effLock, chrLock sendSpawnData
+
+                await mapChrClient.SendPacket(BuffPackets.GiveRemoteBuff(Id, new BuffParameterBuilder(data.Effect).Build(this)));
             }
         }
 
         if (this.isHidden() && mapChrClient.OnlinedCharacter.isGM())
         {
-            await mapChrClient.SendPacket(PacketCreator.giveForeignBuff(getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+            await mapChrClient.SendPacket(BuffPackets.GiveRemoteHiddenBuff(Id));
         }
     }
 

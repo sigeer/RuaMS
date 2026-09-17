@@ -9,5 +9,6 @@ message DiseaseProto {
   int64 length = 2;
   int32 mobSkillId = 3;
   int32 mobSkillLevel = 4;
-  int32 diseaseOrdinal = 5;
+  // BuffStat 里的客户端掩码位（原 diseaseOrdinal；疾病已并入 BuffStat）
+  int32 diseaseBit = 5;
 }

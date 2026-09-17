@@ -141,8 +141,8 @@ namespace Application.Core.Game.Players
 
             if (_diseaseAnnounceNext <= now)
             {
-                await announceDiseases();
-                await collectDiseases();
+                await announceDiseases(now);
+                await collectDiseases(now);
 
                 _diseaseAnnounceNext = now + _diseaseAnnouncePeriod;
             }

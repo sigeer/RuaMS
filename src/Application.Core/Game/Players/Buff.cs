@@ -1,5 +1,6 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.model;
@@ -112,12 +113,12 @@ namespace Application.Core.Game.Players
             Log.Debug("-------------------");
             Log.Debug("CACHED BUFFS: {CachedBuff}", string.Join(", ", buffEffects
                     .Select(entry => entry.Key + ": (" + string.Join(", ", entry.Value
-                            .Select(innerEntry => innerEntry.Key.name() + innerEntry.Value.value)) + ")"))
+                            .Select(innerEntry => innerEntry.Key.ToString() + innerEntry.Value.value)) + ")"))
             );
 
             Log.Debug("-------------------");
             Log.Debug("IN ACTION: {InAction}", string.Join(", ", ActiveEffects
-                    .Select(entry => entry.Key.name() + " -> " +
+                    .Select(entry => entry.Key.ToString() + " -> " +
                     (entry.Value.Effect.isSkill()
                     ? Client.CurrentCulture.GetSkillName(entry.Value.Effect.getSourceId())
                     : Client.CurrentCulture.GetItemName(entry.Value.Effect.getSourceId()))))
@@ -379,7 +380,7 @@ namespace Application.Core.Game.Players
             }
             else if ((ombs = getSingletonStatupFromEffect(effect)) != null)
             {   // removing all effects of a buff having non-shareable buff stat.
-                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(ombs);
+                BuffStatValueHolder? mbsvh = ActiveEffects.GetValueOrDefault(ombs.Value);
                 if (mbsvh != null)
                 {
                     buffstats = extractCurrentBuffStats(mbsvh.Effect);
@@ -878,9 +879,10 @@ namespace Application.Core.Game.Players
                 activeStatups.Clear();
             }
 
-            if (this.isRidingBattleship())
+            var riding = GetBuffStatValue(BuffStat.MONSTER_RIDING);
+            if (riding != null && riding.Effect.getBuffSourceId() == Corsair.BATTLE_SHIP)
             {
-                await this.SendPacket(PacketCreator.giveBuff(ItemId.BATTLESHIP, 5221006, new BuffStatValue(BuffStat.MONSTER_RIDING, 0)));
+                await this.SendPacket(BuffPackets.GiveBuff(new BuffParameterBuilder(riding.Effect).Build(this)));
                 await this.announceBattleshipHp();
             }
         }
