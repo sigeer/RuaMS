@@ -21,28 +21,28 @@
  */
 
 
-using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
-using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Core.Server.partyquest;
+using Application.Shared.Battle.Skills;
 using Application.Shared.MapObjects.Summons;
 using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
 using Application.Templates.StatEffectProps;
-using client.inventory;
 using client.inventory.manipulator;
-using System.Runtime.ConstrainedExecution;
+using System.Collections.Immutable;
 using tools;
+using ZLinq;
 
 namespace Application.Core.Server;
 
@@ -51,21 +51,25 @@ namespace Application.Core.Server;
  * @author Frz
  * @author Ronan
  */
-public class StatEffect
+public class StatEffect : IBuffSource
 {
-    private short watk, matk, wdef, mdef, acc, avoid, speed, jump;
+    private short watk, matk, wdef, mdef;
     private short hp, mp;
     private double hpR, mpR;
-    private short mhpRRate, mmpRRate;
+    // private short mhpRRate, mmpRRate;
     private sbyte mhpR, mmpR;
     private short mpCon, hpCon;
     private int duration = -1;
     private bool overTime;
     private int sourceid;
-    private List<Disease> cureDebuffs;
+    private ImmutableHashSet<BuffStat> cureDebuffs;
     private bool skill;
-    private List<BuffStatValue> statups;
-    private Dictionary<MonsterStatus, int> monsterStatus;
+    /// <summary>
+    /// 当前Effect能够加成的buff。理论上不能存在多个相同BuffStat
+    /// </summary>
+    public ImmutableDictionary<BuffStat, int> Statups { get; }
+
+    public ImmutableDictionary<MonsterStatus, int> MonsterStatuses { get; }
     private int x, y, mobCount = 1, moneyCon, cooldown;
     private int prop = 100;
     private int itemCon, itemConNo;
@@ -88,7 +92,7 @@ public class StatEffect
     public List<ScopedEffect> ScopedEffects { get; } = [];
     public int Prob { get; private set; }
     public char DefenseAttChar { get; private set; }
-    public Disease? DefenseState { get; private set; }
+    public BuffStat? DefenseState { get; private set; }
     public char DefenseStateChar { get; private set; }
 
 
@@ -129,11 +133,11 @@ public class StatEffect
     }
 
 
-    private static void addBuffStatPairToListIfNotZero(List<BuffStatValue> list, BuffStat buffstat, int val)
+    private static void addBuffStatPairToListIfNotZero(Dictionary<BuffStat, int> dic, BuffStat buffstat, int val)
     {
         if (val != 0)
         {
-            list.Add(new(buffstat, val));
+            dic[buffstat] = val;
         }
     }
     public StatEffect(IStatEffectProp template, IStatEffectSource sourceTemplate, bool isBuff)
@@ -166,40 +170,43 @@ public class StatEffect
             mpR = heal.MPR / 100.0;
         }
 
-        cureDebuffs = new();
+        var tempCureDebuffs = new HashSet<BuffStat>();
         if (template is IStatEffectCure cure)
         {
             if (cure.Cure_Poison)
-                cureDebuffs.Add(Disease.POISON);
+                tempCureDebuffs.Add(BuffStat.POISON);
             if (cure.Cure_Seal)
-                cureDebuffs.Add(Disease.SEAL);
+                tempCureDebuffs.Add(BuffStat.SEAL);
             if (cure.Cure_Darkness)
-                cureDebuffs.Add(Disease.DARKNESS);
+                tempCureDebuffs.Add(BuffStat.DARKNESS);
             if (cure.Cure_Weakness)
             {
-                cureDebuffs.Add(Disease.WEAKEN);
-                cureDebuffs.Add(Disease.SLOW);
+                tempCureDebuffs.Add(BuffStat.WEAKEN);
+                tempCureDebuffs.Add(BuffStat.SLOW);
             }
             if (cure.Cure_Curse)
-                cureDebuffs.Add(Disease.CURSE);
+                tempCureDebuffs.Add(BuffStat.CURSE);
         }
+        this.cureDebuffs = tempCureDebuffs.ToImmutableHashSet();
 
-        statups = new();
+        var statups = new Dictionary<BuffStat, int>();
         if (template is IStatEffectPower power)
         {
             mhpR = (sbyte)power.MHPR;
-            mhpRRate = (short)(power.MHPRate * 100);
+            // 不明，通常与mhpR同时出现
+            // mhpRRate = (short)(power.MHPRate * 100);
             mmpR = (sbyte)power.MMPR;
-            mmpRRate = (short)(power.MMPRate * 100);
+            // mmpRRate = (short)(power.MMPRate * 100);
 
             watk = (short)power.PAD;
             wdef = (short)power.PDD;
             matk = (short)power.MAD;
             mdef = (short)power.MDD;
-            acc = (short)power.ACC;
-            avoid = (short)power.EVA;
-            speed = (short)power.Speed;
-            jump = (short)power.Jump;
+
+            var acc = (short)power.ACC;
+            var avoid = (short)power.EVA;
+            var speed = (short)power.Speed;
+            var jump = (short)power.Jump;
 
             // 强化疾风步
             if (YamlConfig.config.server.USE_ULTRA_NIMBLE_FEET
@@ -213,8 +220,8 @@ public class StatEffect
             if (overTime && !isSummonProp)
             {
                 // buffstat名字上看是回复，但是属性又是提升上限
-                addBuffStatPairToListIfNotZero(statups, BuffStat.HPREC, mhpR);
-                addBuffStatPairToListIfNotZero(statups, BuffStat.MPREC, mmpR);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.HYPERBODYHP, mhpR);
+                addBuffStatPairToListIfNotZero(statups, BuffStat.HYPERBODYMP, mmpR);
 
                 addBuffStatPairToListIfNotZero(statups, BuffStat.WATK, watk);
                 addBuffStatPairToListIfNotZero(statups, BuffStat.WDEF, wdef);
@@ -238,9 +245,10 @@ public class StatEffect
             addBuffStatPairToListIfNotZero(statups, BuffStat.GHOST_MORPH, morphGhost.Ghost);
         }
 
-        if (template is IStatEffectMorph morphEffect)
+        if (template is IStatEffectMorph morphEffect && morphEffect.Valid())
         {
             hp = (short)morphEffect.HP;
+            addBuffStatPairToListIfNotZero(statups, BuffStat.MORPH, 1); // 取值不固定，视被附加的人而定
         }
 
         if (template is PotionItemTemplate other)
@@ -274,7 +282,7 @@ public class StatEffect
                 if (!string.IsNullOrEmpty(mobCard.DefenseState))
                 {
                     DefenseStateChar = mobCard.DefenseState[0];
-                    DefenseState = Disease.GetDiseaseByAb(mobCard.DefenseState);
+                    DefenseState = DiseaseInfo.GetByAb(mobCard.DefenseState);
 
                     addBuffStatPairToListIfNotZero(statups, BuffStat.DEFENSE_STATE, mobCard.Prob);
                 }
@@ -305,7 +313,7 @@ public class StatEffect
             addBuffStatPairToListIfNotZero(statups, BuffStat.THAW, mapProtect.Thaw);
         }
 
-        monsterStatus = new();
+        var monsterStatus = new Dictionary<MonsterStatus, int>();
         if (template is SkillLevelData skillData)
         {
             SkillLevel = skillData.Level;
@@ -357,13 +365,13 @@ public class StatEffect
                 case Noblesse.RECOVERY:
                 case Legend.RECOVERY:
                 case Evan.RECOVERY:
-                    statups.Add(new(BuffStat.RECOVERY, x));
+                    statups[BuffStat.RECOVERY] = x;
                     break;
                 case Beginner.ECHO_OF_HERO:
                 case Noblesse.ECHO_OF_HERO:
                 case Legend.ECHO_OF_HERO:
                 case Evan.ECHO_OF_HERO:
-                    statups.Add(new(BuffStat.ECHO_OF_HERO, x));
+                    statups[BuffStat.ECHO_OF_HERO] = x;
                     break;
                 case Beginner.MONSTER_RIDER:
                 case Noblesse.MONSTER_RIDER:
@@ -383,27 +391,27 @@ public class StatEffect
                 case Beginner.BALROG_MOUNT:
                 case Noblesse.BALROG_MOUNT:
                 case Legend.BALROG_MOUNT:
-                    statups.Add(new(BuffStat.MONSTER_RIDING, sourceid));
+                    statups[BuffStat.MONSTER_RIDING] = sourceid;
                     break;
                 case Beginner.INVINCIBLE_BARRIER:
                 case Noblesse.INVINCIBLE_BARRIER:
                 case Legend.INVICIBLE_BARRIER:
                 case Evan.INVINCIBLE_BARRIER:
-                    statups.Add(new(BuffStat.DIVINE_BODY, 1));
+                    statups[BuffStat.DIVINE_BODY] = 1;
                     break;
                 case Fighter.POWER_GUARD:
                 case Page.POWER_GUARD:
-                    statups.Add(new(BuffStat.POWERGUARD, x));
+                    statups[BuffStat.POWERGUARD] = x;
                     break;
                 case Spearman.HYPER_BODY:
                 case GM.HYPER_BODY:
                 case SuperGM.HYPER_BODY:
-                    statups.Add(new(BuffStat.HYPERBODYHP, x));
-                    statups.Add(new(BuffStat.HYPERBODYMP, y));
+                    statups[BuffStat.HYPERBODYHP] = x;
+                    statups[BuffStat.HYPERBODYMP] = y;
                     break;
                 case Crusader.COMBO:
                 case DawnWarrior.COMBO:
-                    statups.Add(new(BuffStat.COMBO, 1));
+                    statups[BuffStat.COMBO] = 1;
                     break;
                 case WhiteKnight.BW_FIRE_CHARGE:
                 case WhiteKnight.BW_ICE_CHARGE:
@@ -415,132 +423,134 @@ public class StatEffect
                 case Paladin.SWORD_HOLY_CHARGE:
                 case DawnWarrior.SOUL_CHARGE:
                 case ThunderBreaker.LIGHTNING_CHARGE:
-                    statups.Add(new(BuffStat.WK_CHARGE, x));
+                    statups[BuffStat.WK_CHARGE] = x;
                     break;
                 case DragonKnight.DRAGON_BLOOD:
-                    statups.Add(new(BuffStat.DRAGONBLOOD, x));
+                    statups[BuffStat.DRAGONBLOOD] = x;
                     break;
                 case Hero.STANCE:
                 case Paladin.STANCE:
                 case DarkKnight.STANCE:
                 case Aran.FREEZE_STANDING:
-                    statups.Add(new(BuffStat.STANCE, prop));
+                    statups[BuffStat.STANCE] = prop;
                     break;
                 case DawnWarrior.FINAL_ATTACK:
                 case WindArcher.FINAL_ATTACK:
-                    statups.Add(new(BuffStat.FINALATTACK, x));
+                    statups[BuffStat.FINALATTACK] = x;
                     break;
                 // MAGICIAN
                 case Magician.MAGIC_GUARD:
                 case BlazeWizard.MAGIC_GUARD:
                 case Evan.MAGIC_GUARD:
-                    statups.Add(new(BuffStat.MAGIC_GUARD, x));
+                    statups[BuffStat.MAGIC_GUARD] = x;
                     break;
                 case Cleric.INVINCIBLE:
-                    statups.Add(new(BuffStat.INVINCIBLE, x));
+                    statups[BuffStat.INVINCIBLE] = x;
                     break;
                 case Priest.HOLY_SYMBOL:
                 case SuperGM.HOLY_SYMBOL:
-                    statups.Add(new(BuffStat.HOLY_SYMBOL, x));
+                    statups[BuffStat.HOLY_SYMBOL] = x;
                     break;
                 case FPArchMage.INFINITY:
                 case ILArchMage.INFINITY:
                 case Bishop.INFINITY:
-                    statups.Add(new(BuffStat.INFINITY, x));
+                    statups[BuffStat.INFINITY] = x;
                     break;
                 case FPArchMage.MANA_REFLECTION:
                 case ILArchMage.MANA_REFLECTION:
                 case Bishop.MANA_REFLECTION:
-                    statups.Add(new(BuffStat.MANA_REFLECTION, x));
+                    statups[BuffStat.MANA_REFLECTION] = x;
                     break;
                 case Bishop.HOLY_SHIELD:
-                    statups.Add(new(BuffStat.HOLY_SHIELD, x));
+                    statups[BuffStat.HOLY_SHIELD] = x;
                     break;
                 case BlazeWizard.ELEMENTAL_RESET:
                 case Evan.ELEMENTAL_RESET:
-                    statups.Add(new(BuffStat.ELEMENTAL_RESET, x));
+                    statups[BuffStat.ELEMENTAL_RESET] = x;
                     break;
                 case Evan.MAGIC_SHIELD:
-                    statups.Add(new(BuffStat.MAGIC_SHIELD, x));
+                    statups[BuffStat.MAGIC_SHIELD] = x;
                     break;
                 case Evan.MAGIC_RESISTANCE:
-                    statups.Add(new(BuffStat.MAGIC_RESISTANCE, x));
+                    statups[BuffStat.MAGIC_RESISTANCE] = x;
                     break;
                 case Evan.SLOW:
-                    statups.Add(new(BuffStat.SLOW, x));
-                    goto case Priest.MYSTIC_DOOR;
+                    statups[BuffStat.SLOW] = x;
+                    break;
                 // BOWMAN
                 case Priest.MYSTIC_DOOR:
+                    statups[BuffStat.MysticDoor] = x;
+                    break;
                 case Hunter.SOUL_ARROW:
                 case Crossbowman.SOUL_ARROW:
                 case WindArcher.SOUL_ARROW:
-                    statups.Add(new(BuffStat.SOULARROW, x));
+                    statups[BuffStat.SOULARROW] = x;
                     break;
                 case Ranger.PUPPET:
                 case Sniper.PUPPET:
                 case WindArcher.PUPPET:
                 case Outlaw.OCTOPUS:
                 case Corsair.WRATH_OF_THE_OCTOPI:
-                    statups.Add(new(BuffStat.PUPPET, 1));
+                    statups[BuffStat.PUPPET] = 1;
                     break;
                 case Bowmaster.CONCENTRATE:
-                    statups.Add(new(BuffStat.CONCENTRATE, x));
+                    statups[BuffStat.CONCENTRATE] = x;
                     break;
                 case Bowmaster.HAMSTRING:
-                    statups.Add(new(BuffStat.HAMSTRING, x));
+                    statups[BuffStat.HAMSTRING] = x;
                     monsterStatus.AddOrUpdate(MonsterStatus.SPEED, x);
                     break;
                 case Marksman.BLIND:
-                    statups.Add(new(BuffStat.BLIND, x));
+                    statups[BuffStat.BLIND] = x;
                     monsterStatus.AddOrUpdate(MonsterStatus.ACC, x);
                     break;
                 case Bowmaster.SHARP_EYES:
                 case Marksman.SHARP_EYES:
-                    statups.Add(new(BuffStat.SHARP_EYES, x << 8 | y));
+                    statups[BuffStat.SHARP_EYES] = x << 8 | y;
                     break;
                 case WindArcher.WIND_WALK:
-                    statups.Add(new(BuffStat.WIND_WALK, x));
+                    statups[BuffStat.WIND_WALK] = x;
                     goto case Rogue.DARK_SIGHT;
                 //break;    thanks Vcoc for noticing WW not showing for other players when changing maps
                 case Rogue.DARK_SIGHT:
                 case NightWalker.DARK_SIGHT:
-                    statups.Add(new(BuffStat.DARKSIGHT, x));
+                    statups[BuffStat.DARKSIGHT] = x;
                     break;
                 case Hermit.MESO_UP:
-                    statups.Add(new(BuffStat.MESOUP, x));
+                    statups[BuffStat.MESOUP] = x;
                     break;
                 case Hermit.SHADOW_PARTNER:
                 case NightWalker.SHADOW_PARTNER:
-                    statups.Add(new(BuffStat.SHADOWPARTNER, x));
+                    statups[BuffStat.SHADOWPARTNER] = x;
                     break;
                 case ChiefBandit.MESO_GUARD:
-                    statups.Add(new(BuffStat.MESOGUARD, x));
+                    statups[BuffStat.MESOGUARD] = x;
                     break;
                 case ChiefBandit.PICKPOCKET:
-                    statups.Add(new(BuffStat.PICKPOCKET, x));
+                    statups[BuffStat.PICKPOCKET] = x;
                     break;
                 case NightLord.SHADOW_STARS:
-                    statups.Add(new(BuffStat.SHADOW_CLAW, 0));
+                    statups[BuffStat.SHADOW_CLAW] = 0;
                     break;
                 // PIRATE
                 case Pirate.DASH:
                 case ThunderBreaker.DASH:
                 case Beginner.SPACE_DASH:
                 case Noblesse.SPACE_DASH:
-                    statups.Add(new(BuffStat.DASH2, x));
-                    statups.Add(new(BuffStat.DASH, y));
+                    statups[BuffStat.DASH2] = x;
+                    statups[BuffStat.DASH] = y;
                     break;
                 case Corsair.SPEED_INFUSION:
                 case Buccaneer.SPEED_INFUSION:
                 case ThunderBreaker.SPEED_INFUSION:
-                    statups.Add(new(BuffStat.SPEED_INFUSION, x));
+                    statups[BuffStat.SPEED_INFUSION] = x;
                     break;
                 case Outlaw.HOMING_BEACON:
                 case Corsair.BULLSEYE:
-                    statups.Add(new(BuffStat.HOMING_BEACON, x));
+                    statups[BuffStat.HOMING_BEACON] = x;
                     break;
                 case ThunderBreaker.SPARK:
-                    statups.Add(new(BuffStat.SPARK, x));
+                    statups[BuffStat.SPARK] = x;
                     break;
                 // MULTIPLE
                 case Aran.POLEARM_BOOSTER:
@@ -567,7 +577,7 @@ public class StatEffect
                 case Beginner.POWER_EXPLOSION:
                 case Noblesse.POWER_EXPLOSION:
                 case Legend.POWER_EXPLOSION:
-                    statups.Add(new(BuffStat.BOOSTER, x));
+                    statups[BuffStat.BOOSTER] = x;
                     break;
                 case Hero.MAPLE_WARRIOR:
                 case Paladin.MAPLE_WARRIOR:
@@ -583,17 +593,17 @@ public class StatEffect
                 case Buccaneer.MAPLE_WARRIOR:
                 case Aran.MAPLE_WARRIOR:
                 case Evan.MAPLE_WARRIOR:
-                    statups.Add(new(BuffStat.MAPLE_WARRIOR, x));
+                    statups[BuffStat.MAPLE_WARRIOR] = x;
                     break;
                 // SUMMON
                 case Ranger.SILVER_HAWK:
                 case Sniper.GOLDEN_EAGLE:
-                    statups.Add(new(BuffStat.SUMMON, 1));
+                    statups[BuffStat.SUMMON] = 1;
                     monsterStatus.AddOrUpdate(MonsterStatus.STUN, 1);
                     break;
                 case FPArchMage.ELQUINES:
                 case Marksman.FROST_PREY:
-                    statups.Add(new(BuffStat.SUMMON, 1));
+                    statups[BuffStat.SUMMON] = 1;
                     monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
                     break;
                 case Priest.SUMMON_DRAGON:
@@ -608,7 +618,7 @@ public class StatEffect
                 case NightWalker.DARKNESS:
                 case ThunderBreaker.LIGHTNING:
                 case BlazeWizard.IFRIT:
-                    statups.Add(new(BuffStat.SUMMON, 1));
+                    statups[BuffStat.SUMMON] = 1;
                     break;
                 // ----------------------------- MONSTER STATUS ---------------------------------- //
                 case Crusader.ARMOR_CRASH:
@@ -706,30 +716,33 @@ public class StatEffect
                     goto case Aran.COMBO_ABILITY;
                 //ARAN
                 case Aran.COMBO_ABILITY:
-                    statups.Add(new(BuffStat.ARAN_COMBO, 100));
+                    statups[BuffStat.ARAN_COMBO] = 0;
                     break;
                 case Aran.COMBO_BARRIER:
-                    statups.Add(new(BuffStat.COMBO_BARRIER, x));
+                    statups[BuffStat.COMBO_BARRIER] = x;
                     break;
                 case Aran.COMBO_DRAIN:
-                    statups.Add(new(BuffStat.COMBO_DRAIN, x));
+                    statups[BuffStat.COMBO_DRAIN] = x;
                     break;
                 case Aran.SMART_KNOCKBACK:
-                    statups.Add(new(BuffStat.SMART_KNOCKBACK, x));
+                    statups[BuffStat.SMART_KNOCKBACK] = x;
                     break;
                 case Aran.BODY_PRESSURE:
-                    statups.Add(new(BuffStat.BODY_PRESSURE, x));
+                    statups[BuffStat.BODY_PRESSURE] = x;
                     break;
                 case Aran.SNOW_CHARGE:
-                    statups.Add(new(BuffStat.WK_CHARGE, duration));
+                    statups[BuffStat.WK_CHARGE] = duration;
+                    break;
+                case ThunderBreaker.ENERGY_CHARGE:
+                case Marauder.ENERGY_CHARGE:
+                    statups[BuffStat.ENERGY_CHARGE] = 0;
                     break;
                 default:
                     break;
             }
         }
-
-
-        statups.TrimExcess();
+        Statups = statups.ToImmutableDictionary();
+        MonsterStatuses = monsterStatus.ToImmutableDictionary();
     }
 
     /**
@@ -915,7 +928,7 @@ public class StatEffect
         {
             if (summonData != null && pos != null)
             {
-                await applyto.cancelBuffStats(SummonMovementTypeExtensions.GetSummonMovementType(summonData) == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
+                await applyto.CancelBuff(SummonMovementTypeExtensions.GetSummonMovementType(summonData) == SummonMovementType.STATIONARY ? BuffStat.PUPPET : BuffStat.SUMMON);
                 await applyto.SendPacket(PacketCreator.enableActions());
             }
 
@@ -978,7 +991,7 @@ public class StatEffect
                                 else
                                 {
                                     MobSkill mobSkill = skill.getSkill();
-                                    await chrApp.giveDebuff(dis, mobSkill);
+                                    await chrApp.giveDebuff(dis.Value, mobSkill);
                                 }
                             }
                         }
@@ -995,7 +1008,7 @@ public class StatEffect
                             else
                             {
                                 MobSkill mobSkill = skill.getSkill();
-                                await chrApp.giveDebuff(dis, mobSkill);
+                                await chrApp.giveDebuff(dis.Value, mobSkill);
                             }
                         }
                     }
@@ -1046,7 +1059,7 @@ public class StatEffect
                     await applyto.Pink("There are no door portals available for the town at this moment. Try again later.");
                 }
 
-                await applyto.cancelBuffStats(BuffStat.SOULARROW);  // cancel door buff
+                await applyto.CancelBuff(BuffStat.MysticDoor);  // cancel door buff
             }
         }
         else if (isMist())
@@ -1060,17 +1073,14 @@ public class StatEffect
             await applyto.removeAllCooldownsExcept(Buccaneer.TIME_LEAP, true);
         }
         else if (cureDebuffs.Count > 0)
-        { // added by Drago (Dragohe4rt)
-            foreach (Disease debuff in cureDebuffs)
-            {
-                await applyfrom.dispelDebuff(debuff);
-            }
+        {
+            await applyfrom.DispelDebuffs(cureDebuffs);
         }
         else if (EffectTemplate is IItemStatEffectMobSkill mobSkillEffect && mobSkillEffect.MobSkill != null)
         {
             MobSkillType mobSkillType = MobSkillTypeUtils.from(mobSkillEffect.MobSkill.MobSkill);
             MobSkill ms = MobSkillFactory.getMobSkillOrThrow(mobSkillType, mobSkillEffect.MobSkill.Level);
-            var dis = Disease.GetBySkillTrust(mobSkillType);
+            var dis = DiseaseInfo.GetBySkillTrust(mobSkillType);
 
             if (mobSkillEffect.MobSkill.Target > 0)
             {
@@ -1128,13 +1138,20 @@ public class StatEffect
 
     private async Task applyMonsterBuff(Player applyfrom)
     {
-        Rectangle bounds = calculateBoundingBox(applyfrom.getPosition(), applyfrom.isFacingLeft());
-        List<IMapObject> affected = applyfrom.getMap().getMapObjectsInBox(bounds, [MapObjectType.MONSTER]);
+        var curPos = applyfrom.getPosition();
+        Rectangle bounds = calculateBoundingBox(curPos, applyfrom.isFacingLeft());
+
+        var affected = applyfrom.MapModel.QueryMapObjects()
+            .AsValueEnumerable()
+            .Where(x => bounds.Contains(x.getPosition()) && x.getType() == MapObjectType.MONSTER)
+            .OrderBy(x => x.getPosition().distanceSq(curPos))
+            .OfType<Monster>()
+            .ToList();
+
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
         int i = 0;
-        foreach (var mo in affected)
+        foreach (var monster in affected)
         {
-            Monster monster = (Monster)mo;
             if (isDispel())
             {
                 await monster.debuffMob(skill_.getId());
@@ -1147,7 +1164,7 @@ public class StatEffect
             {
                 if (makeChanceResult())
                 {
-                    await monster.applyStatus(applyfrom, new MonsterStatusEffect(getMonsterStati(), skill_), isPoison(), getDuration());
+                    await monster.applyStatus(applyfrom, new MonsterStatusEffect(MonsterStatuses, skill_), isPoison(), getDuration());
                     if (isCrash())
                     {
                         await monster.debuffMob(skill_.getId());
@@ -1185,88 +1202,50 @@ public class StatEffect
         return !YamlConfig.config.server.USE_BUFF_EVERLASTING ? duration : int.MaxValue;
     }
 
-    public async Task silentApplyBuff(Player chr, long localStartTime, List<BuffStatValue> appliedBuffStats)
-    {
-        int localDuration = getBuffLocalDuration();
-        localDuration = alchemistModifyVal(chr, localDuration, false);
-        //CancelEffectAction cancelAction = new CancelEffectAction(chr, this, starttime);
-        //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + localDuration) - Server.getInstance().getCurrentTime()));
-        var expiredAt = localStartTime + localDuration;
-
-        await chr.registerEffect(this, appliedBuffStats, localStartTime, localStartTime + localDuration, true);
-
-        if (SourceTemplate is SkillTemplate skillTemplate && skillTemplate.HasSummonNode)
-        {
-            Summon tosummon = new Summon(chr, this, chr.getPosition());
-            // 非固定型召唤物可以在切换频道恢复buff时一起回复
-            if (tosummon.MovementType != SummonMovementType.STATIONARY)
-            {
-                chr.addSummon(sourceid, tosummon);
-                tosummon.addHP(x);
-            }
-        }
-        if (sourceid == Corsair.BATTLE_SHIP)
-        {
-            await chr.announceBattleshipHp();
-        }
-    }
-
     public async Task applyComboBuff(Player applyto, int combo)
     {
-        await applyto.SendPacket(PacketCreator.giveBuff(sourceid, 99999, new BuffStatValue(BuffStat.ARAN_COMBO, combo)));
-
-        long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
-        //	CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
-        //	ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, ((starttime + 99999) - Server.getInstance().getCurrentTime()));
-        await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
-    }
-
-    public async Task applyBeaconBuff(Player applyto, int objectid)
-    {
-        // thanks Thora & Hyun for reporting an issue with homing beacon autoflagging mobs when changing maps
-        // 按照其他调用，第一个参数应该是souceid, 第二个参数应该是有效时间（毫秒）
-        await applyto.SendPacket(PacketCreator.giveBuff(1, sourceid, new BuffStatValue(BuffStat.HOMING_BEACON, objectid)));
-
-        long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
-        await applyto.registerEffect(this, getStatups(), starttime, long.MaxValue, false);
-    }
-
-    public async Task updateBuffEffect(Player target, BuffStatValue[] activeStats, long starttime)
-    {
-        int localDuration = getBuffLocalDuration();
-        localDuration = alchemistModifyVal(target, localDuration, false);
-
-        long leftDuration = (starttime + localDuration) - target.Client.CurrentServer.Node.getCurrentTime();
-        if (leftDuration > 0)
+        await applyto.UpdateBuff(BuffStat.ARAN_COMBO, holder =>
         {
-            if (isDash() || isInfusion())
-            {
-                await target.SendPacket(PacketCreator.givePirateBuff(activeStats, getBuffSourceId(), (int)leftDuration));
-            }
-            else
-            {
-                await target.SendPacket(PacketCreator.GiveBuff(this, (int)leftDuration, activeStats));
-            }
-        }
+            holder.Value = combo;
+        }, async () =>
+        {
+            await applyBuffEffect(applyto, applyto, true);
+        });
     }
 
-    private async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary)
+    public async Task applyBeaconBuff(Player applyto, Monster mob)
     {
-        if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
-        {     // last mystic door already dispelled if it has been used before.
-            await applyto.cancelEffect(this, true);
-        }
+        await applyto.UpdateBuff(BuffStat.HOMING_BEACON, holder =>
+        {
+            if (holder is EffectGuideBullet eHolder)
+            {
+                eHolder.MobOId = mob.getObjectId();
+            }
+        }, async () =>
+        {
+            await applyBuffEffect(applyto, applyto, true);
+        });
+    }
 
-        var localStatupList = statups.ToList();
+    public async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary)
+    {
+        // 不明
+        //if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
+        //{     
+        //    // last mystic door already dispelled if it has been used before.
+        //    await applyto.CancelBuffs(Statups.Keys);
+        //}
+
+        Dictionary<BuffStat, int> activeBuffs = Statups.ToDictionary();
         int localDuration = getBuffLocalDuration();
-        int localsourceid = sourceid;
-        int seconds = localDuration / 1000;
+
         int activeMorphId = 0;
         Mount? givemount = null;
         if (isMonsterRiding())
         {
             int ridingMountId = 0;
-            Item? mount = applyfrom.getInventory(InventoryType.EQUIPPED).getItem(-18);
+
+            var mount = applyfrom.getInventory(InventoryType.EQUIPPED).getItem(EquipSlot.Mount);
             if (mount != null)
             {
                 ridingMountId = mount.getItemId();
@@ -1300,119 +1279,54 @@ public class StatEffect
             // thanks inhyuk for noticing some skill mounts not acting properly for other players when changing maps
             givemount = applyto.mount(ridingMountId, sourceid);
 
-            localDuration = sourceid;
-            localsourceid = ridingMountId;
-
-            localStatupList = [new BuffStatValue(BuffStat.MONSTER_RIDING, 0)];
+            activeBuffs[BuffStat.MONSTER_RIDING] = ridingMountId;
         }
         else if (EffectTemplate is IStatEffectMorph morph && morph.Valid())
         {
             // 存在随机，实际使用时附加
             activeMorphId = getMorph(applyto);
-            localStatupList.Add(new(BuffStat.MORPH, activeMorphId));
+            activeBuffs[BuffStat.MORPH] = activeMorphId;
         }
+        else if (isCombo())
+        {
+            activeBuffs[BuffStat.COMBO] = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
+        }
+        else if (getBuffSourceId() == Aran.COMBO_ABILITY)
+        {
+            localDuration = int.MaxValue;
+        }
+
         if (primary)
         {
             localDuration = alchemistModifyVal(applyfrom, localDuration, false);
             await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.Id, sourceid, SkillLevel, applyto.Level), applyto.Id);
         }
 
-        if (localStatupList.Count > 0)
+        if (activeBuffs.Count > 0)
         {
-            var localstatups = localStatupList.ToArray();
-            Packet? buff = null;
-            Packet? mbuff = null;
-            if (this.isActive(applyto))
-            {
-                buff = PacketCreator.GiveBuff(this, localDuration, localstatups);
-            }
-            if (isDash())
-            {
-                buff = PacketCreator.givePirateBuff(statups, sourceid, seconds);
-                mbuff = PacketCreator.giveForeignPirateBuff(applyto.getId(), sourceid, seconds, localstatups);
-            }
-            else if (isWkCharge())
-            {
-                mbuff = PacketCreator.giveForeignWKChargeEffect(applyto.getId(), sourceid, localstatups);
-            }
-            else if (isInfusion())
-            {
-                buff = PacketCreator.givePirateBuff(localstatups, sourceid, seconds);
-                mbuff = PacketCreator.giveForeignPirateBuff(applyto.getId(), sourceid, seconds, localstatups);
-            }
-            else if (isDs())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0));
-            }
-            else if (isWw())
-            {
-                List<KeyValuePair<BuffStat, int>> dsstat = Collections.singletonList(new KeyValuePair<BuffStat, int>());
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.WIND_WALK, 0));
-            }
-            else if (isCombo())
-            {
-                int comboCount = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
+            long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
 
-                var combo = new BuffStatValue(BuffStat.COMBO, comboCount);
-                buff = PacketCreator.GiveBuff(this, localDuration, combo);
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), combo);
-            }
-            else if (isMonsterRiding())
+            var holders = activeBuffs.Select(x => Player.GetPlayerBuffStatValueHolder(applyto, x.Key, this, starttime, starttime + localDuration, x.Value)).ToDictionary(x => x.BuffStat);
+
+            if (isMonsterRiding())
             {
                 if (sourceid == Corsair.BATTLE_SHIP)
-                {//hp
+                {
+                    //hp
                     if (applyto.getBattleshipHp() <= 0)
                     {
                         applyto.resetBattleshipHp();
                     }
-
-                    localstatups = statups.ToArray();
                 }
-                buff = PacketCreator.giveBuff(localsourceid, localDuration, localstatups);
-                mbuff = PacketCreator.showMonsterRiding(applyto.getId(), givemount!);
-                localDuration = duration;
-            }
-            else if (isShadowPartner())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SHADOWPARTNER, 0));
-            }
-            else if (isSoulArrow())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.SOULARROW, 0));
             }
             else if (isEnrage())
             {
-                await applyto.handleOrbconsume();
+                // 葵花宝典固定消耗10
+                await applyto.handleOrbconsume(10);
             }
-            else if (activeMorphId > 0)
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.MORPH, activeMorphId));
-            }
-            else if (isAriantShield())
-            {
-                mbuff = PacketCreator.giveForeignBuff(applyto.getId(), new BuffStatValue(BuffStat.AURA, 1));
-            }
-
-            if (buff != null)
-            {
-                //Thanks flav for such a simple release! :)
-                //Thanks Conrad, Atoot for noticing summons not using buff icon
-
-                await applyto.SendPacket(buff);
-            }
-
-            long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
             //CancelEffectAction cancelAction = new CancelEffectAction(applyto, this, starttime);
             //ScheduledFuture<?> schedule = TimerManager.getInstance().schedule(cancelAction, localDuration);
-            await applyto.registerEffect(this, localstatups, starttime, starttime + localDuration, false);
-            if (mbuff != null)
-            {
-                await applyto.BroadcastMap(mbuff, applyto.Id);
-            }
-            if (sourceid == Corsair.BATTLE_SHIP)
-            {
-                await applyto.announceBattleshipHp();
-            }
+            await applyto.RegisterEffect(this, holders);
         }
     }
 
@@ -1431,7 +1345,7 @@ public class StatEffect
                 {
                     hpchange += hp;
                 }
-                if (applyfrom.hasDisease(Disease.ZOMBIFY))
+                if (applyfrom.hasDisease(BuffStat.ZOMBIFY))
                 {
                     hpchange /= 2;
                 }
@@ -1444,7 +1358,7 @@ public class StatEffect
                     hpHeal = (applyfrom.ActualMaxHP * (float)hp / (100.0f * affectedPlayers));
 
                 hpchange += (int)hpHeal;
-                if (applyfrom.hasDisease(Disease.ZOMBIFY))
+                if (applyfrom.hasDisease(BuffStat.ZOMBIFY))
                 {
                     hpchange = -hpchange;
                     hpCon = 0;
@@ -1453,7 +1367,7 @@ public class StatEffect
         }
         if (hpR != 0)
         {
-            hpchange += (int)(applyfrom.ActualMaxHP * hpR) / (applyfrom.hasDisease(Disease.ZOMBIFY) ? 2 : 1);
+            hpchange += (int)(applyfrom.ActualMaxHP * hpR) / (applyfrom.hasDisease(BuffStat.ZOMBIFY) ? 2 : 1);
         }
         if (primary)
         {
@@ -1781,14 +1695,7 @@ public class StatEffect
 
     private bool isCureAllAbnormalStatus()
     {
-        if (skill)
-        {
-            return isHerosWill(sourceid);
-        }
-        else
-        {
-            return sourceid == ItemId.WHITE_ELIXIR;
-        }
+        return skill && isHerosWill(sourceid);
     }
 
     public static bool isHerosWill(int skillid)
@@ -1821,15 +1728,7 @@ public class StatEffect
             return false;
         }
 
-        foreach (var p in statups)
-        {
-            if (p.BuffState.Equals(BuffStat.WK_CHARGE))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return Statups.ContainsKey(BuffStat.WK_CHARGE);
     }
 
     private bool isDash()
@@ -1966,16 +1865,6 @@ public class StatEffect
         return mmpR;
     }
 
-    public short getHpRRate()
-    {
-        return mhpRRate;
-    }
-
-    public short getMpRRate()
-    {
-        return mmpRRate;
-    }
-
     public short getHpCon()
     {
         return hpCon;
@@ -1999,11 +1888,6 @@ public class StatEffect
     public int getDuration()
     {
         return duration;
-    }
-
-    public List<BuffStatValue> getStatups()
-    {
-        return statups;
     }
 
     public bool sameSource(StatEffect effect)
@@ -2061,10 +1945,11 @@ public class StatEffect
         return cooldown;
     }
 
-    public Dictionary<MonsterStatus, int> getMonsterStati()
-    {
-        return monsterStatus;
-    }
-
     public Skill? GetSkill() => skill ? SkillFactory.getSkill(sourceid) : null;
+
+    public BuffSourceType Type => isSkill() ? BuffSourceType.Skill : BuffSourceType.Item;
+    public int GetEncodeId()
+    {
+        return getBuffSourceId();
+    }
 }

@@ -95,14 +95,15 @@ namespace Application.Core.Game.Players
         public long MapDamagePeriod { get; } = YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL * YamlConfig.config.server.MAP_DAMAGE_OVERTIME_COUNT;
         public long MapDamageNext { get; set; }
 
-        long _diseaseAnnounceNext;
-        long _diseaseAnnouncePeriod = YamlConfig.config.server.UPDATE_INTERVAL;
-
         public TickableStatus Status { get; private set; }
 
         public virtual async Task OnTick(long now)
         {
             foreach (var item in getAllStatups().OfType<ITickable>())
+            {
+                await item.OnTick(now);
+            }
+            foreach (var item in Diseases.Values.OfType<ITickable>())
             {
                 await item.OnTick(now);
             }
@@ -139,18 +140,11 @@ namespace Application.Core.Game.Players
                 MapDamageNext = now + MapDamagePeriod;
             }
 
-            if (_diseaseAnnounceNext <= now)
-            {
-                await announceDiseases();
-                await collectDiseases();
-
-                _diseaseAnnounceNext = now + _diseaseAnnouncePeriod;
-            }
-
             if (Next <= now)
             {
                 await ClearExpiredBuffs();
-                await ClearExpiredDisease(now);
+                await ClearExpiredDisease();
+
                 await ClearExpiredSkills(now);
                 await ClearExpiredQuests(now);
                 await ClearExpiredSkillCooldown(now);

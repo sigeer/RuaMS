@@ -123,7 +123,7 @@ public class Door
         //}
     }
 
-    public static void attemptRemoveDoor(Player owner)
+    public static async Task attemptRemoveDoor(Player owner)
     {
         var destroyDoor = owner.getPlayerDoor();
         if (destroyDoor != null)
@@ -137,12 +137,12 @@ public class Door
             }
             else
             {
-                owner.Client.CurrentServer.Send(new InvokeRemoveDoorCommand(owner.Id));
+                await owner.Client.CurrentServer.Send(new InvokeRemoveDoorCommand(owner.Id));
             }
         }
         else
         {
-            owner.Client.CurrentServer.Send(new RequestRemoveDoorCommand(owner.Id));
+            await owner.Client.CurrentServer.Send(new RequestRemoveDoorCommand(owner.Id));
         }
     }
 

@@ -25,6 +25,7 @@ using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Mists;
+using Application.Core.Game.Players.Tickables;
 using Application.Shared.Battle.Skills;
 using net.server.services.task.channel;
 
@@ -33,7 +34,7 @@ namespace Application.Core.Server.life;
 /**
  * @author Danny (Leifde)
  */
-public class MobSkill : ISkill
+public class MobSkill : ISkill, IBuffSource
 {
     private MobSkillId id;
     private int mpCon;
@@ -49,6 +50,8 @@ public class MobSkill : ISkill
     private Point? rb;
     private int limit;
     private List<int> toSummon;
+
+    public BuffSourceType Type => BuffSourceType.MobSkill;
 
     private MobSkill(MobSkillType type, int level, int mpCon, int spawnEffect, int hp, int x, int y, int count,
                      long duration, long cooltime, float prop, Point? lt, Point? rb, int limit, List<int> toSummon)
@@ -198,7 +201,7 @@ public class MobSkill : ISkill
             return;
         }
 
-        Disease? disease = null;
+        BuffStat? disease = null;
         Dictionary<MonsterStatus, int> stats = new();
         List<int> reflection = new();
         switch (id.type)
@@ -227,31 +230,31 @@ public class MobSkill : ISkill
                 await applyHealEffect(skill, monster);
                 break;
             case MobSkillType.SEAL:
-                disease = Disease.SEAL;
+                disease = BuffStat.SEAL;
                 break;
             case MobSkillType.DARKNESS:
-                disease = Disease.DARKNESS;
+                disease = BuffStat.DARKNESS;
                 break;
             case MobSkillType.WEAKNESS:
-                disease = Disease.WEAKEN;
+                disease = BuffStat.WEAKEN;
                 break;
             case MobSkillType.STUN:
-                disease = Disease.STUN;
+                disease = BuffStat.STUN;
                 break;
             case MobSkillType.CURSE:
-                disease = Disease.CURSE;
+                disease = BuffStat.CURSE;
                 break;
             case MobSkillType.POISON:
-                disease = Disease.POISON;
+                disease = BuffStat.POISON;
                 break;
             case MobSkillType.SLOW:
-                disease = Disease.SLOW;
+                disease = BuffStat.SLOW;
                 break;
             case MobSkillType.DISPEL:
                 await applyDispelEffect(skill, monster, player);
                 break;
             case MobSkillType.SEDUCE:
-                disease = Disease.SEDUCE;
+                disease = BuffStat.SEDUCE;
                 break;
             case MobSkillType.BANISH:
                 applyBanishEffect(skill, monster, player, banishPlayersOutput);
@@ -260,10 +263,10 @@ public class MobSkill : ISkill
                 await spawnMonsterMist(monster);
                 break;
             case MobSkillType.REVERSE_INPUT:
-                disease = Disease.CONFUSE;
+                disease = BuffStat.CONFUSE;
                 break;
             case MobSkillType.UNDEAD:
-                disease = Disease.ZOMBIFY;
+                disease = BuffStat.ZOMBIFY;
                 break;
             case MobSkillType.PHYSICAL_IMMUNE:
                 if (!monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY))
@@ -318,7 +321,7 @@ public class MobSkill : ISkill
         }
         if (disease != null)
         {
-            await applyDisease(disease, skill, monster, player);
+            await applyDisease(disease.Value, skill, monster, player);
         }
     }
 
@@ -493,7 +496,7 @@ public class MobSkill : ISkill
         }
     }
 
-    private async Task applyDisease(Disease disease, bool skill, Monster monster, Player player)
+    private async Task applyDisease(BuffStat disease, bool skill, Monster monster, Player player)
     {
         if (lt != null && rb != null && skill)
         {
@@ -573,12 +576,12 @@ public class MobSkill : ISkill
         // 对玩家释放
         if (chr != null)
         {
-            var buff = chr.getBuffEffect(BuffStat.DEFENSE_STATE);
+            var buff = chr.GetBuffStatValue(BuffStat.DEFENSE_STATE);
             if (buff != null)
             {
-                if (buff.DefenseState?.getMobSkillType() == this.getType())
+                if (buff.Effect.DefenseState != null && DiseaseInfo.GetMobSkillType(buff.Effect.DefenseState.Value) == this.getType())
                 {
-                    checkProp -= (buff.Prob / 100.0f);
+                    checkProp -= (buff.Effect.Prob / 100.0f);
                 }
             }
         }
@@ -599,5 +602,10 @@ public class MobSkill : ISkill
     private List<IMapObject> getObjectsInRange(Monster monster, MapObjectType objectType)
     {
         return monster.getMap().getMapObjectsInBox(calculateBoundingBox(monster.getPosition()), [objectType]);
+    }
+
+    public int GetEncodeId()
+    {
+        return id.GetEncodedId();
     }
 }

@@ -1,154 +1,132 @@
-using Application.Utility;
-
 namespace Application.Shared.GameProps
 {
-    public class BuffStat : EnumClass
+    /// <summary>
+    /// （客户端 SecondaryStat）状态。
+    ///
+    /// <para>
+    /// <b>枚举值 = 客户端 128 位掩码里的位号</b>，与测试工程里的同名对照表
+    /// 封包层直接用 <c>(int)stat</c> 定位字段、生成掩码，不需要任何换算：
+    /// </para>
+    /// <list type="bullet">
+    /// <item>位 0..31 → secondmask 的高 dword，位 32..63 → secondmask 的低 dword；</item>
+    /// <item>位 64..95 → firstmask 的高 dword，位 96..127 → firstmask 的低 dword。</item>
+    /// </list>
+    /// <para>
+    /// （客户端的 UINT128 是按 dword 逆序存放的，掩码与字段顺序见 <c>BuffPackets</c> 里的说明。）
+    /// </para>
+    /// </summary>
+    public enum BuffStat
     {
-        // public static readonly BuffStat SLOW = new BuffStat(0x1L);
-        public static readonly BuffStat MORPH = new BuffStat(0x2L);
-        public static readonly BuffStat RECOVERY = new BuffStat(0x4L);
-        public static readonly BuffStat MAPLE_WARRIOR = new BuffStat(0x8L);
-        public static readonly BuffStat STANCE = new BuffStat(0x10L);
-        public static readonly BuffStat SHARP_EYES = new BuffStat(0x20L);
-        public static readonly BuffStat MANA_REFLECTION = new BuffStat(0x40L);
-        //public static readonly BuffStat ALWAYS_RIGHT = new BuffStat(0X80L);
-        public static readonly BuffStat SHADOW_CLAW = new BuffStat(0x100L);
-        public static readonly BuffStat INFINITY = new BuffStat(0x200L);
-        public static readonly BuffStat HOLY_SHIELD = new BuffStat(0x400L);
-        public static readonly BuffStat HAMSTRING = new BuffStat(0x800L);
-        public static readonly BuffStat BLIND = new BuffStat(0x1000L);
-        public static readonly BuffStat CONCENTRATE = new BuffStat(0x2000L);
-        public static readonly BuffStat PUPPET = new BuffStat(0x4000L);
-        public static readonly BuffStat ECHO_OF_HERO = new BuffStat(0x8000L);
-        public static readonly BuffStat MESO_UP_BY_ITEM = new BuffStat(0x10000L);
-        public static readonly BuffStat GHOST_MORPH = new BuffStat(0x20000L);
-        public static readonly BuffStat AURA = new BuffStat(0x40000L);
-        public static readonly BuffStat CONFUSE = new BuffStat(0x80000L);
-
-        public static readonly BuffStat EXP_BUFF = new BuffStat(0x40000000000L, true);
-
-        // ------ COUPON feature ------
-        public static readonly BuffStat COUPON_EXP1 = new BuffStat(0x100000L);
-        public static readonly BuffStat COUPON_EXP2 = new BuffStat(0x200000L);
-        public static readonly BuffStat COUPON_EXP3 = new BuffStat(0x400000L);
-        public static readonly BuffStat COUPON_EXP4 = new BuffStat(0x400000L);
-        public static readonly BuffStat COUPON_DRP1 = new BuffStat(0x800000L);
-        public static readonly BuffStat COUPON_DRP2 = new BuffStat(0x1000000L);
-        public static readonly BuffStat COUPON_DRP3 = new BuffStat(0x1000000L);
-
-        // ------ monster card buffs, thanks to Arnah (Vertisy) ------
-        public static readonly BuffStat ITEM_UP_BY_ITEM = new BuffStat(0x100000L);
+        // —— 常规 buff / 属性（位 0..31）——
+        WATK = 0,
+        WDEF = 1,
+        MATK = 2,
+        MDEF = 3,
+        ACC = 4,
+        AVOID = 5,
+        HANDS = 6,
+        SPEED = 7,
+        JUMP = 8,
+        MAGIC_GUARD = 9,
+        DARKSIGHT = 10,
+        BOOSTER = 11,
+        POWERGUARD = 12,
+        HYPERBODYHP = 13,
+        HYPERBODYMP = 14,
+        INVINCIBLE = 15,
         /// <summary>
-        /// 无视物理抵抗
+        /// 时空门借用
         /// </summary>
-        public static readonly BuffStat RESPECT_PIMMUNE = new BuffStat(0x200000L);
+        SOULARROW = 16,
+        MysticDoor = 16,
+        STUN = 17,
+        POISON = 18,
+        SEAL = 19,
+        DARKNESS = 20,
         /// <summary>
-        /// 无视魔法抵抗
+        /// SUMMON借用
         /// </summary>
-        public static readonly BuffStat RESPECT_MIMMUNE = new BuffStat(0x400000L);
+        COMBO = 21,
+        SUMMON = 21,
+        WK_CHARGE = 22,
+        DRAGONBLOOD = 23,
+        HOLY_SYMBOL = 24,
+        MESOUP = 25,
+        SHADOWPARTNER = 26,
+        PICKPOCKET = 27,
+        MESOGUARD = 28,
+        THAW = 29,
+        WEAKEN = 30,
+        CURSE = 31,
+
+        // —— 第二组（位 32..63）——
+        SLOW = 32,
+        MORPH = 33,
+        RECOVERY = 34,
+        MAPLE_WARRIOR = 35,
+        STANCE = 36,
+        SHARP_EYES = 37,
+        MANA_REFLECTION = 38,
+        SEDUCE = 39,
+        SHADOW_CLAW = 40,
+        FISHABLE = 40,
+        INFINITY = 41,
+        HOLY_SHIELD = 42,
+        HAMSTRING = 43,
+        BLIND = 44,
+        CONCENTRATE = 45,
         /// <summary>
-        /// 属性抗性
+        /// 应该是BanMap，替身术借用
         /// </summary>
-        public static readonly BuffStat DEFENSE_ATT = new BuffStat(0x800000L);
-        /// <summary>
-        /// 状态抗性
-        /// </summary>
-        public static readonly BuffStat DEFENSE_STATE = new BuffStat(0x1000000L);
+        PUPPET = 46,
+        ECHO_OF_HERO = 47,
+        MESO_UP_BY_ITEM = 48,
+        GHOST_MORPH = 49,
+        AURA = 50,
+        CONFUSE = 51,
+        ITEM_UP_BY_ITEM = 52,
+        RESPECT_PIMMUNE = 53,
+        RESPECT_MIMMUNE = 54,
+        DEFENSE_ATT = 55,
+        DEFENSE_STATE = 56,
+        HPREC = 57,
+        MPREC = 58,
+        BERSERK_FURY = 59,
+        DIVINE_BODY = 60,
+        SPARK = 61,
+        MAP_CHAIR = 62,
+        FINALATTACK = 63,
 
-        public static readonly BuffStat HPREC = new BuffStat(0x2000000L);
-        public static readonly BuffStat MPREC = new BuffStat(0x4000000L);
-        public static readonly BuffStat BERSERK_FURY = new BuffStat(0x8000000L);
-        public static readonly BuffStat DIVINE_BODY = new BuffStat(0x10000000L);
-        public static readonly BuffStat SPARK = new BuffStat(0x20000000L);
-        public static readonly BuffStat MAP_CHAIR = new BuffStat(0x40000000L);
-        public static readonly BuffStat FINALATTACK = new BuffStat(0x80000000L);
-        public static readonly BuffStat WATK = new BuffStat(0x100000000L);
-        public static readonly BuffStat WDEF = new BuffStat(0x200000000L);
-        public static readonly BuffStat MATK = new BuffStat(0x400000000L);
-        public static readonly BuffStat MDEF = new BuffStat(0x800000000L);
-        public static readonly BuffStat ACC = new BuffStat(0x1000000000L);
-        public static readonly BuffStat AVOID = new BuffStat(0x2000000000L);
-        public static readonly BuffStat HANDS = new BuffStat(0x4000000000L);
-        public static readonly BuffStat SPEED = new BuffStat(0x8000000000L);
-        public static readonly BuffStat JUMP = new BuffStat(0x10000000000L);
-        public static readonly BuffStat MAGIC_GUARD = new BuffStat(0x20000000000L);
-        public static readonly BuffStat DARKSIGHT = new BuffStat(0x40000000000L);
-        public static readonly BuffStat BOOSTER = new BuffStat(0x80000000000L);
-        public static readonly BuffStat POWERGUARD = new BuffStat(0x100000000000L);
-        public static readonly BuffStat HYPERBODYHP = new BuffStat(0x200000000000L);
-        public static readonly BuffStat HYPERBODYMP = new BuffStat(0x400000000000L);
-        public static readonly BuffStat INVINCIBLE = new BuffStat(0x800000000000L);
-        public static readonly BuffStat SOULARROW = new BuffStat(0x1000000000000L);
-        public static readonly BuffStat STUN = new BuffStat(0x2000000000000L);
-        public static readonly BuffStat POISON = new BuffStat(0x4000000000000L);
-        public static readonly BuffStat SEAL = new BuffStat(0x8000000000000L);
-        public static readonly BuffStat DARKNESS = new BuffStat(0x10000000000000L);
-        public static readonly BuffStat COMBO = new BuffStat(0x20000000000000L);
-        public static readonly BuffStat SUMMON = new BuffStat(0x20000000000000L);
-        public static readonly BuffStat WK_CHARGE = new BuffStat(0x40000000000000L);
-        public static readonly BuffStat DRAGONBLOOD = new BuffStat(0x80000000000000L);
-        public static readonly BuffStat HOLY_SYMBOL = new BuffStat(0x100000000000000L);
-        public static readonly BuffStat MESOUP = new BuffStat(0x200000000000000L);
-        public static readonly BuffStat SHADOWPARTNER = new BuffStat(0x400000000000000L);
-        public static readonly BuffStat PICKPOCKET = new BuffStat(0x800000000000000L);
-        public static readonly BuffStat MESOGUARD = new BuffStat(0x1000000000000000L);
-        public static readonly BuffStat THAW = new BuffStat(0x2000000000000000L);
-        public static readonly BuffStat WEAKEN = new BuffStat(0x4000000000000000L);
+        // —— firstmask 组（位 64..81）——
+        WINDBREAKERFINAL = 64,
+        ELEMENTAL_RESET = 65,
+        WIND_WALK = 66,
+        EVENTRATE = 67,
+        ARAN_COMBO = 68,
+        COMBO_DRAIN = 69,
+        COMBO_BARRIER = 70,
+        BODY_PRESSURE = 71,
+        SMART_KNOCKBACK = 72,
+        BERSERK = 73,
+        EXP_BUFF = 74,
+        StopPotion = 75,
+        StopMotion = 76,
+        FEAR = 77,
+        EVANSLOW = 78,
+        MAGIC_SHIELD = 79,
+        MAGIC_RESISTANCE = 80,
+        SOULSTONE = 81,
 
-        //all incorrect buffstats
-        public static readonly BuffStat SLOW = new BuffStat(0x200000000L, true);
-        public static readonly BuffStat ELEMENTAL_RESET = new BuffStat(0x200000000L, true);
-        public static readonly BuffStat MAGIC_SHIELD = new BuffStat(0x400000000L, true);
-        public static readonly BuffStat MAGIC_RESISTANCE = new BuffStat(0x800000000L, true);
-        // needs Soul Stone
-        //end incorrect buffstats
+        // —— 特殊字段（位 82..88，客户端各有独立解码对象）——
+        ENERGY_CHARGE = 82,
+        DASH2 = 83,
+        DASH = 84,
+        MONSTER_RIDING = 85,
+        SPEED_INFUSION = 86,
+        HOMING_BEACON = 87,
+        NOTDAMAGED = 88,
 
-        public static readonly BuffStat WIND_WALK = new BuffStat(0x400000000L, true);
-        public static readonly BuffStat ARAN_COMBO = new BuffStat(0x1000000000L, true);
-        public static readonly BuffStat COMBO_DRAIN = new BuffStat(0x2000000000L, true);
-        public static readonly BuffStat COMBO_BARRIER = new BuffStat(0x4000000000L, true);
-        public static readonly BuffStat BODY_PRESSURE = new BuffStat(0x8000000000L, true);
-        public static readonly BuffStat SMART_KNOCKBACK = new BuffStat(0x10000000000L, true);
-        public static readonly BuffStat BERSERK = new BuffStat(0x20000000000L, true);
-        public static readonly BuffStat ENERGY_CHARGE = new BuffStat(0x4000000000000L, true);
-        public static readonly BuffStat DASH2 = new BuffStat(0x8000000000000L, true); // correct (speed)
-        public static readonly BuffStat DASH = new BuffStat(0x10000000000000L, true); // correct (jump)
-        public static readonly BuffStat MONSTER_RIDING = new BuffStat(0x20000000000000L, true);
-        public static readonly BuffStat SPEED_INFUSION = new BuffStat(0x40000000000000L, true);
-        public static readonly BuffStat HOMING_BEACON = new BuffStat(0x80000000000000L, true);
-
-        private long i;
-        private bool isFirst;
-
-        BuffStat(long i, bool isFirst = false)
-        {
-            this.i = i;
-            this.isFirst = isFirst;
-        }
-
-        public long getValue()
-        {
-            return i;
-        }
-
-        public bool IsFirst => isFirst;
-
-
-        public override string ToString()
-        {
-            return name();
-        }
-
-        public int CompareTo(BuffStat? other)
-        {
-            if (other == null)
-                return 1;
-            return i.CompareTo(other.i);
-        }
-
-        public static BuffStat From(string str)
-        {
-            return EnumClassCache<BuffStat>.GetValue(str);
-        }
+        /// <summary>丧尸状态：服务端逻辑用，位 89 超出客户端包字段范围，客户端不会显示。</summary>
+        ZOMBIFY = 89,
     }
 }

@@ -61,6 +61,9 @@ public enum SendOpcode
     /// CWvsContext::OnTemporaryStatSet
     /// </summary>
     GIVE_BUFF = 0x20,
+    /// <summary>
+    /// CWvsContext::OnTemporaryStatReset
+    /// </summary>
     CANCEL_BUFF = 0x21,
     FORCED_STAT_SET = 0x22,
     FORCED_STAT_RESET = 0x23,
@@ -243,7 +246,13 @@ public enum SendOpcode
     PYRAMID_GAUGE = 0x9D,
     PYRAMID_SCORE = 0x9E,
     QUICKSLOT_INIT = 0x9F,//LP_QuickslotMappedInit
+    /// <summary>
+    /// CUserPool::OnUserEnterField
+    /// </summary>
     SPAWN_PLAYER = 0xA0,
+    /// <summary>
+    /// CUserPool::OnUserLeaveField
+    /// </summary>
     REMOVE_PLAYER_FROM_MAP = 0xA1,
     CHATTEXT = 0xA2, //0
     CHATTEXT1 = 0xA3, //1
@@ -314,7 +323,13 @@ public enum SendOpcode
     SHOW_CHAIR = 0xC4,
     UPDATE_CHAR_LOOK = 0xC5,
     SHOW_FOREIGN_EFFECT = 0xC6,
+    /// <summary>
+    /// sub_98385D
+    /// </summary>
     GIVE_FOREIGN_BUFF = 0xC7,
+    /// <summary>
+    /// sub_983921
+    /// </summary>
     CANCEL_FOREIGN_BUFF = 0xC8,
     UPDATE_PARTYMEMBER_HP = 0xC9,
     GUILD_NAME_CHANGED = 0xCA,
@@ -379,10 +394,19 @@ public enum SendOpcode
     COOLDOWN = 0xEA,
     SPAWN_MONSTER = 0xEC,
     KILL_MONSTER = 0xED,
+    /// <summary>
+    /// CMobPool::OnMobChangeController
+    /// </summary>
     SPAWN_MONSTER_CONTROL = 0xEE,
     MOVE_MONSTER = 0xEF,
     MOVE_MONSTER_RESPONSE = 0xF0,
+    /// <summary>
+    /// CMob::OnStatSet
+    /// </summary>
     APPLY_MONSTER_STATUS = 0xF2,
+    /// <summary>
+    /// CMob::OnStatReset
+    /// </summary>
     CANCEL_MONSTER_STATUS = 0xF3,
     RESET_MONSTER_ANIMATION = 0xF4,//LOL? o.o
     /// <summary>

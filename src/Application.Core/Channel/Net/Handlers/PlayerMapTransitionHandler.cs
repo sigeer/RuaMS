@@ -20,6 +20,7 @@
 
 
 
+using Application.Core.Channel.Net.Packets;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -34,12 +35,12 @@ public class PlayerMapTransitionHandler : ChannelHandlerBase
         var chr = c.OnlinedCharacter;
         chr.setMapTransitionComplete();
 
-        int beaconid = chr.getBuffSource(BuffStat.HOMING_BEACON);
-        if (beaconid != -1)
+        if (chr.HasBuff(BuffStat.HOMING_BEACON))
         {
-            await chr.cancelBuffStats(BuffStat.HOMING_BEACON);
+            await chr.CancelBuff(BuffStat.HOMING_BEACON);
 
-            await chr.SendPacket(PacketCreator.giveBuff(1, beaconid, new BuffStatValue(BuffStat.HOMING_BEACON, 0)));
+            // ?
+            // await chr.SendPacket(PacketCreator.giveBuff(1, beaconid, new BuffStatValue(BuffStat.HOMING_BEACON, 0)));
         }
 
         if (!chr.isHidden())

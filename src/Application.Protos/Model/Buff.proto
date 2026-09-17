@@ -9,6 +9,7 @@ message BuffProto {
   int32 skillLevel = 3;
 
   int64 startTime = 4;
+  int64 expiredAt = 2;
   repeated BuffStatProto stats = 5;
 }
 

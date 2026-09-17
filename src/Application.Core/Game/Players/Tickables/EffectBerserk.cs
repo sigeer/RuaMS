@@ -5,10 +5,10 @@ using tools;
 
 namespace Application.Core.Game.Players.Tickables
 {
-    internal sealed class EffectBerserk : BuffStatValueHolder
+    public sealed class EffectBerserk : EffectBuff
     {
-        public EffectBerserk(Player chr, StatEffect effect, long startTime, long expiredAt, int value)
-            : base(chr, effect, startTime, expiredAt, value)
+        public EffectBerserk(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value)
+            : base(chr, buffStat, effect, startTime, expiredAt, value)
         {
             Period = 5_000;
             Next = chr.getChannelServer().Node.getCurrentTime() + 3_000;

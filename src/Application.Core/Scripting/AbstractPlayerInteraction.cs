@@ -785,7 +785,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task cancelItem(int id)
     {
-        await getPlayer().cancelEffect(ItemInformationProvider.getInstance().GetItemEffectTrust(id), false);
+        await getPlayer().CancelBuffFromSourceId(id);
     }
 
     public async Task teachSkill(int skillid, sbyte level, sbyte masterLevel, long expiration, bool force = false)

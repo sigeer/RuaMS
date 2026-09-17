@@ -262,15 +262,13 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                     && attack.numAttacked > 0
                     && chr.getBuffSource(BuffStat.DARKSIGHT) != SuperGM.HIDE)
                 {
-                    await chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
-                    await chr.cancelBuffStats(BuffStat.DARKSIGHT);
+                    await chr.CancelBuff(BuffStat.DARKSIGHT);
                 }
                 else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0
                     && chr.getBuffedValue(BuffStat.WIND_WALK) != null
                     && attack.numAttacked > 0)
                 {
-                    await chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);
-                    await chr.cancelBuffStats(BuffStat.WIND_WALK);
+                    await chr.CancelBuff(BuffStat.WIND_WALK);
                 }
 
                 await applyAttack(attack, chr);

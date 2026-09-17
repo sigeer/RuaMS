@@ -5,10 +5,10 @@ using tools;
 
 namespace Application.Core.Game.Players.Tickables
 {
-    public sealed class EffectDragonBlood : BuffStatValueHolder
+    public sealed class EffectDragonBlood : EffectBuff
     {
-        public EffectDragonBlood(Player chr, StatEffect effect, long startTime, long expiredAt, int value)
-            : base(chr, effect, startTime, expiredAt, value)
+        public EffectDragonBlood(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value)
+            : base(chr, buffStat, effect, startTime, expiredAt, value)
         {
             Period = 4_000;
             Next = chr.getChannelServer().Node.getCurrentTime() + Period;

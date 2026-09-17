@@ -1,4 +1,5 @@
 using Application.Core.Game.Players.PlayerProps;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Application.Shared.Battle.Skills;
@@ -52,16 +53,18 @@ namespace Application.Core.Game.Players
                 (Skills.GetSkill(skill)?.skillevel ?? 0) + (final ? TempSkillCache.GetValueOrDefault(skill.getId()) : 0),
                 skill.getMaxLevel());
         }
+
         /// <summary>
-        /// 获取玩家技能效果，会验证职业，技能等级
+        /// 根据玩家技能等级获取玩家技能效果
         /// </summary>
         /// <param name="skillId"></param>
+        /// <param name="checkJob">验证职业<para>正常途径不会出现跨职业调用技能效果</para></param>
         /// <returns></returns>
-        public StatEffect? TryGetPlayerSkillEffect(int skillId)
+        public StatEffect? GetPlayerSkillEffect(int skillId, bool checkJob = true)
         {
             var skillObj = SkillFactory.GetSkillTrust(skillId);
 
-            if (JobModel.CheckSkill(skillId))
+            if (!checkJob || JobModel.CheckSkill(skillId))
             {
                 var skillLevel = getSkillLevel(skillObj);
                 if (skillLevel == 0)
@@ -70,20 +73,6 @@ namespace Application.Core.Game.Players
             }
 
             return null;
-        }
-
-        public StatEffect GetPlayerSkillEffect(int skillId)
-        {
-            var skillObj = SkillFactory.GetSkillTrust(skillId);
-            return GetPlayerSkillEffect(skillObj);
-        }
-
-        public StatEffect GetPlayerSkillEffect(Skill skill)
-        {
-            var skillLevel = getSkillLevel(skill);
-            if (skillLevel == 0)
-                throw new BusinessResException($"Id = {Id} Name = {Name}, SkillId = {skill.getId()}, PlayerSkillLevel = 0");
-            return skill.getEffect(skillLevel);
         }
 
         public async Task changeSkillLevel(Skill skill, sbyte newLevel, int newMasterlevel, long expiration)
@@ -247,7 +236,7 @@ namespace Application.Core.Game.Players
             return true;
         }
 
-        public bool CheckBuff(BuffStatValueHolder buff)
+        public bool CheckBuff(EffectBuff buff)
         {
             if (!buff.Effect.isSkill())
             {

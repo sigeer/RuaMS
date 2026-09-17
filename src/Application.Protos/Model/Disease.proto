@@ -6,8 +6,8 @@ package ProtoModel;
 
 message DiseaseProto {
   int64 startTime = 1;
-  int64 length = 2;
+  int64 expiredAt = 2;
   int32 mobSkillId = 3;
   int32 mobSkillLevel = 4;
-  int32 diseaseOrdinal = 5;
+  int32 diseaseBit = 5;
 }

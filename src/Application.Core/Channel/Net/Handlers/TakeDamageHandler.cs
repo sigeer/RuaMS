@@ -25,6 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.Server.life;
 using client.autoban;
@@ -107,7 +108,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                     loseItems = attacker.getStats().loseItem();
                     if (loseItems != null)
                     {
-                        if (chr.getBuffEffect(BuffStat.AURA) == null)
+                        if (!chr.HasBuff(BuffStat.AURA))
                         {
                             InventoryType type;
                             int playerpos = chr.getPosition().X;
@@ -205,10 +206,10 @@ public class TakeDamageHandler : ChannelHandlerBase
                         // 寒冰掌
                         foreach (var skill in SkillIds.GuardSkills)
                         {
-                            var skillEffect = chr.TryGetPlayerSkillEffect(skill);
+                            var skillEffect = chr.GetPlayerSkillEffect(skill);
                             if (skillEffect != null)
                             {
-                                await targetMob.applyStatus(chr, new MonsterStatusEffect(skillEffect.getMonsterStati(), skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
+                                await targetMob.applyStatus(chr, new MonsterStatusEffect(skillEffect.MonsterStatuses, skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
 
                                 // await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, skillEffect.getSourceId()), chr.Id);
                                 break;
@@ -263,14 +264,14 @@ public class TakeDamageHandler : ChannelHandlerBase
             if (damagefrom == -1)
             {
                 // 抗压 也能反击？
-                var bPressure = chr.getBuffEffect(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
+                var bPressure = chr.GetBuffStatValue(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
                 if (bPressure != null && damage > 0 && !attacker.isBoss())
                 {
                     if (!attacker.alreadyBuffedStats().Contains(MonsterStatus.NEUTRALISE))
                     {
-                        if (bPressure.makeChanceResult())
+                        if (bPressure.Effect.makeChanceResult())
                         {
-                            await attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), bPressure.GetSkill()!), false, bPressure.getX(), false);
+                            await attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), bPressure.Effect.GetSkill()!), false, bPressure.Effect.getX(), false);
                         }
                     }
                 }
@@ -322,7 +323,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             // 假动作、寒冰掌 都能让damage = -1
             foreach (var guardSkill in SkillIds.AllGuardSkills)
             {
-                if (chr.TryGetPlayerSkillEffect(guardSkill) != null)
+                if (chr.GetPlayerSkillEffect(guardSkill) != null)
                 {
                     fake = guardSkill;
                     break;
@@ -354,10 +355,10 @@ public class TakeDamageHandler : ChannelHandlerBase
         {
             if (attacker != null)
             {
-                var cBarrier = chr.getBuffEffect(BuffStat.COMBO_BARRIER);  // thanks BHB for noticing Combo Barrier buff not working
+                var cBarrier = chr.GetBuffStatValue(BuffStat.COMBO_BARRIER);  // thanks BHB for noticing Combo Barrier buff not working
                 if (cBarrier != null)
                 {
-                    finalDamage -= damage * (1 - ((cBarrier.getX() / 1000.0)));
+                    finalDamage -= damage * (1 - ((cBarrier.Effect.getX() / 1000.0)));
                 }
             }
 
@@ -365,7 +366,7 @@ public class TakeDamageHandler : ChannelHandlerBase
             {
                 foreach (var skill in SkillIds.AchillesSkills)
                 {
-                    var achilles = chr.TryGetPlayerSkillEffect(skill);
+                    var achilles = chr.GetPlayerSkillEffect(skill);
                     if (achilles != null)
                     {
                         finalDamage -= damage * (1 - (achilles.getX() / 1000.0));
@@ -373,7 +374,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                     }
                 }
 
-                var highDefEffect = chr.TryGetPlayerSkillEffect(Aran.HIGH_DEFENSE);
+                var highDefEffect = chr.GetPlayerSkillEffect(Aran.HIGH_DEFENSE);
                 if (highDefEffect != null)
                 {
                     finalDamage -= damage * (1 - ((highDefEffect.getX() / 1000.0)));
@@ -411,7 +412,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                 if (chr.getMeso() < mesoloss)
                 {
                     await chr.GainMeso(-chr.getMeso());
-                    await chr.cancelBuffStats(BuffStat.MESOGUARD);
+                    await chr.CancelBuff(BuffStat.MESOGUARD);
                 }
                 else
                 {

@@ -48,7 +48,7 @@ public class CancelBuffHandler : ChannelHandlerBase
                 break;
 
             default:
-                await c.OnlinedCharacter.cancelEffect(SkillFactory.GetSkillTrust(sourceid).getEffect(1), false);
+                await c.OnlinedCharacter.CancelBuffFromSourceId(sourceid);
                 break;
         }
     }

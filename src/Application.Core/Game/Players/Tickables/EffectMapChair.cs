@@ -4,9 +4,9 @@ using Application.Utility.Tickables;
 
 namespace Application.Core.Game.Players.Tickables
 {
-    internal class EffectMapChair : BuffStatValueHolder
+    public class EffectMapChair : EffectBuff
     {
-        public EffectMapChair(Player chr, StatEffect effect, long startTime, long expiredAt, int value) : base(chr, effect, startTime, expiredAt, value)
+        public EffectMapChair(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value) : base(chr, buffStat, effect, startTime, expiredAt, value)
         {
             var now = chr.getChannelServer().Node.getCurrentTime();
             var p = Player.getChairTaskIntervalRate(chr.ActualMaxHP, chr.ActualMaxMP);

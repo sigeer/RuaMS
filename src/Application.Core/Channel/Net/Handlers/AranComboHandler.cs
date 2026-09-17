@@ -41,25 +41,6 @@ public class AranComboHandler : ChannelHandlerBase
                 combo = 0;
             }
             combo++;
-            switch (combo)
-            {
-                case 10:
-                case 20:
-                case 30:
-                case 40:
-                case 50:
-                case 60:
-                case 70:
-                case 80:
-                case 90:
-                case 100:
-                    if (player.getJob().getId() != 2000 && (combo / 10) > skillLevel)
-                    {
-                        break;
-                    }
-                    await SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY).getEffect(combo / 10).applyComboBuff(player, combo);
-                    break;
-            }
             await player.setCombo(combo);
             player.setLastCombo(currentTime);
         }

@@ -903,7 +903,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
             int _partyExp = expValueToInteger(partyExp.Value);
 
-            if (attacker.hasDisease(Disease.CURSE))
+            if (attacker.hasDisease(BuffStat.CURSE))
             {
                 _personalExp = (int)(_personalExp * 0.5);
                 _partyExp = (int)(_partyExp * 0.5);
@@ -1881,10 +1881,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public bool isCharacterPuppetInVicinity(Player chr)
     {
-        var mse = chr.getBuffEffect(BuffStat.PUPPET);
+        var mse = chr.GetBuffStatValue(BuffStat.PUPPET);
         if (mse != null)
         {
-            var summon = chr.getSummonByKey(mse.getSourceId());
+            var summon = chr.getSummonByKey(mse.Effect.GetEncodeId());
 
             // check whether mob is currently under a puppet's field of action or not
             if (summon != null)
@@ -2292,10 +2292,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 return;
             }
 
-            var puppetEffect = chrController.getBuffEffect(BuffStat.PUPPET);
+            var puppetEffect = chrController.GetBuffStatValue(BuffStat.PUPPET);
             if (puppetEffect != null)
             {
-                var puppet = chrController.getSummonByKey(puppetEffect.getSourceId());
+                var puppet = chrController.getSummonByKey(puppetEffect.Effect.GetEncodeId());
 
                 if (puppet != null && isPuppetInVicinity(puppet))
                 {
