@@ -2594,7 +2594,7 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet DamagePlayerFromCounter(int cid, int damage)
+    public static Packet DamagePlayerFromObstacle(int cid, int damage)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
         p.writeInt(cid);

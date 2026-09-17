@@ -1197,7 +1197,8 @@ public partial class Player
              {
                  await ChangeHP(-MapModel.getHPDec(), false);
              });
-            await BroadcastMap(PacketCreator.DamagePlayerFromCounter(Id, MapModel.getHPDec()));
+            await SendPacket(PacketCreator.onNotifyHPDecByField(MapModel.getHPDec()));
+            // await BroadcastMap(PacketCreator.DamagePlayerFromObstacle(Id, MapModel.getHPDec()));
         }
     }
 

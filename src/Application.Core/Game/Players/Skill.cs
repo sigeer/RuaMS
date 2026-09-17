@@ -253,7 +253,7 @@ namespace Application.Core.Game.Players
             {
                 return true;
             }
-            return !isGM() && JobModel.CheckSkill(buff.Effect.getSourceId());
+            return JobModel.CheckSkill(buff.Effect.getSourceId());
         }
     }
 }
