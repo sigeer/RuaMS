@@ -279,21 +279,21 @@ public class MobSkill : ISkill
                 }
                 break;
             case MobSkillType.PHYSICAL_COUNTER:
-                stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, 10);
-                stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 10);
+                stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 1);
                 reflection.Add(x);
                 break;
 
             case MobSkillType.MAGIC_COUNTER:
-                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, 10);
-                stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 10);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 1);
                 reflection.Add(x);
                 break;
             case MobSkillType.PHYSICAL_AND_MAGIC_COUNTER:
-                stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, 10);
-                stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 10);
-                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, 10);
-                stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 10);
+                stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 1);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 1);
                 reflection.Add(x);
                 break;
             case MobSkillType.ACC:
