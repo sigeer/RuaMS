@@ -90,7 +90,11 @@ namespace ServiceTest.Games
         }
 
         public MasterServer GetMasterServer() => ServiceProvider.GetRequiredService<MasterServer>();
-
+        public void Update()
+        {
+            var node = ServiceProvider.GetRequiredService<WorldChannelServer>();
+            node.UpdateServerTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        }
         public async Task<Player?> GetPlayer(int cid = 1)
         {
             var channel = ServiceProvider.GetRequiredService<WorldChannelServer>().Servers[1] as WorldChannel;

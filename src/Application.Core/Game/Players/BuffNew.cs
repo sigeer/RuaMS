@@ -16,6 +16,15 @@ namespace Application.Core.Game.Players
 
         public async Task RegisterEffects(Dictionary<StatEffect, Dictionary<BuffStat, EffectBuff>> newEffects, bool hideRemote = false)
         {
+            if (!YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
+            {
+                foreach (var item in newEffects)
+                {
+                    var duplicatedBuff = buffEffects.FirstOrDefault(x => new HashSet<BuffStat>(x.Value.Keys).SetEquals(item.Value.Keys));
+                    buffEffects.Remove(duplicatedBuff.Key);
+                }
+            }
+
             foreach (var oItem in newEffects)
             {
                 var source = oItem.Key;
@@ -30,25 +39,13 @@ namespace Application.Core.Game.Players
             // 被覆盖的旧buff
             HashSet<EffectBuff> overwritedBuffs = [];
 
-            List<IGrouping<BuffStat, EffectBuff>> allStatups = [];
-            if (YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
-            {
-                allStatups = buffEffects
+            var allStatups = buffEffects
                     .AsValueEnumerable()
                     .Select(x => x.Value).SelectMany(x => x.Values)
-                    .OrderBy(x => x)
                     .GroupBy(x => x.BuffStat)
+                    .Select(x => new { Key = x.Key, Items = x.OrderBy(y => y, BuffOrder.Default).ToList() })
                     .ToList();
-            }
-            else
-            {
-                allStatups = buffEffects
-                    .AsValueEnumerable()
-                    .Select(x => x.Value).SelectMany(x => x.Values)
-                    .OrderByDescending(x => x.StartTime)
-                    .GroupBy(x => x.BuffStat)
-                    .ToList();
-            }
+
 
             foreach (var currentActive in ActiveEffects.ToList())
             {
@@ -62,7 +59,7 @@ namespace Application.Core.Game.Players
             foreach (var item in allStatups)
             {
                 // 同类型buff中，优先级最高/释放最晚的 且有效的
-                var activeItem = item.FirstOrDefault(x => x.Effect.isActive(this));
+                var activeItem = item.Items.FirstOrDefault(x => x.Effect.isActive(this));
                 if (ActiveEffects.TryGetValue(item.Key, out var exsitedActive))
                 {
                     // 应生效buff不存在，移除
@@ -76,7 +73,7 @@ namespace Application.Core.Game.Players
                         if (YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
                         {
                             // buff被移除 或 应生效buff优于现有buff，替换
-                            if (!item.Contains(exsitedActive) || activeItem.CompareTo(exsitedActive) < 0)
+                            if (!item.Items.Contains(exsitedActive) || BuffOrder.Default.Compare(activeItem, exsitedActive) < 0)
                             {
                                 toUpdateEffects[item.Key] = activeItem;
                                 ActiveEffects[item.Key] = activeItem;
@@ -86,9 +83,9 @@ namespace Application.Core.Game.Players
                         }
                         else
                         {
-                            if (!item.Contains(exsitedActive))
+                            if (!item.Items.Contains(exsitedActive) && item.Items.Count < 1)
                             {
-                                // 被移除
+                                // 被移除 且没有次级buff
                                 toRemoveEffects[item.Key] = exsitedActive;
                                 ActiveEffects.Remove(item.Key);
                             }
@@ -213,14 +210,23 @@ namespace Application.Core.Game.Players
             await RefreshEffects();
         }
 
-        public Task CancelBuffFromSource(StatEffect statEffect) => CancelBuffFromSource([statEffect]);
+        public Task CancelBuffFromSource(StatEffect statEffect) => CancelBuffFromSourceId(statEffect.getBuffSourceId());
 
-        public Task CancelAllBuffs() => CancelBuffFromSource(buffEffects.Values.AsValueEnumerable().SelectMany(x => x.Values.Select(y => y.Effect)).ToHashSet());
+        public async Task CancelAllBuffs()
+        {
+            // 仅 ActiveEffects 中的buff需要发包
+            var allBuffSources = ActiveEffects.Values.AsValueEnumerable().Select(x => x.Effect).ToHashSet();
+            await CancelBuffFromSource(allBuffSources);
+            buffEffects.Clear();
+        }
         public async Task CancelBuffFromSourceId(int skillId)
         {
-            if (buffEffects.TryGetValue(skillId, out var data) && data.Values.Count > 0)
+            if (buffEffects.Remove(skillId, out var data))
             {
-                await CancelBuffFromSource(data.Values.FirstOrDefault()!.Effect);
+                if (data.Values.Count > 0)
+                {
+                    await RefreshEffects();
+                }
             }
         }
     }
