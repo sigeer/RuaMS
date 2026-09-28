@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.Commands;
 using Application.Core.Game.Life;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.Mists;
 using Application.Core.Game.Players.Tickables;
@@ -34,7 +35,7 @@ namespace Application.Core.Server.life;
 /**
  * @author Danny (Leifde)
  */
-public class MobSkill : ISkill, IBuffSource
+public class MobSkill : IBuffSource
 {
     private MobSkillId id;
     private int mpCon;
@@ -203,7 +204,6 @@ public class MobSkill : ISkill, IBuffSource
 
         BuffStat? disease = null;
         Dictionary<MonsterStatus, int> stats = new();
-        List<int> reflection = new();
         switch (id.type)
         {
             case MobSkillType.ATTACK_UP:
@@ -284,20 +284,17 @@ public class MobSkill : ISkill, IBuffSource
             case MobSkillType.PHYSICAL_COUNTER:
                 stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, x);
                 stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 1);
-                reflection.Add(x);
                 break;
 
             case MobSkillType.MAGIC_COUNTER:
-                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, y);
                 stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 1);
-                reflection.Add(x);
                 break;
             case MobSkillType.PHYSICAL_AND_MAGIC_COUNTER:
                 stats.AddOrUpdate(MonsterStatus.WEAPON_REFLECT, x);
                 stats.AddOrUpdate(MonsterStatus.WEAPON_IMMUNITY, 1);
-                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, x);
+                stats.AddOrUpdate(MonsterStatus.MAGIC_REFLECT, y);
                 stats.AddOrUpdate(MonsterStatus.MAGIC_IMMUNITY, 1);
-                reflection.Add(x);
                 break;
             case MobSkillType.ACC:
                 stats.AddOrUpdate(MonsterStatus.ACC, x);
@@ -317,7 +314,7 @@ public class MobSkill : ISkill, IBuffSource
         }
         if (stats.Count > 0)
         {
-            await applyMonsterBuffs(stats, skill, monster, reflection);
+            await applyMonsterBuffs(stats, skill, monster);
         }
         if (disease != null)
         {
@@ -481,18 +478,18 @@ public class MobSkill : ISkill, IBuffSource
         }
     }
 
-    private async Task applyMonsterBuffs(Dictionary<MonsterStatus, int> stats, bool skill, Monster monster, List<int> reflection)
+    private async Task applyMonsterBuffs(Dictionary<MonsterStatus, int> stats, bool skill, Monster monster)
     {
         if (lt != null && rb != null && skill)
         {
             foreach (var mons in getObjectsInRange(monster, MapObjectType.MONSTER))
             {
-                await ((Monster)mons).applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
+                await ((Monster)mons).applyMonsterBuff(stats, getDuration(), this);
             }
         }
         else
         {
-            await monster.applyMonsterBuff(stats, getX(), getDuration(), this, reflection);
+            await monster.applyMonsterBuff(stats, getDuration(), this);
         }
     }
 

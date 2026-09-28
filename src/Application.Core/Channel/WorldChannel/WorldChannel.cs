@@ -106,7 +106,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     #region
     public MobClearSkillService MobClearSkillService { get; }
-    public MobStatusService MobStatusService { get; }
     public OverallService OverallService { get; }
     #endregion
     public CommandLoop<WorldChannel> CommandLoop { get; }
@@ -162,7 +161,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         DojoInstance = new DojoInstance(this);
 
         MobClearSkillService = new MobClearSkillService(this);
-        MobStatusService = new MobStatusService(this);
         OverallService = new OverallService(this);
 
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
@@ -345,7 +343,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     private void closeChannelServices()
     {
         MobClearSkillService.dispose();
-        MobStatusService.dispose();
         OverallService.dispose();
     }
 

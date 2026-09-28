@@ -27,18 +27,17 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Events;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
-using Application.Core.Game.Skills;
+using Application.Core.Server;
 using Application.Core.Server.life;
 using Application.Resources.Messages;
 using Application.Shared.Battle.Skills;
 using Application.Shared.MapObjects.Summons;
-using Application.Shared.WzEntity;
 using Application.Templates.Mob;
 using Application.Templates.Reader;
 using Application.Templates.UI;
-using Application.Utility.Pipeline;
 using Application.Utility.Tickables;
 using net.server.coordinator.world;
 using net.server.services.task.channel;
@@ -59,14 +58,22 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     private WeakReference<Player?> controller = new(null);
     private bool controllerHasAggro, controllerKnowsAboutAggro, controllerHasPuppet;
 
-    private Dictionary<MonsterStatus, MonsterStatusEffect> stati = new();
-    private List<MonsterStatus> alreadyBuffed = new();
+    public Dictionary<MonsterStatus, MonsterBuffBase> AllBuffs { get; } = new();
+    private HashSet<MonsterStatus> alreadyBuffed = new();
 
     private int VenomMultiplier = 0;
     private bool fake = false;
     private bool _dropsDisabled = false;
-    private HashSet<MobSkillId> usedSkills = new();
-    private HashSet<int> usedAttacks = new();
+
+    /// <summary>
+    /// 技能cd
+    /// </summary>
+    private Dictionary<MobSkillId, long> usedSkills = new();
+    /// <summary>
+    /// 攻击cd
+    /// </summary>
+    private Dictionary<int, long> usedAttacks = new();
+
     private HashSet<int>? calledMobOids = null;
     private WeakReference<Monster?> callerMob = new(null);
     private List<int> stolenItems = new(5);
@@ -844,10 +851,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             }
         }
 
-        var mse = stati.GetValueOrDefault(MonsterStatus.SHOWDOWN);
+        var mse = AllBuffs.GetValueOrDefault(MonsterStatus.SHOWDOWN);
         if (mse != null)
         {
-            multiplier *= (1.0f + (mse.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN, 0) / 100.0f));
+            multiplier *= (1.0f + (mse.Value / 100.0f));
         }
 
         return multiplier;
@@ -1116,8 +1123,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
 
 
-        stati.Clear();
+        AllBuffs.Clear();
         alreadyBuffed.Clear();
+        usedAttacks.Clear();
+        usedSkills.Clear();
     }
 
 
@@ -1239,7 +1248,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public ElementalEffectiveness getElementalEffectiveness(Element e)
     {
-        if (stati.GetValueOrDefault(MonsterStatus.DOOM) != null)
+        if (AllBuffs.ContainsKey(MonsterStatus.DOOM))
         {
             return ElementalEffectiveness.NORMAL; // like blue snails
         }
@@ -1276,18 +1285,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    private async Task<int> broadcastStatusEffect(MonsterStatusEffect status)
+    public async Task BroadcastMobStats()
     {
-        int animationTime = status.getSkill()!.getAnimationTime();
-        Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), status, null);
-        await broadcastMonsterStatusMessage(packet);
-
-        return animationTime;
+        Packet packet = MobBuffPackets.ApplyMonsterStatus(this);
+        await BroadcastMap(packet);
     }
 
-    public async Task<bool> applyStatus(Player from, MonsterStatusEffect status, bool poison, long duration, bool venom = false)
+    public async Task<bool> RegisterDebuff(Player from, StatEffect playerEffect, Dictionary<MonsterStatus, MonsterDebuff> buffs)
     {
-        var effectSkill = status.getSkill()!;
+        var effectSkill = playerEffect.GetSkill()!;
         switch (getMonsterEffectiveness(effectSkill.getElement()))
         {
             case ElementalEffectiveness.IMMUNE:
@@ -1330,167 +1336,59 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 return false;
             }
         }
-        if (poison && hp.get() <= 1)
+
+        foreach (var buff in buffs)
         {
-            return false;
+            if (buff.Key == MonsterStatus.POISON && hp <= 1)
+            {
+                continue;
+            }
+            AllBuffs[buff.Key] = buff.Value;
+            alreadyBuffed.Add(buff.Key);
         }
 
-        Dictionary<MonsterStatus, int> statis = status.getStati();
         if (stats.isBoss())
         {
-            if (!(statis.ContainsKey(MonsterStatus.SPEED)
-                    && statis.ContainsKey(MonsterStatus.NINJA_AMBUSH)
-                    && statis.ContainsKey(MonsterStatus.WATK)))
+            if (!(buffs.ContainsKey(MonsterStatus.SPEED)
+                    && buffs.ContainsKey(MonsterStatus.NINJA_AMBUSH)
+                    && buffs.ContainsKey(MonsterStatus.WATK)))
             {
                 return false;
             }
         }
 
-        int mapid = MapModel.getId();
-        if (statis.Count > 0)
-        {
-            foreach (MonsterStatus stat in statis.Keys)
-            {
-                var oldEffect = stati.GetValueOrDefault(stat);
-                if (oldEffect != null)
-                {
-                    oldEffect.removeActiveStatus(stat);
-                    if (oldEffect.getStati().Count == 0)
-                    {
-                        MobStatusService serviced = MapModel.getChannelServer().MobStatusService;
-                        serviced.interruptMobStatus(mapid, oldEffect);
-                    }
-                }
-            }
-        }
-
-        Action cancelTask = () =>
-        {
-            MapModel.ChannelServer.Send(new MonsterStatusRemoveCommand(this, status));
-        };
-        ICommand? overtimeAction = null;
-        int overtimeDelay = -1;
-
-        int animationTime;
-        if (poison)
-        {
-            int poisonLevel = from.getSkillLevel(status.getSkill());
-            int poisonDamage = Math.Min(short.MaxValue, (int)(getMaxHp() / (70.0 - poisonLevel) + 0.999));
-            status.setValue(MonsterStatus.POISON, poisonDamage);
-            animationTime = await broadcastStatusEffect(status);
-
-            overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
-            overtimeDelay = 1000;
-        }
-        else if (venom)
-        {
-            if (from.getJob() == Job.NIGHTLORD || from.getJob() == Job.SHADOWER || from.getJob().isA(Job.NIGHTWALKER3))
-            {
-                int poisonLevel, matk, jobid = from.getJob().getId();
-                int skillid = (jobid == JobId.NIGHTLORD ? NightLord.VENOMOUS_STAR : (jobid == JobId.SHADOWER ? Shadower.VENOMOUS_STAB : NightWalker.VENOM));
-                var skill = SkillFactory.getSkill(skillid);
-                poisonLevel = from.getSkillLevel(skill);
-                if (poisonLevel <= 0)
-                {
-                    return false;
-                }
-                matk = skill!.getEffect(poisonLevel).getMatk();
-                int luk = from.getLuk();
-                int maxDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.2 * luk * matk));
-                int minDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.1 * luk * matk));
-                int gap = maxDmg - minDmg;
-                if (gap == 0)
-                {
-                    gap = 1;
-                }
-                int poisonDamage = 0;
-                for (int i = 0; i < getVenomMulti(); i++)
-                {
-                    poisonDamage += (Randomizer.nextInt(gap) + minDmg);
-                }
-                poisonDamage = Math.Min(short.MaxValue, poisonDamage);
-                status.setValue(MonsterStatus.VENOMOUS_WEAPON, poisonDamage);
-                status.setValue(MonsterStatus.POISON, poisonDamage);
-                animationTime = await broadcastStatusEffect(status);
-
-                overtimeAction = new MonsterApplyDamageCommand(this, from, status, poisonDamage, 0);
-                overtimeDelay = 1000;
-            }
-            else
-            {
-                return false;
-            }
-            /*
-        } else if (status.getSkill().getId() == Hermit.SHADOW_WEB || status.getSkill().getId() == NightWalker.SHADOW_WEB) { //Shadow Web
-            int webDamage = (int) (getMaxHp() / 50.0 + 0.999);
-            status.setValue(MonsterStatus.SHADOW_WEB, webDamage);
-            animationTime = broadcastStatusEffect(status);
-            
-            overtimeAction = new DamageTask(webDamage, from, status, 1);
-            overtimeDelay = 3500;
-            */
-        }
-        else if (effectSkill.getId() == NightLord.NINJA_AMBUSH || effectSkill.getId() == Shadower.NINJA_AMBUSH)
-        {
-            // Ninja Ambush
-            var skill = SkillFactory.GetSkillTrust(effectSkill.getId());
-            var level = from.getSkillLevel(skill);
-            int damage = (int)((from.getStr() + from.getLuk()) * ((3.7 * skill.getEffect(level).getDamage()) / 100.0));
-
-            status.setValue(MonsterStatus.NINJA_AMBUSH, damage);
-            animationTime = await broadcastStatusEffect(status);
-
-            overtimeAction = new MonsterApplyDamageCommand(this, from, status, damage, 2);
-            overtimeDelay = 1000;
-        }
-        else
-        {
-            animationTime = await broadcastStatusEffect(status);
-        }
-
-        foreach (MonsterStatus stat in status.getStati().Keys)
-        {
-            stati.AddOrUpdate(stat, status);
-            alreadyBuffed.Add(stat);
-        }
-
-        MobStatusService service = MapModel.getChannelServer().MobStatusService;
-        service.registerMobStatus(mapid, status, new MonsterStatusRemoveCommand(this, status), duration + animationTime - 100, overtimeAction, overtimeDelay);
+        await BroadcastMobStats();
         return true;
     }
+
 
     public async Task dispelSkill(MobSkill skill)
     {
         List<MonsterStatus> toCancel = new();
-        foreach (var effects in stati)
+        foreach (var effects in AllBuffs)
         {
-            MonsterStatusEffect mse = effects.Value;
-            if (mse.getMobSkill()?.getType() == skill.getType())
+            if (effects.Value.BuffSource is MobSkill mobSkill && mobSkill.getType() == skill.getType())
             {
-                //not checking for level.
                 toCancel.Add(effects.Key);
             }
         }
-        foreach (MonsterStatus stat in toCancel)
-        {
-            await debuffMobStat(stat);
-        }
+
+        await debuffMobStat(toCancel);
     }
 
-    public async Task applyMonsterBuff(Dictionary<MonsterStatus, int> stats, int x, long duration, MobSkill skill, List<int> reflection)
-    {
-        MonsterStatusEffect effect = new MonsterStatusEffect(stats, skill);
-        Packet packet = PacketCreator.applyMonsterStatus(getObjectId(), effect, reflection);
-        await broadcastMonsterStatusMessage(packet);
 
-        foreach (MonsterStatus stat in stats.Keys)
+    public async Task applyMonsterBuff(Dictionary<MonsterStatus, int> stats, long duration, MobSkill skill)
+    {
+        var now = MapModel.ChannelServer.Node.getCurrentTime();
+        var buffs = stats.ToDictionary(x => x.Key, x => new MonsterStatusEffect(this, x.Key, skill, x.Value, now, now + duration));
+
+        foreach (var buff in buffs)
         {
-            stati.AddOrUpdate(stat, effect);
-            alreadyBuffed.Add(stat);
+            AllBuffs[buff.Key] = buff.Value;
+            alreadyBuffed.Add(buff.Key);
         }
 
-        MobStatusService service = MapModel.getChannelServer().MobStatusService;
-        service.registerMobStatus(MapModel.getId(), effect, new MonsterBuffRemoveCommand(this, stats), duration);
+        await BroadcastMobStats();
     }
 
     public async Task refreshMobPosition()
@@ -1510,17 +1408,15 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         await aggroUpdateController();
     }
 
-    private async Task debuffMobStat(MonsterStatus stat)
+    private async Task debuffMobStat(IEnumerable<MonsterStatus> buffs)
     {
-        MonsterStatusEffect? oldEffect;
-
-        stati.Remove(stat, out oldEffect);
-
-        if (oldEffect != null)
+        foreach (var item in buffs)
         {
-            Packet packet = PacketCreator.cancelMonsterStatus(getObjectId(), oldEffect.getStati());
-            await broadcastMonsterStatusMessage(packet);
+            AllBuffs.Remove(item);
         }
+
+        Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), buffs);
+        await BroadcastMap(packet);
     }
 
     public async Task debuffMob(int skillid)
@@ -1529,20 +1425,16 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (skillid == Hermit.SHADOW_MESO)
         {
-            await debuffMobStat(statups[1]);
-            await debuffMobStat(statups[3]);
+            await debuffMobStat([statups[1], statups[3]]);
         }
         else if (skillid == Priest.DISPEL)
         {
-            foreach (MonsterStatus ms in statups)
-            {
-                await debuffMobStat(ms);
-            }
+            await debuffMobStat(statups);
         }
         else
         {    // is a crash skill
             int i = (skillid == Crusader.ARMOR_CRASH ? 1 : (skillid == WhiteKnight.MAGIC_CRASH ? 2 : 0));
-            await debuffMobStat(statups[i]);
+            await debuffMobStat([statups[i]]);
 
             if (YamlConfig.config.server.USE_ANTI_IMMUNITY_CRASH)
             {
@@ -1550,25 +1442,25 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 {
                     if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
                     {
-                        await debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                        await debuffMobStat([MonsterStatus.WEAPON_IMMUNITY]);
                     }
                     if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
                     {
-                        await debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                        await debuffMobStat([MonsterStatus.MAGIC_IMMUNITY]);
                     }
                 }
                 else if (skillid == WhiteKnight.MAGIC_CRASH)
                 {
                     if (!isBuffed(MonsterStatus.MAGIC_REFLECT))
                     {
-                        await debuffMobStat(MonsterStatus.MAGIC_IMMUNITY);
+                        await debuffMobStat([MonsterStatus.MAGIC_IMMUNITY]);
                     }
                 }
                 else
                 {
                     if (!isBuffed(MonsterStatus.WEAPON_REFLECT))
                     {
-                        await debuffMobStat(MonsterStatus.WEAPON_IMMUNITY);
+                        await debuffMobStat([MonsterStatus.WEAPON_IMMUNITY]);
                     }
                 }
             }
@@ -1577,7 +1469,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public bool isBuffed(MonsterStatus status)
     {
-        return stati.ContainsKey(status);
+        return AllBuffs.ContainsKey(status);
     }
 
     public void setFake(bool fake)
@@ -1600,7 +1492,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return stats.getSkills();
     }
 
-    public bool canUseSkill(MobSkill? toUse, bool apply)
+    public bool canUseSkill(MobSkill? toUse, long now, bool apply)
     {
         if (toUse == null || isBuffed(MonsterStatus.SEAL_SKILL))
         {
@@ -1615,7 +1507,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             }
         }
 
-        if (usedSkills.Contains(toUse.getId()))
+        if (usedSkills.TryGetValue(toUse.getId(), out var cd) && cd < now)
         {
             return false;
         }
@@ -1639,7 +1531,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
         if (apply)
         {
-            this.usedSkill(toUse);
+            mp -= toUse.getMpCon();
+
+            usedSkills[toUse.getId()] = now + toUse.getCoolTime();
         }
         return true;
     }
@@ -1649,33 +1543,13 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return (mobSkill.getType()) switch
         {
             MobSkillType.PHYSICAL_COUNTER or
-             MobSkillType.MAGIC_COUNTER or 
+             MobSkillType.MAGIC_COUNTER or
              MobSkillType.PHYSICAL_AND_MAGIC_COUNTER => true,
             _ => false
         };
     }
 
-    private void usedSkill(MobSkill skill)
-    {
-        MobSkillId msId = skill.getId();
-
-        mp -= skill.getMpCon();
-
-        this.usedSkills.Add(msId);
-
-        Monster mons = this;
-        var mmap = mons.getMap();
-
-        MobClearSkillService service = MapModel.getChannelServer().MobClearSkillService;
-        service.registerMobClearSkillAction(mmap.getId(), new MonsterClearSkillCommand(this, skill), skill.getCoolTime());
-    }
-
-    public void clearSkill(MobSkillId msId)
-    {
-        usedSkills.Remove(msId);
-    }
-
-    public int canUseAttack(int attackPos, bool isSkill)
+    public int canUseAttack(int attackPos, long now, bool isSkill)
     {
 
         /*
@@ -1690,6 +1564,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             return -1;
         }
 
+        if (usedAttacks.TryGetValue(attackPos, out var cd) && cd < now)
+        {
+            return -1;
+        }
+
+
         if (mp < attackInfo.ConMP)
         {
             return -1;
@@ -1701,27 +1581,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
         */
 
-        usedAttack(attackPos, attackInfo.ConMP, attackInfo.AttackAfter);
+        mp -= attackInfo.ConMP;
+        usedAttacks[attackPos] = now + attackInfo.AttackAfter;
         return 1;
     }
-
-    private void usedAttack(int attackPos, int mpCon, int cooltime)
-    {
-        mp -= mpCon;
-        usedAttacks.Add(attackPos);
-
-        Monster mons = this;
-        var mmap = mons.getMap();
-
-        MobClearSkillService service = MapModel.getChannelServer().MobClearSkillService;
-        service.registerMobClearSkillAction(mmap.getId(), new MonsterClearAttackCommand(this, attackPos), cooltime);
-    }
-
-    public void clearAttack(int attackPos)
-    {
-        usedAttacks.Remove(attackPos);
-    }
-
     public bool hasAnySkill()
     {
         return this.stats.getNoSkills() > 0;
@@ -1799,11 +1662,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    public ICollection<MonsterStatus> alreadyBuffedStats()
-    {
-        return new List<MonsterStatus>(alreadyBuffed);
-    }
-
 
     public void setBoss(bool boss)
     {
@@ -1818,16 +1676,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public int getPADamage()
     {
         return SourceTemplate.PAD;
-    }
-
-    public Dictionary<MonsterStatus, MonsterStatusEffect> getStati()
-    {
-        return new(stati);
-    }
-
-    public MonsterStatusEffect? getStati(MonsterStatus ms)
-    {
-        return stati.GetValueOrDefault(ms);
     }
 
     // ---- one can always have fun trying these pieces of codes below in-game rofl ----
@@ -2521,6 +2369,31 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             await heal(0, getLevel());
             _recoverMPNext = now + _recoverMPPeriod;
+
+            var allBuffs = AllBuffs.Values.ToList();
+            foreach (var buff in allBuffs)
+            {
+                await buff.OnTick(now);
+            }
+        }
+
+        var toRemove = AllBuffs.Values.Where(x => x.Status == TickableStatus.Remove).ToList();
+        if (toRemove.Count > 0)
+        {
+            if (isAlive())
+            {
+                Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), toRemove.Select(x => x.BuffStat));
+                await BroadcastMap(packet);
+            }
+
+            foreach (var item in toRemove)
+            {
+                if (item.BuffStat == MonsterStatus.VENOMOUS_WEAPON)
+                {
+                    setVenomMulti(0);
+                }
+                AllBuffs.Remove(item.BuffStat);
+            }
         }
     }
 

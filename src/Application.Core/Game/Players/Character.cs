@@ -1169,7 +1169,6 @@ public partial class Player
              {
                  await ChangeHP(-MapModel.getHPDec(), false);
              });
-            await BroadcastMap(PacketCreator.DamagePlayerFromCounter(Id, MapModel.getHPDec()));
         }
     }
 

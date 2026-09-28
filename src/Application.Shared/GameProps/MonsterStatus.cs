@@ -19,74 +19,46 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Application.Utility;
 
 namespace Application.Shared.GameProps;
 
 /// <summary>
-/// mob的buff
+/// mob 的 buff（客户端 <c>CMob</c> 的 MobStat 掩码）。
 /// </summary>
-public class MonsterStatus : EnumClass
+public enum MonsterStatus
 {
-    public static readonly MonsterStatus WATK = new MonsterStatus(0x1);
-    public static readonly MonsterStatus WDEF = new MonsterStatus(0x2);
-    public static readonly MonsterStatus NEUTRALISE = new MonsterStatus(0x2, true);
-    public static readonly MonsterStatus PHANTOM_IMPRINT = new MonsterStatus(0x4, true);
-    public static readonly MonsterStatus MATK = new MonsterStatus(0x4);
-    public static readonly MonsterStatus MDEF = new MonsterStatus(0x8);
-    public static readonly MonsterStatus ACC = new MonsterStatus(0x10);
-    public static readonly MonsterStatus AVOID = new MonsterStatus(0x20);
-    public static readonly MonsterStatus SPEED = new MonsterStatus(0x40);
-    public static readonly MonsterStatus STUN = new MonsterStatus(0x80);
-    public static readonly MonsterStatus FREEZE = new MonsterStatus(0x100);
-    public static readonly MonsterStatus POISON = new MonsterStatus(0x200);
-    public static readonly MonsterStatus SEAL = new MonsterStatus(0x400);
-    public static readonly MonsterStatus SHOWDOWN = new MonsterStatus(0x800);
-    public static readonly MonsterStatus WEAPON_ATTACK_UP = new MonsterStatus(0x1000);
-    public static readonly MonsterStatus WEAPON_DEFENSE_UP = new MonsterStatus(0x2000);
-    public static readonly MonsterStatus MAGIC_ATTACK_UP = new MonsterStatus(0x4000);
-    public static readonly MonsterStatus MAGIC_DEFENSE_UP = new MonsterStatus(0x8000);
-    public static readonly MonsterStatus DOOM = new MonsterStatus(0x10000);
-    public static readonly MonsterStatus SHADOW_WEB = new MonsterStatus(0x20000);
-    public static readonly MonsterStatus WEAPON_IMMUNITY = new MonsterStatus(0x40000);
-    public static readonly MonsterStatus MAGIC_IMMUNITY = new MonsterStatus(0x80000);
-    public static readonly MonsterStatus HARD_SKIN = new MonsterStatus(0x200000);
-    public static readonly MonsterStatus NINJA_AMBUSH = new MonsterStatus(0x400000);
-    public static readonly MonsterStatus NUELEMENTAL_ATTRIBUTELL = new MonsterStatus(0x800000);
-    public static readonly MonsterStatus VENOMOUS_WEAPON = new MonsterStatus(0x1000000);
-    public static readonly MonsterStatus BLIND = new MonsterStatus(0x2000000);
-    public static readonly MonsterStatus SEAL_SKILL = new MonsterStatus(0x4000000);
-    public static readonly MonsterStatus INERTMOB = new MonsterStatus(0x10000000);
-    public static readonly MonsterStatus WEAPON_REFLECT = new MonsterStatus(0x20000000, true);
-    public static readonly MonsterStatus MAGIC_REFLECT = new MonsterStatus(0x40000000, true);
+    WATK = 0,
+    WDEF = 1,
+    MATK = 2,
 
-    private int value;
-    private bool first;
+    MDEF = 3,
+    ACC = 4,
+    AVOID = 5,
+    SPEED = 6,
+    STUN = 7,
+    FREEZE = 8,
+    POISON = 9,
+    SEAL = 10,
+    SHOWDOWN = 11,
+    WEAPON_ATTACK_UP = 12,
+    WEAPON_DEFENSE_UP = 13,
+    MAGIC_ATTACK_UP = 14,
+    MAGIC_DEFENSE_UP = 15,
+    DOOM = 16,
+    SHADOW_WEB = 17,
+    WEAPON_IMMUNITY = 18,
+    MAGIC_IMMUNITY = 19,
+    HARD_SKIN = 21,
+    NINJA_AMBUSH = 22,
+    NUELEMENTAL_ATTRIBUTELL = 23,
+    VENOMOUS_WEAPON = 24,
+    BLIND = 25,
+    SEAL_SKILL = 26,
+    INERTMOB = 28,
+    WEAPON_REFLECT = 29,
+    MAGIC_REFLECT = 30,
 
-    private MonsterStatus(int i)
-    {
-        this.value = i;
-        this.first = false;
-    }
-
-    private MonsterStatus(int i, bool first)
-    {
-        this.value = i;
-        this.first = first;
-    }
-
-    public static explicit operator int(MonsterStatus obj)
-    {
-        return obj.value;
-    }
-
-    public bool isFirst()
-    {
-        return first;
-    }
-
-    public int getValue()
-    {
-        return value;
-    }
+    Toss = 32,
+    NEUTRALISE = 33,
+    PHANTOM_IMPRINT = 34,
 }

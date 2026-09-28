@@ -23,7 +23,7 @@
 
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -110,15 +110,14 @@ public class MobDamageMobHandler : ChannelHandlerBase
 
     private static int calcModifier(Monster monster, MonsterStatus buff, MonsterStatus nerf)
     {
-        Dictionary<MonsterStatus, MonsterStatusEffect> monsterStati = monster.getStati();
+        
+        var atkBuff = monster.AllBuffs.GetValueOrDefault(buff);
+        var atkModifier = atkBuff == null ? 100 : atkBuff.Value;
 
-        var atkBuff = monsterStati.GetValueOrDefault(buff);
-        var atkModifier = atkBuff == null ? 100 : atkBuff.getStati().GetValueOrDefault(buff, 100);
-
-        var atkNerf = monsterStati.GetValueOrDefault(nerf);
+        var atkNerf = monster.AllBuffs.GetValueOrDefault(nerf);
         if (atkNerf != null)
         {
-            atkModifier -= atkNerf.getStati().GetValueOrDefault(nerf);
+            atkModifier -= atkNerf.Value;
         }
 
         return atkModifier;
