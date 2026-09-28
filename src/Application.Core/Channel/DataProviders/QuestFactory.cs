@@ -16,7 +16,6 @@ namespace Application.Core.Channel.DataProviders
         public QuestFactory(ILogger<DataBootstrap> logger) : base(logger)
         {
             Name = "任务";
-            provider.AddRef();
         }
 
         public void Register(IServiceProvider sp)
@@ -48,7 +47,6 @@ namespace Application.Core.Channel.DataProviders
                     infoNumberQuests[infoNumber] = q.getId();
                 }
             }
-            provider.Release();
         }
 
 

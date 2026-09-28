@@ -48,8 +48,6 @@ public class SkillbookInformationProvider : DataBootstrap
     {
         Name = "能手册";
         _transport = transport;
-
-        questProvider.AddRef();
     }
 
     protected override void LoadDataInternal()
@@ -136,7 +134,6 @@ public class SkillbookInformationProvider : DataBootstrap
             FetchSkillbooksFromQuest(item.Act?.StartAct, item, dataSource);
             FetchSkillbooksFromQuest(item.Act?.EndAct, item, dataSource);
         }
-        questProvider.Release();
         return dataSource;
     }
 
