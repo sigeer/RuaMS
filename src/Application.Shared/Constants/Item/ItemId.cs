@@ -539,4 +539,9 @@ public const int ENGAGEMENT_BOX_MOONSTONE = 2240000;
     {
         return itemId / 1000 == 2331;
     }
+
+    public static bool IsPriorityBuffSourceid(int sourceid)
+    {
+        return sourceid == -ItemId.ROSE_SCENT || sourceid == -ItemId.FREESIA_SCENT || sourceid == -ItemId.LAVENDER_SCENT;
+    }
 }

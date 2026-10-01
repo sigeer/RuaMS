@@ -48,7 +48,7 @@ namespace Application.Core.Game.Players
                 // 固定型召唤物完全销毁，跟随型召唤物仅在旧地图中销毁
                 if (summon.MovementType == SummonMovementType.STATIONARY)
                 {
-                    await cancelEffectFromBuffStat(BuffStat.PUPPET);
+                    await CancelBuff(BuffStat.PUPPET);
                 }
                 else
                 {

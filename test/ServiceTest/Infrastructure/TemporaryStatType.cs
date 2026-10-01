@@ -22,34 +22,14 @@ namespace ServiceTest.Infrastructure
                 );
             }
 
-            var o = EnumClassCache<BuffStat>.GetValues();
-            var d = EnumClassCache<Disease>.GetValues();
+            var o = BuffStatUtils.Values;
             List<PosValuePair> os = [];
             foreach (var item in o)
             {
-                var high = (uint)(item.getValue() >> 32);
-                var low = (uint)(item.getValue() & 0xFFFFFFFF);
-
-                int pos = low != 0 ? 2 : 3;
-                if (item.IsFirst)
-                {
-                    pos -= 2;
-                }
-                var value = low > 0 ? low : high;
-                os.Add(new PosValuePair(item.name(), pos, value, false));
-            }
-            foreach (var item in d)
-            {
-                var high = (uint)(item.getValue() >> 32);
-                var low = (uint)(item.getValue() & 0xFFFFFFFF);
-
-                int pos = low != 0 ? 2 : 3;
-                if (item.isFirst())
-                {
-                    pos -= 2;
-                }
-                var value = low > 0 ? low : high;
-                os.Add(new PosValuePair(item.name(), pos, value, true));
+                // BuffStat 枚举值就是客户端掩码位（与 TemporaryStatType 的索引一致），
+                // 疾病也已经并入 BuffStat（元数据在 DiseaseInfo 里）
+                int bit = (int)item;
+                os.Add(new PosValuePair(item.ToString(), 3 - bit / 32, (uint)(1 << (bit % 32)), !DiseaseInfo.IsDisease(item)));
             }
 
             Console.WriteLine("New================>");

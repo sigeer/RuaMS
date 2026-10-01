@@ -1,4 +1,5 @@
 using Application.Core.Server.life;
+using Application.Shared.Battle.Skills;
 using Application.Templates.PartyQuest;
 using Application.Templates.Reader;
 
@@ -92,9 +93,9 @@ public class CarnivalFactory
             return MobSkillFactory.getMobSkillOrThrow((MobSkillType)MobSkillId, level);
         }
 
-        public Disease? getDisease()
+        public BuffStat? getDisease()
         {
-            return Disease.getBySkill((MobSkillType)MobSkillId);
+            return DiseaseInfo.GetBySkill((MobSkillType)MobSkillId);
         }
     }
 }

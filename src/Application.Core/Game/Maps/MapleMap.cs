@@ -1633,7 +1633,7 @@ public class MapleMap : IMap, INamedInstance
 
     public List<IMapObject> getMapObjects()
     {
-        return mapobjects.Values.AsValueEnumerable().OrderBy(x => x.getType()).ThenBy(x => x.getObjectId()).ToList();
+        return QueryMapObjects().AsValueEnumerable().OrderBy(x => x.getType()).ThenBy(x => x.getObjectId()).ToList();
     }
     /// <summary>
     /// 
@@ -1652,18 +1652,24 @@ public class MapleMap : IMap, INamedInstance
 
     public List<IMapObject> GetMapObjects(Func<IMapObject, bool> func)
     {
-        return mapobjects.Values.AsValueEnumerable().Where(func).ToList();
+        return QueryMapObjects().AsValueEnumerable().Where(func).ToList();
     }
+
+    public IEnumerable<IMapObject> QueryMapObjects()
+    {
+        return mapobjects.Values;
+    }
+
     List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type) where TObject : IMapObject
     {
-        return mapobjects.Values.AsValueEnumerable()
+        return QueryMapObjects().AsValueEnumerable()
             .Where(x => x.getType() == type)
             .Cast<TObject>()
             .ToList();
     }
     public List<TObject> GetRequiredMapObjects<TObject>(MapObjectType type, Func<TObject, bool> func) where TObject : IMapObject
     {
-        return mapobjects.Values.AsValueEnumerable()
+        return QueryMapObjects().AsValueEnumerable()
             .Where(x => x.getType() == type)
             .Cast<TObject>()
             .Where(func)
@@ -2633,7 +2639,7 @@ public class MapleMap : IMap, INamedInstance
             await c.SendPacket(PacketCreator.spawnPlayerMapObject(chr.Client, chr, true));
             if (isChrHidden)
             {
-                await c.SendPacket(PacketCreator.giveForeignBuff(chr.getId(), new BuffStatValue(BuffStat.DARKSIGHT, 0)));
+                await c.SendPacket(BuffPackets.GiveRemoteHiddenBuff(chr.Id));
             }
         }, false))
         {
@@ -2645,7 +2651,8 @@ public class MapleMap : IMap, INamedInstance
 
         GameMetrics.MapPlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", ChannelServer.InstanceName), new KeyValuePair<string, object?>("Map", InstanceName));
 
-        await chr.updateActiveEffects();
+        // await chr.updateActiveEffects();
+        await chr.RefreshEffects();
 
         chr.MapDamageNext = ChannelServer.Node.getCurrentTime() + chr.MapDamagePeriod;
 
@@ -2671,8 +2678,7 @@ public class MapleMap : IMap, INamedInstance
 
         if (FieldLimit.CANNOTUSEMOUNTS.check(SourceTemplate.FieldLimit) && chr.getBuffedValue(BuffStat.MONSTER_RIDING) != null)
         {
-            await chr.cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
-            await chr.cancelBuffStats(BuffStat.MONSTER_RIDING);
+            await chr.CancelBuff(BuffStat.MONSTER_RIDING);
         }
 
 

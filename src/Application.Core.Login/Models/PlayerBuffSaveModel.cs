@@ -25,6 +25,6 @@ namespace Application.Core.Login.Models
         public long Length { get; set; }
         public int MobSkillId { get; set; }
         public int MobSkillLevel { get; set; }
-        public int DiseaseOrdinal { get; set; }
+        public int DiseaseBit { get; set; }
     }
 }

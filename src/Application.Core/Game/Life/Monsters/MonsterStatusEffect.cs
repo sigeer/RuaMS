@@ -9,7 +9,7 @@ namespace Application.Core.Game.Life.Monsters
         private Dictionary<MonsterStatus, int> stati;
         private ISkill skill;
 
-        public MonsterStatusEffect(Dictionary<MonsterStatus, int> stati, ISkill skill)
+        public MonsterStatusEffect(IDictionary<MonsterStatus, int> stati, ISkill skill)
         {
             this.stati = new(stati);
             this.skill = skill;

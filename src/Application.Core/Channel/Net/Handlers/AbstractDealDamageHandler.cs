@@ -27,6 +27,7 @@ using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Application.Core.Server.life;
@@ -323,18 +324,17 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     else if (attack.skill == FPArchMage.FIRE_DEMON)
                     {
-                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
+                        long duration = 1000 * (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == ILArchMage.ICE_DEMON)
                     {
-                        long duration = 1000 * (player.GetPlayerSkillEffect(attack.skill).getDuration());
+                        long duration = 1000 * (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
                     {
-                        StatEffect beacon = player.GetPlayerSkillEffect(attack.skill);
-                        await beacon.applyBeaconBuff(player, monster.getObjectId());
+                        await attackEffect!.applyBeaconBuff(player, monster);
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)
                     {
@@ -533,7 +533,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     if (totDamageToOneMonster > 0 && attackEffect != null)
                     {
-                        Dictionary<MonsterStatus, int> attackEffectStati = attackEffect.getMonsterStati();
+                        var attackEffectStati = attackEffect.MonsterStatuses;
                         if (attackEffectStati.Count > 0)
                         {
                             if (attackEffect.makeChanceResult())
@@ -806,8 +806,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             if (comboBuff > 6)
             {
                 // Advanced Combo
-                StatEffect skillEfect = chr.GetPlayerSkillEffect(advcomboid);
-                calcDmgMax = Math.Floor(calcDmgMax * (skillEfect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
+                var skillEfect = chr.GetPlayerSkillEffect(advcomboid);
+                if (skillEfect != null)
+                {
+                    calcDmgMax = Math.Floor(calcDmgMax * (skillEfect.getDamage() + 50) / 100 + 0.20 + (comboBuff.Value - 5) * 0.04);
+                }
             }
             else
             {
@@ -851,8 +854,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         if (chr.getEnergyBar() == 15000)
         {
             int energycharge = chr.isCygnus() ? ThunderBreaker.ENERGY_CHARGE : Marauder.ENERGY_CHARGE;
-            StatEffect ceffect = chr.GetPlayerSkillEffect(energycharge);
-            calcDmgMax = (calcDmgMax * (100 + ceffect.getDamage()) / 100d);
+            var ceffect = chr.GetPlayerSkillEffect(energycharge);
+            if (ceffect != null)
+            {
+                calcDmgMax = (calcDmgMax * (100 + ceffect.getDamage()) / 100d);
+            }
         }
 
         int bonusDmgBuff = 100;
@@ -891,7 +897,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             calcDmgMax = (calcDmgMax * 1.4);
         }
 
-        bool shadowPartner = chr.getBuffEffect(BuffStat.SHADOWPARTNER) != null;
+        bool shadowPartner = chr.HasBuff(BuffStat.SHADOWPARTNER);
 
         if (ret.skill != 0)
         {
@@ -911,11 +917,12 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             List<int> damageLines = [];
             var monster = chr.getMap().getMonsterByOid(oid);
 
-            if (chr.getBuffEffect(BuffStat.WK_CHARGE) != null)
+            var wkCharge = chr.GetBuffStatValue(BuffStat.WK_CHARGE);
+            if (wkCharge != null)
             {
                 // Charge, so now we need to check elemental effectiveness
-                int sourceID = chr.getBuffSource(BuffStat.WK_CHARGE);
-                var level = chr.getBuffedValue(BuffStat.WK_CHARGE) ?? 0;
+                int sourceID = wkCharge.Effect.getSourceId();
+                var level = wkCharge.Value;
                 if (monster != null)
                 {
                     if (sourceID == WhiteKnight.BW_FIRE_CHARGE || sourceID == WhiteKnight.SWORD_FIRE_CHARGE)

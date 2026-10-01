@@ -97,11 +97,11 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                     damage = maxDmg;
                 }
 
-                if (damage > 0 && summonEffect.getMonsterStati().Count > 0)
+                if (damage > 0 && summonEffect.MonsterStatuses.Count > 0)
                 {
                     if (summonEffect.makeChanceResult())
                     {
-                        await target.applyStatus(player, new MonsterStatusEffect(summonEffect.getMonsterStati(), summonSkill), summonEffect.isPoison(), 4000);
+                        await target.applyStatus(player, new MonsterStatusEffect(summonEffect.MonsterStatuses, summonSkill), summonEffect.isPoison(), 4000);
                     }
                 }
                 await target.DamageBy(player, damage, attackEntry.delay);
@@ -109,8 +109,9 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         }
 
         if (summon.getSkill() == Outlaw.GAVIOTA)
-        {  // thanks Periwinks for noticing Gaviota not cancelling after grenade toss
-            await player.cancelEffect(summonEffect, false);
+        { 
+            // thanks Periwinks for noticing Gaviota not cancelling after grenade toss
+            await player.CancelBuffFromSource(summonEffect);
         }
     }
 

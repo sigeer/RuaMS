@@ -21,7 +21,9 @@
 */
 
 
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Microsoft.Extensions.Logging;
@@ -69,7 +71,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             PacketCreator.closeRangeAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, attack.speed, attack.direction, attack.display),
             chr.Id);
         int numFinisherOrbs = 0;
-        var comboBuff = chr.getBuffedValue(BuffStat.COMBO);
+        var comboBuff = chr.GetBuffStatValue(BuffStat.COMBO);
         if (GameConstants.isFinisherSkill(attack.skill))
         {
             if (comboBuff != null)
@@ -82,10 +84,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         {
             if (attack.skill != Crusader.SHOUT && comboBuff != null)
             {
-                var orbcount = chr.getBuffedValue(BuffStat.COMBO);
-                int oid = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
+                var orbcount = comboBuff.Value;
+                int oSkillId = chr.isCygnus() ? DawnWarrior.COMBO : Crusader.COMBO;
                 int advcomboid = chr.isCygnus() ? DawnWarrior.ADVANCED_COMBO : Hero.ADVANCED_COMBO;
-                Skill combo = SkillFactory.GetSkillTrust(oid);
+                Skill combo = SkillFactory.GetSkillTrust(oSkillId);
                 Skill advcombo = SkillFactory.GetSkillTrust(advcomboid);
                 StatEffect? ceffect;
                 int advComboSkillLevel = chr.getSkillLevel(advcombo);
@@ -98,7 +100,7 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                     int comboLv = chr.getSkillLevel(combo);
                     if (comboLv <= 0 || chr.isGM())
                     {
-                        comboLv = SkillFactory.GetSkillTrust(oid).getMaxLevel();
+                        comboLv = SkillFactory.GetSkillTrust(oSkillId).getMaxLevel();
                     }
 
                     if (comboLv > 0)
@@ -112,9 +114,9 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 }
                 if (ceffect != null)
                 {
-                    if (orbcount < ceffect.getX() + 1)
+                    if (orbcount <= ceffect.getX())
                     {
-                        int neworbcount = orbcount.Value + 1;
+                        int neworbcount = orbcount + 1;
                         if (advComboSkillLevel > 0 && ceffect.makeChanceResult())
                         {
                             if (neworbcount <= ceffect.getX())
@@ -123,19 +125,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                             }
                         }
 
-                        int olv = chr.getSkillLevel(oid);
-                        if (olv <= 0)
+                        await chr.UpdateBuff(BuffStat.COMBO, holder =>
                         {
-                            olv = SkillFactory.GetSkillTrust(oid).getMaxLevel();
-                        }
-
-                        int duration = combo.getEffect(olv).getDuration();
-                        var stat = new BuffStatValue(BuffStat.COMBO, neworbcount);
-                        chr.setBuffedValue(BuffStat.COMBO, neworbcount);
-                        duration -= (int)(c.CurrentServer.Node.getCurrentTime() - (chr.getBuffedStarttime(BuffStat.COMBO) ?? 0));
-
-                        await c.SendPacket(PacketCreator.giveBuff(oid, duration, stat));
-                        await chr.BroadcastMap(PacketCreator.giveForeignBuff(chr.getId(), stat), chr.Id);
+                            holder.Value = neworbcount;
+                        });
                     }
                 }
             }
@@ -157,15 +150,14 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
         if (attack.numAttacked > 0 && attack.skill == WhiteKnight.CHARGE_BLOW)
         {
             bool advcharge_prob = false;
-            var advchargeSkill = SkillFactory.GetSkillTrust(Paladin.ADVANCED_CHARGE);
-            int advcharge_level = chr.getSkillLevel(advchargeSkill);
-            if (advcharge_level > 0)
+            var advchargeSkillEffect = chr.GetPlayerSkillEffect(Paladin.ADVANCED_CHARGE);
+            if (advchargeSkillEffect != null)
             {
-                advcharge_prob = advchargeSkill.getEffect(advcharge_level).makeChanceResult();
+                advcharge_prob = advchargeSkillEffect.makeChanceResult();
             }
             if (!advcharge_prob)
             {
-                await chr.cancelEffectFromBuffStat(BuffStat.WK_CHARGE);
+                await chr.CancelBuff(BuffStat.WK_CHARGE);
             }
         }
         int attackCount = 1;
@@ -209,13 +201,11 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
             && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
         {
             // && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004
-            await chr.cancelEffectFromBuffStat(BuffStat.DARKSIGHT);
-            await chr.cancelBuffStats(BuffStat.DARKSIGHT);
+            await chr.CancelBuff(BuffStat.DARKSIGHT);
         }
         else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 && chr.getBuffedValue(BuffStat.WIND_WALK) != null)
         {
-            await chr.cancelEffectFromBuffStat(BuffStat.WIND_WALK);
-            await chr.cancelBuffStats(BuffStat.WIND_WALK);
+            await chr.CancelBuff(BuffStat.WIND_WALK);
         }
 
         await applyAttack(attack, chr);

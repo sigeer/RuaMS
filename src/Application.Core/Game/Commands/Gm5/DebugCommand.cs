@@ -139,7 +139,7 @@ public class DebugCommand : CommandBase
                 break;
 
             case "buff":
-                c.OnlinedCharacter.debugListAllBuffs();
+                await c.OnlinedCharacter.Dialog(c.OnlinedCharacter.debugListAllBuffs());
                 break;
 
             case "disease":

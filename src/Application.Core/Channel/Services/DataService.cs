@@ -1,7 +1,11 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
+using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Players.Models;
+using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Mappers;
@@ -13,13 +17,17 @@ using Application.Core.Server.quest;
 using Application.Core.ServerTransports;
 using Application.Shared.Battle.Skills;
 using Application.Shared.Events;
+using Application.Shared.MapObjects.Summons;
 using Application.Shared.Quest;
+using Application.Templates.Skill;
 using client;
 using client.inventory;
 using client.keybind;
 using Google.Protobuf.Collections;
 using net.server.guild;
+using System.Runtime.ConstrainedExecution;
 using tools;
+using static Application.Core.Server.partyquest.CarnivalFactory;
 
 namespace Application.Core.Channel.Services
 {
@@ -242,11 +250,8 @@ namespace Application.Core.Channel.Services
             }
 
             var mountItem = player.Bag[InventoryType.EQUIPPED].getItem(EquipSlot.Mount);
-            if (mountItem != null)
-            {
-                var mountModel = new Mount(player, mountItem.getItemId());
-                player.SetMount(mountModel);
-            }
+            var mountModel = new Mount(player, mountItem?.getItemId() ?? 0);
+            player.SetMount(mountModel);
 
             // Quickslot key config
             if (o.AccountGame.Data.QuickSlot != null)
@@ -465,19 +470,19 @@ namespace Application.Core.Channel.Services
                 {
                     SkillLevel = x.Effect.SkillLevel,
                     SourceId = x.Effect.getBuffSourceId(),
-
-                    StartTime = x.StartTime
+                    StartTime = x.StartTime,
+                    ExpiredAt = x.ExpiredAt
                 };
                 o.Stats.AddRange(x.EffectStats.Select(y => new ProtoModel.BuffStatProto { Value = y.Value, BuffStat = y.BuffState.ToString() }));
                 return o;
             }));
             data.Diseases.AddRange(player.Diseases.Select(x => new ProtoModel.DiseaseProto
             {
-                DiseaseOrdinal = x.Key.ordinal(),
+                DiseaseBit = (int)x.Key,
                 StartTime = x.Value.StartTime,
-                Length = x.Value.Length,
-                MobSkillId = x.Value.FromMobSkill.getId().type.getId(),
-                MobSkillLevel = x.Value.FromMobSkill.getId().level
+                ExpiredAt = x.Value.ExpiredAt,
+                MobSkillId = x.Value.Effect.getId().type.getId(),
+                MobSkillLevel = x.Value.Effect.getId().level
             }));
             return data;
         }
@@ -490,22 +495,64 @@ namespace Application.Core.Channel.Services
         public async Task RecoverCharacterBuff(Player player)
         {
             var buffdto = _transport.GetBuffObject(player.Id);
+            var now = player.Client.CurrentServer.Node.getCurrentTime();
 
-            foreach (var x in buffdto.Buffs)
+            Dictionary<StatEffect, Dictionary<BuffStat, EffectBuff>> buffData = [];
+            foreach (var item in buffdto.Buffs)
             {
-                var statEffect = x.SourceId > 0
-                    ? SkillFactory.GetSkillTrust(x.SourceId).getEffect(x.SkillLevel)
-                    : ItemInformationProvider.getInstance().getItemEffect(-x.SourceId);
+                if (now <= item.ExpiredAt)
+                {
+                    continue;
+                }
+
+                var statEffect = item.SourceId > 0
+                    ? SkillFactory.GetSkillTrust(item.SourceId).getEffect(item.SkillLevel)
+                    : ItemInformationProvider.getInstance().getItemEffect(-item.SourceId);
 
                 if (statEffect != null)
-                    await statEffect.silentApplyBuff(player, x.StartTime, x.Stats.Select(y => new BuffStatValue(BuffStat.From(y.BuffStat), y.Value)).ToList());
+                {
+                    List<BuffStatValue> statups = [];
+                    foreach (var y in item.Stats)
+                    {
+                        if (BuffStatUtils.TryParse(y.BuffStat, out BuffStat stat))
+                        {
+                            statups.Add(new BuffStatValue(stat, y.Value));
+                        }
+                    }
+
+                    if (statups.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    buffData[statEffect] = statups.Select(x => Player.GetPlayerBuffStatValueHolder(player, x.BuffState, statEffect, item.StartTime, item.ExpiredAt, x.Value)).ToDictionary(x => x.BuffStat);
+                }
             }
 
-            player.silentApplyDiseases(buffdto.Diseases);
-            foreach (var e in player.Diseases.Values)
+            if (buffData.Count > 0)
             {
-                var debuff = Collections.singletonList(new KeyValuePair<Disease, int>(e.Disease, e.FromMobSkill.getX()));
-                await player.SendPacket(PacketCreator.giveDebuff(debuff, e.FromMobSkill));
+                // 进入地图时，spawnPlayerMapObject包含remote buff
+                await player.RegisterEffects(buffData, true);
+            }
+
+            foreach (var item in buffdto.Diseases)
+            {
+                var disease = BuffStatUtils.FromBit(item.DiseaseBit);
+                if (disease == null || !DiseaseInfo.IsDisease(disease.Value) || item.ExpiredAt <= now)
+                {
+                    continue;
+                }
+
+                var skill = MobSkillFactory.getMobSkillOrThrow((MobSkillType)item.MobSkillId, item.MobSkillLevel);
+                var dis = new EffectDebuff(player,
+                    disease.Value,
+                    skill,
+                    item.StartTime,
+                    item.ExpiredAt,
+                    skill.getX()
+                    );
+                player.Diseases[disease.Value] = dis;
+                await player.SendPacket(BuffPackets.GiveBuff(player, dis));
             }
         }
 

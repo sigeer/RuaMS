@@ -91,10 +91,10 @@ namespace Application.Plugin.Script.Events
         }
         public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
-            await chr.cancelEffect(2022090);
-            await chr.cancelEffect(2022091);
-            await chr.cancelEffect(2022092);
-            await chr.cancelEffect(2022093);
+            await chr.CancelBuffFromSourceId(2022090);
+            await chr.CancelBuffFromSourceId(2022091);
+            await chr.CancelBuffFromSourceId(2022092);
+            await chr.CancelBuffFromSourceId(2022093);
             await base.OnPlayerUnregister(eim, chr);
         }
     }

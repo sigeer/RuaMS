@@ -86,6 +86,7 @@ namespace Application.Core.Game.Maps
         Task<bool> AddMapObject(IMapObject mapobject, Func<IChannelClient, Task>? packetbakery, bool allocateMabObjectId = true);
         Task ProcessMapObject(Func<IMapObject, bool> codition, Func<IMapObject, Task> action);
         IMapObject? getMapObject(int oid);
+        IEnumerable<IMapObject> QueryMapObjects();
         List<IMapObject> getMapObjects();
         List<IMapObject> GetMapObjects(Func<IMapObject, bool> func);
         List<IMapObject> getMapObjectsInBox(Rectangle box, HashSet<MapObjectType> types);

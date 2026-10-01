@@ -18,10 +18,9 @@ public class DebuffCommand : CommandBase
             return;
         }
 
-        var disease = EnumClassCache<Disease>.GetValue(paramsValue[0]);
-        if (disease == null)
+        if (!BuffStatUtils.TryParse(paramsValue[0], out BuffStat disease) || !DiseaseInfo.IsDisease(disease))
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
             return;
         }
 
@@ -29,10 +28,17 @@ public class DebuffCommand : CommandBase
         if (paramsValue.Length > 1)
             int.TryParse(paramsValue[1], out level);
 
-        var skill = MobSkillFactory.getMobSkill(disease.getMobSkillType(), level);
+        var mobSkillType = DiseaseInfo.GetMobSkillType(disease);
+        if (mobSkillType == null)
+        {
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
+            return;
+        }
+
+        var skill = MobSkillFactory.getMobSkill(mobSkillType.Value, level);
         if (skill == null)
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', EnumClassCache<Disease>.Values.Select(x => x.name())));
+            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
             return;
         }
 

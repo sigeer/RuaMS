@@ -35,6 +35,6 @@ public class CancelItemEffectHandler : ChannelHandlerBase
         {
             return;
         }
-        await c.OnlinedCharacter.cancelEffect(itemId);
+        await c.OnlinedCharacter.CancelBuffFromSourceId(itemId);
     }
 }

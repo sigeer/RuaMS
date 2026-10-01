@@ -226,7 +226,7 @@ namespace Application.Core.Game.Players
 
         async Task OnDead()
         {
-            await cancelAllBuffs(false);
+            await CancelAllBuffs();
             await dispelDebuffs();
 
             var eim = getEventInstance();
@@ -289,9 +289,9 @@ namespace Application.Core.Game.Players
                 }
             }
 
-            await cancelEffectFromBuffStat(BuffStat.MORPH);
+            await CancelBuff(BuffStat.MORPH);
 
-            await cancelEffectFromBuffStat(BuffStat.MONSTER_RIDING);
+            await CancelBuff(BuffStat.MONSTER_RIDING);
 
             await unsitChairInternal();
             await SendPacket(PacketCreator.enableActions());

@@ -77,7 +77,7 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             await mc.Client.CurrentServer.EnterExtralWorld(mc);
 
-            await mc.cancelAllBuffs(true);
+            await mc.CancelAllBuffs();
             mc.cancelAllDebuffs();
             await mc.forfeitExpirableQuests();
 

@@ -1,7 +1,10 @@
+using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Skills;
 using Application.Core.model;
 using Application.Core.Server;
 using tools;
+using XmlWzReader;
 
 namespace Application.Core.Game.Players
 {
@@ -141,7 +144,8 @@ namespace Application.Core.Game.Players
             if (skillLv > 0)
             {
                 StatEffect mapChairSkill = SkillFactory.getSkill(skillId)!.getEffect(skillLv);
-                return await cancelEffect(mapChairSkill, false);
+                await CancelBuffFromSource(mapChairSkill);
+                return true;
             }
 
             return false;

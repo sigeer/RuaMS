@@ -447,7 +447,7 @@ public class InventoryManipulator
 
         if (chr.getBuffedValue(BuffStat.BOOSTER) != null && ItemConstants.isWeapon(source.getItemId()))
         {
-            await chr.cancelBuffStats(BuffStat.BOOSTER);
+            await chr.CancelBuff(BuffStat.BOOSTER);
         }
 
         ops.Add(new InventoryMove(InventoryType.EQUIP, src, dst));

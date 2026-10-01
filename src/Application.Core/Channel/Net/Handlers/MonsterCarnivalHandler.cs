@@ -130,7 +130,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                                         }
                                         else
                                         {
-                                            await mc.giveDebuff(dis, skill.getSkill());
+                                            await mc.giveDebuff(dis.Value, skill.getSkill());
                                         }
                                     }
                                 }
@@ -147,7 +147,7 @@ public class MonsterCarnivalHandler : ChannelHandlerBase
                                 }
                                 else
                                 {
-                                    await chrApp.giveDebuff(dis, skill.getSkill());
+                                    await chrApp.giveDebuff(dis.Value, skill.getSkill());
                                 }
                             }
                         }

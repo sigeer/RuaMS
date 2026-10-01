@@ -158,7 +158,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                     {
                         if (chr.canDoor())
                         {
-                            await chr.cancelMagicDoor();
+                            await chr.CancelBuff(BuffStat.MysticDoor);
                             await effect.applyTo(chr, pos);
                         }
                         else

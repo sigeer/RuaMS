@@ -21,6 +21,7 @@
 
 
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.Net.Packets;
 using Application.Core.Client.inventory;
 using Application.Core.Game.GameEvents.CPQ;
 using Application.Core.Game.Gameplay;
@@ -40,6 +41,7 @@ using Application.Core.Server.events.gm;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Core.Server.movement;
+using Application.Scripting.JS;
 using Application.Shared.Battle;
 using Application.Shared.Battle.Skills;
 using Application.Shared.Constants.Buddy;
@@ -1142,6 +1144,11 @@ public class PacketCreator
         p.writeByte(newSpawn ? -2 : -1);
     }
 
+    /// <summary>
+    /// CMob::SetTemporaryStat
+    /// </summary>
+    /// <param name="p"></param>
+    /// <param name="stati"></param>
     private static void encodeTemporary(OutPacket p, Dictionary<MonsterStatus, MonsterStatusEffect> stati)
     {
         int pCounter = -1;
@@ -1579,6 +1586,7 @@ public class PacketCreator
         p.writeShort(0); //v83
         p.writeByte(0xFC);
         p.writeByte(1);
+
         if (chr.getBuffedValue(BuffStat.MORPH) != null)
         {
             p.writeInt(2);
@@ -1591,26 +1599,27 @@ public class PacketCreator
         int? buffvalue = null;
         if ((chr.getBuffedValue(BuffStat.DARKSIGHT) != null || chr.getBuffedValue(BuffStat.WIND_WALK) != null) && !chr.isHidden())
         {
-            buffmask |= BuffStat.DARKSIGHT.getValue();
+            buffmask |= (int)BuffStat.DARKSIGHT;
         }
         if (chr.getBuffedValue(BuffStat.COMBO) != null)
         {
-            buffmask |= BuffStat.COMBO.getValue();
+            buffmask |= (int)BuffStat.COMBO;
             buffvalue = chr.getBuffedValue(BuffStat.COMBO);
         }
         if (chr.getBuffedValue(BuffStat.SHADOWPARTNER) != null)
         {
-            buffmask |= BuffStat.SHADOWPARTNER.getValue();
+            buffmask |= (int)BuffStat.SHADOWPARTNER;
         }
         if (chr.getBuffedValue(BuffStat.SOULARROW) != null)
         {
-            buffmask |= BuffStat.SOULARROW.getValue();
+            buffmask |= (int)BuffStat.SOULARROW;
         }
         if (chr.getBuffedValue(BuffStat.MORPH) != null)
         {
             buffvalue = chr.getBuffedValue(BuffStat.MORPH);
         }
-        p.writeInt((int)((buffmask >> 32) & 0xffffffffL));
+        // 这几位是 0..31 的客户端位，正好对应这里要的一个 int
+        p.writeInt((int)buffmask);
         if (buffvalue != null)
         {
             if (chr.getBuffedValue(BuffStat.MORPH) != null)
@@ -1691,6 +1700,7 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.SPAWN_PLAYER);
         p.writeInt(chr.getId());
+        // CUserRemote::Init
         p.writeByte(chr.getLevel()); //v83
         p.writeString(chr.getName());
 
@@ -1709,8 +1719,11 @@ public class PacketCreator
             p.skip(6);
         }
 
-        writeForeignBuffs(p, chr);
+        // sub_788156 同 GIVE_FOREIGN_BUFF
+        BuffPackets.EncodeForRemote(p, chr.ActiveEffects);
+        // writeForeignBuffs(p, chr);
 
+        // *(this + 3575) = CInPacket::Decode2(a2);
         p.writeShort(chr.getJob().getId());
 
         /* replace "p.writeShort(chr.getJob().getId())" with this snippet for 3rd person FJ animation on all classes
@@ -1720,6 +1733,7 @@ public class PacketCreator
     p.writeShort(412);
         }*/
 
+        // AvatarLook::Decode
         addCharLook(p, chr, false);
         p.writeInt(chr.getInventory(InventoryType.CASH).countById(ItemId.HEART_SHAPED_CHOCOLATE));
         p.writeInt(chr.getItemEffect());
@@ -1738,7 +1752,9 @@ public class PacketCreator
             p.writeByte(chr.getStance());
         }
 
+        //  v8 = CInPacket::Decode2(a2);
         p.writeShort(0);    // chr.getFh()
+        // v10 = CInPacket::Decode1(a2);
         p.writeByte(0);     // admin？
         var pet = chr.getPets();
         for (sbyte i = 0; i < 3; i++)
@@ -2762,251 +2778,6 @@ public class PacketCreator
         return p;
     }
 
-    /**
-     * It is important that statups is in the correct order (see declaration
-     * order in BuffStat) since this method doesn't do automagical
-     * reordering.
-     *
-     * @param buffid
-     * @param bufflength
-     * @param statups
-     * @return
-     */
-    //1F 00 00 00 00 00 03 00 00 40 00 00 00 E0 00 00 00 00 00 00 00 00 E0 01 8E AA 4F 00 00 C2 EB 0B E0 01 8E AA 4F 00 00 C2 EB 0B 0C 00 8E AA 4F 00 00 C2 EB 0B 44 02 8E AA 4F 00 00 C2 EB 0B 44 02 8E AA 4F 00 00 C2 EB 0B 00 00 E0 7A 1D 00 8E AA 4F 00 00 00 00 00 00 00 00 03
-    public static Packet giveBuff(int buffid, int bufflength, params BuffStatValue[] statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
-        bool special = false;
-        writeLongMask(p, statups);
-        foreach (var statup in statups)
-        {
-            if (statup.BuffState.Equals(BuffStat.MONSTER_RIDING) || statup.BuffState.Equals(BuffStat.HOMING_BEACON))
-            {
-                special = true;
-            }
-            p.writeShort(statup.Value);
-            p.writeInt(buffid);
-            p.writeInt(bufflength);
-        }
-
-        p.writeInt(0);
-        p.writeByte(0);
-        p.writeInt(statups[0].Value); //Homing beacon ...
-
-        if (special)
-        {
-            p.skip(3);
-        }
-        return p;
-    }
-
-    public static Packet GiveBuff(StatEffect effect, int period, params BuffStatValue[] statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
-        bool special = false;
-        writeLongMask(p, statups);
-
-        foreach (var statup in statups)
-        {
-            if (statup.BuffState.Equals(BuffStat.MONSTER_RIDING) || statup.BuffState.Equals(BuffStat.HOMING_BEACON))
-            {
-                special = true;
-            }
-            p.writeShort(statup.Value);
-            p.writeInt(effect.getBuffSourceId());
-            p.writeInt(period);
-        }
-
-        p.writeByte(effect.DefenseAttChar);
-        /// mob对玩家附加disease是服务端处理的，除非客户端分步计算（buff抵抗和mob成功概率分开计算，buff没抵抗成功才请求服务端，也就是乘法计算，这里只是推测）
-        /// 当前修复是以服务端单次计算，也就是加法计算 <see cref="MobSkill.makeChanceResult(Player?)"/>
-        p.writeByte(effect.DefenseStateChar); // DefenseState?
-        p.skip(3);
-        p.writeInt(statups[0].Value); //Homing beacon ...
-
-        if (special)
-        {
-            p.skip(3);
-        }
-        return p;
-    }
-
-
-    /**
-     * @param cid
-     * @param statups
-     * @param mount
-     * @return
-     */
-    public static Packet showMonsterRiding(int cid, Mount mount)
-    {
-        //Gtfo with this, this is just giveForeignBuff
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        p.writeInt(cid);
-        p.writeLong(BuffStat.MONSTER_RIDING.getValue());
-        p.writeLong(0);
-
-        p.writeShort(0);
-        p.writeInt(mount.getItemId());
-        p.writeInt(mount.getSkillId());
-
-        p.writeInt(0); //Server Tick value.
-        p.writeShort(0);
-        p.writeByte(0); //Times you have been buffed
-        return p;
-    }
-    /*        p.writeInt(cid);
-         writeLongMask(mplew, statups);
-         foreach(Pair<BuffStat, int> statup in statups) {
-         if (morph) {
-         p.writeInt(statup.getRight());
-         } else {
-         p.writeShort(statup.getRight());
-         }
-         }
-         p.writeShort(0);
-         p.writeByte(0);*/
-
-    private static void writeLongMaskD(OutPacket p, List<KeyValuePair<Disease, int>> statups)
-    {
-        long firstmask = 0;
-        long secondmask = 0;
-        foreach (var statup in statups)
-        {
-            if (statup.Key.isFirst())
-            {
-                firstmask |= (long)statup.Key.getValue();
-            }
-            else
-            {
-                secondmask |= (long)statup.Key.getValue();
-            }
-        }
-        p.writeLong(firstmask);
-        p.writeLong(secondmask);
-    }
-
-    public static Packet giveDebuff(List<KeyValuePair<Disease, int>> statups, MobSkill skill)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
-        writeLongMaskD(p, statups);
-        foreach (var statup in statups)
-        {
-            p.writeShort(statup.Value);
-            writeMobSkillId(p, skill.getId());
-            p.writeInt((int)skill.getDuration());
-        }
-        p.writeShort(0); // ??? wk charges have 600 here o.o
-        p.writeShort(900);//Delay
-        p.writeByte(1);
-        return p;
-    }
-
-    public static Packet giveForeignDebuff(int chrId, List<KeyValuePair<Disease, int>> statups, MobSkill skill)
-    {
-        // Poison damage visibility and missing diseases status visibility, extended through map transitions thanks to Ronan
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        p.writeInt(chrId);
-        writeLongMaskD(p, statups);
-        foreach (var statup in statups)
-        {
-            if (statup.Key == Disease.POISON)
-            {
-                p.writeShort(statup.Value);
-            }
-            writeMobSkillId(p, skill.getId());
-        }
-        p.writeShort(0); // same as give_buff
-        p.writeShort(900);//Delay
-        return p;
-    }
-
-    public static Packet cancelForeignFirstDebuff(int cid, long mask)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_FOREIGN_BUFF);
-        p.writeInt(cid);
-        p.writeLong(mask);
-        p.writeLong(0);
-        return p;
-    }
-
-    public static Packet cancelForeignDebuff(int cid, long mask)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_FOREIGN_BUFF);
-        p.writeInt(cid);
-        p.writeLong(0);
-        p.writeLong(mask);
-        return p;
-    }
-
-    public static Packet giveForeignBuff(int chrId, params BuffStatValue[] statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        p.writeInt(chrId);
-        writeLongMask(p, statups);
-        foreach (var statup in statups)
-        {
-            p.writeShort(statup.Value);
-        }
-        p.writeInt(0);
-        p.writeShort(0);
-        return p;
-    }
-
-    public static Packet cancelForeignBuff(int chrId, List<BuffStat> statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_FOREIGN_BUFF);
-        p.writeInt(chrId);
-        writeLongMaskFromList(p, statups);
-        return p;
-    }
-
-    public static Packet cancelBuff(List<BuffStat> statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_BUFF);
-        writeLongMaskFromList(p, statups);
-        p.writeByte(1);//?
-        return p;
-    }
-
-    private static void writeLongMask(OutPacket p, params BuffStatValue[] statups)
-    {
-        long firstmask = 0;
-        long secondmask = 0;
-        foreach (var statup in statups)
-        {
-            if (statup.BuffState.IsFirst)
-            {
-                firstmask |= statup.BuffState.getValue();
-            }
-            else
-            {
-                secondmask |= statup.BuffState.getValue();
-            }
-        }
-        p.writeLong(firstmask);
-        p.writeLong(secondmask);
-    }
-
-    private static void writeLongMaskFromList(OutPacket p, List<BuffStat> statups)
-    {
-        long firstmask = 0;
-        long secondmask = 0;
-        foreach (BuffStat statup in statups)
-        {
-            if (statup.IsFirst)
-            {
-                firstmask |= statup.getValue();
-            }
-            else
-            {
-                secondmask |= statup.getValue();
-            }
-        }
-        p.writeLong(firstmask);
-        p.writeLong(secondmask);
-    }
-
     private static void writeLongEncodeTemporaryMask(OutPacket p, ICollection<MonsterStatus> stati)
     {
         int[] masks = new int[4];
@@ -3026,48 +2797,15 @@ public class PacketCreator
         }
     }
 
-    public static Packet cancelDebuff(long mask)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_BUFF);
-        p.writeLong(0);
-        p.writeLong(mask);
-        p.writeByte(0);
-        return p;
-    }
-
+    // Slow的这个为什么和他的掩码不符  是刻意为之还是BUG
     private static void writeLongMaskSlowD(OutPacket p)
     {
         p.writeInt(0);
         p.writeInt(2048);
-        // p.writeLong(0x00000800_0000_0000L);
+        // p.writeLong(0x00000800_0000_0000L); BuffStat.BOOSTER
         p.writeLong(0);
     }
 
-    public static Packet giveForeignSlowDebuff(int chrId, List<KeyValuePair<Disease, int>> statups, MobSkill skill)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        p.writeInt(chrId);
-        writeLongMaskSlowD(p);
-        foreach (var statup in statups)
-        {
-            if (statup.Key == Disease.POISON)
-            {
-                p.writeShort(statup.Value);
-            }
-            writeMobSkillId(p, skill.getId());
-        }
-        p.writeShort(0); // same as give_buff
-        p.writeShort(900);//Delay
-        return p;
-    }
-
-    public static Packet cancelForeignSlowDebuff(int chrId)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_FOREIGN_BUFF);
-        p.writeInt(chrId);
-        writeLongMaskSlowD(p);
-        return p;
-    }
 
     private static void writeLongMaskChair(OutPacket p)
     {
@@ -3096,18 +2834,6 @@ public class PacketCreator
         return p;
     }
 
-    // packet found thanks to Ronan
-    public static Packet giveForeignWKChargeEffect(int cid, int buffid, params BuffStatValue[] statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        p.writeInt(cid);
-        writeLongMask(p, statups);
-        p.writeInt(buffid);
-        p.writeShort(600);
-        p.writeShort(1000);//Delay
-        p.writeByte(1);
-        return p;
-    }
 
     public static Packet cancelForeignChairSkillEffect(int chrId)
     {
@@ -5080,43 +4806,6 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet givePirateBuff(IEnumerable<BuffStatValue> statups, int buffid, int duration)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
-        bool infusion = buffid == Buccaneer.SPEED_INFUSION || buffid == ThunderBreaker.SPEED_INFUSION || buffid == Corsair.SPEED_INFUSION;
-        writeLongMask(p, statups.ToArray());
-        p.writeShort(0);
-        foreach (var stat in statups)
-        {
-            p.writeInt(stat.Value);
-            p.writeInt(buffid);
-            p.skip(infusion ? 10 : 5);
-            p.writeShort(duration);
-        }
-        p.skip(3);
-        return p;
-    }
-
-    public static Packet giveForeignPirateBuff(int cid, int buffid, int time, params BuffStatValue[] statups)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_FOREIGN_BUFF);
-        bool infusion = buffid == Buccaneer.SPEED_INFUSION || buffid == ThunderBreaker.SPEED_INFUSION || buffid == Corsair.SPEED_INFUSION;
-        p.writeInt(cid);
-        writeLongMask(p, statups);
-        p.writeShort(0);
-        foreach (var statup in statups)
-        {
-            p.writeInt(statup.Value);
-            p.writeInt(buffid);
-            p.skip(infusion ? 10 : 5);
-            p.writeShort(time);
-        }
-        p.writeShort(0);
-        p.writeByte(2);
-        return p;
-    }
-
-
     /// <summary>
     /// 
     /// </summary>
@@ -5406,22 +5095,6 @@ public class PacketCreator
         // thanks to snow
         OutPacket p = OutPacket.create(SendOpcode.CLAIM_STATUS_CHANGED);
         p.writeByte(1);
-        return p;
-    }
-
-    public static Packet giveFinalAttack(int skillid, int time)
-    {
-        // packets found thanks to lailainoob
-        OutPacket p = OutPacket.create(SendOpcode.GIVE_BUFF);
-        p.writeLong(0);
-        p.writeShort(0);
-        p.writeByte(0);//some 80 and 0 bs DIRECTION
-        p.writeByte(0x80);//let's just do 80, then 0
-        p.writeInt(0);
-        p.writeShort(1);
-        p.writeInt(skillid);
-        p.writeInt(time);
-        p.writeInt(0);
         return p;
     }
 

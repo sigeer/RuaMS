@@ -22,7 +22,8 @@
 
 
 using Application.Core.Server;
+using Application.Shared.Battle.Skills;
 
 namespace net.server;
 
-public record PlayerBuffValueHolder(long StartTime, StatEffect Effect, List<BuffStatValue> EffectStats);
+public record PlayerBuffValueHolder(long StartTime, long ExpiredAt, StatEffect Effect, List<BuffStatValue> EffectStats);

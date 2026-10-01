@@ -23,6 +23,9 @@ using Application.Utility;
 
 namespace Application.Shared.GameProps;
 
+/// <summary>
+/// mob的buff
+/// </summary>
 public class MonsterStatus : EnumClass
 {
     public static readonly MonsterStatus WATK = new MonsterStatus(0x1);

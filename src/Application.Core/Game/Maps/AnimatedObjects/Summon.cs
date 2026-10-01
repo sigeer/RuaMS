@@ -150,7 +150,7 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
         if (hp <= 0)
         {
             await MapModel.RemoveMapObject(this, chr => chr.SendPacket(SummonPackets.RemoveSummon(this, SummonRemoveType.Dead)));
-            await owner.cancelEffectFromBuffStat(BuffStat.PUPPET);
+            await owner.CancelBuff(BuffStat.PUPPET);
         }
 
         return true;

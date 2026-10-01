@@ -120,8 +120,7 @@ namespace Application.Core.Channel.Net
         /// <param name="serverTransition"></param>
         private static async Task RemovePlayer(Player player, bool serverTransition)
         {
-            await player.cancelMagicDoor();
-            await player.cancelAllBuffs(true);
+            await player.CancelAllBuffs();
             player.cancelAllDebuffs();
             await player.unregisterChairBuff();
 
