@@ -1,5 +1,4 @@
 using Application.Core.Game.Players.Tickables;
-using System.Runtime.ConstrainedExecution;
 
 namespace Application.Core.Channel.Net.Packets
 {
@@ -326,7 +325,7 @@ namespace Application.Core.Channel.Net.Packets
 
         public static Packet? GiveRemoteBuff(int chrId, Dictionary<BuffStat, EffectBuff> allEffects)
         {
-            if (ClientRemoteFields.All(item => !allEffects.ContainsKey(item)) 
+            if (ClientRemoteFields.All(item => !allEffects.ContainsKey(item))
                 && ClientSpecialFieldOrder.All(item => !allEffects.ContainsKey(item)))
             {
                 return null;

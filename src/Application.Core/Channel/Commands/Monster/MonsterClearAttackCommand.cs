@@ -3,41 +3,6 @@ using Application.Core.Server.life;
 
 namespace Application.Core.Channel.Commands
 {
-    internal class MonsterClearAttackCommand : IWorldChannelCommand
-    {
-        public string Name => nameof(MonsterClearAttackCommand);
-        Monster _mob;
-        int _attackPos;
-
-        public MonsterClearAttackCommand(Monster mob, int attackPos)
-        {
-            _mob = mob;
-            _attackPos = attackPos;
-        }
-
-        public void Execute(WorldChannel ctx)
-        {
-            _mob.clearAttack(_attackPos);
-        }
-    }
-
-    internal class MonsterClearSkillCommand : IWorldChannelCommand
-    {
-        public string Name => nameof(MonsterClearSkillCommand);
-        Monster _mob;
-        MobSkill _mobSkill;
-
-        public MonsterClearSkillCommand(Monster mob, MobSkill mobSkill)
-        {
-            _mob = mob;
-            _mobSkill = mobSkill;
-        }
-
-        public void Execute(WorldChannel ctx)
-        {
-            _mob.clearSkill(_mobSkill.getId());
-        }
-    }
 
     internal class MonsterClearEffectCommand : IWorldChannelCommand
     {

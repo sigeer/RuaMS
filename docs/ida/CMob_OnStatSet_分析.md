@@ -1,9 +1,15 @@
-# PacketCreator.applyMonsterStatus ↔ CMob::OnStatSet 数据包分析
+# MobBuffPackets ↔ CMob::OnStatSet 数据包分析
 
 > IDA 数据库: `Angel.idb`（v83，基址 `0x400000`）  
-> 服务端: `src/Application.Core/tools/PacketCreator.cs`  
+> 服务端: `src/Application.Core/Channel/Net/Packets/MobBuffPackets.cs`（原 `tools/PacketCreator.cs` 内联实现）  
 > 关联: `src/Application.Shared/GameProps/MonsterStatus.cs`、`src/Application.Shared/Net/SendOpcode.cs`  
-> 关联文档: `docs/CWvsContext_OnTemporaryStatSet_分析.md`
+> 关联文档: `docs/ida/CWvsContext_OnTemporaryStatSet_分析.md`、`src/Application.Core/Channel/Net/Packets/BuffPackets.cs`（角色侧同类实现）  
+>  
+> **2026-09-27 修订**：§2.3 / §2.4 / §3.4 / §3.5 / §3.6 / §4 / §5 原本按“掩码是大端/低半区”的错误前提写成，
+> 已按 `UINT128` dword 逆序（`sub_873B22`）重写；旧结论会让所有 mob buff 静默失效。  
+> **2026-09-27 修订二**：`MonsterStatus` 由 `EnumClass`（引用相等、value = 单 bit 0x1..0x40000000）
+> 改为 `enum`，**枚举值 = 客户端位号（0..30）**，与 `BuffStat` 同一约定（见 §2.6）；
+> `NEUTRALISE` 随之改取位号范围之外的服务端专用 id，组掩码时跳过、不发包。
 
 ---
 
@@ -23,8 +29,8 @@
 调用链：
 
 ```
-服务端 Monster.applyStatus / broadcastStatusEffect
-  → PacketCreator.applyMonsterStatus(oid, mse, reflection)   // 0xF2
+服务端 Monster.applyMonsterBuff / broadcastStatusEffect
+  → MobBuffPackets.ApplyMonsterStatus(oid, mse)                // 0xF2
 客户端 CMobPool::OnPacket
   → CMobPool::OnMobPacket(0x67936D)
       Decode4 → oid；CMobPool::GetMob(oid)
@@ -111,13 +117,15 @@ Decode4 → nReason   → this[n+1]    // skillId 或 writeMobSkillId 的 4 字�
 Decode2 → nDur      → this[n+2] = now + 500 * nDur
 ```
 
-### 2.2 MonsterStatus 全表（服务端 value → bit → dw 地址 → 行为）
+### 2.2 MonsterStatus 全表（旧服务端 value → bit → dw 地址 → 行为）
+
+> 下表 `bit#` 一列现在就是 `MonsterStatus` 的枚举值（见 §2.6）；`服务端 value` 一列是重构前的 `getValue()`（`1 << bit`），留作对照。
 
 | MonsterStatus | 服务端 value | bit# | mask 常量 (dw) | 虚地址 | MobStat `this[]` | Decode 序 | ProcessStatSet / 相关行为 |
 |---|---|---|---|---|---|---|---|
 | WATK | 0x00000001 | 0 | dword_BEFAB0 | 0xBEFAB0 | [10],[11],[12] | 1 | 仅更新数值 |
 | WDEF | 0x00000002 | 1 | dword_BEFAA0 | 0xBEFAA0 | [14],[15],[16] | 2 | 仅更新数值 |
-| NEUTRALISE *(first)* | 0x00000002 | 1 | dword_BEFAA0 | 0xBEFAA0 | [14],[15],[16] | 2 | 与 WDEF 共 bit1，进 firstmask |
+| NEUTRALISE | — | — | — | — | — | — | **无客户端位**：抗压标记，见 §2.6；旧实现借 WDEF 的 bit1（`0x2`） |
 | MATK | 0x00000004 | 2 | dword_BEFA90 | 0xBEFA90 | [18],[19],[20] | 3 | 仅更新数值 |
 | PHANTOM_IMPRINT *(first)* | 0x00000004 | 2 | dword_BEFA90 | 0xBEFA90 | [18],[19],[20] | 3 | 与 MATK 共 bit2，进 firstmask |
 | MDEF | 0x00000008 | 3 | dword_BEFA80 | 0xBEFA80 | [22],[23],[24] | 4 | 仅更新数值 |
@@ -144,14 +152,14 @@ Decode2 → nDur      → this[n+2] = now + 500 * nDur
 | VENOMOUS_WEAPON | 0x01000000 | 24 | dword_BEF930 | 0xBEF930 | [88],[89],[90] | 23 | **CMob+1120=now** |
 | BLIND | 0x02000000 | 25 | dword_BEF920 | 0xBEF920 | [92],[93],[94] | 24 | 仅更新数值 |
 | SEAL_SKILL | 0x04000000 | 26 | dword_BEF910 | 0xBEF910 | [95],[96],[97] | 25 | 仅更新数值 |
-| *(未占用)* | 0x08000000 | 27 | dword_BEF900 | 0xBEF900 | list @+124 | 32 | **reflection：D4 count + 循环读 OID** |
+| *(未占用)* | 0x08000000 | 27 | dword_BEF900 | 0xBEF900 | list @+124 | 32 | **reflection：D4 count + 每个条目 3×D4**（`sub_78BB91`） |
 | INERTMOB | 0x10000000 | 28 | dword_BEF8F0 | 0xBEF8F0 | [98],[99],[100] | 26 | `sub_66B562(0,0,0)` + `sub_672305`；movement |
 | WEAPON_REFLECT *(first)* | 0x20000000 | 29 | dword_BEF8E0 | 0xBEF8E0 | [104..106],[107],[112] | 27,33,35 | 尾部额外 D4→[107]、\|\|时 D4→[112] |
 | MAGIC_REFLECT *(first)* | 0x40000000 | 30 | dword_BEF8D0 | 0xBEF8D0 | [108..110],[111],[112] | 28,34,35 | 尾部额外 D4→[111]、\|\|时 D4→[112] |
 | *(视觉位)* | — | 31 | dword_BEF8C0 | 0xBEF8C0 | [122],[123] | 36 | D1×2；ProcessStatSet 大段 **Alpha** 逻辑 |
-| *(movement 扩展)* | — | 32 | dword_BEF8B0 | 0xBEF8B0 | [101],[102],[103] | 29 | IsMovementAffectingStat 组成位 |
-| *(保留)* | — | 33 | dword_BEF8A0 | 0xBEF8A0 | [113],[114],[115] | 30 | DecodeTemporary 读取 |
-| *(保留)* | — | 34 | dword_BEF890 | 0xBEF890 | [116],[117],[118] | 31 | DecodeTemporary 读取 |
+| Toss | — | 32 | dword_BEF8B0 | 0xBEF8B0 | [101],[102],[103] | 29 | IsMovementAffectingStat 组成位 |
+| NEUTRALISE | — | 33 | dword_BEF8A0 | 0xBEF8A0 | [113],[114],[115] | 30 | DecodeTemporary 读取 |
+| PHANTOM_IMPRINT | — | 34 | dword_BEF890 | 0xBEF890 | [116],[117],[118] | 31 | DecodeTemporary 读取 |
 
 **IsMovementAffectingStat（0x78C803）**：
 
@@ -170,101 +178,108 @@ if (mask & dword_BEF900) {
     clear_list(MobStat + 124);          // sub_672A87
     while (count--) {
         node = list_alloc(MobStat + 124); // sub_7944BA
-        sub_78BB91(packet);              // Decode4 → 读入一个 OID
+        sub_78BB91(packet);              // 3 × Decode4 = 12 字节/条目
         node[3] = now;                   // *(node+12) = update_time
     }
 }
 ```
 
-服务端 `applyMonsterStatus` 在 per-status 循环后写 `reflection` OID 数组（**无 count 前缀**），与客户端 `Decode4 count` 不对齐——当前枚举无 `0x08000000` 成员，该路径通常不触发；若未来启用 bit27 需同时改服务端编码。
+`sub_78BB91`（0x78BB91）读的是 **3 个 Decode4**，不是单个 OID：
+```c
+*this = Decode4(a2); *(this+1) = Decode4(a2); *(this+2) = Decode4(a2);
+```
 
-### 2.4 first / second mask 与 16 字节布局（确定结论）
+旧服务端 `applyMonsterStatus` 在 per-status 循环后写 `reflection` 数组（**无 count 前缀**，且条目是单个 int），与客户端 `Decode4 count` + 12 字节/条目两处都不对齐——当前枚举无 `0x08000000` 成员，该路径不触发；若未来启用 bit27，必须同时补 count 前缀与 3 dword 条目。
+**现状：`MobBuffPackets` 已彻底删掉这段写出**（多写 1 个 dword 会把紧随其后的反射计数整体顶掉）。
 
-**客户端格式唯一，不存在两套兼容读法。**
+### 2.4 16 字节掩码的字节布局（已验证；本节旧结论写反了）
 
-- `OnStatSet` 与 `SetTemporaryStat` 都是 `DecodeBuffer(16)` → 同一个 `DecodeTemporary` / `IsMovementAffectingStat` / `Reset`。
-- 位测试常量全部是 `UINT128(1)<<n`（n=0..34），**有效状态位必须落在 16 字节 LE mask 的低半区（bytes 0..7 = UINT128 bit 0..63，实际只用到 bit 0..34）**。
-- 高半区（bytes 8..15 / bit 64..127）的 1 在 `DecodeTemporary` 中**不会**命中任何 `dword_BEFxxx`。
+关键前提：客户端 `UINT128` 是 **dword 逆序** 存放的。
 
-#### 服务端两种写法 vs 客户端
+- `UINT128::UINT128(unsigned long)`（0x873A2F → `sub_873B22`）做的是 `this[0]=this[1]=this[2]=0; this[3]=value`，
+  即 **32 位字 3 持有数值的低 32 位**。
+- 单 bit 常量由 `UINT128(1) << n` 生成（`sub_873B8C`），位 n 的常量地址规律 `0xBEFAB0 - n*0x10`
+  （`sub_78973C` 初始化位 0 … `sub_789D9C` 初始化位 34）。
+- `UINT128::operator&`（0x874049）是逐 dword 的普通 AND。
+- `CInPacket::DecodeBuffer`（0x432257）是纯 `memcpy`，**不做字节交换**。
 
-| 写法 | 16 字节 LE 布局 | 客户端 bit0..34 命中 |
-|------|-----------------|----------------------|
-| **`applyMonsterStatus` / `cancelMonsterStatus`**：`writeLong(0)` + `writeIntMask` | `[00×8][first u32][second u32]` → 状态位全在 **bit 64..127** | **全否** → `DecodeTemporary` 一位都不读；尾部 `Decode2+Decode1` 会错位吃 status 数据 |
-| **`encodeTemporary`**：`writeLongEncodeTemporaryMask`（`pos = isFirst?0:2`） | `[first u32][00×4][second u32][00×4]` → first→bit0..31，second→bit64..95 | **仅 isFirst 命中**：NEUTRALISE / PHANTOM / \*REFLECT ✓；POISON/SPEED/… ✗；first/second 混用时字段序还可能与 mask 命中集错位 |
-| **客户端预期** | 状态位须在 **bytes 0..7**（且 DecodeTemporary 只用 bit 0..34） | — |
+于是 16 字节包体的偏移与客户端位号的对应是：
+
+| 包体偏移 | 客户端位 |
+|---|---|
+| 0..7   | 64..127 |
+| 8..11  | 32..63  |
+| 12..15 | 0..31   |
+
+`MonsterStatus` 的每个状态都对应客户端的一个位，且位号都在 0..30
+（WATK→dword_BEFAB0=位 0、SPEED→dword_BEFA50=位 6、MAGIC_REFLECT→dword_BEF8D0=位 30）。
+所以**所有状态位都必须 OR 进包体偏移 12..15 的那一个 dword**：
 
 ```text
-applyMonsterStatus 线上字节序（little-endian）:
-  offset 0..7   : writeLong(0)       → UINT128 低 64 恒 0
-  offset 8..11  : firstmask (int32)  → UINT128 bit 64..95
-  offset 12..15 : secondmask (int32) → UINT128 bit 96..127
-
-writeLongEncodeTemporaryMask 线上字节序:
-  offset 0..3   : masks[0] = isFirst 低 32   → bit 0..31   ✓ 与客户端一致
-  offset 4..7   : masks[1] = isFirst 高 32=0 → bit 32..63
-  offset 8..11  : masks[2] = !isFirst 低 32  → bit 64..95  ✗ 客户端不测
-  offset 12..15 : masks[3] = !isFirst 高 32=0→ bit 96..127
+offset 0..7   : 0                        → 客户端位 64..127（恒不命中）
+offset 8..11  : 0                        → 客户端位 32..63 （恒不命中）
+offset 12..15 : WATK|WDEF|…|MAGIC_REFLECT→ 客户端位 0..31  ✓
 ```
-
-#### 结论（以客户端读取为准）
-
-1. **`applyMonsterStatus` 的 `writeLong(0)+writeIntMask` 相对本客户端是错误布局**：低 64 恒 0 → `mask & dword_BEFxxx` 恒假 → `DecodeTemporary` 不读任何 per-status 字段。0xF2 路径可能表现为状态静默不生效 / 尾部错位，而不是“另一套正确协议”。
-2. **`writeLongEncodeTemporaryMask` 只对一半**：`isFirst` 进 masks[0] 碰巧正确；`!isFirst`（绝大多数状态）进 masks[2]=bit64+，客户端测不到。`MonsterStatus` 的 value（0x1..0x40000000）与客户端 bit0..30 同一值域——若 first/second 都表示“本 32 位图内的位”，则 **两者都应 OR 进 masks[0]**（或等价地写入低 32 位），不能按 64 位 high/low 半区拆分。
-3. **角色 `WriteStatMask` 的 first/second ↔ bit64+ 映射不能套到 Mob**：角色高位 bit 由另一套常量测试；Mob 的 `DecodeTemporary` 只用低 bit0..34。
-4. **`encodeTemporary` 注释 “to patch some status crashing players”（过滤 WATK/WDEF）** 更像是在绕开错误 mask/字段序导致的错位崩溃，根因是布局而非 WATK/WDEF 本身。
-5. **修复方向（仅记录，本次不改代码）**：`applyMonsterStatus` / `cancelMonsterStatus` / `writeLongEncodeTemporaryMask` 都应把参与 `DecodeTemporary` 的状态位写入 **mask 低 32/64 位**；去掉或重解释 `writeLong(0)` 的前导零。改完后 per-status 遍历序仍须等于 §2.1。
-
-### 2.5 服务端每状态字段宽度
-
-```csharp
-p.writeShort(value);                          // 2 → Decode2
-if (mse.isMonsterSkill())
-    writeMobSkillId(p, msId);                 // writeShort(type)+writeShort(level) = 4 → Decode4
-else
-    p.writeInt(mse.getSkill()!.getId());      // 4 → Decode4
-p.writeShort(-1);                             // 2 → Decode2；now + 500*(-1)
-```
-
-`writeMobSkillId` 为 4 字节，与客户端 `Decode4` 对齐。
-
----
 
 ## 3. OnStatSet 如何接收这些状态
 
-### 3.1 服务端写出布局（`applyMonsterStatus`，`PacketCreator.cs:3382`）
+### 3.1 服务端写出布局（旧 `applyMonsterStatus`，`PacketCreator.cs:3382`；现状见 §4.1）
 
 ```text
-OutPacket = opcode 0xF2 (short LE)
-+ int32  oid                         // OnMobPacket 已 Decode4 消费
-+ int64  0                           // writeLong(0)
-+ int32  firstmask                   // isFirst=true
-+ int32  secondmask                  // isFirst=false
-  ---- 以上 16 字节 = DecodeBuffer(&mask, 0x10) ----
-+ 对 stati 中每个状态（Dictionary 插入序）：
-    int16  value
-    int32  skillId  或  (int16 type + int16 level)  // writeMobSkillId
-    int16  -1                        // buffTime 占位
-+ [可选] 每个 reflection 玩家：int32 objectId
-+ uint8  size                        // stati.Count；有 reflection 且 count>0 时 size/2
-+ int32  0                           // 尾部
-```
-
-> 服务端 per-status **遍历顺序 = `mse.getStati()` 的 Dictionary 插入序**；必须与 §2.1 的 DecodeTemporary 检查序一致（多状态同时生效时）。
-
-### 3.2 客户端 OnMobPacket 分发（0x67936D）
-
-```c
-void CMobPool::OnMobPacket(CMobPool* this, int op, CInPacket* p) {
-    int oid = p->Decode4();
-    CMob* mob = CMobPool::GetMob(this, oid);
-    if (!mob) return;
-    switch (op) {
-    case 242: CMob::OnStatSet(mob, p);   break;  // APPLY_MONSTER_STATUS
-    case 243: CMob::OnStatReset(mob, p); break;  // CANCEL_MONSTER_STATUS
+<c>APPLY_MONSTER_STATUS (0xF2)</c>，对应 <c>CMob::OnStatSet</c>（0x66C301）→ <c>ProcessStatSet</c>（0x671B71）。
+int32  oid
+16B    掩码（WriteStatMask）> 服务端 per-status **遍历顺序 = `mse.getStati()` 的 Dictionary 插入序**；必须与 §2.1 的 DecodeTemporary 检查序一致（多状态同时生效时）。
+每个置位状态（ClientFieldOrder 序）：8 字节（见 EncodeForLocalOne）
+[位 29] int32、[位 30] int32、[位 29|30] int32   ← EncodeReflectCounter### 3.2 客户端 OnMobPacket 分发（0x67936D）
+int16  skillRelated                              ← UpdateAffectedSkillList 的到期偏移
+uint8  size                                      ← CMob+1220
+[movement 命中时] uint8 statChangedPoint          ← CMovePath::SetStatChangedPointvoid CMobPool::OnMobPacket(CMobPool* this, int op, CInPacket* p) {
+</code>    int oid = p->Decode4();
+<para>    CMob* mob = CMobPool::GetMob(this, oid);
+<paramref name="mse"/> 里若只有纯服务端状态（<see cref="MonsterStatus.NEUTRALISE"/>），    if (!mob) return;
+掩码会写 0：客户端那边这只怪不带任何状态，效果全在服务端（如抗压让它不打人）。    switch (op) {
+包体仍然完整，客户端读完三个尾部字段就结束。    case 242: CMob::OnStatSet(mob, p);   break;  // APPLY_MONSTER_STATUS
+</para>    case 243: CMob::OnStatReset(mob, p); break;  // CANCEL_MONSTER_STATUS
     // 239 OnMove, 240 OnCtrlAck, 246 OnDamaged, ...
     }
 }
+```
+
+```
+<c>DecodeTemporary</c> 尾段的反射计数（在 28 个状态字段之后）：
+位 29 WEAPON_REFLECT 额外 Decode4 → <c>MobStat[107]</c>、
+位 30 MAGIC_REFLECT 额外 Decode4 → <c>MobStat[111]</c>、
+两者任一置位再 Decode4 → <c>MobStat[112]</c>（counter prob，写 100）。
+<para>
+只要掩码位置位客户端就会读，所以这里必须补齐，否则包体错位。
+三段之间没有别的字段：位 27/32/33/34 的读法都排在这三段之前，而服务端置不起那些位。
+</para>
+<para>
+客户端算这个数字的是 <c>sub_7937E3</c>（<c>TryDoingMeleeAttack</c> / <c>TryDoingShootAttack</c> /
+<c>TryDoingMagicAttack</c> 打中带反击的怪之后各调一次，第 1 个参数 2 表示魔法）：
+</para>
+<code>
+if (!mobStat || (mobStat[112] &amp;&amp; rand() % 100 &gt;= mobStat[112])) return 0;
+base = (type == 2 ? mobStat[108] : mobStat[104]);   // 魔法 / 物理
+var  = (type == 2 ? mobStat[111] : mobStat[107]);
+return var ? base + rand() % var - var / 2 : base;
+</code>
+<para>
+也就是 <c>[104]</c>/<c>[108]</c> 是固定反伤值——来自 per-status 字段里那个 D2
+（<see cref="EncodeForLocalOne"/> 写的 <c>stati</c> 值，即 <see cref="MobSkill.applyEffect"/>
+放进 WEAPON_REFLECT 的 x / MAGIC_REFLECT 的 y），
+<c>[107]</c>/<c>[111]</c> 是上下浮动幅度（WZ 的 143/144/145 没有这个字段，所以写 0，
+客户端于是走 <c>var == 0</c> 那条分支直接返回 base，弹出的数字正好是 x / y，L1 即 10000），
+<c>[112]</c> 是触发概率（写 100 = 必触发）。
+</para>
+<para>
+客户端只弹数字、不回包：算完经 <c>sub_953595</c> 调 <c>CUserLocal::SetDamaged</c>
+（活体 vtable 基址 0xB3D20C，槽 18 即 <c>[vptr+0x48]</c> → 0x9581A9），
+那个 thunk 把第 5 个参数 <c>CMob*</c> 和其余 8 个参数全填 0，
+而 SetDamaged 只在第 8 个参数非 0 时才发 TAKE_DAMAGE——
+所以 <c>TakeDamageHandler</c> 收不到反击包，反伤只能由服务端自己扣
+（<c>AbstractDealDamageHandler</c> 里那段，扣的就是这里发出去的 stati 值）。
+</para>
 ```
 
 ### 3.3 OnStatSet 主体（0x66C301）
@@ -314,8 +329,9 @@ void CMob::ProcessStatSet(CMob* this, UINT128 mask, CInPacket* p) {
         sub_672305(g_pMobPool+0x64, this);     // 追击/控制相关
     }
 
-    // C. 公共尾部（服务端 writeByte(size)+writeInt(0)）
-    WORD skillRelated = p->Decode2();          // → UpdateAffectedSkillList
+    // C. 公共尾部：无条件 Decode2 + Decode1
+    //    （旧服务端写的是 writeByte(size)+writeInt(0)，字节数够但语义错位，靠封包长度前缀幸免）
+    WORD skillRelated = p->Decode2();          // → UpdateAffectedSkillList 的到期偏移
     BYTE size = p->Decode1();                  // → *(this + 1220) / 0x4C4
     CMob::UpdateAffectedSkillList(this, skillRelated);
 
@@ -342,15 +358,17 @@ void CMob::ProcessStatSet(CMob* this, UINT128 mask, CInPacket* p) {
 }
 ```
 
-**尾部字节对照：**
+**尾部字节对照（现状 = `MobBuffPackets`）：**
 
 | 客户端读取 | 字节 | 服务端写出 |
 |---|---|---|
-| Decode2 → skillRelated | 2 | `writeByte(size)` + `writeInt(0)` 低 2 字节（size \| 0<<8） |
-| Decode1 → size@+1220 | 1 | `writeInt(0)` 下 1 字节 |
-| Decode1 → movement point（可选） | 1 | `writeInt(0)` 再 1 字节 |
+| Decode2 → skillRelated | 2 | `writeShort(0)` |
+| Decode1 → size@+1220 | 1 | `writeByte(GetStatCount(stati.Keys))`（只数有客户端位的状态） |
+| Decode1 → movement point（movement 命中时） | 1 | `writeByte(0)` |
 
-即服务端 `writeByte(size)+writeInt(0)` 共 5 字节，覆盖 Decode2+Decode1(+可选 Decode1)；多出的字节在非 movement 时可能残留未读（包边界允许）。
+旧服务端写的是 `writeByte(size) + writeInt(0)`（5 字节）：字节数比上述 3~4 字节多，靠封包自带长度前缀没触发越界，
+但**语义错位**——客户端的 `skillRelated` 读到的是 `size | (0<<8)`，`size@+1220` 读到 0。
+movement 位命中时旧写法刚好剩下 1 个未读字节可吃，所以症状不易暴露；漏写才会抛 `ZException` 断线。
 
 ### 3.5 取消路径（对照）
 
@@ -367,7 +385,11 @@ void CMob::ProcessStatSet(CMob* this, UINT128 mask, CInPacket* p) {
   6. SPEED → `SetShoeAttr`；
   7. 若 `CMob::IsActive` 且 movement：`Decode1` → `CMovePath::SetStatChangedPoint`。
 
-服务端 `cancelMonsterStatus`（`PacketCreator.cs:3419`）：`oid + writeLong(0) + writeIntMask + writeInt(0)`。
+服务端 `cancelMonsterStatus`（旧 `PacketCreator.cs:3419`）：`oid + writeLong(0) + writeIntMask + writeInt(0)` →
+掩码布局同 §2.4（secondmask 碰巧命中位 0..31，`isFirst` 那 4 个状态落空）；尾部 `Decode1 + [Decode1]` 字节数对得上但语义错位。
+现状 `MobBuffPackets.CancelMonsterStatus`：`oid + writeLong(0) + writeInt(0) + writeInt(mask)`，
+再 `writeByte(0)`，movement 命中时补 `writeByte(0)`（客户端还会用它那个 `IsActive()` 门控再判一次，
+我们无条件多写 1 字节，多出来的尾巴读不到、无害）。
 
 ### 3.6 出生带 buff 路径（对照，非 0xF2）
 
@@ -378,66 +400,18 @@ void CMob::ProcessStatSet(CMob* this, UINT128 mask, CInPacket* p) {
 - DOOM → `SetFromWhenDoom`；`AdjustDamagedElemAttr`；
 - `UpdateAffectedSkillList` / `SetShoeAttr` / bit32 → `*(this+329)=0`。
 
-该路径 mask 由服务端 **`writeLongEncodeTemporaryMask`**（4×int，`pos=isFirst?0:2`）编码。相对客户端：仅 **isFirst**（NEUTRAISE/PHANTOM/\*REFLECT）落在 bit0..31 能被测到；**!isFirst 被放进 bit64+，客户端不读**。不是 `applyMonsterStatus` 的正确参照——见 §2.4 确定结论。
+该路径 mask 旧由服务端 **`writeLongEncodeTemporaryMask`**（4×int，`pos=isFirst?0:2`）编码，
+旧布局下 first→位 96..127、second→位 32..63，客户端**一位都测不到**（见 §2.4）。
+现状由 `MobBuffPackets.EncodeTemporary` 编码：`writeLong(0)+writeInt(0)+writeInt(mask)` 后再写 per-status 字段；
+**没有** 0xF2 那条 `Decode2+Decode1` 尾巴——`SetTemporaryStat` 读完 `DecodeTemporary` 就返回，
+`*(this+305)=a3` 的 size 值来自封包里更早的那个字节（出生包的 `controller==null?5:1`）。
 
 ---
 
-## 4. 服务端 / 客户端片段对照
-
-### 4.1 服务端发送
-
-```csharp
-// PacketCreator.cs:3382
-public static Packet applyMonsterStatus(int oid, MonsterStatusEffect mse, List<int>? reflection)
-{
-    Dictionary<MonsterStatus, int> stati = mse.getStati();
-    OutPacket p = OutPacket.create(SendOpcode.APPLY_MONSTER_STATUS); // 0xF2
-    p.writeInt(oid);
-    p.writeLong(0);
-    writeIntMask(p, stati);                 // firstmask + secondmask
-    foreach (var stat in stati)             // 须匹配 DecodeTemporary 检查序
-    {
-        p.writeShort(stat.Value);
-        if (mse.isMonsterSkill())
-            writeMobSkillId(p, mse.getMobSkill()!.getId()); // 2+2
-        else
-            p.writeInt(mse.getSkill()!.getId());
-        p.writeShort(-1);
-    }
-    // reflection OID[] …
-    p.writeByte(size);
-    p.writeInt(0);
-    return p;
-}
-```
-
-### 4.2 客户端接收（伪代码）
-
-```c
-// OnMobPacket 0x67936D — 已消费 oid
-// OnStatSet 0x66C301
-UINT128 mask = pkt.DecodeBuffer(16);
-if (IsMovementAffectingStat(mask) && cmob->flag_330)
-    cmob->reserved.Add({ type=1, mask, pkt });
-else
-    ProcessStatSet(cmob, mask, pkt);
-
-// ProcessStatSet 0x671B71
-MobStat::DecodeTemporary(&cmob->mobStat /*+416*/, mask, pkt, now);
-// §2.1 顺序 + §2.2 副作用 …
-WORD w = pkt.Decode2();
-BYTE n = pkt.Decode1();                    // → +1220
-UpdateAffectedSkillList(cmob, w);
-if (mask & SPEED) SetShoeAttr(cmob);
-if (IsMovementAffectingStat(mask))
-    MovePath.SetStatChangedPoint(..., pkt.Decode1());
-```
-
----
-
-## 5. 摘要
+## 4. 摘要
 
 1. **表格**：§2.2 覆盖全部 `MonsterStatus` → bit# → `dword_BEFxxx`（虚地址 `0xBEFxxx`）→ `MobStat this[]` → 行为；标出服务端未占用的 bit20/27、客户端 **不读字段** 的 bit20/23（含 `NUELEMENTAL_ATTRIBUTELL`）。§2.1 给出 **DecodeTemporary 真实检查序**（bit18/19 在 bit16/17 之前，等）。  
 2. **收包**：`OnMobPacket` case **242** → `OnStatSet` 读 **16 字节 UINT128**；movement-affecting 且激活则挂 `ReservedPacket(type=1)`；否则 `ProcessStatSet` → `DecodeTemporary` 按 **§2.1 序** 以 `D2+D4+D2`（8 字节/位）读入，再处理副作用与公共尾部 `Decode2+Decode1`（+可选 movement `Decode1`）。  
-3. **Mask 布局（确定）**：客户端唯一读法 = 16B LE mask，状态位须在 **bit0..34（低半区）**。`applyMonsterStatus` 的 `writeLong(0)+writeIntMask` 使状态全在 bit64+ → **与客户端完全不兼容**（`DecodeTemporary` 不命中）；`writeLongEncodeTemporaryMask` 仅 isFirst 进低 32 正确，`!isFirst` 进 masks[2]=bit64+ 同样测不到。两者均不能套用角色 first/second 半区约定；详见 §2.4。  
-4. **对齐要求**：服务端 per-status **遍历顺序 = Dictionary 插入序** 必须等于 §2.1；每位字节宽度须含 reflect 尾部 D4、视觉位双 D1、reflection 路径 count+OID（当前枚举未触发 bit27）；mask 位必须落在低半区，否则字段永远不被读取。
+3. **Mask 布局（已验证）**：客户端唯一读法 = 16B mask，且 `UINT128` dword 逆序 ⇒ 状态位必须全部落在 **偏移 12..15**（客户端位 0..31）。旧 `applyMonsterStatus` 只有 secondmask 碰巧落在位 0..31（非 `isFirst` 状态因此能生效），4 个 `isFirst` 状态与整条出生路径都失效；`isFirst` 只是旧枚举的标记（enum 重构后已删除，见 §2.6）。详见 §2.4。  
+4. **对齐要求**：服务端 per-status **遍历顺序必须等于 §2.1**（= `MobBuffPackets.ClientFieldOrder`，不是字典插入序）；每位宽 8 字节，位 29/30 尾部另有 D4、任一置位再 D4、位 27 路径是 count + 3×D4（当前枚举不触发）；0xF2 尾巴是 `Decode2+Decode1(+movement Decode1)`，0xF3 是 `Decode1(+movement Decode1)`，出生包无尾巴；掩码位必须落在偏移 12..15，否则字段永远不被读取。  
+5. **枚举（§2.6）**：`MonsterStatus` = `enum`，值即客户端位号（0..30）；`PHANTOM_IMPRINT = MATK = 2` 共位别名（值语义下不可并存）；`NEUTRALISE` 取 `MonsterStatusUtils.MinServerOnlyId`（100）——纯服务端状态，不进掩码、不计入 `size`，抗压因此不再顺带往客户端塞一个 WDEF。

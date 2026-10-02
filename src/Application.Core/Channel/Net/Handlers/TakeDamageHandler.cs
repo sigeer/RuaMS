@@ -50,6 +50,7 @@ public class TakeDamageHandler : ChannelHandlerBase
 
         var chr = c.OnlinedCharacter;
         var map = chr.getMap();
+        var now = c.CurrentServer.Node.getCurrentTime();
 
         // =====================================================================
         // CUserLocal::SetDamaged (0x9581a9)
@@ -209,7 +210,7 @@ public class TakeDamageHandler : ChannelHandlerBase
                             var skillEffect = chr.GetPlayerSkillEffect(skill);
                             if (skillEffect != null)
                             {
-                                await targetMob.applyStatus(chr, new MonsterStatusEffect(skillEffect.MonsterStatuses, skillEffect.GetSkill()!), skillEffect.isPoison(), skillEffect.getDuration());
+                                await targetMob.RegisterDebuff(chr, skillEffect, skillEffect.ToMonsterDebuff(targetMob, chr, now));
 
                                 await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, skillEffect.getSourceId()), chr.Id);
                                 break;
@@ -270,18 +271,18 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             if (damagefrom == -1)
             {
-                // 抗压 也能反击？
-                var bPressure = chr.GetBuffStatValue(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
-                if (bPressure != null && damage > 0 && !attacker.isBoss())
-                {
-                    if (!attacker.alreadyBuffedStats().Contains(MonsterStatus.NEUTRALISE))
-                    {
-                        if (bPressure.Effect.makeChanceResult())
-                        {
-                            await attacker.applyStatus(chr, new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.NEUTRALISE, 1), bPressure.Effect.GetSkill()!), false, bPressure.Effect.getX(), false);
-                        }
-                    }
-                }
+                // 由 DealDamageHandler 处理
+                //var bPressure = chr.GetBuffStatValue(BuffStat.BODY_PRESSURE); // thanks Atoot for noticing an issue on Body Pressure neutralise
+                //if (bPressure != null && damage > 0 && !attacker.isBoss())
+                //{
+                //    if (!attacker.alreadyBuffedStats().Contains(MonsterStatus.NEUTRALISE))
+                //    {
+                //        if (bPressure.Effect.makeChanceResult())
+                //        {
+                //            attacker.RegisterDebuff(chr, bPressure.Effect, bPressure.Effect.ToMonsterDebuff(attacker, chr, now));
+                //        }
+                //    }
+                //}
             }
             else
             {

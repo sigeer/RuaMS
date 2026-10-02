@@ -1,5 +1,3 @@
-using Application.Shared.GameProps;
-
 namespace Application.Shared.Battle.Skills
 {
     public interface IBuffSource

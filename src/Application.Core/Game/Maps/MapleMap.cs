@@ -1348,10 +1348,10 @@ public class MapleMap : IMap, INamedInstance
         {
             chrRate = !mob.isBoss() ? chr.getDropRate() : chr.getBossDropRate();
 
-            var stati = mob.getStati(MonsterStatus.SHOWDOWN);
+            var stati = mob.AllBuffs.GetValueOrDefault(MonsterStatus.SHOWDOWN);
             if (stati != null)
             {
-                chrRate *= (stati.getStati().GetValueOrDefault(MonsterStatus.SHOWDOWN) / 100.0f + 1.0f);
+                chrRate *= (stati.Value / 100.0f + 1.0f);
             }
         }
 

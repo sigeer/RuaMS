@@ -1,5 +1,5 @@
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Application.Utility.Tickables;
@@ -92,13 +92,13 @@ namespace Application.Core.Game.Maps.Mists
                         return;
                     }
 
-                    List<IMapObject> affectedMonsters = getMap().getMapObjectsInBox(getBox(), [MapObjectType.MONSTER]);
-                    foreach (IMapObject mo in affectedMonsters)
+                    var effect = getSourceSkill().getEffect(owner.getSkillLevel(getSourceSkill()));
+                    var affectedMonsters = getMap().getMapObjectsInBox(getBox(), [MapObjectType.MONSTER]).OfType<Monster>();
+                    foreach (var mo in affectedMonsters)
                     {
                         if (makeChanceResult())
                         {
-                            MonsterStatusEffect poisonEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), getSourceSkill());
-                            await ((Monster)mo).applyStatus(owner, poisonEffect, true, Source.getDuration());
+                            await mo.RegisterDebuff(owner, Source, Source.ToMonsterDebuff(mo, owner, now));
                         }
                     }
                 }

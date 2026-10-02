@@ -2,7 +2,7 @@
 
 > IDA 数据库：`Angel.i64`（v83，基址 0x400000）
 > 相关代码：`src/Application.Core/Channel/Net/Packets/BuffPackets.cs`、`src/Application.Core/tools/PacketCreator.cs`
-> 关联文档：`docs/CWvsContext_OnTemporaryStatSet_分析.md`（本地包 DecodeForLocal）
+> 关联文档：`docs/ida/CWvsContext_OnTemporaryStatSet_分析.md`（本地包 DecodeForLocal）
 
 ---
 
@@ -108,7 +108,7 @@ else          return bit < 32 ? 32 + bit : bit - 32;
 | 62 | `DOJANGSHIELD`（`BuffStat.MAP_CHAIR`，同一位） | 客户端读 4 字节 |
 | 31 / 39 | `CURSE` / `SEDUCE` | `Disease.CURSE = 0x8000000000000000 → 31`、`Disease.SEDUCE = 0x80 → 39` |
 
-> 注意：`docs/CWvsContext_OnTemporaryStatSet_分析.md` 里 §5.1~5.4 的 bit→BuffStat 表是按“读取顺序 = 枚举声明顺序”
+> 注意：`docs/ida/CWvsContext_OnTemporaryStatSet_分析.md` 里 §5.1~5.4 的 bit→BuffStat 表是按“读取顺序 = 枚举声明顺序”
 > 推出来的，和掩码实测位号对不上；该文档 §6.2 的语义标注（bit 85/87/13/50/68）与本文一致。
 
 ---

@@ -27,7 +27,7 @@ using Application.Templates.Skill;
 
 namespace Application.Core.Game.Skills;
 
-public class Skill : ISkill
+public class Skill
 {
     private int id;
     private List<StatEffect> effects = new();

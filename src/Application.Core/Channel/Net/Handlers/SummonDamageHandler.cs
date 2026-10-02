@@ -101,7 +101,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
                 {
                     if (summonEffect.makeChanceResult())
                     {
-                        await target.applyStatus(player, new MonsterStatusEffect(summonEffect.MonsterStatuses, summonSkill), summonEffect.isPoison(), 4000);
+                        await target.RegisterDebuff(player, summonEffect, summonEffect.ToMonsterDebuff(target, player, c.CurrentServer.Node.getCurrentTime(), 4000));
                     }
                 }
                 await target.DamageBy(player, damage, attackEntry.delay);
