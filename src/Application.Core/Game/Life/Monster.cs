@@ -70,7 +70,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     /// </summary>
     private Dictionary<MobSkillId, long> usedSkills = new();
     /// <summary>
-    /// 攻击cd
+    /// 攻击cd，value为冷却结束时间
     /// </summary>
     private Dictionary<int, long> usedAttacks = new();
 
@@ -1507,7 +1507,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             }
         }
 
-        if (usedSkills.TryGetValue(toUse.getId(), out var cd) && cd < now)
+        if (usedSkills.TryGetValue(toUse.getId(), out var cd) && cd > now)
         {
             return false;
         }
@@ -1564,11 +1564,10 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             return -1;
         }
 
-        if (usedAttacks.TryGetValue(attackPos, out var cd) && cd < now)
+        if (usedAttacks.TryGetValue(attackPos, out var cd) && now < cd)
         {
             return -1;
         }
-
 
         if (mp < attackInfo.ConMP)
         {

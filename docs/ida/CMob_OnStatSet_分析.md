@@ -3,7 +3,7 @@
 > IDA 数据库: `Angel.idb`（v83，基址 `0x400000`）  
 > 服务端: `src/Application.Core/Channel/Net/Packets/MobBuffPackets.cs`（原 `tools/PacketCreator.cs` 内联实现）  
 > 关联: `src/Application.Shared/GameProps/MonsterStatus.cs`、`src/Application.Shared/Net/SendOpcode.cs`  
-> 关联文档: `docs/CWvsContext_OnTemporaryStatSet_分析.md`、`src/Application.Core/Channel/Net/Packets/BuffPackets.cs`（角色侧同类实现）  
+> 关联文档: `docs/ida/CWvsContext_OnTemporaryStatSet_分析.md`、`src/Application.Core/Channel/Net/Packets/BuffPackets.cs`（角色侧同类实现）  
 >  
 > **2026-09-27 修订**：§2.3 / §2.4 / §3.4 / §3.5 / §3.6 / §4 / §5 原本按“掩码是大端/低半区”的错误前提写成，
 > 已按 `UINT128` dword 逆序（`sub_873B22`）重写；旧结论会让所有 mob buff 静默失效。  
