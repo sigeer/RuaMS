@@ -461,7 +461,7 @@ public class StatEffect : IBuffSource
                 case FPArchMage.MANA_REFLECTION:
                 case ILArchMage.MANA_REFLECTION:
                 case Bishop.MANA_REFLECTION:
-                    statups[BuffStat.MANA_REFLECTION] = x;
+                    statups[BuffStat.MANA_REFLECTION] = SkillLevel;
                     break;
                 case Bishop.HOLY_SHIELD:
                     statups[BuffStat.HOLY_SHIELD] = x;

@@ -8,7 +8,7 @@ using System.Numerics;
 
 namespace Application.Core.Game.Players.Tickables
 {
-    public class EffectBuff : EffectBase, IComparable<EffectBuff>
+    public class EffectBuff : EffectBase
     {
         StatEffect _effect;
         public StatEffect Effect
@@ -26,42 +26,6 @@ namespace Application.Core.Game.Players.Tickables
         public EffectBuff(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value) : base(chr, buffStat, effect, startTime, expiredAt, value)
         {
             _effect = effect;
-        }
-
-        /// <summary>
-        /// 越小优先级越高
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public int CompareTo(EffectBuff? obj)
-        {
-            if (obj is not EffectBuff buff)
-            {
-                return -1;
-            }
-
-            // 副作用优先级更高
-            if (Value < 0)
-            {
-                return -1;
-            }
-            if (buff.Value < 0)
-            {
-                return 1;
-            }
-
-            // 加成效果
-            var cmp = Value.CompareTo(buff.Value);
-            if (cmp != 0)
-                return -cmp;
-
-            // source的加成数量
-            cmp = Effect.Statups.Count.CompareTo(buff.Effect.Statups.Count);
-            if (cmp != 0)
-                return -cmp;
-
-            // 时间
-            return -ExpiredAt.CompareTo(buff.ExpiredAt);
         }
 
         public override async Task OnMounted()
@@ -99,6 +63,81 @@ namespace Application.Core.Game.Players.Tickables
                 await Door.attemptRemoveDoor(_chr);
             }
             await base.OnUnmounted();
+        }
+    }
+
+    /// <summary>
+    /// 越小优先级越高
+    /// </summary>
+    public class BuffOrder : IComparer<EffectBuff>
+    {
+        public static BuffOrder Default = new BuffOrder();
+        public int Compare(EffectBuff? x, EffectBuff? y)
+        {
+            if (x == null && y == null)
+            {
+                return 0;
+            }
+
+            if (x == null && y != null)
+            {
+                return -1;
+            }
+
+            if (x != null && y == null)
+            {
+                return 1;
+            }
+
+            // 取最佳效果
+            if (YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT)
+            {
+                // 副作用优先级更高
+                if (x.Value < 0)
+                {
+                    return -1;
+                }
+                if (y.Value < 0)
+                {
+                    return 1;
+                }
+
+                // 加成效果
+                var cmp = x.Value.CompareTo(y.Value);
+                if (cmp != 0)
+                    return -cmp;
+
+                // source的加成数量
+                cmp = x.Effect.Statups.Count.CompareTo(y.Effect.Statups.Count);
+                if (cmp != 0)
+                    return -cmp;
+
+                // 时间
+                return -x.ExpiredAt.CompareTo(y.ExpiredAt);
+            }
+            else
+            {
+                if (x.Effect.Statups.Count == 1 && y.Effect.Statups.Count == 1)
+                {
+                    // 单buff 此时互相覆盖
+                    return -x.StartTime.CompareTo(y.StartTime);
+                }
+                else
+                {
+                    // 多重buff时，可能某个buff优先高，某个低
+                    // 此时取副作用
+                    if (x.Value < 0)
+                    {
+                        return -1;
+                    }
+                    if (y.Value < 0)
+                    {
+                        return 1;
+                    }
+
+                    return -x.StartTime.CompareTo(y.StartTime);
+                }
+            }
         }
     }
 }

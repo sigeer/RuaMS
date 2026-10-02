@@ -6,20 +6,26 @@ namespace ServiceTest.Games.Gameplay
 {
     internal class SkillTests
     {
+        [TestCase(true)]
+        [TestCase(false)]
         [Test]
-        public async Task BuffTest1()
+        public async Task BuffTest1(bool useBuffMostSignficant)
         {
             int darkSight = 4001003;
             int haste = 4101004;
 
+            YamlConfig.config.server.USE_BUFF_MOST_SIGNIFICANT = useBuffMostSignficant;
+
             var chr = (await GameTestGlobal.TestServer.GetPlayer())!;
             var hasteEffect = SkillFactory.GetSkillTrust(haste).getEffect(20);
             await hasteEffect.applyTo(chr);
+            GameTestGlobal.TestServer.Update();
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.SPEED)!.Value, Is.EqualTo(hasteEffect.Statups[BuffStat.SPEED]));
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.JUMP)!.Value, Is.EqualTo(hasteEffect.Statups[BuffStat.JUMP]));
 
             var darkSightEffect = SkillFactory.GetSkillTrust(darkSight).getEffect(20);
             await darkSightEffect.applyTo(chr);
+            GameTestGlobal.TestServer.Update();
             Assert.That(chr.ActiveEffects.ContainsKey(BuffStat.DARKSIGHT));
 
             await chr.CancelBuffFromSourceId(darkSight);
@@ -28,6 +34,7 @@ namespace ServiceTest.Games.Gameplay
 
             darkSightEffect = SkillFactory.GetSkillTrust(darkSight).getEffect(10);
             await darkSightEffect.applyTo(chr);
+            GameTestGlobal.TestServer.Update();
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.SPEED)!.Value, Is.EqualTo(darkSightEffect.Statups[BuffStat.SPEED]));
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.JUMP)!.Value, Is.EqualTo(hasteEffect.Statups[BuffStat.JUMP]));
 
@@ -54,6 +61,7 @@ namespace ServiceTest.Games.Gameplay
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.SPEED)!.Value, Is.EqualTo(hasteEffect1.Statups[BuffStat.SPEED]));
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.JUMP)!.Value, Is.EqualTo(hasteEffect1.Statups[BuffStat.JUMP]));
 
+            GameTestGlobal.TestServer.Update();
 
             var hasteEffect2 = SkillFactory.GetSkillTrust(haste2).getEffect(10);
             await hasteEffect2.applyTo(chr);
@@ -71,16 +79,19 @@ namespace ServiceTest.Games.Gameplay
 
 
             await chr.CancelAllBuffs();
+            GameTestGlobal.TestServer.Update();
 
             await hasteEffect2.applyTo(chr);
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.SPEED)!.Value, Is.EqualTo(hasteEffect2.Statups[BuffStat.SPEED]));
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.JUMP)!.Value, Is.EqualTo(hasteEffect2.Statups[BuffStat.JUMP]));
 
+            GameTestGlobal.TestServer.Update();
             await hasteEffect1.applyTo(chr);
             // 覆盖低等级 / 以最新buff覆盖
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.SPEED)!.Value, Is.EqualTo(hasteEffect1.Statups[BuffStat.SPEED]));
             Assert.That(chr.ActiveEffects.GetValueOrDefault(BuffStat.JUMP)!.Value, Is.EqualTo(hasteEffect1.Statups[BuffStat.JUMP]));
 
+            await chr.CancelAllBuffs();
             Assert.Pass();
         }
     }

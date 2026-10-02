@@ -211,7 +211,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                             if (skillEffect != null)
                             {
                                 await targetMob.RegisterDebuff(chr, skillEffect, skillEffect.ToMonsterDebuff(targetMob, chr, now));
-                                // await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, skillEffect.getSourceId()), chr.Id);
+
+                                await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, skillEffect.getSourceId()), chr.Id);
                                 break;
                             }
                         }
@@ -229,9 +230,8 @@ public class TakeDamageHandler : ChannelHandlerBase
                             }
                             int bouncedamage = (int)Math.Min((damage * manaReflection.Effect.getX() / 100.0), attacker.getMaxHp() / 5);
                             await attacker.DamageBy(chr, bouncedamage, 0);
-                            await attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
 
-                            // await chr.SendPacket(EffectPacket.SkillSpecial(manaReflection.Effect.getSourceId()));
+                            await chr.SendPacket(EffectPacket.SkillSpecial(manaReflection.Effect.getSourceId()));
                             await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, manaReflection.Effect.getSourceId()), chr.Id);
                         }
                     }
@@ -250,7 +250,6 @@ public class TakeDamageHandler : ChannelHandlerBase
 
                             finalDamage -= bouncedamage;
                             await attacker.DamageBy(chr, bouncedamage, 0);
-                            await attacker.BroadcastMap(PacketCreator.damageMonster(oid, bouncedamage));
 
                             await attacker.aggroMonsterDamage(chr, bouncedamage);
                         }
@@ -260,6 +259,15 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             // Encode1(v182) - 稳如泰山
             stance = p.readByte();
+
+            if (stance > 0)
+            {
+                var stanceEffect = chr.GetBuffStatValue(BuffStat.STANCE);
+                if (stanceEffect != null && chr.CheckBuff(stanceEffect))
+                {
+                    await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, stanceEffect.Effect.getSourceId()), chr.Id);
+                }
+            }
 
             if (damagefrom == -1)
             {

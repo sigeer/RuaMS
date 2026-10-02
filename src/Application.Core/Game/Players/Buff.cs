@@ -67,7 +67,7 @@ namespace Application.Core.Game.Players
 
         public List<EffectBuff> getAllStatups()
         {
-            return buffEffects.Values.SelectMany(x => x.Values).OrderBy(x => x).ToList();
+            return buffEffects.Values.SelectMany(x => x.Values).OrderBy(x => x, BuffOrder.Default).ToList();
         }
 
         public List<PlayerBuffValueHolder> getAllBuffs()
