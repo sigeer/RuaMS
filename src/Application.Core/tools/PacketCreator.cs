@@ -64,12 +64,6 @@ public class PacketCreator
 
     public static List<KeyValuePair<Stat, int>> EMPTY_STATUPDATE = [];
 
-    private static void writeMobSkillId(OutPacket packet, MobSkillId msId)
-    {
-        packet.writeShort(msId.type.getId());
-        packet.writeShort(msId.level);
-    }
-
     public static Packet showHpHealed(int cid, int amount)
     {
         OutPacket p = OutPacket.create(SendOpcode.SHOW_FOREIGN_EFFECT);
@@ -1144,61 +1138,6 @@ public class PacketCreator
         p.writeByte(newSpawn ? -2 : -1);
     }
 
-    /// <summary>
-    /// CMob::SetTemporaryStat
-    /// </summary>
-    /// <param name="p"></param>
-    /// <param name="stati"></param>
-    private static void encodeTemporary(OutPacket p, Dictionary<MonsterStatus, MonsterStatusEffect> stati)
-    {
-        int pCounter = -1;
-        int mCounter = -1;
-
-        stati = stati  // to patch some status crashing players
-                .Where(e => !(e.Key.Equals(MonsterStatus.WATK) || e.Key.Equals(MonsterStatus.WDEF)))
-                .ToDictionary(x => x.Key, y => y.Value);
-
-        writeLongEncodeTemporaryMask(p, stati.Keys);    // packet structure mapped thanks to Eric
-
-        foreach (var s in stati)
-        {
-            MonsterStatusEffect mse = s.Value;
-            p.writeShort(mse.getStati().GetValueOrDefault(s.Key));
-
-            var mobSkill = mse.getMobSkill();
-            if (mobSkill != null)
-            {
-                writeMobSkillId(p, mobSkill.getId());
-
-                if (s.Key == MonsterStatus.WEAPON_REFLECT)
-                    pCounter = mobSkill.getX();
-                if (s.Key == MonsterStatus.MAGIC_REFLECT)
-                    mCounter = mobSkill.getY();
-            }
-            else
-            {
-                var skill = mse.getSkill();
-                p.writeInt(skill != null ? skill.getId() : 0);
-            }
-
-            p.writeShort(-1);    // duration
-        }
-
-        // reflect packet structure found thanks to Arnah (Vertisy)
-        if (pCounter != -1)
-        {
-            p.writeInt(pCounter);// wPCounter_
-        }
-        if (mCounter != -1)
-        {
-            p.writeInt(mCounter);// wMCounter_
-        }
-        if (pCounter != -1 || mCounter != -1)
-        {
-            p.writeInt(100);// nCounterProb_
-        }
-    }
-
     /**
      * Internal function to handler monster spawning and controlling.
      *
@@ -1236,11 +1175,11 @@ public class PacketCreator
 
         if (requestController)
         {
-            encodeTemporary(p, life.getStati());    // thanks shot for noticing encode temporary buffs missing
+            MobBuffPackets.EncodeTemporary(p, life.AllBuffs);    // thanks shot for noticing encode temporary buffs missing
         }
         else
         {
-            p.skip(16);
+            p.skip(16);     // 非控制者只给 16 字节全 0 掩码，置位全空 → 客户端不会再读任何 per-status 字段
         }
 
         p.writePos(life.getPosition());
@@ -1293,7 +1232,7 @@ public class PacketCreator
         p.writeInt(life.getObjectId());
         p.writeByte(5);
         p.writeInt(life.getId());
-        encodeTemporary(p, life.getStati());
+        MobBuffPackets.EncodeTemporary(p, life.AllBuffs);
         p.writePos(life.getPosition());
         p.writeByte(life.getStance());
         p.writeShort(0);//life.getStartFh()
@@ -1321,7 +1260,7 @@ public class PacketCreator
         p.writeInt(life.getObjectId());
         p.writeByte(5);
         p.writeInt(life.getId());
-        encodeTemporary(p, life.getStati());
+        MobBuffPackets.EncodeTemporary(p, life.AllBuffs);
         p.writePos(life.getPosition());
         p.writeByte(life.getStance());
         p.writeShort(0);//life.getStartFh()
@@ -2610,11 +2549,11 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet DamagePlayerFromObstacle(int cid, int damage)
+    public static Packet DamagePlayerFromCounter(int cid, int damage)
     {
         OutPacket p = OutPacket.create(SendOpcode.DAMAGE_PLAYER);
         p.writeInt(cid);
-        p.writeByte((sbyte)AttackIndex.Obstacle);
+        p.writeByte((sbyte)AttackIndex.Counter);
         p.writeInt(damage);
         p.writeInt(damage);
         return p;
@@ -2776,25 +2715,6 @@ public class PacketCreator
             p.writeShort(s);
         }
         return p;
-    }
-
-    private static void writeLongEncodeTemporaryMask(OutPacket p, ICollection<MonsterStatus> stati)
-    {
-        int[] masks = new int[4];
-
-        foreach (MonsterStatus statup in stati)
-        {
-            int pos = statup.isFirst() ? 0 : 2;
-            for (int i = 0; i < 2; i++)
-            {
-                masks[pos + i] |= statup.getValue() >> 32 * i;
-            }
-        }
-
-        foreach (int mask in masks)
-        {
-            p.writeInt(mask);
-        }
     }
 
     // Slow的这个为什么和他的掩码不符  是刻意为之还是BUG
@@ -3360,74 +3280,8 @@ public class PacketCreator
         return p;
     }
 
-    private static void writeIntMask(OutPacket p, Dictionary<MonsterStatus, int> stats)
-    {
-        int firstmask = 0;
-        int secondmask = 0;
-        foreach (MonsterStatus stat in stats.Keys)
-        {
-            if (stat.isFirst())
-            {
-                firstmask |= stat.getValue();
-            }
-            else
-            {
-                secondmask |= stat.getValue();
-            }
-        }
-        p.writeInt(firstmask);
-        p.writeInt(secondmask);
-    }
-
-    public static Packet applyMonsterStatus(int oid, MonsterStatusEffect mse, List<int>? reflection)
-    {
-        Dictionary<MonsterStatus, int> stati = mse.getStati();
-        OutPacket p = OutPacket.create(SendOpcode.APPLY_MONSTER_STATUS);
-        p.writeInt(oid);
-        p.writeLong(0);
-        writeIntMask(p, stati);
-        foreach (var stat in stati)
-        {
-            p.writeShort(stat.Value);
-            if (mse.isMonsterSkill())
-            {
-                writeMobSkillId(p, mse.getMobSkill()!.getId());
-            }
-            else
-            {
-                p.writeInt(mse.getSkill()!.getId());
-            }
-            p.writeShort(-1); // might actually be the buffTime but it's not displayed anywhere
-        }
-        int size = stati.Count; // size
-        if (reflection != null)
-        {
-            foreach (int refObj in reflection)
-            {
-                p.writeInt(refObj);
-            }
-            if (reflection.Count > 0)
-            {
-                size /= 2; // This gives 2 buffs per reflection but it's really one buff
-            }
-        }
-        p.writeByte(size); // size
-        p.writeInt(0);
-        return p;
-    }
-
-    public static Packet cancelMonsterStatus(int oid, Dictionary<MonsterStatus, int> stats)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.CANCEL_MONSTER_STATUS);
-        p.writeInt(oid);
-        p.writeLong(0);
-        writeIntMask(p, stats);
-        p.writeInt(0);
-        return p;
-    }
-
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="time">单位：秒</param>
     /// <returns></returns>

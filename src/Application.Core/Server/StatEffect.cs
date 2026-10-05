@@ -21,10 +21,12 @@
  */
 
 
+using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
 using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Maps.Mists;
@@ -510,8 +512,8 @@ public class StatEffect : IBuffSource
                     break;
                 case WindArcher.WIND_WALK:
                     statups[BuffStat.WIND_WALK] = x;
-                    goto case Rogue.DARK_SIGHT;
-                //break;    thanks Vcoc for noticing WW not showing for other players when changing maps
+                    statups[BuffStat.DARKSIGHT] = x;
+                    break;
                 case Rogue.DARK_SIGHT:
                 case NightWalker.DARK_SIGHT:
                     statups[BuffStat.DARKSIGHT] = x;
@@ -713,7 +715,7 @@ public class StatEffect : IBuffSource
                     break;
                 case Evan.PHANTOM_IMPRINT:
                     monsterStatus.AddOrUpdate(MonsterStatus.PHANTOM_IMPRINT, x);
-                    goto case Aran.COMBO_ABILITY;
+                    break;
                 //ARAN
                 case Aran.COMBO_ABILITY:
                     statups[BuffStat.ARAN_COMBO] = 0;
@@ -729,6 +731,10 @@ public class StatEffect : IBuffSource
                     break;
                 case Aran.BODY_PRESSURE:
                     statups[BuffStat.BODY_PRESSURE] = x;
+                    monsterStatus[MonsterStatus.NEUTRALISE] = 1;
+                    break;
+                case Aran.FINAL_TOSS:
+                    monsterStatus[MonsterStatus.Toss] = x;
                     break;
                 case Aran.SNOW_CHARGE:
                     statups[BuffStat.WK_CHARGE] = duration;
@@ -736,6 +742,9 @@ public class StatEffect : IBuffSource
                 case ThunderBreaker.ENERGY_CHARGE:
                 case Marauder.ENERGY_CHARGE:
                     statups[BuffStat.ENERGY_CHARGE] = 0;
+                    break;
+                case Outlaw.FLAME_THROWER:
+                    monsterStatus[MonsterStatus.POISON] = 1;
                     break;
                 default:
                     break;
@@ -1149,6 +1158,7 @@ public class StatEffect : IBuffSource
             .ToList();
 
         var skill_ = SkillFactory.GetSkillTrust(sourceid);
+        var now = applyfrom.Client.CurrentServer.Node.getCurrentTime();
         int i = 0;
         foreach (var monster in affected)
         {
@@ -1164,7 +1174,7 @@ public class StatEffect : IBuffSource
             {
                 if (makeChanceResult())
                 {
-                    await monster.applyStatus(applyfrom, new MonsterStatusEffect(MonsterStatuses, skill_), isPoison(), getDuration());
+                    await monster.RegisterDebuff(applyfrom, this, ToMonsterDebuff(monster, applyfrom, now));
                     if (isCrash())
                     {
                         await monster.debuffMob(skill_.getId());
@@ -1951,5 +1961,43 @@ public class StatEffect : IBuffSource
     public int GetEncodeId()
     {
         return getBuffSourceId();
+    }
+
+    public Dictionary<MonsterStatus, MonsterDebuff> ToMonsterDebuff(Monster mob, Player chr, long now, long duration = -1)
+    {
+        duration = duration == -1 ? getDuration() : duration;
+        return MonsterStatuses.ToDictionary(x => x.Key, x =>
+        {
+            if (x.Key == MonsterStatus.POISON)
+            {
+                var poisonDamage = Math.Min(short.MaxValue, (int)(mob.getMaxHp() / (70.0 - SkillLevel) + 0.999));
+                return new MonsterPosion(mob, chr.getObjectId(), x.Key, this, poisonDamage, now, now + duration);
+            }
+            if (x.Key == MonsterStatus.VENOMOUS_WEAPON)
+            {
+                var matk = getMatk();
+                int luk = chr.getLuk();
+                int maxDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.2 * luk * matk));
+                int minDmg = (int)Math.Ceiling(Math.Min(short.MaxValue, 0.1 * luk * matk));
+                int gap = maxDmg - minDmg;
+                if (gap == 0)
+                {
+                    gap = 1;
+                }
+                int poisonDamage = 0;
+                for (int i = 0; i < mob.getVenomMulti(); i++)
+                {
+                    poisonDamage += (Randomizer.nextInt(gap) + minDmg);
+                }
+                poisonDamage = Math.Min(short.MaxValue, poisonDamage);
+                return new MonsterVenom(mob, chr.getObjectId(), x.Key, this, poisonDamage, now, now + duration);
+            }
+            if (x.Key == MonsterStatus.NINJA_AMBUSH)
+            {
+                int damage = (int)((chr.getStr() + chr.getLuk()) * ((3.7 * getDamage()) / 100.0));
+                return new MonsterNinja(mob, chr.getObjectId(), x.Key, this, damage, now, now + duration);
+            }
+            return new MonsterDebuff(mob, chr.getObjectId(), x.Key, this, x.Value, now, now + duration);
+        });
     }
 }

@@ -61,6 +61,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             return;
         }
 
+        var now = c.CurrentServer.Node.getCurrentTime();
         var monster = (Monster)mmo;
         List<Player>? banishPlayers = null;
 
@@ -91,7 +92,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             {
                 var toUse = MobSkillFactory.GetMobSkill(useSkillId, useSkillLevel);
 
-                if (toUse != null && monster.canUseSkill(toUse, true))
+                if (toUse != null && monster.canUseSkill(toUse, now, true))
                 {
                     if (animationTime > 0 && toUse.getType() != MobSkillType.BANISH)
                     {
@@ -108,7 +109,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
         else
         {
             int castPos = (rawActivity - 24) / 2;
-            int atkStatus = monster.canUseAttack(castPos, isSkill);
+            int atkStatus = monster.canUseAttack(castPos, now, isSkill);
             if (atkStatus < 1)
             {
                 rawActivity = -1;
@@ -128,7 +129,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
             nextSkillLevel = skillToUse.level;
             nextUse = MobSkillFactory.getMobSkill(skillToUse.type, skillToUse.level);
 
-            if (nextUse == null || !monster.canUseSkill(nextUse, false))
+            if (nextUse == null || !monster.canUseSkill(nextUse, now, false))
             {
                 // thanks OishiiKawaiiDesu for noticing mobs trying to cast skills they are not supposed to be able
 

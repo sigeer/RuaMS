@@ -25,7 +25,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
+using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
@@ -61,7 +61,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
         Skill? theSkill = null;
         StatEffect? attackEffect = null;
-
+        long now = player.Client.CurrentServer.Node.getCurrentTime();
         try
         {
             if (player.isBanned())
@@ -338,59 +338,45 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     else if (attack.skill == Outlaw.FLAME_THROWER)
                     {
-                        if (!monster.isBoss())
+                        if (!monster.isBoss() && attackEffect != null)
                         {
-                            var type = SkillFactory.GetSkillTrust(Outlaw.FLAME_THROWER);
-                            if (player.getSkillLevel(type) > 0)
-                            {
-                                StatEffect DoT = type.getEffect(player.getSkillLevel(type));
-                                var monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), type);
-                                await monster.applyStatus(player, monsterStatusEffect, true, DoT.getDuration(), false);
-                            }
+                            await monster.RegisterDebuff(player, attackEffect, attackEffect.ToMonsterDebuff(monster, player, now));
                         }
                     }
 
                     if (player.isAran())
                     {
-                        if (player.getBuffedValue(BuffStat.WK_CHARGE) != null)
+                        var wkChargeBuff = player.GetBuffStatValue(BuffStat.WK_CHARGE);
+                        if (wkChargeBuff != null)
                         {
-                            var snowCharge = SkillFactory.GetSkillTrust(Aran.SNOW_CHARGE);
                             if (totDamageToOneMonster > 0)
                             {
-                                MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, snowCharge.getEffect(player.getSkillLevel(snowCharge)).getX()), snowCharge);
-                                long duration = snowCharge.getEffect(player.getSkillLevel(snowCharge)).getY() * 1000;
-                                await monster.applyStatus(player, monsterStatusEffect, false, duration);
+                                await monster.RegisterDebuff(player, wkChargeBuff.Effect, wkChargeBuff.Effect.ToMonsterDebuff(monster, player, now, wkChargeBuff.Effect.getY() * 1000));
                             }
                         }
                     }
-                    if (player.getBuffedValue(BuffStat.HAMSTRING) != null)
+                    var hamstringBuff = player.GetBuffStatValue(BuffStat.HAMSTRING);
+                    if (hamstringBuff != null)
                     {
-                        var hamstring = SkillFactory.GetSkillTrust(Bowmaster.HAMSTRING);
-                        if (hamstring.getEffect(player.getSkillLevel(hamstring)).makeChanceResult())
+                        if (hamstringBuff.Effect.makeChanceResult())
                         {
-                            MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, hamstring.getEffect(player.getSkillLevel(hamstring)).getX()), hamstring);
-                            long duration = 1000 * (hamstring.getEffect(player.getSkillLevel(hamstring)).getY());
-                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.RegisterDebuff(player, hamstringBuff.Effect, hamstringBuff.Effect.ToMonsterDebuff(monster, player, now, hamstringBuff.Effect.getY() * 1000));
                         }
                     }
-                    if (player.getBuffedValue(BuffStat.SLOW) != null)
+                    var evanSlowBuff = player.GetBuffStatValue(BuffStat.SLOW);
+                    if (evanSlowBuff != null)
                     {
-                        var slow = SkillFactory.GetSkillTrust(Evan.SLOW);
-                        if (slow.getEffect(player.getSkillLevel(slow)).makeChanceResult())
+                        if (evanSlowBuff.Effect.makeChanceResult())
                         {
-                            MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.SPEED, slow.getEffect(player.getSkillLevel(slow)).getX()), slow);
-                            long duration = 60 * 1000 * (slow.getEffect(player.getSkillLevel(slow)).getY());
-                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.RegisterDebuff(player, evanSlowBuff.Effect, evanSlowBuff.Effect.ToMonsterDebuff(monster, player, now, evanSlowBuff.Effect.getY() * 60 * 1000));
                         }
                     }
-                    if (player.getBuffedValue(BuffStat.BLIND) != null)
+                    var blindBuff = player.GetBuffStatValue(BuffStat.BLIND);
+                    if (blindBuff != null)
                     {
-                        var blind = SkillFactory.GetSkillTrust(Marksman.BLIND);
-                        if (blind.getEffect(player.getSkillLevel(blind)).makeChanceResult())
+                        if (blindBuff.Effect.makeChanceResult())
                         {
-                            MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.ACC, blind.getEffect(player.getSkillLevel(blind)).getX()), blind);
-                            long duration = 1000 * (blind.getEffect(player.getSkillLevel(blind)).getY());
-                            await monster.applyStatus(player, monsterStatusEffect, false, duration);
+                            await monster.RegisterDebuff(player, blindBuff.Effect, blindBuff.Effect.ToMonsterDebuff(monster, player, now, blindBuff.Effect.getY() * 1000));
                         }
                     }
                     if (player.JobModel == Job.WHITEKNIGHT || player.JobModel == Job.PALADIN)
@@ -452,9 +438,9 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                     if (monster.getVenomMulti() < 3)
                                     {
                                         monster.setVenomMulti((monster.getVenomMulti() + 1));
-                                        MonsterStatusEffect monsterStatusEffect = new MonsterStatusEffect(Collections.singletonMap(MonsterStatus.POISON, 1), type);
-                                        await monster.applyStatus(player, monsterStatusEffect, false, venomEffect.getDuration(), true);
                                     }
+                                    // 刷新buff
+                                    await monster.RegisterDebuff(player, venomEffect, venomEffect.ToMonsterDebuff(monster, player, now));
                                 }
                             }
                         }
@@ -533,12 +519,12 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     if (totDamageToOneMonster > 0 && attackEffect != null)
                     {
-                        var attackEffectStati = attackEffect.MonsterStatuses;
+                        var attackEffectStati = attackEffect.ToMonsterDebuff(monster, player, now);
                         if (attackEffectStati.Count > 0)
                         {
                             if (attackEffect.makeChanceResult())
                             {
-                                await monster.applyStatus(player, new MonsterStatusEffect(attackEffectStati, theSkill), attackEffect.isPoison(), attackEffect.getDuration());
+                                await monster.RegisterDebuff(player, attackEffect, attackEffectStati);
                             }
                         }
                     }
@@ -577,37 +563,26 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                         await monster.DamageBy(player, totDamageToOneMonster, target.Value!.delay);
                     }
-                    // 反击是否由TakeDamageHanlder
-                    //if (monster.isBuffed(MonsterStatus.WEAPON_REFLECT) && !attack.magic)
-                    //{
-                    //    foreach (MobSkillId msId in monster.getSkills())
-                    //    {
-                    //        if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
-                    //        {
-                    //            MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                    //            await player.UpdateStatsChunk(async () =>
-                    //            {
-                    //                await player.DamageBy(monster, toUse.getX(), attack.attackDelay);
-                    //            });
-                    //            await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
-                    //        }
-                    //    }
-                    //}
-                    //if (monster.isBuffed(MonsterStatus.MAGIC_REFLECT) && attack.magic)
-                    //{
-                    //    foreach (MobSkillId msId in monster.getSkills())
-                    //    {
-                    //        if (msId.type == MobSkillType.PHYSICAL_AND_MAGIC_COUNTER)
-                    //        {
-                    //            MobSkill toUse = MobSkillFactory.getMobSkillOrThrow(MobSkillType.PHYSICAL_AND_MAGIC_COUNTER, msId.level);
-                    //            await player.UpdateStatsChunk(async () =>
-                    //            {
-                    //                await player.DamageBy(monster, toUse.getY(), attack.attackDelay);
-                    //            });
-                    //            await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(monster.getId(), player.getId(), toUse.getX()));
-                    //        }
-                    //    }
-                    //}
+
+                    // 反击（MobSkill 143/144/145）：并没有走TakeDamage，客户端触发伤害数字后没有任何数据包
+                    if (monster.AllBuffs.TryGetValue(MonsterStatus.WEAPON_REFLECT, out var weaponReflect) && !attack.magic)
+                    {
+                        int reflectDamage = weaponReflect.Value;
+                        await player.UpdateStatsChunk(async () =>
+                        {
+                            await player.DamageBy(monster, reflectDamage, attack.attackDelay);
+                        });
+                        await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(player.getId(), reflectDamage));
+                    }
+                    if (monster.AllBuffs.TryGetValue(MonsterStatus.MAGIC_REFLECT, out var magicReflect) && attack.magic)
+                    {
+                        int reflectDamage = magicReflect.Value;
+                        await player.UpdateStatsChunk(async () =>
+                        {
+                            await player.DamageBy(monster, reflectDamage, attack.attackDelay);
+                        });
+                        await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(player.getId(), reflectDamage));
+                    }
                 }
             }
         }
@@ -1013,7 +988,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 {
                     if (monster != null)
                     {
-                        int bodyPressureDmg = (int)Math.Ceiling(monster.getMaxHp() * SkillFactory.GetSkillTrust(Aran.BODY_PRESSURE).getEffect(ret.skilllevel).getDamage() / 100.0);
+                        int bodyPressureDmg = (int)Math.Ceiling(monster.getMaxHp() * effect!.getDamage() / 100.0);
                         if (bodyPressureDmg > calcDmgMax)
                         {
                             calcDmgMax = bodyPressureDmg;
