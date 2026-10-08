@@ -94,18 +94,22 @@ public abstract class AbstractMapObject : IMapObject
         await MapModel.ChannelServer.NodeService.PluginManager.OnMapObjectLeaveField(MapModel, this);
     }
 
-    /// <summary>
-    /// 不考虑距离的情况下，对玩家是否可视
-    /// </summary>
-    /// <param name="chr"></param>
-    /// <returns></returns>
-    protected virtual bool IsVisibleForPlayerWithoutRange(Player chr) => MapModel == chr.MapModel;
-    public virtual bool IsVisibleForPlayer(Player chr)
-    {
-        return IsVisibleForPlayerWithoutRange(chr) &&
-            (!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance()));
-    }
+    public virtual VisionType LifeScopeLevel => VisionType.InVision;
+    public virtual VisionType MessageScopeLevel => VisionType.InVision;
 
+
+    public virtual VisionType GetVisionTypeForPlayer(Player chr)
+    {
+        if (MapModel == chr.MapModel)
+        {
+            if (!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance()))
+            {
+                return VisionType.InVision;
+            }
+        }
+
+        return VisionType.OutofVision;
+    }
 
     public async Task BroadcastMap(Packet packet, int exceptCId = -1)
     {
@@ -117,7 +121,7 @@ public abstract class AbstractMapObject : IMapObject
             }
 
 
-            if (MapModel.IsMapObjectVisibleForPlayerCached(mapChr, this))
+            if (MapModel.GetVisionTypeForPlayerCached(mapChr, this) >= MessageScopeLevel)
             {
                 await mapChr.SendPacket(packet);
             }

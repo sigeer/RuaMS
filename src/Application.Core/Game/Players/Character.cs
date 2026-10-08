@@ -454,7 +454,7 @@ public partial class Player
                     }
                     else
                     {
-                        await MapModel.SetPlayerVisibleObject(mapChr, this);
+                        await MapModel.ResetPlayerVisibleObject(mapChr, this);
                     }
 
 
@@ -485,7 +485,7 @@ public partial class Player
                         }
                         else
                         {
-                            await MapModel.SetPlayerInvisibleObject(mapChr, this);
+                            await MapModel.ResetPlayerVisibleObject(mapChr, this);
                         }
                     }
                     await this.releaseControlledMonsters();
@@ -3481,31 +3481,18 @@ public partial class Player
         return false;
     }
 
-
-    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr) && (!isHidden() || chr.isGM());
+        if (isHidden() && !chr.isGM())
+        {
+            return VisionType.Invisible;
+        }
+
+        return VisionType.InVision;
     }
 
     public override Player? Controller => this;
-
-    public override async Task BroadcastMovement(Packet packet, Point pos)
-    {
-        foreach (var mapChr in MapModel.getAllPlayers())
-        {
-            if (mapChr == Controller)
-            {
-                continue;
-            }
-
-            if (IsVisibleForPlayerWithoutRange(mapChr))
-            {
-                await mapChr.SendPacket(packet);
-            }
-        }
-    }
-
-
+    public override VisionType LifeScopeLevel => VisionType.OutofVision;
 
     public bool HideSummon { get; set; }
     public bool HidePet { get; set; }

@@ -24,11 +24,16 @@ namespace Application.Core.Game.Maps
         /// 从地图移除后
         /// </summary>
         Task OnUnmounted();
+
         /// <summary>
-        /// 可以对 <paramref name="chr"/> 显示
+        /// 地图对象的生命（生成、销毁、移动）广播范围
         /// </summary>
-        /// <param name="chr"></param>
-        bool IsVisibleForPlayer(Player chr);
+        VisionType LifeScopeLevel { get; }
+        /// <summary>
+        /// 地图对象的消息广播范围
+        /// </summary>
+        VisionType MessageScopeLevel { get; }
+        VisionType GetVisionTypeForPlayer(Player chr);
         Task BroadcastMap(Packet packet, int exceptCId = -1);
     }
 }

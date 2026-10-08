@@ -83,8 +83,7 @@ public abstract class AbstractAnimatedMapObject : AbstractMapObject, IAnimatedMa
                 continue;
             }
 
-            if ((!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(pos, mapChr.getPosition(), MapModel.ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance()))
-                && IsVisibleForPlayerWithoutRange(mapChr))
+            if (MapModel.GetVisionTypeForPlayerCached(mapChr, this) >= LifeScopeLevel)
             {
                 await mapChr.SendPacket(packet);
             }

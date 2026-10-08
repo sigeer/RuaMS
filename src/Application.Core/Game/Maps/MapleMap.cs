@@ -280,6 +280,7 @@ public class MapleMap : IMap, INamedInstance
                 exceptPlayerId = p.Id;
             }
 
+            // 向地图中的玩家渲染新增的地图对象
             foreach (Player chr in getAllPlayers())
             {
                 if (chr.Id == exceptPlayerId)
@@ -287,10 +288,9 @@ public class MapleMap : IMap, INamedInstance
                     continue;
                 }
 
-                if (mapobject.IsVisibleForPlayer(chr))
+                var (_, newVision) = RegisterPlayerVisibleObject(chr, mapobject);
+                if (newVision >= mapobject.LifeScopeLevel)
                 {
-                    await SetPlayerVisibleObject(chr, mapobject, false);
-
                     if (packetbakery != null)
                     {
                         await packetbakery.Invoke(chr.Client);
@@ -354,15 +354,14 @@ public class MapleMap : IMap, INamedInstance
         {
             foreach (var chr in getAllPlayers())
             {
-                if (removePacketAction != null)
+                var oldVision = UnregisterPlayerVisibleObject(chr, obj);
+                if (oldVision >= obj.LifeScopeLevel)
                 {
-                    if (IsMapObjectVisibleForPlayerCached(chr, obj))
+                    if (removePacketAction != null)
                     {
                         await removePacketAction.Invoke(chr);
                     }
                 }
-
-                await SetPlayerInvisibleObject(chr, obj, false);
             }
             return true;
         }
@@ -1795,16 +1794,7 @@ public class MapleMap : IMap, INamedInstance
 
         foreach (Player chr in getAllPlayers())
         {
-            var isObjectNowVisible = mapObject.IsVisibleForPlayer(chr);
-
-            if (isObjectNowVisible)
-            {
-                await SetPlayerVisibleObject(chr, mapObject);
-            }
-            else
-            {
-                await SetPlayerInvisibleObject(chr, mapObject);
-            }
+            await ResetPlayerVisibleObject(chr, mapObject);
         }
     }
 
@@ -2563,27 +2553,12 @@ public class MapleMap : IMap, INamedInstance
         {
             if (mo is Player mapChr)
             {
-                if (mapChr.IsVisibleForPlayer(player))
-                {
-                    await SetPlayerVisibleObject(player, mapChr, false);
-                    await SetPlayerVisibleObject(mapChr, player, false);
-                }
-                else
-                {
-                    await SetPlayerInvisibleObject(player, mapChr, false);
-                    await SetPlayerInvisibleObject(mapChr, player, false);
-                }
+                await ResetPlayerVisibleObject(player, mapChr);
+                await ResetPlayerVisibleObject(mapChr, player);
             }
             else
             {
-                if (mo.IsVisibleForPlayer(player))
-                {
-                    await SetPlayerVisibleObject(player, mo);
-                }
-                else
-                {
-                    await SetPlayerInvisibleObject(player, mo);
-                }
+                await ResetPlayerVisibleObject(player, mo);
             }
 
         }
@@ -2778,73 +2753,87 @@ public class MapleMap : IMap, INamedInstance
         await sendObjectPlacement(chr);
         await OnPlayerEnter(chr);
     }
+
+    /// <summary>
+    /// 向进入地图的玩家渲染可视对象
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
     private async Task sendObjectPlacement(Player chr)
     {
         var allMapObjects = getMapObjects();
 
         foreach (var o in allMapObjects)
         {
-            if (o.IsVisibleForPlayer(chr))
+            if (o == chr)
             {
-                await SetPlayerVisibleObject(chr, o, o is not MapPet);
+                continue;
+            }
 
-                if (o is Monster monster && !monster.isFake())
-                    await monster.aggroUpdateController();
-            }
-            else
-            {
-                // 没必要
-                // await SetPlayerInvisibleObject(chr, o);
-            }
+            await ResetPlayerVisibleObject(chr, o);
         }
     }
 
 
 
-    Dictionary<Player, HashSet<IMapObject>> _chrVisibleMapObjects = new();
-    public bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj)
+    Dictionary<Player, Dictionary<IMapObject, VisionType>> _chrVisibleMapObjects = new();
+
+    public VisionType GetVisionTypeForPlayerCached(Player player, IMapObject mapObj)
     {
-        return _chrVisibleMapObjects.GetValueOrDefault(player)?.Contains(mapObj) ?? false;
+        return _chrVisibleMapObjects.GetValueOrDefault(player)?.GetValueOrDefault(mapObj) ?? VisionType.OutofVision;
     }
-    public async Task SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true)
+
+    (VisionType OldVision, VisionType NewVision) RegisterPlayerVisibleObject(Player chr, IMapObject mapObj)
     {
+        var newVision = mapObj.GetVisionTypeForPlayer(chr);
+        var oldVision = VisionType.Invisible;
+
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
-            if (list.Add(mapObj))
-            {
-                if (sendSpawnData)
-                {
-                    await mapObj.sendSpawnData(chr.Client);
-                }
-            }
+            oldVision = list.GetValueOrDefault(mapObj, VisionType.Invisible);
+            list[mapObj] = newVision;
         }
         else
         {
-            _chrVisibleMapObjects[chr] = [mapObj];
-
-            if (sendSpawnData)
-            {
-                await mapObj.sendSpawnData(chr.Client);
-            }
+            _chrVisibleMapObjects[chr] = new Dictionary<IMapObject, VisionType>() { { mapObj, newVision } };
         }
 
-
-
+        return (oldVision, newVision);
     }
-    public async Task SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true)
+
+    VisionType UnregisterPlayerVisibleObject(Player chr, IMapObject mapObj)
     {
+        var oldVision = VisionType.Invisible;
+
         if (_chrVisibleMapObjects.TryGetValue(chr, out var list))
         {
-            if (list.Remove(mapObj))
+            if (list.Remove(mapObj, out oldVision))
             {
-                if (sendDestroyData)
-                {
-                    await mapObj.sendDestroyData(chr.Client);
-                }
+                return oldVision;
             }
         }
+
+        return oldVision;
     }
 
+    public async Task ResetPlayerVisibleObject(Player chr, IMapObject mapObj)
+    {
+        var (oldVision, newVision) = RegisterPlayerVisibleObject(chr, mapObj);
+        if (oldVision == newVision)
+        {
+            return;
+        }
+
+        if (newVision == VisionType.InVision)
+        {
+            await mapObj.sendSpawnData(chr.Client);
+        }
+
+        if (oldVision == VisionType.InVision && newVision == VisionType.OutofVision)
+        {
+            await mapObj.sendDestroyData(chr.Client);
+        }
+    }
     public async Task removePlayer(Player chr)
     {
         if (XiGuai?.Controller == chr)
