@@ -69,9 +69,19 @@ namespace Application.Core.Game.Maps.AnimatedObjects
 
         public short GetFoothold() => (short)(MapModel.Footholds.FindBelowFoothold(getPosition())?.getId() ?? 0);
 
-        public override bool IsVisibleForPlayer(Player chr)
+        public override VisionType GetVisionTypeForPlayer(Player chr)
         {
-            return Owner == chr || base.IsVisibleForPlayer(chr) && !chr.HidePet;
+            if (Owner == chr)
+            {
+                return VisionType.InVision;
+            }
+
+            if (chr.HidePet)
+            {
+                return VisionType.Invisible;
+            }
+
+            return base.GetVisionTypeForPlayer(chr);
         }
 
         public void EncodeData(sbyte index, OutPacket p)

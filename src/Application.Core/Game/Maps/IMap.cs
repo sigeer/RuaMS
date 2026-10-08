@@ -121,9 +121,8 @@ namespace Application.Core.Game.Maps
         /// </summary>
         /// <param name="mapObject"></param>
         Task MoveMapObject(AbstractAnimatedMapObject mapObject);
-        bool IsMapObjectVisibleForPlayerCached(Player player, IMapObject mapObj);
-        Task SetPlayerVisibleObject(Player chr, IMapObject mapObj, bool sendSpawnData = true);
-        Task SetPlayerInvisibleObject(Player chr, IMapObject mapObj, bool sendDestroyData = true);
+        VisionType GetVisionTypeForPlayerCached(Player player, IMapObject mapObj);
+        Task ResetPlayerVisibleObject(Player chr, IMapObject mapObj);
         Task removePlayer(Player chr);
         Task addPlayer(Player chr);
         #endregion

@@ -131,11 +131,6 @@ namespace Application.Plugin.FakeCharacter
             return 500000 + chr.Id * 100 + idx;
         }
 
-        protected override bool IsVisibleForPlayerWithoutRange(Player chr)
-        {
-            return true;
-        }
-
         public override Task OnTick(long now)
         {
             // TODO: 在此实现巡逻/跟随等定时行为

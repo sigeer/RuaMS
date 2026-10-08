@@ -76,8 +76,8 @@ public class Kite : AbstractMapObject, ILifedTickable
         return Task.CompletedTask;
     }
 
-    public override bool IsVisibleForPlayer(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr);
+        return VisionType.InVision;
     }
 }

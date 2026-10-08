@@ -71,8 +71,8 @@ public abstract class Mist : AbstractMapObject
         return skillDelay;
     }
 
-    public override bool IsVisibleForPlayer(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr);
+        return VisionType.InVision;
     }
 }

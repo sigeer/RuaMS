@@ -56,10 +56,7 @@ public class WhereaMiCommand : CommandBase
                     .Append(" - Oid: ").Append(obj.getObjectId())
                     .Append(" - Position: ").Append(obj.getPosition());
 
-                if (!player.MapModel.IsMapObjectVisibleForPlayerCached(player, obj))
-                {
-                    sb.Append("（超出视野）");
-                }
+                sb.Append("（").Append(player.MapModel.GetVisionTypeForPlayerCached(player, obj).GetDescription()).Append("）");
                 sb.Append("\r\n");
             }
         }

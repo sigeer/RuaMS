@@ -502,8 +502,14 @@ public class Reactor : AbstractMapObject
     }
 
 
-    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive();
+        if (!isAlive())
+        {
+            return VisionType.Invisible;
+        }
+
+        return base.GetVisionTypeForPlayer(chr);
     }
 }

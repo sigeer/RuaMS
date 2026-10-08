@@ -79,7 +79,7 @@ public class GeneralChatHandler : ChannelHandlerBase
                 return;
             }
 
-            await chr.BroadcastMap(PacketCreator.getChatText(chr.getId(), s, chr.getWhiteChat(), show));
+            await chr.BroadcastMap(PacketCreator.getChatText(chr.getId(), s, chr.getWhiteChat(), show), visionTypeLevel: VisionType.OutofVision);
 
             chr.getAutobanManager().spam(7);
         }
