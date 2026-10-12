@@ -240,54 +240,20 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     totDamage += totDamageToOneMonster;
                     await monster.aggroMonsterDamage(player, totDamageToOneMonster);
-                    if (player.getBuffedValue(BuffStat.PICKPOCKET) != null
-                        && (attack.skill == 0
-                            || attack.skill == Rogue.DOUBLE_STAB
-                            || attack.skill == Bandit.SAVAGE_BLOW
-                            || attack.skill == ChiefBandit.ASSAULTER
-                            || attack.skill == ChiefBandit.BAND_OF_THIEVES
-                            || attack.skill == Shadower.ASSASSINATE
-                            || attack.skill == Shadower.TAUNT
-                            || attack.skill == Shadower.BOOMERANG_STEP))
-                    {
-                        var pickpocket = SkillFactory.GetSkillTrust(ChiefBandit.PICKPOCKET);
-                        int picklv = (player.isGM()) ? pickpocket.getMaxLevel() : player.getSkillLevel(pickpocket);
-                        if (picklv > 0)
-                        {
-                            short delay = 0;
-                            var maxmeso = player.getBuffedValue(BuffStat.PICKPOCKET) ?? 0;
-                            foreach (int eachd in onedList)
-                            {
-                                int tempInt = eachd + int.MaxValue;
 
-                                if (pickpocket.getEffect(picklv).makeChanceResult())
-                                {
-                                    int eachdf;
-                                    if (tempInt < 0)
-                                        eachdf = tempInt + int.MaxValue;
-                                    else
-                                        eachdf = tempInt;
-
-                                    int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
-                                    var position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
-                                    await map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
-                                    delay += 100;
-                                }
-                            }
-                        }
-                    }
-                    else if (attack.skill == Marauder.ENERGY_DRAIN
+                    #region 主动技能特殊效果
+                    if (attack.skill == Marauder.ENERGY_DRAIN
                         || attack.skill == ThunderBreaker.ENERGY_DRAIN
                         || attack.skill == NightWalker.VAMPIRE
                         || attack.skill == Assassin.DRAIN)
                     {
-                        var skillModel = SkillFactory.GetSkillTrust(attack.skill);
+                        
                         await player.UpdateStatsChunk(async () =>
                         {
                             // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
                             await player.ChangeHP(
                                 Math.Min(monster.getMaxHp(),
-                                Math.Min((int)(totDamage * (double)skillModel.getEffect(player.getSkillLevel(skillModel)).getX() / 100.0),
+                                Math.Min((int)(totDamage * (double)attackEffect!.getX() / 100.0),
                                 player.ActualMaxHP / 2)));
                         });
                     }
@@ -332,29 +298,46 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         long duration = 1000 * (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
-                    else if (attack.skill == Outlaw.HOMING_BEACON || attack.skill == Corsair.BULLSEYE)
-                    {
-                        await attackEffect!.applyBeaconBuff(player, monster);
-                    }
-                    else if (attack.skill == Outlaw.FLAME_THROWER)
-                    {
-                        if (!monster.isBoss() && attackEffect != null)
-                        {
-                            await monster.RegisterDebuff(player, attackEffect, attackEffect.ToMonsterDebuff(monster, player, now));
-                        }
-                    }
+                    #endregion
 
-                    if (player.isAran())
+                    #region 临时被动技能效果
+                    var pickPocketBuff = player.GetBuffStatValue(BuffStat.PICKPOCKET);
+                    if (pickPocketBuff != null
+                        && (attack.skill == 0
+                            || attack.skill == Rogue.DOUBLE_STAB
+                            || attack.skill == Bandit.SAVAGE_BLOW
+                            || attack.skill == ChiefBandit.ASSAULTER
+                            || attack.skill == ChiefBandit.BAND_OF_THIEVES
+                            || attack.skill == Shadower.ASSASSINATE
+                            || attack.skill == Shadower.TAUNT
+                            || attack.skill == Shadower.BOOMERANG_STEP))
                     {
-                        var wkChargeBuff = player.GetBuffStatValue(BuffStat.WK_CHARGE);
-                        if (wkChargeBuff != null)
+                        int picklv = pickPocketBuff.Effect.SkillLevel;
+                        if (picklv > 0)
                         {
-                            if (totDamageToOneMonster > 0)
+                            short delay = 0;
+                            var maxmeso = pickPocketBuff.Value;
+                            foreach (int eachd in onedList)
                             {
-                                await monster.RegisterDebuff(player, wkChargeBuff.Effect, wkChargeBuff.Effect.ToMonsterDebuff(monster, player, now, wkChargeBuff.Effect.getY() * 1000));
+                                int tempInt = eachd + int.MaxValue;
+
+                                if (pickPocketBuff.Effect.makeChanceResult())
+                                {
+                                    int eachdf;
+                                    if (tempInt < 0)
+                                        eachdf = tempInt + int.MaxValue;
+                                    else
+                                        eachdf = tempInt;
+
+                                    int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
+                                    var position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
+                                    await map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
+                                    delay += 100;
+                                }
                             }
                         }
                     }
+
                     var hamstringBuff = player.GetBuffStatValue(BuffStat.HAMSTRING);
                     if (hamstringBuff != null)
                     {
@@ -379,53 +362,50 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             await monster.RegisterDebuff(player, blindBuff.Effect, blindBuff.Effect.ToMonsterDebuff(monster, player, now, blindBuff.Effect.getY() * 1000));
                         }
                     }
-                    if (player.JobModel == Job.WHITEKNIGHT || player.JobModel == Job.PALADIN)
+
+                    var wkChargeBuff = player.GetBuffStatValue(BuffStat.WK_CHARGE);
+                    if (wkChargeBuff != null)
                     {
-                        for (int charge = 1211005; charge < 1211007; charge++)
+                        if (totDamageToOneMonster > 0)
                         {
-                            var chargeSkill = SkillFactory.GetSkillTrust(charge);
-                            if (player.isBuffFrom(BuffStat.WK_CHARGE, chargeSkill))
+                            var sourceSkillId = wkChargeBuff.Effect.getSourceId();
+                            var duration = wkChargeBuff.Effect.getY() * 1000;
+                            switch (sourceSkillId)
                             {
-                                if (totDamageToOneMonster > 0)
-                                {
-                                    if (charge == WhiteKnight.BW_ICE_CHARGE || charge == WhiteKnight.SWORD_ICE_CHARGE)
-                                    {
-                                        monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, chargeSkill.getEffect(player.getSkillLevel(chargeSkill)).getY() * 1000);
-                                        break;
-                                    }
-                                    if (charge == WhiteKnight.BW_FIRE_CHARGE || charge == WhiteKnight.SWORD_FIRE_CHARGE)
-                                    {
-                                        monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, chargeSkill.getEffect(player.getSkillLevel(chargeSkill)).getY() * 1000);
-                                        break;
-                                    }
-                                }
+                                case WhiteKnight.BW_ICE_CHARGE:
+                                case WhiteKnight.SWORD_ICE_CHARGE:
+                                    monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, duration);
+                                    break;
+                                case WhiteKnight.BW_FIRE_CHARGE:
+                                case WhiteKnight.SWORD_FIRE_CHARGE:
+                                    monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
+                                    break;
+                                case Paladin.BW_HOLY_CHARGE:
+                                case Paladin.SWORD_HOLY_CHARGE:
+                                    monster.setTempEffectiveness(Element.HOLY, ElementalEffectiveness.WEAK, duration);
+                                    break;
+                                default:
+                                    break;
                             }
-                        }
-                        if (player.JobModel == Job.PALADIN)
-                        {
-                            for (int charge = 1221003; charge < 1221004; charge++)
+
+                            if (!monster.isBoss())
                             {
-                                var chargeSkill = SkillFactory.GetSkillTrust(charge);
-                                if (player.isBuffFrom(BuffStat.WK_CHARGE, chargeSkill))
-                                {
-                                    if (totDamageToOneMonster > 0)
-                                    {
-                                        monster.setTempEffectiveness(Element.HOLY, ElementalEffectiveness.WEAK, chargeSkill.getEffect(player.getSkillLevel(chargeSkill)).getY() * 1000);
-                                        break;
-                                    }
-                                }
+                                await monster.RegisterDebuff(player, wkChargeBuff.Effect, wkChargeBuff.Effect.ToMonsterDebuff(monster, player, now, duration));
                             }
                         }
                     }
-                    else if (player.getBuffedValue(BuffStat.COMBO_DRAIN) != null)
+
+                    var comboDrainBuff = player.GetBuffStatValue(BuffStat.COMBO_DRAIN);
+                    if (comboDrainBuff != null)
                     {
-                        Skill skill = SkillFactory.GetSkillTrust(Aran.COMBO_DRAIN);
                         await player.UpdateStatsChunk(async () =>
                         {
-                            await player.ChangeHP((int)((totDamage * skill.getEffect(player.getSkillLevel(skill)).getX()) / 100.0));
+                            await player.ChangeHP((int)((totDamage * comboDrainBuff.Effect.getX()) / 100.0));
                         });
                     }
-                    else if (attack.ranged && (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3))
+                    #endregion
+
+                    if (attack.ranged && (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3))
                     {
                         Skill type = SkillFactory.GetSkillTrust(player.getJob().getId() == 412 ? 4120005 : (player.getJob().getId() == 1411 ? 14110004 : 4220005));
                         if (player.getSkillLevel(type) > 0)
@@ -445,7 +425,8 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             }
                         }
                     }
-                    else if (player.JobModel.Id >= JobId.RANGER && player.JobModel.Id <= JobId.MARKSMAN)
+                    
+                    if (player.JobModel.Id >= JobId.RANGER && player.JobModel.Id <= JobId.MARKSMAN)
                     {
                         if (!monster.isBoss())
                         {
@@ -473,6 +454,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             }
                         }
                     }
+
                     if (attack.skill != 0)
                     {
                         if (attackEffect!.getFixDamage() != -1)
@@ -517,8 +499,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             }
                         }
                     }
+
                     if (totDamageToOneMonster > 0 && attackEffect != null)
                     {
+                        // 抗压是buff，是否会触发这里
                         var attackEffectStati = attackEffect.ToMonsterDebuff(monster, player, now);
                         if (attackEffectStati.Count > 0)
                         {
@@ -527,7 +511,14 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                                 await monster.RegisterDebuff(player, attackEffect, attackEffectStati);
                             }
                         }
+
+                        // 导航
+                        if (attackEffect.getBuffSourceId() == Outlaw.HOMING_BEACON || attackEffect.getBuffSourceId() == Corsair.BULLSEYE)
+                        {
+                            await attackEffect.applyBeaconBuff(player, monster);
+                        }
                     }
+
                     if (attack.skill == Paladin.HEAVENS_HAMMER)
                     {
                         if (!monster.isBoss())
@@ -536,8 +527,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            var skill = SkillFactory.GetSkillTrust(Paladin.HEAVENS_HAMMER);
-                            var HHDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100.0);
+                            var HHDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (attackEffect!.getDamage() / 100.0);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (HHDmg / 5) + HHDmg * .8)), attack.skill, 1777);
                         }
                     }
@@ -549,8 +539,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         }
                         else
                         {
-                            var skill = SkillFactory.GetSkillTrust(Aran.COMBO_TEMPEST);
-                            var TmpDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (skill.getEffect(player.getSkillLevel(skill)).getDamage() / 100.0);
+                            var TmpDmg = player.calculateMaxBaseDamage(player.getTotalWatk()) * (attackEffect!.getDamage() / 100.0);
                             damageMonsterWithSkill(player, map, monster, (int)(Math.Floor(Randomizer.nextDouble() * (TmpDmg / 5) + TmpDmg * .8)), attack.skill, 0);
                         }
                     }
@@ -574,6 +563,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         });
                         await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(player.getId(), reflectDamage));
                     }
+
                     if (monster.AllBuffs.TryGetValue(MonsterStatus.MAGIC_REFLECT, out var magicReflect) && attack.magic)
                     {
                         int reflectDamage = magicReflect.Value;

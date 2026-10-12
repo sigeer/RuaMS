@@ -5,9 +5,10 @@ namespace Application.Core.Game.Players.Tickables
     public class EffectGuideBullet : EffectBuff
     {
         public int MobOId { get; set; }
-        public EffectGuideBullet(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value)
+        public EffectGuideBullet(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value, int mobOId)
             : base(chr, buffStat, effect, startTime, expiredAt, value)
         {
+            MobOId = mobOId;
         }
 
         public override void EncodeSpecial(OutPacket p)
