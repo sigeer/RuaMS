@@ -65,8 +65,11 @@ public class Dragon : AbstractAnimatedMapObject
         return owner;
     }
     public override Player? Controller => owner;
-    public override bool IsVisibleForPlayer(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return getOwner() == chr || base.IsVisibleForPlayer(chr);
+        if (owner == chr)
+            return VisionType.InVision;
+
+        return base.GetVisionTypeForPlayer(chr);
     }
 }

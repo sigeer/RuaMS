@@ -94,21 +94,37 @@ public abstract class AbstractMapObject : IMapObject
         await MapModel.ChannelServer.NodeService.PluginManager.OnMapObjectLeaveField(MapModel, this);
     }
 
-    /// <summary>
-    /// 不考虑距离的情况下，对玩家是否可视
-    /// </summary>
-    /// <param name="chr"></param>
-    /// <returns></returns>
-    protected virtual bool IsVisibleForPlayerWithoutRange(Player chr) => MapModel == chr.MapModel;
-    public virtual bool IsVisibleForPlayer(Player chr)
+    public virtual VisionType LifeScopeLevel => VisionType.InVision;
+    public virtual VisionType MessageScopeLevel => VisionType.InVision;
+
+    public bool IsVisibleForPlayer(Player chr)
     {
-        return IsVisibleForPlayerWithoutRange(chr) &&
-            (!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance()));
+        return MapModel.GetVisionTypeForPlayerCached(chr, this) >= LifeScopeLevel;
     }
 
-
-    public async Task BroadcastMap(Packet packet, int exceptCId = -1)
+    public bool IsMessageVisibleForPlayer(Player chr)
     {
+        return MapModel.GetVisionTypeForPlayerCached(chr, this) >= MessageScopeLevel;
+    }
+
+    public virtual VisionType GetVisionTypeForPlayer(Player chr)
+    {
+        if (MapModel == chr.MapModel)
+        {
+            if (!MapModel.UseRangedView || MapGlobalData.IsObjectInRange(this, chr.getPosition(), MapModel.ChannelServer.NodeService.NodeConfig.SystemConfig.GetRangedDistance()))
+            {
+                return VisionType.InVision;
+            }
+
+            return VisionType.OutofVision;
+        }
+
+        return VisionType.Invisible;
+    }
+
+    public async Task BroadcastMap(Packet packet, int exceptCId = -1, VisionType? visionTypeLevel = null)
+    {
+        var level = visionTypeLevel ?? MessageScopeLevel;
         foreach (var mapChr in MapModel.getAllPlayers())
         {
             if (mapChr.Id == exceptCId)
@@ -117,7 +133,7 @@ public abstract class AbstractMapObject : IMapObject
             }
 
 
-            if (MapModel.IsMapObjectVisibleForPlayerCached(mapChr, this))
+            if (MapModel.GetVisionTypeForPlayerCached(mapChr, this) >= level)
             {
                 await mapChr.SendPacket(packet);
             }

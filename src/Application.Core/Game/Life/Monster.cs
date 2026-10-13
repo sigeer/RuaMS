@@ -1274,17 +1274,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    public async Task broadcastMonsterStatusMessage(Packet packet)
-    {
-        await BroadcastMap(packet);
-
-        var chrController = getActiveController();
-        if (chrController != null && !MapModel.IsMapObjectVisibleForPlayerCached(chrController, this))
-        {
-            await chrController.SendPacket(packet);
-        }
-    }
-
     public async Task BroadcastMobStats()
     {
         Packet packet = MobBuffPackets.ApplyMonsterStatus(this);
@@ -2396,9 +2385,19 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    protected override bool IsVisibleForPlayerWithoutRange(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return base.IsVisibleForPlayerWithoutRange(chr) && isAlive() && (AllowedAttacker == null || AllowedAttacker.Contains(chr.getObjectId()));
+        if (!isAlive())
+        {
+            return VisionType.Invisible;
+        }
+
+        if (AllowedAttacker != null && !AllowedAttacker.Contains(chr.getObjectId()))
+        {
+            return VisionType.Invisible;
+        }
+
+        return base.GetVisionTypeForPlayer(chr);
     }
 
     public override async Task OnUnmounted()

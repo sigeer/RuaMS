@@ -107,9 +107,19 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
         return getSkill() == Ranger.PUPPET || getSkill() == Sniper.PUPPET || getSkill() == WindArcher.PUPPET;
     }
 
-    public override bool IsVisibleForPlayer(Player chr)
+    public override VisionType GetVisionTypeForPlayer(Player chr)
     {
-        return getOwner() == chr || base.IsVisibleForPlayer(chr) && !chr.HideSummon;
+        if (getOwner() == chr)
+        {
+            return VisionType.InVision;
+        }
+
+        if (chr.HideSummon)
+        {
+            return VisionType.Invisible;
+        }
+
+        return base.GetVisionTypeForPlayer(chr);
     }
 
     public override async Task OnMounted(IMap map)
