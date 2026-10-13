@@ -187,7 +187,7 @@ namespace Application.Core.Game.Players
             return false;
         }
 
-        public static EffectBuff GetPlayerBuffStatValueHolder(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value)
+        public static EffectBuff GetPlayerBuffStatValueHolder(Player chr, BuffStat buffStat, StatEffect effect, long startTime, long expiredAt, int value, int extra0 = 0)
         {
             // 这几个技能都是对自己释放，不会触发“相同取最优”的逻辑
             if (effect.isDragonBlood())
@@ -204,7 +204,7 @@ namespace Application.Core.Game.Players
             }
             else if (buffStat == BuffStat.HOMING_BEACON)
             {
-                return new EffectGuideBullet(chr, buffStat, effect, startTime, expiredAt, value);
+                return new EffectGuideBullet(chr, buffStat, effect, startTime, expiredAt, value, extra0);
             }
             return new EffectBuff(chr, buffStat, effect, startTime, expiredAt, value);
         }

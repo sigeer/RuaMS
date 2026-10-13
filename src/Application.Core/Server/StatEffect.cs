@@ -416,16 +416,19 @@ public class StatEffect : IBuffSource
                     statups[BuffStat.COMBO] = 1;
                     break;
                 case WhiteKnight.BW_FIRE_CHARGE:
-                case WhiteKnight.BW_ICE_CHARGE:
                 case WhiteKnight.BW_LIT_CHARGE:
                 case WhiteKnight.SWORD_FIRE_CHARGE:
-                case WhiteKnight.SWORD_ICE_CHARGE:
                 case WhiteKnight.SWORD_LIT_CHARGE:
                 case Paladin.BW_HOLY_CHARGE:
                 case Paladin.SWORD_HOLY_CHARGE:
                 case DawnWarrior.SOUL_CHARGE:
                 case ThunderBreaker.LIGHTNING_CHARGE:
                     statups[BuffStat.WK_CHARGE] = x;
+                    break;
+                case WhiteKnight.BW_ICE_CHARGE:
+                case WhiteKnight.SWORD_ICE_CHARGE:
+                    statups[BuffStat.WK_CHARGE] = x;
+                    monsterStatus[MonsterStatus.FREEZE] = 1;
                     break;
                 case DragonKnight.DRAGON_BLOOD:
                     statups[BuffStat.DRAGONBLOOD] = x;
@@ -680,10 +683,12 @@ public class StatEffect : IBuffSource
                 case ILArchMage.BLIZZARD:
                 case ILMage.ELEMENT_COMPOSITION:
                 case Sniper.BLIZZARD:
-                case Outlaw.ICE_SPLITTER:
                 case FPArchMage.PARALYZE:
                 case Aran.COMBO_TEMPEST:
                 case Evan.ICE_BREATH:
+                    monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
+                    break;
+                case Outlaw.ICE_SPLITTER:
                     monsterStatus.AddOrUpdate(MonsterStatus.FREEZE, 1);
                     duration *= 2; // freezing skills are a little strange
                     break;
@@ -738,6 +743,7 @@ public class StatEffect : IBuffSource
                     break;
                 case Aran.SNOW_CHARGE:
                     statups[BuffStat.WK_CHARGE] = duration;
+                    monsterStatus[MonsterStatus.SPEED] = x;
                     break;
                 case ThunderBreaker.ENERGY_CHARGE:
                 case Marauder.ENERGY_CHARGE:
@@ -1233,11 +1239,11 @@ public class StatEffect : IBuffSource
             }
         }, async () =>
         {
-            await applyBuffEffect(applyto, applyto, true);
+            await applyBuffEffect(applyto, applyto, true, mob.getObjectId());
         });
     }
 
-    public async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary)
+    public async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary, int extra0 = 0)
     {
         // 不明
         //if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
@@ -1301,7 +1307,8 @@ public class StatEffect : IBuffSource
         {
             activeBuffs[BuffStat.COMBO] = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
         }
-        else if (getBuffSourceId() == Aran.COMBO_ABILITY)
+
+        if (getBuffSourceId() == Aran.COMBO_ABILITY)
         {
             localDuration = int.MaxValue;
         }
@@ -1315,8 +1322,8 @@ public class StatEffect : IBuffSource
         if (activeBuffs.Count > 0)
         {
             long starttime = applyto.Client.CurrentServer.Node.getCurrentTime();
-
-            var holders = activeBuffs.Select(x => Player.GetPlayerBuffStatValueHolder(applyto, x.Key, this, starttime, starttime + localDuration, x.Value)).ToDictionary(x => x.BuffStat);
+            var expiredAt = localDuration == -1 ? long.MaxValue : starttime + localDuration;
+            var holders = activeBuffs.Select(x => Player.GetPlayerBuffStatValueHolder(applyto, x.Key, this, starttime, expiredAt, x.Value, extra0)).ToDictionary(x => x.BuffStat);
 
             if (isMonsterRiding())
             {
