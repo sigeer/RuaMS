@@ -1231,21 +1231,24 @@ public class StatEffect : IBuffSource
 
     public async Task applyBeaconBuff(Player applyto, Monster mob)
     {
-        await applyto.UpdateBuff(BuffStat.HOMING_BEACON, holder =>
+        var oHolder = applyto.GetBuffStatValue(BuffStat.HOMING_BEACON);
+        if (oHolder != null && oHolder is EffectGuideBullet eHolder)
         {
-            if (holder is EffectGuideBullet eHolder)
+            if (eHolder.MobOId != mob.getObjectId())
             {
-                eHolder.MobOId = mob.getObjectId();
+                await applyto.CancelBuff(BuffStat.HOMING_BEACON);
+                await applyBuffEffect(applyto, applyto, true, mob.getObjectId());
             }
-        }, async () =>
+        }
+        else
         {
             await applyBuffEffect(applyto, applyto, true, mob.getObjectId());
-        });
+        }
     }
 
     public async Task applyBuffEffect(Player applyfrom, Player applyto, bool primary, int extra0 = 0)
     {
-        // 不明
+        // 不需要在这里移除旧BUFF，会通过RegisterEffect处理
         //if (!isMonsterRiding() && !isCouponBuff() && !isMysticDoor() && !isHyperBody() && !isCombo())
         //{     
         //    // last mystic door already dispelled if it has been used before.
@@ -1305,7 +1308,7 @@ public class StatEffect : IBuffSource
         }
         else if (isCombo())
         {
-            activeBuffs[BuffStat.COMBO] = applyto.getBuffedValue(BuffStat.COMBO) ?? 0;
+            activeBuffs[BuffStat.COMBO] = 1;
         }
 
         if (getBuffSourceId() == Aran.COMBO_ABILITY)
@@ -1977,8 +1980,16 @@ public class StatEffect : IBuffSource
         {
             if (x.Key == MonsterStatus.POISON)
             {
-                var poisonDamage = Math.Min(short.MaxValue, (int)(mob.getMaxHp() / (70.0 - SkillLevel) + 0.999));
-                return new MonsterPosion(mob, chr.getObjectId(), x.Key, this, poisonDamage, now, now + duration);
+                var poisonDamage = Math.Min(short.MaxValue, (mob.getMaxHp() / (70.0 - SkillLevel) + 0.999));
+                if (getBuffSourceId() == Outlaw.BURST_FIRE)
+                {
+                    var passive = chr.GetPlayerSkillEffect(Corsair.ELEMENTAL_BOOST);
+                    if (passive != null)
+                    {
+                        poisonDamage += poisonDamage * (passive.getX() / 100.0);
+                    }
+                }
+                return new MonsterPosion(mob, chr.getObjectId(), x.Key, this, (int)poisonDamage, now, now + duration);
             }
             if (x.Key == MonsterStatus.VENOMOUS_WEAPON)
             {
@@ -2003,6 +2014,17 @@ public class StatEffect : IBuffSource
             {
                 int damage = (int)((chr.getStr() + chr.getLuk()) * ((3.7 * getDamage()) / 100.0));
                 return new MonsterNinja(mob, chr.getObjectId(), x.Key, this, damage, now, now + duration);
+            }
+            if (x.Key == MonsterStatus.FREEZE)
+            {
+                if (getBuffSourceId() == Outlaw.ICE_SPLITTER)
+                {
+                    var passive = chr.GetPlayerSkillEffect(Corsair.ELEMENTAL_BOOST);
+                    if (passive != null)
+                    {
+                        duration += passive.getY() * 1000;
+                    }
+                }
             }
             return new MonsterDebuff(mob, chr.getObjectId(), x.Key, this, x.Value, now, now + duration);
         });
