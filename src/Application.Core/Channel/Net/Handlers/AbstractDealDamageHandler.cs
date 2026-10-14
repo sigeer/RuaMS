@@ -101,7 +101,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         else if (attack.skill == NightWalker.POISON_BOMB)
                         {
                             // Poison Bomb
-                            await attackEffect.applyTo(player, new Point(attack.position.X, attack.position.Y));
+                            await attackEffect.applyTo(player, attack.position);
                         }
                         else
                         {

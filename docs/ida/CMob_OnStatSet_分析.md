@@ -152,7 +152,7 @@ Decode2 → nDur      → this[n+2] = now + 500 * nDur
 | VENOMOUS_WEAPON | 0x01000000 | 24 | dword_BEF930 | 0xBEF930 | [88],[89],[90] | 23 | **CMob+1120=now** |
 | BLIND | 0x02000000 | 25 | dword_BEF920 | 0xBEF920 | [92],[93],[94] | 24 | 仅更新数值 |
 | SEAL_SKILL | 0x04000000 | 26 | dword_BEF910 | 0xBEF910 | [95],[96],[97] | 25 | 仅更新数值 |
-| *(未占用)* | 0x08000000 | 27 | dword_BEF900 | 0xBEF900 | list @+124 | 32 | **reflection：D4 count + 每个条目 3×D4**（`sub_78BB91`） |
+| *(未占用)* | 0x08000000 | 27 | dword_BEF900 | 0xBEF900 | list @+124（0x1F0） | 32 | **D4 count + 每条目 3×D4（id/value/expire）**，每秒按 value 跳伤害，见 §2.3 |
 | INERTMOB | 0x10000000 | 28 | dword_BEF8F0 | 0xBEF8F0 | [98],[99],[100] | 26 | `sub_66B562(0,0,0)` + `sub_672305`；movement |
 | WEAPON_REFLECT *(first)* | 0x20000000 | 29 | dword_BEF8E0 | 0xBEF8E0 | [104..106],[107],[112] | 27,33,35 | 尾部额外 D4→[107]、\|\|时 D4→[112] |
 | MAGIC_REFLECT *(first)* | 0x40000000 | 30 | dword_BEF8D0 | 0xBEF8D0 | [108..110],[111],[112] | 28,34,35 | 尾部额外 D4→[111]、\|\|时 D4→[112] |
@@ -170,27 +170,61 @@ Decode2 → nDur      → this[n+2] = now + 500 * nDur
 
 任一位命中且 `*(CMob+330)` 非 0 → OnStatSet/OnStatReset 延迟入 `ReservedPacket` 队列。
 
-### 2.3 bit27 reflection 列表（DecodeTemporary 尾段）
+### 2.3 bit27 条目列表（DecodeTemporary 尾段，`sub_78BB91`）
+
+位 27（`dword_BEF900`）在客户端不读标准三元组，而是维护一个**条目列表**（`ZList`，位于 `MobStat+0x1F0`，链表头 `MobStat+0x1FC` = `CMob+0x39C`）。
 
 ```c
 if (mask & dword_BEF900) {
-    int count = packet->Decode4();
-    clear_list(MobStat + 124);          // sub_672A87
+    int count = packet->Decode4();       // 0x78BA7F
+    clear_list(MobStat + 124);           // sub_672A87 (0x672A87)
     while (count--) {
-        node = list_alloc(MobStat + 124); // sub_7944BA
-        sub_78BB91(packet);              // 3 × Decode4 = 12 字节/条目
-        node[3] = now;                   // *(node+12) = update_time
+        node = list_alloc(MobStat + 124);// sub_7944BA (0x7944BA)
+        sub_78BB91(node, packet);        // 3 × Decode4 = 12 字节/条目
+        node[3] = now;                   // 0x78BAB5: *(node+12) = update_time（客户端自填，不在包里）
     }
 }
 ```
 
-`sub_78BB91`（0x78BB91）读的是 **3 个 Decode4**，不是单个 OID：
+`sub_78BB91`（0x78BB91，`__thiscall`，`ecx`=节点数据指针，`a2`=`CInPacket*`）连读 **3 个 Decode4**：
+
 ```c
 *this = Decode4(a2); *(this+1) = Decode4(a2); *(this+2) = Decode4(a2);
 ```
 
-旧服务端 `applyMonsterStatus` 在 per-status 循环后写 `reflection` 数组（**无 count 前缀**，且条目是单个 int），与客户端 `Decode4 count` + 12 字节/条目两处都不对齐——当前枚举无 `0x08000000` 成员，该路径不触发；若未来启用 bit27，必须同时补 count 前缀与 3 dword 条目。
-**现状：`MobBuffPackets` 已彻底删掉这段写出**（多写 1 个 dword 会把紧随其后的反射计数整体顶掉）。
+**节点字段语义**（每个节点 16 字节，前 12 字节来自包体，第 4 个 DWORD 客户端自填）：
+
+| 节点偏移 | 含义 | 依据（IDA） |
+|---|---|---|
+| `[0]` (+0x00) | **条目键 id**（reason / 来源标识） | upsert `sub_789F76`（0x789F76）按 `*node == key` 匹配，命中只更新 `[1][2][3]`；取消 `sub_78C70A`（0x78C74B）读 count 后逐条 `Decode4` 按 `node[0]` 处理/删除；过期时也被收集进输出数组（`sub_78BBBB` 0x78C0D6 段） |
+| `[1]` (+0x04) | **数值 nValue**：每秒在该怪身上跳出的伤害数字 | `CMob::Update`（0x66772B–0x6677A4）遍历列表：`node[1]!=0` 才进入分支，`now - node[3] >= 1000`（0x3E8）时 `ShowDamage(this, var_10>0 ? var_10 : node[1], …)`，随后 `node[3]=now`。`CMob::ShowDamage`（0x6691D3）：`nDamage>0` 红字伤害、`<0` 绿字回血、`==0` MISS |
+| `[2]` (+0x08) | **到期时间戳（绝对时刻）** | 过期扫描 `sub_78BBBB`（0x78C08A 段）：`now - node[2] > 0` → `sub_873F00(out_mask, dword_BEF900)` 置位 bit27（标记需 reset）、收集 `node[0]` 进输出数组、`sub_7944F8` 删除节点。与普通三元组 `this[n+2] = now + 500*Decode2()` 同位同义 |
+| `[3]` (+0x0C) | **最近一次跳字时间戳** | 仅由客户端写入（0x78BAB5 / 0x66779C），**不在包体里** |
+
+编码侧对称实现：`sub_78B087`（0x78B087）`Encode4 [0] / [1] / [2]`，位于 `sub_789FE6`（0x789FE6，本作无调用点）。
+
+**与 POISON / VENOM / NINJA_AMBUSH 的平行结构**（三者是“单条目”版，bit27 列表是“多条目”版）：
+
+| | 数值 | reason（→`sub_68146C`） | 到期 | 跳字时间 |
+|---|---|---|---|---|
+| POISON | `MobStat[43]` = `CMob+0x24C` | `[44]` = `CMob+0x250` | `[45]` = `CMob+0x254` | `CMob+0x45C` |
+| VENOMOUS_WEAPON | `[88]` | `[89]` = `CMob+0x304` | `[90]` | `CMob+0x460` |
+| NINJA_AMBUSH | `[84]` | `[85]` = `CMob+0x2F4` | `[86]` | `CMob+0x464` |
+| bit27 列表 | `node[1]` | `node[0]` | `node[2]` | `node[3]` |
+
+> **异常（已核实）**：`CMob::Update` 里本应把 `node[0]`（reason）传给 `sub_68146C`（对应 POISON 的 `push [ebx+250h]`）的位置，实际调用的是 `sub_78C7FD`（0x78C7FD）= `mov eax, offset loc_4F837C; retn`（返回常量；0x66776B 的 call 目标已按原始字节 `E8 8D 50 12 00` 核实，指向 0x78C7FD）。`loc_4F837C` 是被大量函数尾跳的尾合并块（`jmp +2; xor eax,eax; mov [0xBF6AB8], eax; ret`），更像是编译器尾合并/保护产物。因此 **`node[0]` 在 `Update` 中并未真正参与判定**，其游戏语义就只是“条目键”（upsert / 取消 / 过期收集）。
+
+**若未来启用 bit27，服务端必须写出的包体格式**（当前 `MonsterStatus` 枚举无 27 号成员，该路径不触发）：
+
+```text
+[位 27] int32 count
+        count × ( int32 id, int32 value, int32 expire )   // 12 字节/条目
+取消包  (0xF3 → ProcessStatReset → sub_78C70A)
+        int32 count
+        count × int32 id
+```
+
+注意 count 前缀不可省、条目必须是 3 个 int（12 字节）；写成无 count 的单 int 数组会让紧随其后的位 29/30 反弹计数整体错位。
 
 ### 2.4 16 字节掩码的字节布局（已验证；本节旧结论写反了）
 
@@ -413,5 +447,5 @@ movement 位命中时旧写法刚好剩下 1 个未读字节可吃，所以症�
 1. **表格**：§2.2 覆盖全部 `MonsterStatus` → bit# → `dword_BEFxxx`（虚地址 `0xBEFxxx`）→ `MobStat this[]` → 行为；标出服务端未占用的 bit20/27、客户端 **不读字段** 的 bit20/23（含 `NUELEMENTAL_ATTRIBUTELL`）。§2.1 给出 **DecodeTemporary 真实检查序**（bit18/19 在 bit16/17 之前，等）。  
 2. **收包**：`OnMobPacket` case **242** → `OnStatSet` 读 **16 字节 UINT128**；movement-affecting 且激活则挂 `ReservedPacket(type=1)`；否则 `ProcessStatSet` → `DecodeTemporary` 按 **§2.1 序** 以 `D2+D4+D2`（8 字节/位）读入，再处理副作用与公共尾部 `Decode2+Decode1`（+可选 movement `Decode1`）。  
 3. **Mask 布局（已验证）**：客户端唯一读法 = 16B mask，且 `UINT128` dword 逆序 ⇒ 状态位必须全部落在 **偏移 12..15**（客户端位 0..31）。旧 `applyMonsterStatus` 只有 secondmask 碰巧落在位 0..31（非 `isFirst` 状态因此能生效），4 个 `isFirst` 状态与整条出生路径都失效；`isFirst` 只是旧枚举的标记（enum 重构后已删除，见 §2.6）。详见 §2.4。  
-4. **对齐要求**：服务端 per-status **遍历顺序必须等于 §2.1**（= `MobBuffPackets.ClientFieldOrder`，不是字典插入序）；每位宽 8 字节，位 29/30 尾部另有 D4、任一置位再 D4、位 27 路径是 count + 3×D4（当前枚举不触发）；0xF2 尾巴是 `Decode2+Decode1(+movement Decode1)`，0xF3 是 `Decode1(+movement Decode1)`，出生包无尾巴；掩码位必须落在偏移 12..15，否则字段永远不被读取。  
+4. **对齐要求**：服务端 per-status **遍历顺序必须等于 §2.1**（= `MobBuffPackets.ClientFieldOrder`，不是字典插入序）；每位宽 8 字节，位 29/30 尾部另有 D4、任一置位再 D4、位 27 路径是 count + 每条目 3×D4（id/value/expire，语义见 §2.3，当前枚举不触发）；0xF2 尾巴是 `Decode2+Decode1(+movement Decode1)`，0xF3 是 `Decode1(+movement Decode1)`，出生包无尾巴；掩码位必须落在偏移 12..15，否则字段永远不被读取。  
 5. **枚举（§2.6）**：`MonsterStatus` = `enum`，值即客户端位号（0..30）；`PHANTOM_IMPRINT = MATK = 2` 共位别名（值语义下不可并存）；`NEUTRALISE` 取 `MonsterStatusUtils.MinServerOnlyId`（100）——纯服务端状态，不进掩码、不计入 `size`，抗压因此不再顺带往客户端塞一个 WDEF。

@@ -51,9 +51,9 @@ namespace Application.Core.Channel.Net.Packets
         /// 它不是位号升序：位 18/19（WEAPON_IMMUNITY / MAGIC_IMMUNITY）排在位 16/17（DOOM / SHADOW_WEB）之前。
         /// </para>
         /// <para>
-        /// 表外的位：位 20 / 23 / 27 客户端不读 per-status 字段（位 27 读的是 reflection 列表），
-        /// 位 31 是视觉位（双 Decode1 → 层 Alpha），位 32..34 又各是一个 per-status 三元组——
-        /// 但 <see cref="MonsterStatus"/> 只定义到位 30，这几位服务端永远置不起来，因此本表即完整。
+        /// 表外的位：位 20 / 23 客户端不读任何字段，位 27 读的是 <c>count + 条目列表</c>（不在本表里，
+        /// 由 <see cref="EncodeTemporary"/> 单独写出），位 31 是视觉位（双 Decode1 → 层 Alpha），
+        /// 没有对应的 <see cref="MonsterStatus"/>，因此本表即完整。
         /// </para>
         /// </summary>
         internal static readonly MonsterStatus[] ClientFieldOrder =
@@ -89,7 +89,7 @@ namespace Application.Core.Channel.Net.Packets
             MonsterStatus.Toss,               // 位 32 dword_BEF8B0
             MonsterStatus.NEUTRALISE,         // 位 33 dword_BEF8A0
             MonsterStatus.PHANTOM_IMPRINT,    // 位 34 dword_BEF890
-            // 位 27 dword_BEF900
+            MonsterStatus.Burned     // 位 27 dword_BEF900
             // 位 31 dword_BEF8C0
         ];
 
@@ -182,22 +182,38 @@ namespace Application.Core.Channel.Net.Packets
 
         /// <summary>
         /// <c>CANCEL_MONSTER_STATUS (0xF3)</c>，对应 <c>CMob::OnStatReset</c>（0x66C424）→ <c>ProcessStatReset</c>（0x672111）。
+        /// <para>
+        /// 掩码之后、<c>Decode1</c> size 之前，客户端 <c>sub_78C70A</c>（0x78C74B 段）会在掩码含位 27 时读
+        /// <c>int32 count + count×int32 id</c>；每个非 0 的 id 会把整条链表（<c>MobStat+0x1F0</c>）里的节点全部删掉
+        /// （id 值本身不参与匹配，0 会被整轮跳过），所以至少要写 1 条非 0 id，否则客户端不会清空列表。
+        /// </para>
         /// </summary>
-        internal static Packet CancelMonsterStatus(int oid, IEnumerable<MonsterStatus> statups)
+        internal static Packet CancelMonsterStatus(int mobObjectId, Dictionary<MonsterStatus, MonsterBuffBase> toRemove)
         {
             OutPacket p = OutPacket.create(SendOpcode.CANCEL_MONSTER_STATUS);
-            p.writeInt(oid);
-            WriteStatMask(p, statups);
+            p.writeInt(mobObjectId);
+            WriteStatMask(p, toRemove.Keys);
+
+            if (toRemove.TryGetValue(MonsterStatus.Burned, out var data) && data is MonsterBurned buffHolder)
+            {
+                // result = CInPacket::Decode4(a7);
+                p.writeInt(buffHolder.BurnList.Count);
+                foreach (var item in buffHolder.BurnList)
+                {
+                    p.writeInt(item.Key);
+                }
+            }
+
+            // v12 = CInPacket::Decode1(a7);
             p.writeByte(0);
 
-            if (MovementAffectingStat.Any(x => statups.Contains(x)))
+            if (MovementAffectingStat.Any(x => toRemove.ContainsKey(x)))
             {
                 // CMovePath::SetStatChangedPoint
                 p.writeByte(0);
             }
             return p;
         }
-
         #endregion
     }
 }

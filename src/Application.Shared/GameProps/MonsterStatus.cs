@@ -54,6 +54,9 @@ public enum MonsterStatus
     VENOMOUS_WEAPON = 24,
     BLIND = 25,
     SEAL_SKILL = 26,
+
+    Burned = 27,
+
     INERTMOB = 28,
     WEAPON_REFLECT = 29,
     MAGIC_REFLECT = 30,

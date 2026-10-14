@@ -142,6 +142,8 @@ The client is a v83 build.
 3. Record what the client actually proved: the IDB/version/base address; the functions and addresses inspected; the packet or field layout in decode order; how it maps to the server code under `src/`; which conclusions are client-verified versus still unconfirmed; and what was changed (or deliberately left alone) as a result.
 4. Fix cross-references from other documents and add the new file to `RuaMS.slnx`.
 
+**Core principle: when IDA analysis is required, reach the goal through IDA itself.** The server code in this repo may not implement the feature at all, or may implement it incorrectly — treat it only as a secondary reference, never as the source of truth. Confirm every conclusion against the IDB (decompile + disasm + raw bytes).
+
 ## Configuration Notes
 
 - `appsettings.json` keys can be overridden via environment variables prefixed with `RUA_MS_` (e.g., `RUA_MS_Database=MySql`, `RUA_MS_ChannelServerConfig__ServerHost=...`)

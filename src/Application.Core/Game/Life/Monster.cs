@@ -33,6 +33,7 @@ using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Server;
 using Application.Core.Server.life;
 using Application.Resources.Messages;
+using Application.Shared.Battle;
 using Application.Shared.Battle.Skills;
 using Application.Shared.MapObjects.Summons;
 using Application.Templates.Mob;
@@ -123,6 +124,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
     public IReadOnlyDictionary<int, MobAttackTemplate> AttackInfoHolders { get; }
     public HashSet<int> HasSaid { get; }
     public long Period { get; private set; } = -1;
+    public HashSet<BurnInfo> BurnInfos { get; } = new();
 
     /// <summary>
     /// removeAfter
@@ -1410,12 +1412,16 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     private async Task debuffMobStat(IEnumerable<MonsterStatus> buffs)
     {
+        var toRemove = new Dictionary<MonsterStatus, MonsterBuffBase>();
         foreach (var item in buffs)
         {
-            AllBuffs.Remove(item);
+            if (AllBuffs.Remove(item, out var data))
+            {
+                toRemove[item] = data;
+            }
         }
 
-        Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), buffs);
+        Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), toRemove);
         await BroadcastMap(packet);
     }
 
@@ -2376,22 +2382,19 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             }
         }
 
-        var toRemove = AllBuffs.Values.Where(x => x.Status == TickableStatus.Remove).ToList();
+        var toRemove = AllBuffs.Where(x => x.Value.Status == TickableStatus.Remove).ToDictionary();
         if (toRemove.Count > 0)
         {
-            if (isAlive())
-            {
-                Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), toRemove.Select(x => x.BuffStat));
-                await BroadcastMap(packet);
-            }
+            Packet packet = MobBuffPackets.CancelMonsterStatus(getObjectId(), toRemove);
+            await BroadcastMap(packet);
 
             foreach (var item in toRemove)
             {
-                if (item.BuffStat == MonsterStatus.VENOMOUS_WEAPON)
+                if (item.Key == MonsterStatus.VENOMOUS_WEAPON)
                 {
                     setVenomMulti(0);
                 }
-                AllBuffs.Remove(item.BuffStat);
+                AllBuffs.Remove(item.Key);
             }
         }
     }

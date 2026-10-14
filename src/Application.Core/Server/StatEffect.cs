@@ -2015,6 +2015,10 @@ public class StatEffect : IBuffSource
                 int damage = (int)((chr.getStr() + chr.getLuk()) * ((3.7 * getDamage()) / 100.0));
                 return new MonsterNinja(mob, chr.getObjectId(), x.Key, this, damage, now, now + duration);
             }
+            if (x.Key == MonsterStatus.Burned)
+            {
+                return new MonsterBurned(mob, chr.getObjectId(), this, now, now + duration);
+            }
             if (x.Key == MonsterStatus.FREEZE)
             {
                 if (getBuffSourceId() == Outlaw.ICE_SPLITTER)
