@@ -334,19 +334,19 @@ public partial class Player
             await CancelBuff(BuffStat.ARAN_COMBO);
         }
 
-        var activeLevel = Math.Min(count / 10, getSkillLevel(Aran.COMBO_ABILITY));
+        comboCount = Math.Min((short)30000, count);
+
+        var activeLevel = Math.Min(comboCount / 10, getSkillLevel(Aran.COMBO_ABILITY));
         if (activeLevel > 0)
         {
             var effect = SkillFactory.GetSkillTrust(Aran.COMBO_ABILITY).getEffect(activeLevel);
             if (effect != null)
             {
-                await effect.applyComboBuff(this, count);
+                await effect.applyComboBuff(this, comboCount);
             }
         }
 
-
-        comboCount = Math.Min((short)30000, count);
-        if (count > 0)
+        if (comboCount > 0)
         {
             await SendPacket(PacketCreator.showCombo(comboCount));
         }

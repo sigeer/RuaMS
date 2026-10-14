@@ -57,7 +57,7 @@ namespace Application.Core.Game.Life.Monsters.TemporaryStat
             return Task.CompletedTask;
         }
 
-        public void EncodeForLocalOne(OutPacket p)
+        public virtual void EncodeForLocalOne(OutPacket p)
         {
             p.writeShort(Value);
             p.writeInt(BuffSource.GetEncodeId());
