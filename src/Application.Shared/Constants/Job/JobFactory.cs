@@ -26,6 +26,11 @@ namespace Application.Shared.Constants.Job
             return (JobType)(id / 1000);
         }
 
+        public static JobStyle GetJobStyleById(int id)
+        {
+            return (JobStyle)(id / 100);
+        }
+
         public static int MaxJobId = _dataSource.Keys.Max();
     }
 

@@ -15,6 +15,7 @@ namespace Application.Shared.Constants.Job
         /// 职业群
         /// </summary>
         public JobType Type { get; }
+        public JobStyle Style { get; set; }
         public Job? ParentJob { get; }
 
         public static Job BEGINNER = new Job(JobId.BEGINNER, "新手", null);
@@ -138,6 +139,7 @@ namespace Application.Shared.Constants.Job
             HasSPTable = IsEvan();
 
             Type = JobFactory.GetJobTypeById(Id);
+            Style = JobFactory.GetJobStyleById(Id);
 
             if (Id % 1000 == 0)
             {

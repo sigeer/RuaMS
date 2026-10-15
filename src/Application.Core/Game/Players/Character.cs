@@ -693,11 +693,12 @@ public partial class Player
         }, 777);
     }
 
-    public async Task changeJob(Job? newJob)
+    public async Task changeJob(Job newJob)
     {
-        if (newJob == null)
+        var oldJob = JobModel;
+        if (!newJob.IsSameJobGroup(oldJob))
         {
-            return;//the fuck you doing idiot!
+            await CancelAllBuffs();
         }
 
         this.JobModel = newJob;
