@@ -37,7 +37,7 @@ public class JobCommand : CommandBase
                 }
 
                 await victim.changeJob(JobFactory.GetById(jobid));
-                await player.equipChanged();
+                await victim.equipChanged();
             }
             else
             {
