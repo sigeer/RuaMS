@@ -187,14 +187,14 @@ namespace Application.Core.Channel.Net
             {
                 CurrentServer.Send(w =>
                 {
-                    _ = ProcessPacket(msg);
+                    _ = ProcessPacketSafe(msg);
                 });
             }
             else
             {
                 Character.MapModel.Send(m =>
                 {
-                    _ = ProcessPacket(msg);
+                    _ = ProcessPacketSafe(msg);
                 });
             }
         }

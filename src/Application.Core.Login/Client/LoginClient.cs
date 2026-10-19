@@ -45,7 +45,7 @@ namespace Application.Core.Login.Client
             base.ChannelRead0(ctx, msg);
             CurrentServer.Send(w =>
             {
-                _ = ProcessPacket(msg);
+                _ = ProcessPacketSafe(msg);
             });
         }
 

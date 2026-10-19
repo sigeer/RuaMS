@@ -119,6 +119,11 @@ namespace Application.Shared.Client
 
         public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
         {
+            HandleException(cause);
+        }
+
+        private void HandleException(Exception cause)
+        {
             if (cause is not DecoderException)
                 log.LogError(cause, "Exception caught by {ClientInfo}", this);
 
@@ -136,6 +141,22 @@ namespace Application.Shared.Client
                     CloseSession();
                 else
                     _ = SendPacket(PacketCommon.serverNotice(5, cause.Message));
+            }
+        }
+
+        /// <summary>
+        /// 处理包，异常按 ExceptionCaught 的规则处理。
+        /// 该方法不会向外抛出异常，可以安全地 fire-and-forget 调用。
+        /// </summary>
+        protected async Task ProcessPacketSafe(InPacket packet)
+        {
+            try
+            {
+                await ProcessPacket(packet);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
             }
         }
 
