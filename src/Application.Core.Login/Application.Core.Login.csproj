@@ -39,19 +39,4 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
-
-	<ItemGroup>
-		<Generated Include="Mappers\*.g.cs" />
-	</ItemGroup>
-
-	<Target Name="CleanGenerated" AfterTargets="Clean">
-		<Delete Files="@(Generated)" />
-	</Target>
-
-	<Target Name="Mapster" AfterTargets="AfterBuild">
-		<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
-		<Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper -a &quot;$(TargetDir)$(ProjectName).dll&quot;" />
-	</Target>
-
-
 </Project>

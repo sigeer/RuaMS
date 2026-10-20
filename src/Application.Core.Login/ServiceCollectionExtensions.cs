@@ -181,8 +181,6 @@ namespace Application.Core.Login
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             services.AddSingleton(mapperConfig);
             services.AddSingleton<IMapper, ServiceMapper>();
-            //services.AddSingleton<ICharacterMapper, CharacterMapper>();
-            //services.AddSingleton<IAccountMapper, AccountMapper>();
 
             services.AddLoginHandlers();
 

@@ -189,8 +189,6 @@ namespace Application.Core.Channel.HostExtensions
             mapperConfig.Scan(typeof(ProtoMapper).Assembly);
             builder.Services.AddSingleton(mapperConfig);
             builder.Services.AddSingleton<IMapper, ServiceMapper>();
-            //builder.Services.AddSingleton<IItemMapper, ItemMapper>();
-            //builder.Services.AddSingleton<IPlayerMapper, PlayerMapper>();
 
             builder.Services.AddHostedService<ChannelHost>();
 
