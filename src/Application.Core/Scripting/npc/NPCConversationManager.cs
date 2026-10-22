@@ -28,7 +28,9 @@ using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
 using Application.Core.Managers;
 using Application.Core.Models;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
+using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Core.Server.partyquest;
 using System.Threading.Channels;
@@ -1184,4 +1186,36 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     }
 
     #endregion
+
+    /// <summary>
+    /// 开始单人任务副本并回馈结果。
+    /// private：脚本注册表收集的是 public 方法，辅助方法必须私有，否则会被当成脚本键。
+    /// </summary>
+    /// <param name="questId">任务 Id，同时也是 <see cref="SoloQuestEventTemplate"/> 的注册键（q{questId}）</param>
+    /// <returns>true 表示已进入副本</returns>
+    protected Task TryStartSoloQuest(int questId, Func<Task>? onSuccessCallback = null, Func<Task>? onFailedCallback = null)
+    {
+        return TryStartEvent(GetSoloQuestEventManager(questId), onSuccessCallback, onFailedCallback);
+    }
+
+    /// <summary>
+    /// 开始任意事件副本并回馈结果。
+    /// private 理由同 <see cref="TryStartSoloQuest"/>。
+    /// </summary>
+    protected async Task TryStartEvent(AbstractEventManager em, Func<Task>? onSuccessCallback = null, Func<Task>? onFailedCallback = null)
+    {
+        var r = await em.StartInstance(getPlayer());
+        if (r == CreateInstanceResult.Success)
+        {
+            if (onSuccessCallback != null)
+                await onSuccessCallback();
+        }
+        else
+        {
+            if (onFailedCallback != null)
+                await onFailedCallback();
+
+            await SayOK(em.HandleCreateInstanceResult(r, c));
+        }
+    }
 }

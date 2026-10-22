@@ -188,11 +188,57 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9000003, 9000004, 9000005, 9000006 
-        public Task Event03()
+        public async Task Event03()
         {
-            // Only 9000004 has JS — contains complex party/boss stage logic
-            // TODO
-            return Task.CompletedTask;
+            var eim = GetEventInstanceTrust();
+            const string nthText = "last";
+
+            var preamble = eim.getProperty("leader" + nthText + "preamble");
+            var mobcount = eim.getProperty("leader" + nthText + "mobcount");
+
+            // 首次对话：标记前导完成，等待队长带队进入
+            if (preamble == null)
+            {
+                await SayOK("嗨。欢迎来到最后一阶段。这是你与#bboss#k战斗的地方。我们开始吧？");
+                eim.setProperty("leader" + nthText + "preamble", "done");
+                return;
+            }
+
+            if (!isEventLeader())
+            {
+                if (mobcount == null)
+                {
+                    await SayOK("请告诉你的#b队长#k来找我谈话。");
+                }
+                else
+                {
+                    await warp(109020001, 0);
+                }
+                return;
+            }
+
+            if (mobcount != null)
+            {
+                await SayOK("你可以继续到下一阶段！");
+                return;
+            }
+
+            if (!await AskYesNo("你完了？！"))
+                return;
+
+            if (getMap().countMonsters() != 0)
+            {
+                await SayOK("你在说什么？杀死那些怪物！");
+                return;
+            }
+
+            await SayOK("干得好！你干掉了他们！");
+
+            eim.setProperty("leader" + nthText + "mobcount", "done");
+
+            var members = eim.getPlayers();
+            await warpParty(109020001, 0);
+            await eim.giveEventPlayersExp(2500);
         }
 
 

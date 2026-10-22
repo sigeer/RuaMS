@@ -63,7 +63,10 @@ namespace Application.Plugin.Script
         // Reactor: 6109026 
         public async Task glpqflame6() => await ToggleFlame("glpq_f6", ["g3", "g4", "g5", "h3", "h4", "h5", "i3", "i4", "i5"]);
 
-        // Reactor: 6109027 
+        // Reactor: 6109027
         public async Task glpqflame7() => await ToggleFlame("glpq_f7", ["g6", "g7", "h6", "h7", "i6", "i7"]);
+
+        // Reactor: 2406000 — 龙蛋：JS 的 untouch() 为空函数
+        public Task hontaleNPC0() => Task.CompletedTask;
     }
 }

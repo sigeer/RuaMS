@@ -1,9 +1,9 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.ContiMove;
+using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
-using Application.Core.Server.events;
 using Application.Core.Server.life;
 using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
@@ -11,7 +11,6 @@ using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
-using Application.Shared.Events;
 using Application.Shared.GameProps;
 using Application.Shared.MapObjects;
 using Application.Shared.Quest;
@@ -960,9 +959,9 @@ namespace Application.Plugin.Script.Npc
             switch (option)
             {
                 case 0:
-                    var em0 = GetEventManager("KerningTrain");
-                    var r = await em0.StartInstance(getPlayer());
-                    await SayOK(em0.HandleCreateInstanceResult(r, c));
+                    var contiMove = GetEventManager(PrivateContiMove.KerningTrain);
+                    var r = await contiMove.StartInstance(getPlayer());
+                    await SayOK(contiMove.HandleCreateInstanceResult(r, c));
                     break;
                 case 1:
                     if (haveItem(4031036) || haveItem(4031037) || haveItem(4031038))
@@ -1128,14 +1127,7 @@ namespace Application.Plugin.Script.Npc
                 var area = await AskMenu("高级道路是一个聚集了各种类型怪物，刷经验、刷装备的理想场所。#p1052014# 选择您想要面对的区域：", levels.Select(x => x));
 
                 var pqArea = area + 1;
-                var em = GetEventManager<PartyQuestEventManager>($"CafePQ_{pqArea}");
-
-                if (em == null)
-                {
-                    await SayOK($"CafePQ_{pqArea}遇到了一个错误。");
-                    return;
-                }
-
+                var em = GetEventManager($"CafePQ_{pqArea}");
                 var pqOption = await AskMenu($"#e#b<组队任务：高级之路 - {levels[area]}>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n#p1052014# 的操作方式与普通的不同。它们不使用金币或扭蛋券，而是使用 #r橡皮擦#k，可以通过完成高级之路上的任务获得。要前往那里，你必须找到队友并参加一个组队任务。当组队并准备好后，让你的 #b队长#k 与我交谈。", [
                     "我想参加组队任务。",
                     "我想了解更多详情。"
@@ -1324,7 +1316,7 @@ namespace Application.Plugin.Script.Npc
                 case 0:
                     if (isQuestStarted(2286) || isQuestStarted(2287) || isQuestStarted(2288))
                     {
-                        var em = GetEventManager("RockSpirit");
+                        var em = GetEventManager(nameof(RockSpirit));
                         var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         return;
@@ -1404,8 +1396,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(6108))
             {
-                var em = GetSoloQuestEventManager(6108);
-                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
+                await TryStartSoloQuest(6108);
             }
             else
             {
@@ -1676,14 +1667,17 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1092007 
         public async Task nautil_black()
         {
+            if (!isQuestStarted(2175))
+            {
+                await SayOK(GetDefaultTalk(2175));
+                return;
+            }
+
             if (await AskYesNo("你想要被传送到黑魔法师的弟子那里吗？"))
             {
-                await warp(912000000, 0);
+                await TryStartSoloQuest(2175);
             }
-            else
-            {
-                await SayOK(GetDefault0());
-            }
+
         }
 
 
@@ -1798,7 +1792,7 @@ namespace Application.Plugin.Script.Npc
                         "我要把你送到诺特勒斯号的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
                         "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
                         ]);
-                    var em = GetEventManager("4jaerial");
+                    var em = GetEventManager(nameof(Job4Aerial));
                     await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                 }
                 else
@@ -1923,7 +1917,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100003 
         public async Task contimoveEreEli()
         {
-            var contiMove = GetEventManager("ShipEllin");
+            var contiMove = GetEventManager(PrivateContiMove.ShipEllin);
             if (await AskYesNo("嗯，你好...又来了。你想离开圣地去别的地方吗？如果是的话，你来对地方了。我经营着一艘从#b圣地#k到#b金银岛#k的渡船，如果你愿意的话，我可以带你去#b金银岛#k...你需要支付#b1000#k金币的费用。\r\n"))
             {
                 if (getMeso() < 1000)
@@ -1954,7 +1948,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100004 
         public async Task contimoveEreOrb()
         {
-            var contiMove = GetEventManager("ShipOribs");
+            var contiMove = GetEventManager(PrivateContiMove.ShipOribs);
             if (await AskYesNo("嗯...风势正好。你是不是想离开圣地去别的地方？这艘渡船开往神秘岛的天空之城。你在圣地需要办的事情都处理好了吗？如果你正好要去#b天空之城#k，我可以带你去那里。你怎么样？要去天空之城吗？\r\n"))
             {
                 if (getMeso() < 1000)
@@ -1999,7 +1993,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100007 
         public async Task contimoveEliEre()
         {
-            var contiMove = GetEventManager("ShipEllin");
+            var contiMove = GetEventManager(PrivateContiMove.ShipEllin);
             if (await AskYesNo("嗯...那么...嗯...你是想离开金银岛去其他地区吗？你可以乘这艘船去#b圣地#k。在那里，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤。那里是神兽和女皇所在的地方。你想去圣地吗？大约需要#b2分钟#k，费用是#b1000#k金币。\r\n"))
             {
                 if (getMeso() < 1000)
@@ -2029,19 +2023,20 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1100008 
         public async Task contimoveOrbEre()
         {
-            var contiMove = GetEventManager("ShipOribs");
+            var contiMove = GetEventManager(PrivateContiMove.ShipOribs);
             if (await AskYesNo("这艘船将驶向#b圣地#k，那里是一个浮空的岛屿，你会看到明亮的阳光照在树叶上，感受到轻柔的微风拂过你的皮肤，还有女皇——希纳斯。如果你有兴趣加入皇家骑士团，那么你一定要来这里看看。你有兴趣去圣地吗？这次旅行将花费你#b1000#k金币\r\n"))
             {
-                if (getMeso() < 1000)
+                var meso = 1000;
+                if (getMeso() < meso)
                 {
-                    await SayNext("嗯... 你确定你有 #b1000#k 金币吗？检查一下你的背包，确保你有足够的金币。你必须支付费用，否则我不能让你上船...");
+                    await SayNext($"嗯... 你确定你有 #b{meso}#k 金币吗？检查一下你的背包，确保你有足够的金币。你必须支付费用，否则我不能让你上船...");
                 }
                 else
                 {
                     var r = await contiMove.StartInstance(getPlayer());
                     if (r == CreateInstanceResult.Success)
                     {
-                        await gainMeso(-1000);
+                        await gainMeso(-meso);
                     }
                     else
                     {
@@ -2168,7 +2163,7 @@ namespace Application.Plugin.Script.Npc
             {
                 // 910510001, 1104000
                 await SayNext("什么……你不属于这里！");
-                var puppet = GetEventManager("Puppeteer");
+                var puppet = GetEventManager(nameof(Puppeteer));
                 var r = await puppet.StartInstance(getPlayer());
                 await SayOK(puppet.HandleCreateInstanceResult(r, c));
 
@@ -2235,7 +2230,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1200003 
         public async Task contimoveRieRit()
         {
-            var contiMove = GetEventManager("Whale");
+            var contiMove = GetEventManager(PrivateContiMove.Whale);
             if (await AskYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
             {
                 if (haveItem(4032338))
@@ -2289,7 +2284,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1200004 
         public async Task contimoveRitRie()
         {
-            var contiMove = GetEventManager("Whale");
+            var contiMove = GetEventManager(PrivateContiMove.Whale);
 
             await SayNext("你考虑离开金银岛前往我们的城镇吗？如果你登上这艘船，我可以带你从#b明珠港#k到#b里恩#k，然后再返回。但你必须支付#b800#k金币的费用。你想去#b里恩#k吗？");
             if (getMeso() < 800)
@@ -2391,7 +2386,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                var em = GetEventManager<PartyQuestEventManager>(nameof(MK_PrimeMinister));
+                var em = GetEventManager(nameof(MK_PrimeMinister));
                 var r = await em.StartInstance(getPlayer());
                 await SayOK(em.HandleCreateInstanceResult(r, c));
             }
@@ -2420,7 +2415,7 @@ namespace Application.Plugin.Script.Npc
                 var option = await AskMenu("你要去哪？", allOptions);
                 if (option == 0)
                 {
-                    var pepe = GetEventManager<PartyQuestEventManager>(nameof(MK_PepeKing));
+                    var pepe = GetEventManager(nameof(MK_PepeKing));
                     var r = await pepe.StartInstance(getPlayer());
                     await SayOK(pepe.HandleCreateInstanceResult(r, c));
                 }
@@ -2751,9 +2746,7 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。祝你好运。");
 
-                var em = GetSoloQuestEventManager(questId);
-                var r = await em.StartInstance(getPlayer());
-                await SayOK(em.HandleCreateInstanceResult(r, c));
+                await TryStartSoloQuest(questId);
             }
             else
             {
@@ -2770,17 +2763,11 @@ namespace Application.Plugin.Script.Npc
                     ]);
                 if (await AskYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
                 {
-                    var em = GetSoloQuestEventManager(questId);
-                    var r = await em.StartInstance(getPlayer());
-                    if (r == CreateInstanceResult.Success)
+                    await TryStartSoloQuest(questId, async () =>
                     {
                         await setQuestProgress(questId, 1);
                         await gainItem(letter, -1);
-                    }
-                    else
-                    {
-                        await SayOK(em.HandleCreateInstanceResult(r, c));
-                    }
+                    });
                 }
                 else
                 {
@@ -2999,9 +2986,7 @@ namespace Application.Plugin.Script.Npc
             var jobId = QuestId.Get3rdJobQuest(getJob());
             if (isQuestStarted(jobId) && getMapId() == allowedJob.GetValueOrDefault(jobStyle) && !haveItem(4031059))
             {
-
-                var em = GetSoloQuestEventManager(jobId);
-                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
+                await TryStartSoloQuest(jobId);
             }
             else
             {
@@ -3209,8 +3194,7 @@ namespace Application.Plugin.Script.Npc
 
             if (await AskYesNo("你准备好进入玩偶屋了吗？"))
             {
-                var em = GetSoloQuestEventManager(3230);
-                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
+                await TryStartSoloQuest(3230);
             }
         }
 
@@ -3235,8 +3219,7 @@ namespace Application.Plugin.Script.Npc
 
                 if (await AskYesNo("你准备好进入#b#m922000000##k了吗？"))
                 {
-                    var em = GetSoloQuestEventManager(3239);
-                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
+                    await TryStartSoloQuest(3239);
                 }
             }
 
@@ -3395,13 +3378,7 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var em = GetEventManager<PartyQuestEventManager>("ElementalBattle");
-            if (em == null)
-            {
-                await SayOK("元素战斗遇到了一个错误。");
-                return;
-            }
-
+            var em = GetEventManager(nameof(ElementalBattle));
             var option = await AskMenu($"#e#b<组队任务：元素塔纳托斯>\r\n#k#n{em.Template.GetRequirementDescription(c)}\r\n\r\n你正在寻找元素塔纳托斯，对吗？如果你和另一个法师组队，而且他的元素属性与你相反，你们就能够克服它们。作为队长，当你准备好出发时，和我交谈。", [
                 "我想参加组队任务。",
                 "我想了解更多细节。"
@@ -3526,17 +3503,11 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    var em = GetSoloQuestEventManager(6002);
-                    var r = await em.StartInstance(getPlayer());
-                    if (r == CreateInstanceResult.Success)
+                    await TryStartSoloQuest(6002, async () =>
                     {
                         await removeAll(4031507);
                         await removeAll(4031508);
-                    }
-                    else
-                    {
-                        await SayOK(em.HandleCreateInstanceResult(r, c));
-                    }
+                    });
                 }
             }
             else
@@ -3869,7 +3840,7 @@ namespace Application.Plugin.Script.Npc
                     await SayNext("改变想法随时跟我搭话吧。");
                     return;
                 }
-                contiMove = GetEventManager("Crane");
+                contiMove = GetEventManager(PrivateContiMove.Crane);
             }
             else if (curMap == 250000100)
             {
@@ -3898,7 +3869,7 @@ namespace Application.Plugin.Script.Npc
                         await SayNext("改变想法随时跟我搭话吧。");
                         return;
                     }
-                    contiMove = GetEventManager("Crane");
+                    contiMove = GetEventManager(PrivateContiMove.Crane);
                 }
 
 
@@ -3930,12 +3901,7 @@ namespace Application.Plugin.Script.Npc
                 var inputText = await AskText("封印神殿的入口... #b暗号#k!");
                 if (inputText == "道可道非常道")
                 {
-                    var em = GetSoloQuestEventManager(21747);
-                    var r = await em.StartInstance(getPlayer());
-                    if (r != CreateInstanceResult.Success)
-                    {
-                        await SayNext(em.HandleCreateInstanceResult(r, c));
-                    }
+                    await TryStartSoloQuest(21747);
                 }
                 else
                 {
@@ -3973,7 +3939,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() != 925010400)
             {
-                var em = GetEventManager<PartyQuestEventManager>("DelliBattle");
+                var em = GetEventManager(nameof(DelliBattle));
                 if (em == null)
                 {
                     await SayOK("德利战斗遇到了一个错误。");
@@ -4096,11 +4062,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3335) && !haveItem(4031695, 1))
             {
-                await warp(926120300, "out00");
+                await TryStartSoloQuest(3335);
             }
             else
             {
-                await SayOK(GetDefault0());
+                await SayOK(GetDefaultTalk(3335));
             }
         }
 
@@ -4631,13 +4597,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                var em = GetEventManager<PartyQuestEventManager>("BossRushPQ");
-                if (em == null)
-                {
-                    await SayOK("Boss Rush PQ遇到了一个错误。");
-                    return;
-                }
-
+                var em = GetEventManager(nameof(BossRushPQ));
                 var option = await AskMenu(
                     "#e#b<组队任务：首领突袭>\r\n#k#n" + em.Template.GetRequirementDescription(c) +
                     "\r\n\r\n你想要和队友合作完成远征任务，还是勇敢到足以独自完成？让你的#b队伍领袖#k与我交谈或者自己创建一个队伍。",
@@ -4743,9 +4703,38 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9000041 
-        public Task Donation()
+        public async Task Donation()
         {
-            return Task.CompletedTask;
+            if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT)
+            {
+                await SayOK("勋章排名系统目前不可用。");
+                return;
+            }
+
+            string[] options = ["装备", "消耗", "设置", "其他"];
+            var selStr = "你好，我是#b巴扎 NPC#k！把背包里不需要的道具卖给我吧。#r警告#b：请确保你选中出售的道具槽位#r之后#b的格子都已准备好出售。#k 选中道具#b下方#k的道具会被一并售出。";
+            for (var i = 0; i < options.Length; i++)
+            {
+                selStr += $"\r\n#L{i}# {options[i]}#l";
+            }
+
+            var selectedType = await AskMenu(selStr);
+            if (selectedType < 0 || selectedType >= options.Length)
+                return;
+
+            var name = await AskText($"从你的#r{options[selectedType]}#k背包中的哪一件道具开始交易？");
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var res = await getPlayer().sellAllItemsFromName((sbyte)(selectedType + 1), name);
+            if (res > -1)
+            {
+                await SayOK($"交易完成！你从这个行动中获得了#r{numberWithCommas(res)}金币#k。");
+            }
+            else
+            {
+                await SayOK($"你的#b'{name}'#k物品栏中没有#b{options[selectedType]}#k！");
+            }
         }
 
 
@@ -4826,23 +4815,18 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9001105 
         public async Task spaceGaGa_papa()
         {
+
             var mapId = getPlayer().getMapId();
             if (mapId == 922240200)
             {
-                int selection = await AskMenu("你有什么要说的吗...? #b\r\n#L0#我想要救出嘎嘎。#l\r\n");
+                int selection = await AskMenu("你有什么要说的吗...? #b\r\n#L0#我想要救出佳佳。#l\r\n");
                 if (selection == 0)
                 {
                     await SayNext("欢迎！我从小月兔那里听说了发生的事情，很高兴你来了，因为我正打算请求一些帮助。Gaga是我的朋友，以前帮过我，经常过来打个招呼。不幸的是，他被外星人绑架了。");
 
-                    if (await AskYesNo("如果我们把嘎嘎留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出嘎嘎。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？"))
+                    if (await AskYesNo("如果我们把佳佳留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出佳佳。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？"))
                     {
-                        var em = GetEventManager("RescueGaga");
-                        if (em == null)
-                        {
-                            await SayOK("此活动目前不可用。");
-                            return;
-                        }
-
+                        var em = GetEventManager(nameof(RescueGaga));
                         var r = await em.StartInstance(getPlayer());
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                     }
@@ -4857,12 +4841,12 @@ namespace Application.Plugin.Script.Npc
             }
             else if (mapId >= 922240100 && mapId <= 922240119)
             {
-                var rgaga = getPlayer().getEvents().GetValueOrDefault("rescueGaga") as RescueGaga;
+                var eim = GetEventInstanceTrust();
                 string text = "You went through so much trouble to rescue Gaga, but it looks like we're back to square one. ";
-                if (rgaga.getCompleted() > 10)
+                if (getPlayer().Events.GetValueOrDefault(eim.EventName) > 10)
                 {
                     text += "Please don't give up until Gaga is rescued. To show you my appreciation for what you've accomplished thus far, I've given you a Spaceship. It's rather worn out, but it should still be operational. Check your #bSkill Window#k.";
-                    await rgaga.giveSkill(getPlayer());
+                    await eim.GetTemplate<RescueGaga>().GiveSkill(getPlayer());
                 }
                 else
                 {
@@ -4977,8 +4961,149 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("08_xmas")]
         public async Task s_08_xmas()
         {
-            // TODO: HolidayPQ - complex PQ coordination
-            await SayOK("假期组队任务暂时不可用。");
+            var pqType = (getMapId() / 10) % 10 + 1;
+            if (pqType < 1 || pqType > 3)
+            {
+                await SayOK($"假期组队任务{pqType}遇到了一个错误。");
+                return;
+            }
+
+            var em = GetEventManager("HolidayPQ_" + pqType);
+
+            // 在招募地图：显示报名菜单
+            if (getMapId() % 10 == 0)
+            {
+                var sel = await AskMenu("#e#b<组队任务：假日>\r\n#k#n"
+                    + (em?.Template?.GetRequirementDescription(c) ?? "")
+                    + "\r\n\r\n你和你的队伍成员一起完成任务怎么样？在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。如果你想尝试，请告诉你的队伍的#b队长#k来找我谈谈。#b\r\n#L0#我想参加组队任务。\r\n#L1#我想了解更多详情。");
+
+                if (sel == 0)
+                {
+                    if (getParty() == null)
+                    {
+                        await SayOK("只有当你加入一个队伍时，你才能参加派对任务。");
+                        return;
+                    }
+
+                    if (!isLeader())
+                    {
+                        await SayOK("你的队长必须与我交谈才能开始这个组队任务。");
+                        return;
+                    }
+
+                    await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer(), pqType), c));
+                }
+                else if (sel == 1)
+                {
+                    await SayOK("#e#b<组队任务：假日>#k#n\r\n\r\n与您的团队一起参与，建造雪人，保护快乐村免受斯克鲁奇的恶行。在里面，与您的团队一起努力保护它，收集雪之力量，这将有助于建造雪人。");
+                }
+                return;
+            }
+
+            // 在任务地图内：按阶段推进
+            var eim = GetEventInstanceTrust();
+            var difficulty = eim.getIntProperty("level");
+            var stg = eim.getIntProperty("statusStg1");
+            var mapobj = await eim.getInstanceMap(889100001 + 10 * (difficulty - 1));
+
+            if (stg == -1)
+            {
+                await SayNext("#b#h0##k…… 你终于来了。这是快乐村居民建造巨大雪人的地方。但斯克鲁奇的手下现在正在攻击它。快点！我们的任务是让你和你的队伍在限定时间内保护雪人免受斯克鲁奇手下的攻击。如果你消灭他们，他们会掉落一个叫做雪之力量的物品。收集它们并丢在雪人身上，你会看到它真的在变大。一旦它恢复到原来的大小，你的任务就完成了。只是要小心一件事。一些手下可能会掉落一个假的雪之力量。假的雪之力量实际上会让雪人比平常更快地融化。祝你好运。");
+
+                if (!isEventLeader())
+                {
+                    await SayOK("请让你们的队长和我联系，以获取有关任务的进一步详情。");
+                    return;
+                }
+
+                mapobj?.allowSummonState(true);
+                if (mapobj != null)
+                {
+                    var snowmanId = 9400317 + 5 * difficulty;
+                    var snowman = Application.Core.Server.life.LifeFactory.Instance.GetMonsterTrust(snowmanId);
+                    await mapobj.spawnMonsterOnGroundBelow(snowman, new System.Drawing.Point(-180, 15));
+                }
+                eim.setIntProperty("snowmanLevel", 1);
+                await eim.dropMessage(5, "雪人出现在了场地上！用一切手段保护它！");
+                eim.setIntProperty("statusStg1", 0);
+            }
+            else if (stg == 0)
+            {
+                if (mapobj?.getMonsterById(9400321 + 5 * difficulty) == null)
+                {
+                    await SayNext("请打败斯克鲁奇的手下，让雪人变大，这样斯克鲁奇就无法再躲避露面了。");
+                    return;
+                }
+
+                await SayNext("太棒了！正如我所预料的，你成功击败了斯克鲁奇的手下。非常感谢你！（沉默片刻……）不幸的是，斯克鲁奇似乎并不打算就此罢手。他的手下已经告诉他发生了什么，这意味着……他很快就会出现。请继续战斗，再次祝你好运。");
+
+                if (!isEventLeader())
+                {
+                    await SayOK("请让你们的队长和我进一步讨论任务的细节。");
+                    return;
+                }
+
+                // 雪人长成 → 斯克鲁奇登场
+                await eim.dropMessage(5, "随着雪人长大成型，斯克鲁奇出现了！");
+                if (mapobj != null)
+                {
+                    var boss = Application.Core.Server.life.LifeFactory.Instance.GetMonsterTrust(9400318 + difficulty);
+                    await mapobj.spawnMonsterOnGroundBelow(boss, new System.Drawing.Point(-180, 15));
+                }
+                eim.setIntProperty("spawnedBoss", 1);
+                eim.setIntProperty("statusStg1", 1);
+            }
+            else
+            {
+                if (!eim.isEventCleared())
+                {
+                    await SayNext("请击败斯克鲁奇，这样我们的枫之圣诞节就能免受伤害了！");
+                    return;
+                }
+
+                await SayNext("哇！！你打败了Scrooge！非常感谢你！你成功地让这个枫之谷平安度过了Maplemas！谢谢！！");
+
+                // 结算：有圣诞礼物券（4032092）则让玩家挑选礼物，否则发放通关奖励
+                if (haveItem(4032092))
+                {
+                    await GiveXmasPresent();
+                }
+                else if (eim.gridCheck(getPlayer()) == -1)
+                {
+                    await eim.GiveClearReward(getPlayer(), eim.getIntProperty("level"));
+                    eim.gridInsert(getPlayer(), 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 圣诞礼物券（4032092）兑换：二选一。
+        /// </summary>
+        private async Task GiveXmasPresent()
+        {
+            var sel = await AskMenu("哦，你带了一张#b#t4032092##k吗？太好了，稍等一下…… 这是你的冒险岛圣诞礼物。请选择你想要收到的礼物：\r\n\r\n"
+                + "#L0#20个#t2000002##k + 1个#t1002850##l\r\n"
+                + "#L1#20个#t2000006##k + 1个#t1012011##l");
+
+            // 索引 1 额外随机 0~8 号帽子
+            var (mainItem, subItem) = sel switch
+            {
+                0 => (2000002, 1002850),
+                1 => (2000006, 1012011),
+                _ => (0, 0),
+            };
+            if (mainItem == 0)
+                return;
+
+            if (!canHold(mainItem, 20) || !canHold(subItem, 1))
+            {
+                await SayOK("请确保在继续之前，您的装备和使用物品栏有足够的空间。");
+                return;
+            }
+
+            await gainItem(4032092, -1);
+            await gainItem(mainItem, 20);
+            await gainItem(sel == 1 ? subItem + Random.Shared.Next(9) : subItem, 1);
         }
 
 
@@ -5201,156 +5326,6 @@ namespace Application.Plugin.Script.Npc
             else
             {
                 await SayOK("如果你想回到#m801000000#，就来找我。");
-            }
-        }
-
-
-        // Npc: 9120201 
-        public async Task s_dungeon()
-        {
-            var exped = ExpeditionType.SHOWA;
-            var expedName = "Showa Gang";
-            var expedBoss = "The Boss";
-            var expedMap = "Nightmarish Last Days";
-            var expedItem = 4000138;
-
-            var player = getPlayer();
-            var expedition = getExpedition(exped);
-            var em = getEventManager("ShowaBattle");
-
-            if (player.getLevel() < exped.getMinLevel() || player.getLevel() > exped.getMaxLevel())
-            {
-                await SayOK("您不符合与" + expedBoss + "战斗的条件！");
-                return;
-            }
-
-            if (expedition == null)
-            {
-                var sel = await AskMenu("#e#b<远征：" + expedName + ">\r\n#k#n" + (em?.Template?.GetRequirementDescription(c) ?? "") + "\r\n\r\n你想组建一个队伍来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
-                if (sel == 1)
-                {
-                    expedition = getExpedition(exped);
-                    if (expedition != null)
-                    {
-                        await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
-                        return;
-                    }
-
-                    var res = await createExpedition(exped);
-                    if (res == 0)
-                        await SayOK("#r" + expedBoss + " 远征#k 已经创建。\r\n\r\n再次与我交谈，查看当前队伍，或开始战斗！");
-                    else if (res > 0)
-                        await SayOK("抱歉，您已经达到了此次远征的尝试配额！请另选他日再试……");
-                    else
-                        await SayOK("在开始远征时发生了意外错误，请稍后重试。");
-                }
-                else
-                {
-                    await SayOK("当然，并非每个人都能挑战" + expedBoss + "。");
-                }
-            }
-            else if (expedition.isLeader(player))
-            {
-                if (expedition.isInProgress())
-                {
-                    await SayOK("你的探险已经在进行中，对于那些仍在战斗中的人，让我们为那些勇敢的灵魂祈祷吧。");
-                }
-                else
-                {
-                    var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
-                    var sel = await AskMenu(list);
-
-                    if (sel == 1)
-                    {
-                        var expedMembers = expedition.getMemberList();
-                        var size = expedMembers.Count;
-                        if (size == 1)
-                        {
-                            await SayOK("你是探险队中唯一的成员。");
-                            return;
-                        }
-
-                        var text = "以下成员组成了你的探险队（点击成员名字可以将其踢出探险队）：\r\n";
-                        text += "\r\n\t\t1." + expedition.getLeader().getName();
-                        for (var i = 1; i < size; i++)
-                        {
-                            text += "\r\n#b#L" + (i + 1) + "#" + (i + 1) + ". " + expedMembers[i].Name + "#l\n";
-                        }
-
-                        var kickSel = await AskMenu(text);
-                        if (kickSel > 0)
-                        {
-                            var banned = expedMembers[kickSel - 1];
-                            await expedition.ban(banned);
-                            await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
-                        }
-                    }
-                    else if (sel == 2)
-                    {
-                        if (!haveItem(expedItem))
-                        {
-                            await SayOK("作为远征队领袖，你必须在你的物品栏中拥有一件#b#t" + expedItem + "##k，以对抗" + expedBoss + "！");
-                            return;
-                        }
-
-                        var min = exped.getMinSize();
-                        var size = expedition.getMemberList().Count;
-                        if (size < min)
-                        {
-                            await SayOK("你的远征队至少需要有" + min + "名玩家注册。");
-                            return;
-                        }
-
-                        await SayOK("探险队将开始，现在将由护送你前往 #b" + expedMap + "#k。");
-
-                        // TODO: Start the Showa battle using C# expedition API
-                        // JS uses: em.StartExpeditionInstance(expedition) - not available in C#
-                    }
-                    else if (sel == 3)
-                    {
-                        await player.getMap().LightBlue(expedition.getLeader().getName() + "探险结束了。");
-                        await expedition.dispose(true);
-                        await SayOK("这次探险已经结束。有时候最好的策略就是逃跑。");
-                    }
-                }
-            }
-            else if (expedition.isRegistering())
-            {
-                if (expedition.contains(player))
-                {
-                    await SayOK("你已经注册了这次远征。请等待 #r" + expedition.getLeader().getName() + "#k 开始。");
-                }
-                else
-                {
-                    var result = await expedition.addMember(player);
-                    await SayOK(result);
-                }
-            }
-            else if (expedition.isInProgress())
-            {
-                if (expedition.contains(player))
-                {
-                    if (em != null)
-                    {
-                        var eim = em.getInstance(expedName + player.getClient().getChannel());
-                        if (eim != null && eim.getIntProperty("canJoin") == 1)
-                        {
-                            await eim.registerPlayer(player);
-                        }
-                        else
-                        {
-                            await SayOK("你的远征队已经开始对抗" + expedBoss + "的战斗。让我们为这些勇敢的灵魂祈祷。");
-                        }
-                    }
-                    else
-                    {
-                        await SayOK("无法找到战斗实例。");
-                    }
-                }
-                else
-                {
-                    await SayOK("另一支探险队已经主动挑战了" + expedBoss + "，让我们为这些勇敢的灵魂祈祷吧。");
-                }
             }
         }
 
@@ -6014,9 +5989,33 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9220018 
-        public Task guyfawkes_ch()
+        public async Task guyfawkes_ch()
         {
-            throw new NotImplementedException();
+            var em = GetEventManager(nameof(TreasurePQ));
+            var sel = await AskMenu("#e#b<组队任务：MV的巢穴>\r\n#k#n"
+                + (em.Template?.GetRequirementDescription(c) ?? "")
+                + "\r\n\r\n由于前方有极其危险的生物，你无法继续前进。你想要和队友合作完成任务吗？如果是的话，请让你的 #b队伍领袖#k 和我交谈。#b\r\n#L0#我想参与组队任务。\r\n#L1#我想了解更多详情。");
+
+            if (sel == 0)
+            {
+                if (getParty() == null)
+                {
+                    await SayOK("只有当你加入一个队伍时，才能参加派对任务。");
+                    return;
+                }
+
+                if (!isLeader())
+                {
+                    await SayOK("你的队长必须与我交谈才能开始这个组队任务。");
+                    return;
+                }
+
+                await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
+            }
+            else if (sel == 1)
+            {
+                await SayOK("#e#b<组队任务：MV的巢穴>#k#n\r\n带领你的队员前往 MV 的巢穴，找到并击败盘踞其中的怪物。");
+            }
         }
 
 
@@ -6240,9 +6239,52 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9310039 
-        public Task q8535s()
+        public async Task q8535s()
         {
-            throw new NotImplementedException();
+            const int recruitMap = 702070400;
+            const short questId = 8534;
+
+            if (getMapId() != recruitMap)
+                return;
+
+            if (questId > 0 && !isQuestCompleted(questId))
+            {
+                await SayOK("...");
+                return;
+            }
+
+            var em = GetEventManager(nameof(YaoSengPQ));
+
+            var sel = await AskMenu("#e#b<组队任务> 少林密室#n\r\n"
+                + (em.Template?.GetRequirementDescription(c) ?? "")
+                + "#k\r\n\r\n你和你的队伍成员一起完成任务怎么样？\r\n在这里，你会遇到障碍和问题，如果没有出色的团队合作，你是无法完成的。\r\n如果你想尝试，请告诉你的#b队长#k来找我谈谈。#b\r\n"
+                + "#L0#我想参加组队任务。#l\r\n"
+                + "#L1#我想了解更多细节。#l");
+
+            if (sel == 0)
+            {
+                if (getParty() == null)
+                {
+                    await SayOK("只有当你加入一个队伍时，你才能参加组队任务。");
+                    return;
+                }
+
+                if (!isLeader())
+                {
+                    await SayOK("必须由你的队长与我交谈才能开始这个组队任务。");
+                    return;
+                }
+
+                var r = await em.StartInstance(getPlayer(), 1);
+                if (r != CreateInstanceResult.Success)
+                {
+                    await SayOK("另一个队伍已经进入了该频道的#r组队任务#k。请尝试其他频道，或者等待当前队伍完成。");
+                }
+            }
+            else if (sel == 1)
+            {
+                await SayOK("#e#b<组队任务> 少林密室#k#n\r\n带领你的队员到#e#b#m702060000##n#k进行调查并解决问题的源头。");
+            }
         }
 
 
@@ -6264,10 +6306,20 @@ namespace Application.Plugin.Script.Npc
 
 
         // Npc: 9901000, 9901001, 9901002, 9901003, 9901004, 9901005, 9901006, 9901007, 9901008, 9901009, 9901010, 9901011 ...
-        public Task rank_user()
+        public async Task rank_user()
         {
-            // TODO
-            return Task.CompletedTask;
+            var pnpc = getPlayerNPCByScriptid(getNpc());
+            if (pnpc is PlayerNpc playerNpc)
+            {
+                var branchJobName = GetJobName(playerNpc.Job);
+                var rankStr = $"你好，我是#b{playerNpc.Name}#k，在#r{branchJobName}#k职业中第#r{c.CurrentCulture.Ordinal(playerNpc.JobRank)}#k位达到最高等级。\r\n";
+                rankStr += $"\r\n    世界排名：#e#b{c.CurrentCulture.Ordinal(playerNpc.OverallRank)}#k#n";
+                await SayOK(rankStr);
+            }
+            else
+            {
+                await SayOK("你好，你好吗？");
+            }
         }
 
         async Task EnterTranningMap(int start)
@@ -6435,7 +6487,7 @@ namespace Application.Plugin.Script.Npc
             await warp(220080000);
         }
 
-        // Npc: 2007 
+        // Npc: 2007
         public async Task tutorialSkip()
         {
             if (getPlayer().Level <= 10)
@@ -6453,6 +6505,91 @@ namespace Application.Plugin.Script.Npc
             {
                 await SayNext("旅行愉快。");
             }
+        }
+
+        // Npc: 2096000 — 武陵修炼场告示牌
+        public async Task sca_dollBear()
+        {
+            await SayOK("新手在这张地图上训练。精通者在下一个地图上训练。专业人士在最后一个地图上训练，那里会有boss等待。");
+        }
+
+        // Npc: 9900001 — GM 升级 NPC
+        public async Task levelUP2()
+        {
+            if (getPlayer().gmLevel() <= 1)
+            {
+                await SayOK("嘿，怎么了？");
+                return;
+            }
+
+            if (await AskYesNo("你想升级吗？"))
+            {
+                await getPlayer().levelUp(true);
+            }
+        }
+
+        const int HONOR_NPC_FEE = 7000000;
+
+        /// <summary>
+        /// 名人堂 NPC：在对应职业的名人堂地图放置一个与玩家当前形象相同的 NPC。
+        /// 冒险家（1102003）、骑士团（1102003）、战神（1202010）共用同一流程，
+        /// 差别只在职业判定与"没有资格"时的提示语。
+        /// </summary>
+        private async Task SpawnHonorPlayerNpc(Func<int, bool> hasRequiredJob, string noQualifyMessage)
+        {
+            var jobType = getJobId() / 100;
+            if (!hasRequiredJob(jobType))
+            {
+                await SayOK(noQualifyMessage);
+                return;
+            }
+
+            var honorMapId = GameConstants.getHallOfFameMapid(getJob());
+            if (!await canSpawnPlayerNpc(honorMapId))
+            {
+                await SayOK(noQualifyMessage);
+                return;
+            }
+
+            var message = "你一路走来，才拥有今天的力量、智慧与勇气，不是吗？你想不想现在就把你的角色形象，以#rNPC#k的形式留在名人堂里呢？";
+            if (HONOR_NPC_FEE > 0)
+            {
+                message += $" 我可以为你办到，费用是#b {numberWithCommas(HONOR_NPC_FEE)} 冒险币#k。";
+            }
+
+            if (!await AskYesNo(message))
+            {
+                return;
+            }
+
+            if (getMeso() < HONOR_NPC_FEE)
+            {
+                await SayOK("抱歉，您没有足够的冒险币购买在名人堂上的位置。");
+                return;
+            }
+
+            if (!await canSpawnPlayerNpc(honorMapId))
+            {
+                await SayOK("抱歉，名人堂目前已满...");
+                return;
+            }
+
+            c.CurrentServer.NodeService.PlayerNPCService.SpawnPlayerNPCByHonor(getPlayer());
+            await gainMeso(-HONOR_NPC_FEE);
+            await SayOK("给你了！希望你会喜欢它。");
+        }
+
+        // Npc: 1102003 — 骑士团名人堂（职业类型 11~15）
+        public async Task cygnus_lv120()
+        {
+            await SpawnHonorPlayerNpc(jobType => jobType >= 11 && jobType <= 15, "欢迎来到骑士之间。");
+        }
+
+        // Npc: 1202010 — 战神名人堂（职业类型 21）
+        public async Task aran_lv200()
+        {
+            await SpawnHonorPlayerNpc(jobType => jobType == 21,
+                "瞧，这里是利恩的杰出勇敢英雄！那些坚定的心灵一直以来一直在保护我们的人民，他们是我们勇敢的战友。");
         }
     }
 

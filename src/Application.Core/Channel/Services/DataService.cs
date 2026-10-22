@@ -183,7 +183,7 @@ namespace Application.Core.Channel.Services
             player.PlayerTrockLocation.LoadData(o.Character.Data.TrockLocations);
             player.AreaInfo = o.Character.Data.Areas.ToDictionary(x => (short)x.Area, x => x.Info);
 
-            player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => new RescueGaga(x.Info) as Application.Core.Server.events.Events);
+            player.Events = o.Character.Data.Events.ToDictionary(x => x.Name, x => x.Info);
 
             var statusFromDB = o.Character.Data.QuestStatuses;
             foreach (var item in statusFromDB)
@@ -337,7 +337,7 @@ namespace Application.Core.Channel.Services
             data.QuestRecordEx.AddRange(player.QuestRecordEx.Select(x => new ProtoModel.AreaProto() { Area = x.Key, Info = x.Value.ToString() }));
             data.MonsterBooks.AddRange(player.Monsterbook.ToDto());
             data.SavedLocations.AddRange(player.SavedLocations.ToDto());
-            data.Events.AddRange(player.Events.Select(x => new ProtoModel.EventProto { Characterid = player.Id, Name = x.Key, Info = x.Value.getInfo() }));
+            data.Events.AddRange(player.Events.Select(x => new ProtoModel.EventProto { Characterid = player.Id, Name = x.Key, Info = x.Value }));
             data.Skills.AddRange(player.Skills.ToDto());
             data.SkillMacros.AddRange(_mapper.Map<ProtoModel.SkillMacroProto[]>(player.SkillMacros.Where(x => x != null)));
             data.TrockLocations.AddRange(player.PlayerTrockLocation.ToDto());

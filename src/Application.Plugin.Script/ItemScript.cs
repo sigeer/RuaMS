@@ -62,5 +62,22 @@ namespace Application.Plugin.Script
                 await TypedMessage(5, "这里没有荆棘需要清除");
             }
         }
+
+        /// <summary>
+        /// 北斗卫星手册（2430033）：集齐 7 本可兑换 100 万冒险币。
+        /// </summary>
+        public async Task BeiDouSatelliteManual()
+        {
+            if (haveItem(2430033, 7))
+            {
+                await gainMeso(1000000);
+                await SayOK("这是赏你的，拿去吧.");
+                await gainItem(2430033, -7);
+            }
+            else
+            {
+                await SayOK("请搜集7本以后再使用吧.");
+            }
+        }
     }
 }

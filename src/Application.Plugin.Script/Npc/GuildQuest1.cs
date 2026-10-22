@@ -2,6 +2,7 @@ using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Core.Server.maps;
+using Application.Plugin.Script.Events;
 
 
 namespace Application.Plugin.Script.Npc
@@ -11,13 +12,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9040000 — Guild Quest entrance / queue / join lobby
         public async Task guildquest1_enter()
         {
-            var em = getEventManager("GuildQuest");
-            if (em is not GuildQuestEventManager gqEm)
-            {
-                await SayOK("公会任务遇到了一个错误。");
-                return;
-            }
-
+            var em = GetEventManager<GuildQuestEventManager>(nameof(GuildQuest));
             var sel = await AskMenu("#e#b<公会任务：沙连尼安遗迹>\r\n#k#n\r\n通往沙连尼安的道路就在这里。你想做什么？#b\r\n#L0#注册公会进行公会任务#l\r\n#L1#加入你的公会的公会任务#l\r\n#L2#我想了解更多细节。#l");
             if (sel == 0)
             {
@@ -27,7 +22,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                if (gqEm.isQueueFull())
+                if (em.isQueueFull())
                 {
                     await SayOK("这个频道的队列已经满了。请耐心等待一会儿，然后再试一次，或者尝试在另一个频道。");
                     return;
@@ -38,7 +33,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                var entry = await gqEm.addGuildToQueue(getPlayer().getGuildId(), getPlayer().getId());
+                var entry = await em.addGuildToQueue(getPlayer().getGuildId(), getPlayer().getId());
                 if (entry > 0)
                 {
                     await SayOK("您的公会已成功注册。一条消息将在您的聊天窗口中弹出，让您的公会了解注册状态。\r\n现在，#r重要#k：作为这个实例的队长者，#r在公会被召集进行策略时，您必须已经在该频道上#k。#b未能完成此操作将使#k您的公会注册作废，并立即召集下一个公会。还必须注意的是，如果您，作为这个实例的队长者，从策略时间结束到实例持续时间的任何时刻都不在场，将使任务中断，并立即将您的公会移出队列。");
@@ -60,7 +55,7 @@ namespace Application.Plugin.Script.Npc
                     return;
                 }
 
-                var eim = findGuildLobby(gqEm, getPlayer().getGuildId());
+                var eim = findGuildLobby(em, getPlayer().getGuildId());
                 if (eim == null)
                 {
                     await SayOK("你的公会目前不在此频道上进行战略时间。请再次检查你的公会是否正在计划公会任务，如果是的话，请确认他们分配的频道。");

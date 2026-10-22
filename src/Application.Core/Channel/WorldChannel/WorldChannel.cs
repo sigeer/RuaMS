@@ -8,7 +8,6 @@ using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
 using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Server.events.gm;
-using Application.Core.Server.expeditions;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Core.ServerTransports;
@@ -54,7 +53,7 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     /// 处于现金商城
     /// </summary>
     public Dictionary<int, Player> PlayersAway { get; set; } = new();
-    private Dictionary<ExpeditionType, Expedition> expeditions = new();
+
     private Dictionary<int, MiniDungeon> dungeons = new();
 
     private Event? @event;
@@ -576,32 +575,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
             }
         }
     }
-
-    public async Task<bool> addExpedition(Expedition exped)
-    {
-        if (expeditions.TryAdd(exped.getType(), exped))
-        {
-            await exped.beginRegistration();
-            return true;
-        }
-        return false;
-    }
-
-    public void removeExpedition(Expedition exped)
-    {
-        expeditions.Remove(exped.getType());
-    }
-
-    public Expedition? getExpedition(ExpeditionType type)
-    {
-        return expeditions.GetValueOrDefault(type);
-    }
-
-    public List<Expedition> getExpeditions()
-    {
-        return new(expeditions.Values);
-    }
-
 
     public async Task setServerMessage(string message)
     {

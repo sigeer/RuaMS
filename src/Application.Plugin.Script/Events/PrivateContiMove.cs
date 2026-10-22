@@ -8,6 +8,12 @@ namespace Application.Plugin.Script.Events
 {
     public class PrivateContiMove : AbstractSoloEventTemplate
     {
+        public const string KerningTrain = "KerningTrain";
+        public const string ShipOribs = "ShipOribs";
+        public const string ShipEllin = "ShipEllin";
+        public const string Whale = "Whale";
+        public const string Crane = "Crane";
+
         public int[] Stations { get; }
         public int[] Transportings { get; }
         public int[] ArrivePortals { get; init; }

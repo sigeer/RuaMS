@@ -742,9 +742,8 @@ namespace Application.Plugin.Script
         // Reactor: 2119000
         public async Task scaScript1()
         {
-            // TODO
-            // 2119000
-            if (getReactor().getState() != 0) { }
+            if (getReactor().getState() != 0)
+                return;
 
             await weakenAreaBoss(
                 6090000,
@@ -755,9 +754,8 @@ namespace Application.Plugin.Script
         // Reactor: 2119001
         public async Task scaScript2()
         {
-            // TODO
-            // 2119001
-            if (getReactor().getState() != 0) { }
+            if (getReactor().getState() != 0)
+                return;
 
             await weakenAreaBoss(
                 6090000,
@@ -768,9 +766,8 @@ namespace Application.Plugin.Script
         // Reactor: 2119002
         public async Task scaScript3()
         {
-            // TODO
-            // 2119002
-            if (getReactor().getState() != 0) { }
+            if (getReactor().getState() != 0)
+                return;
 
             await weakenAreaBoss(
                 6090000,
@@ -781,9 +778,8 @@ namespace Application.Plugin.Script
         // Reactor: 2119003
         public async Task scaScript4()
         {
-            // TODO
-            // 2119003
-            if (getReactor().getState() != 0) { }
+            if (getReactor().getState() != 0)
+                return;
 
             await weakenAreaBoss(
                 6090000,
@@ -794,8 +790,6 @@ namespace Application.Plugin.Script
         // Reactor: 2119004
         public async Task snowscaScript0()
         {
-            // TODO
-            // 2119004
         }
 
         // Reactor: 2119005
@@ -1300,8 +1294,7 @@ namespace Application.Plugin.Script
         // Reactor: 2612004
         public async Task magatiaItem1()
         {
-            // TODO
-            // 2612004
+            // JS 的 rm.sprayItems()：以反应堆为中心向四周喷出掉落物
             await dropItems();
         }
 
@@ -1329,8 +1322,6 @@ namespace Application.Plugin.Script
         // Reactor: 2619000
         public async Task magaScript0()
         {
-            // TODO
-            // 2619000
             await dropItems();
         }
 
@@ -1372,8 +1363,6 @@ namespace Application.Plugin.Script
         // Reactor: 2708000
         public async Task PinkBeenBack0()
         {
-            // TODO
-            // 2708000
             var mapObj = getMap();
 
             //spawnJrBoss(mapObj.getMonsterById(8820019));
@@ -1416,8 +1405,6 @@ namespace Application.Plugin.Script
         // Reactor: 3008000
         public async Task pFBack0()
         {
-            // TODO
-            // 3008000
             var eim = getEventInstance();
             if (eim != null)
                 await eim.giveEventPlayersExp(52000, getMapId());

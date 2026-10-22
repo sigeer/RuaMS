@@ -1,3 +1,4 @@
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Infrastructure;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Job;
@@ -531,17 +532,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("拜托你了，战神...请阻止我。能阻止我的暴走的，只有主人你。我已经再也无法抑制了！请你一定要把暴走的我打倒！"))
             {
-                var em = GetSoloQuestEventManager(21401);
-                var r = await em.StartInstance(getPlayer());
-
-                if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-                {
-                    await startQuest();
-                }
-                else
-                {
-                    await SayOK(em.HandleCreateInstanceResult(r, c));
-                }
+                await TryStartSoloQuest(getQuest(), forceStartQuest);
             }
         }
         // Quest: 21401 
@@ -607,17 +598,7 @@ namespace Application.Plugin.Script.Quest
                 ]);
             if (await SayAcceptDecline("我们明白，但我们不会丢下我们的小狗离开。这样吧，我们来考验你，看看你是否有资格养一只狼。#r狼的考试#k"))
             {
-                var em = GetSoloQuestEventManager(21613);
-                var r = await em.StartInstance(getPlayer());
-
-                if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-                {
-                    await startQuest();
-                }
-                else
-                {
-                    await SayOK(em.HandleCreateInstanceResult(r, c));
-                }
+                await TryStartSoloQuest(getQuest(), forceStartQuest);
             }
         }
         // Quest: 21618 
@@ -1017,18 +998,8 @@ namespace Application.Plugin.Script.Quest
         public async Task q21746s()
         {
             await SayNext("封印石......那是很久很久以前，由武陵看管的东西......难道说觊觎它的人又出现了......");
-            var mapobj = await getWarpMap(925040001);
-            if (mapobj.countPlayers() == 0)
-            {
-                await mapobj.resetPQ(1);
 
-                await warp(925040001, 0);
-                await forceStartQuest();
-            }
-            else
-            {
-                await SayOK("有人已经在挑战，请等待他挑战结束。");
-            }
+            await TryStartSoloQuest(getQuest(), forceStartQuest);
         }
         // Quest: 21747 
         public async Task q21747s()

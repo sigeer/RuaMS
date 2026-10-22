@@ -25,7 +25,8 @@ namespace Application.Plugin.Script
 
         public ScriptService(WorldChannelServer node, string pluginName) : base(node, pluginName)
         {
-            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript)); _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
+            _npcSource = TypeUtils.LoadFromType(typeof(NpcScript)); 
+            _itemSource = TypeUtils.LoadFromType(typeof(ItemScript));
             _questSource = TypeUtils.LoadFromType(typeof(QuestScript));
 
             _portalSource = TypeUtils.LoadFromType(typeof(PortalScript));

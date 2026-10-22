@@ -58,7 +58,7 @@ namespace Application.Core.Game.Players
 
             PlayerTrockLocation = new(this, 5, 10);
 
-            Events = new Dictionary<string, Events>();
+            Events = new ();
             SavedLocations = new(this);
 
             Bag = new PlayerBag(this, o.Character.Equipslots, o.Character.Useslots, o.Character.Setupslots, o.Character.Etcslots);

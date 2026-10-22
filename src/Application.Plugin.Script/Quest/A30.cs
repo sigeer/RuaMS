@@ -382,22 +382,22 @@ namespace Application.Plugin.Script.Quest
                 }
             }
         }
-        // Quest: 2232 
+        // Quest: 2232
+        /// <summary>
+        /// 家族任务：需要读取玩家的家族条目（<c>getFamilyEntry()</c>）来判断是否有下属。
+        /// ⚠ 家族系统在 C# 中标注为「搁置」（见 <c>Character.cs</c> 中「替换Family，搁置」），
+        /// <c>Player</c> 上没有 <c>getFamilyEntry()</c>，家族数据仅在
+        /// <c>Application.Module.Family.Channel</c> 内维护且未与 <c>Player</c> 打通。
+        /// 因此这里按约定跳过实现，保持空方法；待家族系统恢复后再补。
+        /// </summary>
         public Task q2232e()
         {
-            //// TODO
-            //var familyEntry = getPlayer().getFamilyEntry();
-            //if (familyEntry != null && familyEntry.getJuniorCount() > 0)
-            //{  // script found thanks to kvmba
-            //    await forceCompleteQuest();
-            //    gainExp(3000);
-            //    await SayNext("做得很好！");
-            //}
-            //else
-            //{
-            //    await SayNext("你还没有找到一个同学吗？");
-            //}
-            //dispose();
+            // TODO: 依赖家族系统（当前搁置），暂不实现。
+            // 原 JS 逻辑：
+            //   var familyEntry = qm.getPlayer().getFamilyEntry();
+            //   if (familyEntry != null && familyEntry.getJuniorCount() > 0) {
+            //       qm.forceCompleteQuest(); qm.gainExp(3000); qm.sendNext("做得很好！");
+            //   } else { qm.sendNext("你还没有找到一个同学吗？"); }
             return Task.CompletedTask;
         }
         // Quest: 2233 
@@ -422,16 +422,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 2245 
         public async Task q2245s()
         {
-            var em = GetSoloQuestEventManager(2245);
-            var r = await em.StartInstance(getPlayer());
-            if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-            {
-                await forceStartQuest();
-            }
-            else
-            {
-                await SayOK(em.HandleCreateInstanceResult(r, c));
-            }
+            await TryStartSoloQuest(getQuest(), forceStartQuest);
         }
         // Quest: 2251 
         public async Task q2251e()
@@ -668,11 +659,9 @@ namespace Application.Plugin.Script.Quest
                 await getPlayer().showHint("我必须找到碧欧蕾塔公主！ (#b任务开始#k)");
             }
         }
-        // Quest: 2332 
+        // Quest: 2332 — 原 JS 的 end() 为空函数
         public Task q2332e()
         {
-            // TODO
-
             return Task.CompletedTask;
         }
         // Quest: 2333 

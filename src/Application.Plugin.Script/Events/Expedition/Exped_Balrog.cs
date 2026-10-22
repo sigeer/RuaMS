@@ -1,0 +1,121 @@
+using Application.Core.Game.Life;
+using Application.Core.Game.Maps;
+using Application.Core.scripting.Events.Instances;
+using Application.Core.scripting.Events.Templates;
+using Application.Core.Server.life;
+using Application.Shared.Battle;
+using System.Drawing;
+
+namespace Application.Plugin.Script.Events
+{
+    public class PQ_Balrog : AbstractSoloEventTemplate
+    {
+        public PQ_Balrog() : base(nameof(PQ_Balrog))
+        {
+            EntryMap = 910520000;
+            EntryPortal = 1;
+
+            ExitMap = 105100100;
+
+            MinMap = 910520000;
+            MaxMap = 910520000;
+
+            EventTime = 10 * 60;
+            MaxLobbys = 7;
+        }
+
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+            if (mob.getId() == 9300326)
+            {
+                await mob.MapModel.SpawnNpc(1061015, new Point(0, 115));
+            }
+        }
+    }
+
+    internal class Exped_Balrog : AbstractExpeditionEventTemplate
+    {
+        public Exped_Balrog() : base(8830003, nameof(Exped_Balrog), ExpeditionEntryType.BALROG_NORMAL.Name)
+        {
+            MinCount = 6;
+            MaxCount = 30;
+
+            MinLevel = 50;
+            MaxLevel = 255;
+
+            EntryMap = 105100300;
+            ExitMap = 105100100;
+            ClearMap = 105100301;
+
+            MinMap = 105100300;
+            MaxMap = 105100301;
+
+            EventTime = 60 * 60;
+            RegistrationTime = 5 * 60;
+        }
+
+        public override async Task AfterSeup(AbstractEventInstanceManager eim)
+        {
+            await base.AfterSeup(eim);
+
+            eim.Schedule(releaseLeftClaw, 1 * 60000);
+
+            var mapObj = await eim.getInstanceMap(EntryMap)!;
+
+            var mob0 = LifeFactory.Instance.GetMonsterTrust(8830000);
+            await mapObj.spawnFakeMonsterOnGroundBelow(mob0, new Point(412, 258));
+
+            // 8830002 -> 8830005
+            var mob2 = LifeFactory.Instance.GetMonsterTrust(8830002);
+            await mapObj.spawnMonsterOnGroundBelow(mob2, new Point(412, 258));
+
+            // 8830006 -> 8830001 -> 8830004
+            var mob6 = LifeFactory.Instance.GetMonsterTrust(8830006);
+            await mapObj.spawnMonsterOnGroundBelow(mob6, new Point(412, 258));
+        }
+
+        async Task releaseLeftClaw(AbstractEventInstanceManager eim)
+        {
+            var map = await eim.getInstanceMap(EntryMap);
+            if (map != null)
+            {
+                await map.killMonster(8830006);
+            }
+        }
+
+        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
+        {
+            var mapObj = (await eim.getInstanceMap(EntryMap))!;
+            if (mob.getId() == 8830001 || mob.getId() == 8830002)
+            {
+                var count = eim.getIntProperty("boss");
+                count++;
+
+                if (count == 2)
+                {
+                    await mapObj.makeMonsterReal(mapObj.getMonsterById(8830000));
+                }
+                eim.setIntProperty("boss", count);
+            }
+
+
+            if (mob.getId() == 8830000)
+            {
+                await eim.showClearEffect();
+                await eim.clearPQ();
+
+                await eim.dispatchRaiseQuestMobCount(BossId, EntryMap);
+                await eim.dispatchRaiseQuestMobCount(9101003, EntryMap); // thanks Atoot for noticing quest not getting updated after boss kill
+
+                await eim.EventManager.ChannelServer.NodeActor.Send(s =>
+                {
+                    s.SendDropMessage(6, "[Victory] " + eim.getLeader().getName() + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + mapObj.countAlivePlayers() + " players alive.", false);
+                });
+
+                await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(BossId), new Point(412, 258));
+            }
+        }
+
+
+    }
+}

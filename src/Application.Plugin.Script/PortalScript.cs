@@ -4,22 +4,21 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
+using Application.Plugin.Script.Events;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Job;
 using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
 using Application.Templates.Mob;
 using Application.Utility;
-using Application.Utility.Exceptions;
 using scripting.portal;
 using System.Drawing;
 
 namespace Application.Plugin.Script
 {
-    internal class PortalScript : PortalPlayerInteraction
+    internal partial class PortalScript : PortalPlayerInteraction
     {
         public PortalScript(IChannelClient c, IPortal p) : base(c, p)
         {
@@ -593,32 +592,17 @@ namespace Application.Plugin.Script
             }
             else
             {
-                var em = getEventManager("LatanicaBattle") as PartyQuestEventManager;
-                if (em == null)
-                {
-                    throw new BusinessNotsupportException($"Event: LatanicaBattle");
-                }
-
+                var em = GetEventManager(nameof(LatanicaBattle));
                 var r = await em.StartInstance(getPlayer());
-                switch (r)
+                if (r == CreateInstanceResult.Success)
                 {
-                    case CreateInstanceResult.Success:
-                        await playPortalSound();
-                        return true;
-                    case CreateInstanceResult.RequiredParty:
-                        await Pink("You are currently not in a party, create one to attempt the boss.");
-                        return false;
-                    case CreateInstanceResult.RequiredLeader:
-                        await Pink("Your party leader must enter the portal to start the battle.");
-                        return false;
-                    case CreateInstanceResult.Requirement:
-                        await Pink("Your party must consist of at least 2 players to attempt the boss.");
-                        return false;
-                    case CreateInstanceResult.LobbyLimited:
-                        await Pink("The battle against the boss has already begun, so you may not enter this place yet.");
-                        return false;
-                    default:
-                        return false;
+                    await playPortalSound();
+                    return true;
+                }
+                else
+                {
+                    await Pink(em.HandleCreateInstanceResult(r, c));
+                    return false;
                 }
             }
         }
@@ -940,8 +924,8 @@ namespace Application.Plugin.Script
 
         public async Task<bool> Depart_ToKerning()
         {
-            var em = GetEventManager("KerningTrain");
-            if (await em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
+            var contiMove = GetEventManager(PrivateContiMove.KerningTrain);
+            if (await contiMove.StartInstance(getPlayer()) != CreateInstanceResult.Success)
             {
                 await Pink("The passenger wagon is already full. Try again a bit later.");
                 return false;
@@ -1145,7 +1129,7 @@ namespace Application.Plugin.Script
             }
             else if (isQuestStarted(100203) || getPlayer().haveItem(4001094))
             {
-                var em = GetEventManager<SoloEventManager>("NineSpirit");
+                var em = GetEventManager(nameof(NineSpirit));
                 if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
                     await Pink("There is currently someone in this map, come back later.");
@@ -1484,36 +1468,23 @@ namespace Application.Plugin.Script
 
         public async Task<bool> enterFirstDH()
         {
-            var map = 0;
-
+            var currentQuestId = 0;
             if (getQuestStatus(20701) == 1)
             {
-                map = 913000000;
+                currentQuestId = 20701;
             }
             else if (getQuestStatus(20702) == 1)
             {
-                map = 913000100;
+                currentQuestId = 20702;
             }
             else if (getQuestStatus(20703) == 1)
             {
-                map = 913000200;
+                currentQuestId = 20703;
             }
-            if (map > 0)
-            {
-                var mapp = await getMap(map);
-                if (mapp.getAllPlayers().Count == 0)
-                {
-                    await mapp.resetPQ();
 
-                    await playPortalSound();
-                    await warp(map, 0);
-                    return true;
-                }
-                else
-                {
-                    await Pink("已经有其他人比你先使用了演武场，请稍后再试！");
-                    return false;
-                }
+            if (currentQuestId > 0)
+            {
+                return await TryStartSoloQuest(currentQuestId);
             }
             else
             {
@@ -1591,17 +1562,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
             {
-                var em = GetSoloQuestEventManager(21733);
-                var r = await em.StartInstance(getPlayer());
-                if (r == CreateInstanceResult.Success)
-                {
-                    return true;
-                }
-                else
-                {
-                    await Pink("目标地图有人，请稍后再尝试进入。");
-                    return false;
-                }
+                return await TryStartSoloQuest(21733);
             }
             else
             {
@@ -1666,14 +1627,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestActive(21739))
             {
-                var em = GetSoloQuestEventManager(21739);
-                var r = await em.StartInstance(getPlayer());
-                if (r != CreateInstanceResult.Success)
-                {
-                    await Pink(em.HandleCreateInstanceResult(r, c) ?? "");
-                    return false;
-                }
-                return true;
+                return await TryStartSoloQuest(21739);
             }
             else
             {
@@ -1712,17 +1666,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(21610) && !haveItem(4001193, 1))
             {
-                var em = GetSoloQuestEventManager(21610);
-                if (await em.StartInstance(getPlayer()) != CreateInstanceResult.Success)
-                {
-                    await Pink("There is currently someone in this map, come back later.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    return true;
-                }
+                return await TryStartSoloQuest(21610);
             }
             else
             {
@@ -5471,9 +5415,7 @@ namespace Application.Plugin.Script
         {
             if (isQuestStarted(20718))
             {
-                var cml = GetSoloQuestEventManager(20718);
-                await cml.StartInstance(getPlayer());
-                await playPortalSound();
+                return await TryStartSoloQuest(20718);
             }
             else
             {
@@ -6337,7 +6279,7 @@ namespace Application.Plugin.Script
 
             if (!((isQuestStarted(6361) && haveItem(4031870, 1)) || (isQuestCompleted(6361) && !isQuestCompleted(6363))))
             {
-                var em = GetEventManager<PartyQuestEventManager>("PapulatusBattle");
+                var em = GetEventManager(nameof(PapulatusBattle));
 
                 var r = await em.StartInstance(getPlayer());
                 if (r == CreateInstanceResult.Success)
@@ -6345,24 +6287,9 @@ namespace Application.Plugin.Script
                     await playPortalSound();
                     return true;
                 }
-                else if (r == CreateInstanceResult.RequiredParty)
-                {
-                    await Pink("You are currently not in a party, create one to attempt the boss.");
-                    return false;
-                }
-                else if (r == CreateInstanceResult.RequiredLeader)
-                {
-                    await Pink("Your party leader must enter the portal to start the battle.");
-                    return false;
-                }
-                else if (r == CreateInstanceResult.Requirement)
-                {
-                    await Pink("You cannot start this battle yet, because either your party is not in the range size, some of your party members are not eligible to attempt it or they are not in this map. If you're having trouble finding party members, try Party Search.");
-                    return false;
-                }
                 else
                 {
-                    await Pink("The battle against the boss has already begun, so you may not enter this place yet.");
+                    await Pink(em.HandleCreateInstanceResult(r, c));
                     return false;
                 }
             }
@@ -7023,20 +6950,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6153) && haveItem(4031475))
             {
-                var mapobj = await getWarpMap(910500200);
-                if (mapobj.countPlayers() == 0)
-                {
-                    await resetMapObjects(910500200);
-                    await playPortalSound();
-                    await warp(910500200, "out01");
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6153);
             }
             else
             {
@@ -7083,19 +6997,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6240))
             {
-                if ((await getWarpMap(921100200)).countPlayers() == 0)
-                {
-                    await resetMapObjects(921100200);
-                    await playPortalSound();
-                    await warp(921100200, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6240);
             }
             else
             {
@@ -7110,19 +7012,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6201))
             {
-                if ((await getWarpMap(910200000)).countPlayers() == 0)
-                {
-                    await resetMapObjects(910200000);
-                    await playPortalSound();
-                    await warp(910200000, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6201);
             }
 
             await Pink("A mysterious force won't let you in.");
@@ -7135,19 +7025,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6242))
             {
-                if ((await getWarpMap(921100210)).countPlayers() == 0)
-                {
-                    await resetMapObjects(921100210);
-                    await playPortalSound();
-                    await warp(921100210, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6242);
             }
             else
             {
@@ -7184,52 +7062,27 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6241) || isQuestStarted(6243))
             {
-                if ((await getWarpMap(924000100)).countPlayers() == 0)
-                {
-                    await resetMapObjects(924000100);
-                    await playPortalSound();
-                    await warp(924000100, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6241);
             }
 
             await Pink("A mysterious force won't let you in.");
             return false;
         }
 
-
+        // Map: 230040300
         public async Task<bool> s4resurrection()
         {
 
             if (haveItem(4001108))
             {
-                var map = await getWarpMap(923000100);
-                if (map.getAllPlayers().Count == 0)
-                {
-                    await map.resetMapObjects();
-                    await playPortalSound();
-                    await warp(map.Id, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6132);
             }
 
             await Pink("A mysterious force won't let you in.");
             return false;
         }
 
-
+        // Map: 220070400
         public async Task<bool> s4resur_enter()
         {
 
@@ -7343,19 +7196,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(6230) || isQuestStarted(6231) || haveItem(4001110))
             {
-                if ((await getWarpMap(922020200)).countPlayers() == 0)
-                {
-                    await resetMapObjects(922020200);
-                    await playPortalSound();
-                    await warp(922020200, 0);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Some other player is currently inside.");
-                    return false;
-                }
+                return await TryStartSoloQuest(6230);
             }
 
             return false;
@@ -7440,17 +7281,7 @@ namespace Application.Plugin.Script
 
             if (isQuestStarted(3935) && !haveItem(4031574, 1))
             {
-                if ((await getWarpMap(926000010)).countPlayers() == 0)
-                {
-                    await playPortalSound();
-                    await warp(926000010, 0);
-                    return true;
-                }
-                else
-                {
-                    await Pink("Someone is already trying this map.");
-                    return false;
-                }
+                return await TryStartSoloQuest(3935);
             }
             else
             {
@@ -7655,34 +7486,7 @@ namespace Application.Plugin.Script
         {
 
             var stage = (int)((Math.Floor(getMapId() / 100.0)) % 10) - 1;
-            var em = GetEventManager<PartyQuestEventManager>("TD_Battle" + stage);
-            if (em == null)
-            {
-                await Pink("TD Battle " + stage + " encountered an unexpected error and is currently unavailable.");
-                return false;
-            }
-
-            var r = await em.StartInstance(getPlayer());
-            switch (r)
-            {
-                case CreateInstanceResult.Success:
-                    await playPortalSound();
-                    return true;
-                case CreateInstanceResult.RequiredParty:
-                    await Pink("You are currently not in a party, create one to attempt the boss.");
-                    return false;
-                case CreateInstanceResult.RequiredLeader:
-                    await Pink("Your party leader must enter the portal to start the battle.");
-                    return false;
-                case CreateInstanceResult.Requirement:
-                    await Pink("Your party must consist of at least 2 players to attempt the boss.");
-                    return false;
-                case CreateInstanceResult.LobbyLimited:
-                    await Pink("The battle against the boss has already begun, so you may not enter this place yet.");
-                    return false;
-                default:
-                    return false;
-            }
+            return await TryStartEvent(GetEventManager("TD_Battle" + stage));
         }
 
 
@@ -7790,13 +7594,7 @@ namespace Application.Plugin.Script
         public async Task<bool> TD_neo_inTree()
         {
 
-            var nex = getEventManager("GuardianNex") as SoloEventManager;
-            if (nex == null)
-            {
-                await Pink("Guardian Nex challenge encountered an error and is unavailable.");
-                return false;
-            }
-
+            var nex = GetEventManager(nameof(GuardianNex));
             int[] quests = [3719, 3724, 3730, 3736, 3742, 3748];
             int[] mobs = [7120100, 7120101, 7120102, 8120100, 8120101, 8140510];
 

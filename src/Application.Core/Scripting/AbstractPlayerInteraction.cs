@@ -30,10 +30,10 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Relation;
 using Application.Core.Game.Skills;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
-using Application.Core.Server.expeditions;
 using Application.Core.Server.life;
 using Application.Core.Server.partyquest;
 using Application.Core.Server.quest;
@@ -235,12 +235,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getPlayer().getMap().countMonsters();
     }
 
-    public async Task resetMapObjects(int mapid)
-    {
-        await (await getWarpMap(mapid)).resetMapObjects();
-    }
-
-    public AbstractEventManager? getEventManager(string @event)
+    AbstractEventManager? getEventManager(string @event)
     {
         return getPlayer().getEventManager(@event);
     }
@@ -928,6 +923,44 @@ public class AbstractPlayerInteraction : IClientMessenger
         await getPlayer().getMap().broadcastMessage(PacketCreator.environmentChange(env, mode));
     }
 
+    /// <summary>
+    /// 通过对象 oid 移除地图上的 NPC（JS: <c>cm.removeNPC(oid)</c>）。
+    /// </summary>
+    public async Task removeNpcByOid(int oid)
+    {
+        var map = getPlayer().getMap();
+        var obj = map.getMapObject(oid);
+        if (obj is NPC npc)
+        {
+            await map.RemoveMapObject(npc, null);
+        }
+    }
+
+    /// <summary>
+    /// 播放一段过场特效（JS: <c>cm.showIntro(path)</c>）。
+    /// 与 <see cref="ShowEffect"/> 的差别只在于不额外发送 enableActions。
+    /// </summary>
+    public async Task showIntro(string path)
+    {
+        await c.SendPacket(EffectPacket.UIEffect(path));
+    }
+
+    /// <summary>
+    /// 在对话框里嵌入一张插图（JS: <c>cm.sendImage(path)</c>，用于新手引导的说明图）。
+    /// </summary>
+    public async Task sendImage(string path)
+    {
+        await c.SendPacket(EffectPacket.UIEffect(path));
+    }
+
+    /// <summary>
+    /// 聊天栏提示获得/失去道具（JS: <c>cm.showItemGain(itemId, qty)</c>）。
+    /// </summary>
+    public async Task showItemGain(int itemId, short quantity)
+    {
+        await c.SendPacket(PacketCreator.getShowItemGain(itemId, quantity));
+    }
+
     public string numberWithCommas(int number)
     {
         return getClient().CurrentCulture.Number(number);
@@ -936,53 +969,6 @@ public class AbstractPlayerInteraction : IClientMessenger
     public Pyramid? getPyramid()
     {
         return getPlayer().getPartyQuest() as Pyramid;
-    }
-
-    public async Task<int> createExpedition(ExpeditionType type, bool silent = false, int minPlayers = 0, int maxPlayers = 0)
-    {
-        var player = getPlayer();
-        Expedition exped = new Expedition(player, type, silent, minPlayers, maxPlayers);
-
-        var channelServer = player.getMap().getChannelServer();
-        int channel = channelServer.getId();
-        if (!channelServer.NodeService.ExpeditionService.CanStartExpedition(player.getId(), channel, exped.getType().name()))
-        {
-            // thanks Conrad for noticing missing expeditions entry limit
-            return 1;
-        }
-
-        if (await exped.addChannelExpedition(player.getClient().getChannelServer()))
-        {
-            return 0;
-        }
-        else
-        {
-            return -1;
-        }
-    }
-
-    public Expedition? getExpedition(ExpeditionType type)
-    {
-        return getPlayer().getClient().getChannelServer().getExpedition(type);
-    }
-
-    public string getExpeditionMemberNames(ExpeditionType type)
-    {
-        string members = "";
-        var exped = getExpedition(type);
-        if (exped != null)
-        {
-            foreach (string memberName in exped.getMembers().Values)
-            {
-                members += "" + memberName + ", ";
-            }
-        }
-        return members;
-    }
-
-    public bool isLeaderExpedition(ExpeditionType type)
-    {
-        return getExpedition(type)?.isLeader(getPlayer()) ?? false;
     }
 
     public long getJailTimeLeft()

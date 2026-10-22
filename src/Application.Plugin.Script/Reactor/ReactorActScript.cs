@@ -1439,30 +1439,24 @@ namespace Application.Plugin.Script
         // Reactor: 2119000 
         public async Task scaScript1()
         {
-            // TODO
-            // 2119000
-            // If the chest is destroyed before Riche, killing him should yield no exp
-
-
+            // JS 的 act() 为空函数：若在 Riche 之前摧毁宝箱，击杀他将不会获得经验
+            return;
         }
 
 
         // Reactor: 2119001 
         public async Task scaScript2()
         {
-            // TODO
-            // 2119001
-            // If the chest is destroyed before Riche, killing him should yield no exp
-
-
+            // JS 的 act() 为空函数：若在 Riche 之前摧毁宝箱，击杀他将不会获得经验
+            return;
         }
 
 
         // Reactor: 2119002 
         public async Task scaScript3()
         {
-            // TODO
-            // 2119002
+            // JS 的 act() 为空函数
+            return;
             // If the chest is destroyed before Riche, killing him should yield no exp
 
 
@@ -1472,8 +1466,8 @@ namespace Application.Plugin.Script
         // Reactor: 2119003 
         public async Task scaScript4()
         {
-            // TODO
-            // 2119003
+            // JS 的 act() 为空函数
+            return;
             // If the chest is destroyed before Riche, killing him should yield no exp
 
 
@@ -2198,11 +2192,8 @@ namespace Application.Plugin.Script
         // Reactor: 2612004 
         public async Task magatiaItem1()
         {
-            // TODO
-            // 2612004
-
-
-
+            // JS 的 act() 为空函数：掉落逻辑在 hit() 中处理
+            return;
         }
 
 
@@ -2240,12 +2231,9 @@ namespace Application.Plugin.Script
         // Reactor: 2619000 
         public async Task magaScript0()
         {
-            // TODO
-            // 2619000
-            // There's a timeout of 3 seconds to revert back from state 1 to 0.
-            // Reactor is destroyed (state 2) and triggers this if dropping two Magic Devices at once, which shouldn't really happen.
-
-
+            // JS 的 act() 为空函数：状态 1 会在 3 秒后自动回落到 0；
+            // 反应堆被摧毁（状态 2）时触发此处，仅在一次性掉落两个魔法装置时才会发生，正常情况下不会出现
+            return;
         }
 
 
@@ -2301,22 +2289,15 @@ namespace Application.Plugin.Script
         // Reactor: 2708000 
         public async Task PinkBeenBack0()
         {
-            // TODO
-            // 2708000
-
-
-
+            // JS 的 act() 为空函数：击杀逻辑在 hit() 中处理
+            return;
         }
 
 
-        // Reactor: 2709000 
+        // Reactor: 2709000 — 粉豆召唤：移除占位怪物，由事件模板生成真正的粉豆
         public async Task PinkBeenScript0()
         {
-            // TODO
-            // 2709000
-
-
-
+            await getMap().killMonster(8820000);
         }
 
 

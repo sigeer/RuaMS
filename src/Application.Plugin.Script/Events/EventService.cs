@@ -48,6 +48,11 @@ namespace Application.Plugin.Events
                 new PQ_Kerning(),
                 new PQ_Ellin(),
                 new PQ_Ludi(),
+                new LudiMazePQ(),
+
+                new HolidayPQ(1),
+                new HolidayPQ(2),
+                new HolidayPQ(3),
                 new PQ_Orbis(),
                 new PQ_Pirate(),
 
@@ -57,28 +62,73 @@ namespace Application.Plugin.Events
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "2", 980000200),
                 new PQ_CPQ1( nameof(PQ_CPQ1) + "3", 980000300),
 
+                new PQ_CPQ2( nameof(PQ_CPQ2) + "1", 980031000),
+                new PQ_CPQ2( nameof(PQ_CPQ2) + "2", 980032000),
+                new PQ_CPQ2( nameof(PQ_CPQ2) + "3", 980033000),
+
                 new PQ_Ariant( nameof(PQ_Ariant) + "1", 980010100),
                 new PQ_Ariant( nameof(PQ_Ariant) + "2", 980010200),
                 new PQ_Ariant( nameof(PQ_Ariant) + "3", 980010300),
 
                 new PQ_Zakum(),
-                new Battle_Zakum(),
+                new Exped_Zakum(),
 
                 new PQ_Balrog(),
-                new Battle_Balrog(),
+                new Exped_Balrog(),
+
+                new BalrogQuest(),
+                new Exped_Balrog_Easy(),
 
                 new PQ_Horntail(),
-                new Battle_Horntail(),
+                new Exped_Horntail(),
 
-                new PrivateContiMove( "KerningTrain", [103000100, 103000310], [103000301, 103000302], 50),
+                new Exped_Showa(),
+                new Exped_PinkBean(),
+                new Exped_Scarga(),
+                new Exped_CWKPQ(),
+                new ElementalBattle(),
+                new AmoriaPQ(),
+                new LatanicaBattle(),
+                new PapulatusBattle(),
+                new GuardianNex(),
+                new NineSpirit(),
+                new RescueGaga(),
+                new DelliBattle(),
+                new BossRushPQ(),
+                new MK_PrimeMinister2(),
+                new Job4Aerial(),
+                new GuildQuest(),
+                new MagatiaPQ_A(),
+                new MagatiaPQ_Z(),
+
+                new TreasurePQ(),
+                new YaoSengPQ(),
+                new ElnathPQ(),
+
+
+
+                new TD_Battle1(),
+                new TD_Battle2(),
+                new TD_Battle3(),
+                new TD_Battle4(),
+                new TD_Battle5(),
+
+                new CafePQ_1(),
+                new CafePQ_2(),
+                new CafePQ_3(),
+                new CafePQ_4(),
+                new CafePQ_5(),
+                new CafePQ_6(),
+
+                new PrivateContiMove( PrivateContiMove.KerningTrain, [103000100, 103000310], [103000301, 103000302], 50),
                 // 天空之城 - 圣地
-                new PrivateContiMove( "ShipOribs", [MapId.ORBIS_STATION, MapId.SKY_FERRY],[200090020, 200090021], 8 * 60),
+                new PrivateContiMove( PrivateContiMove.ShipOribs, [MapId.ORBIS_STATION, MapId.SKY_FERRY],[200090020, 200090021], 8 * 60),
                 // 魔法密林 - 圣地
-                new PrivateContiMove( "ShipEllin", [MapId.ELLINIA_SKY_FERRY, MapId.SKY_FERRY],[MapId.FROM_ELLINIA_TO_EREVE, MapId.FROM_EREVE_TO_ELLINIA], 2 * 60),
+                new PrivateContiMove( PrivateContiMove.ShipEllin, [MapId.ELLINIA_SKY_FERRY, MapId.SKY_FERRY],[MapId.FROM_ELLINIA_TO_EREVE, MapId.FROM_EREVE_TO_ELLINIA], 2 * 60),
                 // 里恩 - 明珠港
-                new PrivateContiMove( "Whale", [MapId.DANGEROUS_FOREST, MapId.LITH_HARBOUR],[MapId.FROM_RIEN_TO_LITH, MapId.FROM_LITH_TO_RIEN], 60) { ArrivePortals = [0, 3]},
+                new PrivateContiMove( PrivateContiMove.Whale, [MapId.DANGEROUS_FOREST, MapId.LITH_HARBOUR],[MapId.FROM_RIEN_TO_LITH, MapId.FROM_LITH_TO_RIEN], 60) { ArrivePortals = [0, 3]},
                 // 天空之城 - 武陵
-                new PrivateContiMove( "Crane", [200000141, 250000100],[200090300, 200090310], 60),
+                new PrivateContiMove( PrivateContiMove.Crane, [200000141, 250000100],[200090300, 200090310], 60),
 
                 new SoloQuestEventTemplate(QuestId.Get3rdJobQuest(Job.WARRIOR), 20 * 60, 108010300, 105070001, 108010300, 108010301),
                 new SoloQuestEventTemplate(QuestId.Get3rdJobQuest(Job.MAGICIAN), 20 * 60, 108010200, 100040106, 108010200, 108010201),
@@ -91,13 +141,27 @@ namespace Application.Plugin.Events
                 new SoloQuestEventTemplate(QuestId.Get2ndJobQuest(Job.BOWMAN), 20 * 60, 108000100, 106010000, 108000100, 108000100) { MaxLobbys = 3, ExitPortal = 9 },
                 new SoloQuestEventTemplate(QuestId.Get2ndJobQuest(Job.THIEF), 20 * 60, 108000400, 102040000, 108000400, 108000400) { MaxLobbys = 3, ExitPortal = 9 },
 
+                new SoloQuestEventTemplate(2175, 20 * 60, 912000000, 120000100,912000000,912000000),
                 new SoloQuestEventTemplate(2191, 20 * 60, 108000502, 120000101, 108000502, 108000502) { MaxLobbys = 2 },
                 new SoloQuestEventTemplate(2192, 20 * 60, 108000501, 120000101, 108000501, 108000501) { MaxLobbys = 2 },
-                new SoloQuestEventTemplate(3230, 10 * 60, 922000010,221024400,922000010,922000010 ),
+
+                new SoloQuestEventTemplate(3335, 10 * 60, 926120300, 261000000, 926120300, 926120300) { EntryPortal = 4 },
+
+                new DollHouse(),
+
                 new SoloQuestEventTemplate(21301, 10 * 60, 108010700,140020200,108010700,108010700 ){EntryPortal = 1},
 
                 new SoloQuestEventTemplate(6108, 30 * 60, 910500000,105090200,910500000,910500000 ){EntryPortal = 1},
-                new SoloQuestEventTemplate(20718, 10 * 60, 910110000,101000000,910110000,910110000){EntryPortal = 1, ExitPortal = 26},
+
+                new SoloQuestEventTemplate(6153, 30 * 60, 910500200,105090800,910500200,910500200) { EntryPortal = 2 },
+                new SoloQuestEventTemplate(6240, 30 * 60, 921100200,211042200,921100200,921100200),
+                new SoloQuestEventTemplate(6201, 30 * 60, 910200000,101030104,910200000,910200000),
+                new SoloQuestEventTemplate(6230, 30 * 60, 922020200,220010001,922020200,922020200),
+                new SoloQuestEventTemplate(6241, 30 * 60, 924000100,240010700,924000100,924000100),
+                new SoloQuestEventTemplate(6242, 30 * 60, 921100210,211040700,921100210,921100210),
+                new SoloQuestEventTemplate(6132, 30 * 60, 923000100,230040300,923000100,923000100),
+
+                new SoloQuestEventTemplate(20718, 10 * 60, 910110000,101000000,910110000,910110000){EntryPortal = 1, ExitPortal = 2},
                 new q21401(),
                 new q21610(),
                 new q21613(),
@@ -107,9 +171,17 @@ namespace Application.Plugin.Events
                 new q2245(),
                 new SoloQuestEventTemplate(2291, 30 * 60, 103040440,103040400,103040410,103040460),
                 new SoloQuestEventTemplate(3239, 20 * 60, 922000000,922000009,922000000,922000000),
+                new SoloQuestEventTemplate(3933, 30 * 60, 926000000,260000200,926000000,926000000) { EntryPortal = 1},
+                new SoloQuestEventTemplate(3935, 30 * 60, 926000010,260000302,926000010,926000010),
                 new q6002(),
                 new q6330(),
                 new q6370(),
+
+                new SoloQuestEventTemplate(21746, 30 * 60, 925040001,925040000,925040001,925040001),
+
+                new SoloQuestEventTemplate(20701, 30 * 60, 913000000,130020000,913000000,913000000),
+                new SoloQuestEventTemplate(20702, 30 * 60, 913000100,130020000,913000100,913000100),
+                new SoloQuestEventTemplate(20703, 30 * 60, 913000200,130020000,913000200,913000200),
 
                 new RockSpirit(),
                 new Puppeteer(),

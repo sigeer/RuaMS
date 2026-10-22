@@ -162,7 +162,7 @@ public partial class Player
     private bool allowExpGain = true;
     private byte lastmobcount = 0;
 
-    public Dictionary<string, Events> Events { get; set; }
+    public Dictionary<string, int> Events { get; set; }
 
     private PartyQuest? partyQuest = null;
 
@@ -3311,11 +3311,6 @@ public partial class Player
                 await nEquip.gainItemExp(Client, expGain);
             }
         }
-    }
-
-    public Dictionary<string, Events> getEvents()
-    {
-        return Events;
     }
 
     public PartyQuest? getPartyQuest()

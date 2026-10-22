@@ -1,5 +1,6 @@
 using Application.Shared.Constants.Inventory;
 using Application.Shared.GameProps;
+using Application.Shared.Quest;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -360,17 +361,7 @@ namespace Application.Plugin.Script.Quest
             if (await SayAcceptDecline("若想要实际测试你的力量，应该需要亲自去体验吧？我想和你进行一场对战！别担心，我也不想伤害你…就用我的分身来对付你好了！可以马上进行对战吗？"))
             {
                 await SayNext("很好，我喜欢你的自信。");
-                // TODO
-                if ((await getWarpMap(926000000)).getAllPlayers().Count > 0)
-                {
-                    await SayOK("此地图中当前有人，请稍后再试。");
-                }
-                else
-                {
-                    await forceStartQuest();
-
-                    await warp(926000000, "st00");
-                }
+                await TryStartSoloQuest(getQuest(), forceStartQuest);
             }
         }
         // Quest: 3941 

@@ -129,7 +129,7 @@ namespace Application.Plugin.Script.Npc
 
                     if (selectedMenu == 0)
                     {
-                        if (!getPlayer().hasEntered(getMapId()) && !getPlayer().FinishedDojoTutorial)
+                        if (!getPlayer().FinishedDojoTutorial)
                         {
                             if (await AskYesNo("嘿！你！这是你第一次来吗？嗯，我的主人不会随便见任何人。他很忙。看你的样子，我觉得他不会理你。哈！但是，今天是你的幸运日……我告诉你吧，如果你能打败我，我就让你见我的主人。你觉得怎么样？"))
                             {
