@@ -1,19 +1,11 @@
-using Application.Core.Client;
-using Application.Core.scripting.item;
-using client.inventory;
-
 namespace Application.Plugin.Script
 {
     /// <summary>
     /// 补齐 WZ 中声明、但 JS 与 C# 两侧均无实现的道具脚本。
     /// 占位方法抛出 <see cref="NotImplementedException"/>，由 PluginManager 统一处理。
     /// </summary>
-    internal class ItemScriptMissing : ItemScriptBase
-{
-        public ItemScriptMissing(IChannelClient c, Item item, int npcId) : base(c, item, npcId)
-        {
-        }
-
+    internal partial class ItemScript
+    {
         private Task NotImplemented() => throw new NotImplementedException();
 
         [ScriptName("KeySettingByItem")]

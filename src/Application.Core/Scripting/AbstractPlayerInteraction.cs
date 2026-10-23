@@ -464,7 +464,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (int)getQuestStat(id);
     }
 
-    private QuestStatus.Status getQuestStat(int id)
+    protected QuestStatus.Status getQuestStat(int id)
     {
         return c.OnlinedCharacter.getQuest(Quest.getInstance(id)).getStatus();
     }

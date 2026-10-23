@@ -1,18 +1,25 @@
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Application.Utility
 {
     public static class DynamicObjectFactory
     {
-        // 缓存键：目标类型全名 + 参数类型全名组合（避免冲突）
-        private static readonly ConcurrentDictionary<string, Delegate> _cache = new();
+        // 以目标类型为弱键：插件程序集卸载后缓存项可被回收，不会阻止可回收 ALC 卸载。
+        private static readonly ConditionalWeakTable<Type, ConcurrentDictionary<string, Delegate>> _cache = new();
+
+        static Delegate GetOrAddCreator(Type type, Type[] parameterTypes, Func<Delegate> factory)
+        {
+            var perType = _cache.GetOrCreateValue(type);
+            var key = string.Join('|', parameterTypes.Select(x => x.AssemblyQualifiedName));
+            return perType.GetOrAdd(key, _ => factory());
+        }
 
         // ==================== 0 个参数 ====================
         public static object Create(Type type)
         {
-            string key = type.AssemblyQualifiedName;
-            var creator = (Func<object>)_cache.GetOrAdd(key, _ => BuildCreator0(type));
+            var creator = (Func<object>)GetOrAddCreator(type, Type.EmptyTypes, () => BuildCreator0(type));
             return creator();
         }
 
@@ -27,8 +34,7 @@ namespace Application.Utility
         // ==================== 1 个参数 ====================
         public static object Create<TArg1>(Type type, TArg1 arg1)
         {
-            string key = $"{type.AssemblyQualifiedName}|{typeof(TArg1).AssemblyQualifiedName}";
-            var creator = (Func<TArg1, object>)_cache.GetOrAdd(key, _ => BuildCreator1<TArg1>(type));
+            var creator = (Func<TArg1, object>)GetOrAddCreator(type, [typeof(TArg1)], () => BuildCreator1<TArg1>(type));
             return creator(arg1);
         }
 
@@ -45,8 +51,7 @@ namespace Application.Utility
         // ==================== 2 个参数 ====================
         public static object Create<TArg1, TArg2>(Type type, TArg1 arg1, TArg2 arg2)
         {
-            string key = $"{type.AssemblyQualifiedName}|{typeof(TArg1).AssemblyQualifiedName}|{typeof(TArg2).AssemblyQualifiedName}";
-            var creator = (Func<TArg1, TArg2, object>)_cache.GetOrAdd(key, _ => BuildCreator2<TArg1, TArg2>(type));
+            var creator = (Func<TArg1, TArg2, object>)GetOrAddCreator(type, [typeof(TArg1), typeof(TArg2)], () => BuildCreator2<TArg1, TArg2>(type));
             return creator(arg1, arg2);
         }
 
@@ -64,8 +69,7 @@ namespace Application.Utility
         // ==================== 3 个参数 ====================
         public static object Create<TArg1, TArg2, TArg3>(Type type, TArg1 arg1, TArg2 arg2, TArg3 arg3)
         {
-            string key = $"{type.AssemblyQualifiedName}|{typeof(TArg1).AssemblyQualifiedName}|{typeof(TArg2).AssemblyQualifiedName}|{typeof(TArg3).AssemblyQualifiedName}";
-            var creator = (Func<TArg1, TArg2, TArg3, object>)_cache.GetOrAdd(key, _ => BuildCreator3<TArg1, TArg2, TArg3>(type));
+            var creator = (Func<TArg1, TArg2, TArg3, object>)GetOrAddCreator(type, [typeof(TArg1), typeof(TArg2), typeof(TArg3)], () => BuildCreator3<TArg1, TArg2, TArg3>(type));
             return creator(arg1, arg2, arg3);
         }
 
@@ -84,8 +88,7 @@ namespace Application.Utility
         // ==================== 4 个参数 ====================
         public static object Create<TArg1, TArg2, TArg3, TArg4>(Type type, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4)
         {
-            string key = $"{type.AssemblyQualifiedName}|{typeof(TArg1).AssemblyQualifiedName}|{typeof(TArg2).AssemblyQualifiedName}|{typeof(TArg3).AssemblyQualifiedName}|{typeof(TArg4).AssemblyQualifiedName}";
-            var creator = (Func<TArg1, TArg2, TArg3, TArg4, object>)_cache.GetOrAdd(key, _ => BuildCreator4<TArg1, TArg2, TArg3, TArg4>(type));
+            var creator = (Func<TArg1, TArg2, TArg3, TArg4, object>)GetOrAddCreator(type, [typeof(TArg1), typeof(TArg2), typeof(TArg3), typeof(TArg4)], () => BuildCreator4<TArg1, TArg2, TArg3, TArg4>(type));
             return creator(arg1, arg2, arg3, arg4);
         }
 
@@ -105,8 +108,7 @@ namespace Application.Utility
         // ==================== 5 个参数 ====================
         public static object Create<TArg1, TArg2, TArg3, TArg4, TArg5>(Type type, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5)
         {
-            string key = $"{type.AssemblyQualifiedName}|{typeof(TArg1).AssemblyQualifiedName}|{typeof(TArg2).AssemblyQualifiedName}|{typeof(TArg3).AssemblyQualifiedName}|{typeof(TArg4).AssemblyQualifiedName}|{typeof(TArg5).AssemblyQualifiedName}";
-            var creator = (Func<TArg1, TArg2, TArg3, TArg4, TArg5, object>)_cache.GetOrAdd(key, _ => BuildCreator5<TArg1, TArg2, TArg3, TArg4, TArg5>(type));
+            var creator = (Func<TArg1, TArg2, TArg3, TArg4, TArg5, object>)GetOrAddCreator(type, [typeof(TArg1), typeof(TArg2), typeof(TArg3), typeof(TArg4), typeof(TArg5)], () => BuildCreator5<TArg1, TArg2, TArg3, TArg4, TArg5>(type));
             return creator(arg1, arg2, arg3, arg4, arg5);
         }
 

@@ -9,14 +9,15 @@ namespace Application.Core.Gameplay.Plugins
     public enum PluginInvocationMode
     {
         /// <summary>
-        /// 首次命中：同名请求由优先级最高的实现处理，只调用一次
+        /// 首次命中：同名请求由优先级最高的实现处理。
+        /// 多个插件实现同名脚本时，逐个脚本名按优先级裁决，被压制者输出日志。
         /// </summary>
         FirstMatch,
 
         /// <summary>
         /// 广播：每个事件通知所有实现
         /// </summary>
-        Broadcast
+        Broadcast,
     }
 
     /// <summary>

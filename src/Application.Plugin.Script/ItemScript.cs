@@ -5,7 +5,7 @@ using client.inventory;
 
 namespace Application.Plugin.Script
 {
-    internal class ItemScript : ItemScriptBase
+    internal partial class ItemScript : ItemScriptBase
     {
         public ItemScript(IChannelClient c, Item item, int npcId) : base(c, item, npcId)
         {

@@ -1,6 +1,5 @@
 using Application.Core.Channel.DataProviders;
 using Application.Shared.Constants;
-using Application.Shared.Constants.Job;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -261,9 +260,6 @@ namespace Application.Plugin.Script.Quest
                 await teachSkill(109, 1, 1, -1);
                 await teachSkill(110, 0, -1, -1);
                 await teachSkill(111, 1, 1, -1);
-                await showItemGain(1532000, 1);
-                await showItemGain(1002610, 1);
-                await showItemGain(1052095, 1);
             }
 
             await SayNext("好了，现在你也是海盗中的一员了。现在你有了很多海盗技能，打开技能窗看看吧。我给了你一些SP，你可以用它提升技能。等级提高之后，你可以使用更多的技能。希望你努力修炼。");

@@ -27,6 +27,25 @@ dotnet test ./test/ServiceTest/ServiceTest.csproj
 # Run a single test
 dotnet test --filter "FullyQualifiedName~ServiceTest.Infrastructure.UtilityTests" ./test/ServiceTest/ServiceTest.csproj
 
+### Tests: `Infrastructure` vs `Games`
+
+The two directories differ in **whether a local server is started**:
+
+- `ServiceTest.Games` (`test/ServiceTest/Games/`) has `GameTestGlobal`, a `[SetUpFixture]` that starts
+  `LocalTestServer` before any test in that namespace runs, which performs dependency registration
+  (DI container, `MapFactory` and other static singletons).
+- `ServiceTest.Infrastructure` (`test/ServiceTest/Infrastructure/`) has **no** such initialization and is
+  limited to pure computation / parsing tests.
+
+Rule: **any test that touches server-side global state (DI registration, `MapFactory.Instance`, event
+template construction, …) must live under `Games/`**, otherwise it throws at runtime with errors such as
+"MapFactory not registered". A typical trap is a test that "just reflects over plugin types" — the event
+templates it instantiates have constructors that depend on DI, so such tests belong in `Games/Gameplay/`.
+
+Only tests that never touch server state (WZ parsing, utility methods, serialization, …) belong in
+`Infrastructure/`.
+
+
 # Build channel server separately (multi-process mode)
 dotnet build "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 

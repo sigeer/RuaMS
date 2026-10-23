@@ -148,6 +148,8 @@ C# 重写版本在 `Application.Plugin.Script` 中，需单独 `dotnet build`，
 - **CodeMigration**：代码迁移转换工具
   - `ReplaceJsContent` 类：替换 JS 脚本中的 Java 代码
 
+- **FeatureTemplateGenerator.cs**：生成脚本模板 `dotnet run FeatureTemplateGenerator.cs`
+
 ### test
 
 - **ServiceTest** 测试项目

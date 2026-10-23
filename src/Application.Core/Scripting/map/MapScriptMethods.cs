@@ -74,7 +74,7 @@ public class MapScriptMethods : AbstractPlayerInteraction
         }
     }
 
-    public async Task startExplorerExperience()
+    protected async Task startExplorerExperience()
     {
         switch (c.OnlinedCharacter.getMapId())
         {
@@ -96,19 +96,19 @@ public class MapScriptMethods : AbstractPlayerInteraction
         }
     }
 
-    public async Task goAdventure()
+    protected async Task goAdventure()
     {
         await lockUI();
         await ShowDirectionEffect("Effect/Direction3.img/goAdventure/Scene" + c.OnlinedCharacter.getGender());
     }
 
-    public async Task goLith()
+    protected async Task goLith()
     {
         await lockUI();
         await ShowDirectionEffect("Effect/Direction3.img/goLith/Scene" + c.OnlinedCharacter.getGender());
     }
 
-    public async Task explorerQuest(short questid)
+    protected async Task explorerQuest(short questid)
     {
         Quest quest = Quest.getInstance(questid);
         if (isQuestCompleted(questid))

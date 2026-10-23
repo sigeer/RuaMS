@@ -4,6 +4,7 @@
     <File Path="DevLog.MD" />
     <File Path="docs/CHANGES.MD" />
     <File Path="docs/CodeMigration.MD" />
+    <File Path="docs/ScriptFeatureRefactor.md" />
     <File Path="docs/ScriptMigrationStatus.md" />
     <File Path="README.MD" />
   </Folder>
@@ -90,6 +91,7 @@
     <Project Path="test/ServiceTest/ServiceTest.csproj" />
   </Folder>
   <Folder Name="/tools/">
+    <File Path="tools/FeatureTemplateGenerator.cs" />
     <Project Path="tools/CodeMigration/CodeMigration.csproj" />
     <Project Path="tools/DueyReader.SouceGenerator/DueyReader.SouceGenerator.csproj" />
     <Project Path="tools/XmlWzReader.SouceGenerator/XmlWzReader.SouceGenerator.csproj" />

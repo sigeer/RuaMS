@@ -1,30 +1,20 @@
-using Application.Core.Client;
-using Application.Core.Server.maps;
-using scripting.portal;
-
 namespace Application.Plugin.Script
 {
-    /// <summary>
-    /// 补齐 Map.wz 中引用、但 JS 与 C# 两侧均无实现的 portal 脚本。
-    /// 这些脚本在原始脚本库中没有对应实现，此处的占位方法会抛出
-    /// <see cref="NotImplementedException"/>，由 PluginManager 统一记录并提示。
-    /// </summary>
-    internal class PortalScriptMissing : PortalPlayerInteraction
+    internal partial class PortalScript
     {
-        public PortalScriptMissing(IChannelClient c, IPortal p) : base(c, p)
-        {
-        }
-
         private Task<bool> NotImplemented()
         {
             throw new NotImplementedException();
         }
 
+        private Task<bool> Pass()
+        {
+            return Task.FromResult(true);
+        }
+
         [ScriptName("Pachinko_port_in")]
         public Task<bool> p_Pachinko_port_in() => NotImplemented();
 
-        [ScriptName("08_xmas_st")]
-        public Task<bool> p_08_xmas_st() => NotImplemented();
 
         [ScriptName("200951into01")]
         public Task<bool> p_200951into01() => NotImplemented();
@@ -65,8 +55,6 @@ namespace Application.Plugin.Script
         [ScriptName("BF_out")]
         public Task<bool> p_BF_out() => NotImplemented();
 
-        [ScriptName("Depart_topFloor")]
-        public Task<bool> p_Depart_topFloor() => NotImplemented();
 
         [ScriptName("Jump_event_pro")]
         public Task<bool> p_Jump_event_pro() => NotImplemented();
@@ -164,8 +152,7 @@ namespace Application.Plugin.Script
         [ScriptName("crane_SS")]
         public Task<bool> p_crane_SS() => NotImplemented();
 
-        [ScriptName("davy_next00")]
-        public Task<bool> p_davy_next00() => NotImplemented();
+
 
         [ScriptName("donghwa_end")]
         public Task<bool> p_donghwa_end() => NotImplemented();
@@ -252,16 +239,16 @@ namespace Application.Plugin.Script
         public Task<bool> p_mapleTree_out() => NotImplemented();
 
         [ScriptName("move_EliEre")]
-        public Task<bool> p_move_EliEre() => NotImplemented();
+        public Task<bool> p_move_EliEre() => Pass();
 
         [ScriptName("move_EreEli")]
-        public Task<bool> p_move_EreEli() => NotImplemented();
+        public Task<bool> p_move_EreEli() => Pass();
 
         [ScriptName("move_EreOrb")]
-        public Task<bool> p_move_EreOrb() => NotImplemented();
+        public Task<bool> p_move_EreOrb() => Pass();
 
         [ScriptName("move_OrbEre")]
-        public Task<bool> p_move_OrbEre() => NotImplemented();
+        public Task<bool> p_move_OrbEre() => Pass();
 
         [ScriptName("nooutShip")]
         public Task<bool> p_nooutShip() => NotImplemented();
@@ -334,9 +321,6 @@ namespace Application.Plugin.Script
 
         [ScriptName("tH_Out")]
         public Task<bool> p_tH_Out() => NotImplemented();
-
-        [ScriptName("tutorWorldmap")]
-        public Task<bool> p_tutorWorldmap() => NotImplemented();
 
         [ScriptName("warpEarth")]
         public Task<bool> p_warpEarth() => NotImplemented();

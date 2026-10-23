@@ -172,9 +172,6 @@ namespace Application.Plugin.Script.Npc
                 "勇士部落", 1022000);
         }
 
-
-
-
         // Npc: 2081100 
         public async Task warrior4()
         {
@@ -223,6 +220,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
+                // 正常应该通过任务学习
                 await AskMenu("如果必要的话，我可以教你你职业的技能。\r\n#b#L0#教我我的职业技能。#l");
                 if (getJob() == Job.HERO)
                 {

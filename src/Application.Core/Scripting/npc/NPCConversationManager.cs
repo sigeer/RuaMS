@@ -99,6 +99,35 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
         return GetDefaultRandom();
     }
 
+    /// <summary>
+    /// 当任务未开始或者已经完成，返回true 文本
+    /// </summary>
+    /// <param name="talkStr"></param>
+    /// <param name="checkQuestId"></param>
+    /// <returns>进行中：false</returns>
+    public bool TryGetDefaultTalk(out string talkStr, int checkQuestId = 0)
+    {
+        talkStr = GetDefault0();
+        if (checkQuestId > 0)
+        {
+            var questStatus = getQuestStat(checkQuestId);
+            switch (questStatus)
+            {
+                case client.QuestStatus.Status.UNDEFINED:
+                case client.QuestStatus.Status.NOT_STARTED:
+                    return true;
+                case client.QuestStatus.Status.COMPLETED:
+                    talkStr = GetDefault1();
+                    return true;
+                case client.QuestStatus.Status.STARTED:
+                    return false;
+                default:
+                    break;
+            }
+        }
+        return true;
+    }
+
     public string GetDefault0() => c.CurrentCulture.GetNpcDefaultTalk(npc, 0);
     public string GetDefault1() => c.CurrentCulture.GetNpcDefaultTalk(npc, 1);
     public string GetDefaultRandom() => c.CurrentCulture.GetNpcDefaultTalk(npc, -1);

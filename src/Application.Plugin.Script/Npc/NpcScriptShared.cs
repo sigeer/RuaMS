@@ -1,5 +1,3 @@
-using tools;
-
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -35,41 +33,6 @@ namespace Application.Plugin.Script.Npc
             }
 
             await warp(260010402, 1);
-        }
-
-        // Npc: 共享脚本 MagatiaPassword
-        /// <summary>
-        /// 玛加提亚研究所的密码门：口令取自任务 3360 的进度值，答对后推进进度并播放传送音效。
-        /// </summary>
-        [ScriptName("MagatiaPassword")]
-        public async Task MagatiaPassword()
-        {
-            const short questId = 3360;
-
-            var input = await AskText("请记住这个#b暗号#k!");
-            var questPassword = getQuestProgress(questId, 0);
-            var progress = getQuestProgress(questId, 1);
-
-            if (input != questPassword)
-            {
-                await SayOK("#r密码错误");
-                return;
-            }
-
-            if (progress != "11")
-            {
-                var newProgress = progress switch
-                {
-                    "10" => "11",
-                    "01" => "11",
-                    "00" => "01",
-                    _ => "11",
-                };
-                await setQuestProgress(questId, 1, newProgress);
-            }
-
-            await c.SendPacket(PacketCreator.playPortalSound());
-            await warp(261030000, getMapId() == 261010000 ? "sp_jenu" : "sp_alca");
         }
 
         // Npc: 共享脚本 9220005_old
@@ -215,9 +178,11 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("credits")]
         public async Task Credits()
         {
-            await SayNext("RuaMS —— 由 Cosmic / HeavenMS / OdinMS 一脉相承的 MapleStory 服务端。");
-            await SayNext("感谢所有为本项目提交代码、报告问题与提供数据的人。");
-            await SayOK("按「上一步」可以返回。");
+            await SaySpeech([
+                "RuaMS —— 由 Cosmic / HeavenMS / OdinMS 一脉相承的 MapleStory 服务端。",
+                "感谢所有为本项目提交代码、报告问题与提供数据的人。",
+                "按「上一步」可以返回。"
+            ]);
         }
 
         // Npc: 共享脚本 commands

@@ -1,19 +1,11 @@
-using Application.Core.Client;
-using Application.Core.scripting.quest;
-using Application.Core.Server.quest;
-
 namespace Application.Plugin.Script.Quest
 {
     /// <summary>
     /// 补齐 WZ 中声明、但 JS 与 C# 两侧均无实现的任务脚本。
     /// 占位方法抛出 <see cref="NotImplementedException"/>，由 PluginManager 统一处理。
     /// </summary>
-    internal class QuestScriptMissing : QuestScriptBase
-{
-        public QuestScriptMissing(IChannelClient c, Application.Core.Server.quest.Quest quest, int npcId) : base(c, quest, npcId)
-        {
-        }
-
+    internal partial class QuestScript
+    {
         private Task NotImplemented() => throw new NotImplementedException();
 
         [ScriptName("q20500s")]

@@ -70,7 +70,7 @@ namespace Application.Plugin.Script.Npc
                 if (haveItem(4031012))
                 {
                     var jobList = new Job[] { Job.ASSASSIN, Job.BANDIT };
-                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我会选择我的职业]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
+                    var option = await AskMenu("好的，当你做出决定后，点击底部的[我要选择职业！]。", jobList.Select(j => $"请介绍一下 {c.CurrentCulture.GetJobName(j)}").Concat(["我要选择职业！"]));
                     switch (option)
                     {
                         case 0:

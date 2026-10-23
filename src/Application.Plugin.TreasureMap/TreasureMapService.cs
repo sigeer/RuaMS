@@ -1,31 +1,23 @@
-using Application.Core.Channel;
 using Application.Core.Gameplay.Plugins;
 using Application.Core.Gameplay.Plugins.Services;
 using Application.Shared.Models;
-using System.Reflection;
 
 namespace Application.Plugin.TreasureMap
 {
+    /// <summary>
+    /// 藏宝图插件：只提供少数物品与 NPC 脚本，另外在指定频道挂一个可点击的 NPC。
+    ///
+    /// 脚本由 <see cref="PluginManager"/> 扫描本插件程序集自动发现，
+    /// 这里只需声明自己实现了哪些脚本服务接口。
+    /// </summary>
     public class TreasureMapService : PluginServiceBase, IScriptItemService, IScriptNpcService
     {
-
-        Dictionary<string, (Type ObjType, MethodInfo Method)> _itemScripts;
-        Dictionary<string, (Type ObjType, MethodInfo Method)> _npcScripts;
-        public Dictionary<string, (Type ObjType, MethodInfo Method)> ItemScripts => _itemScripts;
-
-        public Dictionary<string, (Type ObjType, MethodInfo Method)> NpcScripts => _npcScripts;
-
-        public TreasureMapService(WorldChannelServer node, string pluginName) : base(node, pluginName)
+        public TreasureMapService(PluginContainer<PluginServiceBase> pluginContainer) : base(pluginContainer)
         {
-            _itemScripts = TypeUtils.LoadFromType(typeof(ItemScript));
-            _npcScripts = TypeUtils.LoadFromType(typeof(NpcScript));
         }
 
         public override async ValueTask DisposeAsync()
         {
-            _itemScripts.Clear();
-            _npcScripts.Clear();
-
             if (_node.Servers.TryGetValue(Settings.ActiveChannel, out var effectChannel))
             {
                 await effectChannel.Send(async c =>

@@ -2,17 +2,9 @@ using Application.Core.Client;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
-using Application.Core.scripting.Events.Abstraction;
-using Application.Core.scripting.Events.Instances;
-using Application.Core.Server.life;
 using Application.Core.Server.maps;
-using Application.Plugin.Script.Events;
-using Application.Resources.Messages;
 using Application.Shared.Constants.Job;
-using Application.Shared.Constants.Map;
 using Application.Shared.GameProps;
-using Application.Templates.Mob;
-using Application.Utility;
 using scripting.portal;
 using System.Drawing;
 
@@ -24,23 +16,12 @@ namespace Application.Plugin.Script
         {
         }
 
-        [ScriptName("08_xmas_out")]
-        public async Task<bool> _08_xmas_out()
-        {
-
-            await playPortalSound();
-            await warp(getMapId() - 2, 0);
-            return true;
-        }
-
-
         public async Task<bool> advice00()
         {
 
             await showInstruction("您可以使用箭头键移动。", 250, 5);
             return true;
         }
-
 
         public async Task<bool> advice01()
         {
@@ -49,14 +30,12 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> advice02()
         {
 
             await showInstruction("按下 #e#b[Alt]#k#n to\r\\ 跳跃。", 100, 5);
             return true;
         }
-
 
         public async Task<bool> advice03()
         {
@@ -65,14 +44,12 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> advice04()
         {
 
             await showInstruction("单击 \r\\#b<Sera>", 100, 5);
             return true;
         }
-
 
         public async Task<bool> advice05()
         {
@@ -81,14 +58,12 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> advice06()
         {
 
             await showInstruction("按 #e#b[Up]#k 进入光圈\r\\移动到下一张地图。", 230, 5);
             return true;
         }
-
 
         public async Task<bool> advice07()
         {
@@ -97,14 +72,12 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> advice08()
         {
 
             await showInstruction("您可以通过按#e#b[S]#k#n键来查看角色的属性面板。", 350, 5);
             return true;
         }
-
 
         public async Task<bool> advice09()
         {
@@ -113,7 +86,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 40001, 40002, 50001, 60000 | pt: 9
         public async Task<bool> adviceMap()
         {
 
@@ -121,7 +94,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 980010000 | pt: 7
         public async Task<bool> aMatchMove2()
         {
 
@@ -129,7 +102,6 @@ namespace Application.Plugin.Script
             await warp(getPlayer().getSavedLocation("MIRROR"));
             return true;
         }
-
 
         public async Task<bool> apq00()
         {
@@ -139,7 +111,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> apq01()
         {
 
@@ -147,7 +118,6 @@ namespace Application.Plugin.Script
             await warp(670010301, 0);
             return true;
         }
-
 
         public async Task<bool> apq02()
         {
@@ -157,7 +127,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> apq1()
         {
 
@@ -165,7 +134,6 @@ namespace Application.Plugin.Script
             await warp(670010400, 0);
             return true;
         }
-
 
         public async Task<bool> apq2()
         {
@@ -175,7 +143,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> apq3()
         {
 
@@ -184,7 +151,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 670010300, 670010301, 670010302, 670010400, 670010500 | pt: 5
         public async Task<bool> apqClosed()
         {
 
@@ -192,7 +159,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 670010600 | pt: 8
         public async Task<bool> apqDoor()
         {
 
@@ -211,322 +178,12 @@ namespace Application.Plugin.Script
             }
         }
 
-
         public async Task<bool> aqua_pq_boss_0()
         {
 
             await playPortalSound();
             await warp(230040420, 0);
             return true;
-        }
-
-
-        public async Task<bool> aranTutorAloneX()
-        {
-
-            await playPortalSound();
-            await warp(914000100, 1);
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorArrow0()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "arr0=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "arr0=o;mo1=o;mo2=o;mo3=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow3");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorArrow1()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "arr1=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;mo2=o;mo3=o;mo4=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorArrow2()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "arr2=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorArrow3()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "arr3=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;arr3=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorGuide0()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "normal=o"))
-            {
-                return false;
-            }
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide1");
-            await Pink("按一下Ctrl键，能够对怪兽进行一般攻击。");
-            await updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorGuide1()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "chain=o"))
-            {
-                return false;
-            }
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide2");
-            await Pink("按住Ctrl键，能够进行连续攻击。");
-            await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorGuide2()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "cmd=o"))
-            {
-                return false;
-            }
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide3");
-            await Pink("连续攻击后，通过方向键和攻击键可以实现命令攻击。");
-            await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorLost()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "fin=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;arr3=o;fin=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
-            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/Child");
-            await ShowDirectionEffect("Effect/Direction1.img/aranTutorial/ClickChild");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorMono0()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "mo1=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "mo1=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon1");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorMono1()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "mo2=o"))
-            {
-                return false;
-            }
-            await playSound("Aran/balloon");
-            await updateAreaInfo(21002, "mo1=o;mo2=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon2");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorMono2()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "mo3=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "mo1=o;mo2=o;mo3=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon3");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorMono3()
-        {
-
-            await blockPortal();
-            if (containsAreaInfo(21002, "mo4=o"))
-            {
-                return false;
-            }
-            await updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o;mo4=o");
-            await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/legendBalloon6");
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorOut1()
-        {
-
-            if (isQuestStarted(21000))
-            {
-                //lol nexon does this xD
-                await teachSkill(20000017, 0, -1, -1);
-                await teachSkill(20000018, 0, -1, -1);
-                //nexon sends updatePlayerStats Stat.AVAILABLESP 0
-                await teachSkill(20000017, 1, 0, -1);
-                await teachSkill(20000018, 1, 0, -1);
-                //actually nexon does enableActions here :P
-                await playPortalSound();
-                await warp(914000200, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("你只有在接受你右边的雅典娜·皮尔斯的任务后才能退出。");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> aranTutorOut2()
-        {
-
-            //lol nexon does this xD
-            await teachSkill(20000014, 0, -1, -1);
-            await teachSkill(20000015, 0, -1, -1);
-            //nexon sends updatePlayerStats Stat.AVAILABLESP 0
-            await teachSkill(20000014, 1, 0, -1);
-            await teachSkill(20000015, 1, 0, -1);
-            //actually nexon does enableActions here :P
-            await playPortalSound();
-            await warp(914000210, 1);
-            return true;
-        }
-
-
-        public async Task<bool> aranTutorOut3()
-        {
-
-            //lol nexon does this xD
-            await teachSkill(20000016, 0, -1, -1);
-            //nexon sends updatePlayerStats Stat.AVAILABLESP 0
-            await teachSkill(20000016, 1, 0, -1);
-            //actually nexon does enableActions here :P
-            await playPortalSound();
-            await warp(914000220, 1);
-            return true;
-        }
-
-
-        public async Task<bool> ariantMout()
-        {
-
-            await playPortalSound();
-            await warp(980010020, 0);
-            return true;
-        }
-
-
-        public async Task<bool> ariantMout2()
-        {
-
-            await playPortalSound();
-            await warp(980010000, 0);
-            return true;
-        }
-
-
-        public async Task<bool> ariant_Agit()
-        {
-
-            if (isQuestCompleted(3928) && isQuestCompleted(3931) && isQuestCompleted(3934))
-            {
-                await playPortalSound();
-                await warp(260000201, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("仅限沙匪队成员进入。");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> ariant_castle()
-        {
-
-            if (getPlayer().haveItem(4031582) == true)
-            {
-                await playPortalSound();
-                await warp(260000301, 5);
-                return true;
-            }
-            else
-            {
-                await Pink("只有持有宫殿通行证才能进入。");
-                return false;
-            }
-        }
-
-
-        static bool isTigunMorphed(Player chr)
-        {
-            return chr.getBuffSource(BuffStat.MORPH) == 2210005;
-        }
-        public async Task<bool> ariant_queens()
-        {
-
-            if (isTigunMorphed(getPlayer()))
-            {
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(260000300, 7);
-                await Pink("你，入侵者！你没有权限在宫殿中随意走动！滚出去！！");
-                return true;
-            }
         }
 
 
@@ -545,30 +202,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> balogTemple()
-        {
-
-            await playPortalSound();
-            await warp(105100000, 2);
-            return true;
-        }
-
-
-        public async Task<bool> balog_end()
-        {
-            if (!canHold(4001261, 1))
-            {
-                await Pink("请给装备栏腾出至少1个空格子。");
-                return false;
-            }
-            await gainItem(4001261, 1);
-            await playPortalSound();
-            await warp(105100100, 0);
-            return true;
-        }
-
-
         public async Task<bool> bedroom_out()
         {
 
@@ -582,39 +215,13 @@ namespace Application.Plugin.Script
             return false;
         }
 
-        public async Task<bool> captinsg00()
-        {
-
-            if (!haveItem(4000381))
-            {
-                await Pink("You do not have White Essence.");
-                return false;
-            }
-            else
-            {
-                var em = GetEventManager(nameof(LatanicaBattle));
-                var r = await em.StartInstance(getPlayer());
-                if (r == CreateInstanceResult.Success)
-                {
-                    await playPortalSound();
-                    return true;
-                }
-                else
-                {
-                    await Pink(em.HandleCreateInstanceResult(r, c));
-                    return false;
-                }
-            }
-        }
-
-
+        // Map: 250010504 | pt: 8
         public async Task<bool> catPriest_map()
         {
             await playPortalSound();
             await warp(925000000, 2);
             return true;
         }
-
 
         public async Task<bool> contactDragon()
         {
@@ -624,7 +231,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 100040105 | pt: 11
         public async Task<bool> curseforest()
         {
 
@@ -648,450 +255,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
-        public async Task<bool> davy2_hd1()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var level = eim.getIntProperty("level");
-            if (eim.getProperty("stage2b") == "0")
-            {
-                await (await getMap(925100202)).spawnAllMonstersFromMapSpawnList(level, true);
-                eim.setProperty("stage2b", "1");
-            }
-
-            await playPortalSound();
-            await warp(925100202, 0);
-            return true;
-        }
-
-
-        public async Task<bool> davy3_hd1()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var level = eim.getIntProperty("level");
-            if (eim.getProperty("stage3b") == "0")
-            {
-                await (await getMap(925100302)).spawnAllMonstersFromMapSpawnList(level, true);
-                eim.setProperty("stage3b", "1");
-            }
-
-            await playPortalSound();
-            await warp(925100302, 0);
-            return true;
-        }
-
-
-        public async Task<bool> davy_next0()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), eim))
-            {
-                await playPortalSound();
-                await warp(925100100, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-        static bool passedGrindMode(IMap map, AbstractEventInstanceManager eim)
-        {
-            if (eim.getIntProperty("grindMode") == 0)
-            {
-                return true;
-            }
-            return eim.activatedAllReactorsOnMap(map, 2511000, 2517999);
-        }
-
-        public async Task<bool> davy_next1()
-        {
-
-            try
-            {
-                var eim = GetEventInstanceTrust();
-                if (eim != null && eim.getProperty("stage2") == "3")
-                {
-                    await playPortalSound();
-                    await warp(925100200, 0); //next
-                    return true;
-                }
-                else
-                {
-                    await Pink("The portal is not opened yet.");
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                await Pink("Error: " + e.Message);
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> davy_next2()
-        {
-
-            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust()))
-            {
-                await playPortalSound();
-                await warp(925100300, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> davy_next3()
-        {
-
-            if (getMap().countMonsters() == 0 && passedGrindMode(getMap(), GetEventInstanceTrust()))
-            {
-                await playPortalSound();
-                await warp(925100400, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> davy_next4()
-        {
-
-            if (getMap().getReactorByName("sMob1")?.getState() >= 1
-                && getMap().getReactorByName("sMob2")?.getState() >= 1
-                && getMap().getReactorByName("sMob3")?.getState() >= 1
-                && getMap().getReactorByName("sMob4")?.getState() >= 1
-                && getMap().countMonsters() == 0)
-            {
-                var eim = GetEventInstanceTrust();
-
-                if (eim.getProperty("spawnedBoss") == null)
-                {
-                    var level = int.Parse(eim.getProperty("level"));
-                    var chests = int.Parse(eim.getProperty("openedChests"));
-                    MobTemplate boss;
-                    if (chests == 0)
-                    {
-                        boss = LifeFactory.Instance.GetMonsterTrust(9300119);
-                    }//lord pirate
-                    else if (chests == 1)
-                    {
-                        boss = LifeFactory.Instance.GetMonsterTrust(9300105);
-                    }//angry lord pirate
-                    else
-                    {
-                        boss = LifeFactory.Instance.GetMonsterTrust(9300106);
-                    }                   //enraged lord pirate
-
-                    await (await getMap(925100500)).spawnMonsterOnGroundBelow(boss, new Point(777, 140), mob =>
-                    {
-                        mob.changeDifficulty(level, true);
-                    });
-                    eim.setProperty("spawnedBoss", "true");
-                }
-
-                await playPortalSound();
-                await warp(925100500, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> Depart_goBack00()
-        {
-
-            await playPortalSound();
-            await warp(getPlayer().getMap().getId() - 10, "left00");
-            return true;
-        }
-
-
-        public async Task<bool> Depart_goBack01()
-        {
-
-            await playPortalSound();
-            await warp(getPlayer().getMap().getId() - 10, "left01");
-            return true;
-        }
-
-
-        public async Task<bool> Depart_goFoward0()
-        {
-
-            var mapid = getPlayer().getMap().getId();
-
-            if (mapid == 103040410 && isQuestCompleted(2287))
-            {
-                await playPortalSound();
-                await warp(103040420, "right00");
-                return true;
-            }
-            else if (mapid == 103040420 && isQuestCompleted(2288))
-            {
-                await playPortalSound();
-                await warp(103040430, "right00");
-                return true;
-            }
-            else if (mapid == 103040410 && isQuestStarted(2287))
-            {
-                await playPortalSound();
-                await warp(103040420, "right00");
-                return true;
-            }
-            else if (mapid == 103040420 && isQuestStarted(2288))
-            {
-                await playPortalSound();
-                await warp(103040430, "right00");
-                return true;
-            }
-            else
-            {
-                if (mapid == 103040440 || mapid == 103040450)
-                {
-                    await playPortalSound();
-                    await warp(mapid + 10, "right00");
-                    return true;
-                }
-                await Pink("You cannot access this area.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> Depart_goFoward1()
-        {
-
-            var mapid = getPlayer().getMap().getId();
-
-            if (mapid == 103040410 && isQuestCompleted(2287))
-            {
-                await playPortalSound();
-                await warp(103040420, "right01");
-                return true;
-            }
-            else if (mapid == 103040420 && isQuestCompleted(2288))
-            {
-                await playPortalSound();
-                await warp(103040430, "right01");
-                return true;
-            }
-            else if (mapid == 103040410 && isQuestStarted(2287))
-            {
-                await playPortalSound();
-                await warp(103040420, "right01");
-                return true;
-            }
-            else if (mapid == 103040420 && isQuestStarted(2288))
-            {
-                await playPortalSound();
-                await warp(103040430, "right01");
-                return true;
-            }
-            else
-            {
-                if (mapid == 103040440 || mapid == 103040450)
-                {
-                    await playPortalSound();
-                    await warp(mapid + 10, "right01");
-                    return true;
-                }
-                await Pink("You cannot access this area.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> Depart_ToKerning()
-        {
-            var contiMove = GetEventManager(PrivateContiMove.KerningTrain);
-            if (await contiMove.StartInstance(getPlayer()) != CreateInstanceResult.Success)
-            {
-                await Pink("The passenger wagon is already full. Try again a bit later.");
-                return false;
-            }
-
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> Depart_TopFloor()
-        {
-
-            await openNpc(1052125); //It is actually suppose to open the npc, because it leads to a boss map
-            return true;
-        }
-
-
-        public async Task<bool> Depart_topOut()
-        {
-
-            await playPortalSound();
-            await warp(103040300, 1);
-            return true;
-        }
-
-
-        public async Task<bool> dojang_exit()
-        {
-
-            var map = getPlayer().getSavedLocation("MIRROR");
-            if (map == -1)
-            {
-                map = 100000000;
-            }
-
-            await playPortalSound();
-            await warp(map);
-            return true;
-        }
-
-
-        public async Task<bool> dojang_next()
-        {
-
-            if (getPlayer().canClickNPC(3000))
-            {
-                return false;
-            }
-            // this script can be ran twice when passing the dojo portal... strange.
-            getPlayer().setClickedNPC();
-
-            var gate = getPlayer().getMap().getReactorByName("door");
-            if (gate != null)
-            {
-                if (gate.getState() == 1 || getMap().countMonsters() == 0)
-                {
-                    if (Math.Floor(getPlayer().getMapId() / 100.0) % 100 < 38)
-                    {
-                        if (((Math.Floor((getPlayer().getMap().getId() + 100) / 100.0)) % 100) % 6 == 0)
-                        {
-                            if (Math.Floor(getPlayer().getMapId() / 10000.0) == 92503)
-                            {
-                                var restMapId = getPlayer().getMap().getId() + 100;
-                                var mapId = getPlayer().getMap().getId();
-
-                                for (var i = 0; i < 5; i++)
-                                {
-                                    var chrlist = (await getMap(mapId - 100 * i)).getAllPlayers();
-
-                                    foreach (var chr in chrlist)
-                                    {
-                                        for (var j = i; j >= 0; j--)
-                                        {
-                                            await chr.Pink("You received " + chr.addDojoPointsByMap(mapId - 100 * j) + " training points. Your total training points score is now " + chr.getDojoPoints() + ".");
-                                        }
-
-                                        await chr.changeMap(restMapId, 0);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                await Pink("You received " + getPlayer().addDojoPointsByMap(getMapId()) + " training points. Your total training points score is now " + getPlayer().getDojoPoints() + ".");
-                                await playPortalSound();
-                                await warp(getPlayer().getMap().getId() + 100, 0);
-                            }
-                        }
-                        else
-                        {
-                            await Pink("You received " + getPlayer().addDojoPointsByMap(getMapId()) + " training points. Your total training points score is now " + getPlayer().getDojoPoints() + ".");
-                            await playPortalSound();
-                            await warp(getPlayer().getMap().getId() + 100, 0);
-                        }
-                    }
-                    else
-                    {
-                        await playPortalSound();
-                        await warp(925020003, 0);
-                        await getPlayer().gainExp(2000 * getPlayer().getDojoPoints(), true, true, true);
-                    }
-                    return true;
-                }
-                else
-                {
-                    await Pink("The door is not open yet.");
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        public async Task<bool> dojang_tuto()
-        {
-
-            if (getPlayer().getMap().getMonsterById(9300216) != null)
-            {
-                getPlayer().FinishedDojoTutorial = true;
-                getClient().getChannelServer().resetDojo(getPlayer().getMap().getId());
-                getClient().getChannelServer().dismissDojoSchedule(getPlayer().getMap().getId(), getParty());
-                await playPortalSound();
-                await warp(925020001, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("So Gong: Haha! You're going to run away like a coward? I won't let you get away that easily!");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> dojang_up()
-        {
-
-            try
-            {
-                if (getPlayer().getMap().getMonsterById(9300216) != null)
-                {
-                    await goDojoUp();
-                    await getPlayer().getMap().setReactorState();
-                    var stage = (int)Math.Floor(getPlayer().getMapId() / 100.0) % 100;
-                    if ((stage - (stage / 6) | 0) == getPlayer().getVanquisherStage() && !MapId.isPartyDojo(getPlayer().getMapId())) // we can also try 5 * stage / 6 | 0 + 1
-                    {
-                        getPlayer().setVanquisherKills(getPlayer().getVanquisherKills() + 1);
-                    }
-                }
-                else
-                {
-                    await Pink("There are still some monsters remaining.");
-                }
-                await enableActions();
-                return true;
-            }
-            catch (Exception err)
-            {
-                await Notice(err.Message);
-                return false;
-            }
-        }
-
-
+        // Map: 240000110 | pt: 7
         public async Task<bool> dracoout()
         {
 
@@ -1099,8 +263,6 @@ namespace Application.Plugin.Script
             await warp(240000100, "east00");
             return true;
         }
-
-
 
         public async Task<bool> dragoneyes()
         {
@@ -1117,37 +279,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> dragonNest()
-        {
-
-            if (isQuestCompleted(3706))
-            {
-                await playPortalSound();
-                await warp(240040612, "out00");
-                return true;
-            }
-            else if (isQuestStarted(100203) || getPlayer().haveItem(4001094))
-            {
-                var em = GetEventManager(nameof(NineSpirit));
-                if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-                {
-                    await Pink("There is currently someone in this map, come back later.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    return true;
-                }
-            }
-            else
-            {
-                await Pink("A strange force is blocking you from entering.");
-                return false;
-            }
-        }
-
+        // Map: 222020100, 222020200 | pt: 8
         public async Task<bool> elevator()
         {
             var elevator = GetContiMove();
@@ -1167,6 +299,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
+        // Map: 200010300 | pt: 8
         public async Task<bool> eliza_Garden()
         {
 
@@ -1175,7 +308,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 912000000 | pt: 7
         public async Task<bool> end_black()
         {
 
@@ -1184,7 +317,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 912000100 | pt: 7
         public async Task<bool> end_cow()
         {
 
@@ -1210,34 +343,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> enterAchter()
-        {
-
-            await playPortalSound();
-            await warp(100000201, "out02");
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> enterBackStreet()
-        {
-
-            if (isQuestActive(21747) || isQuestActive(21744) && isQuestCompleted(21745))
-            {
-                await playPortalSound();
-                await warp(925040000, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("You don't have permission to access this area.");
-                return false;
-            }
-        }
-
-
+        // Map: 130000200 | pt: 7
         public async Task<bool> enterDisguise0()
         {
 
@@ -1262,200 +368,84 @@ namespace Application.Plugin.Script
             return true;
         }
 
+        // Map: 130010000 | pt: 7
+        public Task<bool> enterDisguise1() => enterDisguiseMaster(0, 130010010);
 
-        public async Task<bool> enterDisguise1()
+        // Map: 130010000 | pt: 7
+        public Task<bool> enterDisguise2() => enterDisguiseMaster(1, 130010020);
+
+        // Map: 130010100 | pt: 7
+        public Task<bool> enterDisguise3() => enterDisguiseMaster(2, 130010110);
+
+        // Map: 130010100 | pt: 7
+        public Task<bool> enterDisguise4() => enterDisguiseMaster(3, 130010120);
+
+        // Map: 130010200 | pt: 7
+        public Task<bool> enterDisguise5() => enterDisguiseMaster(4, 130020000, "east00");
+
+        /// <summary>
+        /// 变身任务（20301~20305）进行中时进入对应职业的密林，否则退回上一层入口。
+        /// private：脚本注册表收集的是 public 方法，辅助方法必须私有，否则会被当成脚本键。
+        /// </summary>
+        /// <param name="jobtype">职业序号，决定目标地图 108010600 + 10 * jobtype 与凭证 4032101 + jobtype</param>
+        /// <param name="retreatMap">未接任务时退回到的地图</param>
+        /// <param name="portal">目标地图与退回地图的落点（两者一致）</param>
+        private async Task<bool> enterDisguiseMaster(int jobtype, int retreatMap, string portal = "out00")
         {
-            var jobtype = 0;
-            if (isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305))
-            {
-                var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
-                if (map.countPlayers() > 0)
-                {
-                    await Pink("Someone else is already searching the area.");
-                    return false;
-                }
-
-                if (haveItem(4032101 + jobtype, 1))
-                {
-                    await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
-                    return false;
-                }
-
-                await playPortalSound();
-                await warp(map.Id, "out00");
-            }
-            else
+            bool inQuest = isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305);
+            if (!inQuest)
             {
                 await playPortalSound();
-                await warp(130010010, "out00");
-            }
-            return true;
-        }
-
-
-        public async Task<bool> enterDisguise2()
-        {
-
-            var jobtype = 0;
-            if (isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305))
-            {
-                var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
-                if (map.countPlayers() > 0)
-                {
-                    await Pink("Someone else is already searching the area.");
-                    return false;
-                }
-
-                if (haveItem(4032101 + jobtype, 1))
-                {
-                    await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
-                    return false;
-                }
-
-                await playPortalSound();
-                await warp(map.Id, "out00");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(130010020, "out00");
-            }
-            return true;
-        }
-
-
-        public async Task<bool> enterDisguise3()
-        {
-
-            var jobtype = 0;
-            if (isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305))
-            {
-                var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
-                if (map.countPlayers() > 0)
-                {
-                    await Pink("Someone else is already searching the area.");
-                    return false;
-                }
-
-                if (haveItem(4032101 + jobtype, 1))
-                {
-                    await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
-                    return false;
-                }
-
-                await playPortalSound();
-                await warp(map.Id, "out00");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(130010110, "out00");
-            }
-            return true;
-        }
-
-
-        public async Task<bool> enterDisguise4()
-        {
-
-            var jobtype = 0;
-            if (isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305))
-            {
-                var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
-                if (map.countPlayers() > 0)
-                {
-                    await Pink("Someone else is already searching the area.");
-                    return false;
-                }
-
-                if (haveItem(4032101 + jobtype, 1))
-                {
-                    await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
-                    return false;
-                }
-
-                await playPortalSound();
-                await warp(map.Id, "out00");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(130010120, "out00");
-            }
-            return true;
-        }
-
-
-        public async Task<bool> enterDisguise5()
-        {
-
-            var jobtype = 0;
-            if (isQuestStarted(20301) || isQuestStarted(20302) || isQuestStarted(20303) || isQuestStarted(20304) || isQuestStarted(20305))
-            {
-                var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
-                if (map.countPlayers() > 0)
-                {
-                    await Pink("Someone else is already searching the area.");
-                    return false;
-                }
-
-                if (haveItem(4032101 + jobtype, 1))
-                {
-                    await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
-                    return false;
-                }
-
-                await playPortalSound();
-                await warp(map.Id, "east00");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(130020000, "east00");
-            }
-            return true;
-        }
-
-        // Map: 105070300
-        public async Task<bool> enterDollcave()
-        {
-
-            if (isQuestCompleted(20730) || isQuestCompleted(21734))
-            {
-                // puppeteer defeated, newfound secret path
-                await playPortalSound();
-                await warp(105040201, 2);
+                await warp(retreatMap, portal);
                 return true;
             }
 
-            await openNpc(1063011);
-            return false;
-        }
-
-
-        public async Task<bool> enterDollWay()
-        {
-
-            if (isQuestCompleted(20730) || isQuestCompleted(21734))
+            var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
+            if (map.countPlayers() > 0)
             {
-                // puppeteer defeated, newfound secret path
-                await playPortalSound();
-                await warp(105070300, 3);
-                return true;
-            }
-            else if (isQuestStarted(21734))
-            {
-                await playPortalSound();
-                await warp(910510100, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("一股不祥的力量阻止你通过此处。");
+                await Pink("Someone else is already searching the area.");
                 return false;
             }
+
+            if (haveItem(4032101 + jobtype, 1))
+            {
+                await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
+                return false;
+            }
+
+            switch (map.Id)
+            {
+                case 108010600:
+                    await SpawnTutorNpc(map, 1104100, new Point(2830, 78));
+                    break;
+                case 108010610:
+                    await SpawnTutorNpc(map, 1104101, new Point(3395, -322));
+                    break;
+                case 108010620:
+                    await SpawnTutorNpc(map, 1104102, new Point(500, -522));
+                    break;
+                case 108010630:
+                    await SpawnTutorNpc(map, 1104103, new Point(-2263, -582));
+                    break;
+                case 108010640:
+                    await SpawnTutorNpc(map, 1104104, new Point(372, 70));
+                    break;
+                default:
+                    break;
+            }
+
+            await playPortalSound();
+            await warp(map.Id, portal);
+            return true;
         }
 
+        private async Task SpawnTutorNpc(IMap map, int npcId, Point pos)
+        {
+            if (map.getNPCById(npcId) != null)
+                return;
+
+            await spawnNpc(npcId, pos, map);
+        }
 
         public async Task<bool> enterEvanRoom()
         {
@@ -1465,35 +455,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> enterFirstDH()
-        {
-            var currentQuestId = 0;
-            if (getQuestStatus(20701) == 1)
-            {
-                currentQuestId = 20701;
-            }
-            else if (getQuestStatus(20702) == 1)
-            {
-                currentQuestId = 20702;
-            }
-            else if (getQuestStatus(20703) == 1)
-            {
-                currentQuestId = 20703;
-            }
-
-            if (currentQuestId > 0)
-            {
-                return await TryStartSoloQuest(currentQuestId);
-            }
-            else
-            {
-                await Pink("只有参加Kiku的适应训练，才能进入1号演武场。");
-                return false;
-            }
-        }
-
-
+        // Map: 130020000 | pt: 7
         public async Task<bool> enterfourthDH()
         {
 
@@ -1528,7 +490,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 140010100 | pt: 7
         public async Task<bool> enterGym()
         {
 
@@ -1557,25 +519,7 @@ namespace Application.Plugin.Script
             }
         }
 
-        // Map: 910400000
-        public async Task<bool> enterInfo()
-        {
-            if (isQuestStarted(21733) && getQuestProgressInt(21733, 21762) != 2)
-            {
-                return await TryStartSoloQuest(21733);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(104000004);
-                return true;
-            }
-        }
-
-
-
-
-
+        // Map: 140030000 | pt: 8
         public async Task<bool> enterMCave()
         {
             if (isQuestStarted(21201))
@@ -1622,60 +566,7 @@ namespace Application.Plugin.Script
             }
         }
 
-        // Map 200060000
-        public async Task<bool> enterNepenthes()
-        {
-            if (isQuestActive(21739))
-            {
-                return await TryStartSoloQuest(21739);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(200060001, 2);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> enterPort()
-        {
-            if (isQuestStarted(21301) && getQuestProgressInt(21301, 9001013) == 0)
-            {
-                var em = GetSoloQuestEventManager(21301);
-                var r = await em.StartInstance(getPlayer());
-                if (r != CreateInstanceResult.Success)
-                {
-                    await Pink("门从另一边被堵住了。有人已经和小偷乌鸦打起来了？");
-                    return false;
-                }
-
-                await playPortalSound();
-                return true;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(140020300, 1);
-            }
-            return true;
-        }
-
-
-        public async Task<bool> enterRider()
-        {
-            if (isQuestStarted(21610) && !haveItem(4001193, 1))
-            {
-                return await TryStartSoloQuest(21610);
-            }
-            else
-            {
-                await Pink("领取了任务《斯卡德的建议》才可以进入这里");
-                return false;
-            }
-        }
-
-
+        // Map: 140010000 | pt: 7
         public async Task<bool> enterRienFirst()
         {
 
@@ -1693,7 +584,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 130020000 | pt: 7
         public async Task<bool> enterSecondDH()
         {
 
@@ -1719,7 +610,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 130020000 | pt: 7
         public async Task<bool> enterthirdDH()
         {
 
@@ -1752,7 +643,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 1010000 | pt: 7
         public async Task<bool> entertraining()
         {
 
@@ -1784,7 +675,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 300000010 | pt: 7
         public async Task<bool> enterWarehouse()
         {
 
@@ -1793,41 +684,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> enterWitch()
-        {
-
-            if (isQuestCompleted(20404))
-            {
-                int warpMap;
-
-                if (isQuestCompleted(20407))
-                {
-                    warpMap = 924010200;
-                }
-                else if (isQuestCompleted(20406))
-                {
-                    warpMap = 924010100;
-                }
-                else
-                {
-                    warpMap = 924010000;
-                }
-
-                await playPortalSound();
-                await warp(warpMap, 1);
-                return true;
-
-
-            }
-            else
-            {
-                await Pink("I shouldn't go here.. it's creepy!");
-                return false;
-            }
-        }
-
-
+        // Map: 120000101 | pt: 8
         public async Task<bool> enter_earth00()
         {
 
@@ -1842,7 +699,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 221000300 | pt: 8
         public async Task<bool> enter_earth01()
         {
 
@@ -1857,7 +714,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> enter_nautil()
         {
 
@@ -1866,7 +722,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 674030100 | pt: 8
         public async Task<bool> enter_td()
         {
 
@@ -1874,7 +730,6 @@ namespace Application.Plugin.Script
             await warp(600000000, "yn00");
             return true;
         }
-
 
         public async Task<bool> evanEntrance()
         {
@@ -1884,7 +739,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> evanFall()
         {
 
@@ -1892,7 +746,6 @@ namespace Application.Plugin.Script
             await warp(900090102, 0);
             return true;
         }
-
 
         public async Task<bool> evanFarmCT()
         {
@@ -1909,7 +762,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> evanGarden0()
         {
 
@@ -1917,7 +769,6 @@ namespace Application.Plugin.Script
             await warp(100030200, "east00");
             return true;
         }
-
 
         public async Task<bool> evanGarden1()
         {
@@ -1934,7 +785,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> evanlivingRoom()
         {
 
@@ -1942,7 +792,6 @@ namespace Application.Plugin.Script
             await warp(100030102, "in00");
             return true;
         }
-
 
         public async Task<bool> evanRoom0()
         {
@@ -1957,23 +806,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-        // Map: 910510000
-        public async Task<bool> exit_puppeteer()
-        {
-            var eim = GetEventInstanceTrust();
-            if (!eim.isEventCleared())
-            {
-                await Pink("Defeat the Puppeteer before leaving.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(105070300, 3);
-                return true;
-            }
-        }
-
+        // Map: 670010200
 
         public async Task<bool> female00()
         {
@@ -1995,38 +828,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> foxLaidy_map()
-        {
-
-            if (!(isQuestStarted(3647) && haveItem(4031793, 1)))
-            {
-                await playPortalSound();
-                await warp(222010200, "east00");
-            }
-            else
-            {
-                if (!isQuestStarted(23647))
-                {
-                    await forceStartQuest(23647);
-                }
-                await playPortalSound();
-                await warp(922220000, "east00");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> gaga_success()
-        {
-
-            await playPortalSound();
-            await warp(922240100 + (getPlayer().getMapId() - 922240000), 0);
-            return true;
-        }
-
-
+        // Map: 670010200 | pt: 8
         public async Task<bool> gendergo()
         {
 
@@ -2061,24 +863,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> ghostgate_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("ghostgate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000800, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("This way forward is not open yet.");
-                return false;
-            }
-        }
-
-
+        // Map: 610030010 | pt: 8
         public async Task<bool> glpqEnter()
         {
 
@@ -2095,314 +880,9 @@ namespace Application.Plugin.Script
             }
         }
 
+        // glpq 传送门已在 Features/CWKPQ 中实现
 
-        public async Task<bool> glpqPortal0()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim.getIntProperty("glpq1") == 0)
-            {
-                await eim.Pink("This path is currently blocked.");
-                return false;
-
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(610030200, 0);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal00()
-        {
-
-            if (getPlayer().getJob().GetJobNiche() == 1)
-            {
-                await playPortalSound();
-                await warp(610030510, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("Only warriors may enter this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal01()
-        {
-
-            if (getPlayer().getJob().GetJobNiche() == 3)
-            {
-                await playPortalSound();
-                await warp(610030540, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("Only bowmen may enter this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal02()
-        {
-
-            if (getPlayer().getJob().GetJobNiche() == 2)
-            {
-                await playPortalSound();
-                await warp(610030521, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("Only mages may enter this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal03()
-        {
-
-            if (getPlayer().getJob().GetJobNiche() == 4)
-            {
-                await playPortalSound();
-                await warp(610030530, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("Only thieves may enter this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal04()
-        {
-
-            if (getPlayer().getJob().GetJobNiche() == 5)
-            {
-                await playPortalSound();
-                await warp(610030550, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("Only pirates may enter this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> glpqPortal1()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                if (eim.getIntProperty("glpq2") == 5)
-                {
-                    await playPortalSound();
-                    await warp(610030300, 0);
-                    return true;
-                }
-                else
-                {
-                    await Pink("The portal has not been activated yet!");
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal2()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                await playPortalSound();
-                await warp(610030300, 0);
-
-                if (eim.getIntProperty("glpq3") < 5 || eim.getIntProperty("glpq3_p") < 5)
-                {
-                    if (eim.getIntProperty("glpq3_p") == 5)
-                    {
-                        await mapMessage(6, "Not all Sigils have been activated yet. Make sure they have all been activated to proceed to the next stage.");
-                    }
-                    else
-                    {
-                        eim.setIntProperty("glpq3_p", eim.getIntProperty("glpq3_p") + 1);
-
-                        if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
-                        {
-                            await mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
-
-                            await eim.showClearEffect(610030300, "3pt", 2);
-                            await eim.GiveStageClearRewardAll(3);
-                        }
-                        else
-                        {
-                            await mapMessage(6, "An adventurer has passed through! " + (5 - eim.getIntProperty("glpq3_p")) + " to go.");
-                        }
-                    }
-                }
-                else
-                {
-                    await LightBlue("The portal at the bottom has already been opened! Proceed there!");
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal3()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                if (eim.getIntProperty("glpq3") < 5 || eim.getIntProperty("glpq3_p") < 5)
-                {
-                    await Pink("The portal is not opened yet.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await warp(610030400, 0);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal4()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                if (eim.getIntProperty("glpq4") < 5)
-                {
-                    await Pink("The portal is not opened yet.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await warp(610030500, 0);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal5()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                if (eim.getIntProperty("glpq5") < 5)
-                {
-                    await Pink("The portal is not opened yet.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await warp(610030600, 0);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal6()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                if (eim.getIntProperty("glpq6") < 3)
-                {
-                    await Pink("The portal is not opened yet.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await warp(610030700, 0);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> glpqPortal7()
-        {
-
-            await playPortalSound();
-            await warp(610030800, 0);
-            return true;
-        }
-
-
-        public async Task<bool> glpqPortalDummy()
-        {
-
-            var react = getMap().getReactorByName("mob0");
-            if (react == null)
-            {
-                return false;
-            }
-
-            var eim = GetEventInstanceTrust();
-            if (eim == null)
-            {
-                return false;
-            }
-
-            if (react.getState() < 1)
-            {
-                await react.forceHitReactor(1);
-
-                eim.setIntProperty("glpq1", 1);
-
-                await eim.dropMessage(5, "A strange force starts being emitted from the portal apparatus, showing a hidden path once blocked now open.");
-                await playPortalSound();
-                await warp(610030100, 0);
-
-                await eim.showClearEffect();
-                await eim.GiveStageClearRewardAll(1);
-                return true;
-            }
-
-            await eim.dropMessage(5, "The portal apparatus is malfunctional, due to the last transportation. The finding another way through.");
-            return false;
-        }
-
-
+        // Map: 10000, 20000, 30000 | pt: 9
         public async Task<bool> glTutoMsg0()
         {
 
@@ -2410,45 +890,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> gotocastle()
-        {
-
-            if (isQuestCompleted(2321))
-            {
-                await playPortalSound();
-                await warp(isQuestCompleted(2324) ? 106020501 : 106020500, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("前路布满荆棘，无法通过！");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> go_secretroom()
-        {
-
-            if (!isQuestCompleted(2335) && !(isQuestStarted(2335) && hasItem(4032405)))
-            {
-                await Pink("门锁了，需要钥匙才能进去。");
-                return false;
-            }
-
-            if (isQuestStarted(2335))
-            {
-                await forceCompleteQuest(2335, 1300002);
-                await giveCharacterExp(5000, getPlayer());
-                await gainItem(4032405, -1);
-            }
-            await playPortalSound();
-            await warp(106021001, 1);
-            return true;
-        }
-
-
+        // Map: 240020100 | pt: 7
         public async Task<bool> gryphius()
         {
 
@@ -2457,107 +899,9 @@ namespace Application.Plugin.Script
             return true;
         }
 
+        // 公会任务传送门（guild1F00~guildwaitingexit）已在 Features/GuildQuest 中实现
 
-        public async Task<bool> guild1F00()
-        {
-
-            int[] backPortals = [6, 8, 9, 11];
-            var idx = GetEventInstanceTrust().gridCheck(getPlayer());
-
-            await playPortalSound();
-            await warp(990000600, backPortals[idx]);
-            return true;
-        }
-
-
-        public async Task<bool> guild1F01()
-        {
-
-            GetEventInstanceTrust().gridInsert(getPlayer(), 0);
-            await playPortalSound();
-            await warp(990000700, "st00");
-            return true;
-        }
-
-
-        public async Task<bool> guild1F02()
-        {
-
-            GetEventInstanceTrust().gridInsert(getPlayer(), 1);
-            await playPortalSound();
-            await warp(990000700, "st00");
-            return true;
-        }
-
-
-        public async Task<bool> guild1F03()
-        {
-
-            GetEventInstanceTrust().gridInsert(getPlayer(), 3);
-            await playPortalSound();
-            await warp(990000700, "st00");
-            return true;
-        }
-
-
-        public async Task<bool> guild1F04()
-        {
-
-            GetEventInstanceTrust().gridInsert(getPlayer(), 2);
-            await playPortalSound();
-            await warp(990000700, "st00");
-            return true;
-        }
-
-        [ScriptTag(["GuildQuest"])]
-        public async Task<bool> guildwaitingenter()
-        {
-
-            var entryTime = long.Parse(GetEventInstanceTrust().getProperty("entryTimestamp"));
-            var timeNow = c.CurrentServer.Node.getCurrentTime();
-
-            var timeLeft = Math.Ceiling((entryTime - timeNow) / 1000.0);
-
-            if (timeLeft <= 0)
-            {
-                await playPortalSound();
-                await warp(990000100, 0);
-                return true;
-            }
-            else
-            { //cannot proceed while allies can still enter
-                await Pink("The portal will open in about " + timeLeft + " seconds.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> guildwaitingexit()
-        {
-
-            await playPortalSound();
-            await warp(101030104);
-            return true;
-        }
-
-
-        public async Task<bool> guyfawkes0_esc()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg1") == 1)
-            {
-                await playPortalSound();
-                await warp(674030200, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The tunnel is currently blocked.");
-                return false;
-            }
-        }
-
-
+        // Map: 674030000 | pt: 9
         public async Task<bool> guyfawkes0_floor()
         {
 
@@ -2565,7 +909,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 682000000 | pt: 8
         public async Task<bool> halloween_enter()
         {
 
@@ -2574,7 +918,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> halloween_Omni1()
         {
 
@@ -2582,7 +925,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 101010103, 102000000, 103000000, 120000000, 200080100 | pt: 9
         public async Task<bool> highposition()
         {
 
@@ -2591,253 +934,12 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
-        public async Task<bool> hontale_Bopen()
-        {
-
-            int nextMap;
-            AbstractEventInstanceManager eim;
-            IMap target;
-            IPortal? targetPortal;
-            string? avail;
-
-            if (getPlayer().getMapId() == 240050101)
-            {
-                nextMap = 240050102;
-                eim = GetEventInstanceTrust();
-                target = await eim.getMapInstance(nextMap);
-                targetPortal = target.getPortal("sp");
-                // only let people through if the eim is ready
-                avail = eim.getProperty("1stageclear");
-                if (avail == null)
-                {
-                    // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await getPlayer().changeMap(target, targetPortal);
-                    return true;
-                }
-            }
-            else if (getPlayer().getMapId() == 240050102)
-            {
-                nextMap = 240050103;
-                eim = GetEventInstanceTrust();
-                target = await eim.getMapInstance(nextMap);
-                targetPortal = target.getPortal("sp");
-                // only let people through if the eim is ready
-                avail = eim.getProperty("2stageclear");
-                if (avail == null)
-                {
-                    // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await getPlayer().changeMap(target, targetPortal);
-                    return true;
-                }
-            }
-            else if (getPlayer().getMapId() == 240050103)
-            {
-                nextMap = 240050104;
-                eim = GetEventInstanceTrust();
-                target = await eim.getMapInstance(nextMap);
-                targetPortal = target.getPortal("sp");
-                // only let people through if the eim is ready
-                avail = eim.getProperty("3stageclear");
-                if (avail == null)
-                {
-                    // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await getPlayer().changeMap(target, targetPortal);
-                    return true;
-                }
-            }
-            else if (getPlayer().getMapId() == 240050104)
-            {
-                nextMap = 240050105;
-                eim = GetEventInstanceTrust();
-                target = await eim.getMapInstance(nextMap);
-                targetPortal = target.getPortal("sp");
-                // only let people through if the eim is ready
-                avail = eim.getProperty("4stageclear");
-                if (avail == null)
-                {
-                    // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-                else
-                {
-                    await playPortalSound();
-                    await getPlayer().changeMap(target, targetPortal);
-                    return true;
-                }
-            }
-            else if (getPlayer().getMapId() == 240050105)
-            {
-                nextMap = 240050100;
-                eim = GetEventInstanceTrust();
-                target = await eim.getMapInstance(nextMap);
-                targetPortal = target.getPortal("st00");
-
-                avail = eim.getProperty("5stageclear");
-                if (avail == null)
-                {
-                    if (haveItem(4001092) && isEventLeader())
-                    {
-                        await eim.showClearEffect();
-                        await LightBlue("The leader's key break the seal for a flash...");
-                        await playPortalSound();
-                        await getPlayer().changeMap(target, targetPortal);
-                        eim.setIntProperty("5stageclear", 1);
-                        return true;
-                    }
-                    else
-                    {
-                        await LightBlue("Horntail\'s Seal is blocking this door. Only the leader with the key can lift this seal.");
-                        return false;
-                    }
-                }
-                else
-                {
-                    await playPortalSound();
-                    await getPlayer().changeMap(target, targetPortal);
-                    return true;
-                }
-            }
-            return true;
-        }
-
-
-        public async Task<bool> hontale_BR()
-        {
-
-            if (getPlayer().getMapId() == 240060000)
-            {
-                if (GetEventInstanceTrust().getIntProperty("defeatedHead") >= 1)
-                {
-                    await playPortalSound();
-                    await warp(240060100, 0);
-                    return true;
-                }
-                else
-                {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-            }
-            else if (getPlayer().getMapId() == 240060100)
-            {
-                if (GetEventInstanceTrust().getIntProperty("defeatedHead") >= 2)
-                {
-                    await playPortalSound();
-                    await warp(240060200, 0);
-                    return true;
-                }
-                else
-                {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-            }
-            return false;
-        }
-
-        // Map: 240050100
-        public async Task<bool> hontale_BtoB1()
-        {
-
-            if (getMap().countPlayers() == 1)
-            {
-                await LightBlue("As the last player on this map, you are compelled to wait for the incoming keys.");
-                return false;
-            }
-            else
-            {
-                if (haveItem(4001087))
-                {
-                    await LightBlue("背包中持有#t4001087#时无法进入下一地图！");
-                    return false;
-                }
-                await playPortalSound();
-                await warp(240050101, 0);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> hontale_C()
-        {
-
-            var eim = GetEventInstanceTrust();
-
-            if (isEventLeader() == true)
-            {
-                int target;
-                var theWay = getMap().getReactorByName("light")!.getState();
-                if (theWay == 1)
-                {
-                    target = 240050300; //light
-                }
-                else if (theWay == 3)
-                {
-                    target = 240050310; //dark
-                }
-                else
-                {
-                    await Pink("Hit the Lightbulb to determine your fate!");
-                    return false;
-                }
-
-                await playPortalSound();
-                await eim.warpEventTeam(target);
-                return true;
-            }
-            else
-            {
-                await Pink("You are not the party leader. Only the party leader may proceed through this portal.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> hontale_morph2()
-        {
-
-            await playPortalSound();
-            await warp(240040600, 4);
-            return true;
-        }
-
-
-        public async Task<bool> hontale_out1()
-        {
-
-            await playPortalSound();
-            await warp(240050400, "sp");
-            return true;
-        }
-
-
         public async Task<bool> in2159011()
         {
 
             await openNpc(2159011);
             return true;
         }
-
 
         public async Task<bool> inDragonEgg()
         {
@@ -2856,7 +958,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 101000000 | pt: 7
         public async Task<bool> inERShip()
         {
 
@@ -2865,7 +967,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 40000 | pt: 9
         public async Task<bool> infoAttack()
         {
 
@@ -2878,7 +980,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 10000 | pt: 9
         public async Task<bool> infoMinimap()
         {
 
@@ -2891,7 +993,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 40000 | pt: 9
         public async Task<bool> infoPickup()
         {
 
@@ -2904,7 +1006,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 1000000 | pt: 9
         public async Task<bool> infoReactor()
         {
 
@@ -2921,7 +1023,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 40000 | pt: 9
         public async Task<bool> infoSkill()
         {
 
@@ -2934,7 +1036,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 50000 | pt: 9
         public async Task<bool> infoWorldmap()
         {
 
@@ -2943,7 +1045,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240020101, 240020102 | pt: 7
         public async Task<bool> inNix1()
         {
 
@@ -2952,7 +1054,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240020401, 240020402 | pt: 7
         public async Task<bool> inNix2()
         {
 
@@ -2961,39 +1063,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> investigate1()
-        {
-
-            if (isQuestActive(2314) || isQuestCompleted(2314))
-            {
-                await openNpc(1300014);
-                return true;
-            }
-            return false;
-        }
-
-
-        public async Task<bool> investigate2()
-        {
-
-            if (isQuestActive(2322) || isQuestCompleted(2322))
-            {
-                await openNpc(1300014);
-                return true;
-            }
-            return false;
-        }
-
-
-        public async Task<bool> in_xmas_party()
-        {
-
-            await openNpc(9209100);
-            return false;
-        }
-
-
+        // Map: 300000010 | pt: 8
         public async Task<bool> jail_in()
         {
 
@@ -3002,7 +1072,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 300000012 | pt: 8
         public async Task<bool> jail_out()
         {
 
@@ -3026,472 +1096,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> jnr12_in()
-        {
-
-            await playPortalSound();
-            await warp(926110401, 0); //next
-            return true;
-        }
-
-
-        public async Task<bool> jnr1_out()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg2") == 1)
-            {
-                await playPortalSound();
-                await warp(926110100, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr1_pt00()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg1") == 1)
-            {
-                await playPortalSound();
-                await warp(926110001, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr2_out()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg3") == 3)
-            {
-                await playPortalSound();
-                await warp(926110200, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr3_in0()
-        {
-
-            if (getMap().getReactorByName("jnr3_out1")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110201, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr3_in1()
-        {
-
-            if (getMap().getReactorByName("jnr3_out2")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110202, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr3_out()
-        {
-
-            if (getMap().getReactorByName("jnr3_out3")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110203, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr4_r1()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 0;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                await playPortalSound();
-                await warp(926110301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("This room is already being explored.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr4_r2()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 1;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                await playPortalSound();
-                await warp(926110301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("This room is already being explored.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr4_r3()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 2;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                await playPortalSound();
-                await warp(926110301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("This room is already being explored.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr4_r4()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-            var reg = 3;
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                await playPortalSound();
-                await warp(926110301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("This room is already being explored.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr5_rp()
-        {
-
-            var mapplayer = "stage6_comb" + (getMapId() % 10);
-            var eim = GetEventInstanceTrust();
-
-            var comb = eim.getProperty(mapplayer);
-            if (string.IsNullOrEmpty(comb))
-            {
-                comb = "";
-                for (var i = 0; i < 10; i++)
-                {
-                    var r = Random.Shared.Next(4);
-                    comb += r.ToString();
-                }
-
-                eim.setProperty(mapplayer, comb);
-            }
-
-            var name = getPortal().getName().Substring(2, 4);
-            var portalId = int.Parse(name);
-
-
-            var pRow = (int)Math.Floor(portalId / 10.0);
-            var pCol = (portalId % 10);
-
-            if (pCol == int.Parse(comb.Substring(pRow, pRow + 1)))
-            {    //climb
-                if (pRow < 9)
-                {
-                    await playPortalSound();
-                    await TeleportPortal(getPortal().getId() + 4);
-                }
-                else
-                {
-                    if (eim.getIntProperty("statusStg6") == 0)
-                    {
-                        eim.setIntProperty("statusStg6", 1);
-                        await eim.GiveStageClearRewardAll(6);
-                    }
-
-                    await playPortalSound();
-                    await TeleportPortal(1);
-                }
-
-            }
-            else
-            {    //fail
-                await playPortalSound();
-                await TeleportPortal(2);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> jnr6_out()
-        {
-
-            if (getMap().getReactorByName("jnr6_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110300, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr_201_0()
-        {
-
-            if (getMap().getReactorByName("jnr31_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110200, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr_202()
-        {
-
-            if (getMap().getReactorByName("jnr32_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926110200, 2);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> jnr_exit()
-        {
-
-            await playPortalSound();
-            await warp(261000021, 0);
-            return true;
-        }
-
-
-        public async Task<bool> kinggate2_open()
-        {
-
-            var eim = GetEventInstanceTrust();
-
-            if (getPlayer().getMap().getReactorByName("kinggate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000900, 2);
-                if (eim.getProperty("boss") == "true")
-                {
-                    await changeMusic("Bgm10/Eregos");
-                }
-                return true;
-            }
-            else
-            {
-                await Pink("This crack appears to be blocked off by the door nearby.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kinggate_open()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (getPlayer().getMap().getReactorByName("kinggate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000900, 1);
-                if (eim.getProperty("boss") == "true")
-                {
-                    await changeMusic("Bgm10/Eregos");
-                }
-                return true;
-            }
-            else
-            {
-                await Pink("This door is closed.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kpq0()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(103000801);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kpq1()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(103000802);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kpq2()
-        {
-
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(103000803);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kpq3()
-        {
-
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(103000804);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> kpq4()
-        {
-
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(103000805);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
+        // kerning PQ 传送门（kpq0~kpq4）已在 Features/KerningPQ 中实现
 
         public async Task<bool> lionCastle_enter()
         {
@@ -3501,179 +1106,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> lpq0()
-        {
-            var eim = GetEventInstanceTrust();
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010200;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq1()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010300;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq2()
-        {
-            var eim = GetEventInstanceTrust();
-
-            // only let people through if the eim is ready
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                // can't go thru eh?
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010400;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq3()
-        {
-            var eim = GetEventInstanceTrust();
-
-            // only let people through if the eim is ready
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                // can't go thru eh?
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010500;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq4()
-        {
-            var eim = GetEventInstanceTrust();
-
-            // only let people through if the eim is ready
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                // can't go thru eh?
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010600;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq5()
-        {
-            var eim = GetEventInstanceTrust();
-            // only let people through if the eim is ready
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                // can't go thru eh?
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010700;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> lpq6()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                await playPortalSound();
-                var target = await eim.getMapInstance(922010800);
-                await getPlayer().changeMap(target, target.getPortal("st00"));
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        public async Task<bool> lpq7()
-        {
-            var eim = GetEventInstanceTrust();
-
-            // only let people through if the eim is ready
-            if (!eim.ClearedMaps.ContainsKey(getMapId()))
-            {
-                // can't go thru eh?
-                await Pink("Some seal is blocking this door.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                var nextMap = 922010900;
-                var target = await eim.getMapInstance(nextMap);
-                var targetPortal = target.getPortal("st00");
-                await getPlayer().changeMap(target, targetPortal);
-                return true;
-            }
-        }
-
+        // ludi PQ 传送门（lpq0~lpq7）已在 Features/LudiPQ 中实现
 
         public async Task<bool> ludi021()
         {
@@ -3682,42 +1115,6 @@ namespace Application.Plugin.Script
             await warp(220020600);
             return true;
         }
-
-
-        public async Task<bool> magatia_alc0()
-        {
-
-            if (!isQuestStarted(3309) || haveItem(4031708, 1))
-            {
-                await playPortalSound();
-                await warp(261020700, "down00");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(926120000, "out00");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> magatia_dark0()
-        {
-
-            if (isQuestCompleted(7770))
-            {
-                await playPortalSound();
-                await warp(926130000, "out00");
-                return true;
-            }
-            else
-            {
-                await Pink("This pipe seems too dark to venture inside.");
-                return false;
-            }
-        }
-
 
         public async Task<bool> male00()
         {
@@ -3739,7 +1136,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 680100000, 680100001, 680100002, 680100003 | pt: 7
         public async Task<bool> mapleMarket7_out()
         {
 
@@ -3748,7 +1145,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 910000000 | pt: 7
         public async Task<bool> market00()
         {
 
@@ -3766,7 +1163,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 100000100 | pt: 7
         public async Task<bool> market01()
         {
 
@@ -3780,7 +1177,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 220000000 | pt: 7
         public async Task<bool> market02()
         {
 
@@ -3794,7 +1191,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 211000100 | pt: 7
         public async Task<bool> market03()
         {
 
@@ -3808,7 +1205,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 102000000 | pt: 7
         public async Task<bool> market04()
         {
 
@@ -3822,7 +1219,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 230000000 | pt: 7
         public async Task<bool> market05()
         {
 
@@ -3836,7 +1233,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 221000000 | pt: 7
         public async Task<bool> market06()
         {
 
@@ -3850,7 +1247,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 200000000 | pt: 7
         public async Task<bool> market07()
         {
 
@@ -3864,7 +1261,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 801000300 | pt: 7
         public async Task<bool> market08()
         {
 
@@ -3878,7 +1275,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 240000000, 701000200 | pt: 7, 8
         public async Task<bool> market09()
         {
 
@@ -3892,7 +1289,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 250000000 | pt: 7
         public async Task<bool> market10()
         {
 
@@ -3906,7 +1303,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 251000000 | pt: 7
         public async Task<bool> market11()
         {
 
@@ -3920,7 +1317,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 600000000 | pt: 7
         public async Task<bool> market12()
         {
 
@@ -3934,7 +1331,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 260000000, 702000000 | pt: 7
         public async Task<bool> market13()
         {
 
@@ -3948,7 +1345,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 222000000, 701000100 | pt: 7
         public async Task<bool> market14()
         {
 
@@ -3962,7 +1359,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 540000000 | pt: 7
         public async Task<bool> market15()
         {
 
@@ -3976,7 +1373,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 541000000 | pt: 7
         public async Task<bool> market16()
         {
 
@@ -3990,7 +1387,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 120000200 | pt: 7
         public async Task<bool> market17()
         {
 
@@ -4004,7 +1401,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 261000000 | pt: 7
         public async Task<bool> market18()
         {
 
@@ -4018,7 +1415,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 130000200 | pt: 7
         public async Task<bool> market19()
         {
 
@@ -4032,7 +1429,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 550000000 | pt: 7
         public async Task<bool> market20()
         {
 
@@ -4046,7 +1443,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 551000000 | pt: 7
         public async Task<bool> market21()
         {
 
@@ -4060,7 +1457,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 140000000 | pt: 7
         public async Task<bool> market22()
         {
 
@@ -4073,7 +1470,6 @@ namespace Application.Plugin.Script
             }
             return false;
         }
-
 
         public async Task<bool> market23()
         {
@@ -4088,7 +1484,6 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
         public async Task<bool> market24()
         {
 
@@ -4101,7 +1496,6 @@ namespace Application.Plugin.Script
             }
             return false;
         }
-
 
         public async Task<bool> market26()
         {
@@ -4116,7 +1510,6 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
         public async Task<bool> market52()
         {
 
@@ -4129,7 +1522,6 @@ namespace Application.Plugin.Script
             }
             return false;
         }
-
 
         public async Task<bool> market53()
         {
@@ -4144,7 +1536,6 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
         public async Task<bool> market54()
         {
 
@@ -4157,7 +1548,6 @@ namespace Application.Plugin.Script
             }
             return false;
         }
-
 
         public async Task<bool> market55()
         {
@@ -4172,7 +1562,6 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
         public async Task<bool> market56()
         {
 
@@ -4186,7 +1575,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 610010200 | pt: 8
         public async Task<bool> Masteria_B1_1()
         {
 
@@ -4199,7 +1588,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 610010201 | pt: 8
         public async Task<bool> Masteria_B2_1()
         {
 
@@ -4212,7 +1601,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 610010202 | pt: 8
         public async Task<bool> Masteria_B3_1()
         {
 
@@ -4225,7 +1614,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 610020010 | pt: 8
         public async Task<bool> Masteria_CC1_A()
         {
 
@@ -4234,7 +1623,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020015 | pt: 8
         public async Task<bool> Masteria_CC6_A()
         {
 
@@ -4243,7 +1632,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020000 | pt: 8
         public async Task<bool> Masteria_CM1_A()
         {
 
@@ -4256,7 +1645,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020000 | pt: 8
         public async Task<bool> Masteria_CM1_B()
         {
 
@@ -4269,7 +1658,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020000 | pt: 8
         public async Task<bool> Masteria_CM1_C()
         {
 
@@ -4282,7 +1671,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020000 | pt: 8
         public async Task<bool> Masteria_CM1_D()
         {
 
@@ -4295,7 +1684,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020001 | pt: 8
         public async Task<bool> Masteria_CM2_B()
         {
 
@@ -4308,7 +1697,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020001 | pt: 8
         public async Task<bool> Masteria_CM2_C()
         {
 
@@ -4321,7 +1710,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020001 | pt: 8
         public async Task<bool> Masteria_CM2_D()
         {
 
@@ -4334,7 +1723,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610020001 | pt: 8
         public async Task<bool> Masteria_CM2_E()
         {
 
@@ -4347,7 +1736,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610010001 | pt: 8
         public async Task<bool> Masteria_U2_1()
         {
 
@@ -4360,7 +1749,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610010002 | pt: 8
         public async Task<bool> Masteria_U3_1()
         {
 
@@ -4373,7 +1762,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610010004 | pt: 8
         public async Task<bool> Masteria_U5_1()
         {
 
@@ -4386,7 +1775,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610010004 | pt: 8
         public async Task<bool> Masteria_U5_2()
         {
 
@@ -4399,7 +1788,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 610010005 | pt: 8
         public async Task<bool> Masteria_U6_1()
         {
 
@@ -4412,7 +1801,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240020400 | pt: 7
         public async Task<bool> mayong()
         {
 
@@ -4421,105 +1810,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> MC2revive()
-        {
-
-            await playPortalSound();
-            await WarpReturn();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive1()
-        {
-
-            await WarpReturn();
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive2()
-        {
-
-            await WarpReturn();
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive3()
-        {
-
-            var portal = 0;
-            switch (getPlayer().getTeam())
-            {
-                case 0:
-                    portal = 4;
-                    break;
-                case 1:
-                    portal = 3;
-                    break;
-            }
-            await WarpReturn(portal);
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive4()
-        {
-
-            var portal = 0;
-            switch (getPlayer().getTeam())
-            {
-                case 0:
-                    portal = 4;
-                    break;
-                case 1:
-                    portal = 3;
-                    break;
-            }
-            await WarpReturn(portal);
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive5()
-        {
-
-            await WarpReturn();
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> MCrevive6()
-        {
-
-            await WarpReturn();
-            await playPortalSound();
-            return true;
-        }
-
-
-        public async Task<bool> mc_out()
-        {
-
-            var returnMap = getPlayer().getSavedLocation("MONSTER_CARNIVAL");
-            if (returnMap < 0)
-            {
-                returnMap = 102000000; // Just Incase there is no saved location.
-            }
-            var target = await getPlayer().getClient().getChannelServer().getMapFactory().getMap(returnMap);
-            await getPlayer().changeMap(target);
-            await playPortalSound();
-            return true;
-        }
-
-
+        // Map: 600000000 | pt: 7
         public async Task<bool> MD_cakeEnter()
         {
 
@@ -4528,7 +1819,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 105090311, 105090320 | pt: 7
         public async Task<bool> MD_drakeroom()
         {
             var baseid = 105090311;
@@ -4580,7 +1871,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 261020300, 261020301 | pt: 7
         public async Task<bool> MD_error()
         {
             var baseid = 261020300;
@@ -4631,7 +1922,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 105040304, 105040320 | pt: 7
         public async Task<bool> MD_golem()
         {
             var baseid = 105040304;
@@ -4682,7 +1973,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 551030000, 551030001 | pt: 7
         public async Task<bool> MD_high()
         {
             var baseid = 551030000;
@@ -4733,7 +2024,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 105050100, 105050101 | pt: 7
         public async Task<bool> MD_mushroom()
         {
             var baseid = 105050100;
@@ -4784,7 +2075,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 100020000, 100020100 | pt: 7
         public async Task<bool> MD_pig()
         {
             var baseid = 100020000;
@@ -4835,7 +2126,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 240040520, 240040900 | pt: 7, 8
         public async Task<bool> MD_protect()
         {
             var baseid = 240040520;
@@ -4886,7 +2177,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 221023400, 221023401 | pt: 7
         public async Task<bool> MD_rabbit()
         {
             var baseid = 240040520;
@@ -4937,7 +2228,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 240040511, 240040800 | pt: 7, 8
         public async Task<bool> MD_remember()
         {
             var baseid = 240040511;
@@ -4988,7 +2279,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 240020500, 240020501 | pt: 7, 8
         public async Task<bool> MD_roundTable()
         {
             var baseid = 240020500;
@@ -5039,7 +2330,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 260020600, 260020630 | pt: 7
         public async Task<bool> MD_sand()
         {
             var baseid = 260020600;
@@ -5091,7 +2382,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 251010402, 251010410 | pt: 7
         public async Task<bool> MD_treasure()
         {
             var baseid = 251010402;
@@ -5142,21 +2433,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> metalgate_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("metalgate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000431, 0);
-                return true;
-            }
-            await Pink("This way forward is not open yet.");
-            return false;
-        }
-
-
+        // Map: 910320000 | pt: 9
         public async Task<bool> metro_Chat00()
         {
 
@@ -5165,7 +2442,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 910320000 | pt: 7
         public async Task<bool> metro_in00()
         {
 
@@ -5173,7 +2450,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 102040000 | pt: 7
         public async Task<bool> met_in()
         {
 
@@ -5184,7 +2461,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 910320000 | pt: 7
         public async Task<bool> met_out()
         {
 
@@ -5204,7 +2481,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 101010000, 240010100 | pt: 8
         public async Task<bool> minar_elli()
         {
 
@@ -5230,7 +2507,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240010500 | pt: 8
         public async Task<bool> minar_job4()
         {
 
@@ -5238,7 +2515,6 @@ namespace Application.Plugin.Script
             await warp(240010501, "out00");
             return true;
         }
-
 
         public async Task<bool> mirtalk00()
         {
@@ -5253,7 +2529,6 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
         public async Task<bool> mirtalk01()
         {
 
@@ -5267,7 +2542,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 108000710 | pt: 7
         public async Task<bool> moveBefore()
         {
 
@@ -5276,7 +2551,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 108000700 | pt: 7
         public async Task<bool> moveNext()
         {
 
@@ -5285,7 +2560,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 222020400 | pt: 7
         public async Task<bool> move_elin()
         {
 
@@ -5295,21 +2570,21 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 200090070, 200090071, 200090072, 200090073, 200090074, 200090075 … (共 10 张) | pt: 9
         public async Task<bool> move_RieRit()
         {
 
             return true;
         }
 
-
+        // Map: 200090060, 200090061, 200090062, 200090063, 200090064, 200090065 … (共 10 张) | pt: 9
         public async Task<bool> move_RitRie()
         {
 
             return true;
         }
 
-
+        // Map: 260020500 | pt: 7
         public async Task<bool> nets_in()
         {
 
@@ -5319,7 +2594,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 926010000 | pt: 7
         public async Task<bool> nets_out()
         {
 
@@ -5337,7 +2612,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 980041000, 980041100, 980042000, 980042100, 980043000, 980043100 … (共 7 张) | pt: 9
         public async Task<bool> NextMap()
         {
 
@@ -5345,33 +2620,6 @@ namespace Application.Plugin.Script
             await warp(getMapId() + 100, 0);
             return true;
         }
-
-
-        public async Task<bool> obstacle()
-        {
-
-            if (isQuestStarted(100202))
-            {    //使用过奇拉蘑菇孢子后允许直接通过
-                await playPortalSound();
-                await warp(106020400, 2);
-                return true;
-            }
-            else if (hasItem(4000507))
-            {
-                await gainItem(4000507, -1);
-                await playPortalSound();
-                await warp(106020400, 2);
-                await Pink("消耗一个 蘑菇的毒孢子 通过了结界。");
-                return true;
-            }
-            else
-            {
-                await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon1");
-                await Pink("似乎有一个魔力强大的结界阻止你进入。");
-            }
-            return false;
-        }
-
 
         public async Task<bool> outArchterMap()
         {
@@ -5382,7 +2630,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 914000300 | pt: 7
         public async Task<bool> outChild()
         {
 
@@ -5400,55 +2648,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
-        public async Task<bool> outDarkEreb()
-        {
-            var warpMap = isQuestCompleted(20407) ? 924010200 : 924010100;
-
-            await playPortalSound();
-            await warp(warpMap, 0);
-            return true;
-        }
-
-
-        public async Task<bool> enterMagiclibrar()
-        {
-            if (isQuestStarted(20718))
-            {
-                return await TryStartSoloQuest(20718);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(101000003, 8);
-            }
-            return true;
-        }
-
-        // Map: 910110000
-        public async Task<bool> outMagiclib()
-        {
-            if (getMap().countMonster(2220100) > 0)
-            {
-                await Pink("Cannot leave until all Blue Mushrooms have been defeated.");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                // 离开任务副本时会自行关闭副本
-                await warp(101000000, 26);
-
-                if (isQuestCompleted(20718))
-                {
-                    await openNpc(1103003, "MaybeItsGrendel_end");
-                }
-
-                return true;
-            }
-        }
-
-
+        // Map: 914020000 | pt: 7
         public async Task<bool> outMaha()
         {
             await playPortalSound();
@@ -5456,7 +2656,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240020600 | pt: 7
         public async Task<bool> outNix1()
         {
 
@@ -5465,7 +2665,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240020600 | pt: 7
         public async Task<bool> outNix2()
         {
 
@@ -5474,7 +2674,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 105100100 | pt: 7
         public async Task<bool> outPerrion_1()
         {
 
@@ -5484,7 +2684,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 105100100 | pt: 9
         public async Task<bool> outPerrion_2()
         {
 
@@ -5493,7 +2693,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 921110000 | pt: 7
         public async Task<bool> outRider()
         {
 
@@ -5511,7 +2711,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 925040001 | pt: 7
         public async Task<bool> outSpecialSchool()
         {
 
@@ -5520,7 +2720,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 270000100 | pt: 7
         public async Task<bool> outTemple()
         {
 
@@ -5530,7 +2730,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 914030000 | pt: 7
         public async Task<bool> outtestWolf()
         {
 
@@ -5556,706 +2756,8 @@ namespace Application.Plugin.Script
             }
         }
 
-        // Map: 106021500
-        public async Task<bool> out_pepeking()
-        {
-            var eim = getEventInstance();
-            if (eim != null)
-            {
-                await eim.stopEventTimer();
-                await eim.DisposeAsync();
-            }
 
-            var questProgress = getQuestProgressInt(2330, 3300005) + getQuestProgressInt(2330, 3300006) + getQuestProgressInt(2330, 3300007); //3 Yetis
-            if (questProgress == 3 && !hasItem(4032388))
-            {
-                if (canHold(4032388))
-                {
-                    await Pink("你已经拿到了结婚礼堂的钥匙。企鹅国王肯定是把它丢掉了。");
-                    await gainItem(4032388, 1);
-
-                    await playPortalSound();
-                    await warp(106021400, 2);
-                    return true;
-                }
-                else
-                {
-                    await Pink("请确保背包其它物品栏还有可用空间。");
-                    return false;
-                }
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(106021400, 2);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> party3_gardenin()
-        {
-
-            if (getPlayer().getParty() != null && isEventLeader() && haveItem(4001055, 1))
-            {
-                await playPortalSound();
-                await GetEventInstanceTrust().warpEventTeam(920010100);
-                return true;
-            }
-            else
-            {
-                await Pink("Please get the leader in this portal, make sure you have the Root of Life.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> party3_jail1()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg8") == 1)
-            {
-                await playPortalSound();
-                await warp(920010910, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The storage is currently inaccessible, as the powers of the Pixies remains active within the tower.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> party3_jail2()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg8") == 1)
-            {
-                await playPortalSound();
-                await warp(920010920, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The storage is currently inaccessible, as the powers of the Pixies remains active within the tower.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> party3_jail3()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg8") == 1)
-            {
-                await playPortalSound();
-                await warp(920010930, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The storage is currently inaccessible, as the powers of the Pixies remains active within the tower.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> party3_jailin()
-        {
-            var map = getMap();
-            var mobcount = map.countMonster(9300044);
-
-            if (mobcount > 0)
-            {
-                await Pink("请先使用控制杆清除所有威胁再继续前进");
-                return false;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(getMapId() + 2, 0);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> party3_r4pt()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim.getProperty("stage4_comb") == null)
-            {
-                var r = Math.Floor((Random.Shared.NextDouble() * 3)) + 1;
-                var s = Math.Floor((Random.Shared.NextDouble() * 3)) + 1;
-
-                eim.setProperty("stage4_comb", "" + r + s);
-            }
-
-            var pname = int.Parse(getPortal().getName().Substring(4, 6));
-            var cname = int.Parse(eim.getProperty("stage4_comb"));
-
-            var secondPt = true;
-            if (getPortal().getId() < 14)
-            {
-                cname = (int)Math.Floor(cname / 10.0);
-                secondPt = false;
-            }
-
-            if ((pname % 10) == (cname % 10))
-            {    //climb
-                int nextPortal;
-                if (secondPt)
-                {
-                    nextPortal = 1;
-                }
-                else
-                {
-                    nextPortal = getPortal().getId() + 3;
-                }
-
-                await playPortalSound();
-                await TeleportPortal(nextPortal);
-            }
-            else
-            {    //fail
-                await playPortalSound();
-                await TeleportPortal(2);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party3_r4pt1()
-        {
-
-            await playPortalSound();
-            await warp(920010600, Random.Shared.NextDouble() * 3 > 1 ? 1 : 2);
-            return true;
-        }
-
-
-        public async Task<bool> party3_r6pt()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var comb = eim.getProperty("stage6_comb");
-            if (string.IsNullOrEmpty(comb))
-            {
-                comb = "0";
-
-                for (var i = 0; i < 16; i++)
-                {
-                    var r = Math.Floor((Random.Shared.NextDouble() * 4)) + 1;
-                    comb += r.ToString();
-                }
-
-                eim.setProperty("stage6_comb", comb);
-            }
-
-            var name = getPortal().getName().Substring(2, 5);
-            var portalId = int.Parse(name);
-
-
-            var pRow = (int)Math.Floor(portalId / 10.0);
-            var pCol = portalId % 10;
-
-            if (pCol == int.Parse(comb.Substring(pRow, pRow + 1)))
-            {
-                //climb
-                await TeleportPortal((pRow % 4 != 0) ? getPortal().getId() + 4 : (pRow / 4));
-            }
-            else
-            {
-                //fail
-                pRow--;
-                await TeleportPortal((pRow / 4.0) > 1 ? (int)(pRow / 4.0) : 5);  // thanks Chloek3, seth1 for noticing next plaform issues
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party3_room1()
-        {
-
-            await playPortalSound();
-            await warp(920010200, 13);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room2()
-        {
-
-            await playPortalSound();
-            await warp(920010300, 1);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room3()
-        {
-
-            await playPortalSound();
-            await warp(920010400, 8);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room4()
-        {
-
-            await playPortalSound();
-            await warp(920010500, 3);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room5()
-        {
-
-            await playPortalSound();
-            await warp(920010600, 17);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room6()
-        {
-
-            await playPortalSound();
-            await warp(920010700, 23);
-            return true;
-        }
-
-
-        public async Task<bool> party3_room8()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg8") == 1)
-            {
-                await playPortalSound();
-                await warp(920011000, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The storage is currently inaccessible, as the powers of the Pixies remains active within the tower.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> party3_roomout()
-        {
-
-            var exitPortal = 0;
-
-            switch (getMapId())
-            {
-                case 920010200:
-                    exitPortal = 4;
-                    break;
-
-                case 920010300:
-                    exitPortal = 12;
-                    break;
-
-                case 920010400:
-                    exitPortal = 5;
-                    break;
-
-                case 920010500:
-                    exitPortal = 13;
-                    break;
-
-                case 920010600:
-                    exitPortal = 15;
-                    break;
-
-                case 920010700:
-                    exitPortal = 14;
-                    break;
-
-                case 920011000:
-                    exitPortal = 16;
-                    break;
-            }
-
-            await playPortalSound();
-            await warp(920010100, exitPortal);
-            return true;
-        }
-
-
-        public async Task<bool> party6_out()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim == null)
-                return false;
-
-            if (eim.isEventCleared())
-            {
-                if (isEventLeader())
-                {
-                    await playPortalSound();
-                    await eim.warpEventTeam(930000800);
-                    return true;
-                }
-                else
-                {
-                    await Pink(nameof(ClientMessage.Tip_WaitForLeaderEnterPortal));
-                    return false;
-                }
-            }
-            else
-            {
-                await Pink(nameof(ClientMessage.EllinPQ_NeedDefeatBossFirst));
-                return false;
-            }
-        }
-
-        [ScriptTag(["EllinPQ"])]
-        public async Task<bool> party6_stage()
-        {
-
-            switch (getMapId())
-            {
-                case 930000000:
-                    await playPortalSound();
-                    await warp(930000100, 0);
-                    return true;
-                case 930000100:
-                    if (getMap().countMonsters() == 0)
-                    {
-                        await playPortalSound();
-                        await warp(930000200, 0);
-                        return true;
-                    }
-                    else
-                    {
-                        await Pink(nameof(ClientMessage.Tip_EliminateAllMonster));
-                        return false;
-                    }
-                case 930000200:
-                    if (getMap().getReactorByName("spine") != null && getMap().getReactorByName("spine")?.getState() < 4)
-                    {
-                        await Pink(nameof(ClientMessage.EllinPQ_SpineBlockWay));
-                        return false;
-                    }
-                    else
-                    {
-                        await playPortalSound();
-                        await warp(930000300, 0); //assuming they cant get past reactor without it being gone
-                        return true;
-                    }
-                default:
-                    await Pink(nameof(ClientMessage.Tip_UnknownPortal));
-                    return false;
-            }
-        }
-
-
-        public async Task<bool> party6_stage501()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "02st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage502()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "03st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage503()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "04st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage504()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "05st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage505()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "06st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage506()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "07st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage507()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "08st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage508()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "09st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage509()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "10st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage510()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "11st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage511()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "12st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage512()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "13st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage513()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "14st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage514()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "15st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage515()
-        {
-
-            if (Random.Shared.NextDouble() < 0.1)
-            {
-                await playPortalSound();
-                await warp(930000300, "16st");
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(930000300, "01st");
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> party6_stage800()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (eim != null)
-            {
-                await eim.dropExclusiveItems(getPlayer());
-
-                var spring = getMap().getReactorById(3008000);  // thanks Chloek3, seth1 for noticing fragments not being awarded properly
-                if (spring != null && spring.getState() > 0)
-                {
-                    if (!canHold(4001198, 1))
-                    {
-                        await Pink("Tip_CheckEtcSizeBeforeEnterPortal");
-                        return false;
-                    }
-
-                    await gainItem(4001198, 1);
-                }
-            }
-
-            await playPortalSound();
-            await warp(300030100, 0);
-            return true;
-        }
-
-
+        // Map: 230040410 | pt: 7
         public async Task<bool> Pianus()
         {
 
@@ -6264,53 +2766,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> Pinkin()
-        {
-
-            await playPortalSound();
-            await warp(270050100);
-            return true;
-        }
-
-
-        public async Task<bool> Populatus00()
-        {
-
-            if (!((isQuestStarted(6361) && haveItem(4031870, 1)) || (isQuestCompleted(6361) && !isQuestCompleted(6363))))
-            {
-                var em = GetEventManager(nameof(PapulatusBattle));
-
-                var r = await em.StartInstance(getPlayer());
-                if (r == CreateInstanceResult.Success)
-                {
-                    await playPortalSound();
-                    return true;
-                }
-                else
-                {
-                    await Pink(em.HandleCreateInstanceResult(r, c));
-                    return false;
-                }
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(922020300, 0);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> PPinkOut()
-        {
-
-            await playPortalSound();
-            await warp(270050000);
-            return true;
-        }
-
-
+        // Map: 100030000 | pt: 7
         public async Task<bool> q2073()
         {
 
@@ -6327,7 +2783,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 926130100 | pt: 8
         public async Task<bool> q3366in()
         {
 
@@ -6344,7 +2800,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 926130200 | pt: 7
         public async Task<bool> q3366out()
         {
 
@@ -6353,32 +2809,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> q3367in()
-        {
-
-            if (isQuestStarted(3367))
-            {
-                var booksDone = getQuestProgressInt(3367, 31);
-                var booksInv = getItemQuantity(4031797);
-
-                if (booksInv < booksDone)
-                {
-                    await gainItem(4031797, booksDone - booksInv);
-                }
-
-                await playPortalSound();
-                await warp(926130102, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("You don't have permission to access this room.");
-                return false;
-            }
-        }
-
-
+        // Map: 926130201 | pt: 7
         public async Task<bool> q3367out()
         {
 
@@ -6387,7 +2818,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 926130100 | pt: 8
         public async Task<bool> q3368in()
         {
 
@@ -6404,7 +2835,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 926130203 | pt: 7
         public async Task<bool> q3368out()
         {
 
@@ -6413,76 +2844,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> raidout()
-        {
-
-            var map = getPlayer().getSavedLocation("BOSSPQ");
-            if (map == -1)
-            {
-                map = 100000000;
-            }
-
-            await playPortalSound();
-            await warp(map, 0);
-            return true;
-        }
-
-
-        public async Task<bool> raid_rest()
-        {
-
-            var evLevel = ((getMapId() - 1) % 5) + 1;
-
-            var eim = GetEventInstanceTrust();
-            if (eim.isEventLeader(getPlayer()) && eim.getPlayerCount() > 1)
-            {
-                await Pink("Being the party leader, you cannot leave before your teammates leave first or you pass leadership.");
-                return false;
-            }
-
-            if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
-            {
-                await playPortalSound();
-                await warp(970030000);
-                return true;
-            }
-            else
-            {
-                await Pink(c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.Redeem_InventoryFull)));
-                return false;
-            }
-        }
-
-
-        public async Task<bool> raid_stage()
-        {
-
-            if (getMap().countMonsters() == 0)
-            {
-                int nextStage;
-
-                if (getMapId() % 500 >= 100)
-                {
-                    nextStage = getMapId() + 100;
-                }
-                else
-                {
-                    nextStage = 970030001 + (int)(Math.Floor((getMapId() - 970030100) / 500.0));
-                }
-
-                await playPortalSound();
-                await warp(nextStage);
-                return true;
-            }
-            else
-            {
-                await LightBlue("Defeat all monsters before proceeding to the next stage.");
-                return false;
-            }
-        }
-
-
+        // Map: 100000204, 101000004, 102000004, 103000008, 120000105, 130000120 … (共 8 张) | pt: 8
         public async Task<bool> rankDeveloperRoom()
         {
 
@@ -6516,7 +2878,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 100000201, 101000003, 102000003, 103000003, 120000101, 130000000 … (共 8 张) | pt: 7
         public async Task<bool> rankRoom()
         {
 
@@ -6553,7 +2915,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 240000110 | pt: 9
         public async Task<bool> reundodraco()
         {
 
@@ -6561,7 +2923,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140010200 | pt: 7
         public async Task<bool> rienCaveEnter()
         {
 
@@ -6578,7 +2940,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 140090100 | pt: 7
         public async Task<bool> rienTutor1()
         {
 
@@ -6592,7 +2954,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140090200 | pt: 7
         public async Task<bool> rienTutor2()
         {
 
@@ -6606,7 +2968,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140090300 | pt: 7
         public async Task<bool> rienTutor3()
         {
 
@@ -6620,7 +2982,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140090400 | pt: 7
         public async Task<bool> rienTutor4()
         {
 
@@ -6634,7 +2996,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140090500 | pt: 9
         public async Task<bool> rienTutor5()
         {
 
@@ -6643,7 +3005,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 140090500 | pt: 9
         public async Task<bool> rienTutor6()
         {
 
@@ -6652,7 +3014,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 140010000 | pt: 7
         public async Task<bool> rienTutor7()
         {
 
@@ -6669,7 +3031,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 140000000 | pt: 7
         public async Task<bool> rienTutor8()
         {
 
@@ -6696,714 +3058,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> rnj12_in()
-        {
-
-            await playPortalSound();
-            await warp(926100401, 0); //next
-            return true;
-        }
-
-        [ScriptTag(["PQ_Magatia"])]
-        public async Task<bool> rnj1_out()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg2") == 1)
-            {
-                await playPortalSound();
-                await warp(926100100, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj1_pt00()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg1") == 1)
-            {
-                await playPortalSound();
-                await warp(926100001, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj2_out()
-        {
-
-            if (GetEventInstanceTrust().getIntProperty("statusStg3") == 3)
-            {
-                await playPortalSound();
-                await warp(926100200, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj3_in0()
-        {
-
-            if (getMap().getReactorByName("rnj3_out1")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100201, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj3_in1()
-        {
-
-            if (getMap().getReactorByName("rnj3_out2")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100202, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj3_out()
-        {
-
-            if (getMap().getReactorByName("rnj3_out3")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100203, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-        async Task<bool> Rnj4_RAsync(int reg)
-        {
-            var eim = GetEventInstanceTrust();
-            var area = eim.getIntProperty("statusStg5");
-
-            if ((area >> reg) % 2 == 0)
-            {
-                area |= (1 << reg);
-                eim.setIntProperty("statusStg5", area);
-
-                await playPortalSound();
-                await warp(926100301 + reg, 0); //next
-                return true;
-            }
-            else
-            {
-                await Pink("This room is already being explored.");
-                return false;
-            }
-        }
-
-        public Task<bool> rnj4_r1() => Rnj4_RAsync(0);
-
-
-        public Task<bool> rnj4_r2() => Rnj4_RAsync(1);
-
-
-        public Task<bool> rnj4_r3() => Rnj4_RAsync(2);
-
-
-        public Task<bool> rnj4_r4() => Rnj4_RAsync(3);
-
-
-        public async Task<bool> rnj5_rp()
-        {
-
-            var mapplayer = "stage6_comb" + (getMapId() % 10);
-            var eim = GetEventInstanceTrust();
-
-            var comb = eim.getProperty(mapplayer) ?? "";
-
-            var name = getPortal().getName().Substring(2, 4);
-            var portalId = int.Parse(name);
-
-
-            var pRow = (int)Math.Floor(portalId / 10.0);
-            var pCol = (portalId % 10);
-
-            if (pCol == int.Parse(comb.Substring(pRow, pRow + 1)))
-            {    //climb
-                if (pRow < 9)
-                {
-                    await playPortalSound();
-                    await TeleportPortal(getPortal().getId() + 4);
-                }
-                else
-                {
-                    if (eim.getIntProperty("statusStg6") == 0)
-                    {
-                        eim.setIntProperty("statusStg6", 1);
-                        await eim.GiveStageClearRewardAll(6);
-                    }
-
-                    await playPortalSound();
-                    await TeleportPortal(1);
-                }
-
-            }
-            else
-            {    //fail
-                await playPortalSound();
-                await TeleportPortal(2);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> rnj6_out()
-        {
-
-            if (getMap().getReactorByName("rnj6_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100300, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The portal is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj_201_0()
-        {
-
-            if (getMap().getReactorByName("rnj31_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100200, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj_202()
-        {
-
-            if (getMap().getReactorByName("rnj32_out")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(926100200, 2);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is not opened yet.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> rnj_exit()
-        {
-
-            await playPortalSound();
-            await warp(261000011, 0);
-            return true;
-        }
-
-
-        public async Task<bool> s4berserk()
-        {
-
-            if (isQuestStarted(6153) && haveItem(4031475))
-            {
-                return await TryStartSoloQuest(6153);
-            }
-            else
-            {
-                await Pink("A mysterious force won't let you in.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> s4berserk_move()
-        {
-
-            if (getPlayer().getMap().countMonsters() == 0)
-            {
-                await playPortalSound();
-                await warp(910500200, "out00");
-                return true;
-            }
-            await Pink("You must defeat all the monsters first.");
-            return true;
-        }
-
-
-        public async Task<bool> s4common1_exit()
-        {
-
-            if (hasItem(4031495))
-            {
-                await playPortalSound();
-                await warp(921100301);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(211040100);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> s4firehawk()
-        {
-
-            if (isQuestStarted(6240))
-            {
-                return await TryStartSoloQuest(6240);
-            }
-            else
-            {
-                await Pink("A mysterious force won't let you in.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> s4hitman()
-        {
-
-            if (isQuestStarted(6201))
-            {
-                return await TryStartSoloQuest(6201);
-            }
-
-            await Pink("A mysterious force won't let you in.");
-            return false;
-        }
-
-
-        public async Task<bool> s4iceeagle()
-        {
-
-            if (isQuestStarted(6242))
-            {
-                return await TryStartSoloQuest(6242);
-            }
-            else
-            {
-                await Pink("A mysterious force won't let you in.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> s4mind_end()
-        {
-
-            if (!GetEventInstanceTrust().isEventCleared())
-            {
-                await Pink("You have to clear this mission before entering this portal.");
-                return false;
-            }
-            else
-            {
-                if (isQuestStarted(6410))
-                {
-                    await setQuestProgress(6410, 6411, "p2");
-                }
-
-                await playPortalSound();
-                await warp(925010400);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> s4nest()
-        {
-
-            if (isQuestStarted(6241) || isQuestStarted(6243))
-            {
-                return await TryStartSoloQuest(6241);
-            }
-
-            await Pink("A mysterious force won't let you in.");
-            return false;
-        }
-
-        // Map: 230040300
-        public async Task<bool> s4resurrection()
-        {
-
-            if (haveItem(4001108))
-            {
-                return await TryStartSoloQuest(6132);
-            }
-
-            await Pink("A mysterious force won't let you in.");
-            return false;
-        }
-
-        // Map: 220070400
-        public async Task<bool> s4resur_enter()
-        {
-
-            if (isQuestStarted(6134))
-            {
-                await playPortalSound();
-                await warp(922020000, 0);
-                return true;
-            }
-
-            await Pink("A mysterious force won't let you in.");
-            return false;
-        }
-
-
-        public async Task<bool> s4resur_out()
-        {
-
-            if (isQuestStarted(6134))
-            {
-                if (canHold(4031448))
-                {
-                    await gainItem(4031448, 1);
-                    await playPortalSound();
-                    await warp(220070400, 3);
-
-                    return true;
-                }
-                else
-                {
-                    await Pink("Make room on your ETC to receive the quest item.");
-                    return false;
-                }
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(220070400, 3);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> s4rush()
-        {
-
-            if (isQuestStarted(6110))
-            {
-                await playPortalSound();
-                await warp(910500100, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("A mysterious force won't let you in.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> s4ship_out()
-        {
-
-            var exit = GetEventInstanceTrust().getIntProperty("canLeave");
-            if (exit == 0)
-            {
-                await Pink("You have to wait one minute before you can leave this place.");
-                return false;
-            }
-            else if (exit == 2)
-            {
-                await playPortalSound();
-                await warp(912010200);
-                return true;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(120000101);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> s4super_out()
-        {
-
-            var exit = GetEventInstanceTrust().getIntProperty("canLeave");
-            if (exit == 0)
-            {
-                await Pink("You have to wait one minute before you can leave this place.");
-                return false;
-            }
-            else if (exit == 2)
-            {
-                await playPortalSound();
-                await warp(912010200);
-                return true;
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(120000101);
-                return true;
-            }
-        }
-
-
-        public async Task<bool> s4tornado_enter()
-        {
-
-            if (isQuestStarted(6230) || isQuestStarted(6231) || haveItem(4001110))
-            {
-                return await TryStartSoloQuest(6230);
-            }
-
-            return false;
-        }
-
-
-        public async Task<bool> secretDoor()
-        {
-
-            if (isQuestCompleted(3360))
-            {
-                await playPortalSound();
-                await warp(261030000, "sp_" + ((getMapId() == 261010000) ? "jenu" : "alca"));
-                return true;
-            }
-            else if (isQuestStarted(3360))
-            {
-                await openNpc(2111024);
-                return false;
-            }
-            else
-            {
-                await Pink("门锁住了.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> secretgate1_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("secretgate1")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000611, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("This door is closed.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> secretgate2_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("secretgate2")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000631, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("This door is closed.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> secretgate3_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("secretgate3")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000641, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("This door is closed.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> skyrom()
-        {
-
-            if (isQuestStarted(3935) && !haveItem(4031574, 1))
-            {
-                return await TryStartSoloQuest(3935);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        public async Task<bool> Spacegaga_out0()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var fc = eim.getIntProperty("falls");
-
-            if (fc >= 3)
-            {
-                await playPortalSound();
-                await warp(922240200, 0);
-            }
-            else
-            {
-                eim.setIntProperty("falls", fc + 1);
-                await playPortalSound();
-                await warp(getPlayer().getMapId(), 0);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> Spacegaga_out1()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var fc = eim.getIntProperty("falls");
-
-            if (fc >= 3)
-            {
-                await playPortalSound();
-                await warp(922240200, 0);
-            }
-            else
-            {
-                eim.setIntProperty("falls", fc + 1);
-                await playPortalSound();
-                await warp(getPlayer().getMapId(), 0);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> Spacegaga_out2()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var fc = eim.getIntProperty("falls");
-
-            if (fc >= 3)
-            {
-                await playPortalSound();
-                await warp(922240200, 0);
-            }
-            else
-            {
-                eim.setIntProperty("falls", fc + 1);
-                await playPortalSound();
-                await warp(getPlayer().getMapId(), 0);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> Spacegaga_out3()
-        {
-
-            var eim = GetEventInstanceTrust();
-            var fc = eim.getIntProperty("falls");
-
-            if (fc >= 3)
-            {
-                await playPortalSound();
-                await warp(922240200, 0);
-            }
-            else
-            {
-                eim.setIntProperty("falls", fc + 1);
-                await playPortalSound();
-                await warp(getPlayer().getMapId(), 0);
-            }
-
-            return true;
-        }
-
-
-        public async Task<bool> space_return()
-        {
-
-            await playPortalSound();
-            await warp(getPlayer().getSavedLocation("EVENT"));
-            return true;
-        }
-
-
-        public async Task<bool> speargate_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("speargate")?.getState() == 4)
-            {
-                await playPortalSound();
-                await warp(990000401, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("This way forward is not open yet.");
-                return false;
-            }
-        }
-
-
+        // Map: 670010750 | pt: 7
         public async Task<bool> stageBogo()
         {
 
@@ -7412,41 +3067,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> statuegate_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("statuegate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000301, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The gate is closed.");
-                return false;
-            }
-        }
-
-
-        public async Task<bool> stonegate_open()
-        {
-
-            if (getPlayer().getMap().getReactorByName("stonegate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000430, 0);
-                return true;
-            }
-            else
-            {
-                await Pink("The door is still blocked.");
-                return false;
-            }
-        }
-
-
+        // Map: 103000100 | pt: 7
         public async Task<bool> subway_in2()
         {
 
@@ -7455,177 +3076,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> tamepig_out2()
-        {
-
-            if (!(haveItem(4031507, 5) && haveItem(4031508, 5) && isQuestStarted(6002)))
-            {
-                await removeAll(4031507);
-                await removeAll(4031508);
-            }
-
-            var pCount = getPlayer().countItem(4031507);
-            var rCount = getPlayer().countItem(4031508);
-
-            if (pCount > 5)
-            {
-                await gainItem(4031507, -1 * (pCount - 5));
-            }
-            if (rCount > 5)
-            {
-                await gainItem(4031508, -1 * (rCount - 5));
-            }
-
-            await playPortalSound();
-            await warp(230000003, "out00");
-            return true;
-        }
-
-        public async Task<bool> TD_Boss_enter()
-        {
-
-            var stage = (int)((Math.Floor(getMapId() / 100.0)) % 10) - 1;
-            return await TryStartEvent(GetEventManager("TD_Battle" + stage));
-        }
-
-
-        public async Task<bool> TD_chat_enter()
-        {
-
-            await openNpc(2083006);
-            return false;
-        }
-
-
-        public async Task<bool> TD_MC_Egate()
-        {
-
-            await playPortalSound();
-            await warp(106021300, 1);
-            return true;
-        }
-
-
-        public async Task<bool> TD_MC_enterboss1()
-        {
-            await openNpc(1300013);
-            return false;
-        }
-
-
-        public async Task<bool> TD_MC_enterboss2()
-        {
-            await openNpc(1300013);
-            return false;
-        }
-
-
-        public async Task<bool> TD_MC_first()
-        {
-
-            if (IsQuestNotStarted(2300))
-            {
-                await playPortalSound();
-                await warp(106020001, 0);
-                return true;
-            }
-
-            if (isQuestCompleted(2260) ||
-        isQuestStarted(2300) || isQuestCompleted(2300) ||
-        isQuestStarted(2301) || isQuestCompleted(2301) ||
-        isQuestStarted(2302) || isQuestCompleted(2302) ||
-        isQuestStarted(2303) || isQuestCompleted(2303) ||
-        isQuestStarted(2304) || isQuestCompleted(2304) ||
-        isQuestStarted(2305) || isQuestCompleted(2305) ||
-        isQuestStarted(2306) || isQuestCompleted(2306) ||
-        isQuestStarted(2307) || isQuestCompleted(2307) ||
-        isQuestStarted(2308) || isQuestCompleted(2308) ||
-        isQuestStarted(2309) || isQuestCompleted(2309) ||
-        isQuestStarted(2310) || isQuestCompleted(2310))
-            {
-                await playPortalSound();
-                await warp(106020000, 0);
-                return true;
-            }
-            await Pink("一股神秘力量阻挡了你的进入。");
-            return false;
-        }
-
-        // Map: 106020403
-        public async Task<bool> TD_MC_jump()
-        {
-            if (!isQuestCompleted(2324))
-            {
-                await Pink("城墙上仍然长满了荆棘。");
-                return false;
-            }
-
-            await playPortalSound();
-            await warp(106020600 + Randomizer.NextInt(0, 2), 0);
-            return true;
-        }
-
-        /// <summary>
-        /// MapId: 106020601
-        /// </summary>
-        /// <returns></returns>
-        public async Task<bool> TD_MC_faild()
-        {
-            await ShowDirectionEffect("Effect/Direction2.img/mushCatle/nugu");
-            await Pink("你被警卫发现了，现在将被送到悬崖底部。");
-
-            var chrId = getPlayer().Id;
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(2000);
-                await getMap().Send(async m =>
-                {
-                    var chr = m.getCharacterById(chrId);
-                    if (chr != null)
-                    {
-                        await chr.changeMap(106020403);
-                    }
-                });
-            });
-            return true;
-        }
-
-        public async Task<bool> TD_neo_inTree()
-        {
-
-            var nex = GetEventManager(nameof(GuardianNex));
-            int[] quests = [3719, 3724, 3730, 3736, 3742, 3748];
-            int[] mobs = [7120100, 7120101, 7120102, 8120100, 8120101, 8140510];
-
-            for (var i = 0; i < quests.Length; i++)
-            {
-                if (isQuestActive(quests[i]))
-                {
-                    if (getQuestProgressInt(quests[i], mobs[i]) != 0)
-                    {
-                        await Pink("You already faced Nex. Complete your mission.");
-                        return false;
-                    }
-
-                    if (await nex.StartInstance(getPlayer(), lobbyId: i) != CreateInstanceResult.Success)
-                    {
-                        await Pink("Someone is already challenging Nex. Wait for them to finish before you enter.");
-                        return false;
-                    }
-                    else
-                    {
-                        await playPortalSound();
-                        return true;
-                    }
-                }
-            }
-
-            await Pink("A mysterious force won't let you in.");
-            return false;
-        }
-
-
+        // Map: 200090510 | pt: 7
         public async Task<bool> templeenter()
         {
 
@@ -7635,7 +3086,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-        // Map: 260010401
+        // Map: 260010401 | pt: 8
         public async Task<bool> thief_in1()
         {
 
@@ -7645,64 +3096,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
-        public async Task<bool> timeQuest()
-        {
-
-            var mapid = getPlayer().getMapId();
-            await playPortalSound();
-            var map = (mapid - 270010000) / 100;
-            //await Pink(map + " " + isQuestCompleted(3534));
-            if (map < 5 && isQuestCompleted(3500 + map))
-            {
-                await warp(mapid + 10, "out00");
-            }
-            else if (map == 5 && isQuestCompleted(3502 + map))
-            {
-                await warp(270020000, "out00");
-            }
-            else if (map > 100 && map < 105 && isQuestCompleted(3407 + map))
-            {
-                await warp(mapid + 10, "out00");
-            }
-            else if (map == 105 && isQuestCompleted(3514))
-            {
-                await warp(270030000, "out00");
-            }
-            else if (map > 200 && map < 205 && isQuestCompleted(3314 + map))
-            {
-                await warp(mapid + 10, "out00");
-            }
-            else if (map == 205 && isQuestCompleted(3519))
-            {
-                await warp(270040000, "out00");
-            }
-            else if (map == 300 && (haveItem(4032002) || isQuestCompleted(3522)))
-            {
-                await warp(270040100, "out00");
-            }
-            else
-            {
-                if (map > 200)
-                {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
-                    await warp(270030000, "in00");
-                }
-                else if (map > 100)
-                {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
-                    await warp(270020000, "in00");
-                }
-                else
-                {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
-                    await warp(270010000, "in00");
-                }
-            }
-            return true;
-        }
-
-
+        // Map: 105100100 | pt: 7
         public async Task<bool> tristanEnter()
         {
 
@@ -7719,7 +3113,7 @@ namespace Application.Plugin.Script
             }
         }
 
-
+        // Map: 10000 | pt: 9
         public async Task<bool> tutoChatNPC()
         {
 
@@ -7731,17 +3125,16 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
+        // Map: 130030000 | pt: 9
         public async Task<bool> tutorHelper()
         {
-
             await spawnGuide();
             await talkGuide("Welcome to Maple World! I'm Mimo. I'm in charge of guiding you until you reach Lv. 10 and become a Knight-In-Training. Double-click for further information!");
             await blockPortal();
             return true;
         }
 
-
+        // Map: 100000201, 101000003, 102000003, 103000003, 120000101 | pt: 9
         public async Task<bool> tutorialNPC()
         {
 
@@ -7780,16 +3173,16 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
+        // Map: 130030001 | pt: 9
         public async Task<bool> tutorMinimap()
         {
-
+            await setQuestProgress(20010, 20022, 1);
             await guideHint(1);
             await blockPortal();
             return true;
         }
 
-
+        // Map: 130030001, 130030002, 130030003, 130030004 | pt: 7
         public async Task<bool> tutorquest()
         {
 
@@ -7849,24 +3242,7 @@ namespace Application.Plugin.Script
             return false;
         }
 
-
-        public async Task<bool> under30gate()
-        {
-
-            if (getPlayer().getLevel() <= 30)
-            {
-                await playPortalSound();
-                await warp(990000640, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("You cannot proceed past this point.");
-                return false;
-            }
-        }
-
-
+        // Map: 200090500, 200090510 | pt: 7, 9
         public async Task<bool> undodraco()
         {
 
@@ -7876,77 +3252,12 @@ namespace Application.Plugin.Script
             return true;
         }
 
-
-        public async Task<bool> watergate_open()
+        // Map: 130030006
+        [ScriptName("tutorWorldmap")]
+        public async Task<bool> p_tutorWorldmap()
         {
-
-            if (getPlayer().getMap().getReactorByName("watergate")?.getState() == 1)
-            {
-                await playPortalSound();
-                await warp(990000600, 1);
-                return true;
-            }
-            else
-            {
-                await Pink("This way forward is not open yet.");
-            }
-            return false;
-        }
-
-
-        public async Task<bool> Zakum03()
-        {
-
-            var eim = GetEventInstanceTrust();
-            if (!eim.isEventCleared())
-            {
-                await Pink("你的队伍尚未完成试炼，请先完成奥拉的需求。");
-                return false;
-            }
-
-            if (eim.gridCheck(getPlayer()) == -1)
-            {
-                await Pink("你还没有领取战利品，请先与Aura交谈。");
-                return false;
-            }
-
-            await playPortalSound();
-            await warp(211042300);
-            return true;
-        }
-
-
-        public async Task<bool> Zakum05()
-        {
-
-            if (!(isQuestStarted(100200) || isQuestCompleted(100200)))
-            {
-                await Pink("你需要得到大师们的准许才能挑战扎昆BOSS,你现在没有资格进入。");
-                return false;
-            }
-
-            if (!isQuestCompleted(100201))
-            {
-                await Pink("你必须完成所有试炼任务才有资格进入。");
-                return false;
-            }
-
-            if (!haveItem(4001017))
-            {
-                // thanks Conrad for pointing out missing checks for token item and unused reactor
-                await Pink("扎昆祭台需要 火焰之眼 ，否则无法召唤扎昆BOSS，请准备好所需物品再来挑战。");
-                return false;
-            }
-
-            var react = getMap().getReactorById(2118002);
-            if (react != null && react.getState() > 0)
-            {
-                await Pink("入口目前已被封锁，无法进入。");
-                return false;
-            }
-
-            await playPortalSound();
-            await warp(211042400, "west00");
+            await guideHint(11);
+            await blockPortal();
             return true;
         }
     }

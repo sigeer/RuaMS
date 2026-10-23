@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="bin\**" />
-    <EmbeddedResource Remove="bin\**" />
-    <None Remove="bin\**" />
+    <InternalsVisibleTo Include="ServiceTest" />
   </ItemGroup>
 
   <ItemGroup>

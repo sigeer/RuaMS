@@ -7,6 +7,7 @@ namespace Application.Core.Gameplay.Plugins
         /// 默认脚本插件使用 <see cref="PluginPriority.Low"/>，第三方插件以默认 <see cref="PluginPriority.Normal"/> 即可覆盖。
         /// </summary>
         PluginPriority Priority { get; }
+        PluginContainer<PluginServiceBase> Container { get; }
 
         Task OnMounted();
     }
