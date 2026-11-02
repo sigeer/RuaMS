@@ -1908,10 +1908,209 @@ namespace Application.Plugin.Script.Npc
             }
         }
 
-        // Npc: 2080000 
-        public Task minar_weapon()
+        // Npc: 2080000 — 龙之武器制作
+        public async Task minar_weapon()
         {
-            return Task.CompletedTask;
+            getPlayer().setCS(true);
+
+            var options = new List<string>
+            {
+                "什么是刺激剂？",
+                "制作战士武器", "制作弓箭手武器", "制作法师武器", "制作盗贼武器", "制作海盗武器",
+                "制作战士武器（使用刺激剂）", "制作弓箭手武器（使用刺激剂）", "制作法师武器（使用刺激剂）",
+                "制作盗贼武器（使用刺激剂）", "制作海盗武器（使用刺激剂）",
+            };
+            if (isQuestStarted(7301) || isQuestStarted(7303))
+            {
+                options.Add("制作 #t4001078#");
+            }
+
+            var selStr = "龙的力量不可小觑。如果你愿意，我可以把它注入你的武器。不过，武器必须足够强大才能承载这份潜力……#b";
+            for (var i = 0; i < options.Count; i++)
+            {
+                selStr += $"\r\n#L{i}# {options[i]}#l";
+            }
+
+            var selectedType = await AskMenu(selStr);
+            if (selectedType < 0 || selectedType >= options.Count)
+                return;
+
+            var stimulator = selectedType > 5 && selectedType < 11;
+            if (stimulator)
+            {
+                selectedType -= 5;
+            }
+
+            if (selectedType == 0)
+            {
+                await SayNext("刺激剂是一种特殊的药水，我可以在制作某些道具时加入。它能让成品拥有如同怪物掉落般的属性。但也有可能毫无变化，甚至低于平均水平。此外还有 10% 的几率什么都得不到，请谨慎选择。");
+                return;
+            }
+
+            // 各职业的武器列表
+            string[] weaponNames = selectedType switch
+            {
+                1 => ["龙之弯刀#k - 110级单手剑#b", "龙之战斧#k - 110级单手斧#b", "龙之锤#k - 110级单手钝器#b", "龙之双手剑#k - 110级双手剑#b", "龙之双手斧#k - 110级双手斧#b", "龙之双手钝器#k - 110级双手钝器#b", "龙之长枪#k - 110级枪#b", "龙之戟#k - 110级矛#b"],
+                2 => ["龙之弓#k - 110级弓#b", "龙之弩#k - 110级弩#b"],
+                3 => ["龙之杖#k - 108级短杖#b", "龙之魔杖#k - 110级长杖#b"],
+                4 => ["龙之短刀#k - 110级力量短刀#b", "龙之短剑#k - 110级幸运短刀#b", "龙之拳套#k - 110级拳套#b"],
+                5 => ["龙之指虎#k - 110级指虎#b", "龙之短枪#k - 110级短枪#b"],
+                _ => [],
+            };
+
+            int[] itemSet;
+            int[][] matSet;
+            int[][] matQtySet;
+            int cost;
+
+            switch (selectedType)
+            {
+                case 1:
+                    itemSet = [1302059, 1312031, 1322052, 1402036, 1412026, 1422028, 1432038, 1442045];
+                    matSet = [
+                        [1302056, 4000244, 4000245, 4005000], [1312030, 4000244, 4000245, 4005000],
+                        [1322045, 4000244, 4000245, 4005000], [1402035, 4000244, 4000245, 4005000],
+                        [1412021, 4000244, 4000245, 4005000], [1422027, 4000244, 4000245, 4005000],
+                        [1432030, 4000244, 4000245, 4005000], [1442044, 4000244, 4000245, 4005000]];
+                    matQtySet = [.. Enumerable.Repeat(new[] { 1, 20, 25, 8 }, 8)];
+                    cost = 120000;
+                    break;
+                case 2:
+                    itemSet = [1452044, 1462039];
+                    matSet = [[1452019, 4000244, 4000245, 4005000, 4005002], [1462015, 4000244, 4000245, 4005000, 4005002]];
+                    matQtySet = [[1, 20, 25, 3, 5], [1, 20, 25, 5, 3]];
+                    cost = 120000;
+                    break;
+                case 3:
+                    itemSet = [1372032, 1382036];
+                    matSet = [[1372010, 4000244, 4000245, 4005001, 4005003], [1382035, 4000244, 4000245, 4005001, 4005003]];
+                    matQtySet = [[1, 20, 25, 6, 2], [1, 20, 25, 6, 2]];
+                    cost = 120000;
+                    break;
+                case 4:
+                    itemSet = [1332049, 1332050, 1472051];
+                    matSet = [[1332051, 4000244, 4000245, 4005000, 4005002], [1332052, 4000244, 4000245, 4005002, 4005003], [1472053, 4000244, 4000245, 4005002, 4005003]];
+                    matQtySet = [[1, 20, 25, 5, 3], [1, 20, 25, 3, 5], [1, 20, 25, 2, 6]];
+                    cost = 120000;
+                    break;
+                case 5:
+                    itemSet = [1482013, 1492013];
+                    matSet = [[1482012, 4000244, 4000245, 4005000, 4005002], [1492012, 4000244, 4000245, 4005000, 4005002]];
+                    matQtySet = [[1, 20, 25, 5, 3], [1, 20, 25, 3, 5]];
+                    cost = 120000;
+                    break;
+                case 11:
+                    itemSet = [4001078];
+                    matSet = [[4011001, 4011002, 4001079]];
+                    matQtySet = [[1, 1, 1]];
+                    cost = 25000;
+                    break;
+                default:
+                    return;
+            }
+
+            var selectedItem = await AskMenu("那么，哪一件武器要承载龙的力量？#b\r\n"
+                + string.Join("\r\n", weaponNames.Select((n, i) => $"#L{i}# {n}#l")));
+            if (selectedItem < 0 || selectedItem >= itemSet.Length)
+                return;
+
+            var item = itemSet[selectedItem];
+            var mats = matSet[selectedItem];
+            var matQty = matQtySet[selectedItem];
+
+            var stimID = stimulator ? GetStimulatorId(item) : 0;
+            var prompt = $"你想让我制作一个#t{item}#吗？那样的话，我需要你提供特定的材料。不过请先确认你的背包有足够空间！#b";
+            if (stimulator)
+            {
+                prompt += $"\r\n#i{stimID}# 1 #t{stimID}#";
+            }
+            for (var i = 0; i < mats.Length; i++)
+            {
+                prompt += $"\r\n#i{mats[i]}# {matQty[i]} #t{mats[i]}#";
+            }
+            if (cost > 0)
+            {
+                prompt += $"\r\n#i4031138# {cost} 冒险币";
+            }
+
+            if (!await AskYesNo(prompt))
+                return;
+
+            if (!canHold(item))
+            {
+                await SayOK("首先检查你的物品栏是否有空位。");
+                return;
+            }
+
+            if (getMeso() < cost)
+            {
+                await SayOK("我的费用是为了利益所有的利弗尔人。如果你付不起，那就滚吧。");
+                return;
+            }
+
+            for (var i = 0; i < mats.Length; i++)
+            {
+                if (!haveItem(mats[i], matQty[i]))
+                {
+                    await SayOK("恐怕没有正确的物品，龙之精华就不能成为一个非常可靠的武器。下次请带来正确的物品。");
+                    return;
+                }
+            }
+
+            if (stimulator && !haveItem(stimID))
+            {
+                await SayOK("恐怕没有正确的物品，龙之精华就不能成为一个非常可靠的武器。下次请带来正确的物品。");
+                return;
+            }
+
+            for (var i = 0; i < mats.Length; i++)
+            {
+                await gainItem(mats[i], -matQty[i]);
+            }
+            await gainMeso(-cost);
+
+            if (stimulator)
+            {
+                await gainItem(stimID, -1);
+                if (Random.Shared.Next(10) != 0)
+                {
+                    await gainItem(item, 1, true);
+                    await SayOK("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
+                }
+                else
+                {
+                    await SayOK("不幸的是，龙的精华与你的武器产生了冲突。对你的损失我深感抱歉。");
+                }
+            }
+            else
+            {
+                await gainItem(item, 1);
+                await SayOK("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
+            }
+        }
+
+        private static int GetStimulatorId(int equipId)
+        {
+            return (equipId / 10000) switch
+            {
+                130 => 4130002,
+                131 => 4130003,
+                132 => 4130004,
+                140 => 4130005,
+                141 => 4130006,
+                142 => 4130007,
+                143 => 4130008,
+                144 => 4130009,
+                137 => 4130010,
+                138 => 4130011,
+                145 => 4130012,
+                146 => 4130013,
+                133 => 4130014,
+                147 => 4130015,
+                148 => 4130016,
+                149 => 4130017,
+                _ => 4130002,
+            };
         }
 
     }

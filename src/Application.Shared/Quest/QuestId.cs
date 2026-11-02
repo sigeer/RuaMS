@@ -32,8 +32,6 @@ namespace Application.Shared.Quest
         public const int Pirate3rd0 = 553000;
 
 
-        public const int ZakumBattle = 100200;
-
         /// <summary>
         /// 根据职业2转的自定义任务id
         /// </summary>

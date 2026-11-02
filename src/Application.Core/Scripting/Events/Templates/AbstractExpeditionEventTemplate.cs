@@ -9,12 +9,12 @@ namespace Application.Core.scripting.Events.Templates
 {
     public abstract class AbstractExpeditionEventTemplate : AbstractBehindPartyQuestEventTemplate
     {
-        public ExpeditionEntryType ExpeditionType { get; }
+        public string ExpeditionName { get; }
         public int BossId { get; }
-        public AbstractExpeditionEventTemplate(int bossId, string name, ExpeditionEntryType type) : base(name)
+        public AbstractExpeditionEventTemplate(int bossId, string name, string type) : base(name)
         {
             BossId = bossId;
-            ExpeditionType = type;
+            ExpeditionName = type;
         }
 
         public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
@@ -27,7 +27,7 @@ namespace Application.Core.scripting.Events.Templates
 
             int channel = eim.ChannelServer.getId();
 
-            if (!eim.ChannelServer.NodeService.ExpeditionService.CanStartExpedition(player.getId(), channel, Name))
+            if (!eim.ChannelServer.NodeService.ExpeditionService.CanStartExpedition(player.getId(), channel, ExpeditionName))
             {
                 // thanks Conrad, Cato for noticing some expeditions have entry limit
                 return JoinInstanceResult.ChannelFull;
@@ -104,7 +104,7 @@ namespace Application.Core.scripting.Events.Templates
                     s.SendDropMessage(6, "[Expedition] " + Name + " Expedition started with leader: " + eim.getLeader().getName(), true);
                 });
 
-            eim.ChannelServer.NodeService.ExpeditionService.RegisterExpedition(eim.getPlayers().Select(x => x.getId()).ToArray(), eim.ChannelServer.Id, ExpeditionType.Name);
+            eim.ChannelServer.NodeService.ExpeditionService.RegisterExpedition(eim.getPlayers().Select(x => x.getId()).ToArray(), eim.ChannelServer.Id, ExpeditionName);
             await base.OnBattleStarted(eim);
         }
 

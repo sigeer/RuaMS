@@ -3,22 +3,21 @@ using Application.Core.scripting.Events.Templates;
 namespace Application.Plugin.Script.Events
 {
 
-    internal sealed class SoloQuestEventTemplate : AbstractSoloEventTemplate
+    internal abstract class SoloQuestEventTemplate : AbstractSoloEventTemplate
     {
-        int _questId;
-        public SoloQuestEventTemplate(int quest, int eventTime, int entryMap, int exitMap, int minMap, int maxMap) : base($"q{quest}")
+        /// <summary>
+        /// 任务 Id，同时也是事件注册键（q{QuestId}）。
+        /// </summary>
+        public int QuestId { get; }
+
+        protected SoloQuestEventTemplate(int questId) : base($"q{questId}")
         {
-            _questId = quest;
+            QuestId = questId;
+        }
 
-            EventTime = eventTime;
+        protected SoloQuestEventTemplate(string eventName) : base(eventName)
+        {
 
-            MaxLobbys = 1;
-
-            EntryMap = entryMap;
-            ExitMap = exitMap;
-
-            MinMap = minMap;
-            MaxMap = maxMap;
         }
     }
 }

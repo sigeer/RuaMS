@@ -107,6 +107,8 @@ namespace Application.Core.scripting.Events.Templates
         #region Events
         public virtual Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
+            eim.Level = level;
+            eim.setProperty("level", level);
             return Task.CompletedTask;
         }
 
@@ -208,9 +210,9 @@ namespace Application.Core.scripting.Events.Templates
         /// <param name="eim"></param>
         /// <param name="player"></param>
         /// <param name="mapid"></param>
-        public virtual void OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
+        public virtual Task OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
         {
-
+            return Task.CompletedTask;
         }
 
 

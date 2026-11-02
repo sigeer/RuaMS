@@ -5,6 +5,8 @@ using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Abstraction;
+using Application.Core.scripting.Events.Templates;
+using Application.Core.scripting.Infrastructure;
 using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Core.Server.maps;
@@ -66,6 +68,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         this.mapManager = new MapManager(this, ChannelServer);
 
         SubTickables = [mapManager];
+    }
+
+    public TTemplate GetTemplate<TTemplate>() where TTemplate : AbstractEventTemplate
+    {
+        return (EventManager.Template as TTemplate) ?? throw new ConversationDiffInstanceException();
     }
 
     public void setName(string name)
@@ -695,6 +702,18 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
                     await chr.raiseQuestMobCount(mobid);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// 设置副本独占道具：玩家离开副本时会被自动清除。
+    /// </summary>
+    public void SetExclusiveItems(IEnumerable<int> items)
+    {
+        exclusiveItems.Clear();
+        foreach (var item in items)
+        {
+            exclusiveItems.Add(item);
         }
     }
 

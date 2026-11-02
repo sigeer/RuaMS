@@ -21,6 +21,8 @@
  */
 
 
+using Application.Core.scripting.Events.Abstraction;
+using Application.Core.Scripting.Events;
 using Application.Core.Server.maps;
 using tools;
 
@@ -65,5 +67,32 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
         return c.CurrentServer.NodeService.AdminService.GetServerStats().IsDevRoomAvailable;
     }
 
+    /// <summary>
+    /// 开始单人任务副本并回馈结果。
+    /// private：脚本注册表收集的是 public 方法，辅助方法必须私有，否则会被当成脚本键。
+    /// </summary>
+    /// <param name="questId">任务 Id，同时也是 <see cref="SoloQuestEventTemplate"/> 的注册键（q{questId}）</param>
+    /// <returns>true 表示已进入副本</returns>
+    protected Task<bool> TryStartSoloQuest(int questId)
+    {
+        return TryStartEvent(GetSoloQuestEventManager(questId));
+    }
+
+    /// <summary>
+    /// 开始任意事件副本并回馈结果。
+    /// private 理由同 <see cref="TryStartSoloQuest"/>。
+    /// </summary>
+    protected async Task<bool> TryStartEvent(AbstractEventManager em)
+    {
+        var r = await em.StartInstance(getPlayer());
+        if (r == CreateInstanceResult.Success)
+        {
+            await playPortalSound();
+            return true;
+        }
+
+        await Pink(em.HandleCreateInstanceResult(r, c));
+        return false;
+    }
 
 }

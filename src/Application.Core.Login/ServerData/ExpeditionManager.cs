@@ -97,7 +97,7 @@ namespace Application.Core.Login.ServerData.ExpeditionBossLog
 
             if (log)
             {
-                SetDirty(new PlayerBossLogModel { Id = Interlocked.Increment(ref _localId), BossName = boss.name(), CharacterId = cid, Time = _server.GetCurrentTimeDateTimeOffset() });
+                SetDirty(new PlayerBossLogModel { Id = Interlocked.Increment(ref _localId), BossName = boss.Name, CharacterId = cid, Time = _server.GetCurrentTimeDateTimeOffset() });
             }
             return true;
         }

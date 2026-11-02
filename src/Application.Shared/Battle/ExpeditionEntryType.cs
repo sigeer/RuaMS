@@ -5,6 +5,8 @@ namespace Application.Shared.Battle
 {
     public class ExpeditionEntryType : EnumClass
     {
+        public static readonly ExpeditionEntryType None = new ExpeditionEntryType("None", int.MaxValue, false);
+
         public static readonly ExpeditionEntryType BALROG_EASY = new(nameof(BALROG_EASY), 1, false);
         public static readonly ExpeditionEntryType BALROG_NORMAL = new(nameof(BALROG_NORMAL), 1, false);
 
@@ -13,6 +15,7 @@ namespace Application.Shared.Battle
         public static readonly ExpeditionEntryType PINKBEAN = new (nameof(PINKBEAN), 1, false);
         public static readonly ExpeditionEntryType SCARGA = new (nameof(SCARGA), 1, false);
         public static readonly ExpeditionEntryType PAPULATUS = new (nameof(PAPULATUS), 2, false);
+        public static readonly ExpeditionEntryType CWKPQ = new (nameof(CWKPQ), 1, false);
 
         public string Name { get; }
         private int entries;

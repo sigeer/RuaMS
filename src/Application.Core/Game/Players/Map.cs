@@ -254,28 +254,6 @@ namespace Application.Core.Game.Players
             return -1;
         }
 
-        private HashSet<int> entered = new();
-        public void enteredScript(int mapid)
-        {
-            entered.Add(mapid);
-        }
-
-        public void resetEnteredScript()
-        {
-            entered.Remove(MapModel.getId());
-        }
-
-        public void resetEnteredScript(int mapId)
-        {
-            entered.Remove(mapId);
-        }
-
-        public bool hasEntered(int mapId)
-        {
-            return entered.Contains(mapId);
-        }
-
-
         public void visitMap(IMap map)
         {
             int idx = getVisitedMapIndex(map);

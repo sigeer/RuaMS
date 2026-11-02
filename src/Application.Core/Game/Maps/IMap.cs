@@ -102,7 +102,6 @@ namespace Application.Core.Game.Maps
         /// </summary>
         /// <returns></returns>
         Task resetMapObjects();
-        Task resetPQ(int difficulty = 1);
         #endregion
 
         #region Players

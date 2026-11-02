@@ -1,5 +1,4 @@
 using Application.Core.scripting.Infrastructure;
-using Application.Plugin.Script.Events;
 using Application.Shared.Constants;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Job;
@@ -382,22 +381,22 @@ namespace Application.Plugin.Script.Quest
                 }
             }
         }
-        // Quest: 2232 
+        // Quest: 2232
+        /// <summary>
+        /// 家族任务：需要读取玩家的家族条目（<c>getFamilyEntry()</c>）来判断是否有下属。
+        /// ⚠ 家族系统在 C# 中标注为「搁置」（见 <c>Character.cs</c> 中「替换Family，搁置」），
+        /// <c>Player</c> 上没有 <c>getFamilyEntry()</c>，家族数据仅在
+        /// <c>Application.Module.Family.Channel</c> 内维护且未与 <c>Player</c> 打通。
+        /// 因此这里按约定跳过实现，保持空方法；待家族系统恢复后再补。
+        /// </summary>
         public Task q2232e()
         {
-            //// TODO
-            //var familyEntry = getPlayer().getFamilyEntry();
-            //if (familyEntry != null && familyEntry.getJuniorCount() > 0)
-            //{  // script found thanks to kvmba
-            //    await forceCompleteQuest();
-            //    gainExp(3000);
-            //    await SayNext("做得很好！");
-            //}
-            //else
-            //{
-            //    await SayNext("你还没有找到一个同学吗？");
-            //}
-            //dispose();
+            // TODO: 依赖家族系统（当前搁置），暂不实现。
+            // 原 JS 逻辑：
+            //   var familyEntry = qm.getPlayer().getFamilyEntry();
+            //   if (familyEntry != null && familyEntry.getJuniorCount() > 0) {
+            //       qm.forceCompleteQuest(); qm.gainExp(3000); qm.sendNext("做得很好！");
+            //   } else { qm.sendNext("你还没有找到一个同学吗？"); }
             return Task.CompletedTask;
         }
         // Quest: 2233 
@@ -419,20 +418,7 @@ namespace Application.Plugin.Script.Quest
         {
             await forceStartQuest();
         }
-        // Quest: 2245 
-        public async Task q2245s()
-        {
-            var em = GetSoloQuestEventManager(2245);
-            var r = await em.StartInstance(getPlayer());
-            if (r == Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-            {
-                await forceStartQuest();
-            }
-            else
-            {
-                await SayOK(em.HandleCreateInstanceResult(r, c));
-            }
-        }
+
         // Quest: 2251 
         public async Task q2251e()
         {
@@ -449,30 +435,7 @@ namespace Application.Plugin.Script.Quest
                 await SayOK("噢！你带来了20个#b#t4032399##k!谢谢你.");
             }
         }
-        // Quest: 2291 
-        public async Task q2291e()
-        {
-            if (!haveItem(4032521, 10))
-            {
-                await SayNext("嘿，你还没有得到#b10张#t4032521##k吗？");
-                return;
-            }
-            else
-            {
 
-                await SayNext("你身上有#b#i4032521##k，很好，让我给你带路。");
-
-                var em = GetSoloQuestEventManager(2291);
-                if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
-                {
-                    await SayOK("嗯...看起来前面的房间现在有点拥挤。请在这儿等一会，好吗？");
-                    return;
-                }
-
-                await gainItem(4032521, -10);
-                await forceCompleteQuest();
-            }
-        }
         // Quest: 2293 
         public async Task q2293s()
         {
@@ -668,35 +631,10 @@ namespace Application.Plugin.Script.Quest
                 await getPlayer().showHint("我必须找到碧欧蕾塔公主！ (#b任务开始#k)");
             }
         }
-        // Quest: 2332 
+        // Quest: 2332 — 原 JS 的 end() 为空函数
         public Task q2332e()
         {
-            // TODO
-
             return Task.CompletedTask;
-        }
-        // Quest: 2333 
-        public async Task q2333s()
-        {
-            var eim = GetEventInstanceTrust();
-
-            if (await SayAcceptDecline("勇士，拜托你了！请你一定要拯救蘑菇王国"))
-            {
-                await SayNext("#b蘑菇大臣#k是幕后策划的黑手！哦，不！他来了。。。");
-                await forceStartQuest();
-
-
-                var template = eim.EventManager.GetTemplate as MK_PrimeMinister;
-                await template.SpawnBoss(eim);
-            }
-        }
-        // Quest: 2333 
-        public async Task q2333e()
-        {
-            await SayNext("天哪！ #b#h ##k 你居然打败了 #b蘑菇大臣#k.");
-
-            await gainExp(15000);
-            await forceCompleteQuest();
         }
         // Quest: 2334 
         public async Task q2334s()
@@ -715,25 +653,7 @@ namespace Application.Plugin.Script.Quest
             await forceCompleteQuest();
 
         }
-        // Quest: 2335 
-        public async Task q2335s()
-        {
-            await SayNext("这还不是结束，#b#h ##k。 #b蘑菇大臣#k 的手下仍然散布在城堡中。");
-            if (await SayAcceptDecline("据我所知，靠近#b天空高楼 3#k附近有一群蘑菇大臣的手下。前几天我捡到了蘑菇大臣掉落的一把钥匙。拿去吧，用这把钥匙。"))
-            {
-                if (canHold(4032405))
-                {
-                    await gainItem(4032405, 1);
-                    await forceStartQuest();
 
-                    await SayNext("最后一次，祝你好运。");
-                }
-                else
-                {
-                    await SayOK("请确保你的其他栏有空位。");
-                }
-            }
-        }
         // Quest: 2338 
         public async Task q2338s()
         {

@@ -1032,11 +1032,17 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 await MapModel.broadcastMessage(FieldEffectPacket.Screen("dojang/end/clear"));
             }
 
+            // 立即revive但是延迟显示
+            await Revive(killer, lastController);
+
             await MapModel.ChannelServer.TimerManager.schedule(new NamedRunnable($"Map:{getMap().InstanceName}_MobId:{getId()},{GetHashCode()}_Revive", () =>
             {
                 MapModel.Send(async map =>
                 {
-                    await Revive(killer, lastController);
+                    foreach (var revivedMob in RevivingMonsters)
+                    {
+                        await revivedMob.resetMobPosition(getPosition());
+                    }
                 });
             }), TimeSpan.FromMilliseconds(getAnimationTime("die1")));
         }
@@ -2297,7 +2303,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         foreach (var mobId in stats.getRevives())
         {
             var mobData = LifeFactory.Instance.GetMonsterTrust(mobId);
-            var mob = reviveMap.CreateMonster(mobData, curMob.getPosition());
+            // 生成的离玩家很远，让玩家看不见
+            var mob = reviveMap.CreateMonster(mobData, new Point(short.MaxValue, short.MaxValue));
             mob.setFh(curMob.getFh());
             mob.setParentMobOid(curMob.getObjectId());
             mob.ChaindMobOId = ChaindMobOId;
@@ -2310,11 +2317,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             OnRevive?.Invoke(curMob, new MonsterReviveEventArgs(mob, killer));
             mob.RevivedFrom = curMob;
             RevivingMonsters.Add(mob);
-
-            if (controller != null)
-            {
-                await mob.aggroSwitchController(controller, aggro);
-            }
 
             if (eim != null)
             {

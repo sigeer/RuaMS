@@ -22,11 +22,13 @@ namespace Application.Core.Gameplay.Plugins
         readonly ILogger _logger;
         protected WorldChannelServer _node;
         protected string _pluginName;
-        public PluginServiceBase(WorldChannelServer node, string pluginName)
+        public PluginContainer<PluginServiceBase> Container { get; }
+        public PluginServiceBase(PluginContainer<PluginServiceBase> container)
         {
-            _node = node;
-            _pluginName = pluginName;
-            _logger = LogFactory.GetLogger($"Plugin/{pluginName}");
+            Container = container;
+            _node = container.Node;
+            _pluginName = container.LoadContext.PluginName; ;
+            _logger = container.Logger;
         }
 
         /// <summary>

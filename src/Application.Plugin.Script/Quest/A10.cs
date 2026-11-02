@@ -6,9 +6,7 @@ namespace Application.Plugin.Script.Quest
         // Quest: 1054 
         public Task q1054s()
         {
-            // TODO
-
-            return Task.CompletedTask;
+            return forceStartQuest();
         }
 
         // Quest: 6030 

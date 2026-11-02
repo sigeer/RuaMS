@@ -2270,18 +2270,7 @@ public class MapleMap : IMap, INamedInstance
         await resetReactors();
     }
 
-
-    public async Task resetPQ(int difficulty = 1)
-    {
-        await resetMapObjects(difficulty, true);
-    }
-
     public async Task resetMapObjects()
-    {
-        await resetMapObjects(1, false);
-    }
-
-    async Task resetMapObjects(int difficulty, bool isPq)
     {
         await clearMapObjects();
 
@@ -2605,7 +2594,7 @@ public class MapleMap : IMap, INamedInstance
         // 可能离开了副本，新的地图没有EventInstanceManager
         chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
-
+    bool _scriptOnFirstUserEnter = false;
     public async Task addPlayer(Player chr)
     {
         var isChrHidden = chr.isHidden();
@@ -2633,11 +2622,10 @@ public class MapleMap : IMap, INamedInstance
 
         if (!string.IsNullOrEmpty(SourceTemplate.OnFirstUserEnter))
         {
-            if (!chr.hasEntered(Id) || getEventInstance() != null)
+            if (!_scriptOnFirstUserEnter)
             {
+                _scriptOnFirstUserEnter = true;
                 await chr.getClient().CurrentServer.NodeService.PluginManager.MapFirstEnterScript(chr.getClient(), this);
-
-                chr.enteredScript(Id);
             }
         }
 

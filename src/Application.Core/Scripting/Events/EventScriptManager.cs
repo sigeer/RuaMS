@@ -78,6 +78,23 @@ public class EventScriptManager : ITickableTree, IAsyncDisposable
         return events.GetValueOrDefault(evt);
     }
 
+    /// <summary>
+    /// 把事件模板同步为给定集合：新增/更新模板，并移除不再存在的模板。
+    /// 用于插件热重载——模板被替换时 <see cref="ReloadEventScript"/> 会在原事件管理器上替换 <c>Template</c>，
+    /// 正在运行的副本不受影响。
+    /// </summary>
+    public async Task SyncEventTemplates(IReadOnlyList<AbstractEventTemplate> templates)
+    {
+        var desired = templates.Select(x => x.Name).ToHashSet();
+        var removed = events.Keys.Where(x => !desired.Contains(x)).ToHashSet();
+        if (removed.Count > 0)
+        {
+            await ClearEvents(removed);
+        }
+
+        ReloadEventScript([.. templates]);
+    }
+
     public int GetEventMaps()
     {
         return events.Values.Sum(x => x.getInstances().Sum(x => x.getMapFactory().getMaps().Count));

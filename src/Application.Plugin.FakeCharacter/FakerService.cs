@@ -19,7 +19,7 @@ namespace Application.Plugin.FakeCharacter
         ConcurrentDictionary<AbstractEventInstanceManager, Dictionary<int, FakePlayer>> _dataSource = new();
         HashSet<CommandBase> _commands = [];
 
-        public FakerService(WorldChannelServer node, string pluginName) : base(node, pluginName)
+        public FakerService(PluginContainer<PluginServiceBase> container) : base(container)
         {
         }
 
