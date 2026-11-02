@@ -1352,7 +1352,7 @@ public partial class Player
     private long _lastNpcClick;
     public bool canClickNPC(long defaultCD = 500)
     {
-        return _lastNpcClick + defaultCD < Client.CurrentServer.Node.getCurrentTime();
+        return _lastNpcClick == 0 || (_lastNpcClick + defaultCD < Client.CurrentServer.Node.getCurrentTime());
     }
     public void setClickedNPC()
     {
