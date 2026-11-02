@@ -42,8 +42,11 @@ namespace Application.Core.Game.Life.Monsters.TemporaryStat
                     return;
                 }
 
-                await Process(now);
-                Next = now + Period;
+                if (Next <= now)
+                {
+                    await Process(now);
+                    Next = now + Period;
+                }
             }
         }
 

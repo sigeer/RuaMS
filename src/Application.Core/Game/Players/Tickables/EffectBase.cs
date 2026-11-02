@@ -43,8 +43,11 @@ namespace Application.Core.Game.Players.Tickables
                     return;
                 }
 
-                await Process(now);
-                Next = now + Period;
+                if (Next <= now)
+                {
+                    await Process(now);
+                    Next = now + Period;
+                }
             }
         }
 
