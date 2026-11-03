@@ -1,3 +1,4 @@
+using Application.Core.Game.Gameplay;
 using Application.Core.Game.Players.PlayerProps;
 using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
@@ -5,6 +6,8 @@ using Application.Core.Server;
 using Application.Shared.Battle.Skills;
 using Application.Shared.KeyMaps;
 using net.server;
+using System.Collections;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -244,5 +247,92 @@ namespace Application.Core.Game.Players
             }
             return JobModel.CheckSkill(buff.Effect.getSourceId());
         }
+
+        /// <summary>
+        /// 技能释放检测
+        /// </summary>
+        /// <param name="skillId"></param>
+        /// <param name="skillLevel"></param>
+        /// <param name="attackInfo">攻击性技能</param>
+        /// <returns></returns>
+        public async Task<bool> SkillUsed(int skillId, int skillLevel, AttackInfo? attackInfo = null)
+        {
+            var skillEffect = GetPlayerSkillEffect(skillId, !isGM());
+            if (skillEffect == null)
+                return false;
+
+            if (attackInfo != null)
+            {
+                // 无法攻击的变身状态
+                if (IsMorphWithoutAttack())
+                {
+                    await Client.Disconnect(false, false);
+                    return false;
+                }
+
+                if (skillId != attackInfo.skill && skillLevel != attackInfo.skilllevel)
+                {
+                    return false;
+                }
+            }
+
+            if (skillLevel > skillEffect.SkillLevel)
+            {
+                await Client.Disconnect(false, false);
+                return false;
+            }
+
+            // 技能是否处于CD
+            if (skillEffect.getCooldown() > 0)
+            {
+                if (skillIsCooling(skillEffect.getBuffSourceId()))
+                {
+                    return false;
+                }
+                else if (skillEffect.getBuffSourceId() != Corsair.BATTLE_SHIP)
+                {
+                    // 武装 是在被破坏后进入CD
+                    int cooldownTime = skillEffect.getCooldown();
+                    if (StatEffect.isHerosWill(skillEffect.getBuffSourceId()) && YamlConfig.config.server.USE_FAST_REUSE_HERO_WILL)
+                    {
+                        cooldownTime /= 60;
+                    }
+
+                    await SendPacket(PacketCreator.skillCooldown(skillEffect.getBuffSourceId(), cooldownTime));
+                    addCooldown(skillEffect.getBuffSourceId(), Client.CurrentServer.Node.getCurrentTime(), 1000 * cooldownTime);
+                }
+            }
+
+            if (attackInfo != null)
+            {
+                if (HasBuff(BuffStat.DARKSIGHT))
+                {
+                    await CancelBuff(BuffStat.DARKSIGHT);
+                }
+            }
+
+            if (MapId.isDojo(MapModel.Id))
+            {
+                var tSkill = skillId % 10000000;
+                if (tSkill == 1009 || tSkill == 1010 || tSkill == 1011)
+                {
+                    if (getDojoEnergy() < 10000)
+                    {
+                        return false;
+                    }
+
+                    setDojoEnergy(0);
+                    await Pink("As you used the secret skill, your energy bar has been reset.");
+                }
+                else if (attackInfo?.numAttacked > 0)
+                {
+                    setDojoEnergy(getDojoEnergy() + +YamlConfig.config.server.DOJO_ENERGY_ATK);
+                }
+                await SendPacket(PacketCreator.getEnergy(SessionValues.Energy, getDojoEnergy()));
+            }
+
+            return true;
+        }
+
     }
 }

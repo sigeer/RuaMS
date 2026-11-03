@@ -153,9 +153,13 @@ namespace Application.Core.Game.Players
         }
 
         /// <summary>
-        /// 
+        /// 移除Buff（同一Source下的其他buff也会被移除）
+        /// <para>
+        /// 比如轻功 是speed + jump， 但取消不可能仅取消speed/jump --> 取消以source为单位
+        /// </para>
         /// </summary>
-        /// <param name="buffStat"></param>
+        /// <param name="buffStat">
+        /// </param>
         /// <param name="deep">true: 完全移除, false: 仅移除当前生效项（取最优时）</param>
         /// <returns></returns>
         public Task CancelBuff(BuffStat buffStat, bool deep = true) => CancelBuffs([buffStat], deep);
@@ -191,7 +195,6 @@ namespace Application.Core.Game.Players
                     }
                 }
             }
-            // 比如轻功 是speed + jump， 但取消不可能仅取消speed/jump --> 取消应该以source为单位
             await CancelBuffFromSource(effects);
         }
 

@@ -24,9 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
-using Application.Core.Game.Players.Tickables;
-using Application.Core.Game.Skills;
 using Application.Core.Server.life;
 using client.autoban;
 using client.inventory.manipulator;
@@ -389,69 +386,20 @@ public class TakeDamageHandler : ChannelHandlerBase
                 }
             }
 
-            int? buffValue = null;
             finalDamageValue = (int)Math.Ceiling(finalDamage);
-            // 魔法盾
-            if ((buffValue = chr.getBuffedValue(BuffStat.MAGIC_GUARD)) != null && mpattack == 0)
+
+            await chr.UpdateStatsChunk(async () =>
             {
-                int mploss = (int)(finalDamageValue * (buffValue.Value / 100.0));
-                int hploss = finalDamageValue - mploss;
-
-                int curmp = chr.MP;
-                if (mploss > curmp)
-                {
-                    hploss += mploss - curmp;
-                    mploss = curmp;
-                }
-
-                await chr.UpdateStatsChunk(async () =>
-                {
-                    await chr.DamageBy(attacker, hploss, 0);
-                    chr.ChangeMP(-mploss);
-                });
-            }
-            // 金钱盾
-            else if ((buffValue = chr.getBuffedValue(BuffStat.MESOGUARD)) != null)
-            {
-                finalDamage = Math.Round(finalDamage / 2);
-                int mesoloss = (int)(finalDamage * (buffValue.Value / 100.0));
-
-                finalDamageValue = (int)Math.Ceiling(finalDamage);
-                if (chr.getMeso() < mesoloss)
-                {
-                    await chr.GainMeso(-chr.getMeso());
-                    await chr.CancelBuff(BuffStat.MESOGUARD);
-                }
-                else
-                {
-                    await chr.GainMeso(-mesoloss);
-                }
-                await chr.UpdateStatsChunk(async () =>
-                {
-                    await chr.DamageBy(attacker, finalDamageValue, 0);
-                    chr.ChangeMP(-mpattack);
-                });
-            }
-            else
-            {
-                if (chr.isRidingBattleship())
-                {
-                    await chr.decreaseBattleshipHp(finalDamageValue);
-                }
-
-                await chr.UpdateStatsChunk(async () =>
-                {
-                    await chr.DamageBy(attacker, finalDamageValue, 0);
-                    chr.ChangeMP(-mpattack);
-                });
-            }
+                chr.ChangeMP(-mpattack);
+                finalDamageValue = await chr.DamageBy(attacker, finalDamageValue, 0);
+            });
         }
         await chr.Notice($"AttackIndex: {damagefrom}, damage: {damage}, finalDamage: {finalDamageValue}, pgmr:{pgmr}, guard:{guard}, is_pg: {is_pg}");
         await chr.BroadcastMap(PacketCreator.DamagePlayer(chr.getId(), damagefrom, mobId, damage, finalDamageValue, fake, direction, pgmr, is_pg, oid, action, pos_x, pos_y, stance), chr.Id);
         if (MapId.isDojo(map.getId()))
         {
             chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_DMG);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
+            await c.SendPacket(PacketCreator.getEnergy(SessionValues.Energy, chr.getDojoEnergy()));
         }
 
         foreach (var player in banishPlayers)

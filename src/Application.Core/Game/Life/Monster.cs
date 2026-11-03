@@ -464,21 +464,21 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
     }
 
-    public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
+    public async Task<int> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
     {
         if (!this.isAlive())
         {
-            return false;
+            return 0;
         }
 
         if (isFake())
         {
-            return false;
+            return 0;
         }
 
         if (AllowedAttacker != null && attacker != null && !AllowedAttacker.Contains(attacker.getObjectId()))
         {
-            return false;
+            return 0;
         }
 
         if (damageValue > 0)
@@ -492,7 +492,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
                 if (getHp() <= selfDestr.Hp)
                 {
                     await MapModel.RemoveMob(this, attacker, true, selfDestr.Action, dropDelay: delay);
-                    return true;
+                    return damageValue;
                 }
             }
 
@@ -500,9 +500,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             {
                 await MapModel.RemoveMob(this, attacker, true, dropDelay: delay);
             }
-            return true;
+            return damageValue;
         }
-        return false;
+        return damageValue;
     }
 
     /**

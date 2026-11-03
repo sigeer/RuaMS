@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
 using Application.Shared.Objects;
 using client.inventory.manipulator;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Game.Players
@@ -210,18 +211,50 @@ namespace Application.Core.Game.Players
         }
 
         // 需要在UpdateStatsChunk内调用
-        public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
+        public async Task<int> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
         {
             if (!isAlive())
             {
-                return false;
+                return 0;
+            }
+
+            var finalDamageValue = damageValue;
+            var magicGuard = GetBuffStatValue(BuffStat.MAGIC_GUARD);
+            if (magicGuard != null)
+            {
+                int guarded = Math.Min((int)(damageValue * (magicGuard.Value / 100.0)), MP);
+                ChangeMP(-guarded);
+
+                finalDamageValue -= guarded;
+            }
+
+            var mesoGuard = GetBuffStatValue(BuffStat.MESOGUARD);
+            if (mesoGuard != null)
+            {
+                var guarded = (int)Math.Ceiling(damageValue / 2.0);
+                // X% of the guarded damage replaced with mesos
+                int mesoloss = (int)(guarded * (mesoGuard.Value / 100.0));
+                if (getMeso() < mesoloss)
+                {
+                    await GainMeso(-getMeso());
+                    await CancelBuff(BuffStat.MESOGUARD);
+                }
+                else
+                {
+                    await GainMeso(-mesoloss);
+                }
+
+                finalDamageValue -= guarded;
             }
 
             if (stayAlive)
-                damageValue = Math.Min(HP, damageValue) - 1;
+                finalDamageValue = Math.Min(HP, finalDamageValue) - 1;
 
-            await ChangeHP(-damageValue, false);
-            return true;
+            if (isRidingBattleship())
+                await decreaseBattleshipHp(finalDamageValue);
+
+            await ChangeHP(-finalDamageValue, false);
+            return finalDamageValue;
         }
 
         async Task OnDead()

@@ -2,7 +2,8 @@
 
 > IDA 数据库：`Angel.i64`（v83，基址 0x400000）
 > 相关代码：`src/Application.Core/Channel/Net/Packets/BuffPackets.cs`、`src/Application.Core/tools/PacketCreator.cs`
-> 关联文档：`docs/ida/CWvsContext_OnTemporaryStatSet_分析.md`（本地包 DecodeForLocal）
+> 关联文档：`docs/ida/CWvsContext_OnTemporaryStatSet_分析.md`（本地包 DecodeForLocal）、
+> `docs/ida/CUserRemote_OnAttack_暴击伤害编码_分析与实现.md`（同属 `CUserRemote` 的远程包解码）
 
 ---
 

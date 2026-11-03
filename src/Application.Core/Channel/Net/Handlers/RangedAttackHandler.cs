@@ -23,10 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
-using Application.Core.Client.inventory;
-using Application.Core.Game.Skills;
 using Application.Core.Server;
-using Application.Templates.Item.Consume;
 using Application.Templates.Skill;
 using client.inventory;
 using client.inventory.manipulator;
@@ -54,17 +51,9 @@ public class RangedAttackHandler : AbstractDealDamageHandler
 
         var attack = await parseDamage(p, chr, true, false);
 
-        if (chr.IsMorphWithoutAttack())
+        if (!(await chr.SkillUsed(attack.skill, attack.skilllevel, attack)))
         {
-            // How are they attacking when the client won't let them?
-            await chr.getClient().Disconnect(false, false);
             return;
-        }
-
-        if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)
-        {
-            chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_ATK);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
         if (attack.skill == Buccaneer.ENERGY_ORB || attack.skill == ThunderBreaker.SPARK || attack.skill == Shadower.TAUNT || attack.skill == NightLord.TAUNT)
@@ -119,7 +108,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             if (attack.skill != 0)
             {
                 effect = await attack.getAttackEffect(chr, null);
-                if (effect == null  || effect.EffectTemplate is not SkillLevelData skillLevelData)
+                if (effect == null || effect.EffectTemplate is not SkillLevelData skillLevelData)
                 {
                     return;
                 }
@@ -161,7 +150,7 @@ public class RangedAttackHandler : AbstractDealDamageHandler
             }
 
             Item? usedBullet = null;
-            if (projectile  == 0)
+            if (projectile == 0)
             {
                 usedBullet = chr.GetProperBulletItem(bulletCount);
                 if (usedBullet != null)
@@ -239,37 +228,6 @@ public class RangedAttackHandler : AbstractDealDamageHandler
                         break;
                 }
                 await chr.BroadcastMap(packet, chr.Id);
-
-                if (effect != null)
-                {
-                    var effectCooldown = effect.getCooldown();
-                    if (effectCooldown > 0)
-                    {
-                        if (chr.skillIsCooling(attack.skill))
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effectCooldown));
-                            chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * effectCooldown);
-                        }
-                    }
-                }
-
-                if (chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0
-                    && chr.getBuffedValue(BuffStat.DARKSIGHT) != null
-                    && attack.numAttacked > 0
-                    && chr.getBuffSource(BuffStat.DARKSIGHT) != SuperGM.HIDE)
-                {
-                    await chr.CancelBuff(BuffStat.DARKSIGHT);
-                }
-                else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0
-                    && chr.getBuffedValue(BuffStat.WIND_WALK) != null
-                    && attack.numAttacked > 0)
-                {
-                    await chr.CancelBuff(BuffStat.WIND_WALK);
-                }
 
                 await applyAttack(attack, chr);
             }

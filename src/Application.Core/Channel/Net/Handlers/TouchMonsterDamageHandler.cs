@@ -26,6 +26,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Core.Channel.Net.Handlers;
 
+/// <summary>
+/// 特殊模式下触碰mob造成伤害
+/// </summary>
 public class TouchMonsterDamageHandler : AbstractDealDamageHandler
 {
     public TouchMonsterDamageHandler(ILogger<AbstractDealDamageHandler> logger, AutoBanDataManager autoBanDataManager) : base(logger, autoBanDataManager)
@@ -37,7 +40,8 @@ public class TouchMonsterDamageHandler : AbstractDealDamageHandler
         var chr = c.OnlinedCharacter;
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)
         {
-            await applyAttack(await parseDamage(p, chr, false, false), c.OnlinedCharacter);
+            var attackInfo = await parseDamage(p, chr, false, false);
+            await applyAttack(attackInfo, c.OnlinedCharacter);
         }
     }
 }

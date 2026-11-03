@@ -13,6 +13,6 @@ public class MaxEnergyCommand : CommandBase
     {
         var player = c.OnlinedCharacter;
         c.OnlinedCharacter.setDojoEnergy(10000);
-        await c.SendPacket(PacketCreator.getEnergy("energy", 10000));
+        await c.SendPacket(PacketCreator.getEnergy(SessionValues.Energy, 10000));
     }
 }

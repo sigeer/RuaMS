@@ -21,11 +21,9 @@
  */
 
 
-using Application.Core.Channel.Commands;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Items;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters;
 using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
@@ -395,6 +393,12 @@ public class StatEffect : IBuffSource
                 case Legend.BALROG_MOUNT:
                     statups[BuffStat.MONSTER_RIDING] = sourceid;
                     break;
+                case Beginner.POWER_EXPLOSION:
+                case Noblesse.POWER_EXPLOSION:
+                case Legend.POWER_EXPLOSION:
+                case Evan.POWER_EXPLOSION:
+                    statups[BuffStat.BERSERK_FURY] = 1;
+                    break;
                 case Beginner.INVINCIBLE_BARRIER:
                 case Noblesse.INVINCIBLE_BARRIER:
                 case Legend.INVICIBLE_BARRIER:
@@ -579,9 +583,6 @@ public class StatEffect : IBuffSource
                 case NightWalker.CLAW_BOOSTER:
                 case ThunderBreaker.KNUCKLER_BOOSTER:
                 case Evan.MAGIC_BOOSTER:
-                case Beginner.POWER_EXPLOSION:
-                case Noblesse.POWER_EXPLOSION:
-                case Legend.POWER_EXPLOSION:
                     statups[BuffStat.BOOSTER] = x;
                     break;
                 case Hero.MAPLE_WARRIOR:
@@ -760,41 +761,22 @@ public class StatEffect : IBuffSource
         MonsterStatuses = monsterStatus.ToImmutableDictionary();
     }
 
-    /**
-     * @param applyto
-     * @param obj
-     * @param attack  damage done by the skill
-     */
-    public async Task applyPassive(Player applyto, IMapObject? obj, int attack)
-    {
-        if (makeChanceResult())
-        {
-            switch (sourceid)
-            { // MP eater
-                case FPWizard.MP_EATER:
-                case ILWizard.MP_EATER:
-                case Cleric.MP_EATER:
-                    if (obj == null || obj.getType() != MapObjectType.MONSTER)
-                    {
-                        return;
-                    }
-                    Monster mob = (Monster)obj; // x is absorb percentage
-                    if (!mob.isBoss())
-                    {
-                        int absorbMp = Math.Min((int)(mob.getMaxMp() * (getX() / 100.0)), mob.getMp());
-                        if (absorbMp > 0)
-                        {
-                            mob.setMp(mob.getMp() - absorbMp);
-                            await applyto.UpdateStatsChunk(() =>
-                            {
-                                applyto.ChangeMP(absorbMp);
-                            });
 
-                            await applyto.SendPacket(EffectPacket.SkillEffect(sourceid, SkillLevel, applyto.Level));
-                            await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.getId(), sourceid, SkillLevel, applyto.Level), applyto.Id);
-                        }
-                    }
-                    break;
+    public async Task ApplyMPEater(Player applyto, Monster mob)
+    {
+        if (!mob.isBoss() && makeChanceResult())
+        {
+            int absorbMp = Math.Min((int)(mob.getMaxMp() * (getX() / 100.0)), mob.getMp());
+            if (absorbMp > 0)
+            {
+                mob.setMp(mob.getMp() - absorbMp);
+                await applyto.UpdateStatsChunk(() =>
+                {
+                    applyto.ChangeMP(absorbMp);
+                });
+
+                await applyto.SendPacket(EffectPacket.SkillEffect(sourceid, SkillLevel, applyto.Level));
+                await applyto.BroadcastMap(EffectPacket.ForeignSkillEffect(applyto.getId(), sourceid, SkillLevel, applyto.Level), applyto.Id);
             }
         }
     }

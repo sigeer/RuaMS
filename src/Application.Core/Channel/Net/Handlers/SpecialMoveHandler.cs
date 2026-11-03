@@ -24,6 +24,7 @@
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
+using System.Collections;
 using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
@@ -37,55 +38,18 @@ public class SpecialMoveHandler : ChannelHandlerBase
         p.readInt();
         chr.getAutobanManager().setTimestamp(4, c.CurrentServer.Node.getCurrentTimestamp(), 28);
         int skillid = p.readInt();
-
-        /*
-        if ((!GameConstants.isPqSkillMap(chr.getMapId()) && GameConstants.isPqSkill(skillid)) || (!chr.isGM() && GameConstants.isGMSkills(skillid)) || (!GameConstants.isInJobTree(skillid, chr.getJob().getId()) && !chr.isGM())) {
-        	AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit skills.");
-        	FilePrinter.printError(FilePrinter.EXPLOITS + chr.getName() + ".txt", chr.getName() + " tried to use skill " + skillid + " without it being in their job.");
-    		c.disconnect(true, false);
-            return;
-        }
-        */
+        int clientSkillLevel = p.ReadSByte();
 
         Point? pos = null;
-        int __skillLevel = p.ReadSByte();
-        var skill = SkillFactory.getSkill(skillid);
-        int skillLevel = chr.getSkillLevel(skill);
-        if (skillid % 10000000 == 1010 || skillid % 10000000 == 1011)
-        {
-            if (chr.getDojoEnergy() < 10000)
-            { // PE hacking or maybe just lagging
-                return;
-            }
-            skillLevel = 1;
-            chr.setDojoEnergy(0);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
-            await c.SendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
-        }
-        if (skillLevel == 0 || skillLevel != __skillLevel)
+
+        if (!(await chr.SkillUsed(skillid, clientSkillLevel)))
         {
             return;
         }
 
-        StatEffect effect = skill!.getEffect(skillLevel);
-        if (effect.getCooldown() > 0)
-        {
-            if (chr.skillIsCooling(skillid))
-            {
-                return;
-            }
-            else if (skillid != Corsair.BATTLE_SHIP)
-            {
-                int cooldownTime = effect.getCooldown();
-                if (StatEffect.isHerosWill(skillid) && YamlConfig.config.server.USE_FAST_REUSE_HERO_WILL)
-                {
-                    cooldownTime /= 60;
-                }
+        var skill = SkillFactory.getSkill(skillid);
+        StatEffect effect = skill!.getEffect(clientSkillLevel);
 
-                await c.SendPacket(PacketCreator.skillCooldown(skillid, cooldownTime));
-                chr.addCooldown(skillid, c.CurrentServer.Node.getCurrentTime(), 1000 * (cooldownTime));
-            }
-        }
         if (skillid == Hero.MONSTER_MAGNET || skillid == Paladin.MONSTER_MAGNET || skillid == DarkKnight.MONSTER_MAGNET)
         { 
             // Monster Magnet
@@ -110,7 +74,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
                 }
             }
             byte direction = p.readByte();   // thanks MedicOP for pointing some 3rd-party related issues with Magnet
-            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.Id, skillid, skillLevel, chr.Level, direction), chr.Id);
+            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.Id, skillid, clientSkillLevel, chr.Level, direction), chr.Id);
             await c.SendPacket(PacketCreator.enableActions());
         }
         else if (skillid == Brawler.MP_RECOVERY)
@@ -126,7 +90,7 @@ public class SpecialMoveHandler : ChannelHandlerBase
         else if (skillid == SuperGM.HEAL_PLUS_DISPEL)
         {
             p.skip(11);
-            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.getId(), skillid, skillLevel, chr.Level), chr.Id);
+            await chr.BroadcastMap(EffectPacket.ForeignSkillEffect(chr.getId(), skillid, clientSkillLevel, chr.Level), chr.Id);
         }
         else if (skillid % 10000000 == 1004)
         {
