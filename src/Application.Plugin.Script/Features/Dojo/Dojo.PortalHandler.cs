@@ -33,7 +33,7 @@ namespace Application.Plugin.Script.Features.Dojo
         public async Task<bool> dojang_next()
         {
 
-            if (getPlayer().canClickNPC(3000))
+            if (!getPlayer().canClickNPC(3000))
             {
                 return false;
             }

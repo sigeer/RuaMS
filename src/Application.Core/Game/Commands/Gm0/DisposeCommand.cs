@@ -11,9 +11,10 @@ public class DisposeCommand : CommandBase
     }
     public override async Task Execute(IChannelClient c, string[] paramValues)
     {
-        c.NPCConversationManager?.DisposeAsync();
-        await c.SendPacket(PacketCreator.enableActions());
-        c.OnlinedCharacter.removeClickedNPC();
+        if (c.NPCConversationManager != null)
+        {
+            await c.NPCConversationManager.DisposeAsync();
+        }
         await c.OnlinedCharacter.Pink(nameof(ClientMessage.DisposeCommand_Message1));
     }
 }
