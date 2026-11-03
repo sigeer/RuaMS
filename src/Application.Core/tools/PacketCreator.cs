@@ -5459,14 +5459,15 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet updateDojoStats(Player chr, int belt)
-    {
-        OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
-        p.writeByte(10);
-        p.writeBytes(new byte[] { 0xB7, 4 }); //?
-        p.writeString("pt=" + chr.getDojoPoints() + ";belt=" + belt + ";tuto=" + (chr.getFinishedDojoTutorial() ? "1" : "0"));
-        return p;
-    }
+    // v83 中不存在
+    //public static Packet updateDojoStats(Player chr, int belt)
+    //{
+    //    OutPacket p = OutPacket.create(SendOpcode.SHOW_STATUS_INFO);
+    //    p.writeByte(10);
+    //    p.writeBytes(new byte[] { 0xB7, 4 }); //? 1207
+    //    p.writeString("pt=" + chr.getDojoPoints() + ";belt=" + belt + ";tuto=" + (chr.getFinishedDojoTutorial() ? "1" : "0"));
+    //    return p;
+    //}
 
 
 

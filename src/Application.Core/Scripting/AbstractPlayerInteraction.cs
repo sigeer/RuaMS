@@ -253,7 +253,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         return (em as TEventManager) ?? throw new BusinessException($"Error: {@event} 不是 {typeof(TEventManager).Name}");
     }
 
-    public SoloEventManager GetSoloQuestEventManager(int questId)
+    public PartyQuestEventManager GetSoloQuestEventManager(int questId)
     {
         var @event = $"q{questId}";
         var em = getPlayer().getEventManager(@event);
@@ -262,7 +262,7 @@ public class AbstractPlayerInteraction : IClientMessenger
             throw new BusinessNotsupportException($"Event: {@event}");
         }
 
-        return (em as SoloEventManager) ?? throw new BusinessException($"Error: {@event} 不是 SoloEventManager");
+        return (em as PartyQuestEventManager) ?? throw new BusinessException($"Error: {@event} 不是 SoloEventManager");
     }
 
     public AbstractEventInstanceManager? getEventInstance()
@@ -845,19 +845,6 @@ public class AbstractPlayerInteraction : IClientMessenger
     public async Task goDojoUp()
     {
         await c.SendPacket(PacketCreator.dojoWarpUp());
-    }
-
-    public void resetDojoEnergy()
-    {
-        c.OnlinedCharacter.setDojoEnergy(0);
-    }
-
-    public void resetPartyDojoEnergy()
-    {
-        foreach (var pchr in c.OnlinedCharacter.getPartyMembersOnSameMap())
-        {
-            pchr.setDojoEnergy(0);
-        }
     }
 
     public async Task enableActions()

@@ -6,7 +6,6 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
-using Application.Core.Gameplay.ChannelEvents;
 using Application.Core.Server.events.gm;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
@@ -58,8 +57,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     private Event? @event;
     private HashSet<int> usedMC = new();
-
-    public DojoInstance DojoInstance { get; }
 
 
     // public IWorld WorldModel { get; set; }
@@ -156,8 +153,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
         PlayerShopManager = ActivatorUtilities.CreateInstance<PlayerShopManager>(LifeScope.ServiceProvider, this);
 
-
-        DojoInstance = new DojoInstance(this);
 
         MobClearSkillService = new MobClearSkillService(this);
         OverallService = new OverallService(this);
@@ -347,8 +342,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     private async Task closeChannelSchedules()
     {
-        await DojoInstance.DisposeAsync();
-
         closeChannelServices();
     }
 
@@ -592,53 +585,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     {
         this.storedVars[key] = val;
     }
-
-    #region dojo
-    public int lookupPartyDojo(Team? party)
-    {
-        return DojoInstance.LookupPartyDojo(party);
-    }
-
-    public async Task<int> ingressDojo(bool isPartyDojo, int fromStage)
-    {
-        return await ingressDojo(isPartyDojo, null, fromStage);
-    }
-
-    public async Task<int> ingressDojo(bool isPartyDojo, Team? party, int fromStage)
-    {
-        return await DojoInstance.IngressDojo(isPartyDojo, party, fromStage);
-    }
-
-    public async Task resetDojoMap(int fromMapId)
-    {
-        await DojoInstance.ResetDojoMap(fromMapId);
-    }
-
-    public void resetDojo(int dojoMapId)
-    {
-        DojoInstance.ResetDojo(dojoMapId, -1);
-    }
-
-    public async Task freeDojoSectionIfEmpty(int dojoMapId)
-    {
-        await DojoInstance.FreeDojoSectionIfEmpty(dojoMapId);
-    }
-
-    public void dismissDojoSchedule(int dojoMapId, Team party)
-    {
-        DojoInstance.DismissDojoSchedule(dojoMapId, party);
-    }
-
-    public bool setDojoProgress(int dojoMapId)
-    {
-        return DojoInstance.SetDojoProgress(dojoMapId);
-    }
-
-    public long getDojoFinishTime(int dojoMapId)
-    {
-        return DojoInstance.GetDojoFinishTime(dojoMapId);
-    }
-    #endregion
 
     public async Task<bool> addMiniDungeon(int dungeonid)
     {

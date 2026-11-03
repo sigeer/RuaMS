@@ -121,6 +121,8 @@ namespace Application.Templates.Map
             sourceTemplate.Backs = Backs;
             sourceTemplate.Life = Life;
             sourceTemplate.Footholds = Footholds;
+            sourceTemplate.Portals = Portals;
+            sourceTemplate.LadderRopes = LadderRopes;
             sourceTemplate.MonsterCarnival = MonsterCarnival;
             sourceTemplate.HasClock = HasClock;
             sourceTemplate.HasShip = HasShip;

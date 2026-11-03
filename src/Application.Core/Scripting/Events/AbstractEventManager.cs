@@ -180,6 +180,10 @@ namespace Application.Core.Scripting.Events
 
         public void ProcessDisposeInstanceInternal(string name) => DisposeInstanceInternal(name);
 
+        /// <summary>
+        /// 仅从EventManager中释放EventInstance，EvenInstance还没有释放
+        /// </summary>
+        /// <param name="instanceName"></param>
         public void DisposeInstance(string instanceName)
         {
             SubTickables.Add(new DelayedDisposeRequest(this, instanceName, getChannelServer().Node.getCurrentTime() + YamlConfig.config.server.EVENT_LOBBY_DELAY * 1000));

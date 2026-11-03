@@ -476,7 +476,7 @@ namespace Application.Core.Gameplay.Plugins
             ScriptHandlerDescriptor script,
             object instance,
             string context,
-            IChannelClient? client)
+            IChannelClient client)
         {
             try
             {
@@ -486,10 +486,17 @@ namespace Application.Core.Gameplay.Plugins
                 }
                 return true;
             }
+            catch (ConversationDiffInstanceException)
+            {
+                await client.OnlinedCharacter.Pink("你是怎么到这里来的？让我带你离开这里。");
+                Log.Logger.Warning("玩家身处事件地图却没有EIM, MapId={MapId}", client.OnlinedCharacter.getMapId());
+
+                await client.OnlinedCharacter.ForcedWarpOut();
+                return true;
+            }
             catch (BusinessException be)
             {
-                if (client != null)
-                    await client.OnlinedCharacter.Debug(5, be.Message);
+                await client.OnlinedCharacter.Debug(5, be.Message);
                 LogScriptError(script.Kind, context, be);
                 return false;
             }

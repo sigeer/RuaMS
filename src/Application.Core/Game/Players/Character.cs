@@ -215,27 +215,6 @@ public partial class Player
         useCS = cs;
     }
 
-
-
-
-
-
-    public int addDojoPointsByMap(int mapid)
-    {
-        int pts = 0;
-        if (DojoPoints < 17000)
-        {
-            pts = 1 + ((mapid - 1) / 100 % 100) / 6;
-            if (!MapId.isPartyDojo(this.getMapId()))
-            {
-                pts++;
-            }
-            this.DojoPoints += pts;
-        }
-        return pts;
-    }
-
-
     public void addMesosTraded(int gain)
     {
         this.mesosTraded += gain;
@@ -976,21 +955,19 @@ public partial class Player
             if (template.ConsumeOnPickup || template.ConsumeOnPickupEx)
             {
                 var mse = ItemInformationProvider.getInstance().getItemEffect(item.getItemId())!;
+                if (isAlive())
+                    await mse.applyTo(this);
+
                 if (template.Party)
                 {
                     List<Player> partyMembers = getPartyMembersOnSameMap();
                     foreach (Player mc in partyMembers)
                     {
-                        if (mc.isAlive())
+                        if (mc.Id != Id && mc.isAlive())
                         {
                             await mse.applyTo(mc);
                         }
                     }
-                }
-                else
-                {
-                    if (isAlive())
-                        await mse.applyTo(this);
                 }
 
                 return true;
@@ -1485,20 +1462,6 @@ public partial class Player
         return currentType;
     }
 
-    public int getDojoEnergy()
-    {
-        return dojoEnergy;
-    }
-
-    public int getDojoPoints()
-    {
-        return DojoPoints;
-    }
-
-    public int getDojoStage()
-    {
-        return LastDojoStage;
-    }
 
 
     public Door? getPlayerDoor()
@@ -1619,12 +1582,6 @@ public partial class Player
     {
         return FamilyId;
     }
-
-    public bool getFinishedDojoTutorial()
-    {
-        return FinishedDojoTutorial;
-    }
-
 
 
     public int getGender()
@@ -1942,15 +1899,6 @@ public partial class Player
     {
         return trade;
     }
-
-
-
-    public int getVanquisherStage()
-    {
-        return VanquisherStage;
-    }
-
-
 
     public int gmLevel()
     {
@@ -2804,11 +2752,39 @@ public partial class Player
         this.DojoPoints = x;
     }
 
+    public int addDojoPointsByMap(int mapid)
+    {
+        int pts = 0;
+        if (DojoPoints < 17000)
+        {
+            pts = 1 + ((mapid - 1) / 100 % 100) / 6;
+            if (!MapId.isPartyDojo(this.getMapId()))
+            {
+                pts++;
+            }
+            this.DojoPoints += pts;
+        }
+        return pts;
+    }
     public void setDojoStage(int x)
     {
         this.LastDojoStage = x;
     }
 
+    public int getDojoEnergy()
+    {
+        return dojoEnergy;
+    }
+
+    public int getDojoPoints()
+    {
+        return DojoPoints;
+    }
+
+    public int getDojoStage()
+    {
+        return LastDojoStage;
+    }
 
     public void setExp(int amount)
     {
@@ -2828,10 +2804,6 @@ public partial class Player
         this.FamilyId = familyId;
     }
 
-    public void setFinishedDojoTutorial()
-    {
-        this.FinishedDojoTutorial = true;
-    }
 
     public void setGender(int gender)
     {
@@ -3040,19 +3012,9 @@ public partial class Player
     {
         this.VanquisherStage = x;
     }
-
-
-    private long getDojoTimeLeft()
+    public int getVanquisherStage()
     {
-        return Client.CurrentServer.getDojoFinishTime(MapModel.getId()) - Client.CurrentServer.Node.getCurrentTime();
-    }
-
-    public async Task showDojoClock()
-    {
-        if (GameConstants.isDojoBossArea(MapModel.getId()))
-        {
-            await SendPacket(PacketCreator.getClock((int)(getDojoTimeLeft() / 1000)));
-        }
+        return VanquisherStage;
     }
 
     public async Task showUnderleveledInfo(Monster mob)

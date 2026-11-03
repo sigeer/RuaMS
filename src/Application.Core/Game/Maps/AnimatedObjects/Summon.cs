@@ -102,6 +102,11 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
         return MapObjectType.SUMMON;
     }
 
+    public override int GetSourceId()
+    {
+        return StatEffect.getBuffSourceId();
+    }
+
     public bool isPuppet()
     {
         return getSkill() == Ranger.PUPPET || getSkill() == Sniper.PUPPET || getSkill() == WindArcher.PUPPET;

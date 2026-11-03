@@ -29,14 +29,12 @@ namespace Application.Plugin.Script.Features.Dojo
                         "想尝尝败北的滋味？尽管放马过来！",
                         "定让你后悔挑战武陵道场！速来受死！"
                     ];
-                    await getPlayer().startMapEffect(Randomizer.Select(messages), 5120024);
+                    await getPlayer().startMapEffect(Randomizer.Select(messages), DojoFeature.MapEffectItem);
                 }
-
-                resetDojoEnergy();
             }
             else
             {
-                await getPlayer().startMapEffect("哈！让我们看看你有什么！除非你先打败我，否则我不会让你离开的！", 5120024);
+                await getPlayer().startMapEffect("哈！让我们看看你有什么！除非你先打败我，否则我不会让你离开的！", DojoFeature.MapEffectItem);
             }
         }
 
@@ -50,9 +48,11 @@ namespace Application.Plugin.Script.Features.Dojo
         // Map: 925020100, 925020101, 925020102, 925020103, 925020104, 925020105 … (共 571 张)
         public async Task dojang_Eff()
         {
-            var stage = (int)Math.Floor(getPlayer().getMap().getId() / 100.0) % 100;
+            var eim = GetEventInstanceTrust();
 
-            await getPlayer().showDojoClock();
+            var stage = DojoFeature.GetStage(getMapId());
+
+            // 休息关（stage % 6 == 0）只有入场提示，没有战斗层数动画
             if (stage % 6 > 0)
             {
                 var realstage = stage - ((stage / 6) | 0);
@@ -62,30 +62,27 @@ namespace Application.Plugin.Script.Features.Dojo
                 await mapEffect("dojang/start/stage");
                 await mapEffect("dojang/start/number/" + realstage);
             }
-
         }
 
         // Map: 925020100, 925020101, 925020102, 925020103, 925020104, 925020105 … (共 571 张)
         public async Task dojang_1st()
         {
-            var stage = (int)Math.Floor(getMapId() / 100.0) % 100;
-            var callBoss = false;
+            var eim = GetEventInstanceTrust();
 
-            if (stage % 6 == 0)
+            var stage = DojoFeature.GetStage(getMapId());
+
+            if (DojoFeature.IsRestingSpot(getMapId()))
             {
-                getClient().getChannelServer().dismissDojoSchedule(getMapId(), getParty());
-                getClient().getChannelServer().setDojoProgress(getMapId());
+                // 休息关：停止上一关的倒计时，玩家在这里不会超时
+                await eim.stopEventTimer();
+                return;
             }
-            else
-            {
-                callBoss = getClient().getChannelServer().setDojoProgress(getMapId());
 
-                var realstage = stage - ((stage / 6) | 0);
-                var mobData = LifeFactory.Instance.GetMonsterTrust(9300183 + realstage);
-                if (callBoss && getPlayer().getMap().getMonsterById(9300216) == null)
-                {
-                    await getPlayer().getMap().spawnDojoMonster(mobData);
-                }
+            await eim.restartEventTimer(DojoFeature.GetStageTime(stage));
+            if (!eim.ClearedMaps.ContainsKey(getMapId()))
+            {
+                var mobData = LifeFactory.Instance.GetMonsterTrust(DojoFeature.GetStageMobId(stage));
+                await getPlayer().getMap().spawnDojoMonster(mobData);
             }
         }
 

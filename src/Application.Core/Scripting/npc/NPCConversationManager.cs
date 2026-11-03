@@ -79,7 +79,7 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
 
     public virtual async ValueTask DisposeAsync()
     {
-        _talkChannel.Writer.Complete();
+        _talkChannel.Writer.TryComplete();
         NextLevelContext.Clear();
         await c.CurrentServer.NPCScriptManager.dispose(this);
         await c.SendPacket(PacketCreator.enableActions());

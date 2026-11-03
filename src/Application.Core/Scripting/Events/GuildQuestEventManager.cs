@@ -3,7 +3,7 @@ using Application.Core.scripting.Events.Templates;
 
 namespace Application.Core.Scripting.Events
 {
-    public class GuildQuestEventManager : SoloEventManager
+    public class GuildQuestEventManager : PartyQuestEventManager
     {
         private Queue<int> queuedGuilds = new();
         private Dictionary<int, int> queuedGuildLeaders = new();
