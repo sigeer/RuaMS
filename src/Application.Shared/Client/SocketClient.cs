@@ -43,7 +43,7 @@ namespace Application.Shared.Client
             return _clientInfo;
         }
 
-        private SemaphoreSlim actionsSemaphore = new (7, 7);
+        private SemaphoreSlim actionsSemaphore = new(7, 7);
 
         public Task tryacquireClient()
         {
@@ -107,7 +107,7 @@ namespace Application.Shared.Client
                     {
                         log.LogInformation("Disconnected {IP} due to idling. Reason: {State}", RemoteAddress, evt.State);
 
-                        CloseSession();
+                        await CloseSessionAsync();
                     }
                 }
             }
@@ -119,28 +119,21 @@ namespace Application.Shared.Client
 
         public override void ExceptionCaught(IChannelHandlerContext ctx, Exception cause)
         {
-            HandleException(cause);
+            _ = HandleExceptionAsync(cause);
         }
 
-        private void HandleException(Exception cause)
+        private async Task HandleExceptionAsync(Exception cause)
         {
             if (cause is not DecoderException)
                 log.LogError(cause, "Exception caught by {ClientInfo}", this);
 
-            if (cause is InvalidPacketHeaderException)
+            if (cause is BusinessException && cause is not BusinessFatalException)
             {
-                CloseSession();
+                await SendPacket(PacketCommon.serverNotice(5, cause.Message));
             }
-            else if (cause is IOException)
+            else
             {
-                CloseSession();
-            }
-            else if (cause is BusinessException)
-            {
-                if (cause is BusinessFatalException)
-                    CloseSession();
-                else
-                    _ = SendPacket(PacketCommon.serverNotice(5, cause.Message));
+                await CloseSessionAsync();
             }
         }
 
@@ -148,7 +141,7 @@ namespace Application.Shared.Client
         /// 处理包，异常按 ExceptionCaught 的规则处理。
         /// 该方法不会向外抛出异常，可以安全地 fire-and-forget 调用。
         /// </summary>
-        protected async Task ProcessPacketSafe(InPacket packet)
+        protected async Task ProcessPacketAsync(InPacket packet)
         {
             try
             {
@@ -156,17 +149,23 @@ namespace Application.Shared.Client
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
         }
 
         protected abstract Task CloseSessionInternal();
 
+
         public void CloseSession()
+        {
+            _ = CloseSessionAsync();
+        }
+
+        protected async Task CloseSessionAsync()
         {
             try
             {
-                _ = CloseSessionInternal();
+                await CloseSessionInternal();
             }
             catch (Exception t)
             {
@@ -174,7 +173,7 @@ namespace Application.Shared.Client
             }
             finally
             {
-                _ = CloseSocket();
+                await CloseSocket();
             }
         }
 

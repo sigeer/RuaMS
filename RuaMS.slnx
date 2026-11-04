@@ -9,6 +9,7 @@
     <File Path="README.MD" />
   </Folder>
   <Folder Name="/docs/ida/">
+    <File Path="docs/ida/CalcDamage_随机种子与暴击同步_分析.md" />
     <File Path="docs/ida/CMob_OnStatSet_分析.md" />
     <File Path="docs/ida/CUserLocal_攻击包_客户端发包结构_分析.md" />
     <File Path="docs/ida/CUserRemote_DecodeForRemote_分析与实现.md" />

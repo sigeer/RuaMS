@@ -291,13 +291,47 @@ if (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax))
 重构后 `totDamageToOneMonster` 直接来自 `AttackDamage.Damage`，与客户端显示值一致。
 之前"暴击行少 1 点"的问题随之消失，无需再改 `DecodeDamage`。
 
-### 3.4 服务端的推断条件与客户端不一致（设计层面，非解码问题）
+### 3.4 服务端的推断条件与客户端不一致（已由客户端补丁解决）
 
 客户端**不根据数值推测暴击**：本地由 `CalcDamage::PDamage` 用暴击率判定，把结果写进
-`a17`；接收侧直接读 bit31。服务端没有任何暴击率信息（攻击包不带 `target[21]`，见 §2.3.1），
-只能用 `canCrit && damage > hitDmgMax` 猜。猜错只会让旁观者多显示/少显示暴击数字，
-不影响伤害计算。另外 `ret.skill == Marksman.SNIPE` 是**无条件**置位 bit31，即所有旁观者都会
-把 SNIPE 的伤害显示为暴击——这是 Cosmic 的既有选择，客户端对这个 skill 不做区分。
+`a17`；接收侧直接读 bit31。原协议下攻击包不带 `target[21]`（见 §2.3.1），
+服务端只能用 `canCrit && damage > hitDmgMax` 猜。
+
+> **2026-11-04 更新**：已通过客户端补丁
+> （`Client::EnableCritFlagInAttackPacket`）
+> 在发包前把 `target[21+i]` OR 进伤害值的 bit31，服务端相应改为拆位解码
+> （`AbstractDealDamageHandler.parseDamage`）。现在暴击是**客户端给出的真值**，
+> 不再需要任何推断。
+
+#### SNIPE（3221007）的真实行为
+
+`CMob::OnHit`（0x668B83）在显示层有一处特判：
+
+```c
+if ( a3 != 1121001 && a3 != 1221001 && a3 != 1321001 )
+{
+    if ( a3 == 3221007 )      // 0x668DD8
+        a7 = 1;               // 强制"暴击"数字图
+    CMob::ShowDamage(v20, a6, a8, a7, ...);
+}
+```
+
+**但这只是旁观者看到的数字图样式，与实际暴击无关。**
+
+`CalcDamage::PDamage` 里 SNIPE 的固定伤害分支会**整段跳过暴击判定**：
+
+```asm
+0x78E4DD  cmp [ebp+arg_24], 1     ; a11 == 1
+0x78E4E1  jnz 0x78E647            ; 否则走正常流程
+0x78E4E7  ... 算 199999 - roll ...
+0x78E552  jmp 0x7905F8            ; 直接写伤害，跳出目标循环
+```
+
+而 `target[21]` 在循环开头已初始化为 0（`0x78E3E5 mov [ebx], ecx`，`ecx=0`），
+所以 **SNIPE 发出去的暴击位恒为 0**。
+
+**结论**：服务端对 SNIPE **不应**无条件置位 bit31——那会与客户端发出的真值矛盾。
+当前实现已删除该特判，与客户端保持一致。
 
 ### 3.5 `damageLines` 的语义
 

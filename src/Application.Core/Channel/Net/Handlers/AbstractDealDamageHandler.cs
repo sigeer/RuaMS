@@ -978,8 +978,19 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
             for (int j = 0; j < ret.numDamage; j++)
             {
-                int damage = p.readInt();
-                bool isCrit = false;
+                int rawDamage = p.readInt();
+
+                // 兼容两种客户端：
+                //  * 打过补丁（BeiDou-ijl15 `Client::EnableCritFlagInAttackPacket`）的客户端
+                //    会把真实暴击位 OR 进伤害值的 bit31，因此负数即为"带暴击标记"；
+                //  * 原版客户端的伤害始终 >= 0（PDamage 0x790586 用 max(1.0, min(raw, cap))
+                //    钳制后才写包），所以非负数一定没带标记。
+                // 后者仍退回旧的按伤害推断（只会漏标，不会错标）。
+                var line = DamageLine.Decode(rawDamage);
+                bool hasCritFlag = line.HasCritFlag;
+                bool isCrit = line.IsCrit;
+                int damage = line.Damage;
+
                 double hitDmgMax = calcDmgMax;
                 if (ret.skill == Buccaneer.BARRAGE || ret.skill == ThunderBreaker.BARRAGE)
                 {
@@ -1000,7 +1011,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                 if (ret.skill == Marksman.SNIPE)
                 {
-                    damage = 195000 + Randomizer.nextInt(5000);
+                    if (!hasCritFlag)
+                    {
+                        // 原版客户端：SNIPE 的伤害是 195000~200000 的固定值，服务端无法从
+                        // 数值判断，沿用旧做法自行生成。补丁客户端已经发来真实伤害与暴击位，
+                        // 不能覆盖。
+                        damage = 195000 + Randomizer.nextInt(5000);
+                    }
                     hitDmgMax = 200000;
                 }
                 else if (ret.skill == Beginner.BAMBOO_RAIN || ret.skill == Noblesse.BAMBOO_RAIN || ret.skill == Evan.BAMBOO_THRUST || ret.skill == Legend.BAMBOO_THRUST)
@@ -1028,8 +1045,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         "DMG: " + damage + " MaxDMG: " + maxWithCrit + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                 }
 
-                if (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax))
+                if (!hasCritFlag && (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax)))
                 {
+                    // 原版客户端：没有暴击信息，只能按伤害推断。
+                    // 该判据只会漏标，不会错标。
                     isCrit = true;
                 }
 
