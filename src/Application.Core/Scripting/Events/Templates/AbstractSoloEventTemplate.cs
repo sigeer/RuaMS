@@ -1,22 +1,17 @@
-using Application.Core.Channel;
-using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
-using Application.Core.Scripting.Events;
 
 namespace Application.Core.scripting.Events.Templates
 {
-    public abstract class AbstractSoloEventTemplate : AbstractEventTemplate
+    public abstract class AbstractSoloEventTemplate : AbstractPartyQuestEventTemplate
     {
         public AbstractSoloEventTemplate(string name) : base(name)
         {
             MinCount = 1;
             MaxCount = 1;
+
+            PartyLeaderRequired = false;
         }
 
-        public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
-        {
-            return new SoloEventManager(worldChannel, this);
-        }
         public override List<Player> GetEligibleParty(Player leader)
         {
             List<Player> members = [leader];

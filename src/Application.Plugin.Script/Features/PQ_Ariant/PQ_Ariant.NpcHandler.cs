@@ -171,7 +171,7 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
                             await eim.StartBattle();
                             break;
                         case 4:
-                            await WarpReturn();
+                            await WarpOut();
                             break;
                         default:
                             break;

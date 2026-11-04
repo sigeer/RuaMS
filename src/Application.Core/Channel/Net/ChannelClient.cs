@@ -127,6 +127,8 @@ namespace Application.Core.Channel.Net
             await player.closePlayerInteractions();
             player.closePartySearchInteractions();
 
+            // 道馆的占位与场景回收由 EventInstance 负责：玩家离开事件地图会 unregister，
+            // 副本随之销毁（dispose 时清掉该层的全部地图实例），这里不再单独处理道馆。
             if (!serverTransition)
             {
                 var eim = player.getEventInstance();
@@ -140,12 +142,7 @@ namespace Application.Core.Channel.Net
 
             if (player.getMap() != null)
             {
-                int mapId = player.getMapId();
                 await player.getMap().removePlayer(player);
-                if (MapId.isDojo(mapId))
-                {
-                    await player.getChannelServer().freeDojoSectionIfEmpty(mapId);
-                }
             }
         }
 

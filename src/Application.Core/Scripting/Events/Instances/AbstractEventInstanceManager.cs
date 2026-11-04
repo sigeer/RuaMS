@@ -12,6 +12,7 @@ using Application.Core.Server;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects.Players;
 using Application.Utility.Tickables;
+using System.Timers;
 using tools;
 using ZLinq;
 
@@ -401,14 +402,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     {
         timeStarted = EventManager.ChannelServer.Node.getCurrentTime();
 
-        if (time >= 0)
+        if (time > 0)
         {
             eventTime = time;
 
-            foreach (var chr in getPlayers())
-            {
-                await chr.SendPacket(PacketCreator.getClock((int)(time / 1000)));
-            }
+            await EventManager.Template.ShowClock(this, time);
 
             _dismissRequest = new EventInstanceTimperDismissRequest(this, timeStarted + time);
             SubTickables.Add(_dismissRequest);
@@ -424,11 +422,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
     private async Task dismissEventTimer()
     {
-        foreach (var chr in getPlayers())
-        {
-            await chr.SendPacket(PacketCreator.removeClock());
-        }
-
+        await EventManager.Template.RemoveClock(this);
 
         eventTime = 0;
         timeStarted = 0;
@@ -533,6 +527,15 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
         killCount.Clear();
         Props.Clear();
+
+        // 实例释放后会回到 AbstractEventManager 的就绪队列等待复用，
+        // 关卡进度、奖励领取记录、已开传送门都必须随实例一起重置，
+        // 否则下一次挑战会继承上一场的状态。
+        ClearedMaps.Clear();
+        rewardedChr.Clear();
+        PlayerGrid.Clear();
+        openedGates.Clear();
+        exclusiveItems.Clear();
 
         EventManager.DisposeInstance(name);
 

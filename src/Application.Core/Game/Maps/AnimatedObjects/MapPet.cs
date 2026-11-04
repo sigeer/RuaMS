@@ -38,6 +38,11 @@ namespace Application.Core.Game.Maps.AnimatedObjects
             return MapObjectType.PET;
         }
 
+        public override int GetSourceId()
+        {
+            return PetItem.getItemId();
+        }
+
         public override string GetName()
         {
             return Name;

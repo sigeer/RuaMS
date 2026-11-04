@@ -7,6 +7,8 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Events;
+using System.Timers;
+using tools;
 
 namespace Application.Core.scripting.Events.Templates
 {
@@ -103,6 +105,22 @@ namespace Application.Core.scripting.Events.Templates
                 return members;
             }
             return [];
+        }
+
+        public virtual async Task ShowClock(AbstractEventInstanceManager eim, long time)
+        {
+            foreach (var chr in eim.getPlayers())
+            {
+                await chr.SendPacket(PacketCreator.getClock((int)(time / 1000)));
+            }
+        }
+
+        public virtual async Task RemoveClock(AbstractEventInstanceManager eim)
+        {
+            foreach (var chr in eim.getPlayers())
+            {
+                await chr.SendPacket(PacketCreator.removeClock());
+            }
         }
         #region Events
         public virtual Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
@@ -329,6 +347,12 @@ namespace Application.Core.scripting.Events.Templates
         protected bool InInstanceMap(int mapId)
         {
             return ((mapId >= MinMap && mapId <= MaxMap) || IncludedMap.Contains(mapId));
+        }
+
+        public virtual Task OnMapCompleted(AbstractEventInstanceManager eim, IMap map)
+        {
+            eim.ClearedMaps[map.Id] = StageStatus.Completed;
+            return Task.CompletedTask;  
         }
         #endregion
 

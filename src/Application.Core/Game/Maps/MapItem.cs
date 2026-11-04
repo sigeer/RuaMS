@@ -212,6 +212,11 @@ public class MapItem : AbstractMapObject, ILifedTickable, IDelayedTickable
         return MapObjectType.ITEM;
     }
 
+    public override int GetSourceId()
+    {
+        return Item?.getItemId() ?? 0;
+    }
+
     public override async Task sendSpawnData(IChannelClient client)
     {
         var chr = client.OnlinedCharacter;

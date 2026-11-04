@@ -702,7 +702,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("你想离开吗？"))
             {
                 await SayNext("好的，下次见。保重。");
-                await WarpReturn();
+                await WarpOut();
             }
 
         }
@@ -3142,13 +3142,13 @@ namespace Application.Plugin.Script.Npc
                 var stage = c.CurrentServer.getStoredVar(9000049);
                 var eventStatus = stage switch
                 {
-                    1 => "EASY",
-                    2 => "MEDIUM",
-                    3 => "HARD",
-                    _ => "CLOSED"
+                    1 => "简单",
+                    2 => "中等",
+                    3 => "困难",
+                    _ => "关闭"
                 };
 
-                int selection = await AskMenu($"你好GM。\r\n当前活动是：#r{eventStatus}#k\r\n你想做什么？\r\n#b#L0#参加活动#l\r\n#L1#关闭活动#l\r\n#L2#将活动设置为简单#l\r\n#L3#将活动设置为中等#l\r\n#L4#将活动设置为困难#l");
+                int selection = await AskMenu($"你好GM。\r\n当前活动状态：#r{eventStatus}#k\r\n你想做什么？\r\n#b#L0#参加活动#l\r\n#L1#关闭活动#l\r\n#L2#将活动设置为简单#l\r\n#L3#将活动设置为中等#l\r\n#L4#将活动设置为困难#l");
 
                 if (selection == 0)
                 {
@@ -3220,34 +3220,34 @@ namespace Application.Plugin.Script.Npc
             var level = getLevel();
             if (level < 20)
             {
-                await SayOK("There is no place for you to transport to from here.");
+                await SayOK("你没有地方可以从这里过去。");
                 return;
             }
 
             var menu = "";
             if (level >= 20 && level <= 30)
             {
-                menu += "#0# Ariant Coliseum";
+                menu += "#0# 阿里安特竞技场";
             }
 
             if (level >= 25)
             {
-                menu += "#1# Mu Lung Dojo";
+                menu += "#1# 武陵道场";
             }
 
             if (level >= 30 && level <= 50)
             {
-                menu += "#2# Monster Carnival 1";
+                menu += "#2# 怪物嘉年华 1";
             }
 
             if (level >= 51 && level <= 70)
             {
-                menu += "#3# Monster Carnival 2";
+                menu += "#3# 怪物嘉年华 2";
             }
 
             int selection = await AskDimensionalMirror(menu);
 
-            getPlayer().saveLocation("MIRROR");
+            getPlayer().SaveLocation(SavedLocationType.MIRROR);
             switch (selection)
             {
                 case 0:
@@ -3257,11 +3257,11 @@ namespace Application.Plugin.Script.Npc
                     await warp(925020000, 0);
                     break;
                 case 2:
-                    getPlayer().saveLocation("MONSTER_CARNIVAL");
+                    getPlayer().SaveLocation(SavedLocationType.MONSTER_CARNIVAL);
                     await warp(980000000, 3);
                     break;
                 case 3:
-                    getPlayer().saveLocation("MONSTER_CARNIVAL");
+                    getPlayer().SaveLocation(SavedLocationType.MONSTER_CARNIVAL);
                     await warp(980030000, 3);
                     break;
             }
@@ -3649,7 +3649,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("列车启动前你想离开吗？车票将不会退款。"))
                 {
-                    await WarpReturn();
+                    await WarpOut();
                 }
             }
 
@@ -4069,7 +4069,7 @@ namespace Application.Plugin.Script.Npc
             if (await AskYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
             {
                 await SayNext("机票不可退，希望再次见到你！");
-                await WarpReturn();
+                await WarpOut();
             }
             else
             {
@@ -4097,7 +4097,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (await AskYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
                 {
-                    await WarpReturn();
+                    await WarpOut();
                 }
                 else
                 {
