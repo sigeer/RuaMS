@@ -8,14 +8,24 @@ namespace XmlWzReader.SouceGenerator
 {
     public class GeneratorScope : IDisposable
     {
-        readonly GeneratorExecutionContext _context;
+        static readonly DiagnosticDescriptor UnhandledType = new DiagnosticDescriptor(
+            "XWSG001",
+            "Unhandled property type",
+            "Property '{0}' of '{1}' has an unsupported type and was skipped",
+            "XmlWzReader.SouceGenerator",
+            DiagnosticSeverity.Warning,
+            true);
+
+        readonly SourceProductionContext _context;
+        readonly Compilation _compilation;
         readonly INamedTypeSymbol classSymbol;
 
         Dictionary<string, PropertyData> _properyMapping = new Dictionary<string, PropertyData>();
 
-        public GeneratorScope(GeneratorExecutionContext context, INamedTypeSymbol classSymbol)
+        public GeneratorScope(SourceProductionContext context, Compilation compilation, INamedTypeSymbol classSymbol)
         {
             _context = context;
+            _compilation = compilation;
             this.classSymbol = classSymbol;
         }
 
@@ -49,7 +59,7 @@ namespace XmlWzReader.SouceGenerator
 
         public void Build()
         {
-            var compilation = _context.Compilation;
+            var compilation = _compilation;
             if (classSymbol.IsAbstract)
                 return;
             var tagAttr = classSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "GenerateTagAttribute");
@@ -180,7 +190,7 @@ namespace XmlWzReader.SouceGenerator
                 else
                 {
                     // 其它情况 (泛型参数、指针等)
-                    Console.WriteLine($"未考虑到的类型：{propSymbol.Name}");
+                    _context.ReportDiagnostic(Diagnostic.Create(UnhandledType, propSymbol.Locations.FirstOrDefault(), propSymbol.Name, classSymbol.Name));
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Application.Utility.Tasks
             if (!_timeManager.TaskScheduler.ContainsKey(JobId))
                 return true;
 
-            var jobKey = JobKey.Create(JobId);
+            var jobKey = new JobKey(JobId);
             if (immediately)
                 await _timeManager.Scheduler.Interrupt(jobKey);
 

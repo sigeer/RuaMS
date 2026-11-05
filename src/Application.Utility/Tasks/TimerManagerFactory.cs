@@ -1,5 +1,5 @@
 using Application.Utility.Exceptions;
-using Quartz.Impl;
+using Quartz;
 using System.Collections.Specialized;
 
 namespace Application.Utility.Tasks
@@ -19,11 +19,12 @@ namespace Application.Utility.Tasks
                 {
                     { "quartz.scheduler.instanceName", schedulerName }
                 };
-                    var factory = new StdSchedulerFactory(properties);
-                    var scheduler = await factory.GetScheduler();
+                    var scheduler = await QuartzSchedulerBuilder.Create()
+                        .UseProperties(properties)
+                        .BuildScheduler();
 
                     var quratz = new QuartzTimerManager(scheduler);
-                    scheduler.ListenerManager.AddJobListener(new JobCompleteListener());
+                    scheduler.ListenerManager.AddJobListener(new JobCompleteListener(), new[] { Matchers.AllJobs() });
                     scheduler.ListenerManager.AddSchedulerListener(new MySchedulerListener(quratz));
 
                     await quratz.Start();

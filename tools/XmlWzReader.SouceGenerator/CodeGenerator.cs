@@ -5,24 +5,21 @@ using System.Linq;
 namespace XmlWzReader.SouceGenerator
 {
     [Generator]
-    public class CodeGenerator : ISourceGenerator
+    public class CodeGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // context.RegisterForSyntaxNotifications(() => new WZPathSyntaxReceiver());
-        }
-
-        public void Execute(GeneratorExecutionContext context)
-        {
-            //System.Diagnostics.Debugger.Launch();
-            var compilation = context.Compilation;
-
-            var aAssembly = compilation.References
-                .Select(r => compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol)
-                .FirstOrDefault(a => a?.Name == "Application.Templates");
-
-            if (aAssembly != null)
+            context.RegisterSourceOutput(context.CompilationProvider, (sourceContext, compilation) =>
             {
+                //System.Diagnostics.Debugger.Launch();
+                var aAssembly = compilation.References
+                    .Select(r => compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol)
+                    .FirstOrDefault(a => a?.Name == "Application.Templates");
+
+                if (aAssembly == null)
+                    return;
+
                 foreach (var type in aAssembly.GlobalNamespace.GetNamespaceMembers()
                              .SelectMany(ns => GetAllTypes(ns)))
                 {
@@ -34,12 +31,12 @@ namespace XmlWzReader.SouceGenerator
                         if (attr.AttributeClass?.ToDisplayString() == "Application.Templates.GenerateTagAttribute")
                         {
                             // 对 A 库类生成代码
-                            var obj = new GeneratorScope(context, type);
+                            var obj = new GeneratorScope(sourceContext, compilation, type);
                             obj.Build();
                         }
                     }
                 }
-            }
+            });
         }
 
         IEnumerable<INamedTypeSymbol> GetAllTypes(INamespaceSymbol ns)

@@ -5,22 +5,19 @@ using System.Linq;
 namespace DueyReader.SouceGenerator
 {
     [Generator]
-    public class CodeGenerator : ISourceGenerator
+    public class CodeGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-        }
-
-        public void Execute(GeneratorExecutionContext context)
-        {
-            var compilation = context.Compilation;
-
-            var aAssembly = compilation.References
-                .Select(r => compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol)
-                .FirstOrDefault(a => a?.Name == "Application.Templates");
-
-            if (aAssembly != null)
+            context.RegisterSourceOutput(context.CompilationProvider, (sourceContext, compilation) =>
             {
+                var aAssembly = compilation.References
+                    .Select(r => compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol)
+                    .FirstOrDefault(a => a?.Name == "Application.Templates");
+
+                if (aAssembly == null)
+                    return;
+
                 foreach (var type in aAssembly.GlobalNamespace.GetNamespaceMembers()
                              .SelectMany(ns => GetAllTypes(ns)))
                 {
@@ -30,12 +27,12 @@ namespace DueyReader.SouceGenerator
                     {
                         if (attr.AttributeClass?.ToDisplayString() == "Application.Templates.GenerateTagAttribute")
                         {
-                            var obj = new GeneratorScope(context, type);
+                            var obj = new GeneratorScope(sourceContext, compilation, type);
                             obj.Build();
                         }
                     }
                 }
-            }
+            });
         }
 
         IEnumerable<INamedTypeSymbol> GetAllTypes(INamespaceSymbol ns)

@@ -15,7 +15,7 @@ using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
-using server.life;
+using Application.Core.Server.life;
 using System.Drawing;
 using System.Threading.Tasks;
 using ZLinq;

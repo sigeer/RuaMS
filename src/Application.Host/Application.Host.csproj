@@ -23,6 +23,12 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
+	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+		  <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild">
+		  <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 

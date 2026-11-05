@@ -8,14 +8,24 @@ namespace DueyReader.SouceGenerator
 {
     public class GeneratorScope : IDisposable
     {
-        readonly GeneratorExecutionContext _context;
+        static readonly DiagnosticDescriptor UnhandledType = new DiagnosticDescriptor(
+            "DRSG001",
+            "Unhandled property type",
+            "Property '{0}' of '{1}' has an unsupported type and was skipped",
+            "DueyReader.SouceGenerator",
+            DiagnosticSeverity.Warning,
+            true);
+
+        readonly SourceProductionContext _context;
+        readonly Compilation _compilation;
         readonly INamedTypeSymbol classSymbol;
 
         Dictionary<string, PropertyData> _properyMapping = new Dictionary<string, PropertyData>();
 
-        public GeneratorScope(GeneratorExecutionContext context, INamedTypeSymbol classSymbol)
+        public GeneratorScope(SourceProductionContext context, Compilation compilation, INamedTypeSymbol classSymbol)
         {
             _context = context;
+            _compilation = compilation;
             this.classSymbol = classSymbol;
         }
 
@@ -47,7 +57,7 @@ namespace DueyReader.SouceGenerator
 
         public void Build()
         {
-            var compilation = _context.Compilation;
+            var compilation = _compilation;
             if (classSymbol.IsAbstract)
                 return;
             var tagAttr = classSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "GenerateTagAttribute");
@@ -170,7 +180,7 @@ namespace DueyReader.SouceGenerator
                 }
                 else
                 {
-                    Console.WriteLine($"Unhandled type: {propSymbol.Name}");
+                    _context.ReportDiagnostic(Diagnostic.Create(UnhandledType, propSymbol.Locations.FirstOrDefault(), propSymbol.Name, classSymbol.Name));
                 }
             }
         }

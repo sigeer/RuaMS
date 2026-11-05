@@ -18,13 +18,13 @@ public class QuartzTimerManager : ITimerManager
 
     public async Task Start()
     {
-        if (!Scheduler.IsStarted)
+        if (Scheduler.Status != SchedulerStatus.Running)
             await Scheduler.Start();
     }
 
     public async Task Stop()
     {
-        if (!Scheduler.IsShutdown)
+        if (Scheduler.Status != SchedulerStatus.Shutdown)
         {
             foreach (var scheduler in TaskScheduler)
             {
@@ -153,6 +153,6 @@ public class QuartzTimerManager : ITimerManager
 
     public bool isShutdown()
     {
-        return Scheduler.IsShutdown;
+        return Scheduler.Status == SchedulerStatus.Shutdown;
     }
 }
