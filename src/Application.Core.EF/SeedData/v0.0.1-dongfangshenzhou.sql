@@ -5,7 +5,7 @@
 */
 
 -- 商店NPC
-INSERT INTO `sys_shops` (`shopid`,`npcid`) VALUES (9310001,9310001),
+INSERT INTO "sys_shops" ("shopid","npcid") VALUES (9310001,9310001),
 (9310002,9310002),
 (9310003,9310003),
 (9310030,9310030),
@@ -13,7 +13,7 @@ INSERT INTO `sys_shops` (`shopid`,`npcid`) VALUES (9310001,9310001),
 (9310038,9310038);
 
 -- 商店出售物品
-INSERT INTO `sys_shopitems` (`shopid`, `itemid`, `price`, `pitch`, `position`) VALUES 
+INSERT INTO "sys_shopitems" ("shopid", "itemid", "price", "pitch", "position") VALUES 
 (9310001,1492004,75000,0,104),
 (9310001,1482004,75000,0,108),
 (9310001,1472001,20000,0,112),
@@ -277,7 +277,7 @@ WHERE dropperid IN (9600002, 9600003, 9600004, 9600005, 9600006, 9600007, 960000
   AND itemid = 0;
 
 -- 怪物物品爆率
-INSERT INTO `sys_drop_data` (`dropperid`, `itemid`, `minimum_quantity`, `maximum_quantity`, `questid`, `chance`) VALUES
+INSERT INTO "sys_drop_data" ("dropperid", "itemid", "minimum_quantity", "maximum_quantity", "questid", "chance") VALUES
 (9600001,2000001,1,1,0,800),
 (9600001,2000003,1,1,0,800),
 (9600001,4003004,1,1,0,800),

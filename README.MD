@@ -14,7 +14,7 @@
 ## 开发环境
 
 - .NET 10
-- MySQL 8（可选）
+- PostgreSQL 14+（可选）
 
 ## 构建与测试
 
@@ -71,7 +71,7 @@ dotnet build "./src/Application.Plugin.FakeCharacter/Application.Plugin.FakeChar
 ### 数据库
 
 - **SQLite**（默认）
-- **MySQL 8**（可选，通过 Pomelo.EntityFrameworkCore.MySql 驱动）
+- **PostgreSQL 14+**（可选，通过 Npgsql.EntityFrameworkCore.PostgreSQL 驱动）
 - 通过 `appsettings.json` 中的 `Database` 配置切换
 - 环境变量使用 `RUA_MS_` 前缀可覆盖任意配置项
 
@@ -87,7 +87,7 @@ src/
 ├── Application.Core.Login/               — Master 服务器：登录处理、世界/频道注册
 ├── Application.Core.Channel.InProgress/  — 单进程模式下进程内运行 Channel 的实现
 ├── Application.Core.EF/                  — EF Core 数据层抽象
-│   ├── Application.Core.EF.MySQL/        — MySQL 驱动，含迁移文件和种子数据
+│   ├── Application.Core.EF.PostgreSQL/   — PostgreSQL 驱动，含迁移文件和种子数据
 │   └── Application.Core.EF.Sqlite/       — SQLite 驱动，含迁移文件和种子数据
 ├── Application.Shared/                   — 公共数据结构、类型、常量、网络包、DTO
 ├── Application.Utility/                  — 工具类（Serilog 日志、Quartz 调度、AutoMapper 映射、扩展方法）
@@ -160,7 +160,7 @@ C# 重写版本在 `Application.Plugin.Script` 中，需单独 `dotnet build`，
 ### 支持数据库
 
 - **SQLite（默认）**
-- **MySQL 8**
+- **PostgreSQL 14+**
 
 ### 部分功能需要修改的配置
 
@@ -203,9 +203,9 @@ sigeer/ruams-standalone
 
 # 环境变量中使用 RUA_MS_ 前缀即可覆盖相应配置文件的值
 
-# 使用 MySQL 需要设置数据库类型及连接字符串
--e "RUA_MS_Database=MySql" \
--e "RUA_MS_ConnectionStrings__MySql=" \
+# 使用 PostgreSQL 需要设置数据库类型及连接字符串
+-e "RUA_MS_Database=PostgreSQL" \
+-e "RUA_MS_ConnectionStrings__PostgreSQL=" \
 
 # 公网运行需要修改 ChannelServerConfig.ServerHost
 -e "RUA_MS_ChannelServerConfig__ServerHost=" \

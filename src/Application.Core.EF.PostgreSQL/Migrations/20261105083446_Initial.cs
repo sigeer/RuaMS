@@ -1,10 +1,11 @@
-using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Application.Core.EF;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Application.Core.EF.MySQL.Migrations
+namespace Application.Core.EF.PostgreSQL.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -12,266 +13,177 @@ namespace Application.Core.EF.MySQL.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+            // 账号名/邮箱/密码需要忽略大小写匹配。PostgreSQL 12+ 可以用 ICU 第 2 级比较规则
+            // 声明非确定性排序规则，无需安装 citext 等扩展。
+            // 注意：非确定性排序规则不支持 LIKE，模糊匹配需用 ILIKE。
+            migrationBuilder.Sql(
+                $"CREATE COLLATION IF NOT EXISTS {DbColumnTypes.PostgreSqlCaseInsensitiveCollation} " +
+                "(provider = icu, locale = 'und-u-ks-level2', deterministic = false);");
 
             migrationBuilder.CreateTable(
                 name: "account_ban",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AccountId = table.Column<int>(type: "int", nullable: false),
-                    StartTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    EndTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    BanLevel = table.Column<int>(type: "int", nullable: false),
-                    Reason = table.Column<sbyte>(type: "tinyint", nullable: false),
-                    ReasonDescription = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    StartTime = table.Column<long>(type: "bigint", nullable: false),
+                    EndTime = table.Column<long>(type: "bigint", nullable: false),
+                    BanLevel = table.Column<int>(type: "integer", nullable: false),
+                    Reason = table.Column<short>(type: "smallint", nullable: false),
+                    ReasonDescription = table.Column<string>(type: "text", nullable: false),
+                    OperateAccountId = table.Column<int>(type: "integer", nullable: false),
+                    AuditAccountId = table.Column<int>(type: "integer", nullable: false),
+                    Canceled = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("account_ban_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "account_bindings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AccountId = table.Column<int>(type: "int", nullable: false),
-                    IP = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    MAC = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    HWID = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    LastActiveTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    IP = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValueSql: "''"),
+                    MAC = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValueSql: "''"),
+                    HWID = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false, defaultValueSql: "''"),
+                    LastActiveTime = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("account_bindings_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "accounts",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(13)", maxLength: 13, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    password = table.Column<string>(type: "varchar(128)", maxLength: 128, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    pin = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    pic = table.Column<string>(type: "varchar(26)", maxLength: 26, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    createdat = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false, defaultValueSql: "''", collation: "case_insensitive"),
+                    password = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false, defaultValueSql: "''", collation: "case_insensitive"),
+                    pin = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false, defaultValueSql: "''"),
+                    pic = table.Column<string>(type: "character varying(26)", maxLength: 26, nullable: false, defaultValueSql: "''"),
+                    createdat = table.Column<long>(type: "bigint", nullable: false),
                     birthday = table.Column<DateTime>(type: "date", nullable: false, defaultValueSql: "'2005-05-11'"),
                     nxCredit = table.Column<int>(type: "int", nullable: false),
                     maplePoint = table.Column<int>(type: "int", nullable: false),
                     nxPrepaid = table.Column<int>(type: "int", nullable: false),
-                    characterslots = table.Column<sbyte>(type: "tinyint", nullable: false, defaultValueSql: "'3'"),
-                    gender = table.Column<sbyte>(type: "tinyint", nullable: false, defaultValueSql: "'10'"),
-                    tos = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    gmlevel = table.Column<sbyte>(type: "tinyint", nullable: false, defaultValueSql: "'0'"),
-                    nick = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    email = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Blob = table.Column<byte[]>(type: "MEDIUMBLOB", nullable: false)
+                    characterslots = table.Column<short>(type: "smallint", nullable: false, defaultValueSql: "'3'"),
+                    gender = table.Column<short>(type: "smallint", nullable: false, defaultValueSql: "'10'"),
+                    tos = table.Column<bool>(type: "boolean", nullable: false),
+                    gmlevel = table.Column<short>(type: "smallint", nullable: false, defaultValueSql: "'0'"),
+                    nick = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    email = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true, collation: "case_insensitive"),
+                    Blob = table.Column<byte[]>(type: "bytea", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("accounts_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "alliance",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(13)", maxLength: 13, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    capacity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'2'"),
-                    notice = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank1 = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false, defaultValueSql: "'Master'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank2 = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false, defaultValueSql: "'Jr. Master'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank3 = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank4 = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank5 = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    capacity = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "'2'"),
+                    notice = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValueSql: "''"),
+                    rank1 = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false, defaultValueSql: "'Master'"),
+                    rank2 = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false, defaultValueSql: "'Jr. Master'"),
+                    rank3 = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'"),
+                    rank4 = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'"),
+                    rank5 = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false, defaultValueSql: "'Member'")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("alliance_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "bbs_replies",
                 columns: table => new
                 {
-                    replyid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    replyid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     threadid = table.Column<int>(type: "int", nullable: false),
                     postercid = table.Column<int>(type: "int", nullable: false),
                     timestamp = table.Column<long>(type: "bigint", nullable: false),
-                    content = table.Column<string>(type: "varchar(26)", maxLength: 26, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    content = table.Column<string>(type: "character varying(26)", maxLength: 26, nullable: false, defaultValueSql: "''")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.replyid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("bbs_replies_pkey", x => x.replyid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "bbs_threads",
                 columns: table => new
                 {
-                    threadid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    threadid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     postercid = table.Column<int>(type: "int", nullable: false),
-                    name = table.Column<string>(type: "varchar(26)", maxLength: 26, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    name = table.Column<string>(type: "character varying(26)", maxLength: 26, nullable: false, defaultValueSql: "''"),
                     timestamp = table.Column<long>(type: "bigint", nullable: false),
                     icon = table.Column<short>(type: "smallint", nullable: false),
                     replycount = table.Column<short>(type: "smallint", nullable: false),
-                    startpost = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    startpost = table.Column<string>(type: "text", nullable: false),
                     guildid = table.Column<int>(type: "int", nullable: false),
                     localthreadid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.threadid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("bbs_threads_pkey", x => x.threadid);
+                });
 
             migrationBuilder.CreateTable(
-                name: "bosslog_daily",
+                name: "boss_log",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    characterid = table.Column<int>(type: "int", nullable: false),
-                    bosstype = table.Column<string>(type: "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    attempttime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CharacterId = table.Column<int>(type: "int", nullable: false),
+                    BossType = table.Column<string>(type: "varchar(20)", nullable: false),
+                    Flag = table.Column<int>(type: "int", nullable: false),
+                    Time = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "bosslog_weekly",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    characterid = table.Column<int>(type: "int", nullable: false),
-                    bosstype = table.Column<string>(type: "enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    attempttime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "cdk_codes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Code = table.Column<string>(type: "varchar(17)", maxLength: 17, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Expiration = table.Column<long>(type: "bigint", nullable: false),
-                    MaxCount = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "cdk_items",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CodeId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'5'"),
-                    ItemId = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'4000000'"),
-                    Quantity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "cdk_records",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CodeId = table.Column<int>(type: "int", nullable: false),
-                    RecipientId = table.Column<int>(type: "int", nullable: false),
-                    RecipientTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("boss_log_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "characterexplogs",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     charid = table.Column<int>(type: "int", nullable: false),
                     world_exp_rate = table.Column<int>(type: "int", nullable: false),
                     exp_coupon = table.Column<int>(type: "int", nullable: false),
                     gained_exp = table.Column<long>(type: "bigint", nullable: false),
                     current_exp = table.Column<int>(type: "int", nullable: false),
-                    exp_gain_time = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    exp_gain_time = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("characterexplogs_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "characters",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     accountid = table.Column<int>(type: "int", nullable: false),
-                    name = table.Column<string>(type: "varchar(13)", maxLength: 13, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    name = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false, defaultValueSql: "''"),
                     level = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
                     exp = table.Column<int>(type: "int", nullable: false),
                     gachaexp = table.Column<int>(type: "int", nullable: false),
@@ -293,12 +205,11 @@ namespace Application.Core.EF.MySQL.Migrations
                     hair = table.Column<int>(type: "int", nullable: false),
                     face = table.Column<int>(type: "int", nullable: false),
                     ap = table.Column<int>(type: "int", nullable: false),
-                    sp = table.Column<string>(type: "varchar(128)", maxLength: 128, nullable: false, defaultValueSql: "'0,0,0,0,0,0,0,0,0,0'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    sp = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false, defaultValueSql: "'0,0,0,0,0,0,0,0,0,0'"),
                     map = table.Column<int>(type: "int", nullable: false),
                     spawnpoint = table.Column<int>(type: "int", nullable: false),
                     buddyCapacity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'25'"),
-                    createdate = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    createdate = table.Column<long>(type: "bigint", nullable: false),
                     rank = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
                     rankMove = table.Column<int>(type: "int", nullable: false),
                     jobRank = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
@@ -325,246 +236,274 @@ namespace Application.Core.EF.MySQL.Migrations
                     ariantPoints = table.Column<int>(type: "int", nullable: false),
                     dojoPoints = table.Column<int>(type: "int", nullable: false),
                     lastDojoStage = table.Column<int>(type: "int", nullable: false),
-                    finishedDojoTutorial = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    finishedDojoTutorial = table.Column<bool>(type: "boolean", nullable: false),
                     vanquisherKills = table.Column<int>(type: "int", nullable: false),
                     summonValue = table.Column<int>(type: "int", nullable: false),
                     PQPoints = table.Column<int>(type: "int", nullable: false),
-                    dataString = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    lastLogoutTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "'2015-01-01 05:00:00'"),
-                    lastExpGainTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "'2015-01-01 05:00:00'"),
-                    partySearch = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
+                    dataString = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false, defaultValueSql: "''"),
+                    lastLogoutTime = table.Column<long>(type: "bigint", nullable: false),
+                    lastExpGainTime = table.Column<long>(type: "bigint", nullable: false),
+                    partySearch = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     jailexpire = table.Column<long>(type: "bigint", nullable: false),
-                    HpAlert = table.Column<int>(type: "int", nullable: false),
-                    MpAlert = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Blob = table.Column<byte[]>(type: "MEDIUMBLOB", nullable: false)
+                    HpAlert = table.Column<int>(type: "integer", nullable: false),
+                    MpAlert = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Blob = table.Column<byte[]>(type: "bytea", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("characters_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "dueypackages",
                 columns: table => new
                 {
-                    PackageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ReceiverId = table.Column<int>(type: "int", nullable: false),
                     SenderId = table.Column<int>(type: "int", nullable: false),
                     Mesos = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'0'"),
-                    CreateTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "'2015-01-01 05:00:00'"),
-                    Message = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    HasNotified = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false),
-                    Type = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false),
-                    ItemBlob = table.Column<byte[]>(type: "MEDIUMBLOB", nullable: true),
-                    ClaimTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true)
+                    CreateTime = table.Column<long>(type: "bigint", nullable: false),
+                    Message = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    HasNotified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    Type = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    ItemBlob = table.Column<byte[]>(type: "bytea", nullable: true),
+                    ClaimTime = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.PackageId);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("dueypackages_pkey", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ex_reward_codes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Code = table.Column<string>(type: "character varying(17)", maxLength: 17, nullable: true),
+                    StartTime = table.Column<long>(type: "bigint", nullable: false),
+                    EndTime = table.Column<long>(type: "bigint", nullable: true),
+                    MaxCount = table.Column<int>(type: "int", nullable: false),
+                    AccountOnce = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("ex_reward_codes_pkey", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ex_reward_items",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CodeId = table.Column<int>(type: "int", nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("ex_reward_items_pkey", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ex_reward_records",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CodeId = table.Column<int>(type: "int", nullable: false),
+                    RecipientId = table.Column<int>(type: "int", nullable: false),
+                    RecipientTime = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("ex_reward_records_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "family_entitlement",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     charid = table.Column<int>(type: "int", nullable: false),
                     entitlementid = table.Column<int>(type: "int", nullable: false),
                     timestamp = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("family_entitlement_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "fredstorage",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     cid = table.Column<int>(type: "int", nullable: false),
                     daynotes = table.Column<int>(type: "int", nullable: false),
                     meso = table.Column<int>(type: "int", nullable: false),
                     itemMeso = table.Column<long>(type: "bigint", nullable: false),
-                    ItemsBlob = table.Column<byte[]>(type: "MEDIUMBLOB", nullable: false),
-                    timestamp = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    ItemsBlob = table.Column<byte[]>(type: "bytea", nullable: false),
+                    timestamp = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("fredstorage_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "gifts",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     toId = table.Column<int>(type: "int", nullable: false),
                     fromId = table.Column<int>(type: "int", nullable: false),
-                    message = table.Column<string>(type: "tinytext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    message = table.Column<string>(type: "text", nullable: false),
                     sn = table.Column<int>(type: "int", nullable: false),
-                    ringSourceId = table.Column<int>(type: "int", nullable: false)
+                    ringSourceId = table.Column<int>(type: "int", nullable: false),
+                    ClaimTime = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("gifts_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "guilds",
                 columns: table => new
                 {
-                    guildid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    guildid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     leader = table.Column<int>(type: "int", nullable: false),
                     GP = table.Column<int>(type: "int", nullable: false),
                     logo = table.Column<int>(type: "int", nullable: false),
                     logoColor = table.Column<short>(type: "smallint", nullable: false),
-                    name = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank1title = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false, defaultValueSql: "'Master'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank2title = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false, defaultValueSql: "'Jr. Master'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank3title = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank4title = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    rank5title = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    name = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false),
+                    rank1title = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false, defaultValueSql: "'Master'"),
+                    rank2title = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false, defaultValueSql: "'Jr. Master'"),
+                    rank3title = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'"),
+                    rank4title = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'"),
+                    rank5title = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false, defaultValueSql: "'Member'"),
                     capacity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'10'"),
                     logoBG = table.Column<int>(type: "int", nullable: false),
                     logoBGColor = table.Column<short>(type: "smallint", nullable: false),
-                    notice = table.Column<string>(type: "varchar(101)", maxLength: 101, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    notice = table.Column<string>(type: "character varying(101)", maxLength: 101, nullable: true),
                     signature = table.Column<int>(type: "int", nullable: false),
                     allianceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.guildid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("guilds_pkey", x => x.guildid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "hwidaccounts",
                 columns: table => new
                 {
-                    accountid = table.Column<int>(type: "int", nullable: false),
-                    hwid = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    relevance = table.Column<sbyte>(type: "tinyint", nullable: false),
-                    expiresat = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    accountid = table.Column<int>(type: "integer", nullable: false),
+                    hwid = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false, defaultValueSql: "''"),
+                    relevance = table.Column<short>(type: "smallint", nullable: false),
+                    expiresat = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => new { x.accountid, x.hwid });
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("hwidaccounts_pkey", x => new { x.accountid, x.hwid });
+                });
 
             migrationBuilder.CreateTable(
                 name: "hwidbans",
                 columns: table => new
                 {
-                    hwidbanid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    hwid = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    AccountId = table.Column<int>(type: "int", nullable: false)
+                    hwidbanid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    hwid = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    LinkedBanId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.hwidbanid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("hwidbans_pkey", x => x.hwidbanid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "ipbans",
                 columns: table => new
                 {
-                    ipbanid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ip = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    aid = table.Column<int>(type: "int", nullable: false)
+                    ipbanid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ip = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false, defaultValueSql: "''"),
+                    aid = table.Column<int>(type: "integer", nullable: false),
+                    LinkedBanId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.ipbanid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("ipbans_pkey", x => x.ipbanid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "macbans",
                 columns: table => new
                 {
-                    macbanid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    mac = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    aid = table.Column<int>(type: "int", nullable: false)
+                    macbanid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    mac = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    aid = table.Column<int>(type: "integer", nullable: false),
+                    LinkedBanId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.macbanid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("macbans_pkey", x => x.macbanid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "marriages",
                 columns: table => new
                 {
-                    marriageid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    marriageid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     husbandid = table.Column<int>(type: "int", nullable: false),
                     wifeid = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    Time0 = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
-                    Time1 = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true),
-                    Time2 = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true),
-                    RingSourceId = table.Column<int>(type: "int", nullable: false),
-                    EngagementItemId = table.Column<int>(type: "int", nullable: false)
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Time0 = table.Column<long>(type: "bigint", nullable: false),
+                    Time1 = table.Column<long>(type: "bigint", nullable: true),
+                    Time2 = table.Column<long>(type: "bigint", nullable: true),
+                    RingSourceId = table.Column<int>(type: "integer", nullable: false),
+                    EngagementItemId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.marriageid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("marriages_pkey", x => x.marriageid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "mts_cart",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     cid = table.Column<int>(type: "int", nullable: false),
                     itemid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("mts_cart_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "mts_items",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     tab = table.Column<int>(type: "int", nullable: false),
                     type = table.Column<int>(type: "int", nullable: false),
                     itemid = table.Column<int>(type: "int", nullable: false),
@@ -596,95 +535,82 @@ namespace Application.Core.EF.MySQL.Migrations
                     jump = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'0'"),
                     locked = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'0'"),
                     isequip = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'0'"),
-                    owner = table.Column<string>(type: "varchar(16)", maxLength: 16, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    sellername = table.Column<string>(type: "varchar(16)", maxLength: 16, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    sell_ends = table.Column<string>(type: "varchar(16)", maxLength: 16, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    owner = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false, defaultValueSql: "''"),
+                    sellername = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    sell_ends = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     transfer = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'0'"),
                     vicious = table.Column<int>(type: "int", nullable: false),
                     flag = table.Column<int>(type: "int", nullable: false),
                     expiration = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "'-1'"),
-                    giftFrom = table.Column<string>(type: "varchar(26)", maxLength: 26, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    giftFrom = table.Column<string>(type: "character varying(26)", maxLength: 26, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("mts_items_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "namechanges",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     characterid = table.Column<int>(type: "int", nullable: false),
-                    old = table.Column<string>(type: "varchar(13)", maxLength: 13, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    @new = table.Column<string>(name: "new", type: "varchar(13)", maxLength: 13, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    requestTime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    completionTime = table.Column<DateTime>(type: "timestamp", nullable: true)
+                    old = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    @new = table.Column<string>(name: "new", type: "character varying(13)", maxLength: 13, nullable: false),
+                    requestTime = table.Column<long>(type: "bigint", nullable: false),
+                    completionTime = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("namechanges_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "newyear",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     senderid = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'-1'"),
                     receiverid = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'-1'"),
-                    message = table.Column<string>(type: "varchar(120)", maxLength: 120, nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    senderdiscard = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    receiverdiscard = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    received = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    message = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false, defaultValueSql: "''"),
+                    senderdiscard = table.Column<bool>(type: "boolean", nullable: false),
+                    receiverdiscard = table.Column<bool>(type: "boolean", nullable: false),
+                    received = table.Column<bool>(type: "boolean", nullable: false),
                     timesent = table.Column<long>(type: "bigint", nullable: false),
                     timereceived = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("newyear_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "notes",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     toId = table.Column<int>(type: "int", nullable: false),
                     fromId = table.Column<int>(type: "int", nullable: false),
-                    message = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    message = table.Column<string>(type: "text", nullable: false),
                     timestamp = table.Column<long>(type: "bigint", nullable: false),
                     fame = table.Column<int>(type: "int", nullable: false),
-                    deleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    deleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("notes_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "playernpcs",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(13)", maxLength: 13, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
                     hair = table.Column<int>(type: "int", nullable: false),
                     face = table.Column<int>(type: "int", nullable: false),
                     skin = table.Column<int>(type: "int", nullable: false),
@@ -705,16 +631,15 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("playernpcs_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "playernpcs_equip",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     npcid = table.Column<int>(type: "int", nullable: false),
                     equipid = table.Column<int>(type: "int", nullable: false),
                     type = table.Column<int>(type: "int", nullable: false),
@@ -722,38 +647,35 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("playernpcs_equip_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "playernpcs_field",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     world = table.Column<int>(type: "int", nullable: false),
                     map = table.Column<int>(type: "int", nullable: false),
-                    step = table.Column<sbyte>(type: "tinyint", nullable: false, defaultValueSql: "'0'"),
+                    step = table.Column<short>(type: "smallint", nullable: false, defaultValueSql: "'0'"),
                     podium = table.Column<short>(type: "smallint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("playernpcs_field_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "plife",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     world = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'-1'"),
                     map = table.Column<int>(type: "int", nullable: false),
                     life = table.Column<int>(type: "int", nullable: false),
-                    type = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: false, defaultValueSql: "'n'")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    type = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: false, defaultValueSql: "'n'"),
                     cy = table.Column<int>(type: "int", nullable: false),
                     f = table.Column<int>(type: "int", nullable: false),
                     fh = table.Column<int>(type: "int", nullable: false),
@@ -767,38 +689,34 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("plife_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "reports",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    reporttime = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    reporttime = table.Column<long>(type: "bigint", nullable: false),
                     reporterid = table.Column<int>(type: "int", nullable: false),
                     victimid = table.Column<int>(type: "int", nullable: false),
-                    reason = table.Column<sbyte>(type: "tinyint", nullable: false),
-                    chatlog = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    description = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    reason = table.Column<short>(type: "smallint", nullable: false),
+                    chatlog = table.Column<string>(type: "text", nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
+                    Processed = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("reports_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "rings",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     itemid = table.Column<int>(type: "int", nullable: false),
                     ringId1 = table.Column<long>(type: "bigint", nullable: false),
                     ringId2 = table.Column<long>(type: "bigint", nullable: false),
@@ -807,16 +725,15 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("rings_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_drop_data",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     dropperid = table.Column<int>(type: "int", nullable: false),
                     itemid = table.Column<int>(type: "int", nullable: false),
                     minimum_quantity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
@@ -826,101 +743,93 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_drop_data_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_drop_data_global",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    continent = table.Column<sbyte>(type: "tinyint", nullable: false, defaultValueSql: "'-1'"),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    continent = table.Column<short>(type: "smallint", nullable: false, defaultValueSql: "'-1'"),
                     itemid = table.Column<int>(type: "int", nullable: false),
                     minimum_quantity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
                     maximum_quantity = table.Column<int>(type: "int", nullable: false, defaultValueSql: "'1'"),
                     questid = table.Column<int>(type: "int", nullable: false),
                     chance = table.Column<int>(type: "int", nullable: false),
-                    comments = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    comments = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_drop_data_global_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_gachapon_pool",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    NpcId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NpcId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "varchar(50)", nullable: false, defaultValueSql: "''")
-                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_gachapon_pool_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_gachapon_pool_item",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PoolId = table.Column<int>(type: "int", nullable: false),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Level = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PoolId = table.Column<int>(type: "integer", nullable: false),
+                    ItemId = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_gachapon_pool_item_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_gachapon_pool_level_chance",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PoolId = table.Column<int>(type: "int", nullable: false),
-                    Level = table.Column<int>(type: "int", nullable: false),
-                    Chance = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PoolId = table.Column<int>(type: "integer", nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    Chance = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_gachapon_pool_level_chance_pkey", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_monstercarddata",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     cardid = table.Column<int>(type: "int", nullable: false),
                     mobid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_monstercarddata_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_reactordrops",
                 columns: table => new
                 {
-                    reactordropid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    reactordropid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     reactorid = table.Column<int>(type: "int", nullable: false),
                     itemid = table.Column<int>(type: "int", nullable: false),
                     chance = table.Column<int>(type: "int", nullable: false),
@@ -928,16 +837,15 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.reactordropid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_reactordrops_pkey", x => x.reactordropid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_shopitems",
                 columns: table => new
                 {
-                    shopitemid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    shopitemid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     shopid = table.Column<int>(type: "int", nullable: false),
                     itemid = table.Column<int>(type: "int", nullable: false),
                     price = table.Column<int>(type: "int", nullable: false),
@@ -946,66 +854,61 @@ namespace Application.Core.EF.MySQL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.shopitemid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_shopitems_pkey", x => x.shopitemid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_shops",
                 columns: table => new
                 {
-                    shopid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    shopid = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     npcid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.shopid);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_shops_pkey", x => x.shopid);
+                });
 
             migrationBuilder.CreateTable(
                 name: "sys_specialcashitems",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     sn = table.Column<int>(type: "int", nullable: false),
                     modifier = table.Column<int>(type: "int", nullable: false, comment: "1024 is add/remove"),
                     info = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                    table.PrimaryKey("sys_specialcashitems_pkey", x => x.id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "family_character",
                 columns: table => new
                 {
-                    cid = table.Column<int>(type: "int", nullable: false),
+                    cid = table.Column<int>(type: "integer", nullable: false),
                     familyid = table.Column<int>(type: "int", nullable: false),
                     seniorid = table.Column<int>(type: "int", nullable: false),
                     reputation = table.Column<int>(type: "int", nullable: false),
                     todaysrep = table.Column<int>(type: "int", nullable: false),
                     totalreputation = table.Column<int>(type: "int", nullable: false),
                     reptosenior = table.Column<int>(type: "int", nullable: false),
-                    precepts = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    precepts = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     lastresettime = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => x.cid);
+                    table.PrimaryKey("family_character_pkey", x => x.cid);
                     table.ForeignKey(
                         name: "family_character_ibfk_1",
                         column: x => x.cid,
                         principalTable: "characters",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateIndex(
                 name: "accountid",
@@ -1039,22 +942,6 @@ namespace Application.Core.EF.MySQL.Migrations
                 column: "name");
 
             migrationBuilder.CreateIndex(
-                name: "idx_code",
-                table: "cdk_codes",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "idx_code2",
-                table: "cdk_items",
-                column: "CodeId");
-
-            migrationBuilder.CreateIndex(
-                name: "idx_code1",
-                table: "cdk_records",
-                column: "CodeId");
-
-            migrationBuilder.CreateIndex(
                 name: "accountid2",
                 table: "characters",
                 column: "accountid");
@@ -1068,6 +955,22 @@ namespace Application.Core.EF.MySQL.Migrations
                 name: "ranking1",
                 table: "characters",
                 columns: new[] { "level", "exp" });
+
+            migrationBuilder.CreateIndex(
+                name: "idx_cdk_codes_code",
+                table: "ex_reward_codes",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "idx_cdk_items_code",
+                table: "ex_reward_items",
+                column: "CodeId");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_code_records",
+                table: "ex_reward_records",
+                column: "CodeId");
 
             migrationBuilder.CreateIndex(
                 name: "cid",
@@ -1140,11 +1043,75 @@ namespace Application.Core.EF.MySQL.Migrations
                 column: "reactorid");
 
             var sqlDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SeedData");
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, "v0.0.1-data_mob_drop.sql")));
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, "v0.0.1-data_shop.sql")));
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, "v0.0.1-data_other.sql")));
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, "v0.0.1-gachapon.sql")));
-            migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, "v0.0.1-dongfangshenzhou.sql")));
+            void RunSeed(string script) =>
+                migrationBuilder.Sql(File.ReadAllText(Path.Combine(sqlDir, script)));
+
+            // 种子脚本用显式 id 插入数据，PostgreSQL 的 identity 序列不会随之推进，
+            // 需在插入后手动校准，否则后续不带 id 的 INSERT 会撞主键。
+            void ResetSequences()
+            {
+                foreach (var (table, column) in new[]
+                {
+                ("account_ban", "Id"),
+                ("account_bindings", "Id"),
+                ("accounts", "id"),
+                ("alliance", "id"),
+                ("bbs_replies", "replyid"),
+                ("bbs_threads", "threadid"),
+                ("boss_log", "id"),
+                ("characterexplogs", "id"),
+                ("characters", "id"),
+                ("dueypackages", "Id"),
+                ("ex_reward_codes", "Id"),
+                ("ex_reward_items", "Id"),
+                ("ex_reward_records", "Id"),
+                ("family_entitlement", "id"),
+                ("fredstorage", "id"),
+                ("gifts", "id"),
+                ("guilds", "guildid"),
+                ("hwidbans", "hwidbanid"),
+                ("ipbans", "ipbanid"),
+                ("macbans", "macbanid"),
+                ("marriages", "marriageid"),
+                ("mts_cart", "id"),
+                ("mts_items", "id"),
+                ("namechanges", "id"),
+                ("newyear", "id"),
+                ("notes", "id"),
+                ("playernpcs", "id"),
+                ("playernpcs_equip", "id"),
+                ("playernpcs_field", "id"),
+                ("plife", "id"),
+                ("reports", "id"),
+                ("rings", "id"),
+                ("sys_drop_data", "id"),
+                ("sys_drop_data_global", "id"),
+                ("sys_gachapon_pool", "Id"),
+                ("sys_gachapon_pool_item", "Id"),
+                ("sys_gachapon_pool_level_chance", "Id"),
+                ("sys_monstercarddata", "id"),
+                ("sys_reactordrops", "reactordropid"),
+                ("sys_shopitems", "shopitemid"),
+                ("sys_shops", "shopid"),
+                ("sys_specialcashitems", "id")
+                })
+                {
+                    migrationBuilder.Sql(
+                        $"SELECT setval(pg_get_serial_sequence('\"{table}\"', '{column}'), " +
+                        $"COALESCE((SELECT MAX(\"{column}\") FROM \"{table}\"), 1));");
+                }
+            }
+
+            RunSeed("v0.0.1-data_mob_drop.sql");
+            RunSeed("v0.0.1-data_shop.sql");
+            RunSeed("v0.0.1-data_other.sql");
+            RunSeed("v0.0.1-gachapon.sql");
+
+            // dongfangshenzhou 含不带 id 的 INSERT INTO sys_shopitems，
+            // 必须先校准序列再执行，否则与已插入的数据撞主键。
+            ResetSequences();
+            RunSeed("v0.0.1-dongfangshenzhou.sql");
+            ResetSequences();
         }
 
         /// <inheritdoc />
@@ -1169,25 +1136,22 @@ namespace Application.Core.EF.MySQL.Migrations
                 name: "bbs_threads");
 
             migrationBuilder.DropTable(
-                name: "bosslog_daily");
-
-            migrationBuilder.DropTable(
-                name: "bosslog_weekly");
-
-            migrationBuilder.DropTable(
-                name: "cdk_codes");
-
-            migrationBuilder.DropTable(
-                name: "cdk_items");
-
-            migrationBuilder.DropTable(
-                name: "cdk_records");
+                name: "boss_log");
 
             migrationBuilder.DropTable(
                 name: "characterexplogs");
 
             migrationBuilder.DropTable(
                 name: "dueypackages");
+
+            migrationBuilder.DropTable(
+                name: "ex_reward_codes");
+
+            migrationBuilder.DropTable(
+                name: "ex_reward_items");
+
+            migrationBuilder.DropTable(
+                name: "ex_reward_records");
 
             migrationBuilder.DropTable(
                 name: "family_character");

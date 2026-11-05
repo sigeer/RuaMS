@@ -1,10 +1,10 @@
-/*Data for the table `sys_gachapon_pool` */
+/*Data for the table "sys_gachapon_pool" */
 
-insert  into `sys_gachapon_pool`(`Id`,`NpcId`,`Name`) values (1,-1,'Global'),(2,9100100,'Henesys'),(3,9100101,'Ellinia'),(4,9100102,'Perion'),(5,9100103,'Kerning City'),(6,9100104,'Sleepywood'),(7,9100105,'Mushroom Shrine'),(8,9100106,'Showa Spa Male'),(9,9100107,'Showa Spa Female'),(10,9100108,'Ludibrium'),(11,9100109,'New Leaf City'),(12,9100110,'ElNath'),(13,9100117,'Nautilus Harbor');
+insert  into "sys_gachapon_pool"("Id","NpcId","Name") values (1,-1,'Global'),(2,9100100,'Henesys'),(3,9100101,'Ellinia'),(4,9100102,'Perion'),(5,9100103,'Kerning City'),(6,9100104,'Sleepywood'),(7,9100105,'Mushroom Shrine'),(8,9100106,'Showa Spa Male'),(9,9100107,'Showa Spa Female'),(10,9100108,'Ludibrium'),(11,9100109,'New Leaf City'),(12,9100110,'ElNath'),(13,9100117,'Nautilus Harbor');
 
-/*Data for the table `sys_gachapon_pool` */
+/*Data for the table "sys_gachapon_pool" */
 
-INSERT INTO `sys_gachapon_pool_item`(`Id`,`PoolId`,`ItemId`,`Level`, `Quantity`) VALUES
+INSERT INTO "sys_gachapon_pool_item"("Id","PoolId","ItemId","Level", "Quantity") VALUES
 (1,1,2000004,0,100),
 (2,1,2000005,0,100),
 (3,1,2001002,0,100),
@@ -1693,7 +1693,7 @@ INSERT INTO `sys_gachapon_pool_item`(`Id`,`PoolId`,`ItemId`,`Level`, `Quantity`)
 (1686,13,2040815,1,1),
 (1687,13,2101001,1,1);
 
-/*Data for the table `sys_gachapon_pool` */
+/*Data for the table "sys_gachapon_pool" */
 
-insert  into `sys_gachapon_pool_level_chance`(`Id`,`PoolId`,`Level`,`Chance`) values (1,1,0,90),(2,1,1,8),(3,1,2,2),(4,2,0,90),(5,2,1,8),(6,2,2,2),(7,3,0,90),(8,3,1,8),(9,3,2,2),(10,4,0,90),(11,4,1,8),(12,4,2,2),(13,5,0,90),(14,5,1,8),(15,5,2,2),(16,6,0,90),(17,6,1,8),(18,6,2,2),(19,7,0,90),(20,7,1,8),(21,7,2,2),(22,8,0,90),(23,8,1,8),(24,8,2,2),(25,9,0,90),(26,9,1,8),(27,9,2,2),(28,10,0,90),(29,10,1,8),(30,10,2,2),(31,11,0,90),(32,11,1,8),(33,11,2,2),(34,12,0,90),(35,12,1,8),(36,12,2,2),(37,13,0,90),(38,13,1,8),(39,13,2,2);
+insert  into "sys_gachapon_pool_level_chance"("Id","PoolId","Level","Chance") values (1,1,0,90),(2,1,1,8),(3,1,2,2),(4,2,0,90),(5,2,1,8),(6,2,2,2),(7,3,0,90),(8,3,1,8),(9,3,2,2),(10,4,0,90),(11,4,1,8),(12,4,2,2),(13,5,0,90),(14,5,1,8),(15,5,2,2),(16,6,0,90),(17,6,1,8),(18,6,2,2),(19,7,0,90),(20,7,1,8),(21,7,2,2),(22,8,0,90),(23,8,1,8),(24,8,2,2),(25,9,0,90),(26,9,1,8),(27,9,2,2),(28,10,0,90),(29,10,1,8),(30,10,2,2),(31,11,0,90),(32,11,1,8),(33,11,2,2),(34,12,0,90),(35,12,1,8),(36,12,2,2),(37,13,0,90),(38,13,1,8),(39,13,2,2);
 

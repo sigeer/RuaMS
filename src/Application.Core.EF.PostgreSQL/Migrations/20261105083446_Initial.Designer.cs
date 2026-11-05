@@ -3,16 +3,16 @@ using System;
 using Application.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Application.Core.EF.MySQL.Migrations
+namespace Application.Core.EF.PostgreSQL.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20260724085748_Initial")]
+    [Migration("20261105083446_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -21,34 +21,41 @@ namespace Application.Core.EF.MySQL.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Application.Core.EF.Entities.AccountBanEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("Id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
                         .HasColumnName("AccountId");
 
+                    b.Property<int>("AuditAccountId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("BanLevel")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("EndTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<bool>("Canceled")
+                        .HasColumnType("boolean");
 
-                    b.Property<sbyte>("Reason")
-                        .HasColumnType("tinyint")
+                    b.Property<long>("EndTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("EndTime");
+
+                    b.Property<int>("OperateAccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<short>("Reason")
+                        .HasColumnType("smallint")
                         .HasColumnName("Reason");
 
                     b.Property<string>("ReasonDescription")
@@ -56,18 +63,44 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("text")
                         .HasColumnName("ReasonDescription");
 
-                    b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("StartTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("StartTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("StartTime");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("account_ban_pkey");
 
                     b.HasIndex(new[] { "AccountId" }, "accountid");
 
                     b.ToTable("account_ban", (string)null);
+                });
+
+            modelBuilder.Entity("Application.Core.EF.Entities.BossLogEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BossType")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Flag")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Time")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("boss_log_pkey");
+
+                    b.ToTable("boss_log", (string)null);
                 });
 
             modelBuilder.Entity("Application.Core.EF.Entities.ExpLogRecord", b =>
@@ -77,7 +110,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("CharId")
                         .HasColumnType("int")
@@ -91,11 +124,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("exp_coupon");
 
-                    b.Property<DateTime>("ExpGainTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("exp_gain_time")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("ExpGainTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("exp_gain_time");
 
                     b.Property<long>("GainedExp")
                         .HasColumnType("bigint")
@@ -106,7 +137,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("world_exp_rate");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("characterexplogs_pkey");
 
                     b.ToTable("characterexplogs", (string)null);
                 });
@@ -115,9 +146,9 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -126,10 +157,10 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("''");
 
                     b.Property<int>("NpcId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_gachapon_pool_pkey");
 
                     b.ToTable("sys_gachapon_pool", (string)null);
                 });
@@ -138,24 +169,24 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ItemId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Level")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PoolId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_gachapon_pool_item_pkey");
 
                     b.ToTable("sys_gachapon_pool_item", (string)null);
                 });
@@ -164,89 +195,33 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Chance")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Level")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PoolId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_gachapon_pool_level_chance_pkey");
 
                     b.ToTable("sys_gachapon_pool_level_chance", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.CdkCodeEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<long>("Expiration")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("MaxCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "Code" }, "idx_code")
-                        .IsUnique();
-
-                    b.ToTable("cdk_codes", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.CdkRecordEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CodeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RecipientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RecipientTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "CodeId" }, "idx_code")
-                        .HasDatabaseName("idx_code1");
-
-                    b.ToTable("cdk_records", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.AccountBindingsEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("Id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
@@ -256,7 +231,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("HWID")
                         .HasDefaultValueSql("''");
 
@@ -264,26 +239,24 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("IP")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTime>("LastActiveTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("LastActiveTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("LastActiveTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("LastActiveTime");
 
                     b.Property<string>("MAC")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("MAC")
                         .HasDefaultValueSql("''");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("account_bindings_pkey");
 
                     b.HasIndex(new[] { "AccountId" }, "accountid")
                         .HasDatabaseName("accountid1");
@@ -295,10 +268,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Birthday")
                         .ValueGeneratedOnAdd()
@@ -308,34 +281,33 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<byte[]>("Blob")
                         .IsRequired()
-                        .HasColumnType("MEDIUMBLOB");
+                        .HasColumnType("bytea");
 
-                    b.Property<sbyte>("Characterslots")
+                    b.Property<short>("Characterslots")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
+                        .HasColumnType("smallint")
                         .HasColumnName("characterslots")
                         .HasDefaultValueSql("'3'");
 
-                    b.Property<DateTime>("Createdat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("createdat")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("Createdat")
+                        .HasColumnType("bigint")
+                        .HasColumnName("createdat");
 
                     b.Property<string>("Email")
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
-                        .HasColumnName("email");
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("email")
+                        .UseCollation("case_insensitive");
 
-                    b.Property<sbyte>("GMLevel")
+                    b.Property<short>("GMLevel")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
+                        .HasColumnType("smallint")
                         .HasColumnName("gmlevel")
                         .HasDefaultValueSql("'0'");
 
-                    b.Property<sbyte>("Gender")
+                    b.Property<short>("Gender")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
+                        .HasColumnType("smallint")
                         .HasColumnName("gender")
                         .HasDefaultValueSql("'10'");
 
@@ -347,13 +319,14 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("name")
-                        .HasDefaultValueSql("''");
+                        .HasDefaultValueSql("''")
+                        .UseCollation("case_insensitive");
 
                     b.Property<string>("Nick")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("nick");
 
                     b.Property<int>("NxCredit")
@@ -368,15 +341,16 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("password")
-                        .HasDefaultValueSql("''");
+                        .HasDefaultValueSql("''")
+                        .UseCollation("case_insensitive");
 
                     b.Property<string>("Pic")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("varchar(26)")
+                        .HasColumnType("character varying(26)")
                         .HasColumnName("pic")
                         .HasDefaultValueSql("''");
 
@@ -384,16 +358,16 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
-                        .HasColumnType("varchar(10)")
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("pin")
                         .HasDefaultValueSql("''");
 
                     b.Property<bool>("Tos")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("tos");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("accounts_pkey");
 
                     b.HasIndex(new[] { "Id", "Name" }, "id");
 
@@ -409,28 +383,28 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("capacity")
                         .HasDefaultValueSql("'2'");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("name");
 
                     b.Property<string>("Notice")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("notice")
                         .HasDefaultValueSql("''");
 
@@ -438,7 +412,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar(11)")
+                        .HasColumnType("character varying(11)")
                         .HasColumnName("rank1")
                         .HasDefaultValueSql("'Master'");
 
@@ -446,7 +420,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar(11)")
+                        .HasColumnType("character varying(11)")
                         .HasColumnName("rank2")
                         .HasDefaultValueSql("'Jr. Master'");
 
@@ -454,7 +428,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar(11)")
+                        .HasColumnType("character varying(11)")
                         .HasColumnName("rank3")
                         .HasDefaultValueSql("'Member'");
 
@@ -462,7 +436,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar(11)")
+                        .HasColumnType("character varying(11)")
                         .HasColumnName("rank4")
                         .HasDefaultValueSql("'Member'");
 
@@ -470,12 +444,12 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar(11)")
+                        .HasColumnType("character varying(11)")
                         .HasColumnName("rank5")
                         .HasDefaultValueSql("'Member'");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("alliance_pkey");
 
                     b.HasIndex(new[] { "Name" }, "name")
                         .HasDatabaseName("name1");
@@ -487,16 +461,16 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Replyid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("replyid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Replyid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Replyid"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("varchar(26)")
+                        .HasColumnType("character varying(26)")
                         .HasColumnName("content")
                         .HasDefaultValueSql("''");
 
@@ -513,7 +487,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("timestamp");
 
                     b.HasKey("Replyid")
-                        .HasName("PRIMARY");
+                        .HasName("bbs_replies_pkey");
 
                     b.ToTable("bbs_replies", (string)null);
                 });
@@ -522,10 +496,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Threadid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("threadid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Threadid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Threadid"));
 
                     b.Property<int>("Guildid")
                         .HasColumnType("int")
@@ -543,7 +517,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(26)
-                        .HasColumnType("varchar(26)")
+                        .HasColumnType("character varying(26)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("''");
 
@@ -565,114 +539,19 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("timestamp");
 
                     b.HasKey("Threadid")
-                        .HasName("PRIMARY");
+                        .HasName("bbs_threads_pkey");
 
                     b.ToTable("bbs_threads", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.BosslogDaily", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Attempttime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("attempttime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Bosstype")
-                        .IsRequired()
-                        .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
-                        .HasColumnName("bosstype");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("bosslog_daily", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.BosslogWeekly", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Attempttime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("attempttime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Bosstype")
-                        .IsRequired()
-                        .HasColumnType("enum('ZAKUM','HORNTAIL','PINKBEAN','SCARGA','PAPULATUS')")
-                        .HasColumnName("bosstype");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int")
-                        .HasColumnName("characterid");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("bosslog_weekly", (string)null);
-                });
-
-            modelBuilder.Entity("Application.EF.Entities.CdkItemEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CodeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'4000000'");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<int>("Type")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("'5'");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.HasIndex(new[] { "CodeId" }, "idx_code")
-                        .HasDatabaseName("idx_code2");
-
-                    b.ToTable("cdk_items", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.CharacterEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccountId")
                         .HasColumnType("int")
@@ -694,7 +573,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<byte[]>("Blob")
                         .IsRequired()
-                        .HasColumnType("MEDIUMBLOB");
+                        .HasColumnType("bytea");
 
                     b.Property<int>("BuddyCapacity")
                         .ValueGeneratedOnAdd()
@@ -702,17 +581,15 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("buddyCapacity")
                         .HasDefaultValueSql("'25'");
 
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("createdate")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("CreateDate")
+                        .HasColumnType("bigint")
+                        .HasColumnName("createdate");
 
                     b.Property<string>("DataString")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(64)
-                        .HasColumnType("varchar(64)")
+                        .HasColumnType("character varying(64)")
                         .HasColumnName("dataString")
                         .HasDefaultValueSql("''");
 
@@ -757,7 +634,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'-1'");
 
                     b.Property<bool>("FinishedDojoTutorial")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("finishedDojoTutorial");
 
                     b.Property<int>("Fquest")
@@ -793,7 +670,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'50'");
 
                     b.Property<int>("HpAlert")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("HpMpUsed")
                         .HasColumnType("int")
@@ -806,7 +683,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'4'");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("IsDeleted");
 
                     b.Property<long>("Jailexpire")
@@ -831,17 +708,13 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("lastDojoStage");
 
-                    b.Property<DateTime>("LastExpGainTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("lastExpGainTime")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("LastExpGainTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("lastExpGainTime");
 
-                    b.Property<DateTime>("LastLogoutTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("lastLogoutTime")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("LastLogoutTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("lastLogoutTime");
 
                     b.Property<int>("Level")
                         .ValueGeneratedOnAdd()
@@ -912,13 +785,13 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'5'");
 
                     b.Property<int>("MpAlert")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("name")
                         .HasDefaultValueSql("''");
 
@@ -936,7 +809,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<bool>("PartySearch")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("partySearch");
 
@@ -968,7 +841,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)")
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("sp")
                         .HasDefaultValueSql("'0,0,0,0,0,0,0,0,0,0'");
 
@@ -1001,7 +874,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("vanquisherStage");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("characters_pkey");
 
                     b.HasIndex(new[] { "AccountId" }, "accountid")
                         .HasDatabaseName("accountid2");
@@ -1021,7 +894,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -1052,7 +925,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("questid");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_drop_data_pkey");
 
                     b.HasIndex(new[] { "Dropperid", "Itemid" }, "dropperid")
                         .IsUnique();
@@ -1064,14 +937,14 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.ToTable("sys_drop_data", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.DropDataGlobal", b =>
+            modelBuilder.Entity("Application.EF.Entities.DropDataGlobalEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -1079,12 +952,12 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<string>("Comments")
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("comments");
 
-                    b.Property<sbyte>("Continent")
+                    b.Property<short>("Continent")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
+                        .HasColumnType("smallint")
                         .HasColumnName("continent")
                         .HasDefaultValueSql("'-1'");
 
@@ -1109,7 +982,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("questid");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_drop_data_global_pkey");
 
                     b.HasIndex(new[] { "Continent" }, "mobid")
                         .HasDatabaseName("mobid1");
@@ -1119,27 +992,25 @@ namespace Application.Core.EF.MySQL.Migrations
 
             modelBuilder.Entity("Application.EF.Entities.DueyPackageEntity", b =>
                 {
-                    b.Property<int>("PackageId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PackageId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset?>("ClaimTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("ClaimTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasDefaultValueSql("'2015-01-01 05:00:00'");
+                    b.Property<long>("CreateTime")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("HasNotified")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
                     b.Property<byte[]>("ItemBlob")
-                        .HasColumnType("MEDIUMBLOB");
+                        .HasColumnType("bytea");
 
                     b.Property<int>("Mesos")
                         .ValueGeneratedOnAdd()
@@ -1148,7 +1019,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<string>("Message")
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("ReceiverId")
                         .HasColumnType("int");
@@ -1158,11 +1029,11 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<bool>("Type")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.HasKey("PackageId")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id")
+                        .HasName("dueypackages_pkey");
 
                     b.ToTable("dueypackages", (string)null);
                 });
@@ -1170,7 +1041,7 @@ namespace Application.Core.EF.MySQL.Migrations
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>
                 {
                     b.Property<int>("Cid")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("cid");
 
                     b.Property<int>("Familyid")
@@ -1183,7 +1054,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<string>("Precepts")
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("precepts");
 
                     b.Property<int>("Reptosenior")
@@ -1207,7 +1078,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("totalreputation");
 
                     b.HasKey("Cid")
-                        .HasName("PRIMARY");
+                        .HasName("family_character_pkey");
 
                     b.HasIndex(new[] { "Cid", "Familyid" }, "cid");
 
@@ -1218,10 +1089,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Charid")
                         .HasColumnType("int")
@@ -1236,7 +1107,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("timestamp");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("family_entitlement_pkey");
 
                     b.HasIndex(new[] { "Charid" }, "charid");
 
@@ -1247,10 +1118,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cid")
                         .HasColumnType("int")
@@ -1266,20 +1137,18 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<byte[]>("ItemsBlob")
                         .IsRequired()
-                        .HasColumnType("MEDIUMBLOB");
+                        .HasColumnType("bytea");
 
                     b.Property<int>("Meso")
                         .HasColumnType("int")
                         .HasColumnName("meso");
 
-                    b.Property<DateTime>("Timestamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("timestamp")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint")
+                        .HasColumnName("timestamp");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("fredstorage_pkey");
 
                     b.HasIndex(new[] { "Cid" }, "cid_2")
                         .IsUnique();
@@ -1291,10 +1160,13 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long?>("ClaimTime")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("FromId")
                         .HasColumnType("int")
@@ -1302,7 +1174,7 @@ namespace Application.Core.EF.MySQL.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("tinytext")
+                        .HasColumnType("text")
                         .HasColumnName("message");
 
                     b.Property<int>("RingSourceId")
@@ -1318,7 +1190,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("toId");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("gifts_pkey");
 
                     b.ToTable("gifts", (string)null);
                 });
@@ -1327,10 +1199,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("GuildId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("guildid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("GuildId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GuildId"));
 
                     b.Property<int>("AllianceId")
                         .HasColumnType("int")
@@ -1369,19 +1241,19 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("name");
 
                     b.Property<string>("Notice")
                         .HasMaxLength(101)
-                        .HasColumnType("varchar(101)")
+                        .HasColumnType("character varying(101)")
                         .HasColumnName("notice");
 
                     b.Property<string>("Rank1Title")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("rank1title")
                         .HasDefaultValueSql("'Master'");
 
@@ -1389,7 +1261,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("rank2title")
                         .HasDefaultValueSql("'Jr. Master'");
 
@@ -1397,7 +1269,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("rank3title")
                         .HasDefaultValueSql("'Member'");
 
@@ -1405,7 +1277,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("rank4title")
                         .HasDefaultValueSql("'Member'");
 
@@ -1413,7 +1285,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("rank5title")
                         .HasDefaultValueSql("'Member'");
 
@@ -1422,7 +1294,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("signature");
 
                     b.HasKey("GuildId")
-                        .HasName("PRIMARY");
+                        .HasName("guilds_pkey");
 
                     b.HasIndex(new[] { "GuildId", "Name" }, "guildid");
 
@@ -1432,28 +1304,26 @@ namespace Application.Core.EF.MySQL.Migrations
             modelBuilder.Entity("Application.EF.Entities.Hwidaccount", b =>
                 {
                     b.Property<int>("AccountId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("accountid");
 
                     b.Property<string>("Hwid")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(40)
-                        .HasColumnType("varchar(40)")
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("hwid")
                         .HasDefaultValueSql("''");
 
-                    b.Property<DateTime>("ExpiresAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("expiresat")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("ExpiresAt")
+                        .HasColumnType("bigint")
+                        .HasColumnName("expiresat");
 
-                    b.Property<sbyte>("Relevance")
-                        .HasColumnType("tinyint")
+                    b.Property<short>("Relevance")
+                        .HasColumnType("smallint")
                         .HasColumnName("relevance");
 
                     b.HasKey("AccountId", "Hwid")
-                        .HasName("PRIMARY");
+                        .HasName("hwidaccounts_pkey");
 
                     b.ToTable("hwidaccounts", (string)null);
                 });
@@ -1462,23 +1332,26 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Hwidbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("hwidbanid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Hwidbanid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Hwidbanid"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("AccountId");
 
                     b.Property<string>("Hwid")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("hwid");
 
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Hwidbanid")
-                        .HasName("PRIMARY");
+                        .HasName("hwidbans_pkey");
 
                     b.HasIndex(new[] { "Hwid" }, "hwid_2")
                         .IsUnique();
@@ -1490,25 +1363,28 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Ipbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("ipbanid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Ipbanid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Ipbanid"));
 
                     b.Property<int>("Aid")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("aid");
 
                     b.Property<string>("Ip")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(40)
-                        .HasColumnType("varchar(40)")
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("ip")
                         .HasDefaultValueSql("''");
 
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Ipbanid")
-                        .HasName("PRIMARY");
+                        .HasName("ipbans_pkey");
 
                     b.ToTable("ipbans", (string)null);
                 });
@@ -1517,23 +1393,26 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Macbanid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("macbanid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Macbanid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Macbanid"));
 
                     b.Property<int>("Aid")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("aid");
+
+                    b.Property<int>("LinkedBanId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Mac")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("mac");
 
                     b.HasKey("Macbanid")
-                        .HasName("PRIMARY");
+                        .HasName("macbans_pkey");
 
                     b.HasIndex(new[] { "Mac" }, "mac_2")
                         .IsUnique();
@@ -1545,39 +1424,39 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Marriageid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("marriageid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Marriageid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Marriageid"));
 
                     b.Property<int>("EngagementItemId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Husbandid")
                         .HasColumnType("int")
                         .HasColumnName("husbandid");
 
                     b.Property<int>("RingSourceId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset>("Time0")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long>("Time0")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset?>("Time1")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("Time1")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset?>("Time2")
-                        .HasColumnType("datetime(6)");
+                    b.Property<long?>("Time2")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Wifeid")
                         .HasColumnType("int")
                         .HasColumnName("wifeid");
 
                     b.HasKey("Marriageid")
-                        .HasName("PRIMARY");
+                        .HasName("marriages_pkey");
 
                     b.ToTable("marriages", (string)null);
                 });
@@ -1586,10 +1465,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cardid")
                         .HasColumnType("int")
@@ -1600,7 +1479,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("mobid");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_monstercarddata_pkey");
 
                     b.HasIndex(new[] { "Id" }, "id")
                         .IsUnique()
@@ -1613,10 +1492,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cid")
                         .HasColumnType("int")
@@ -1627,7 +1506,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("itemid");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("mts_cart_pkey");
 
                     b.ToTable("mts_cart", (string)null);
                 });
@@ -1636,10 +1515,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Acc")
                         .ValueGeneratedOnAdd()
@@ -1684,7 +1563,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<string>("GiftFrom")
                         .IsRequired()
                         .HasMaxLength(26)
-                        .HasColumnType("varchar(26)")
+                        .HasColumnType("character varying(26)")
                         .HasColumnName("giftFrom");
 
                     b.Property<int>("Hands")
@@ -1771,7 +1650,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(16)
-                        .HasColumnType("varchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("owner")
                         .HasDefaultValueSql("''");
 
@@ -1800,7 +1679,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<string>("SellEnds")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("varchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("sell_ends");
 
                     b.Property<int>("Seller")
@@ -1810,7 +1689,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<string>("Sellername")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("varchar(16)")
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("sellername");
 
                     b.Property<int>("Speed")
@@ -1862,7 +1741,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'0'");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("mts_items_pkey");
 
                     b.ToTable("mts_items", (string)null);
                 });
@@ -1871,39 +1750,37 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Characterid")
                         .HasColumnType("int")
                         .HasColumnName("characterid");
 
-                    b.Property<DateTime?>("CompletionTime")
-                        .HasColumnType("timestamp")
+                    b.Property<long?>("CompletionTime")
+                        .HasColumnType("bigint")
                         .HasColumnName("completionTime");
 
                     b.Property<string>("New")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("new");
 
                     b.Property<string>("Old")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("old");
 
-                    b.Property<DateTime>("RequestTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("requestTime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    b.Property<long>("RequestTime")
+                        .HasColumnType("bigint")
+                        .HasColumnName("requestTime");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("namechanges_pkey");
 
                     b.HasIndex(new[] { "Characterid" }, "characterid");
 
@@ -1914,10 +1791,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cy")
                         .HasColumnType("int")
@@ -1954,7 +1831,7 @@ namespace Application.Core.EF.MySQL.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("varchar(13)")
+                        .HasColumnType("character varying(13)")
                         .HasColumnName("name");
 
                     b.Property<int>("Overallrank")
@@ -1994,7 +1871,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("x");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("playernpcs_pkey");
 
                     b.ToTable("playernpcs", (string)null);
                 });
@@ -2003,10 +1880,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Equipid")
                         .HasColumnType("int")
@@ -2025,7 +1902,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("type");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("playernpcs_equip_pkey");
 
                     b.ToTable("playernpcs_equip", (string)null);
                 });
@@ -2034,10 +1911,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Map")
                         .HasColumnType("int")
@@ -2047,9 +1924,9 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("podium");
 
-                    b.Property<sbyte>("Step")
+                    b.Property<short>("Step")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint")
+                        .HasColumnType("smallint")
                         .HasColumnName("step")
                         .HasDefaultValueSql("'0'");
 
@@ -2058,7 +1935,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("world");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("playernpcs_field_pkey");
 
                     b.ToTable("playernpcs_field", (string)null);
                 });
@@ -2067,10 +1944,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cy")
                         .HasColumnType("int")
@@ -2116,7 +1993,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(1)
-                        .HasColumnType("varchar(1)")
+                        .HasColumnType("character varying(1)")
                         .HasColumnName("type")
                         .HasDefaultValueSql("'n'");
 
@@ -2135,7 +2012,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("y");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("plife_pkey");
 
                     b.ToTable("plife", (string)null);
                 });
@@ -2144,10 +2021,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Reactordropid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("reactordropid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Reactordropid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Reactordropid"));
 
                     b.Property<int>("Chance")
                         .HasColumnType("int")
@@ -2168,21 +2045,21 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("reactorid");
 
                     b.HasKey("Reactordropid")
-                        .HasName("PRIMARY");
+                        .HasName("sys_reactordrops_pkey");
 
                     b.HasIndex(new[] { "Reactorid" }, "reactorid");
 
                     b.ToTable("sys_reactordrops", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Report", b =>
+            modelBuilder.Entity("Application.EF.Entities.ReportEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Chatlog")
                         .IsRequired()
@@ -2194,28 +2071,28 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<sbyte>("Reason")
-                        .HasColumnType("tinyint")
+                    b.Property<bool>("Processed")
+                        .HasColumnType("boolean");
+
+                    b.Property<short>("Reason")
+                        .HasColumnType("smallint")
                         .HasColumnName("reason");
 
-                    b.Property<int>("Reporterid")
+                    b.Property<long>("ReportTime")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint")
+                        .HasColumnName("reporttime");
+
+                    b.Property<int>("ReporterId")
                         .HasColumnType("int")
                         .HasColumnName("reporterid");
 
-                    b.Property<DateTime>("Reporttime")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("reporttime")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Reporttime"));
-
-                    b.Property<int>("Victimid")
+                    b.Property<int>("VictimId")
                         .HasColumnType("int")
                         .HasColumnName("victimid");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("reports_pkey");
 
                     b.ToTable("reports", (string)null);
                 });
@@ -2224,10 +2101,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CharacterId1")
                         .HasColumnType("int")
@@ -2250,7 +2127,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("ringId2");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("rings_pkey");
 
                     b.ToTable("rings", (string)null);
                 });
@@ -2259,29 +2136,29 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("ShopId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("shopid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ShopId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ShopId"));
 
                     b.Property<int>("NpcId")
                         .HasColumnType("int")
                         .HasColumnName("npcid");
 
                     b.HasKey("ShopId")
-                        .HasName("PRIMARY");
+                        .HasName("sys_shops_pkey");
 
                     b.ToTable("sys_shops", (string)null);
                 });
 
-            modelBuilder.Entity("Application.EF.Entities.Shopitem", b =>
+            modelBuilder.Entity("Application.EF.Entities.ShopItemEntity", b =>
                 {
                     b.Property<int>("Shopitemid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("shopitemid");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Shopitemid"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Shopitemid"));
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int")
@@ -2305,7 +2182,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("shopid");
 
                     b.HasKey("Shopitemid")
-                        .HasName("PRIMARY");
+                        .HasName("sys_shopitems_pkey");
 
                     b.ToTable("sys_shopitems", (string)null);
                 });
@@ -2314,10 +2191,10 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Info")
                         .HasColumnType("int")
@@ -2333,7 +2210,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("sn");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("sys_specialcashitems_pkey");
 
                     b.ToTable("sys_specialcashitems", (string)null);
                 });
@@ -2342,25 +2219,25 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
+                        .HasColumnType("character varying(120)")
                         .HasColumnName("message")
                         .HasDefaultValueSql("''");
 
                     b.Property<bool>("Received")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("received");
 
                     b.Property<bool>("ReceiverDiscard")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("receiverdiscard");
 
                     b.Property<int>("ReceiverId")
@@ -2370,7 +2247,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasDefaultValueSql("'-1'");
 
                     b.Property<bool>("SenderDiscard")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("senderdiscard");
 
                     b.Property<int>("SenderId")
@@ -2388,7 +2265,7 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("timesent");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("newyear_pkey");
 
                     b.ToTable("newyear", (string)null);
                 });
@@ -2397,13 +2274,13 @@ namespace Application.Core.EF.MySQL.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Deleted")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("boolean")
                         .HasColumnName("deleted");
 
                     b.Property<int>("Fame")
@@ -2428,9 +2305,104 @@ namespace Application.Core.EF.MySQL.Migrations
                         .HasColumnName("toId");
 
                     b.HasKey("Id")
-                        .HasName("PRIMARY");
+                        .HasName("notes_pkey");
 
                     b.ToTable("notes", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AccountOnce")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .HasColumnType("character varying(17)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("EndTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("StartTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id")
+                        .HasName("ex_reward_codes_pkey");
+
+                    b.HasIndex(new[] { "Code" }, "idx_cdk_codes_code")
+                        .IsUnique();
+
+                    b.ToTable("ex_reward_codes", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardItemEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CodeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("'1'");
+
+                    b.HasKey("Id")
+                        .HasName("ex_reward_items_pkey");
+
+                    b.HasIndex(new[] { "CodeId" }, "idx_cdk_items_code");
+
+                    b.ToTable("ex_reward_items", (string)null);
+                });
+
+            modelBuilder.Entity("Application.EF.RewardRecordEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CodeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecipientId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RecipientTime")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("ex_reward_records_pkey");
+
+                    b.HasIndex(new[] { "CodeId" }, "idx_code_records");
+
+                    b.ToTable("ex_reward_records", (string)null);
                 });
 
             modelBuilder.Entity("Application.EF.Entities.FamilyCharacterEntity", b =>
