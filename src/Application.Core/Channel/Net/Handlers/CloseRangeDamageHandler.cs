@@ -21,9 +21,7 @@
 */
 
 
-using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
-using Application.Core.Game.Gameplay;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
 using Microsoft.Extensions.Logging;
@@ -49,22 +47,9 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
 
         var attack = await parseDamage(p, chr, false, false);
 
-        if (chr.IsMorphWithoutAttack())
-        {
-            // How are they attacking when the client won't let them?
-            await chr.getClient().Disconnect(false, false);
-            return;
-        }
-
-        if (chr.getDojoEnergy() < 10000
-            && (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)) // PE hacking or maybe just lagging
+        if (!(await chr.SkillUsed(attack.skill, attack.skilllevel, attack)))
         {
             return;
-        }
-        if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)
-        {
-            chr.setDojoEnergy(chr.getDojoEnergy() + YamlConfig.config.server.DOJO_ENERGY_ATK);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
         await chr.BroadcastMap(
@@ -141,71 +126,10 @@ public class CloseRangeDamageHandler : AbstractDealDamageHandler
                 }
             }
         }
-        if (attack.numAttacked > 0 && attack.skill == DragonKnight.SACRIFICE)
-        {
-            int totDamageToOneMonster = attack.targets.Values.FirstOrDefault()?.damageLines?.FirstOrDefault() ?? 0;
 
-            await chr.safeAddHP(-1 * totDamageToOneMonster * (await attack.getAttackEffect(chr, null))!.getX() / 100);
-        }
-        if (attack.numAttacked > 0 && attack.skill == WhiteKnight.CHARGE_BLOW)
-        {
-            bool advcharge_prob = false;
-            var advchargeSkillEffect = chr.GetPlayerSkillEffect(Paladin.ADVANCED_CHARGE);
-            if (advchargeSkillEffect != null)
-            {
-                advcharge_prob = advchargeSkillEffect.makeChanceResult();
-            }
-            if (!advcharge_prob)
-            {
-                await chr.CancelBuff(BuffStat.WK_CHARGE);
-            }
-        }
-        int attackCount = 1;
-        if (attack.skill != 0)
-        {
-            attackCount = (await attack.getAttackEffect(chr, null))!.getAttackCount();
-        }
         if (numFinisherOrbs == 0 && GameConstants.isFinisherSkill(attack.skill))
         {
             return;
-        }
-        if (attack.skill % 10000000 == 1009)
-        { // bamboo
-            if (chr.getDojoEnergy() < 10000)
-            { // PE hacking or maybe just lagging
-                return;
-            }
-
-            chr.setDojoEnergy(0);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
-            await c.SendPacket(PacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
-        }
-        else if (attack.skill > 0)
-        {
-            Skill skill = SkillFactory.GetSkillTrust(attack.skill);
-            StatEffect effect_ = skill.getEffect(chr.getSkillLevel(skill));
-            if (effect_.getCooldown() > 0)
-            {
-                if (chr.skillIsCooling(attack.skill))
-                {
-                    return;
-                }
-                else
-                {
-                    await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect_.getCooldown()));
-                    chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect_.getCooldown()));
-                }
-            }
-        }
-        if ((chr.getSkillLevel(SkillFactory.GetSkillTrust(NightWalker.VANISH)) > 0 || chr.getSkillLevel(SkillFactory.GetSkillTrust(Rogue.DARK_SIGHT)) > 0)
-            && chr.getBuffedValue(BuffStat.DARKSIGHT) != null)
-        {
-            // && chr.getBuffSource(BuffStat.DARKSIGHT) != 9101004
-            await chr.CancelBuff(BuffStat.DARKSIGHT);
-        }
-        else if (chr.getSkillLevel(SkillFactory.GetSkillTrust(WindArcher.WIND_WALK)) > 0 && chr.getBuffedValue(BuffStat.WIND_WALK) != null)
-        {
-            await chr.CancelBuff(BuffStat.WIND_WALK);
         }
 
         await applyAttack(attack, chr);

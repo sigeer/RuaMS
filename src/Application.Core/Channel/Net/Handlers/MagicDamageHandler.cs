@@ -46,17 +46,9 @@ public class MagicDamageHandler : AbstractDealDamageHandler
 
         var attack = await parseDamage(p, chr, false, true);
 
-        if (chr.IsMorphWithoutAttack())
+        if (!(await chr.SkillUsed(attack.skill, attack.skilllevel, attack)))
         {
-            // How are they attacking when the client won't let them?
-            await chr.getClient().Disconnect(false, false);
             return;
-        }
-
-        if (MapId.isDojo(chr.getMap().getId()) && attack.numAttacked > 0)
-        {
-            chr.setDojoEnergy(chr.getDojoEnergy() + +YamlConfig.config.server.DOJO_ENERGY_ATK);
-            await c.SendPacket(PacketCreator.getEnergy("energy", chr.getDojoEnergy()));
         }
 
         int charge = (attack.skill == Evan.FIRE_BREATH
@@ -68,35 +60,7 @@ public class MagicDamageHandler : AbstractDealDamageHandler
         var packet = PacketCreator.magicAttack(chr, attack.skill, attack.skilllevel, attack.stance, attack.numAttackedAndDamage, attack.targets, charge, attack.speed, attack.direction, attack.display);
 
         await chr.BroadcastMap(packet, chr.Id);
-        var effect = await attack.getAttackEffect(chr, null);
-        if (effect == null)
-        {
-            _logger.LogWarning("技能不存在");
-            return;
-        }
 
-        if (effect.getCooldown() > 0)
-        {
-            if (chr.skillIsCooling(attack.skill))
-            {
-                return;
-            }
-            else
-            {
-                await c.SendPacket(PacketCreator.skillCooldown(attack.skill, effect.getCooldown()));
-                chr.addCooldown(attack.skill, c.CurrentServer.Node.getCurrentTime(), 1000 * (effect.getCooldown()));
-            }
-        }
         await applyAttack(attack, chr);
-        var eaterSkill = SkillFactory.getSkill((chr.getJob().getId() - (chr.getJob().getId() % 10)) * 10000);// MP Eater, works with right job
-        int eaterLevel = chr.getSkillLevel(eaterSkill);
-        if (eaterLevel > 0)
-        {
-            var eaterSkillEffect = eaterSkill!.getEffect(eaterLevel);
-            foreach (int singleDamage in attack.targets.Keys)
-            {
-                await eaterSkillEffect.applyPassive(chr, chr.getMap().getMapObject(singleDamage), 0);
-            }
-        }
     }
 }

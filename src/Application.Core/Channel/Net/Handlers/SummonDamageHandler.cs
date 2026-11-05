@@ -51,6 +51,7 @@ public class SummonDamageHandler : AbstractDealDamageHandler
         {
             return;
         }
+
         var summon = player.getSummonsValues().FirstOrDefault(x => x.getObjectId() == oid);
         if (summon == null)
         {

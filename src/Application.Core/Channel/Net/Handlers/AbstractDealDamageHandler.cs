@@ -25,13 +25,9 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.ServerData;
 using Application.Core.Game.Gameplay;
 using Application.Core.Game.Life;
-using Application.Core.Game.Life.Monsters.TemporaryStat;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players.Tickables;
 using Application.Core.Game.Skills;
 using Application.Core.Server;
-using Application.Core.Server.life;
-using Application.Shared.Battle.Skills;
 using client.autoban;
 using Microsoft.Extensions.Logging;
 using tools;
@@ -145,6 +141,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 return;
             }
 
+            var eaterSkillEffect = player.GetPlayerSkillEffect((player.getJob().getId() - (player.getJob().getId() % 10)) * 10000);
             //WTF IS THIS F3,1
             /*if (attackCount != attack.numDamage && attack.skill != ChiefBandit.MESO_EXPLOSION && attack.skill != NightWalker.VAMPIRE && attack.skill != WindArcher.WIND_SHOT && attack.skill != Aran.COMBO_SMASH && attack.skill != Aran.COMBO_FENRIR && attack.skill != Aran.COMBO_TEMPEST && attack.skill != NightLord.NINJA_AMBUSH && attack.skill != Shadower.NINJA_AMBUSH) {
                 return;
@@ -207,37 +204,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
 
                     int totDamageToOneMonster = 0;
-                    var onedList = (target.Value?.damageLines ?? []).ToArray();
+                    var onedList = (target.Value?.damageLines ?? [])
+                        .Select(x => x.Damage)
+                        .ToArray();
 
-                    // 已经在客户端计算过了，这里只能用是否拥有buff简单的判断（假如效果很低，但是客户端开挂改成100%，服务端也没办法区分）
-                    if (attack.magic && monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) && !player.HasBuff(BuffStat.RESPECT_MIMMUNE))
-                    {
-                        Array.Fill(onedList, 1);
-                    }
-
-                    if (!attack.magic && monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY) && !player.HasBuff(BuffStat.RESPECT_PIMMUNE))
-                    {
-                        Array.Fill(onedList, 1);
-                    }
-
-                    if (MobId.isDojoBoss(monster.getId()))
-                    {
-                        if (attack.skill == Beginner.BAMBOO_RAIN || attack.skill == Noblesse.BAMBOO_RAIN || attack.skill == Legend.BAMBOO_THRUST)
-                        {
-                            int dmgLimit = (int)Math.Ceiling(0.3 * monster.getMaxHp());
-                            for (int i = 0; i < onedList.Length; i++)
-                            {
-                                onedList[i] = onedList[i] < dmgLimit ? onedList[i] : dmgLimit;
-                            }
-                        }
-                    }
-
-                    foreach (int eachd in onedList)
-                    {
-                        int tempInt = eachd;
-                        if (tempInt < 0) tempInt += int.MaxValue;
-                        totDamageToOneMonster += tempInt;
-                    }
+                    totDamageToOneMonster = onedList.Sum();
                     totDamage += totDamageToOneMonster;
                     await monster.aggroMonsterDamage(player, totDamageToOneMonster);
 
@@ -247,7 +218,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         || attack.skill == NightWalker.VAMPIRE
                         || attack.skill == Assassin.DRAIN)
                     {
-                        
+
                         await player.UpdateStatsChunk(async () =>
                         {
                             // 按造成伤害的百分比恢复HP，最大不超过Monster血量上限，自身血量上限的50%
@@ -298,6 +269,23 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         long duration = 1000 * (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
+                    else if (attack.skill == DragonKnight.SACRIFICE)
+                    {
+                        await player.safeAddHP(-1 * totDamageToOneMonster * attackEffect!.getX() / 100);
+                    }
+                    else if (attack.skill == WhiteKnight.CHARGE_BLOW)
+                    {
+                        bool advcharge_prob = false;
+                        var advchargeSkillEffect = player.GetPlayerSkillEffect(Paladin.ADVANCED_CHARGE);
+                        if (advchargeSkillEffect != null)
+                        {
+                            advcharge_prob = advchargeSkillEffect.makeChanceResult();
+                        }
+                        if (!advcharge_prob)
+                        {
+                            await player.CancelBuff(BuffStat.WK_CHARGE);
+                        }
+                    }
                     #endregion
 
                     #region 临时被动技能效果
@@ -317,19 +305,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         {
                             short delay = 0;
                             var maxmeso = pickPocketBuff.Value;
-                            foreach (int eachd in onedList)
+                            foreach (var eachd in onedList)
                             {
-                                int tempInt = eachd + int.MaxValue;
-
-                                if (pickPocketBuff.Effect.makeChanceResult())
+                                if (eachd > 0 && pickPocketBuff.Effect.makeChanceResult())
                                 {
-                                    int eachdf;
-                                    if (tempInt < 0)
-                                        eachdf = tempInt + int.MaxValue;
-                                    else
-                                        eachdf = tempInt;
-
-                                    int meso = Math.Min((int)Math.Max((double)((eachdf / 20000) * maxmeso), 1), maxmeso);
+                                    int meso = Math.Min((int)Math.Max((double)((eachd / 20000) * maxmeso), 1), maxmeso);
                                     var position = new Point(monster.getPosition().X + Randomizer.nextInt(100) - 50, monster.getPosition().Y);
                                     await map.spawnMesoDrop(meso, position, monster, player, true, DropType.FreeForAll, delay);
                                     delay += 100;
@@ -395,14 +375,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         }
                     }
 
-                    var comboDrainBuff = player.GetBuffStatValue(BuffStat.COMBO_DRAIN);
-                    if (comboDrainBuff != null)
-                    {
-                        await player.UpdateStatsChunk(async () =>
-                        {
-                            await player.ChangeHP((int)((totDamage * comboDrainBuff.Effect.getX()) / 100.0));
-                        });
-                    }
+
                     #endregion
 
                     if (attack.ranged && (player.JobModel == Job.NIGHTLORD || player.JobModel == Job.SHADOWER || player.JobModel == Job.NIGHTWALKER3))
@@ -425,7 +398,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                             }
                         }
                     }
-                    
+
                     if (player.JobModel.Id >= JobId.RANGER && player.JobModel.Id <= JobId.MARKSMAN)
                     {
                         if (!monster.isBoss())
@@ -573,7 +546,23 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         });
                         await player.BroadcastMap(PacketCreator.DamagePlayerFromCounter(player.getId(), reflectDamage));
                     }
+
+                    if (attack.magic && eaterSkillEffect != null)
+                    {
+                        await eaterSkillEffect.ApplyMPEater(player, monster);
+                    }
+
                 }
+            }
+
+            // 连环吸血
+            var comboDrainBuff = player.GetBuffStatValue(BuffStat.COMBO_DRAIN);
+            if (comboDrainBuff != null)
+            {
+                await player.UpdateStatsChunk(async () =>
+                {
+                    await player.ChangeHP((int)((totDamage * comboDrainBuff.Effect.getX()) / 100.0));
+                });
             }
         }
         catch (Exception e)
@@ -650,7 +639,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         ret.stance = p.ReadSByte();
         if (ret.skill == ChiefBandit.MESO_EXPLOSION)
         {
-            return parseMesoExplosion(p, ret);
+            return parseMesoExplosion(p, chr, ret);
         }
         if (ranged)
         {
@@ -879,7 +868,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             var curPos = p.readPos();
             var nextPos = p.readPos();
             short delay = p.readShort();
-            List<int> damageLines = [];
+            List<AttackDamage> damageLines = [];
             var monster = chr.getMap().getMonsterByOid(oid);
 
             var wkCharge = chr.GetBuffStatValue(BuffStat.WK_CHARGE);
@@ -989,7 +978,19 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
             for (int j = 0; j < ret.numDamage; j++)
             {
-                int damage = p.readInt();
+                int rawDamage = p.readInt();
+
+                // 兼容两种客户端：
+                //  * 打过补丁（BeiDou-ijl15 `Client::EnableCritFlagInAttackPacket`）的客户端
+                //    会把真实暴击位 OR 进伤害值的 bit31，因此负数即为"带暴击标记"；
+                //  * 原版客户端的伤害始终 >= 0（PDamage 0x790586 用 max(1.0, min(raw, cap))
+                //    钳制后才写包），所以非负数一定没带标记。
+                // 后者仍退回旧的按伤害推断（只会漏标，不会错标）。
+                var line = DamageLine.Decode(rawDamage);
+                bool hasCritFlag = line.HasCritFlag;
+                bool isCrit = line.IsCrit;
+                int damage = line.Damage;
+
                 double hitDmgMax = calcDmgMax;
                 if (ret.skill == Buccaneer.BARRAGE || ret.skill == ThunderBreaker.BARRAGE)
                 {
@@ -1010,7 +1011,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
 
                 if (ret.skill == Marksman.SNIPE)
                 {
-                    damage = 195000 + Randomizer.nextInt(5000);
+                    if (!hasCritFlag)
+                    {
+                        // 原版客户端：SNIPE 的伤害是 195000~200000 的固定值，服务端无法从
+                        // 数值判断，沿用旧做法自行生成。补丁客户端已经发来真实伤害与暴击位，
+                        // 不能覆盖。
+                        damage = 195000 + Randomizer.nextInt(5000);
+                    }
                     hitDmgMax = 200000;
                 }
                 else if (ret.skill == Beginner.BAMBOO_RAIN || ret.skill == Noblesse.BAMBOO_RAIN || ret.skill == Evan.BAMBOO_THRUST || ret.skill == Legend.BAMBOO_THRUST)
@@ -1038,10 +1045,11 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                         "DMG: " + damage + " MaxDMG: " + maxWithCrit + " SID: " + ret.skill + " MobID: " + (monster != null ? monster.getId() : "null") + " Map: " + chr.getMap().getMapName() + " (" + chr.getMapId() + ")");
                 }
 
-                if (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax))
+                if (!hasCritFlag && (ret.skill == Marksman.SNIPE || (canCrit && damage > hitDmgMax)))
                 {
-                    // If the skill is a crit, inverse the damage to make it show up on clients.
-                    damage = -int.MaxValue + damage - 1;
+                    // 原版客户端：没有暴击信息，只能按伤害推断。
+                    // 该判据只会漏标，不会错标。
+                    isCrit = true;
                 }
 
                 if (effect != null)
@@ -1058,7 +1066,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                 }
 
-                damageLines.Add(damage);
+                damageLines.Add(ResetDamageValue(chr, ret.magic, ret.skill, monster, damage, isCrit));
             }
             if (ret.skill != Corsair.RAPID_FIRE
                 || ret.skill != Aran.HIDDEN_FULL_DOUBLE
@@ -1080,10 +1088,10 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
         return ret;
     }
 
-    private AttackInfo parseMesoExplosion(InPacket p, AttackInfo attackInfo)
+    private AttackInfo parseMesoExplosion(InPacket p, Player chr, AttackInfo attackInfo)
     {
         p.skip(6);
-        Dictionary<int, List<int>> targetDamage = new();
+        Dictionary<int, List<AttackDamage>> targetDamage = new();
         for (int i = 0; i < attackInfo.numAttacked; i++)
         {
             int mobOid = p.readInt();
@@ -1091,11 +1099,13 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             var curPos = p.readPos();
             var nextPos = p.readPos();
             int damageLines = p.ReadSByte();
-            List<int> allDamageNumbers = [];
+            var mob = chr.getMap().getMonsterByOid(mobOid);
+            List<AttackDamage> allDamageNumbers = [];
             for (int j = 0; j < damageLines; j++)
             {
                 int damage = p.readInt();
-                allDamageNumbers.Add(damage);
+
+                allDamageNumbers.Add(ResetDamageValue(chr, attackInfo.magic, attackInfo.skill, mob, damage));
             }
             p.skip(4);
             targetDamage.AddOrUpdate(mobOid, allDamageNumbers);
@@ -1143,5 +1153,31 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
             delay = Math.Min(delay, EXPLODED_MESO_MAX_DELAY);
             await map.pickItemDrop(PacketCreator.removeExplodedMesoFromMap(mapItem.getObjectId(), (short)delay), mapItem);
         }
+    }
+
+    static AttackDamage ResetDamageValue(Player chr, bool isMagic, int skill, Monster? monster, int damage, bool isCrit = false)
+    {
+        if (monster != null && monster.isAlive())
+        {
+            if (isMagic && monster.isBuffed(MonsterStatus.MAGIC_IMMUNITY) && !chr.HasBuff(BuffStat.RESPECT_MIMMUNE))
+            {
+                damage = damage > 0 ? 1 : 0;
+            }
+            if (!isMagic && monster.isBuffed(MonsterStatus.WEAPON_IMMUNITY) && !chr.HasBuff(BuffStat.RESPECT_PIMMUNE))
+            {
+                damage = damage > 0 ? 1 : 0;
+            }
+
+            if (MobId.isDojoBoss(monster.getId()))
+            {
+                if (skill == Beginner.BAMBOO_RAIN || skill == Noblesse.BAMBOO_RAIN || skill == Legend.BAMBOO_THRUST)
+                {
+                    int dmgLimit = (int)Math.Ceiling(0.3 * monster.getMaxHp());
+                    damage = Math.Min(dmgLimit, damage);
+                }
+            }
+        }
+
+        return new AttackDamage(damage, isCrit);
     }
 }

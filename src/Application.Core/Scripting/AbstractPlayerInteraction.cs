@@ -854,7 +854,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task dojoEnergy()
     {
-        await c.SendPacket(PacketCreator.getEnergy("energy", getPlayer().getDojoEnergy()));
+        await c.SendPacket(PacketCreator.getEnergy(SessionValues.Energy, getPlayer().getDojoEnergy()));
     }
 
     public async Task talkGuide(string message)

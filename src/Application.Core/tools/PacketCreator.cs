@@ -2161,9 +2161,9 @@ public class PacketCreator
                 {
                     p.writeByte(onedList.damageLines.Count);
                 }
-                foreach (int eachd in onedList.damageLines)
+                foreach (var eachd in onedList.damageLines)
                 {
-                    p.writeInt(eachd);
+                    p.writeInt(eachd.EncodeCritDamage());
                 }
             }
         }

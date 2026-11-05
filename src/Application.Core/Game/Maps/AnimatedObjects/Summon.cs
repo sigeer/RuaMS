@@ -147,17 +147,17 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
         await base.OnUnmounted();
     }
 
-    public async Task<bool> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
+    public async Task<int> DamageBy(ICombatantObject? attacker, int damageValue, short delay, bool stayAlive = false)
     {
         if (!isPuppet())
         {
             // 仅替身术能被造成伤害
-            return false;
+            return 0;
         }
 
         if (hp <= 0)
         {
-            return false;
+            return 0;
         }
 
         hp -= damageValue;
@@ -168,6 +168,6 @@ public class Summon : AbstractAnimatedMapObject, ICombatantObject
             await owner.CancelBuff(BuffStat.PUPPET);
         }
 
-        return true;
+        return damageValue;
     }
 }
