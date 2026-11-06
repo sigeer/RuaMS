@@ -5,12 +5,12 @@
 ## 数据库迁移
 
 ```
-// 在 Application.Core.EF.MySQL/Sqlite 中执行
-dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
+// 在 Application.Core.EF.Sqlite 或 Application.Core.EF.PostgreSQL 中执行
+dotnet ef migrations add [migration_name] --output-dir Migrations --startup-project ../Application.Host -- --DataBase=Sqlite/PostgreSQL
 
-dotnet ef migrations remove --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
+dotnet ef migrations remove --startup-project ../Application.Host -- --DataBase=Sqlite/PostgreSQL
 
-dotnet ef database update --startup-project ../Application.Host -- --DataBase=MySql/Sqlite
+dotnet ef database update --startup-project ../Application.Host -- --DataBase=Sqlite/PostgreSQL
 ```
 
 ## 发布

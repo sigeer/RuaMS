@@ -166,10 +166,15 @@ namespace Application.Core.Login
         {
             services.AddDbContextFactory<DBContext>(o =>
             {
-                if (dbType == AppSettingKeys.ConnectStr_Mysql)
-                    o.UseMySql(connectString, ServerVersion.AutoDetect(connectString), o => o.MigrationsAssembly("Application.Core.EF.MySQL"));
-                else
-                    o.UseSqlite(connectString, o => o.MigrationsAssembly("Application.Core.EF.Sqlite"));
+                switch (dbType)
+                {
+                    case AppSettingKeys.ConnectStr_PostgreSql:
+                        o.UseNpgsql(connectString, o => o.MigrationsAssembly("Application.Core.EF.PostgreSQL"));
+                        break;
+                    default:
+                        o.UseSqlite(connectString, o => o.MigrationsAssembly("Application.Core.EF.Sqlite"));
+                        break;
+                }
             });
 
             var mapperConfig = TypeAdapterConfig.GlobalSettings;

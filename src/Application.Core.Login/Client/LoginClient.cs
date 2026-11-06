@@ -9,6 +9,7 @@ using Application.Utility.Configs;
 using DotNetty.Transport.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Net.WebSockets;
 
 namespace Application.Core.Login.Client
 {
@@ -218,45 +219,36 @@ namespace Application.Core.Login.Client
                 return LoginResultCode.Fail_Count;   // thanks Survival_Project for finding out an issue with AUTOMATIC_REGISTER here
             }
 
-            int accId = CurrentServer.AccountManager.GetAccountIdByName(login);
-            try
+            var dbModel = CurrentServer.AccountManager.FindByName(login);
+            if (dbModel == null)
             {
-                var dbModel = CurrentServer.GetAccountDto(accId);
-                if (dbModel != null)
-                {
-                    accId = dbModel.Id;
-                    if (accId <= 0)
-                    {
-                        log.LogError("Tried to login with accid " + accId);
-                        return LoginResultCode.Fail_SpecialAccount;
-                    }
-
-                    AccountEntity = dbModel;
-                    string passhash = dbModel.Password;
-                    var tos = dbModel.Tos;
-
-                    if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
-                    {
-                        loginok = LoginResultCode.Fail_AlreadyLoggedIn;
-                    }
-                    else if (pwd.Equals(passhash) || HashDigest.HashByType("SHA-512", pwd).ToHexString().Equals(passhash))
-                    {
-                        // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
-                        loginok = !tos ? LoginResultCode.Fail_Agreement : LoginResultCode.Success; // migrate to bcrypt
-                    }
-                    else
-                    {
-                        loginok = LoginResultCode.Fail_IncorrectPassword;
-                    }
-                }
-                else
-                {
-                    accId = -3;
-                }
+                return loginok;
             }
-            catch (DbUpdateException e)
+
+            var accId = dbModel.Id;
+            if (accId <= 0)
             {
-                log.LogError(e.ToString());
+                log.LogError("Tried to login with accid " + accId);
+                return LoginResultCode.Fail_SpecialAccount;
+            }
+
+            AccountEntity = dbModel;
+            string passhash = dbModel.Password;
+            var tos = dbModel.Tos;
+
+            if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
+            {
+                loginok = LoginResultCode.Fail_AlreadyLoggedIn;
+            }
+            else if (pwd.Equals(passhash, StringComparison.OrdinalIgnoreCase) 
+                || HashDigest.HashByType("SHA-512", pwd).ToHexString().Equals(passhash, StringComparison.OrdinalIgnoreCase))
+            {
+                // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
+                loginok = !tos ? LoginResultCode.Fail_Agreement : LoginResultCode.Success; // migrate to bcrypt
+            }
+            else
+            {
+                loginok = LoginResultCode.Fail_IncorrectPassword;
             }
 
             if (loginok == LoginResultCode.Success || loginok == LoginResultCode.Fail_IncorrectPassword)

@@ -8,7 +8,7 @@ namespace Application.Utility
         public const string InstanceName = "InstanceName";
 
         public const string Database = "Database";
-        public const string ConnectStr_Mysql = "MySql";
+        public const string ConnectStr_PostgreSql = "PostgreSQL";
 
         public const string GrpcEndpoint = "Kestrel:Endpoints:grpc";
         public const string OpenApiEndpoint = "Kestrel:Endpoints:openapi";

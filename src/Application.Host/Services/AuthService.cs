@@ -18,9 +18,11 @@ namespace Application.Host.Services
 
         public TokenModel? Login(LoginForm loginForm)
         {
-            var acc = _server.AccountManager.Find(x => x.Name == loginForm.UserName, x => x.Name.Equals(loginForm.UserName, StringComparison.OrdinalIgnoreCase));
+
+            var acc = _server.AccountManager.FindByName(loginForm.UserName);
             if (acc == null)
                 return null;
+
             if (acc.Password.Equals(loginForm.Password, StringComparison.OrdinalIgnoreCase))
             {
                 return TokenModel.CreateToken(

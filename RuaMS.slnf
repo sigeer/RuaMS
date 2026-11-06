@@ -4,7 +4,7 @@
     "projects": [
       "src\\Application.Benchmark\\Application.Benchmark.csproj",
       "src\\Application.Core.Channel.InProgress\\Application.Core.Channel.InProgress.csproj",
-      "src\\Application.Core.EF.MySQL\\Application.Core.EF.MySQL.csproj",
+      "src\\Application.Core.EF.PostgreSQL\\Application.Core.EF.PostgreSQL.csproj",
       "src\\Application.Core.EF.Sqlite\\Application.Core.EF.Sqlite.csproj",
       "src\\Application.Core.EF\\Application.Core.EF.csproj",
       "src\\Application.Core.Login\\Application.Core.Login.csproj",

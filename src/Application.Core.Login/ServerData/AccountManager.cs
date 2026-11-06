@@ -28,7 +28,7 @@ namespace Application.Core.Login.Datas
 
         readonly MasterServer _server;
         public AccountManager(ILogger<AccountManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper maaper, MasterServer server)
-            :base(StorageCategory.Account, dbContextFactory, maaper, logger)
+            : base(StorageCategory.Account, dbContextFactory, maaper, logger)
         {
             _server = server;
         }
@@ -51,9 +51,9 @@ namespace Application.Core.Login.Datas
             return base.Find(key);
         }
 
-        public int GetAccountIdByName(string accName)
+        public AccountCtrl? FindByName(string accName)
         {
-            return Find(x => x.Name == accName, x => x.Name == accName)?.Id ?? -2;
+            return Find(x => x.Name == accName, x => x.Name.Equals(accName, StringComparison.OrdinalIgnoreCase));
         }
 
         public AccountLoginStatus GetAccountLoginStatus(int accId)
@@ -240,10 +240,10 @@ namespace Application.Core.Login.Datas
 
             var data = dbContext.Accounts.OrderBy(x => x.Id).ToPage(pageIndex, pageSize).ToList();
             var ids = data.Select(x => x.Id).ToList();
-            var final = data.Select(x => new AccountResponseDto 
+            var final = data.Select(x => new AccountResponseDto
             {
-                Id= x.Id,
-                Name= x.Name,
+                Id = x.Id,
+                Name = x.Name,
                 GMLevel = x.GMLevel,
             }).ToList();
             var banInfos = _server.AccountBanManager.FilterAccount(ids);

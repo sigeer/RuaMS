@@ -10,8 +10,8 @@ services:
       rua-ms-db:
         condition: service_healthy
     environment:
-        RUA_MS_Database: "MySql"
-        RUA_MS_ConnectionStrings__MySql: "server=rua-ms-db;user id=root;password=root;SslMode=None;allowPublicKeyRetrieval=true;database=ruams;Charset=utf8mb4;"
+        RUA_MS_Database: "PostgreSQL"
+        RUA_MS_ConnectionStrings__PostgreSQL: "Host=rua-ms-db;Port=5432;Database=ruams;Username=postgres;Password=root"
         ## 此处修改HOST
         # RUA_MS_ChannelServerConfig__ServerHost: 127.0.0.1
         # RUA_MS_EnableOpenApi: false
@@ -26,17 +26,17 @@ services:
 
   rua-ms-db:
     container_name: service-rua-ms-db
-    image: mysql:8.4.4
+    image: postgres:17-alpine
     environment:
-      MYSQL_DATABASE: "ruams"
-      MYSQL_ROOT_PASSWORD: "root"
+      POSTGRES_DB: "ruams"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "root"
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/mysql
-      - ./db/log:/var/log/mysql
+      - ./db/pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ruams"]
       interval: 10s
       retries: 20
       timeout: 10s
