@@ -261,12 +261,12 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     }
                     else if (attack.skill == FPArchMage.FIRE_DEMON)
                     {
-                        long duration = 1000 * (attackEffect!.getDuration());
+                        long duration = (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.ICE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == ILArchMage.ICE_DEMON)
                     {
-                        long duration = 1000 * (attackEffect!.getDuration());
+                        long duration = (attackEffect!.getDuration());
                         monster.setTempEffectiveness(Element.FIRE, ElementalEffectiveness.WEAK, duration);
                     }
                     else if (attack.skill == DragonKnight.SACRIFICE)
@@ -881,28 +881,28 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                 {
                     if (sourceID == WhiteKnight.BW_FIRE_CHARGE || sourceID == WhiteKnight.SWORD_FIRE_CHARGE)
                     {
-                        if (monster.getStats().getEffectiveness(Element.FIRE) == ElementalEffectiveness.WEAK)
+                        if (monster.getMonsterEffectiveness(Element.FIRE) == ElementalEffectiveness.WEAK)
                         {
                             calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_ICE_CHARGE || sourceID == WhiteKnight.SWORD_ICE_CHARGE)
                     {
-                        if (monster.getStats().getEffectiveness(Element.ICE) == ElementalEffectiveness.WEAK)
+                        if (monster.getMonsterEffectiveness(Element.ICE) == ElementalEffectiveness.WEAK)
                         {
                             calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == WhiteKnight.BW_LIT_CHARGE || sourceID == WhiteKnight.SWORD_LIT_CHARGE)
                     {
-                        if (monster.getStats().getEffectiveness(Element.LIGHTING) == ElementalEffectiveness.WEAK)
+                        if (monster.getMonsterEffectiveness(Element.LIGHTING) == ElementalEffectiveness.WEAK)
                         {
                             calcDmgMax = (calcDmgMax * (1.05 + level * 0.015));
                         }
                     }
                     else if (sourceID == Paladin.BW_HOLY_CHARGE || sourceID == Paladin.SWORD_HOLY_CHARGE)
                     {
-                        if (monster.getStats().getEffectiveness(Element.HOLY) == ElementalEffectiveness.WEAK)
+                        if (monster.getMonsterEffectiveness(Element.HOLY) == ElementalEffectiveness.WEAK)
                         {
                             calcDmgMax = (calcDmgMax * (1.2 + level * 0.015));
                         }
@@ -924,7 +924,7 @@ public abstract class AbstractDealDamageHandler : ChannelHandlerBase
                     // The skill has an element effect, so we need to factor that in.
                     if (monster != null)
                     {
-                        ElementalEffectiveness eff = monster.getElementalEffectiveness(skill.getElement());
+                        ElementalEffectiveness eff = monster.getMonsterEffectiveness(skill.getElement());
                         if (eff == ElementalEffectiveness.WEAK)
                         {
                             calcDmgMax = (calcDmgMax * 1.5);

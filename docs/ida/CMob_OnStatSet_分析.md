@@ -54,6 +54,8 @@
 - `CMob+416`（0x1A0）为 `MobStat`；`DecodeTemporary` 的 `this[n]` 均相对该基址（`_DWORD` 下标）。
 - `MobStat` 经 `SetFrom` 可见总大小 `0x208`（520 字节 = 130 个 DWORD）。
 - mask 单 bit 常量由 `sub_873B8C(UINT128(1), bit)` 生成，地址规律 **`0xBEFAB0 - bit*0x10`**（初始化：`sub_78973C` bit0 … `sub_789D9C` bit34）。
+- POISON 位的副作用里有一条**元素抗性改写**（`MobStat::AdjustDamagedElemAttr` 0x78C7AB，
+  仅 2121003/2221003 触发），详见 `docs/ida/怪物元素抗性_elemAttr_同步_分析.md`。
 
 ---
 

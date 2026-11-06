@@ -39,6 +39,9 @@ public class MonsterStats
     public int MaxMP { get; set; }
     public bool boss, ffaLoot, _isExplosiveReward, _removeOnMiss;
 
+    /// <summary>
+    /// 模板中的元素抗性。运行期间只读，临时覆盖请使用 <c>Monster.setTempEffectiveness</c>
+    /// </summary>
     public Dictionary<Element, ElementalEffectiveness> resistance = new();
     public int[] revives = new int[0];
 
@@ -131,6 +134,9 @@ public class MonsterStats
     }
 
 
+    /// <summary>
+    /// 写入模板原始抗性，仅供 WZ 数据解码时使用。运行期间的临时覆盖请使用 <c>Monster.setTempEffectiveness</c>
+    /// </summary>
     public void setEffectiveness(Element e, ElementalEffectiveness ee)
     {
         resistance.AddOrUpdate(e, ee);
@@ -159,11 +165,6 @@ public class MonsterStats
     public int getBuffToGive()
     {
         return buffToGive;
-    }
-
-    public void removeEffectiveness(Element e)
-    {
-        resistance.Remove(e);
     }
 
 

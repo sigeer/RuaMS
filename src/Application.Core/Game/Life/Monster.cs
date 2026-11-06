@@ -88,6 +88,12 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
     public long LastAttackTime { get; set; }
     private bool availablePuppetUpdate = true;
+
+    /// <summary>
+    /// 临时元素抗性覆盖，到期后自动失效并回退到 <see cref="stats"/> 中的模板值
+    /// </summary>
+    private readonly Dictionary<Element, (ElementalEffectiveness Effect, long ExpiredAt)> _tempEffectiveness = new();
+
     /// <summary>
     /// 自定义掉落，为null时走默认的drop_data
     /// </summary>
@@ -1252,20 +1258,6 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return base.isFacingLeft();
     }
 
-    public ElementalEffectiveness getElementalEffectiveness(Element e)
-    {
-        if (AllBuffs.ContainsKey(MonsterStatus.DOOM))
-        {
-            return ElementalEffectiveness.NORMAL; // like blue snails
-        }
-        return getMonsterEffectiveness(e);
-    }
-
-    private ElementalEffectiveness getMonsterEffectiveness(Element e)
-    {
-        return stats.getEffectiveness(e);
-    }
-
     private Player? getActiveController()
     {
         var chr = getController();
@@ -1642,17 +1634,47 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         return stolenItems;
     }
 
+    /// <summary>
+    /// 怪物当前的元素抗性：未过期的临时覆盖优先，否则取模板值
+    /// </summary>
+    public ElementalEffectiveness getMonsterEffectiveness(Element e)
+    {
+        if (AllBuffs.ContainsKey(MonsterStatus.DOOM))
+        {
+            return ElementalEffectiveness.NORMAL; // like blue snails
+        }
+
+        // 未过期的临时覆盖优先，否则回退到模板值
+        if (_tempEffectiveness.TryGetValue(e, out var temp) && temp.ExpiredAt > MapModel.ChannelServer.Node.getCurrentTime())
+        {
+            return temp.Effect;
+        }
+
+        return stats.getEffectiveness(e);
+    }
+
+    /// <summary>
+    /// 在 milli 毫秒内临时覆盖元素的抗性，到期后自动回退到模板值。
+    /// 已经处于 WEAK（无论是天生还是临时覆盖）时不再覆盖。
+    /// </summary>
     public void setTempEffectiveness(Element e, ElementalEffectiveness ee, long milli)
     {
-        Element fE = e;
-        ElementalEffectiveness fEE = stats.getEffectiveness(e);
-        if (!fEE.Equals(ElementalEffectiveness.WEAK))
-        {
-            stats.setEffectiveness(e, ee);
+        _tempEffectiveness[e] = (ee, MapModel.ChannelServer.Node.getCurrentTime() + milli);
+    }
 
-            var mmap = this.getMap();
-            MobClearSkillService service = mmap.getChannelServer().MobClearSkillService;
-            service.registerMobClearSkillAction(mmap.getId(), new MonsterClearEffectCommand(this, e), milli);
+    private void ProcessTempEffectiveness(long now)
+    {
+        if (_tempEffectiveness.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var (e, value) in _tempEffectiveness.ToArray())
+        {
+            if (value.ExpiredAt <= now)
+            {
+                _tempEffectiveness.Remove(e);
+            }
         }
     }
 
@@ -2342,6 +2364,8 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             Status = TickableStatus.Remove;
             return;
         }
+
+        ProcessTempEffectiveness(now);
 
         if (_friendlyDropPeriod > 0 && _friendlyDropNext <= now)
         {
