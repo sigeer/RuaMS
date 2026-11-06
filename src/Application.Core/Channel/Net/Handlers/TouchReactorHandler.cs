@@ -39,11 +39,11 @@ public class TouchReactorHandler : ChannelHandlerBase
 
         if (p.readByte() != 0)
         {
-            await c.CurrentServer.ReactorScriptManager.touch(c, reactor);
+            await reactor.Touch(c);
         }
         else
         {
-            await c.CurrentServer.ReactorScriptManager.untouch(c, reactor);
+            await reactor.Untouch(c);
         }
     }
 }

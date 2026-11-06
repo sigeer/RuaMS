@@ -26,6 +26,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Server.partyquest;
 using Application.Utility.Pipeline;
 using net.server.services.task.channel;
+using System.Numerics;
 using tools;
 
 namespace Application.Core.Server.maps;
@@ -248,7 +249,7 @@ public class Reactor : AbstractMapObject
             attackHit = wHit;
 
             await c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
-            await c.CurrentServer.ReactorScriptManager.onHit(c, this);
+            await c.CurrentServer.NodeService.PluginManager.ReactorHit(c, this);
 
             int reactorType = stats.getType(state);
             if (reactorType < 999 && reactorType != -1)
@@ -294,7 +295,7 @@ public class Reactor : AbstractMapObject
                                 await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                             }
 
-                            await c.CurrentServer.ReactorScriptManager.act(c, this);
+                            await Act(c);
                         }
                         else
                         {
@@ -303,7 +304,7 @@ public class Reactor : AbstractMapObject
                             if (state == stats.getNextState(state, b))
                             {
                                 //current state = next state, looping reactor
-                                await c.CurrentServer.ReactorScriptManager.act(c, this);
+                                await Act(c);
                             }
 
                             setShouldCollect(true);     // refresh collectability on item drop-based reactors
@@ -319,7 +320,7 @@ public class Reactor : AbstractMapObject
                 await BroadcastMap(PacketCreator.triggerReactor(this, stance));
                 if (this.getId() != 9980000 && this.getId() != 9980001)
                 {
-                    await c.CurrentServer.ReactorScriptManager.act(c, this);
+                    await Act(c);
                 }
 
                 setShouldCollect(true);
@@ -501,8 +502,20 @@ public class Reactor : AbstractMapObject
         }
     }
 
+    public Task Act(IChannelClient c)
+    {
+        return c.CurrentServer.NodeService.PluginManager.ReactorAct(c, this);
+    }
 
+    public Task Touch(IChannelClient c)
+    {
+        return c.CurrentServer.NodeService.PluginManager.ReactorTouch(c, this);
+    }
 
+    public Task Untouch(IChannelClient c)
+    {
+        return c.CurrentServer.NodeService.PluginManager.ReactorUntouch(c, this);
+    }
     public override VisionType GetVisionTypeForPlayer(Player chr)
     {
         if (!isAlive())

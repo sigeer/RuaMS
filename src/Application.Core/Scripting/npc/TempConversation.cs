@@ -3,14 +3,6 @@ using tools;
 
 namespace Application.Core.scripting.npc
 {
-    public enum TempConversationType
-    {
-        Default,
-        Select,
-        InputNumber,
-        InputText,
-        YesNo
-    }
     public class TempConversation : NPCConversationManager
     {
         private TempConversation(IChannelClient c, int npc = NpcId.MAPLE_ADMINISTRATOR) : base(c, npc)

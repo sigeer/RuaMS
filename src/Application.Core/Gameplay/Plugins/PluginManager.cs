@@ -735,6 +735,9 @@ namespace Application.Core.Gameplay.Plugins
 
         async Task RunReactorScript(IChannelClient c, Reactor reactor, ScriptKind kind, string? scriptName)
         {
+            // Reactor.wz 里没有 action 的反应堆，脚本名约定为 r{ReactorId}
+            scriptName ??= $"r{reactor.getId()}";
+
             var script = FindScript(kind, scriptName);
             if (script == null)
                 return;

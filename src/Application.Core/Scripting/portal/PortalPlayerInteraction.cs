@@ -28,7 +28,7 @@ using tools;
 
 namespace scripting.portal;
 
-public class PortalPlayerInteraction : AbstractPlayerInteraction
+public abstract class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private IPortal portal;
 

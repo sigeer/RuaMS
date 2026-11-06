@@ -40,10 +40,10 @@ dotnet test --filter "FullyQualifiedName~ServiceTest.Infrastructure.UtilityTests
 # 构建频道服务器（多进程模式）
 dotnet build "./src/Application.Host.Channel/Application.Host.Channel.csproj"
 
-# 构建插件项目（以 Application.Plugin 开头，支持热更新，需单独构建）
+# 构建插件项目（插件不在宿主引用图中，必须单独构建，详见「插件系统」）
 dotnet build "./src/Application.Plugin.Script/Application.Plugin.Script.csproj"
 dotnet build "./src/Application.Plugin.FakeCharacter/Application.Plugin.FakeCharacter.csproj"
-# 构建后将 dll 放入根目录 `Plugins` 文件夹即可自动加载
+# 构建后 dll 会自动复制到运行目录下的 `Plugins/`，由宿主加载
 ```
 
 ## 架构概述
@@ -67,6 +67,39 @@ dotnet build "./src/Application.Plugin.FakeCharacter/Application.Plugin.FakeChar
 - **JavaScript**：基于 Jint 引擎，运行 `scripts/` 下的遗留 JS 脚本
 - **C# 脚本**：通过 `Application.Plugin.Script` 重写，支持 IDE 导航和重构（持续迁移中）
 - **Lua**：基于 NLua，暂未投入使用
+
+### 插件系统
+
+`Application.Plugin.*` 是**插件**，不是普通的类库项目：
+
+- **宿主不引用插件项目**。`Application.Host` / `Application.Host.Channel` 的 `ProjectReference` 中没有它们，
+  因此 `dotnet build Application.Host`（以及 `dotnet run`、`dotnet publish` 宿主）**不会编译插件**，
+  更不能为了“想办法编译到”而在宿主里加 `ProjectReference` —— 插件由 `PluginManager` 在运行时
+  通过独立的 `AssemblyLoadContext` 从 DLL 加载（见 `src/Application.Core/Gameplay/Plugins/`）。
+- **插件必须单独构建**：
+
+  ```bash
+  dotnet build "./src/Application.Plugin.Script/Application.Plugin.Script.csproj"
+  ```
+
+  各插件项目自带 `CopyToPlugins` 目标，构建后会把 DLL 复制到
+  `src/Application.Host/bin/<Configuration>/<TargetFramework>/Plugins/`；这一步是插件项目自己完成的，
+  构建宿主不会触发它。
+
+- **只构建解决方案可以一次编译全部**：`dotnet build RuaMS.slnx`（或 `RuaMS.slnf`）会连同插件一起编译，
+  因为这些项目在解决方案中有自己的条目。
+
+- **运行时加载目录是程序基目录下的 `Plugins/`**（`AppDomain.CurrentDomain.BaseDirectory/Plugins`，
+  即与 `Application.Host.dll` 同级），**不是仓库根目录**，也不在 `src/Application.Plugin.Script/bin/` 下。
+  运行时会监视该目录中匹配 `Application.Plugin.*.dll` 的文件，支持放入新 DLL 或覆盖同名 DLL 实现热更新。
+  用 `dotnet run` 启动时，BaseDirectory 是 `src/Application.Host/bin/<Configuration>/<TargetFramework>/`，
+  与 `CopyToPlugins` 的目标一致。
+
+- **多进程模式下每个进程各有一份**：`CopyToPlugins` 只复制到 `Application.Host` 的输出目录，
+  运行 `Application.Host.Channel` 时需要把 DLL 手动放到该进程的 `Plugins/` 下（频道服务器才加载脚本/游戏插件）。
+
+- **单元测试是唯一直接引用插件的项目**：`test/ServiceTest` 通过 `ProjectReference` 引用
+  `Application.Plugin.Script`，以便在测试中断言脚本实现。这是测试专用，不影响插件在运行时的独立加载。
 
 ### 数据库
 
@@ -97,12 +130,11 @@ src/
 ├── Application.Templates.Reader.Img/     — WZ 读取 IMG → 模板对象数据绑定
 ├── Application.Resources/                — 静态资源：wz/、scripts/、yaml 配置文件
 ├── XmlWzReader/                          — XML 格式 WZ 数据读取工具
-├── Application.Scripting/                — 脚本引擎抽象
-├── Application.Scripting.JS/             — JavaScript 脚本引擎（Jint，停止使用）
-├── Application.Scripting.Lua/            — Lua 脚本引擎（NLua，未投入使用）
 ├── Application.Plugin.Script/            — C# 重写的脚本
-│                                          ⚠ 插件项目，未直接引用，以热更新方式加载。修改后需 `dotnet build`，将 dll 放入 `Plugins/`
+│                                          ⚠ 插件项目，宿主不引用，不会被宿主构建连带编译；需单独 `dotnet build`，详见「插件系统」
 ├── Application.Plugin.FakeCharacter/     — 假人/自动角色插件
+│                                          ⚠ 同上，插件项目需单独构建
+├── Application.Plugin.TreasureMap/       — 藏宝图插件
 │                                          ⚠ 同上，插件项目需单独构建
 ├── Application.Benchmark/                — BenchmarkDotNet 性能基准测试
 └── app/
@@ -137,7 +169,8 @@ src/
 #### scripts
 
 当前使用的 `scripts` 来自 [BeiDou](https://github.com/BeiDouMS/BeiDou-Server)。
-C# 重写版本在 `Application.Plugin.Script` 中，需单独 `dotnet build`，将生成的 dll 放入根目录 `Plugins/` 下。
+C# 重写版本在 `Application.Plugin.Script` 中，需单独 `dotnet build`（不要依赖构建宿主顺带编译），
+生成的 dll 默认由插件项目复制到宿主输出目录的 `Plugins/` 下，详见「插件系统」。
 
 #### wz
 

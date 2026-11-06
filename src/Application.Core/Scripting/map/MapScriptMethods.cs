@@ -30,7 +30,7 @@ using tools;
 
 namespace scripting.map;
 
-public class MapScriptMethods : AbstractPlayerInteraction
+public abstract class MapScriptMethods : AbstractPlayerInteraction
 {
     public IMap Map { get; }
     private string rewardstring = " title has been rewarded. Please see NPC Dalair to receive your Medal.";

@@ -1,4 +1,4 @@
-using Application.Core.Client;
+﻿using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
 
@@ -7,7 +7,7 @@ namespace Application.Plugin.Script
     // Extra: 1002008, 1002009, 1021002, 1209001, 200000, 200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008, 200009, 2008006, 2008007, 2052001,
     // 2408002, 2408003, 2408004, 2508000, 2618000, 2618001, 2618002, 3009000, 3102000, 8098000,
     // 9018000, 9018001, 9018002, 9018003, 9018004, 9018005, 9108000, 9108001, 9108002, 9108003, 9108004, 9108005, 9208000, 9208001, 9208002, 9208004, 9208007, 9208009, 9400300, 9400301
-    internal class ReactorHitScript : ReactorHitScriptBase
+    internal partial class ReactorHitScript : ReactorHitScriptBase
     {
         public ReactorHitScript(IChannelClient c, Reactor r)
             : base(c, r) { }

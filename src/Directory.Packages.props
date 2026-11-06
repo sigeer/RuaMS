@@ -1,8 +1,6 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.9.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
     <PackageVersion Include="OpenTelemetry" Version="1.21.0-rc.1" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="10.0.0" />

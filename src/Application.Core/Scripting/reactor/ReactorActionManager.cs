@@ -21,6 +21,7 @@
 */
 
 
+using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Game.Life;
@@ -37,7 +38,7 @@ namespace scripting.reactor;
  * @author Lerk
  * @author Ronan
  */
-public class ReactorActionManager : AbstractPlayerInteraction
+public abstract class ReactorActionManager : AbstractPlayerInteraction
 {
     private Reactor reactor;
 
@@ -176,7 +177,7 @@ public class ReactorActionManager : AbstractPlayerInteraction
 
     private List<DropEntry> getDropChances()
     {
-        return c.CurrentServer.ReactorScriptManager.getDrops(reactor.getId());
+        return c.CurrentServer.NodeService.DataService.GetReactorDrops(reactor.getId());
     }
 
     private List<DropEntry> generateDropList(List<DropEntry> drops, float dropRate, bool meso, int mesoChance, int minItems)

@@ -11,13 +11,6 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<Content Include="..\Application.Resources\scripts\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Link>scripts\%(RecursiveDir)%(Filename)%(Extension)</Link>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
 		<FilesToDelete Include="$(OutputPath)cache\**" />
 	</ItemGroup>
 

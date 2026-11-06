@@ -301,13 +301,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getItemQuantity(itemid) >= quantity;
     }
 
-    [ScriptCall]
     public int getItemQuantity(int itemid)
     {
         return getPlayer().getItemQuantity(itemid);
     }
 
-    [ScriptCall]
     public bool haveItemWithId(int itemid, bool checkEquipped = false)
     {
         return getPlayer().haveItemWithId(itemid, checkEquipped);
@@ -628,7 +626,6 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     }
     // js使用
-    [ScriptCall]
     public Task gainItem(int id, bool show) => gainItem(id, 1, show);
 
     public async Task gainItem(int id, int quantity = 1, bool show = true)

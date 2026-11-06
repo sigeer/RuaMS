@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using Application.Core.Channel;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Channel.Net.Packets;
+using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
 using Application.Core.Game.Relation;
@@ -43,26 +44,20 @@ namespace scripting.npc;
 /**
  * @author Matze
  */
-public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposable
+public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposable
 {
     private ILogger log = LogFactory.GetLogger(LogType.Conversation);
 
     protected int npc;
     private int npcOid;
-    public ScriptMeta ScriptMeta { get; }
-    private string? _getText;
 
-    public NextLevelContext NextLevelContext { get; set; } = new NextLevelContext();
-
-
-    public NPCConversationManager(IChannelClient c, int npc, int oid, ScriptMeta scriptName) : base(c)
+    public NPCConversationManager(IChannelClient c, int npc, int oid) : base(c)
     {
         this.npc = npc;
         this.npcOid = oid;
-        this.ScriptMeta = scriptName;
     }
 
-    public NPCConversationManager(IChannelClient c, int npc) : this(c, npc, -1, null)
+    public NPCConversationManager(IChannelClient c, int npc) : this(c, npc, -1)
     {
 
     }
@@ -80,10 +75,11 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public virtual async ValueTask DisposeAsync()
     {
         _talkChannel.Writer.TryComplete();
-        NextLevelContext.Clear();
-        await c.CurrentServer.NPCScriptManager.dispose(this);
         await c.SendPacket(PacketCreator.enableActions());
         c.OnlinedCharacter.removeClickedNPC();
+        c.OnlinedCharacter.setCS(false);
+        await c.OnlinedCharacter.flushDelayedUpdateQuests();
+        c.NPCConversationManager = null;
     }
 
     public async Task sendDefault(int checkQuestId = 0)
@@ -212,16 +208,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     public async Task sendDimensionalMirror(string text)
     {
         await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
-    }
-
-    public void setGetText(string text)
-    {
-        this._getText = text;
-    }
-
-    public string? getText()
-    {
-        return this._getText;
     }
 
     public async Task<bool> forceStartQuest(int id)
@@ -951,206 +937,6 @@ public class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposabl
     }
     #endregion
 
-
-    #region NextLevelTalk
-    /// <summary>
-    /// 只有下一步的对话
-    /// 对应sendNext
-    /// </summary>
-    /// <param name="nextLevel">下一步方法 function level{nextLevel}</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendNextLevel(string? nextLevel, string text, byte speaker = 0)
-    {
-        sendNext(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_NEXT, nextLevel);
-    }
-    /// <summary>
-    /// 只有下一步的对话
-    /// 对应sendNext
-    /// </summary>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendNextLevel(string text, byte speaker = 0)
-    {
-        sendNextLevel(null, text, speaker);
-    }
-
-    /// <summary>
-    /// 只有上一步的对话
-    /// 对应sendPrev
-    /// </summary>
-    /// <param name="lastLevel">上一步方法 function level{lastLevel}</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendLastLevel(string lastLevel, string text, byte speaker = 0)
-    {
-        sendPrev(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_LAST, lastLevel);
-    }
-
-    /// <summary>
-    /// 有上一步和下一步的对话
-    /// 对应sendNextPrev
-    /// </summary>
-    /// <param name="lastLevel">上一步方法</param>
-    /// <param name="nextLevel">下一步方法</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendLastNextLevel(string lastLevel, string nextLevel, string text, byte speaker = 0)
-    {
-        sendNextPrev(text, speaker);
-        NextLevelContext.TwoOption(NextLevelType.SEND_LAST_NEXT, lastLevel, nextLevel);
-    }
-
-    public void SendParamedNextLevel(string level, object nextParam, string text, byte speaker = 0)
-    {
-        sendNext(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_NEXT, level, nextParam);
-    }
-
-    public void SendParamedLastLevel(string level, object lastParam, string text, byte speaker = 0)
-    {
-        sendPrev(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_LAST, level, lastParam);
-    }
-
-    public void SendParamedLastNextLevel(string level, object lastLevelParam, object nextLevelParam, string text, byte speaker = 0)
-    {
-        sendNextPrev(text, speaker);
-        NextLevelContext.TwoOption(NextLevelType.SEND_LAST_NEXT, level, level, lastLevelParam, nextLevelParam);
-    }
-
-    /// <summary>
-    /// 只有ok按钮的对话
-    /// 对应sendOk，OK后调用level{nextLevel}
-    /// </summary>
-    /// <param name="nextLevel">点击ok的下一步方法</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendOkLevel(string nextLevel, string text, byte speaker = 0)
-    {
-        sendOk(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_OK, nextLevel);
-    }
-
-    /// <summary>
-    /// 只有ok按钮的对话
-    /// 对应sendOk，OK后直接结束，dispose
-    /// </summary>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker">说话者，0,1,8,9 = NPC；2,3 = 玩家；4,5,6,7 = 客户端报38错误；其它数字未测试。</param>
-    public void sendOkLevel(string text, byte speaker = 0)
-    {
-        sendOk(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_OK, null);
-    }
-
-    /**
-     * 多个选项的对话，选择后自动路由到level + selection对应的方法
-     * 对应sendSimple
-     *
-     * @param text 对话内容
-     */
-    public void sendSelectLevel(string text, byte speaker = 0)
-    {
-        sendSelectLevel("", text, speaker);
-    }
-
-    /**
-     * 多个选项的对话，选择后自动路由到level + prefix + selection对应的方法
-     * 对应sendSimple
-     *
-     * @param prefix 方法前缀，如果脚本有多次要选择的地方，可以通过不同的前缀区分
-     * @param text   对话内容
-     */
-    public void sendSelectLevel(string prefix, string text, byte speaker = 0)
-    {
-        sendSimple(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_SELECT, prefix);
-    }
-
-    /**
-     * 多个选项的对话，选择后路由到指定方法，将玩家的选择传入
-     * 对应sendSimple
-     *
-     * @param nextLevel 方法前缀，如果脚本有多次要选择的地方，可以通过不同的前缀区分
-     * @param text   对话内容
-     */
-    public void sendNextSelectLevel(string nextLevel, string text, byte speaker = 0)
-    {
-        sendSimple(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.SEND_NEXT_SELECT, nextLevel);
-    }
-
-    /// <summary>
-    /// 获取玩家输入数字的对话
-    /// 对应sendGetNumber
-    /// </summary>
-    /// <param name="nextLevel">下一步方法</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="def">默认值</param>
-    /// <param name="min">最小值</param>
-    /// <param name="max">最大值</param>
-    /// <param name="speaker"></param>
-    public void getInputNumberLevel(string nextLevel, string text, int def, int min, int max, byte speaker = 0)
-    {
-        sendGetNumber(text, def, min, max, speaker);
-        NextLevelContext.OneOption(NextLevelType.GET_INPUT_NUMBER, nextLevel);
-    }
-
-
-    /// <summary>
-    /// 获取玩家输入字符串的对话
-    /// 对应sendGetText
-    /// </summary>
-    /// <param name="nextLevel">下一步</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker"></param>
-    public void getInputTextLevel(string nextLevel, string text, byte speaker = 0)
-    {
-        sendGetText(text, speaker);
-        NextLevelContext.OneOption(NextLevelType.GET_INPUT_TEXT, nextLevel);
-    }
-
-    /// <summary>
-    /// 有接受和拒绝的对话
-    /// 对应sendAcceptDecline
-    /// </summary>
-    /// <param name="decLineLevel">拒绝</param>
-    /// <param name="acceptLevel">接受</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker"></param>
-    public void sendAcceptDeclineLevel(string decLineLevel, string acceptLevel, string text, byte speaker = 0)
-    {
-        sendAcceptDecline(text, speaker);
-        NextLevelContext.TwoOption(NextLevelType.SEND_ACCEPT_DECLINE, decLineLevel, acceptLevel);
-    }
-
-    /// <summary>
-    /// 有是和否的对话
-    /// 对应sendYesNo
-    /// </summary>
-    /// <param name="noLevel">否方法</param>
-    /// <param name="yesLevel">是方法</param>
-    /// <param name="text">对话内容</param>
-    /// <param name="speaker"></param>
-    public void sendYesNoLevel(string noLevel, string yesLevel, string text, byte speaker = 0)
-    {
-        sendYesNo(text, speaker);
-        NextLevelContext.TwoOption(NextLevelType.SEND_YES_NO, noLevel, yesLevel);
-    }
-
-    public void SetContextData(object? data)
-    {
-        NextLevelContext.SetContextData(data);
-    }
-
-    public object? GetContextData()
-    {
-        return NextLevelContext.GetContextData();
-    }
-    #endregion
 
     #region Guild/Alliance Operation
     public ProtoModel.GuildProto? GetGuild() => getPlayer().GetGuild();
