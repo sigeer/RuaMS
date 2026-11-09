@@ -68,24 +68,6 @@ namespace Application.Plugin.Script.Features.Magician4thJob
             }
         }
 
-        // Map: 921100300 | pt: 7
-        /// <summary>
-        /// 通用出口：持有 4031495 时去 921100301，否则回 211040100。
-        /// </summary>
-        public async Task<bool> s4common1_exit()
-        {
-            if (hasItem(4031495))
-            {
-                await playPortalSound();
-                await warp(921100301);
-            }
-            else
-            {
-                await playPortalSound();
-                await warp(211040100);
-            }
 
-            return true;
-        }
     }
 }

@@ -27,6 +27,13 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
             EventTime = 60 * 60;
         }
 
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+            eim.setIntProperty("boss", 0);
+
+            await base.OnSetup(eim, level, lobbyId);
+        }
+
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             // 未封印的巴洛古：8830007 / 8830008 / 8830009
@@ -72,7 +79,7 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
                 return;
 
             var mob = LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.EasyBossMobId);
-            await map.spawnMonsterOnGroundBelow(mob, Exped_BalrogFeature.EasySpawnPoint);
+            await map.spawnMonsterOnGroundBelow(mob, Exped_BalrogFeature.SpawnPoint);
         }
     }
 }

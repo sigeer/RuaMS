@@ -378,16 +378,6 @@ namespace Application.Plugin.Script.Features.CWKPQ
         }
 
 
-        // Reactor: 6109013 
-        public async Task glpqstrge()
-        {
-            // Intentionally empty — touch/untouch handler does the work
-
-        }
-
-
-
-
 
         // Reactor: 6109016 
         public async Task glpqskill5()

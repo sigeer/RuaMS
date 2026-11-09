@@ -315,31 +315,6 @@ namespace Application.Plugin.Script
             await displayCygnusIntro();
 
         }
-
-        // Map: 914000000, 914000300, 914000400, 914000410, 914000420, 914000500
-        public async Task aranTutorAlone()
-        {
-            // TODO
-
-        }
-
-        // Map: 914090000, 914090001, 914090002, 914090003, 914090004, 914090005 … (共 17 张)
-        public async Task aranDirection()
-        {
-            string intro = (c.OnlinedCharacter.getMapId()) switch
-            {
-                MapId.ARAN_TUTO_1 => "Effect/Direction1.img/aranTutorial/Scene0",
-                MapId.ARAN_TUTO_2 => "Effect/Direction1.img/aranTutorial/Scene1" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-                MapId.ARAN_TUTO_3 => "Effect/Direction1.img/aranTutorial/Scene2" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-                MapId.ARAN_TUTO_4 => "Effect/Direction1.img/aranTutorial/Scene3",
-                MapId.ARAN_POLEARM => "Effect/Direction1.img/aranTutorial/HandedPoleArm" + (c.OnlinedCharacter.getGender() == 0 ? "0" : "1"),
-                MapId.ARAN_MAHA => "Effect/Direction1.img/aranTutorial/Maha",
-                _ => ""
-            };
-            await lockUI();
-            await ShowDirectionEffect(intro);
-        }
-
     
 
         // Map: 109090100, 109090101, 109090102, 109090103, 109090104, 910040110 … (共 11 张)

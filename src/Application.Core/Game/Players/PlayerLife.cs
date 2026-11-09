@@ -265,7 +265,7 @@ namespace Application.Core.Game.Players
             var eim = getEventInstance();
             if (eim != null)
             {
-                eim.playerKilled(this);
+                await eim.playerKilled(this);
             }
             usedSafetyCharm = false;
 

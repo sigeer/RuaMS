@@ -252,7 +252,7 @@ public class MapFactory : IStaticService
 
         if (mapData.ReactorShuffle)
         {
-            map.shuffleReactors();
+            map.ShuffleReactorsByName(mapData.ReactorShuffleName);
         }
 
 

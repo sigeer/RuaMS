@@ -94,89 +94,7 @@ namespace Application.Plugin.Script
             return true;
         }
 
-        // Map: 980010000 | pt: 7
-        public async Task<bool> aMatchMove2()
-        {
 
-            await playPortalSound();
-            await warp(getPlayer().getSavedLocation("MIRROR"));
-            return true;
-        }
-
-        public async Task<bool> apq00()
-        {
-
-            await playPortalSound();
-            await warp(670010300, 0);
-            return true;
-        }
-
-        public async Task<bool> apq01()
-        {
-
-            await playPortalSound();
-            await warp(670010301, 0);
-            return true;
-        }
-
-        public async Task<bool> apq02()
-        {
-
-            await playPortalSound();
-            await warp(670010302, 0);
-            return true;
-        }
-
-        public async Task<bool> apq1()
-        {
-
-            await playPortalSound();
-            await warp(670010400, 0);
-            return true;
-        }
-
-        public async Task<bool> apq2()
-        {
-
-            await playPortalSound();
-            await warp(670010500, 0);
-            return true;
-        }
-
-        public async Task<bool> apq3()
-        {
-
-            await playPortalSound();
-            await warp(670010600, 0);
-            return true;
-        }
-
-        // Map: 670010300, 670010301, 670010302, 670010400, 670010500 | pt: 5
-        public async Task<bool> apqClosed()
-        {
-
-            await Pink("大门还没有打开。");
-            return false;
-        }
-
-        // Map: 670010600 | pt: 8
-        public async Task<bool> apqDoor()
-        {
-
-            var name = getPortal().getName().Substring(2, 4);
-            var gate = getPlayer().getMap().getReactorByName("gate" + name);
-            if (gate != null && gate.getState() == 4)
-            {
-                await playPortalSound();
-                await warp(670010600, "gt" + name + "PIB");
-                return true;
-            }
-            else
-            {
-                await Pink("大门还没有打开。");
-                return false;
-            }
-        }
 
         public async Task<bool> aqua_pq_boss_0()
         {
@@ -861,33 +779,6 @@ namespace Application.Plugin.Script
                     return false;
                 }
             }
-        }
-
-        // Map: 610030010 | pt: 8
-        public async Task<bool> glpqEnter()
-        {
-
-            if (haveItem(3992041, 1))
-            {
-                await playPortalSound();
-                await warp(610030020, "out00");
-                return true;
-            }
-            else
-            {
-                await Pink("The giant gate of iron will not budge no matter what, however there is a visible key-shaped socket.");
-                return false;
-            }
-        }
-
-        // glpq 传送门已在 Features/CWKPQ 中实现
-
-        // Map: 10000, 20000, 30000 | pt: 9
-        public async Task<bool> glTutoMsg0()
-        {
-
-            await showInstruction("离开这个区域，将无法再回来。", 150, 5);
-            return true;
         }
 
         // Map: 240020100 | pt: 7

@@ -52,7 +52,6 @@ namespace Application.Plugin.Script.Features.HolidayPQ
             MaxMap = baseMap + 1;
 
             EventTime = eventMinutes * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
         /// <summary>雪人本体（9400317 + 5*难度 + 等级-1）。</summary>

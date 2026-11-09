@@ -1,5 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
+using Application.Core.scripting.Events.Instances;
+using Application.Core.Server.life;
 using scripting.map;
 
 namespace Application.Plugin.Script.Features.Exped_Balrog
@@ -38,8 +40,22 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
         // Map: 105100300
         public async Task balog_summon()
         {
-            // TODO
+            var eim = getMap().EventInstanceManager;
+            if (eim == null || eim.EventName != Exped_BalrogFeature.EasyEventName)
+            {
+                return;
+            }
 
+            await getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.SealedBossId), Exped_BalrogFeature.SpawnPoint);
+            await getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.LeftClawMobId), Exped_BalrogFeature.SpawnPoint);
+            await getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.Sealed0RightClawMobId), Exped_BalrogFeature.SpawnPoint);
+
+            eim.Schedule(async eim => await releaseLeftClaw(eim, Exped_BalrogFeature.Sealed0RightClawMobId), 1 * 60000);
+        }
+
+        async Task releaseLeftClaw(AbstractEventInstanceManager eim, int toKill)
+        {
+            await getMap().killMonster(toKill);
         }
 
         // Map: 105100400
@@ -51,7 +67,15 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
                 return;
             }
 
-            await Exped_BalrogFeature.SummonEasy(eim, getMap());
+            /// <summary>
+            /// 简单难度：召唤封印形态 8830007（假）、左爪 8830009、右爪 8830013。
+            /// 本体 8830010 不在此处刷出，要等封印形态被打破后由 spawnSealedBalrog 召唤。
+            /// </summary>
+            await getMap().spawnFakeMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.EasySealedBossId), Exped_BalrogFeature.SpawnPoint);
+            await getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.EasyLeftClawMobId), Exped_BalrogFeature.SpawnPoint);
+            await getMap().spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.EasySealed0RightClawMobId), Exped_BalrogFeature.SpawnPoint);
+
+            eim.Schedule(async eim => await releaseLeftClaw(eim, Exped_BalrogFeature.EasySealed0RightClawMobId), 1 * 60000);
         }
 
         // Map: 105100301, 105100401

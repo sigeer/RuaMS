@@ -27,13 +27,5 @@ namespace Application.Plugin.Script.Features.KerningPQ
         /// 关卡里用于答题的凭据。
         /// </summary>
         internal const int TicketItem = 4001007;
-
-        #region 传送门
-
-        #endregion
-
-        #region NPC
-
-        #endregion
     }
 }

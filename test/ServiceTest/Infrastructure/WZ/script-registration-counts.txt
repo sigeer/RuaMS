@@ -2360,7 +2360,6 @@ ReactorAct|JPludiMob2
 ReactorAct|JPludiMob3
 ReactorAct|JPludiMob4
 ReactorAct|PB_boxCount
-ReactorAct|PinkBeenBack0
 ReactorAct|PinkBeenScript0
 ReactorAct|SEAitem0
 ReactorAct|amoriaItem0
@@ -2482,7 +2481,6 @@ ReactorAct|glpqskill6
 ReactorAct|glpqskill7
 ReactorAct|glpqskill8
 ReactorAct|glpqskill9
-ReactorAct|glpqstrge
 ReactorAct|glpqweapon0
 ReactorAct|glpqweapon1
 ReactorAct|glpqweapon2
@@ -2561,11 +2559,7 @@ ReactorAct|pFItem0
 ReactorAct|pFItem1
 ReactorAct|periItem0
 ReactorAct|r2008006
-ReactorAct|r2008007
 ReactorAct|r2408002
-ReactorAct|r2408004
-ReactorAct|r2508000
-ReactorAct|r2618000
 ReactorAct|r2618001
 ReactorAct|r2618002
 ReactorAct|r3009000
@@ -2656,7 +2650,6 @@ ReactorHit|JPludiMob3
 ReactorHit|JPludiMob4
 ReactorHit|PB_boxCount
 ReactorHit|PinkBeenBack0
-ReactorHit|PinkBeenScript0
 ReactorHit|SEAitem0
 ReactorHit|aquaItem0
 ReactorHit|aquaItem1
@@ -2694,13 +2687,8 @@ ReactorHit|fvquest1
 ReactorHit|fvquest2
 ReactorHit|fvscaScript0
 ReactorHit|go221024400
-ReactorHit|guyfawkesbox0
-ReactorHit|guyfawkesmob0
-ReactorHit|guyfawkesmob1
-ReactorHit|guyfawkesmob2
 ReactorHit|halloweenGLitem
 ReactorHit|halloweenbox
-ReactorHit|hontaleNPC0
 ReactorHit|hwMob0
 ReactorHit|leafItem0
 ReactorHit|leafItem1
@@ -2787,7 +2775,6 @@ ReactorTouch|glpqflame6
 ReactorTouch|glpqflame7
 ReactorTouch|glpqstrge
 ReactorTouch|hontaleNPC0
-ReactorTouch|r2408003
 ReactorUntouch|glpqflame0
 ReactorUntouch|glpqflame1
 ReactorUntouch|glpqflame2
@@ -2797,4 +2784,3 @@ ReactorUntouch|glpqflame5
 ReactorUntouch|glpqflame6
 ReactorUntouch|glpqflame7
 ReactorUntouch|glpqstrge
-ReactorUntouch|hontaleNPC0

@@ -51,15 +51,9 @@ namespace Application.Plugin.Script.Features.NineSpirit
             await chr.changeMap(map, 1);
         }
 
-        public override async Task OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
+        public override Task<bool> OnPlayerRevive(AbstractEventInstanceManager eim, Player player)
         {
-            // 离开挑战地图即结束副本
-            if (!InInstanceMap(mapid))
-            {
-                await End(eim, Core.scripting.Events.Abstraction.TerminationReason.MemberCount);
-            }
-
-            await base.OnPlayerMapChanged(eim, player, mapid);
+            return Task.FromResult(true);
         }
 
     }

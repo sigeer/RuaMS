@@ -6,9 +6,5 @@ namespace Application.Plugin.Script.Features.GuardianNex
     internal static class GuardianNexFeature
     {
         internal const string EventName = "GuardianNex";
-
-        #region 传送到 Nex 副本
-
-        #endregion
     }
 }

@@ -6,13 +6,23 @@ using scripting.portal;
 
 namespace Application.Plugin.Script.Features.PQ_Ariant
 {
-    /// <summary>
-    /// PQ_Ariant：ariantMout2。
-    /// </summary>
     internal sealed class PQ_AriantPortalHandler : PortalPlayerInteraction
     {
         public PQ_AriantPortalHandler(IChannelClient c, IPortal portal) : base(c, portal)
         {
+        }
+
+        // Map: 980010101 | pt: 9
+        public Task<bool> aM_start()  => Task.FromResult(true);
+
+
+        // Map: 980010000 | pt: 7
+        public async Task<bool> aMatchMove2()
+        {
+
+            await playPortalSound();
+            await warp(getPlayer().getSavedLocation("MIRROR"));
+            return true;
         }
 
         // Map: 980010010 | pt: 7

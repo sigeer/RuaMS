@@ -1,13 +1,13 @@
-using Application.Core.scripting.Events.Templates;
+using Application.Plugin.Script.Events;
 
-namespace Application.Plugin.Script.Features.ElnathPQ
+namespace Application.Plugin.Script.Features.Warrior4thJob
 {
-    internal sealed class Event : AbstractPartyQuestEventTemplate
+    internal sealed class Warrior4thJobEvent6192 : SoloQuestEventTemplate
     {
         const int ENTRY_MAP = 921100300;
         const int EXIT_MAP = 211040100;
 
-        public Event() : base(ElnathPQFeature.EventName)
+        public Warrior4thJobEvent6192() : base(Warrior4thJob.PowerStance)
         {
             MinCount = 1;
             MaxCount = 4;
@@ -23,7 +23,6 @@ namespace Application.Plugin.Script.Features.ElnathPQ
             MaxMap = ENTRY_MAP;
 
             EventTime = 10 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
     }

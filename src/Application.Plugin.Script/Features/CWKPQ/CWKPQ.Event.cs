@@ -3,6 +3,7 @@ using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Core.Server.life;
+using Application.Core.Server.maps;
 using Application.Resources.Messages;
 using Application.Shared.Battle;
 
@@ -81,6 +82,18 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
             EventTime = 2 * 60;
             RegistrationTime = 5 * 60;
+
+            // JS expStages = [2500, 8000, 18000, 25000, 30000, 40000]
+            //    mesoStages = [500, 1000, 2000, 5000, 8000, 20000]
+            StageClearRewards = new()
+            {
+                { 1, new(2500, 500) },
+                { 2, new(8000, 1000) },
+                { 3, new(18000, 2000) },
+                { 4, new(25000, 5000) },
+                { 5, new(30000, 8000) },
+                { 6, new(40000, 20000) },
+            };
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
@@ -108,17 +121,23 @@ namespace Application.Plugin.Script.Features.CWKPQ
             if (map400 != null)
             {
                 GenerateMapReactors(map400);
-                HideWrongEnvironments(map400);
+                await HideWrongEnvironments(map400);
             }
 
-            (await eim.getInstanceMap(610030550))?.shuffleReactors();
+            // 610030550 的 Map.wz 已带 reactorShuffle 节点，MapFactory 读图时自动洗牌，无需手动调用
 
-            // 第一阶段的守卫者
-            var mapEntry = await eim.getInstanceMap(ENTRY_MAP);
-            if (mapEntry != null)
+            // 弓手房 610030540 的 5 只守卫者（JS 坐标见下）
+            int[] posX = [944, 401, 28, -332, -855];
+            int[] posY = [-204, -384, -504, -384, -204];
+            var archerMap = await eim.getInstanceMap(610030540);
+            if (archerMap != null)
             {
-                var mob = LifeFactory.Instance.GetMonsterTrust(GUARDIAN_MOB);
-                await mapEntry.spawnMonsterOnGroundBelow(mob, new System.Drawing.Point(1000, 336));
+                for (var z = 0; z < posX.Length; z++)
+                {
+                    await archerMap.spawnMonsterOnGroundBelow(
+                        LifeFactory.Instance.GetMonsterTrust(GUARDIAN_MOB),
+                        new System.Drawing.Point(posX[z], posY[z]));
+                }
             }
 
             // 60 秒后一大波守卫者
@@ -155,7 +174,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
             }
 
-            var toRandomize = new List<object>();
+            var toRandomize = new List<Reactor>();
             for (var i = 0; i < indexes.Length; i++)
             {
                 var name = ReactorNames[i][indexes[i]];
@@ -173,7 +192,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
         /// <summary>
         /// 隐藏 4 技能地图中不属于正确路径的环境对象（JS 的 moveEnvironment 初始状态）。
         /// </summary>
-        static void HideWrongEnvironments(IMap map)
+        static async Task HideWrongEnvironments(IMap map)
         {
             string[] rows = ["a", "b", "c", "d", "e", "f", "g", "h", "i"];
             for (var x = 0; x < rows.Length; x++)
@@ -184,12 +203,12 @@ namespace Application.Plugin.Script.Features.CWKPQ
                     {
                         if (y != 2 && y != 4 && y != 5 && y != 7)
                         {
-                            _ = map.moveEnvironment(rows[x] + y, 1);
+                            await map.moveEnvironment(rows[x] + y, 1);
                         }
                     }
                     else
                     {
-                        _ = map.moveEnvironment(rows[x] + y, 1);
+                        await map.moveEnvironment(rows[x] + y, 1);
                     }
                 }
             }

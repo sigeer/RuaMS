@@ -53,6 +53,10 @@ namespace Application.Templates.Reader.Xml.Provider
                                 mapTemplate.CreateMobInterval = infoPropNode.GetIntValue();
                             else if (name == "mobRate")
                                 mapTemplate.MobRate = infoPropNode.GetFloatValue();
+                            else if (name == "reactorShuffleName")
+                                mapTemplate.ReactorShuffleName = infoPropNode.GetStringValue();
+                            else if (name == "reactorShuffle")
+                                mapTemplate.ReactorShuffle = infoPropNode.GetBoolValue();
 
                             else if (name == "onFirstUserEnter")
                                 mapTemplate.OnFirstUserEnter = infoPropNode.GetStringValue();
@@ -80,6 +84,10 @@ namespace Application.Templates.Reader.Xml.Provider
                                 mapTemplate.FieldLimit = infoPropNode.GetIntValue();
                             else if (name == "fieldType")
                                 mapTemplate.FieldType = infoPropNode.GetIntValue();
+                            else if (name == "reactorShuffleName")
+                                mapTemplate.ReactorShuffleName = infoPropNode.GetStringValue();
+                            else if (name == "reactorShuffle")
+                                mapTemplate.ReactorShuffle = infoPropNode.GetBoolValue();
 
                             else if (name == "recovery")
                                 mapTemplate.RecoveryRate = infoPropNode.GetFloatValue();

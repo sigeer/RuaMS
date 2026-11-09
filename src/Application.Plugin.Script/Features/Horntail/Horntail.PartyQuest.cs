@@ -33,5 +33,13 @@ namespace Application.Plugin.Script.Features.Horntail
 
             await base.OnSetup(eim, level, lobbyId);
         }
+
+        public override async Task ClearPQ(AbstractEventInstanceManager eim)
+        {
+            await base.ClearPQ(eim);
+
+            // 通关后把队伍送到黑龙头前的集合图
+            await eim.warpEventTeam(ClearMap);
+        }
     }
 }

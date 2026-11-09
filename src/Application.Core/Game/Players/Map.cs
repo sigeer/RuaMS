@@ -6,6 +6,7 @@ using Application.Core.Game.Trades;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects.Summons;
 using Application.Shared.WzEntity;
+using System.Runtime.ConstrainedExecution;
 using tools;
 using static Application.Templates.Mob.MobTemplate;
 
@@ -96,12 +97,21 @@ namespace Application.Core.Game.Players
             return warpMap;
         }
 
-        private async Task eventChangedMap(int map)
+        private async Task EventChangingMap(int map)
         {
             var eim = getEventInstance();
             if (eim != null)
             {
                 await eim.changedMap(this, map);
+            }
+        }
+
+        private async Task EventAfterChangedMap(int map)
+        {
+            var eim = getEventInstance();
+            if (eim != null)
+            {
+                await eim.afterChangedMap(this, map);
             }
         }
 
@@ -150,7 +160,6 @@ namespace Application.Core.Game.Players
 
         public async Task changeMap(IMap to, IPortal? pto)
         {
-            await eventChangedMap(to.getId());
             pto ??= to.getPortal(0)!;
             var warpTo = await getWarpMap(to.getId());
             await changeMapInternal(warpTo, pto.getPosition(), PacketCreator.getWarpToMap(warpTo, pto.getId(), this));
@@ -158,7 +167,6 @@ namespace Application.Core.Game.Players
 
         public async Task changeMap(IMap to, Point pos)
         {
-            await eventChangedMap(to.getId());
             var warpTo = await getWarpMap(to.getId());
             await changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
         }
@@ -169,6 +177,8 @@ namespace Application.Core.Game.Players
                 return;
 
             this.mapTransitioning.Set(true);
+
+            await EventChangingMap(to.getId());
 
             await this.unregisterChairBuff();
             await closeTrade(TradeResult.UNSUCCESSFUL_ANOTHER_MAP);
@@ -183,6 +193,7 @@ namespace Application.Core.Game.Players
 
                     await SendPacket(warpPacket);
                     await t.addPlayer(this);
+                    await EventAfterChangedMap(t.getId());
 
                     Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new ProtoModel.MapSyncProto { MasterId = Id, MapId = t.getId() });
                 });
@@ -216,7 +227,7 @@ namespace Application.Core.Game.Players
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 
-            await eventChangedMap(MapId.NONE);
+            await EventChangingMap(MapId.NONE);
 
             var mapEim = target.getEventInstance();
             if (mapEim != null)
@@ -237,6 +248,8 @@ namespace Application.Core.Game.Players
                 pto = to.getPortal(0)!;
             }
             await changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
+
+            await EventAfterChangedMap(to.Id);
         }
 
         private int getVisitedMapIndex(IMap map)

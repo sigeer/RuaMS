@@ -11,6 +11,12 @@ namespace Application.Plugin.Script.Features.OrbisPQ
         {
         }
 
+        // Reactor: 2008006 — 奥比斯 PQ 第三阶段：让张伯伦·伊克刷新宝箱
+        public async Task r2008006()
+        {
+            getEventInstance()?.setProperty("statusStg3", "0");
+        }
+
         // Reactor: 2001000 
         public async Task fgodMob0()
         {

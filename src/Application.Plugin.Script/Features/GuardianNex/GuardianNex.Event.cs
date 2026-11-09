@@ -24,7 +24,6 @@ namespace Application.Plugin.Script.Features.GuardianNex
             MaxMap = 240070000;
 
             EventTime = 15 * 60;
-            Type = Shared.Events.EventInstanceType.Regular;
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)

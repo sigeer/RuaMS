@@ -6,7 +6,7 @@ using Application.Core.scripting.Events.Templates;
 namespace Application.Plugin.Script.Features.CafePQ
 {
     /// <summary>
-    /// 咖啡厅组队任务基类（CafePQ_1 ~ CafePQ_6）。
+    /// 网吧组队任务基类（CafePQ_1 ~ CafePQ_6）。
     /// 对应 JS scripts/event/CafePQ_{1..6}.js —— 六份脚本结构一致，仅地图、优惠券数量与掉落数量不同。
     /// 通关由 NPC 1052013 收取优惠券后调用 clearPQ 触发（JS 的 monsterKilled 只负责掉落）。
     /// </summary>
@@ -21,7 +21,8 @@ namespace Application.Plugin.Script.Features.CafePQ
         /// <summary>怪物等级 &gt; 65 时的掉落数量。</summary>
         readonly int _highLevelDrop;
 
-        protected CafePQ(string name, int entryMap, int[] eventMaps, int couponsNeeded, int highLevelDrop)
+        protected CafePQ(string name, int entryMap, int[] eventMaps, int couponsNeeded, int highLevelDrop,
+            int clearExp, int clearItem)
             : base(name)
         {
             MinCount = 3;
@@ -38,7 +39,16 @@ namespace Application.Plugin.Script.Features.CafePQ
             MaxMap = eventMaps[^1];
 
             EventTime = 45 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
+
+            // JS：expStages 只有一个值（通关关），setEventRewards 只发一个通关道具
+            StageClearRewards = new()
+            {
+                { 1, new(clearExp, 0) },
+            };
+            AllClearRewards = new()
+            {
+                { 1, new Core.model.RewardPools([new(clearItem, 1)], [], []) },
+            };
 
             _eventMaps = eventMaps;
             _couponsNeeded = couponsNeeded;
@@ -85,8 +95,8 @@ namespace Application.Plugin.Script.Features.CafePQ
         /// </summary>
         public override async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-            await eim.stopEventTimer();
-            await eim.setEventCleared();
+            await base.ClearPQ(eim);
+
             await eim.GiveStageClearRewardAll(1);
 
             foreach (var mapId in _eventMaps)

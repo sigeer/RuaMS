@@ -163,7 +163,7 @@ namespace Application.Core.Scripting.Events
             return false;
         }
 
-        protected virtual void DisposeInstanceInternal(string name)
+        public async Task ProcessDisposeInstanceInternal(string name)
         {
             if (instances.TryRemove(name, out var eim))
             {
@@ -173,12 +173,11 @@ namespace Application.Core.Scripting.Events
                     new KeyValuePair<string, object?>("Channel", cserv.InstanceName),
                     new KeyValuePair<string, object?>("Event", getName()));
 
-                if (eim != null)
-                    UnregisterLobby(eim.LobbyId);
+                // 对应 JS 事件脚本的 dispose(eim)
+                await Template.OnLobbyDisposed(eim);
+                UnregisterLobby(eim.LobbyId);
             }
         }
-
-        public void ProcessDisposeInstanceInternal(string name) => DisposeInstanceInternal(name);
 
         /// <summary>
         /// 仅从EventManager中释放EventInstance，EvenInstance还没有释放
@@ -298,10 +297,10 @@ namespace Application.Core.Scripting.Events
             eim.setProperty("level", level);
 
             await Template.OnSetup(eim, level, lobbyId);
+
             await Template.respawnStages(eim);
             await eim.startEventTimer(EventTime * 1000);
             await Template.setEventRewards(eim);
-
             return eim;
         }
 
@@ -317,10 +316,9 @@ namespace Application.Core.Scripting.Events
                 _instanceName = instanceName;
             }
 
-            protected override Task Handle(long now)
+            protected override async Task Handle(long now)
             {
-                _src.ProcessDisposeInstanceInternal(_instanceName);
-                return Task.CompletedTask;
+                await _src.ProcessDisposeInstanceInternal(_instanceName);
             }
         }
     }

@@ -1,83 +1,26 @@
-using Application.Core.Game.Life;
-using Application.Core.Game.Maps;
-using Application.Core.scripting.Events.Instances;
-using Application.Core.scripting.Events.Templates;
-
 namespace Application.Plugin.Script.Features.MagatiaPQ
 {
     /// <summary>
-    /// 泽尼姆斯特（Zenumist）分支的事件模板。
-    /// 结构与 <see cref="AlcadnoEvent"/> 相同，只有地图号基数、护送怪与出口反应堆不同。
+    /// 泽尼姆斯特（Zenumist）分支：<c>rnj*</c> 前缀，地图基数 926100000，
+    /// 护送朱丽叶、击破弱 / 强 Frankenroid 9300139 / 9300140。
     /// </summary>
-    internal sealed class ZenumistEvent : AbstractPartyQuestEventTemplate
+    internal sealed class ZenumistEvent : MagatiaPQEventBase
     {
-        public ZenumistEvent() : base(MagatiaPQFeature.ZenumistEventName)
+        public ZenumistEvent() : base(MagatiaPQFeature.ZenumistEventName, MagatiaPQFeature.ZenumistMapBase)
         {
-            MinCount = 4;
-            MaxCount = 4;
-            MinLevel = 71;
-            MaxLevel = 85;
-
             RecruitMap = 261000011;
-            EntryMap = MagatiaPQFeature.ZenumistMapBase;
-            ExitMap = MagatiaPQFeature.ZenumistMapBase + 700;
-            ClearMap = MagatiaPQFeature.ZenumistMapBase + 700;
-
-            MinMap = MagatiaPQFeature.ZenumistMapBase;
-            MaxMap = MagatiaPQFeature.ZenumistMapBase + 600;
-
-            EventTime = 45 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
-        public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
-        {
-            var map = mob.getMap();
-            var mapId = map.getId();
-            var mapBase = MagatiaPQFeature.ZenumistMapBase;
+        internal override int MapBase => MagatiaPQFeature.ZenumistMapBase;
+        internal override bool IsAlcadno => false;
 
-            if (mapId == mapBase + 1 && eim.getIntProperty("statusStg1") == 1)
-            {
-                if (map.countMonsters() == 0)
-                {
-                    await eim.showClearEffect(mapId);
-                    await eim.GiveStageClearRewardAll(mapId);
-                    eim.setIntProperty("statusStg2", 1);
-                }
-            }
-            else if (mapId == mapBase + 203 && eim.getIntProperty("statusStg1") == 1)
-            {
-                if (map.countMonsters() == 0)
-                {
-                    await eim.showClearEffect(mapId);
-                    await eim.GiveStageClearRewardAll(mapId);
+        internal override int YuleteOfficeNpc => 2112000;
+        internal override int YuleteDeadNpc => 2112001;
+        internal override int EscortNpc => 2112006;
 
-                    var reactor = map.getReactorByName("rnj6_out");
-                    if (reactor != null)
-                    {
-                        await reactor.forceHitReactor(1);
-                    }
-                }
-            }
-            else if (mob.getId() == 9300139 || mob.getId() == 9300140)
-            {
-                await eim.showClearEffect(mapId);
-                await eim.GiveStageClearRewardAll(mapId);
+        internal override int WeakBossId => 9300139;
+        internal override int StrongBossId => 9300140;
 
-                var gain = eim.getIntProperty("escortFail") == 1
-                    ? 90000
-                    : (mob.getId() == 9300139 ? 105000 : 140000);
-                await eim.giveEventPlayersExp(gain);
-
-                await map.killAllMonstersNotFriendly();
-
-                if (mob.getId() == 9300139)
-                {
-                    eim.setIntProperty("normalClear", 1);
-                }
-
-                await eim.clearPQ();
-            }
-        }
+        internal override string ExitReactorName => "rnj6_out";
     }
 }

@@ -786,13 +786,7 @@ namespace Application.Plugin.Script
         }
 
 
-        // Reactor: 2406000 
-        public async Task hontaleNPC0()
-        {
-            await spawnNpc(2081008);
-            await startQuest(100203);
-            await mapMessage(6, "光芒闪烁间，龙蛋破壳而出，一只璀璨的幼龙降临世间！");
-        }
+
 
 
         // Reactor: 2502000 
@@ -919,71 +913,6 @@ namespace Application.Plugin.Script
 
         }
 
-
-        // Reactor: 2708000 
-        public async Task PinkBeenBack0()
-        {
-            // JS 的 act() 为空函数：击杀逻辑在 hit() 中处理
-            return;
-        }
-
-
-        // Reactor: 2709000 — 粉豆召唤：移除占位怪物，由事件模板生成真正的粉豆
-        public async Task PinkBeenScript0()
-        {
-            await getMap().killMonster(8820000);
-        }
-
-
-
-        // Reactor: 5411000 
-        public async Task sgboss0()
-        {
-            await changeMusic("Bgm09/TimeAttack");
-            await spawnMonster(9420513, -146, 225);
-            GetEventInstanceTrust().setIntProperty("boss", 1);
-            await mapMessage(5, "As you wish, here comes Capt Latanica.");
-
-
-        }
-
-
-        // Reactor: 6741001 
-        public async Task guyfawkesmob0()
-        {
-            await spawnMonster(9400589);
-
-
-        }
-
-
-        // Reactor: 6741015 
-        public async Task guyfawkesmob1()
-        {
-            await dropItems();
-
-
-        }
-
-
-        // Reactor: 6741016 
-        public async Task guyfawkesmob2()
-        {
-            // TODO
-            // 6741016
-
-
-
-        }
-
-
-        // Reactor: 6742014 
-        public async Task guyfawkesbox0()
-        {
-            await dropItems(true, 1, 5, 25, 15);
-
-
-        }
 
 
         // Reactor: 6802000 

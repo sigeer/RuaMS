@@ -17,7 +17,7 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
 
             if (!haveItem(4000381))
             {
-                await Pink("You do not have White Essence.");
+                await Dialog("你没有#i4000381#。", 9270033);
                 return false;
             }
             else
@@ -31,7 +31,7 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
                 }
                 else
                 {
-                    await Pink(em.HandleCreateInstanceResult(r, c));
+                    await Dialog(em.HandleCreateInstanceResult(r, c), 9270033);
                     return false;
                 }
             }

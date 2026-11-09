@@ -124,10 +124,16 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
 
         public override async Task<ClaimRewardResult> GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
         {
+            var r = await base.GiveClearReward(eim, player, point);
+            if (r != ClaimRewardResult.Success)
+            {
+                return r;
+            }
+
             player.AriantPoints += point;
             await player.Pink($"竞技点数(+{point})");
 
-            return await base.GiveClearReward(eim, player, point);
+            return r;
         }
 
         public override RewardOptions GetAllClearRewardOptions(Player chr, int point = 1)

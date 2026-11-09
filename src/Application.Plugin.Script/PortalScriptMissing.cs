@@ -2,16 +2,6 @@ namespace Application.Plugin.Script
 {
     internal partial class PortalScript
     {
-        private Task<bool> NotImplemented()
-        {
-            throw new NotImplementedException();
-        }
-
-        private Task<bool> Pass()
-        {
-            return Task.FromResult(true);
-        }
-
         [ScriptName("Pachinko_port_in")]
         public Task<bool> p_Pachinko_port_in() => NotImplemented();
 
@@ -77,8 +67,6 @@ namespace Application.Plugin.Script
         [ScriptName("StudioZone_Out")]
         public Task<bool> p_StudioZone_Out() => NotImplemented();
 
-        [ScriptName("aM_start")]
-        public Task<bool> p_aM_start() => NotImplemented();
 
         [ScriptName("beenTreeGate")]
         public Task<bool> p_beenTreeGate() => NotImplemented();
@@ -147,10 +135,10 @@ namespace Application.Plugin.Script
         public Task<bool> p_connetNPC0() => NotImplemented();
 
         [ScriptName("crane_MR")]
-        public Task<bool> p_crane_MR() => NotImplemented();
+        public Task<bool> p_crane_MR() => Pass();
 
         [ScriptName("crane_SS")]
-        public Task<bool> p_crane_SS() => NotImplemented();
+        public Task<bool> p_crane_SS() => Pass();
 
 
 
@@ -217,14 +205,7 @@ namespace Application.Plugin.Script
         [ScriptName("goldkey9")]
         public Task<bool> p_goldkey9() => NotImplemented();
 
-        [ScriptName("hontale_boss1")]
-        public Task<bool> p_hontale_boss1() => NotImplemented();
 
-        [ScriptName("hontale_boss2")]
-        public Task<bool> p_hontale_boss2() => NotImplemented();
-
-        [ScriptName("hontale_morph")]
-        public Task<bool> p_hontale_morph() => NotImplemented();
 
         [ScriptName("hwqout")]
         public Task<bool> p_hwqout() => NotImplemented();
@@ -250,8 +231,6 @@ namespace Application.Plugin.Script
         [ScriptName("move_OrbEre")]
         public Task<bool> p_move_OrbEre() => Pass();
 
-        [ScriptName("nooutShip")]
-        public Task<bool> p_nooutShip() => NotImplemented();
 
         [ScriptName("oliviahallOut")]
         public Task<bool> p_oliviahallOut() => NotImplemented();

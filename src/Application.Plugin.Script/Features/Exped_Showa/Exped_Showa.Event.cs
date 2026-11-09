@@ -83,15 +83,13 @@ namespace Application.Plugin.Script.Features.Exped_Showa
         {
             await base.ClearPQ(eim);
 
+            // JS 无条件先清光 801040100，再按 playerDied 决定是否给额外奖励
+            var eventMap = await eim.getInstanceMap(801040100);
+            if (eventMap != null)
+                await eventMap.killAllMonsters();
+
             if (eim.getIntProperty("playerDied") == 0)
             {
-                var eventMap = await eim.getInstanceMap(801040100);
-                if (eventMap != null)
-                {
-                    eventMap.allowSummonState(false);
-                    await eventMap.killAllMonsters();
-                }
-
                 var map = await eim.getMapInstance(801040101);
                 await map.spawnMonsterOnGroundBelow(9400114, 500, -50);
                 await eim.Pink(
@@ -112,7 +110,7 @@ namespace Application.Plugin.Script.Features.Exped_Showa
             ICombatantObject? killer
         )
         {
-            if (mob.getId() == 8830000)
+            if (mob.getId() == BossId)
             {
                 await eim.showClearEffect();
                 await eim.clearPQ();

@@ -7,8 +7,6 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
     {
         internal const string EventName = "LatanicaBattle";
 
-        #region 传送到 Latanica 副本
-
-        #endregion
+        internal const int QuestId = 4523;
     }
 }

@@ -27,6 +27,7 @@ namespace Application.Core.scripting.Events.Templates
 
             RegistrationTime = 180;
             EventTime = MapMonsterCarnivalTemplate.TimeDefault - 10;
+            PrepareTime = 10;
         }
 
 
@@ -39,10 +40,18 @@ namespace Application.Core.scripting.Events.Templates
         {
             var pEim = eim as MonsterCarnivalEventInstanceManager;
             var map = await pEim.GetEventMap();
-            map.allowSummonState(false);
-            await map.clearMapObjects();
 
             await base.OnSetup(eim, level, lobbyId);
+        }
+
+        public override async Task OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)
+        {
+            await base.OnPlayerMapChanged(eim, player, mapid);
+
+            var pEim = (eim as MonsterCarnivalEventInstanceManager)!;
+
+            var playerData = pEim.GetPlayerData(player.Id)!;
+            await player.SendPacket(PacketCreator.startMonsterCarnival(playerData, pEim.GetPlayerTeamData(player.Id)!, pEim.GetPlayerEnemyTeamData(player.Id)!));
         }
         public override List<Player> GetEligibleParty(Player leader)
         {
@@ -109,11 +118,9 @@ namespace Application.Core.scripting.Events.Templates
                     return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
             }
         }
-        public virtual void OnBattlePrepare(MonsterCarnivalEventInstanceManager eim) { }
         public virtual async Task OnBattleStarted(MonsterCarnivalEventInstanceManager pEim)
         {
             var map = await pEim.GetEventMap();
-            map.allowSummonState(true);
             foreach (var mc in pEim.getPlayers())
             {
                 var playerData = pEim.GetPlayerData(mc.Id)!;

@@ -14,10 +14,5 @@ namespace Application.Plugin.Script.Features.LudiPQ
         /// </summary>
         internal const int FirstStageMap = 922010100;
         internal const int BonusMap = 922011000;
-
-        #region NPC
-
-        #endregion
-
     }
 }

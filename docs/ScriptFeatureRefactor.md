@@ -175,7 +175,7 @@ internal sealed class BalrogEasy
 | CWKPQ | `Features/CWKPQ/` | Event、Portal(12) | 事件与 12 个阶段/职业门集中 |
 | GuildQuest | `Features/GuildQuest/` | Event、Portal(6) | 楼层传送门与集合计时口同处 |
 | Horntail | `Features/Horntail/` | Portal(4) | `Exped_Horntail` 与 `PQ_Horntail` 共用封印门；补上缺失的 `hontale_BtoB1` |
-| MagatiaPQ | `Features/MagatiaPQ/` | Portal(30) | Alcadno(`jnr*`) 与 Zenumist(`rnj*`) 共用一份抽象基类实现 |
+| MagatiaPQ | `Features/MagatiaPQ/` | Event(2)、Npc(11)、Portal(30)、Reactor(Hit/Act) | Alcadno(`jnr*`) 与 Zenumist(`rnj*`) 共用 `MagatiaPQEventBase`，只有分支常量不同 |
 | OrbisPQ | `Features/OrbisPQ/` | Event、Portal(7)、Npc(3) | 通天塔八段传送门 + 女神内侍官 |
 | EllinPQ | `Features/EllinPQ/` | Event、Portal(2)、Npc(4) | 毒雾森林 |
 | TreasurePQ | `Features/TreasurePQ/` | Event、Portal(1) | MV 的巢穴隧道门 |
@@ -305,10 +305,9 @@ WZ 中声明的事件耦合传送门已 **100% 注册**（Portal 基线为空）
 
 - **抽象类不再实例化**：`ScriptFeatureDiscovery` 之前只跳过 `abstract sealed`，纯粹的抽象基类（如 CafePQ/TDBattle 的基类）会被当作模板 `Activator.CreateInstance` 而抛异常。
 - ~~**继承的处理器方法**：处理器若为「抽象基类持有方法 + 具体子类提供配置」，沿基类链收集方法。~~
-  该能力已移除：`MagatiaPQ` 后来改成单个 `sealed class`（内部按事件名切换地图基数），
-  实测 `Application.Plugin.Script` 中已没有任何类型的方法来自插件自定义基类，
-  因此 `CollectHandlers` 现在只扫 `DeclaredOnly`，配套的 `IsPluginOwnedHandler` 与
-  8 项框架基类白名单一并删除。
+  该能力已移除：`CollectHandlers` 现在只扫 `DeclaredOnly`。
+  注意事件模板不受此限——`MagatiaPQ` 的 `AlcadnoEvent` / `ZenumistEvent` 正是从共享基类
+  `MagatiaPQEventBase` 继承钩子（事件模板是整类实例化，不是按方法扫描）。
 
 ### 事件模板守卫
 
@@ -687,3 +686,4 @@ WZ 校验发现 `NpcScriptMissing` / `QuestScriptMissing` / `ItemScriptMissing` 
 | 2026-10-30 | **四转任务各自成目录**：`Features/Quest/` 下的 `Archer4thJob`、`Magician4thJob`、`Pirate4thJobFeature` 三组文件与 `Warrior4thJob` 一样移入同名目录，namespace 同步改为 `Features.<Name>`；`Features/Quest/` 只保留 `Q<id>` 与 `FirstDH`、`PuppeteerFeature` |
 | 2026-10-30 | **修复两处遗留问题**：① `Features.Aran` 内的 `Aran.POLEARM_BOOSTER` 等被外层 namespace 遮蔽（`Aran` 先绑定到 `Features.Aran` 而非技能常量类），改用 `using SkillAran = Application.Shared.Constants.Skill.Aran`；② 移除 csproj 里 `Features\Thief4th\**` 的 `<Compile Remove>`（该目录此前根本没参与编译，`s4hitman`/`s4tornado_enter` 两个 Portal 与 q6201/q6230 两个事件全部丢失），同时把快照中已不存在的 12 条 `ReactorHit|s4hitman*` 删除——这些真实实现只存在于 `Thief4th.ReactorActHandler`，旧 `ReactorHitScript` 里是空 TODO 桩，已随重构删除 |
 | 2026-10-30 | **反应堆脚本按功能拆分后的快照对齐**：`ReactorHitScript`/`ReactorActScript` 里大量方法随拆分迁入 `Features/`，`script-registration-counts.txt` 按当前扫描结果重刷（2936 → 2778 条）。同时确认 `Easy_balogReactor` 的 ReactorHit 路径是重复召唤（简单难度的召唤由地图脚本 `easy_balog_summon` 完成），删除 `Exped_Balrog.ReactorHitHandler.cs`，`Exped_BalrogEasyEventWiring` 改为断言该脚本名**不**注册 |
+| 2026-11-09 | **MagatiaPQ 迁移补全**：对照 `scripts-zh-CN` 原始 JS 修复遗漏——① 两个分支的地图基数写反（`Alcadno` 应为 926110000、`Zenumist` 926100000），且 boss 号也被对调（Alcadno 9300151/9300152、Zenumist 9300139/9300140）；② `OnSetup` 从未调用 `resetMapObjects`、从未 `SetExclusiveItems`（6 个任务道具会漏带出副本）、NPC 全部刷在 Zenumist 地图上（Alcadno 分支的 Yulete/朱丽叶都不出现）；③ 缺 `AfterSeup` 的 26 个书柜随机化、`respawnStages` 每 15 秒重刷保护怪 9300150；④ 缺 `yuleteTimeout` 触发链（进办公室 10 秒后犹泰伏击、刷 30 只小怪、`destroyNPC`）；⑤ 缺 `OnFriendlyMobKilled` 的 `escortFail` 记录；⑥ 缺第六关 `generateStg6Combo`；⑦ 阶段奖励从未配置（`StageClearRewards` 为空，`giveEventPlayersStageReward` 全部无效）；⑧ `jnr_look`/`rnj_look` 漏发第 1 关奖励，`juliet`/`romio` 漏发第 4 关奖励且通关分支无法发出奖励道具 4001160/4001159；⑨ `yurete2_mad`/`yurete2_dead` 实为 Alcadno 侧 NPC（2112010/2112011），原代码按 Zenumist 参数调用。两个事件模板改为继承新的 `MagatiaPQEventBase` |

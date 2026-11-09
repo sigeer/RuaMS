@@ -51,8 +51,6 @@ namespace Application.Plugin.Script.Features.EllinPQ
             var eim = GetEventInstance();
             if (eim != null)
             {
-                await eim.dropExclusiveItems(getPlayer());
-
                 var spring = getMap().getReactorById(3008000);
                 if (spring != null && spring.getState() > 0)
                 {

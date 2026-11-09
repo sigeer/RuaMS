@@ -4,6 +4,6 @@ namespace Application.Plugin.Script.Features.CafePQ
     {
         internal const string EventName = "CafePQ_3";
 
-        public CafePQ_3() : base(EventName, 192000000, [192000000, 192000001], 350, 3) { }
+        public CafePQ_3() : base(EventName, 192000000, [192000000, 192000001], 350, 3, 4001013, 12000) { }
     }
 }

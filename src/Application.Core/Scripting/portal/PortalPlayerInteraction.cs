@@ -67,6 +67,16 @@ public abstract class PortalPlayerInteraction : AbstractPlayerInteraction
         return c.CurrentServer.NodeService.AdminService.GetServerStats().IsDevRoomAvailable;
     }
 
+    protected Task<bool> NotImplemented()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected Task<bool> Pass()
+    {
+        return Task.FromResult(true);
+    }
+
     /// <summary>
     /// 开始单人任务副本并回馈结果。
     /// private：脚本注册表收集的是 public 方法，辅助方法必须私有，否则会被当成脚本键。

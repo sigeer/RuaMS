@@ -24,12 +24,12 @@ namespace Application.Plugin.Script.Features.DavyJohn
             var level = eim.getIntProperty(DavyJohnFeature.StackProperty);
             if (eim.getProperty(DavyJohnFeature.Stage2AProperty) == "0")
             {
-                await (await getMap(DavyJohnFeature.Stage2CheckMap)).spawnAllMonstersFromMapSpawnList(level, true);
+                await (await getMap(DavyJohnFeature.Stage3Sub2)).spawnAllMonstersFromMapSpawnList(level, true);
                 eim.setProperty(DavyJohnFeature.Stage2AProperty, "1");
             }
 
             await playPortalSound();
-            await warp(DavyJohnFeature.Stage2CheckMap, 0);
+            await warp(DavyJohnFeature.Stage3Sub2, 0);
             return true;
         }
 
@@ -45,12 +45,12 @@ namespace Application.Plugin.Script.Features.DavyJohn
             var level = eim.getIntProperty(DavyJohnFeature.StackProperty);
             if (eim.getProperty(DavyJohnFeature.Stage3AProperty) == "0")
             {
-                await (await getMap(DavyJohnFeature.Stage3CheckMap)).spawnAllMonstersFromMapSpawnList(level, true);
+                await (await getMap(DavyJohnFeature.Stage4Sub2)).spawnAllMonstersFromMapSpawnList(level, true);
                 eim.setProperty(DavyJohnFeature.Stage3AProperty, "1");
             }
 
             await playPortalSound();
-            await warp(DavyJohnFeature.Stage3CheckMap, 0);
+            await warp(DavyJohnFeature.Stage4Sub2, 0);
             return true;
         }
 
@@ -81,7 +81,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
             if (eim != null && eim.EventName == DavyJohnFeature.EventName && eim.getProperty(DavyJohnFeature.Stage2Property) == "3")
             {
                 await playPortalSound();
-                await warp(DavyJohnFeature.Stage2PassageMap, 0);
+                await warp(DavyJohnFeature.Stage3Map, 0);
                 return true;
             }
 
@@ -101,7 +101,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
             if (getMap().countMonsters() == 0 && DavyJohnFeature.PassedGrindMode(getMap(), eim))
             {
                 await playPortalSound();
-                await warp(DavyJohnFeature.Stage3PassageMap, 0);
+                await warp(DavyJohnFeature.Stage4Map, 0);
                 return true;
             }
 
@@ -121,7 +121,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
             if (getMap().countMonsters() == 0 && DavyJohnFeature.PassedGrindMode(getMap(), eim))
             {
                 await playPortalSound();
-                await warp(DavyJohnFeature.Stage4Map, 0);
+                await warp(DavyJohnFeature.Stage5Map, 0);
                 return true;
             }
 
@@ -173,8 +173,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
             return true;
         }
 
-        [ScriptName("davy_next00")]
-        public Task<bool> p_davy_next00()
+        public Task<bool> davy_next00()
         {
             return Task.FromResult(true);
         }

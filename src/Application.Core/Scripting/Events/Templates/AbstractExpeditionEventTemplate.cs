@@ -15,6 +15,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             BossId = bossId;
             ExpeditionName = type;
+            Type = Shared.Events.EventInstanceType.Expedition;
         }
 
         public override AbstractEventManager GenerateEventManager(WorldChannel worldChannel)
@@ -86,6 +87,7 @@ namespace Application.Core.scripting.Events.Templates
         public override async Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
         {
             await eim.LightBlue(nameof(ClientMessage.Expedition_Join), chr.Name);
+            await base.OnPlayerJoined(eim, chr);
         }
 
         public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)

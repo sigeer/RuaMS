@@ -9,8 +9,5 @@ namespace Application.Plugin.Script
         public ReactorUntouchScript(IChannelClient c, Reactor r) : base(c, r)
         {
         }
-
-        // Reactor: 2406000 — 龙蛋：JS 的 untouch() 为空函数
-        public Task hontaleNPC0() => Task.CompletedTask;
     }
 }

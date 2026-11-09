@@ -1,4 +1,3 @@
-using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Plugin.Script.Events;
 
@@ -22,21 +21,20 @@ namespace Application.Plugin.Script.Features.Quest
 
             MinMap = ENTRY_MAP;
             MaxMap = ENTRY_MAP;
-
         }
 
-        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
         {
             var map = await eim.getInstanceMap(ENTRY_MAP);
             if (map == null)
                 return;
 
-            // JS 在 playerEntry 里打乱箱子并设置独占道具
+            // 地图没有 ShuffleReactor = 1，手动调用
             map.shuffleReactors();
+            // 没交任务就离开，直接移除
             eim.SetExclusiveItems([DOLL_KEY_ITEM]);
-
-            await chr.changeMap(map, EntryPortal);
-            await eim.startEventTimer(EventTime * 1000L);
+            await base.OnSetup(eim, level, lobbyId);
         }
+
     }
 }

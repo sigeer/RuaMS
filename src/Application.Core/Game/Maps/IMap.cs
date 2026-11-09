@@ -323,8 +323,9 @@ namespace Application.Core.Game.Maps
         bool isAllReactorState(int reactorId, int state);
         Task resetReactors();
         Task resetReactors(List<Reactor> list);
+        void ShuffleReactorsByName(string? name);
         void shuffleReactors(int first = 0, int last = int.MaxValue);
-        void shuffleReactors(List<object> list);
+        void shuffleReactors(List<Reactor> list);
         List<Reactor> getAllReactors();
         Task TryHitReactorByMapItem(MapItem mapItem);
         bool CanHitReactor(MapItem mapItem);

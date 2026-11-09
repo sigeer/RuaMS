@@ -1,5 +1,6 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 
@@ -29,8 +30,19 @@ namespace Application.Plugin.Script.Features.ElementalBattle
             MinMap = ENTRY_MAP;
             MaxMap = ENTRY_MAP;
 
+            MaxLobbys = 7;
+
             EventTime = 20 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
+        }
+
+        /// <summary>
+        /// JS 只允许法师系（job niche == 2）入队。
+        /// </summary>
+        public override List<Player> GetEligibleParty(Player leader)
+        {
+            return base.GetEligibleParty(leader)
+                .Where(x => x.getJob().GetJobNiche() == 2)
+                .ToList();
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
