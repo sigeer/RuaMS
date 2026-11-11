@@ -1,3 +1,5 @@
+using System.Drawing;
+
 namespace Application.Templates.Map
 {
     public sealed class MapPortalTemplate
@@ -21,5 +23,7 @@ namespace Application.Templates.Map
 
         [WZPath("~/$name")]
         public int nIndex { get; set; }
+        [GenerateIgnoreProperty]
+        public Point Position => new Point(nX, nY);
     }
 }

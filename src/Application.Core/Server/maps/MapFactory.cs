@@ -98,7 +98,7 @@ public class MapFactory : IStaticService
         return myLife;
     }
 
-    private void loadLifeFromWz(IMap map, MapTemplate mapData)
+    private async Task loadLifeFromWz(IMap map, MapTemplate mapData)
     {
         foreach (var life in mapData.Life)
         {
@@ -115,25 +115,25 @@ public class MapFactory : IStaticService
                 }
             }
 
-            loadLifeRaw(map, life.Id, life.Type, life.CY, life.F, life.Foothold, life.RX0, life.RX1, life.X, life.Y, life.Hide, life.MobTime, team);
+            await loadLifeRaw(map, life.Id, life.Type, life.CY, life.F, life.Foothold, life.RX0, life.RX1, life.X, life.Y, life.Hide, life.MobTime, team);
         }
     }
 
-    private void loadLifeFromDb(IMap map)
+    private async Task loadLifeFromDb(IMap map)
     {
         var dataList = map.ChannelServer.NodeService.DataService.LoadPLife(map.Id);
 
         foreach (var rs in dataList)
         {
-            loadLifeRaw(map, rs.LifeId, rs.Type, rs.Cy, rs.F, rs.Fh, rs.Rx0, rs.Rx1, rs.X, rs.Y, rs.Hide == 1, rs.Mobtime, rs.Team);
+            await loadLifeRaw(map, rs.LifeId, rs.Type, rs.Cy, rs.F, rs.Fh, rs.Rx0, rs.Rx1, rs.X, rs.Y, rs.Hide == 1, rs.Mobtime, rs.Team);
         }
     }
 
-    private void loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide, int mobTime, int team)
+    private async Task loadLifeRaw(IMap map, int id, string type, int cy, int f, int fh, int rx0, int rx1, int x, int y, bool hide, int mobTime, int team)
     {
         if (type == LifeType.Monster)
         {
-            map.addMonsterSpawn(id, new Point(x, y), cy, f, fh, rx0, rx1, mobTime, hide, team);
+            await map.addMonsterSpawn(id, new Point(x, y), cy, f, fh, rx0, rx1, mobTime, hide, team);
         }
         else
         {
@@ -141,7 +141,7 @@ public class MapFactory : IStaticService
             if (mapObj != null)
             {
                 // 初始化时无玩家
-                map.AddMapObject(mapObj, null);
+                await map.AddMapObject(mapObj, null);
             }
         }
     }
@@ -240,13 +240,13 @@ public class MapFactory : IStaticService
             map.ChannelServer.NodeService.PlayerNPCService.LoadPlayerNpc(map);
         }
 
-        loadLifeFromWz(map, mapData);
-        loadLifeFromDb(map);
+        await loadLifeFromWz(map, mapData);
+        await loadLifeFromDb(map);
 
 
         foreach (var item in mapData.Reactors)
         {
-            Reactor newReactor = loadReactor(map, item);
+            Reactor newReactor = await loadReactor(map, item);
             await map.spawnReactor(newReactor);
         }
 
@@ -261,13 +261,13 @@ public class MapFactory : IStaticService
         return map;
     }
 
-    private Reactor loadReactor(IMap map, MapReactorTemplate mapReactor)
+    private async Task<Reactor> loadReactor(IMap map, MapReactorTemplate mapReactor)
     {
         Reactor myReactor = new Reactor(map, new Point(mapReactor.X, mapReactor.Y), ReactorFactory.getReactor(mapReactor.Id), mapReactor.Id);
         myReactor.setFacingDirection((sbyte)mapReactor.F);
         myReactor.setDelay(mapReactor.ReactorTime * 1000);
         myReactor.setName(mapReactor.Name ?? "");
-        _ = myReactor.resetReactorActions(0);
+        await myReactor.resetReactorActions(0);
         return myReactor;
     }
 

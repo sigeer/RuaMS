@@ -128,7 +128,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task WarpOut()
     {
-        await warp(getPlayer().getMap().getForcedReturnId());
+        await getPlayer().ForcedWarpOut();
     }
 
     public async Task WarpReturn()
@@ -178,12 +178,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         int mapid = getMapId();
         var warpMap = await c.CurrentServer.getMapFactory().getMap(map);
 
-        var portal = warpMap.getPortal(portalName);
-
-        if (portal == null)
-        {
-            portal = warpMap.getPortal(0)!;
-        }
+        var portal = warpMap.getPortal(portalName)?? warpMap.getPortal(0)!;
 
         var portalId = portal.getId();
 

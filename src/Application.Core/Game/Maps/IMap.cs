@@ -346,5 +346,7 @@ namespace Application.Core.Game.Maps
         Task clearDrops();
         List<MapItem> getItems();
         #endregion
+
+        Task Reload(Point? pos = null);
     }
 }

@@ -118,8 +118,7 @@ public class ChangeMapHandler : ChannelHandlerBase
                 {
                     if (chr.isGM())
                     {
-                        var to = await chr.getWarpMap(targetMapId);
-                        await chr.changeMap(to, to.getPortal(0));
+                        await chr.changeMap(targetMapId, portalName);
                     }
                     else
                     {
@@ -171,8 +170,7 @@ public class ChangeMapHandler : ChannelHandlerBase
                         }
                         if (warp)
                         {
-                            var to = await chr.getWarpMap(targetMapId);
-                            await chr.changeMap(to, to.getPortal(0));
+                            await chr.changeMap(targetMapId, portalName);
                         }
                     }
                 }

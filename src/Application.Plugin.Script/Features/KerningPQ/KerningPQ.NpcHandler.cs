@@ -15,7 +15,7 @@ namespace Application.Plugin.Script.Features.KerningPQ
         }
 
         /// <summary>
-        /// 入口 NPC：创建或加入副本。
+        /// Npc: 9020000 入口 NPC：创建或加入副本。
         /// </summary>
         public async Task party1_enter()
         {
@@ -38,7 +38,7 @@ namespace Application.Plugin.Script.Features.KerningPQ
         }
 
         /// <summary>
-        /// 关卡 NPC：第一阶段交通行证，第 2~4 阶段核对位置，第五阶段收尾。
+        /// Npc: 9020001 关卡 NPC：第一阶段交通行证，第 2~4 阶段核对位置，第五阶段收尾。
         /// </summary>
         public async Task party1_play()
         {
@@ -206,7 +206,7 @@ namespace Application.Plugin.Script.Features.KerningPQ
         }
 
         /// <summary>
-        /// 出口 NPC：在奖励地图直接返回城镇，其他地图询问后离开。
+        /// Npc: 9020002 出口 NPC：在奖励地图直接返回城镇，其他地图询问后离开。
         /// </summary>
         public async Task party1_out()
         {

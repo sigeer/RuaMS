@@ -3007,4 +3007,24 @@ public class MapleMap : IMap, INamedInstance
     public Task Send(Action<IMap> action) => Send(new MapDelegateCommand(action));
 
     public Task Send(Func<IMap, Task> action) => Send(new AsyncMapDelegateCommand(action));
+
+    public async Task Reload(Point? pos = null)
+    {
+        var mapManager = EventInstanceManager?.getMapFactory() ?? ChannelServer.getMapFactory();
+        var characters = getAllPlayers();
+
+        var newMap = await mapManager.LoadMapAsync(Id);
+        foreach (var chr in characters)
+        {
+            var toPos = pos.HasValue ? pos.Value : chr.getPosition();
+            chr.saveLocationOnWarp();
+            await chr.ChangeMap(newMap, toPos, false);
+            if (chr.isGM())
+            {
+                await chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
+            }
+        }
+        await mapManager.RegisterMap(newMap);
+        await newMap.respawn();
+    }
 }

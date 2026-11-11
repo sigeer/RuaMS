@@ -18,6 +18,7 @@
     <File Path="docs/ida/UseItem.md" />
     <File Path="docs/ida/怪物元素抗性_elemAttr_同步_分析.md" />
     <File Path="docs/ida/怪物攻击动画_其他玩家不可见_分析.md" />
+    <File Path="docs/ida/portal_pt_类型_客户端行为_分析.md" />
   </Folder>
   <Folder Name="/SolutionItems/">
     <File Path=".dockerignore" />
