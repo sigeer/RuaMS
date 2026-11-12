@@ -24,8 +24,14 @@ namespace Application.Core.Gameplay.Plugins
     /// </summary>
     public sealed class PluginManager : IAsyncDisposable
     {
-        public string PluginDir { get; }      // 运维放置插件 DLL 的源目录
+        public string PluginDir { get; }      // 运维放置插件目录的源目录（每个插件一个子目录）
         readonly string _shadowCopyBaseDir;    // 卷影副本根目录（例如 "ShadowCopy"）
+
+        /// <summary>
+        /// 插件装卸是「读目录 → 建容器 → 重建注册表」的复合操作，必须串行：
+        /// 文件监听会递归看到插件目录里的 dll 变更，可能与手工调用并发触发同一次重载。
+        /// </summary>
+        readonly SemaphoreSlim _loadLock = new(1, 1);
 
 
         volatile bool _disposed = false;
@@ -60,24 +66,31 @@ namespace Application.Core.Gameplay.Plugins
             _shadowCopyBaseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PluginShadowCopy");
         }
 
-        public async Task<bool> LoadPlugin(string pluginDllName)
+        /// <summary>
+        /// 加载一个插件。<paramref name="pluginDirectory"/> 是插件目录名（相对 <see cref="PluginDir"/>）
+        /// 或绝对路径；整个目录被视为一个插件整体，DLL 与自带文案都在其中。
+        /// </summary>
+        public async Task<bool> LoadPlugin(string pluginDirectory)
         {
-            if (await LoadPluginInternal(pluginDllName))
+            await _loadLock.WaitAsync();
+            try
             {
-                return true;
+                return await LoadPluginInternal(pluginDirectory);
             }
-            return false;
+            finally
+            {
+                _loadLock.Release();
+            }
         }
 
 
-        async Task<bool> LoadPluginInternal(string pluginDllName)
+        async Task<bool> LoadPluginInternal(string pluginDirectory)
         {
-            var newContainer = LoadPluginFromSource(pluginDllName);
+            var newContainer = LoadPluginFromSource(pluginDirectory);
             if (newContainer == null)
                 return false;
 
-            var pluginBaseKey = Path.GetFileNameWithoutExtension(pluginDllName);
-            string pluginKey = pluginBaseKey;
+            string pluginKey = newContainer.LoadContext.PluginName;
 
             await RemovePluginInternal(pluginKey);
 
@@ -134,11 +147,15 @@ namespace Application.Core.Gameplay.Plugins
 
         public async Task<bool> UnloadPlugin(string pluginName)
         {
-            if (await RemovePluginInternal(pluginName))
+            await _loadLock.WaitAsync();
+            try
             {
-                return true;
+                return await RemovePluginInternal(pluginName);
             }
-            return false;
+            finally
+            {
+                _loadLock.Release();
+            }
         }
 
         public PluginContainer<PluginServiceBase>? GetPluginContainer(string pluginName)
@@ -153,18 +170,54 @@ namespace Application.Core.Gameplay.Plugins
 
         public int PluginCount => _pluginContainers.Count;
 
-        private PluginContainer<PluginServiceBase> LoadPluginFromSource(string pluginDllName)
+        /// <summary>
+        /// 枚举全部插件（作为 <see cref="LoadPlugin"/> 的入参，即插件目录名）。
+        /// 布局固定为 <c>Plugins/{插件名}/{插件名}.dll</c>，插件自带文案放同级的 <c>i18n/</c>。
+        /// </summary>
+        public IEnumerable<string> EnumeratePluginDirectories()
         {
-            string sourcePath = Path.Combine(PluginDir, pluginDllName);
+            foreach (var directory in Directory.EnumerateDirectories(PluginDir))
+            {
+                var name = Path.GetFileName(directory);
+                if (!name.StartsWith(PluginFilePrefix, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (File.Exists(Path.Combine(directory, name + ".dll")))
+                    yield return name;
+            }
+        }
+
+        /// <summary>插件名前缀，插件目录名与主程序集文件名都以它开头。</summary>
+        public const string PluginFilePrefix = "Application.Plugin.";
+
+        private PluginContainer<PluginServiceBase> LoadPluginFromSource(string pluginDirectory)
+        {
+            // 布局固定为 Plugins/{插件名}/{插件名}.dll + 同级 i18n/，整个目录是一个插件。
+            string sourceDirectory = Path.IsPathRooted(pluginDirectory)
+                ? Path.GetFullPath(pluginDirectory)
+                : Path.Combine(PluginDir, pluginDirectory);
+
+            if (!Directory.Exists(sourceDirectory))
+                throw new DirectoryNotFoundException($"Plugin directory not found: {sourceDirectory}");
+
+            string pluginName = Path.GetFileName(sourceDirectory);
+            string pluginFileName = pluginName + ".dll";
+            string sourcePath = Path.Combine(sourceDirectory, pluginFileName);
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException($"Plugin not found: {sourcePath}");
 
-            // 创建唯一的卷影副本目录
-            string shadowDir = Path.Combine(_shadowCopyBaseDir, Guid.NewGuid().ToString());
+            // 卷影副本与源目录同构：PluginShadowCopy/{guid}/{插件名}/{插件名}.dll
+            // 插件目录里的文件（主程序集、私有依赖、deps.json）整体复制过去，
+            // 这样 AssemblyDependencyResolver 能在卷影目录里解析到插件自己的依赖；
+            // {guid} 这一层保证热重载时旧副本不会被新副本覆盖。
+            string shadowRoot = Path.Combine(_shadowCopyBaseDir, Guid.NewGuid().ToString());
+            string shadowDir = Path.Combine(shadowRoot, pluginName);
             Directory.CreateDirectory(shadowDir);
 
-            string shadowDllPath = Path.Combine(shadowDir, pluginDllName);
-            File.Copy(sourcePath, shadowDllPath, overwrite: true);
+            foreach (var file in Directory.EnumerateFiles(sourceDirectory))
+                File.Copy(file, Path.Combine(shadowDir, Path.GetFileName(file)), overwrite: true);
+
+            string shadowDllPath = Path.Combine(shadowDir, pluginFileName);
 
             // 创建自定义加载上下文
             var loadContext = new PluginLoadContext(shadowDllPath);
@@ -178,7 +231,7 @@ namespace Application.Core.Gameplay.Plugins
             catch (Exception ex)
             {
                 // 加载失败，清理目录
-                Directory.Delete(shadowDir, recursive: true);
+                Directory.Delete(shadowRoot, recursive: true);
                 throw new InvalidOperationException($"Failed to load plugin from {shadowDllPath}", ex);
             }
 
@@ -190,14 +243,15 @@ namespace Application.Core.Gameplay.Plugins
             if (pluginServiceTypes.Count != 1)
             {
                 loadContext.Unload();
-                Directory.Delete(shadowDir, recursive: true);
+                Directory.Delete(shadowRoot, recursive: true);
                 throw new InvalidOperationException(
                     pluginServiceTypes.Count == 0
-                    ? $"No type implementing {serviceType.Name} found in {pluginDllName}"
+                    ? $"No type implementing {serviceType.Name} found in {pluginName}"
                     : $"每个接口仅允许一个入口服务");
             }
 
-            var container = new PluginContainer<PluginServiceBase>(_server, pluginAssembly, loadContext, shadowDir);
+            // ShadowCopyPath 传根目录：卸载时把该插件整份卷影副本（{guid}/{插件名}/）一起删掉。
+            var container = new PluginContainer<PluginServiceBase>(_server, pluginAssembly, loadContext, shadowRoot);
             var pluginServiceImplement = (PluginServiceBase)Activator.CreateInstance(pluginServiceTypes[0], container)!;
             container.LoadServices(pluginServiceImplement);
             return container;
@@ -330,19 +384,28 @@ namespace Application.Core.Gameplay.Plugins
 
             _disposed = true;
 
-            var containers = _pluginContainers.Values.ToList();
-            _pluginContainers.Clear();
-
-            foreach (var container in containers)
+            await _loadLock.WaitAsync();
+            try
             {
-                try
+                var containers = _pluginContainers.Values.ToList();
+                _pluginContainers.Clear();
+
+                foreach (var container in containers)
                 {
-                    await container.DisposeAsync();
+                    try
+                    {
+                        await container.DisposeAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        container.Logger.Error(ex, "Dispose 失败");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    container.Logger.Error(ex, "Dispose 失败");
-                }
+            }
+            finally
+            {
+                _loadLock.Release();
+                _loadLock.Dispose();
             }
         }
 

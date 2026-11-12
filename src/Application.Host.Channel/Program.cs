@@ -1,4 +1,5 @@
 using Application.Core.Channel.HostExtensions;
+using Application.Resources.Messages;
 using Application.Utility;
 using Google.Protobuf.Collections;
 using Mapster;
@@ -9,6 +10,9 @@ using Yitter.IdGenerator;
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 Console.OutputEncoding = Encoding.UTF8;
+
+// 只初始化宿主自己的文案目录；插件文案由 PluginContainer 按 Plugins/{插件名}/Messages 单独注册
+MessageStore.Initialize();
 
 var builder = WebApplication.CreateBuilder(args);
 

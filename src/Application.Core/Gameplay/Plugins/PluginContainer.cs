@@ -18,6 +18,8 @@ namespace Application.Core.Gameplay.Plugins
 
         public PluginLoadContext LoadContext { get; }
         public RequestTracker Tracker { get; } = new();
+
+        /// <summary>本插件卷影副本的根目录（内含 <c>{插件名}/</c>），卸载时整体删除。</summary>
         public string ShadowCopyPath { get; }
         public ILogger Logger { get; }
         public WorldChannelServer Node { get; }
@@ -43,6 +45,7 @@ namespace Application.Core.Gameplay.Plugins
                 await ServiceEntry.DisposeAsync();
             }
             ServiceEntry = null!;
+
             LoadContext.Unload();
             Logger.Information("插件卸载...完成");
             // 清理卷影副本目录

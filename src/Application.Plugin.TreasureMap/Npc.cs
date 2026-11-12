@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
 using Application.Utility;
 using Application.Utility.Extensions;
@@ -20,32 +21,33 @@ namespace Application.Plugin.TreasureMap
 
         public async Task getTreasureMap()
         {
+            var culture = c.CurrentCulture.CultureInfo;
             if (getLevel() < 30)
             {
-                await SayOK("30级之后再来吧");
+                await SayOK(TreasureMapText.Format(TreasureMapText.LevelTooLow, culture));
                 return;
             }
 
             if (c.CurrentServer.Id != Settings.ActiveChannel)
             {
-                await SayOK($"只有#r频道{Settings.ActiveChannel}#k才有这个活动");
+                await SayOK(TreasureMapText.Format(TreasureMapText.WrongChannel, culture, Settings.ActiveChannel));
                 return;
             }
 
-            await AskMenu($"最近有村民提到有流氓的消息，想不想听听？不过你要给我好处费哦，{Settings.QuestPrice}金币一条消息。", [
-                "听听无妨",
+            await AskMenu(TreasureMapText.Format(TreasureMapText.QuestOffer, culture, Settings.QuestPrice), [
+                TreasureMapText.Get(TreasureMapText.QuestAccept, culture)
                 ]);
 
             if (_quests.TryGetValue(getPlayer().Id, out var map))
             {
-                await SayOK($"听说出没在 #r#m{map}##k 附近");
+                await SayOK(TreasureMapText.Format(TreasureMapText.QuestLocation, culture, map));
                 return;
             }
             else
             {
                 if (getMeso() < Settings.QuestPrice)
                 {
-                    await SayOK("金币不足");
+                    await SayOK(TreasureMapText.Format(TreasureMapText.NotEnoughMeso, culture));
                     return;
                 }
 
@@ -90,7 +92,7 @@ namespace Application.Plugin.TreasureMap
                 });
                 _quests[getPlayer().Id] = mapId;
 
-                await SayOK($"听说出没在 #r#m{mapId}##k 附近");
+                await SayOK(TreasureMapText.Format(TreasureMapText.QuestLocation, culture, mapId));
             }
         }
     }

@@ -23,14 +23,16 @@ namespace ServiceTest.Games.Gameplay
 
             // 服务器启动时加载的是 Plugins/ 目录下的副本，构建后可能是旧的。
             // 先刷新副本，保证后续（重新）加载的是刚编译出来的代码。
-            Directory.CreateDirectory(manager.PluginDir);
-            var target = Path.Combine(manager.PluginDir, "Application.Plugin.Script.dll");
+            // 布局：Plugins/{插件名}/{插件名}.dll —— 整个目录是一个插件。
+            var pluginDir = Path.Combine(manager.PluginDir, "Application.Plugin.Script");
+            Directory.CreateDirectory(pluginDir);
+            var target = Path.Combine(pluginDir, "Application.Plugin.Script.dll");
             File.Copy(typeof(Application.Plugin.Script.ScriptService).Assembly.Location, target, overwrite: true);
 
             // 已加载就不再重载：强行重载会卸载其他测试正在使用的插件。
             if (manager.PluginCount == 0)
             {
-                await manager.LoadPlugin("Application.Plugin.Script.dll");
+                await manager.LoadPlugin("Application.Plugin.Script");
             }
         }
 

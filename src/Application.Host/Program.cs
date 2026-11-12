@@ -1,5 +1,6 @@
 using Application.Core.Login;
 using Application.Host.Services;
+using Application.Resources.Messages;
 using Application.Utility;
 using Serilog;
 using Serilog.Events;
@@ -23,6 +24,9 @@ try
     // 支持GBK
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     Console.OutputEncoding = Encoding.UTF8;
+
+    // 只初始化宿主自己的文案目录；插件文案由 PluginContainer 按 Plugins/{插件名}/Messages 单独注册
+    MessageStore.Initialize();
 
     YitIdHelper.SetIdGenerator(new IdGeneratorOptions(builder.Configuration.GetValue<ushort>(AppSettingKeys.LongIdSeed)));
 

@@ -338,7 +338,12 @@ namespace Application.Core.Channel
 
             try
             {
-                watcher = new FileSystemWatcher(PluginManager.PluginDir, "Application.Plugin.*.dll") { NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName };
+                // 插件以目录为单位：Plugins/{插件名}/，监听其中的 dll（含插件自带的 Messages 变更不影响加载）
+                watcher = new FileSystemWatcher(PluginManager.PluginDir, "Application.Plugin.*.dll")
+                {
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName,
+                    IncludeSubdirectories = true
+                };
                 watcher.Changed += OnFileChanged;
                 watcher.Created += OnFileChanged;
                 watcher.Deleted += OnFileDeleted;
@@ -401,10 +406,8 @@ namespace Application.Core.Channel
 
         private async Task LoadAllPlugins()
         {
-            var pluginFiles = Directory.GetFiles(PluginManager.PluginDir, "Application.Plugin.*.dll");
-            foreach (var pluginFile in pluginFiles)
+            foreach (var pluginName in PluginManager.EnumeratePluginDirectories())
             {
-                var pluginName = Path.GetFileName(pluginFile);
                 try
                 {
                     _logger.LogInformation("加载插件: {PluginName}...", pluginName);
@@ -417,10 +420,17 @@ namespace Application.Core.Channel
                 }
             }
         }
-        const string PluginPrefix = "Application.Plugin.";
+
+        /// <summary>
+        /// 监听回调给的是相对 <see cref="PluginManager.PluginDir"/> 的路径（含插件子目录）。
+        /// 插件名 = 目录名 = 主程序集文件名，因此取文件名去后缀即可。
+        /// </summary>
+        private static bool IsPluginDll(string? name) =>
+            name != null && Path.GetFileName(name).StartsWith(PluginManager.PluginFilePrefix, StringComparison.OrdinalIgnoreCase);
+
         private async void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (e.Name == null || !e.Name.StartsWith(PluginPrefix)) return;
+            if (!IsPluginDll(e.Name)) return;
 
             var now = DateTime.Now;
             if ((now - _lastLoadTime) < TimeSpan.FromSeconds(1))
@@ -431,12 +441,12 @@ namespace Application.Core.Channel
             await Task.Delay(200);
             _logger.LogInformation("插件更新: {PluginName}", e.Name);
 
-            await PluginManager.LoadPlugin(e.Name);
+            await PluginManager.LoadPlugin(Path.GetFileNameWithoutExtension(e.Name));
         }
 
         private async void OnFileDeleted(object sender, FileSystemEventArgs e)
         {
-            if (e.Name == null || !e.Name.StartsWith(PluginPrefix)) return;
+            if (!IsPluginDll(e.Name)) return;
 
             _logger.LogInformation("插件删除: {PluginName}", e.Name);
 

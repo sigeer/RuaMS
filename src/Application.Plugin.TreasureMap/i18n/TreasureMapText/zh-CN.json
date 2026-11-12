@@ -1,0 +1,8 @@
+{
+  "LevelTooLow": "30级之后再来吧",
+  "WrongChannel": "只有#r频道{0}#k才有这个活动",
+  "QuestOffer": "最近有村民提到有流氓的消息，想不想听听？不过你要给我好处费哦，{0}金币一条消息。",
+  "QuestAccept": "听听无妨",
+  "QuestLocation": "听说出没在 #r#m{0}##k 附近",
+  "NotEnoughMeso": "金币不足"
+}

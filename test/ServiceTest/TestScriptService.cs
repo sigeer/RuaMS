@@ -19,11 +19,12 @@ internal static class TestScriptService
         var node = Games.GameTestGlobal.TestServer.ServiceProvider
             .GetRequiredService<WorldChannelServer>();
 
+        var shadowPath = Path.Combine(Path.GetTempPath(), "ServiceTest.Plugin");
         var container = new PluginContainer<PluginServiceBase>(
             node,
             typeof(ScriptService).Assembly,
             new PluginLoadContext(typeof(ScriptService).Assembly.Location),
-            Path.Combine(Path.GetTempPath(), "ServiceTest.Plugin"));
+            shadowPath);
 
         var service = new ScriptService(container);
         container.LoadServices(service);
