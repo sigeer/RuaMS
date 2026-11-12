@@ -51,7 +51,7 @@ namespace Application.Plugin.Script.Features.RescueGaga
             if (mapid == GOAL_MAP)
             {
                 // 到达终点 → 通关
-                await ClearPQ(eim);
+                await eim.clearPQ();
             }
             else if (mapid == ENTRY_MAP)
             {

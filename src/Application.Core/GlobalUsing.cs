@@ -2,7 +2,6 @@ global using Application.Core.Client;
 global using Application.Core.Game.Players;
 global using Application.Core.Game.TheWorld;
 global using Application.Core.tools;
-global using Application.Scripting;
 global using Application.Shared;
 global using Application.Shared.Client;
 global using Application.Shared.Constants;

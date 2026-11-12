@@ -19,7 +19,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             var eim = getEventInstance();
             if (eim != null)
             {
-                eim.ClearedMaps[getMapId()] = Core.scripting.Events.Abstraction.StageStatus.Started;
+                eim.StartStage(getMapId());
                 await spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
                 await getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", ItemId.Weather_HenesysPQ, 7000);
                 await getMap().broadcastMessage(MessagePacket.SystemMessage("保护月妙！")); // Protect the Moon Bunny!

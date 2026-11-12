@@ -26,6 +26,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             var chr = eim.getLeader();
             if (chr?.isAlive() ?? false)
             {
+                await eim.clearPQ();
                 await chr.setQuestProgress(6370, 6371, "2");
                 await chr.changeMap(SURVIVE_MAP);
             }

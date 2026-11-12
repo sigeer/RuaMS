@@ -49,33 +49,34 @@ public class MapManager : IAsyncDisposable, INamedInstance, ITickable
         InstanceName = $"{worldChannel.InstanceName}:{nameof(MapManager)}:{(evt == null ? "None" : evt.getName())}";
     }
 
-    public async Task<IMap> resetMap(int mapid)
+    public async Task<IMap> LoadMapAsync(int mapid)
     {
-        await RemoveMap(mapid);
-        return await getMap(mapid);
+        return await MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
     }
 
-    private async Task<IMap> loadMapFromWz(int mapid)
+    public async Task<IMap> getMap(int mapid)
     {
-        if (maps.TryGetValue(mapid, out var map) && map != null)
+        if (maps.TryGetValue(mapid, out var map))
         {
             return map;
         }
 
+        map = await LoadMapAsync(mapid);
+        await RegisterMap(map);
+        return map;
+    }
 
-        map = await MapFactory.Instance.loadMapFromWz(mapid, _channelServer, evt);
-        maps[mapid] = map;
+    public async Task RegisterMap(IMap map)
+    {
+        await RemoveMap(map.Id);
+
+        maps[map.Id] = map;
+
         await _channelServer.NodeService.PluginManager.OnMapLoad(map);
 
         GameMetrics.ActiveMapCount.Add(1,
             new KeyValuePair<string, object?>("Channel", _channelServer.InstanceName),
             new KeyValuePair<string, object?>("Name", InstanceName));
-        return map;
-    }
-
-    public async Task<IMap> getMap(int mapid)
-    {
-        return await loadMapFromWz(mapid);
     }
 
 

@@ -9,7 +9,10 @@ namespace Application.Plugin.Script.Features.MagatiaPQ
         internal const string AlcadnoEventName = "MagatiaPQ_A";
         internal const string ZenumistEventName = "MagatiaPQ_Z";
 
+        /// <summary>Alcadno 分支（<c>jnr*</c>）的地图基数。</summary>
         internal const int AlcadnoMapBase = 926110000;
+
+        /// <summary>Zenumist 分支（<c>rnj*</c>）的地图基数。</summary>
         internal const int ZenumistMapBase = 926100000;
 
     }

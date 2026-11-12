@@ -7,14 +7,5 @@ namespace Application.Plugin.Script.Features.CWKPQ
     internal static class CWKPQFeature
     {
         internal const string EventName = "Exped_CWKPQ";
-
-        #region 传送门
-
-        #endregion
-
-        #region NPC
-
-        #endregion
-
     }
 }

@@ -27,7 +27,6 @@ namespace Application.Core.Channel.HostExtensions
 
         public static void UseDataSource(this WebApplication app)
         {
-            ScriptSource.Instance = new ScriptSource(app.Configuration.GetSection(AppSettingKeys.Section_Script));
             var wzDir = app.Configuration.GetSection(AppSettingKeys.Section_WZ).GetValue("BaseDir", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wz"));
             var file = Directory.EnumerateFiles(wzDir, "*", SearchOption.AllDirectories).FirstOrDefault();
             if (file == null)

@@ -23,12 +23,6 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
-		  <PrivateAssets>all</PrivateAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild">
-		  <PrivateAssets>all</PrivateAssets>
-	  </PackageReference>
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 
@@ -38,13 +32,6 @@
     <ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
     <ProjectReference Include="..\app\RuaMS.ServiceDefaults\RuaMS.ServiceDefaults.csproj" />
   </ItemGroup>
-
-	<ItemGroup Condition="'$(IsStandalone)' == 'true'">
-		<Content Include="..\Application.Resources\scripts\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Link>scripts\%(RecursiveDir)%(Filename)%(Extension)</Link>
-		</Content>
-	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="cache\**" />

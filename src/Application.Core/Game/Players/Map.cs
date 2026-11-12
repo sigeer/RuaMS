@@ -6,6 +6,8 @@ using Application.Core.Game.Trades;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects.Summons;
 using Application.Shared.WzEntity;
+using Humanizer;
+using System.Runtime.ConstrainedExecution;
 using tools;
 using static Application.Templates.Mob.MobTemplate;
 
@@ -96,12 +98,21 @@ namespace Application.Core.Game.Players
             return warpMap;
         }
 
-        private async Task eventChangedMap(int map)
+        private async Task EventChangingMap(int map)
         {
             var eim = getEventInstance();
             if (eim != null)
             {
                 await eim.changedMap(this, map);
+            }
+        }
+
+        private async Task EventAfterChangedMap(int map)
+        {
+            var eim = getEventInstance();
+            if (eim != null)
+            {
+                await eim.afterChangedMap(this, map);
             }
         }
 
@@ -115,33 +126,49 @@ namespace Application.Core.Game.Players
                 await Pink(banishInfo.Message);
             }
 
-            IMap map_ = await getWarpMap(banishInfo.Map);
-            var portal_ = map_.getPortal(banishInfo.PortalName);
-            await changeMap(map_, portal_ != null ? portal_ : map_.getRandomPlayerSpawnpoint());
+            await ChangeMapByMapId(banishInfo.Map, findPortal: map => map.getPortal(banishInfo.PortalName) ?? map.getRandomPlayerSpawnpoint());
         }
 
-        public async Task changeMap(int map)
+        public Task changeMap(int map) => ChangeMapByMapId(map, findPortal: map => map.getRandomPlayerSpawnpoint());
+        public Task changeMap(int map, int portal) => ChangeMapByMapId(map, findPortal: map => map.getPortal(portal));
+        public Task changeMap(int map, string portal) => ChangeMapByMapId(map, findPortal: map => map.getPortal(portal));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mapId"></param>
+        /// <param name="checkInstance">true: 玩家如果处于事件，则取事件内地图</param>
+        /// <param name="findPortal">null: Portal0</param>
+        /// <returns></returns>
+        public async Task ChangeMapByMapId(int mapId, Func<IMap, IPortal?>? findPortal = null, bool checkInstance = true)
         {
-            IMap warpMap = await getWarpMap(map);
-            await changeMap(warpMap, warpMap.getRandomPlayerSpawnpoint());
+            await EventChangingMap(mapId);
+            IMap warpMap = checkInstance ? await getWarpMap(mapId) : await Client.getChannelServer().getMapFactory().getMap(mapId);
+            var portal = (findPortal == null ? warpMap.getPortal(0) : findPortal(warpMap)) ?? warpMap.getPortal(0)!;
+            await changeMapInternal(warpMap, portal.getPosition(), PacketCreator.getWarpToMap(warpMap, portal.getId(), this));
         }
 
-        public async Task changeMap(int map, int portal)
+        public async Task ChangeMap(IMap warpTo, Func<IMap, IPortal?>? findPortal = null, bool checkInstance = true)
         {
-            IMap warpMap = await getWarpMap(map);
-            await changeMap(warpMap, warpMap.getPortal(portal));
+            await EventChangingMap(warpTo.Id);
+            if (checkInstance)
+            {
+                warpTo = await getWarpMap(warpTo.Id);
+            }
+            var portal = (findPortal == null ? warpTo.getPortal(0) : findPortal(warpTo)) ?? warpTo.getPortal(0)!;
+            await changeMapInternal(warpTo, portal.getPosition(), PacketCreator.getWarpToMap(warpTo, portal.getId(), this));
         }
 
-        public async Task changeMap(int map, string portal)
+        public async Task ChangeMap(IMap warpTo, Point pos, bool checkInstance = true)
         {
-            IMap warpMap = await getWarpMap(map);
-            await changeMap(warpMap, warpMap.getPortal(portal));
+            await EventChangingMap(warpTo.Id);
+            if (checkInstance)
+            {
+                warpTo = await getWarpMap(warpTo.Id);
+            }
+            await changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
         }
 
-        public async Task changeMap(int map, IPortal? portal)
-        {
-            await changeMap(await getWarpMap(map), portal);
-        }
 
         public async Task changeMap(IMap to, int portal = 0)
         {
@@ -150,7 +177,7 @@ namespace Application.Core.Game.Players
 
         public async Task changeMap(IMap to, IPortal? pto)
         {
-            await eventChangedMap(to.getId());
+            await EventChangingMap(to.getId());
             pto ??= to.getPortal(0)!;
             var warpTo = await getWarpMap(to.getId());
             await changeMapInternal(warpTo, pto.getPosition(), PacketCreator.getWarpToMap(warpTo, pto.getId(), this));
@@ -158,7 +185,7 @@ namespace Application.Core.Game.Players
 
         public async Task changeMap(IMap to, Point pos)
         {
-            await eventChangedMap(to.getId());
+            await EventChangingMap(to.getId());
             var warpTo = await getWarpMap(to.getId());
             await changeMapInternal(warpTo, pos, PacketCreator.getWarpToMap(warpTo, 0x80, pos, this));
         }
@@ -183,6 +210,7 @@ namespace Application.Core.Game.Players
 
                     await SendPacket(warpPacket);
                     await t.addPlayer(this);
+                    await EventAfterChangedMap(t.getId());
 
                     Client.CurrentServer.NodeService.BatchSynMapManager.Enqueue(new ProtoModel.MapSyncProto { MasterId = Id, MapId = t.getId() });
                 });
@@ -216,7 +244,7 @@ namespace Application.Core.Game.Players
         {
             // will actually enter the map given as parameter, regardless of being an eventmap or whatnot
 
-            await eventChangedMap(MapId.NONE);
+            await EventChangingMap(MapId.NONE);
 
             var mapEim = target.getEventInstance();
             if (mapEim != null)
@@ -237,6 +265,8 @@ namespace Application.Core.Game.Players
                 pto = to.getPortal(0)!;
             }
             await changeMapInternal(to, pto.getPosition(), PacketCreator.getWarpToMap(to, pto.getId(), this));
+
+            await EventAfterChangedMap(to.Id);
         }
 
         private int getVisitedMapIndex(IMap map)
@@ -321,7 +351,8 @@ namespace Application.Core.Game.Players
         }
         public async Task ForcedWarpOut()
         {
-            await changeMap(await MapModel.getForcedReturnMap());
+            // ForcedReturn 必定不在事件中
+            await ChangeMapByMapId(MapModel.getForcedReturnId(), checkInstance: false);
         }
 
         /// <summary>

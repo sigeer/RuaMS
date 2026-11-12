@@ -1,5 +1,6 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
+using Application.Core.Server.life;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Shared.Battle;
@@ -27,6 +28,23 @@ namespace Application.Plugin.Script.Features.Horntail
 
             EventTime = 120 * 60;
             RegistrationTime = 5 * 60;
+        }
+
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+            eim.setIntProperty("canJoin", 1);
+            eim.setIntProperty("defeatedBoss", 0);
+            eim.setIntProperty("defeatedHead", 0);
+
+            // 左右头在两张地图上，WZ 的 life 里没有，必须由事件刷出；
+            // 否则 defeatedHead 恒为 0，hontale_BR 封印门永远打不开
+            var leftMap = await eim.getInstanceMap(240060000);
+            await leftMap.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(8810000), new System.Drawing.Point(960, 120));
+
+            var rightMap = await eim.getInstanceMap(240060100);
+            await rightMap.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(8810001), new System.Drawing.Point(-420, 120));
+
+            await base.OnSetup(eim, level, lobbyId);
         }
 
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)

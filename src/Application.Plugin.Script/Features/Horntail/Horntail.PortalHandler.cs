@@ -26,6 +26,47 @@ namespace Application.Plugin.Script.Features.Horntail
             return eim;
         }
 
+        // Map: 240060000 | pt: 9
+        public Task<bool> hontale_boss1() => NotImplemented();
+
+        // Map: 240060100 | pt: 9
+        public Task<bool> hontale_boss2() => NotImplemented();
+
+        // Map: 240060000, 240060100 | pt: 8
+        public async Task<bool> hontale_BR()
+        {
+
+            if (getPlayer().getMapId() == 240060000)
+            {
+                if (GetEventInstance().getIntProperty("defeatedHead") >= 1)
+                {
+                    await playPortalSound();
+                    await warp(240060100, 0);
+                    return true;
+                }
+                else
+                {
+                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    return false;
+                }
+            }
+            else if (getPlayer().getMapId() == 240060100)
+            {
+                if (GetEventInstance().getIntProperty("defeatedHead") >= 2)
+                {
+                    await playPortalSound();
+                    await warp(240060200, 0);
+                    return true;
+                }
+                else
+                {
+                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    return false;
+                }
+            }
+            return false;
+        }
+
         // Map: 240050100 | pt: 7
         /// <summary>
         /// 进入封印内部：最后一名玩家必须等待钥匙，持有 1st Crystal Key 时不允许通过。
@@ -178,41 +219,6 @@ namespace Application.Plugin.Script.Features.Horntail
             return true;
         }
 
-        // Map: 240060000, 240060100 | pt: 8
-        public async Task<bool> hontale_BR()
-        {
-
-            if (getPlayer().getMapId() == 240060000)
-            {
-                if (GetEventInstance().getIntProperty("defeatedHead") >= 1)
-                {
-                    await playPortalSound();
-                    await warp(240060100, 0);
-                    return true;
-                }
-                else
-                {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-            }
-            else if (getPlayer().getMapId() == 240060100)
-            {
-                if (GetEventInstance().getIntProperty("defeatedHead") >= 2)
-                {
-                    await playPortalSound();
-                    await warp(240060200, 0);
-                    return true;
-                }
-                else
-                {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
-                    return false;
-                }
-            }
-            return false;
-        }
-
         // Map: 240050200 | pt: 7
         public async Task<bool> hontale_C()
         {
@@ -258,6 +264,12 @@ namespace Application.Plugin.Script.Features.Horntail
             await warp(240050400, "sp");
             return true;
         }
+
+
+
+        // Map: 240040700 | pt: 7
+        public Task<bool> hontale_morph() => NotImplemented();
+
 
         // Map: 240040700 | pt: 7
         /// <summary>

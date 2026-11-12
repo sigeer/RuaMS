@@ -10,13 +10,20 @@ namespace Application.Plugin.Script.Features.EllinPQ
         {
         }
 
+        // Reactor: 3009000 — 荆棘
+        public async Task r3009000()
+        {
+            if (getReactor().getState() == 4)
+            {
+                await GetEventInstanceTrust().showClearEffect(getMapId());
+            }
+        }
+
         // Reactor: 3001000 
         public async Task pFBoss()
         {
             await Pink("Poison Golem has been spawned.");
             await spawnMonster(9300180, 1);
-
-
         }
 
 

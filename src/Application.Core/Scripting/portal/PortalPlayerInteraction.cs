@@ -28,7 +28,7 @@ using tools;
 
 namespace scripting.portal;
 
-public class PortalPlayerInteraction : AbstractPlayerInteraction
+public abstract class PortalPlayerInteraction : AbstractPlayerInteraction
 {
     private IPortal portal;
 
@@ -65,6 +65,16 @@ public class PortalPlayerInteraction : AbstractPlayerInteraction
     public bool CanEnterDeveloperRoom()
     {
         return c.CurrentServer.NodeService.AdminService.GetServerStats().IsDevRoomAvailable;
+    }
+
+    protected Task<bool> NotImplemented()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected Task<bool> Pass()
+    {
+        return Task.FromResult(true);
     }
 
     /// <summary>

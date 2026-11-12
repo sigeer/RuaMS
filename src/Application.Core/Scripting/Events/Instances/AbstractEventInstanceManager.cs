@@ -81,8 +81,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         this.name = name;
     }
 
-    public AbstractEventManager getEm() => EventManager;
-
     public int getEventPlayersJobs()
     {
         //Bits -> 0: BEGINNER 1: WARRIOR 2: MAGICIAN
@@ -229,9 +227,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         await EventManager.Template.OnPlayerMapChanging(this, chr, mapId);
     }
 
-    public void afterChangedMap(Player chr, int mapId)
+    public async Task afterChangedMap(Player chr, int mapId)
     {
-        EventManager.Template.OnPlayerMapChanged(this, chr, mapId);
+       await  EventManager.Template.OnPlayerMapChanged(this, chr, mapId);
     }
 
     public async Task changedLeader(Player ldr)
@@ -241,7 +239,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         leaderId = ldr.getId();
     }
 
-    public void monsterKilled(Monster mob, ICombatantObject? killer)
+    public async Task monsterKilled(Monster mob, ICombatantObject? killer)
     {
         int scriptResult = 0;
 
@@ -259,38 +257,38 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
         if (scriptResult > 0)
         {
-            EventManager.Template.OnMobKilled(this, mob, killer);
+            await EventManager.Template.OnMobKilled(this, mob, killer);
 
             if (scriptResult > 1)
             {
-                EventManager.Template.OnMobClear(this, mob.getMap());
+                await EventManager.Template.OnMobClear(this, mob.getMap());
             }
         }
     }
 
-    public void friendlyKilled(Monster mob, ICombatantObject? killer)
+    public async Task friendlyKilled(Monster mob, ICombatantObject? killer)
     {
-        EventManager.Template.OnFriendlyMobKilled(this, mob, killer);
+        await EventManager.Template.OnFriendlyMobKilled(this, mob, killer);
     }
 
-    public void friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
+    public async Task friendlyDamaged(Monster mob, ICombatantObject? attacker, int damage)
     {
-        EventManager.Template.OnFriendlyMobDamaged(this, mob, attacker, damage);
+        await EventManager.Template.OnFriendlyMobDamaged(this, mob, attacker, damage);
     }
 
-    public void friendlyItemDrop(Monster mob)
+    public async Task friendlyItemDrop(Monster mob)
     {
-        EventManager.Template.OnFriendlyMobDrop(this, mob);
+        await EventManager.Template.OnFriendlyMobDrop(this, mob);
     }
 
-    public void playerKilled(Player chr)
+    public async Task playerKilled(Player chr)
     {
-        EventManager.Template.OnPlayerDied(this, chr);
+        await EventManager.Template.OnPlayerDied(this, chr);
     }
 
-    public void reviveMonster(Monster mob)
+    public async Task reviveMonster(Monster mob)
     {
-        EventManager.Template.OnMobRevive(this, mob);
+        await EventManager.Template.OnMobRevive(this, mob);
     }
 
     public async Task<bool> revivePlayer(Player player)
@@ -356,7 +354,11 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
         foreach (var chr in getPlayers())
         {
-            await chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
+            if (CanGiveReward(chr, -2))
+            {
+                await chr.awardQuestPoint(YamlConfig.config.server.QUEST_POINT_PER_EVENT_CLEAR);
+                SetRewardClaimed(chr, -2);
+            }
         }
 
         EventManager.DisposeInstance(name);
@@ -496,6 +498,9 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         return killCount.GetValueOrDefault(chr, 0);
     }
 
+    public StageStatus GetStageStatus(int map) => ClearedMaps.GetValueOrDefault(map, StageStatus.NotStarted);
+    public void StartStage(int map) => ClearedMaps[map] = StageStatus.Started;
+    public void CompleteStage(int map) => ClearedMaps[map] = StageStatus.Completed;
 
     public virtual async ValueTask DisposeAsync()
     {
@@ -506,14 +511,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
         }
 
         Status = TickableStatus.Remove;
-        //try
-        //{
-        //    invokeScriptFunction("dispose", this);
-        //}
-        //catch (Exception ex)
-        //{
-        //    log.Error(ex, "Invoke {JsFunction} from {ScriptName}", "dispose", EventManager.Name);
-        //}
+
         InstanceStatus = InstanceStatus.Disposed;
         await stopEventTimer();
 

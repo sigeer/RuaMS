@@ -34,7 +34,6 @@ namespace Application.Plugin.Script.Features.TDBattle
             MaxMap = EntryMap;
 
             EventTime = eventMinutes * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)

@@ -2,6 +2,7 @@ using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Core.Scripting.Events;
 
 namespace Application.Plugin.Script.Features.GuildQuest
 {
@@ -57,7 +58,31 @@ namespace Application.Plugin.Script.Features.GuildQuest
             eim.setIntProperty("canJoin", 1);
             eim.setIntProperty("canRevive", 0);
 
-            eim.setProperty("entryTimestamp", eim.EventManager.ChannelServer.Node.getCurrentTime().ToString());
+            // JS: entryTimestamp = 当前时间 + 等待时长（毫秒），供 OnTimeOut 判断 canJoin 窗口
+            var entryTimestamp = eim.EventManager.ChannelServer.Node.getCurrentTime() + WAIT_TIME * 60_000L;
+            eim.setProperty("entryTimestamp", entryTimestamp.ToString());
+
+            // 任务道具离场统一回收；1032033 没有 WZ pquest 标记，必须靠这里
+            eim.SetExclusiveItems(ExclusiveItems);
+        }
+
+        /// <summary>JS setEventExclusives 的道具集合。</summary>
+        static readonly int[] ExclusiveItems =
+        [
+            1032033
+        ];
+
+        public override Task OnLobbyDisposed(AbstractEventInstanceManager eim)
+        {
+            // JS: dispose 后延迟 1.5 个大厅间隔再尝试启动队列中的下一公会，
+            // 否则排队中的公会永远不会自动开局
+            var em = (GuildQuestEventManager)eim.EventManager;
+            eim.EventManager.ChannelServer.TimerManager.schedule(() =>
+            {
+                _ = em.attemptStartGuildInstance();
+            }, TimeSpan.FromMilliseconds(em.getLobbyDelay() * 1.5 * 1000));
+
+            return Task.CompletedTask;
         }
 
         public override async Task AfterSeup(AbstractEventInstanceManager eim)
@@ -128,8 +153,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
 
         public override async Task ClearPQ(AbstractEventInstanceManager eim)
         {
-            await eim.stopEventTimer();
-            await eim.setEventCleared();
+            await base.ClearPQ(eim);
 
             await eim.warpEventTeam(CLEAR_MAP);
 
@@ -139,10 +163,10 @@ namespace Application.Plugin.Script.Features.GuildQuest
 
         public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
         {
-            chr.CancelBuffFromSourceId(2023000);
-            chr.CancelBuffFromSourceId(2023001);
-            chr.CancelBuffFromSourceId(2023002);
-            chr.CancelBuffFromSourceId(2023003);
+            await chr.CancelBuffFromSourceId(2023000);
+            await chr.CancelBuffFromSourceId(2023001);
+            await chr.CancelBuffFromSourceId(2023002);
+            await chr.CancelBuffFromSourceId(2023003);
 
             await base.OnPlayerUnregister(eim, chr);
         }

@@ -559,9 +559,9 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         }
 
 
-        if (getStats().isFriendly())
+        if (getStats().isFriendly() && MapModel.EventInstanceManager != null)
         {
-            MapModel.EventInstanceManager?.friendlyDamaged(this, from, trueDamage.Value);
+            await MapModel.EventInstanceManager.friendlyDamaged(this, from, trueDamage.Value);
         }
 
         if (from is Player chr)
@@ -994,7 +994,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             var eim = map.getEventInstance();
             if (eim != null)
             {
-                eim.friendlyItemDrop(this);
+                await eim.friendlyItemDrop(this);
             }
 
             await map.dropFromFriendlyMonster(chr, this);
@@ -1067,11 +1067,11 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
         {
             if (!this.getStats().isFriendly())
             {
-                eim.monsterKilled(this, killer);
+                await eim.monsterKilled(this, killer);
             }
             else
             {
-                eim.friendlyKilled(this, killer);
+                await eim.friendlyKilled(this, killer);
             }
         }
     }
@@ -2342,7 +2342,7 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
 
             if (eim != null)
             {
-                eim.reviveMonster(mob);
+                await eim.reviveMonster(mob);
             }
         }
     }

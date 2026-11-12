@@ -138,13 +138,7 @@ public class GenericPortal : IPortal
             var chr = c.OnlinedCharacter;
             if (!(chr.getChalkboard() != null && GameConstants.isFreeMarketRoom(getTargetMapId())))
             {
-                var to = await chr.getWarpMap(getTargetMapId());
-                var pto = to.getPortal(getTarget());
-                if (pto == null)
-                {// fallback for missing portals - no real life case anymore - interesting for not implemented areas
-                    pto = to.getPortal(0);
-                }
-                await chr.changeMap(to, pto); //late resolving makes this harder but prevents us from loading the whole world at once
+                await chr.changeMap(getTargetMapId(), getTarget());
                 changed = true;
             }
             else

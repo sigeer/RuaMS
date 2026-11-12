@@ -30,6 +30,40 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
 
             EventTime = 75 * 60;
             Type = Shared.Events.EventInstanceType.PartyQuest;
+
+            // JS expStages = [2000, 4000, 6000, 8000, 9000, 11000]
+            StageClearRewards = new()
+            {
+                { 1, new(2000, 0) },
+                { 2, new(4000, 0) },
+                { 3, new(6000, 0) },
+                { 4, new(8000, 0) },
+                { 5, new(9000, 0) },
+                { 6, new(11000, 0) },
+            };
+        }
+
+        /// <summary>
+        /// JS 的准入校验：全队必须已婚，且同时包含两种性别（mask == 3）。
+        /// 基类只校验招募图 / 人数 / 等级，这里补上夫妻副本特有的门槛。
+        /// </summary>
+        public override List<Player> GetEligibleParty(Player leader)
+        {
+            var members = base.GetEligibleParty(leader);
+            if (members.Count == 0)
+                return members;
+
+            // onlyMarriedPlayers = true：任何一人未婚即整队不合格
+            if (members.Any(x => x.getMarriageRing() == null))
+                return [];
+
+            var mask = 0;
+            foreach (var chr in members)
+            {
+                mask |= 1 << (int)chr.getGender();
+            }
+
+            return mask == 3 ? members : [];
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
@@ -48,18 +82,6 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
             foreach (var mapId in new[] { 670010200, 670010300, 670010301, 670010302 })
             {
                 (await eim.getInstanceMap(mapId))?.toggleDrops();
-            }
-
-            var map200 = await eim.getInstanceMap(670010200);
-            if (map200 != null)
-            {
-                await map200.instanceMapForceRespawn();
-            }
-
-            var map500 = await eim.getInstanceMap(670010500);
-            if (map500 != null)
-            {
-                await map500.instanceMapForceRespawn();
             }
 
             (await eim.getInstanceMap(670010750))?.shuffleReactors();
@@ -106,15 +128,6 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
             return chr.getMarriageRing()?.getPartnerChrId() ?? 0;
         }
 
-        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
-        {
-            var map = await eim.getInstanceMap(EntryMap);
-            if (map == null)
-                return;
-
-            await chr.changeMap(map, 0);
-        }
-
         public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
             // 第 6 阶段已通过：直接送出，保留奖励结算
@@ -125,12 +138,5 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
 
             await base.OnTimeOut(eim);
         }
-
-        public override async Task OnPlayerDied(AbstractEventInstanceManager eim, Player chr)
-        {
-            // JS 的 playerDead 为空函数
-            await base.OnPlayerDied(eim, chr);
-        }
-
     }
 }

@@ -10,7 +10,7 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
 {
     internal class Exped_Balrog : AbstractExpeditionEventTemplate
     {
-        public Exped_Balrog() : base(8830003, Exped_BalrogFeature.EventName, ExpeditionEntryType.BALROG_NORMAL.Name)
+        public Exped_Balrog() : base(Exped_BalrogFeature.SealedBossId, Exped_BalrogFeature.EventName, ExpeditionEntryType.BALROG_NORMAL.Name)
         {
             MinCount = 6;
             MaxCount = 30;
@@ -21,6 +21,7 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
             EntryMap = 105100300;
             ExitMap = 105100100;
             ClearMap = 105100301;
+            RecruitMap = 105100100;
 
             MinMap = 105100300;
             MaxMap = 105100301;
@@ -29,52 +30,15 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
             RegistrationTime = 5 * 60;
         }
 
-        public override async Task AfterSeup(AbstractEventInstanceManager eim)
-        {
-            await base.AfterSeup(eim);
-
-            eim.Schedule(releaseLeftClaw, 1 * 60000);
-
-            var mapObj = await eim.getInstanceMap(EntryMap)!;
-
-            var mob0 = LifeFactory.Instance.GetMonsterTrust(8830000);
-            await mapObj.spawnFakeMonsterOnGroundBelow(mob0, new Point(412, 258));
-
-            // 8830002 -> 8830005
-            var mob2 = LifeFactory.Instance.GetMonsterTrust(8830002);
-            await mapObj.spawnMonsterOnGroundBelow(mob2, new Point(412, 258));
-
-            // 8830006 -> 8830001 -> 8830004
-            var mob6 = LifeFactory.Instance.GetMonsterTrust(8830006);
-            await mapObj.spawnMonsterOnGroundBelow(mob6, new Point(412, 258));
-        }
-
-        async Task releaseLeftClaw(AbstractEventInstanceManager eim)
-        {
-            var map = await eim.getInstanceMap(EntryMap);
-            if (map != null)
-            {
-                await map.killMonster(8830006);
-            }
-        }
-
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
-            var mapObj = (await eim.getInstanceMap(EntryMap))!;
-            if (mob.getId() == 8830001 || mob.getId() == 8830002)
-            {
-                var count = eim.getIntProperty("boss");
-                count++;
+            // 未封印的巴洛古：8830000 / 8830001 / 8830002
+            var balrogId = mob.getId() - Exped_BalrogFeature.SealedBossId;
+            if (balrogId < 0 || balrogId > 2)
+                return;
 
-                if (count == 2)
-                {
-                    await mapObj.makeMonsterReal(mapObj.getMonsterById(8830000));
-                }
-                eim.setIntProperty("boss", count);
-            }
-
-
-            if (mob.getId() == 8830000)
+            var count = eim.getIntProperty("boss");
+            if (count == 2)
             {
                 await eim.showClearEffect();
                 await eim.clearPQ();
@@ -82,12 +46,33 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
                 await eim.dispatchRaiseQuestMobCount(BossId, EntryMap);
                 await eim.dispatchRaiseQuestMobCount(9101003, EntryMap); // thanks Atoot for noticing quest not getting updated after boss kill
 
+                var leaderName = eim.getLeader()?.getName() ?? string.Empty;
+                var map = mob.getMap();
                 await eim.EventManager.ChannelServer.NodeActor.Send(s =>
                 {
-                    s.SendDropMessage(6, "[Victory] " + eim.getLeader().getName() + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + mapObj.countAlivePlayers() + " players alive.", false);
+                    s.SendDropMessage(6, "[Victory] " + leaderName + "'s party has successfully defeated the Balrog! Praise to them, they finished with " + map.countAlivePlayers() + " players alive.", false);
                 });
+            }
+            else
+            {
+                if (count == 1)
+                {
+                    var mapObj = await eim.getInstanceMap(EntryMap);
+                    if (mapObj != null)
+                        await mapObj.makeMonsterReal(mapObj.getMonsterById(Exped_BalrogFeature.SealedBossId));
+                }
+                eim.setIntProperty("boss", count + 1);
+            }
 
-                await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(BossId), new Point(412, 258));
+            // 本体死了以后 10 秒才重刷封印形态
+            if (mob.getId() == BossId)
+            {
+                eim.Schedule(async instance =>
+                {
+                    var mapObj = await instance.getInstanceMap(EntryMap);
+                    if (mapObj != null)
+                        await mapObj.spawnMonsterOnGroundBelow(LifeFactory.Instance.GetMonsterTrust(Exped_BalrogFeature.BossMobId), new Point(412, 258));
+                }, 10_000);
             }
         }
 

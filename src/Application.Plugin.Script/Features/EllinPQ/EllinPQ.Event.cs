@@ -28,6 +28,12 @@ namespace Application.Plugin.Script.Features.EllinPQ
 
         int bossId = 9300182;
 
+        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
+        {
+            eim.setIntProperty("statusStg4", 0);
+            await base.OnSetup(eim, level, lobbyId);
+        }
+
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)
         {
             if (mob.getId() == bossId)

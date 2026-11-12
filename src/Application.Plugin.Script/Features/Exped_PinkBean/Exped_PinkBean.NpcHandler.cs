@@ -22,11 +22,10 @@ namespace Application.Plugin.Script.Features.Exped_PinkBean
                 return;
 
             var map = getMap();
-            var npc = map.GetMapObjects(x => x.getType() == Shared.MapObjects.MapObjectType.NPC)
-                .FirstOrDefault(x => x.GetSourceId() == 2141000);
+            var npc = map.getNPCById(2141000);
             if (npc != null)
             {
-                await map.RemoveMapObject(npc, null);
+                await map.RemoveMapObject(npc, mapChr => npc.sendDestroyData(mapChr.Client));
             }
 
             var reactor = map.getReactorById(2709000);

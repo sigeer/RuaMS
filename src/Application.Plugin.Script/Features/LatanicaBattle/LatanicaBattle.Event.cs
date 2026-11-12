@@ -23,7 +23,6 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
             MaxMap = 541010100;
 
             EventTime = 10 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)

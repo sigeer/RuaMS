@@ -2360,7 +2360,6 @@ ReactorAct|JPludiMob2
 ReactorAct|JPludiMob3
 ReactorAct|JPludiMob4
 ReactorAct|PB_boxCount
-ReactorAct|PinkBeenBack0
 ReactorAct|PinkBeenScript0
 ReactorAct|SEAitem0
 ReactorAct|amoriaItem0
@@ -2482,7 +2481,6 @@ ReactorAct|glpqskill6
 ReactorAct|glpqskill7
 ReactorAct|glpqskill8
 ReactorAct|glpqskill9
-ReactorAct|glpqstrge
 ReactorAct|glpqweapon0
 ReactorAct|glpqweapon1
 ReactorAct|glpqweapon2
@@ -2560,6 +2558,20 @@ ReactorAct|pFBoss
 ReactorAct|pFItem0
 ReactorAct|pFItem1
 ReactorAct|periItem0
+ReactorAct|r2008006
+ReactorAct|r2408002
+ReactorAct|r2618001
+ReactorAct|r2618002
+ReactorAct|r3009000
+ReactorAct|r8098000
+ReactorAct|r9208000
+ReactorAct|r9208001
+ReactorAct|r9208002
+ReactorAct|r9208004
+ReactorAct|r9208007
+ReactorAct|r9208009
+ReactorAct|r9400300
+ReactorAct|r9400301
 ReactorAct|rienItem0
 ReactorAct|rnjItem0
 ReactorAct|rnjItem1
@@ -2638,7 +2650,6 @@ ReactorHit|JPludiMob3
 ReactorHit|JPludiMob4
 ReactorHit|PB_boxCount
 ReactorHit|PinkBeenBack0
-ReactorHit|PinkBeenScript0
 ReactorHit|SEAitem0
 ReactorHit|aquaItem0
 ReactorHit|aquaItem1
@@ -2676,13 +2687,8 @@ ReactorHit|fvquest1
 ReactorHit|fvquest2
 ReactorHit|fvscaScript0
 ReactorHit|go221024400
-ReactorHit|guyfawkesbox0
-ReactorHit|guyfawkesmob0
-ReactorHit|guyfawkesmob1
-ReactorHit|guyfawkesmob2
 ReactorHit|halloweenGLitem
 ReactorHit|halloweenbox
-ReactorHit|hontaleNPC0
 ReactorHit|hwMob0
 ReactorHit|leafItem0
 ReactorHit|leafItem1
@@ -2714,6 +2720,8 @@ ReactorHit|osquest4
 ReactorHit|osquest5
 ReactorHit|pFBack0
 ReactorHit|periItem0
+ReactorHit|r2008007
+ReactorHit|r2618000
 ReactorHit|s4berserkItem0
 ReactorHit|s4berserkMap0
 ReactorHit|s4fireHawkItem0
@@ -2776,4 +2784,3 @@ ReactorUntouch|glpqflame5
 ReactorUntouch|glpqflame6
 ReactorUntouch|glpqflame7
 ReactorUntouch|glpqstrge
-ReactorUntouch|hontaleNPC0

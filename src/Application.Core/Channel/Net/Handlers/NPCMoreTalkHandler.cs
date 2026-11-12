@@ -38,7 +38,6 @@ public class NPCMoreTalkHandler : ChannelHandlerBase
                 string returnText = p.readString();
                 if (c.NPCConversationManager != null)
                 {
-                    c.NPCConversationManager.setGetText(returnText);
                     await c.CurrentServer.NodeService.PluginManager.MoreNpcConversation(c, action, lastMsg, -1, returnText);
                 }
             }

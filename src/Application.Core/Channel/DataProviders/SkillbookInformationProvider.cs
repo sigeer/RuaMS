@@ -332,19 +332,20 @@ public class SkillbookInformationProvider : DataBootstrap
 
     private Dictionary<int, SkillBookEntry> fetchSkillbooksFromScripts()
     {
-        return FileCache.GetOrCreate("skillbookinformation_script", () =>
-        {
-            Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
+        return new Dictionary<int, SkillBookEntry> { { 2280011, SkillBookEntry.SCRIPT }, { 2280003, SkillBookEntry.SCRIPT } };
+        //return FileCache.GetOrCreate("skillbookinformation_script", () =>
+        //{
+        //    Dictionary<int, SkillBookEntry> scriptSkillbooks = new();
 
-            foreach (var file in ScriptSource.Instance.LoadAllScript())
-            {
-                if (file.Name.EndsWith(".js"))
-                {
-                    scriptSkillbooks.putAll(fileSearchMatchingData(file));
-                }
-            }
-            return scriptSkillbooks;
-        }) ?? [];
+        //    foreach (var file in ScriptSource.Instance.LoadAllScript())
+        //    {
+        //        if (file.Name.EndsWith(".js"))
+        //        {
+        //            scriptSkillbooks.putAll(fileSearchMatchingData(file));
+        //        }
+        //    }
+        //    return scriptSkillbooks;
+        //}) ?? [];
     }
 
     public SkillBookEntry getSkillbookAvailability(int itemId)

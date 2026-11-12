@@ -5,9 +5,6 @@ namespace Application.Plugin.Script.Features.DavyJohn
 {
     /// <summary>
     /// 组队任务：海盗船（Davy John）。
-    /// 原本分散在 Events/PartyQuest/PQ_Pirate.cs、Npc/PartyQuest/PQ_Pirate.cs、
-    /// PortalScript.cs、ReactorActScript.cs、MapFirstEnterScript.cs 五处，
-    /// 通过 eim 的属性键（"stage2"、"grindMode"、"openedBoxes" 等）跨文件通信。
     /// </summary>
     internal static class DavyJohnFeature
     {
@@ -15,14 +12,18 @@ namespace Application.Plugin.Script.Features.DavyJohn
 
         #region 地图
         internal const int Stage1Map = 925100000;
+
         internal const int Stage2Map = 925100100;
-        internal const int Stage2PassageMap = 925100200;
-        internal const int Stage2BossMap = 925100201;
-        internal const int Stage2CheckMap = 925100202;
-        internal const int Stage3PassageMap = 925100300;
-        internal const int Stage3BossMap = 925100301;
-        internal const int Stage3CheckMap = 925100302;
-        internal const int Stage4Map = 925100400;
+
+        internal const int Stage3Map = 925100200;
+        internal const int Stage3Sub1 = 925100201;
+        internal const int Stage3Sub2 = 925100202;
+
+        internal const int Stage4Map = 925100300;
+        internal const int Stage4Sub1 = 925100301;
+        internal const int Stage4Sub2 = 925100302;
+
+        internal const int Stage5Map = 925100400;
         internal const int BossMap = 925100500;
         internal const int ClearMapId = 925100600;
         internal const int ExitMapId = 925100700;

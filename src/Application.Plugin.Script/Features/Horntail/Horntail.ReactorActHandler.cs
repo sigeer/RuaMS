@@ -1,3 +1,4 @@
+using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -9,6 +10,54 @@ namespace Application.Plugin.Script.Features.Horntail
     {
         public HorntailReactorActHandler(IChannelClient c, Reactor reactor) : base(c, reactor)
         {
+        }
+
+        // Reactor: 2408002 PQ
+        public async Task r2408002()
+        {
+            var eim = GetEventInstanceTrust();
+            var vvpMap = getMapId();
+            var vvpOrig = 4001088;
+            var vvpStage = -1;
+
+            await eim.showClearEffect(false, vvpMap);
+            await mapMessage(6, "The key has been teleported somewhere...");
+
+            int vvpKey;
+            switch (vvpMap)
+            {
+                case 240050101:
+                    vvpKey = vvpOrig;
+                    vvpStage = 1;
+                    break;
+                case 240050102:
+                    vvpKey = vvpOrig + 1;
+                    vvpStage = 2;
+                    break;
+                case 240050103:
+                    vvpKey = vvpOrig + 2;
+                    vvpStage = 3;
+                    break;
+                case 240050104:
+                    vvpKey = vvpOrig + 3;
+                    vvpStage = 4;
+                    break;
+                default:
+                    vvpKey = -1;
+                    break;
+            }
+
+            eim.setIntProperty(vvpStage + "stageclear", 1);
+
+            var womanfred = await eim.getMapInstance(240050100);
+            var theWomanfred = womanfred.getReactorByName("keyDrop" + vvpStage);
+            var dropper = eim.getPlayers().FirstOrDefault();
+            if (dropper == null || theWomanfred == null)
+                return;
+
+            var key = ItemInformationProvider.getInstance().GenerateVirtualItemById(vvpKey, 1);
+            await womanfred.spawnItemDrop(theWomanfred, dropper, key, theWomanfred.getPosition(), true, true);
+            await eim.dropMessage(6, "A bright flash of light, then a key suddenly appears somewhere in the map.");
         }
 
         // Reactor: 2401000 

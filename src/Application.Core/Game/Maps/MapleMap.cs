@@ -883,6 +883,28 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
+    public void ShuffleReactorsByName(string? name)
+    {
+        List<Point> points = new();
+        List<Reactor> targets = new();
+
+        var filterName = !string.IsNullOrEmpty(name);
+
+        foreach (var mr in getAllReactors())
+        {
+            if (!filterName || mr.getName() == name)
+            {
+                points.Add(mr.getPosition());
+                targets.Add(mr);
+            }
+        }
+        Collections.shuffle(points);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].setPosition(points[i]);
+        }
+    }
+
     public void shuffleReactors(int first = 0, int last = int.MaxValue)
     {
         List<Point> points = new();
@@ -905,20 +927,17 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    public void shuffleReactors(List<object> list)
+    public void shuffleReactors(List<Reactor> list)
     {
         List<Point> points = new();
         List<IMapObject> listObjects = new();
         List<Reactor> targets = new();
 
-        foreach (object ob in list)
+        foreach (var mmo in list)
         {
-            if (ob is IMapObject mmo)
+            if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
             {
-                if (mapobjects.ContainsValue(mmo) && mmo.getType() == MapObjectType.REACTOR)
-                {
-                    listObjects.Add(mmo);
-                }
+                listObjects.Add(mmo);
             }
         }
 
@@ -1895,9 +1914,6 @@ public class MapleMap : IMap, INamedInstance
         }
     }
 
-    /// <summary>
-    /// EventInstance的map不会参与MapRespawn，通过该方法刷怪
-    /// </summary>
     public async Task instanceMapRespawn()
     {
         if (!_allowSummons)
@@ -2587,12 +2603,12 @@ public class MapleMap : IMap, INamedInstance
         chr.visitMap(this);
 
         // 恢复当前地图的状态
-        EventInstanceManager?.recoverOpenedGate(chr, Id);
+        if (EventInstanceManager != null)
+        {
+            await EventInstanceManager.recoverOpenedGate(chr, Id);
+        }
 
         await chr.SendPacket(PacketCreator.environmentMoveList(getEnvironment()));
-
-        // 可能离开了副本，新的地图没有EventInstanceManager
-        chr.getEventInstance()?.afterChangedMap(chr, Id);
     }
     bool _scriptOnFirstUserEnter = false;
     public async Task addPlayer(Player chr)
@@ -2991,4 +3007,24 @@ public class MapleMap : IMap, INamedInstance
     public Task Send(Action<IMap> action) => Send(new MapDelegateCommand(action));
 
     public Task Send(Func<IMap, Task> action) => Send(new AsyncMapDelegateCommand(action));
+
+    public async Task Reload(Point? pos = null)
+    {
+        var mapManager = EventInstanceManager?.getMapFactory() ?? ChannelServer.getMapFactory();
+        var characters = getAllPlayers();
+
+        var newMap = await mapManager.LoadMapAsync(Id);
+        foreach (var chr in characters)
+        {
+            var toPos = pos.HasValue ? pos.Value : chr.getPosition();
+            chr.saveLocationOnWarp();
+            await chr.ChangeMap(newMap, toPos, false);
+            if (chr.isGM())
+            {
+                await chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
+            }
+        }
+        await mapManager.RegisterMap(newMap);
+        await newMap.respawn();
+    }
 }

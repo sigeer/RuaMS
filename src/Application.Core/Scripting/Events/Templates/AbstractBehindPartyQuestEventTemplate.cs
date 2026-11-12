@@ -121,7 +121,6 @@ namespace Application.Core.scripting.Events.Templates
 
         public virtual Task OnPlayerBanned(AbstractEventInstanceManager eim, Player chr) => Task.CompletedTask;
         public virtual Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr) => Task.CompletedTask;
-        public virtual Task OnBattlePrepare(AbstractEventInstanceManager eim) => Task.CompletedTask;
         public virtual Task OnBattleStarted(AbstractEventInstanceManager eim) => Task.CompletedTask;
 
         public override bool IsEventTeamLackingNow(AbstractEventInstanceManager eim, bool leavingEventMap, Player quitter)

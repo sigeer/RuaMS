@@ -128,7 +128,7 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     public async Task WarpOut()
     {
-        await warp(getPlayer().getMap().getForcedReturnId());
+        await getPlayer().ForcedWarpOut();
     }
 
     public async Task WarpReturn()
@@ -178,12 +178,7 @@ public class AbstractPlayerInteraction : IClientMessenger
         int mapid = getMapId();
         var warpMap = await c.CurrentServer.getMapFactory().getMap(map);
 
-        var portal = warpMap.getPortal(portalName);
-
-        if (portal == null)
-        {
-            portal = warpMap.getPortal(0)!;
-        }
+        var portal = warpMap.getPortal(portalName)?? warpMap.getPortal(0)!;
 
         var portalId = portal.getId();
 
@@ -301,13 +296,11 @@ public class AbstractPlayerInteraction : IClientMessenger
         return getItemQuantity(itemid) >= quantity;
     }
 
-    [ScriptCall]
     public int getItemQuantity(int itemid)
     {
         return getPlayer().getItemQuantity(itemid);
     }
 
-    [ScriptCall]
     public bool haveItemWithId(int itemid, bool checkEquipped = false)
     {
         return getPlayer().haveItemWithId(itemid, checkEquipped);
@@ -628,7 +621,6 @@ public class AbstractPlayerInteraction : IClientMessenger
 
     }
     // js使用
-    [ScriptCall]
     public Task gainItem(int id, bool show) => gainItem(id, 1, show);
 
     public async Task gainItem(int id, int quantity = 1, bool show = true)

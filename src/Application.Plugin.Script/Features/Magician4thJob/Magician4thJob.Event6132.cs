@@ -2,7 +2,7 @@ using Application.Plugin.Script.Events;
 
 namespace Application.Plugin.Script.Features.Magician4thJob
 {
-    /// <summary>任务 6132 的副本事件。</summary>
+    /// <summary>6132 ~ 6134</summary>
     internal sealed class Magician4thJobEvent6132 : SoloQuestEventTemplate
     {
         internal const int QuestIdValue = 6132;

@@ -75,21 +75,21 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 case DavyJohnFeature.Stage2Map:
                     await TalkStage2(eim);
                     break;
-                case DavyJohnFeature.Stage2PassageMap:
-                case DavyJohnFeature.Stage3PassageMap:
+                case DavyJohnFeature.Stage3Map:
+                case DavyJohnFeature.Stage4Map:
                     await SayNext("要攻打海盗船，我们必须先消灭守卫。");
                     break;
-                case DavyJohnFeature.Stage2BossMap:
+                case DavyJohnFeature.Stage3Sub1:
                     await TalkSealedBossStage(eim, DavyJohnFeature.Stage2AProperty);
                     break;
-                case DavyJohnFeature.Stage3BossMap:
+                case DavyJohnFeature.Stage4Sub1:
                     await TalkSealedBossStage(eim, DavyJohnFeature.Stage3AProperty);
                     break;
-                case DavyJohnFeature.Stage2CheckMap:
-                case DavyJohnFeature.Stage3CheckMap:
+                case DavyJohnFeature.Stage3Sub2:
+                case DavyJohnFeature.Stage4Sub2:
                     await SayNext("他们是效忠于老海盗的凯丁和克鲁。随你处置。");
                     break;
-                case DavyJohnFeature.Stage4Map:
+                case DavyJohnFeature.Stage5Map:
                     await SayNext("我们必须使用骷髅钥匙关上门！");
                     break;
                 case DavyJohnFeature.BossMap:

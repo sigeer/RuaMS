@@ -7,6 +7,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
 using Application.Shared.Events;
+using System.Runtime.ConstrainedExecution;
 using System.Timers;
 using tools;
 
@@ -37,7 +38,14 @@ namespace Application.Core.scripting.Events.Templates
 
         public int MinMap { get; init; }
         public int MaxMap { get; init; }
+        /// <summary>
+        /// 不在[MinMap, MaxMap]的事件地图
+        /// </summary>
         public int[] IncludedMap { get; init; } = [];
+        /// <summary>
+        /// 在[MinMap, MaxMap]的非事件地图
+        /// </summary>
+        public int[] ExcludedMap { get; init; } = [];
 
         /// <summary>
         /// 单位：秒
@@ -127,6 +135,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             eim.Level = level;
             eim.setProperty("level", level);
+            eim.setIntProperty("lobby", lobbyId);
             return Task.CompletedTask;
         }
 
@@ -346,14 +355,20 @@ namespace Application.Core.scripting.Events.Templates
 
         protected bool InInstanceMap(int mapId)
         {
-            return ((mapId >= MinMap && mapId <= MaxMap) || IncludedMap.Contains(mapId));
+            return !ExcludedMap.Contains(mapId) && ((mapId >= MinMap && mapId <= MaxMap) || IncludedMap.Contains(mapId));
         }
 
         public virtual Task OnMapCompleted(AbstractEventInstanceManager eim, IMap map)
         {
             eim.ClearedMaps[map.Id] = StageStatus.Completed;
-            return Task.CompletedTask;  
+            return Task.CompletedTask;
         }
+
+        /// <summary>
+        /// 实例从EM中移除时触发（此时实例可能还未释放：比如实例结束了，事件没有自动把玩家传送出去）
+        /// </summary>
+        public virtual Task OnLobbyDisposed(AbstractEventInstanceManager eim)
+            => Task.CompletedTask;
         #endregion
 
         #region Rewards
@@ -371,8 +386,7 @@ namespace Application.Core.scripting.Events.Templates
         /// </summary>
         /// <param name="eim"></param>
         /// <param name="player"></param>
-        /// <param name="points">得分</param>
-        /// <param name="eventLevel">难度</param>
+        /// <param name="point">得分</param>
         /// <returns>0. 成功，1. 已领取，2. 奖励不存在，3. 背包空间不足</returns>
         public virtual async Task<ClaimRewardResult> GiveClearReward(AbstractEventInstanceManager eim, Player player, int point)
         {

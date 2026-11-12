@@ -29,7 +29,6 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             MaxMap = ENTRY_MAP;
 
             EventTime = 6 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
         }
 
         public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
@@ -54,7 +53,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             }
 
             await eim.showClearEffect();
-            await ClearPQ(eim);
+            await eim.clearPQ();
         }
 
         public override async Task OnFriendlyMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)

@@ -11,6 +11,32 @@ namespace Application.Plugin.Script.Features.CWKPQ
         {
         }
 
+        // Map: 610030010 | pt: 8
+        public async Task<bool> glpqEnter()
+        {
+            if (haveItem(3992041, 1))
+            {
+                await playPortalSound();
+                await warp(610030020, "out00");
+                return true;
+            }
+            else
+            {
+                await Pink("巨大的铁门纹丝不动，但可以看到一个明显的键石形凹槽。");
+                return false;
+            }
+        }
+
+        // glpq 传送门已在 Features/CWKPQ 中实现
+
+        // Map: 10000, 20000, 30000 | pt: 9
+        public async Task<bool> glTutoMsg0()
+        {
+
+            await showInstruction("离开这个区域，将无法再回来。", 150, 5);
+            return true;
+        }
+
         // Map: 610030100 | pt: 8
         public Task<bool> glpqPortal0() => PassIf(eim => eim.getIntProperty("glpq1") != 0, 610030200, "This path is currently blocked.");
 

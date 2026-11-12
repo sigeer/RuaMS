@@ -5,7 +5,6 @@ namespace Application.Plugin.Script.Features.Magician4thJob
     /// </summary>
     internal static class Magician4thJob
     {
-        internal const string FirstEventName = "q6132";
 
     }
 }

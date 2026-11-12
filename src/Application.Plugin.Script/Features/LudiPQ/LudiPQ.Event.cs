@@ -119,6 +119,7 @@ namespace Application.Plugin.Script.Features.LudiPQ
                 },
             };
 
+            // JS expStages = [210, 2520, 2940, 3360, 3770, 0, 4620, 5040, 5950]
             StageClearRewards = new()
             {
                 { 922010100, new(210, 0) },
@@ -128,7 +129,8 @@ namespace Application.Plugin.Script.Features.LudiPQ
                 { 922010500, new(3770, 0) },
                 { 922010600, new(0, 0) },
                 { 922010700, new(4620, 0) },
-                { 922010800, new(5950, 0) },
+                { 922010800, new(5040, 0) },
+                { 922010900, new(5950, 0) },
             };
         }
 
@@ -136,9 +138,13 @@ namespace Application.Plugin.Script.Features.LudiPQ
         {
             await base.ClearPQ(eim);
 
-            // 奖励关：清场后传送到奖励地图，限时 1 分钟
-            await eim.startEventTimer(1 * 60_000);
-            await eim.warpEventTeam(LudiPQFeature.BonusMap);
+            if (eim.GetStageStatus(LudiPQFeature.BonusMap) == StageStatus.NotStarted)
+            {
+                eim.StartStage(LudiPQFeature.BonusMap);
+                // 奖励关：清场后传送到奖励地图，限时 1 分钟
+                await eim.startEventTimer(1 * 60_000);
+                await eim.warpEventTeam(LudiPQFeature.BonusMap);
+            }
         }
 
         /// <summary>
@@ -158,8 +164,9 @@ namespace Application.Plugin.Script.Features.LudiPQ
 
         public override async Task OnTimeOut(AbstractEventInstanceManager eim)
         {
-            if (eim.ClearedMaps.GetValueOrDefault(LudiPQFeature.BonusMap) == StageStatus.Completed)
+            if (eim.GetStageStatus(LudiPQFeature.BonusMap) == StageStatus.Started)
             {
+                eim.CompleteStage(LudiPQFeature.BonusMap);
                 await eim.warpEventTeam(LudiPQFeature.BonusMap, 922011100);
             }
             else

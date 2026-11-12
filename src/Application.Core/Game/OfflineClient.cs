@@ -1,7 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
 using Application.Core.Scripting.Events;
-using Application.Core.Scripting.Infrastructure;
 using Application.Shared.MapObjects.Players;
 using Application.Shared.Servers;
 using DotNetty.Transport.Channels;
@@ -26,7 +25,6 @@ namespace Application.Core.Game
         public bool IsServerTransition => throw new BusinessCharacterOfflineException();
 
         public NPCConversationManager? NPCConversationManager { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
-        public EngineStorage ScriptEngines { get => throw new BusinessCharacterOfflineException(); set => throw new BusinessCharacterOfflineException(); }
 
         public bool IsOnlined => false;
 

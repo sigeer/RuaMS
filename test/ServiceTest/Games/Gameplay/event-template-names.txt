@@ -8,7 +8,6 @@ CafePQ_5
 CafePQ_6
 Crane
 ElementalBattle
-ElnathPQ
 Exped_Balrog
 Exped_Balrog_Easy
 Exped_CWKPQ

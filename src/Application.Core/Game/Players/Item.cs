@@ -126,7 +126,6 @@ namespace Application.Core.Game.Players
                     || (checkEquipped && Bag[InventoryType.EQUIPPED].findById(itemid) != null);
         }
 
-        [ScriptCall]
         public bool haveItemEquipped(int itemid)
         {
             return (Bag[InventoryType.EQUIPPED].findById(itemid) != null);

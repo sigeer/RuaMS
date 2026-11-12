@@ -102,60 +102,10 @@ public class NPCTalkHandler : ChannelHandlerBase
             }
 
             await c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, npc.getId(), npc, npcScript);
-            return;
-
-            //if (npc.getId() == NpcId.DUEY)
-            //{
-            //    c.CurrentServer.NodeService.DueyManager.SendTalk(c);
-            //}
-            //else
-            //{
-            //    if (c.NPCConversationManager != null)
-            //    {
-            //        await c.SendPacket(PacketCreator.enableActions());
-            //        return;
-            //    }
-
-            //    // Custom handling to reduce the amount of scripts needed.
-            //    if (npc.getId() >= NpcId.GACHAPON_MIN && npc.getId() <= NpcId.GACHAPON_MAX)
-            //    {
-            //        c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, "gachapon", null);
-            //    }
-            //    else if (npc.SourceTemplate.MapleTV)
-            //    {
-            //        c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, "mapleTV", null);
-            //    }
-            //    else
-            //    {
-            //        bool hasNpcScript = c.CurrentServer.NPCScriptManager.start(c, npc.getId(), oid, npc.SourceTemplate.Script, null);
-            //        if (!hasNpcScript)
-            //        {
-            //            if (!npc.hasShop(c))
-            //            {
-            //                _logger.LogWarning("NPC {NPCName} ({NPCId}) is not coded", npc.getName(), npc.getId());
-            //                return;
-            //            }
-            //            else if (c.OnlinedCharacter.getShop() != null)
-            //            {
-            //                await c.SendPacket(PacketCreator.enableActions());
-            //                return;
-            //            }
-
-            //            npc.sendShop(c);
-            //        }
-            //    }
-            //}
         }
         else if (obj is PlayerNpc playerNpc)
         {
-            if (playerNpc.GetSourceId() < NpcId.CUSTOM_DEV && !c.CurrentServer.NPCScriptManager.isNpcScriptAvailable(c, "" + playerNpc.GetSourceId()))
-            {
-                await c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), "rank_user", null);
-            }
-            else
-            {
-                await c.CurrentServer.NPCScriptManager.start(c, playerNpc.GetSourceId(), playerNpc.getObjectId(), null);
-            }
+            await c.CurrentServer.NodeService.PluginManager.StartNpcConversation(c, playerNpc.GetSourceId(), null, "rank_user");
         }
     }
 }

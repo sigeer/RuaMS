@@ -1,6 +1,5 @@
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
-using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Shared.Battle;
@@ -28,6 +27,31 @@ namespace Application.Plugin.Script.Features.Zakum
 
             EventTime = 120 * 60;
             RegistrationTime = 5 * 60;
+        }
+
+        /// <summary>
+        /// 扎昆入口闸门：211042300 上的反应堆 2118002。开战时打开，通关/超时时复位。
+        /// </summary>
+        const int GateMapId = 211042300;
+        const int GateReactorId = 2118002;
+
+        async Task UpdateGateState(AbstractEventInstanceManager eim, sbyte state)
+        {
+            var map = await eim.EventManager.ChannelServer.getMapFactory().getMap(GateMapId);
+            var reactor = map.getReactorById(GateReactorId);
+            if (reactor != null)
+                await reactor.forceHitReactor(state);
+        }
+
+        public override async Task OnBattleStarted(AbstractEventInstanceManager eim)
+        {
+            await base.OnBattleStarted(eim);
+            await UpdateGateState(eim, 1);
+        }
+
+        public override async Task OnLobbyDisposed(AbstractEventInstanceManager eim)
+        {
+            await UpdateGateState(eim, 0);
         }
 
         public override async Task OnMobKilled(AbstractEventInstanceManager eim, Monster mob, ICombatantObject? killer)

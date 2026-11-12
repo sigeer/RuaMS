@@ -43,9 +43,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
 
     private MapManager mapManager;
     public EventScriptManager EventScriptManager { get; }
-    public ReactorScriptManager ReactorScriptManager { get; }
-    public NPCScriptManager NPCScriptManager { get; }
-
 
     private Dictionary<int, int> storedVars = new();
     /// <summary>
@@ -156,8 +153,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         OverallService = new OverallService(this);
 
         EventScriptManager = ActivatorUtilities.CreateInstance<EventScriptManager>(LifeScope.ServiceProvider, this);
-        ReactorScriptManager = ActivatorUtilities.CreateInstance<ReactorScriptManager>(LifeScope.ServiceProvider, this);
-        NPCScriptManager = ActivatorUtilities.CreateInstance<NPCScriptManager>(LifeScope.ServiceProvider, this);
 
         MapOwnershipManager = new MapOwnershipManager(this);
         ServerMessageManager = new ServerMessageManager(this);

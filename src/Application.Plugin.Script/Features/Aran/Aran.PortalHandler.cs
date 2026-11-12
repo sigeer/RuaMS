@@ -19,6 +19,10 @@ namespace Application.Plugin.Script.Features.Aran
             return true;
         }
 
+        // Map: 914000500 | pt: 7
+        public Task<bool> nooutShip() => NotImplemented();
+
+
         // Map: 914000100 | pt: 9
         public async Task<bool> aranTutorArrow0()
         {

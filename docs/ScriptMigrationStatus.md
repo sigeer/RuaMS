@@ -465,9 +465,24 @@ WZ 侧另有 22 个 `onFirstUserEnter` 名称只存在于 WZ，两侧都无脚�
 
 `2406000` 的 `touch()` / `untouch()`：持 `4001094` 且状态为 0 时触发 `hitReactor()` 并扣道具。
 
-### 7.3 WZ 无 `action` 字段（47 个，无脚本入口，仅备查）
+### 7.3 WZ 无 `action` 字段（25 个，已补为 `r{ReactorId}` 脚本）
 
-这些反应堆的 WZ 中要么没有 `action`，要么连 `Reactor.wz/<id>.img.xml` 都不存在，运行时不会查脚本表。
+`scripts/reactor/` 里有实现、但 `Reactor.wz/<id>.img.xml` 没有 `action` 的 25 个反应堆
+（2008006、2008007、2408002、2408003、2408004、2508000、2618000~2618002、3009000、8098000、
+9108000~9108005、9208000~9208002、9208004、9208007、9208009、9400300、9400301）。
+
+这类反应堆拿不到 `stats.Action`，`PluginManager.RunReactorScript` 现在会回退成 `r{ReactorId}` 作为脚本名，
+实现集中在：
+
+| 文件 | 内容 |
+|---|---|
+| `Reactor/ReactorActScriptNoAction.cs` | 22 个 act（含 9108000~9108005、9208000~9208002 的共用逻辑） |
+| `Reactor/ReactorHitScriptNoAction.cs` | 2008007、2618000 的 hit |
+| `Reactor/ReactorTouchScriptNoAction.cs` | 2408003 的 touch |
+
+另有 22 个 JS 里存在、但 `Reactor.wz` 中**根本没有对应 img** 的 Id
+（1002008、1002009、1021002、1209001、200000~200009、2052001、3102000、9018000~9018005），
+运行时不会生成该反应堆，按用户要求未纳入。
 
 ### 7.4 另一侧缺口：WZ 有 action 但两侧都没有（5）
 

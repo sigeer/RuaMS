@@ -16,8 +16,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Application.Protos\Application.Protos.csproj" />
 		<ProjectReference Include="..\Application.Resources\Application.Resources.csproj" />
-		<ProjectReference Include="..\Application.Scripting.JS\Application.Scripting.JS.csproj" />
-		<ProjectReference Include="..\Application.Scripting.Lua\Application.Scripting.Lua.csproj" />
 		<ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />
 		<ProjectReference Include="..\Application.Templates.Reader.Img\Application.Templates.Reader.Img.csproj" />
 		<ProjectReference Include="..\Application.Templates.Reader.Xml\Application.Templates.Reader.Xml.csproj" />

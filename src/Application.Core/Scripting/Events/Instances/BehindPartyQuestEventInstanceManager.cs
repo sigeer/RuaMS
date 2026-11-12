@@ -26,7 +26,6 @@ namespace Application.Core.scripting.Events.Instances
                 InstanceStatus = InstanceStatus.Prepare;
 
                 await restartEventTimer(EventManager.PrepareTime * 1000);
-                await EventManager.GetTemplate.OnBattlePrepare(this);
                 return;
             }
 

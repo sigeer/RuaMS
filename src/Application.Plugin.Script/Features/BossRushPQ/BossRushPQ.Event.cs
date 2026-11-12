@@ -1,5 +1,3 @@
-using Application.Core.Game.Players;
-using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 
 namespace Application.Plugin.Script.Features.BossRushPQ
@@ -23,26 +21,264 @@ namespace Application.Plugin.Script.Features.BossRushPQ
             MinMap = 970030001;
             MaxMap = 970042711;
 
+            MaxLobbys = 12;
+
             EventTime = 5 * 60;
-            Type = Shared.Events.EventInstanceType.PartyQuest;
+
+            // JS setEventRewards：6 档（休息点 I~V + 通关），Key 与 evLevel 一致
+            AllClearRewards = new()
+            {
+                {
+                    6,
+                    new Core.model.RewardPools(
+                        [
+                            new(3010061, 1),
+                            new(1122018, 1),
+                            new(1122005, 1),
+                            new(1022088, 1),
+                            new(1402013, 1),
+                            new(1032030, 1),
+                            new(1032070, 1),
+                            new(1102046, 1),
+                            new(2330004, 1),
+                            new(2041013, 1),
+                            new(2041016, 1),
+                            new(2041019, 1),
+                            new(2041022, 1),
+                            new(2049100, 1),
+                            new(2049003, 1),
+                            new(2020012, 25),
+                            new(2020013, 25),
+                            new(2020014, 25),
+                            new(2020015, 25),
+                            new(2022029, 25),
+                            new(2022045, 25),
+                            new(2022068, 25),
+                            new(2022069, 25),
+                            new(2022180, 4),
+                            new(2022179, 4),
+                            new(4004000, 12),
+                            new(4004001, 12),
+                            new(4004002, 12),
+                            new(4004003, 12),
+                            new(4004004, 12),
+                            new(4003000, 25),
+                        ],
+                        [],
+                        []
+                    )
+                },
+                {
+                    5,
+                    new Core.model.RewardPools(
+                        [
+                            new(3010063, 1),
+                            new(1122018, 1),
+                            new(1122005, 1),
+                            new(1022088, 1),
+                            new(1402013, 1),
+                            new(1032030, 1),
+                            new(1032070, 1),
+                            new(1102046, 1),
+                            new(2330004, 1),
+                            new(2041013, 1),
+                            new(2041016, 1),
+                            new(2041019, 1),
+                            new(2041022, 1),
+                            new(2049100, 1),
+                            new(2049003, 1),
+                            new(2020012, 15),
+                            new(2020013, 15),
+                            new(2020014, 15),
+                            new(2020015, 15),
+                            new(2022029, 15),
+                            new(2022045, 15),
+                            new(2022068, 15),
+                            new(2022069, 15),
+                            new(2022180, 2),
+                            new(2022179, 2),
+                            new(4004000, 8),
+                            new(4004001, 8),
+                            new(4004002, 8),
+                            new(4004003, 8),
+                            new(4004004, 8),
+                            new(4003000, 12),
+                        ],
+                        [],
+                        []
+                    )
+                },
+                {
+                    4,
+                    new Core.model.RewardPools(
+                        [
+                            new(1122001, 1),
+                            new(1122006, 1),
+                            new(1022103, 1),
+                            new(1442065, 1),
+                            new(1032042, 1),
+                            new(1032021, 1),
+                            new(1102168, 1),
+                            new(2070005, 1),
+                            new(2040025, 1),
+                            new(2040029, 1),
+                            new(2040301, 1),
+                            new(2040413, 1),
+                            new(2040701, 1),
+                            new(2040817, 1),
+                            new(2002028, 5),
+                            new(2020009, 45),
+                            new(2020010, 45),
+                            new(2020011, 45),
+                            new(2022004, 45),
+                            new(2022005, 45),
+                            new(2022025, 45),
+                            new(2022027, 45),
+                            new(2022048, 45),
+                            new(2022049, 45),
+                            new(4020000, 8),
+                            new(4020001, 8),
+                            new(4020002, 8),
+                            new(4020003, 8),
+                            new(4020004, 8),
+                            new(4020005, 8),
+                            new(4020006, 8),
+                            new(4020007, 8),
+                            new(4020008, 8),
+                            new(4003000, 8),
+                        ],
+                        [],
+                        []
+                    )
+                },
+                {
+                    3,
+                    new Core.model.RewardPools(
+                        [
+                            new(1122002, 1),
+                            new(1022088, 1),
+                            new(1012076, 1),
+                            new(1402029, 1),
+                            new(1032041, 1),
+                            new(1032044, 1),
+                            new(1102167, 1),
+                            new(2070011, 1),
+                            new(2040026, 1),
+                            new(2040030, 1),
+                            new(2040302, 1),
+                            new(2040412, 1),
+                            new(2040702, 1),
+                            new(2040818, 1),
+                            new(2002028, 2),
+                            new(2020009, 20),
+                            new(2020010, 20),
+                            new(2020011, 20),
+                            new(2022004, 20),
+                            new(2022005, 20),
+                            new(2022025, 20),
+                            new(2022027, 20),
+                            new(2022048, 20),
+                            new(2022049, 20),
+                            new(4010000, 5),
+                            new(4010001, 5),
+                            new(4010002, 5),
+                            new(4010003, 5),
+                            new(4010004, 5),
+                            new(4010005, 5),
+                            new(4010006, 5),
+                            new(4010007, 5),
+                            new(4003000, 5),
+                        ],
+                        [],
+                        []
+                    )
+                },
+                {
+                    2,
+                    new Core.model.RewardPools(
+                        [
+                            new(1122003, 1),
+                            new(1012077, 1),
+                            new(1012079, 1),
+                            new(1432014, 1),
+                            new(1032059, 1),
+                            new(1032002, 1),
+                            new(1102191, 1),
+                            new(2330002, 1),
+                            new(2040001, 1),
+                            new(2040311, 1),
+                            new(2040401, 1),
+                            new(2040601, 1),
+                            new(2040824, 1),
+                            new(2040901, 1),
+                            new(2010000, 60),
+                            new(2010001, 60),
+                            new(2010002, 60),
+                            new(2010003, 60),
+                            new(2010004, 60),
+                            new(2020001, 60),
+                            new(2020002, 60),
+                            new(2020003, 60),
+                            new(2022020, 60),
+                            new(2022022, 60),
+                            new(4020000, 3),
+                            new(4020001, 3),
+                            new(4020002, 3),
+                            new(4020003, 3),
+                            new(4020004, 3),
+                            new(4020005, 3),
+                            new(4020006, 3),
+                            new(4020007, 3),
+                            new(4020008, 3),
+                            new(4003000, 3),
+                        ],
+                        [],
+                        []
+                    )
+                },
+                {
+                    1,
+                    new Core.model.RewardPools(
+                        [
+                            new(1122004, 1),
+                            new(1012078, 1),
+                            new(1432008, 1),
+                            new(1432009, 1),
+                            new(1032040, 1),
+                            new(1032009, 1),
+                            new(1102166, 1),
+                            new(2070001, 1),
+                            new(2040002, 1),
+                            new(2040310, 1),
+                            new(2040400, 1),
+                            new(2040600, 1),
+                            new(2040825, 1),
+                            new(2040902, 1),
+                            new(2010000, 25),
+                            new(2010001, 25),
+                            new(2010002, 25),
+                            new(2010003, 25),
+                            new(2010004, 25),
+                            new(2020001, 25),
+                            new(2020002, 25),
+                            new(2020003, 25),
+                            new(2022020, 25),
+                            new(2022022, 25),
+                            new(4010000, 2),
+                            new(4010001, 2),
+                            new(4010002, 2),
+                            new(4010003, 2),
+                            new(4010004, 2),
+                            new(4010005, 2),
+                            new(4010006, 2),
+                            new(4010007, 2),
+                            new(4003000, 2),
+                        ],
+                        [],
+                        []
+                    )
+                },
+            };
         }
-
-        public override async Task OnSetup(AbstractEventInstanceManager eim, int level, int lobbyId)
-        {
-            eim.Level = level;
-            eim.setProperty("level", level);
-            eim.setIntProperty("lobby", lobbyId);
-        }
-
-        public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
-        {
-            // JS: eim.getMapInstance(entryMap + eim.getIntProperty("lobby"))
-            var map = await eim.getInstanceMap(ENTRY_MAP + eim.getIntProperty("lobby"));
-            if (map == null)
-                return;
-
-            await chr.changeMap(map, 0);
-        }
-
     }
 }
