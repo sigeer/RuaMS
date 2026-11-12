@@ -18,20 +18,45 @@ namespace ServiceTest.Infrastructure.I18n
         private static readonly string RepoRoot = FindRepoRoot();
         private static readonly string HostMessageDir = Path.Combine(RepoRoot, "src", "Application.Resources", "i18n");
 
-        /// <summary>ScriptMessage 由 Application.Plugin.Script 提供，测试里当作插件目录注册。</summary>
-        private static readonly string ScriptPluginMessageDir = Path.Combine(RepoRoot, "src", "Application.Plugin.Script", "i18n");
-        private static readonly string PluginMessageDir = Path.Combine(RepoRoot, "src", "Application.Plugin.TreasureMap", "i18n");
+        /// <summary>
+        /// 模拟运行期的 Plugins 目录：{插件根}/{插件名}/i18n/{Category}/{Culture}.json。
+        /// MessageStore 每次查表实时枚举它，因此这里只要在磁盘上摆好目录即可。
+        /// </summary>
+        private static string PluginRoot = null!;
 
         [SetUp]
         public void SetUp()
         {
+            PluginRoot = Path.Combine(Path.GetTempPath(), "ruams-i18n-plugins", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(PluginRoot);
+
+            CopyPluginMessages("Application.Plugin.Script");
+            CopyPluginMessages("Application.Plugin.TreasureMap");
+
             MessageStore.Reset();
-            MessageStore.Initialize(HostMessageDir, hotReload: false);
-            MessageStore.AddDirectory(ScriptPluginMessageDir);
+            MessageStore.Initialize([HostMessageDir], PluginRoot, hotReload: false);
+        }
+
+        /// <summary>把仓库里某个插件的 i18n 目录原样拷到模拟的插件根下。</summary>
+        private static void CopyPluginMessages(string pluginName)
+        {
+            var source = Path.Combine(RepoRoot, "src", pluginName, "i18n");
+            var target = Path.Combine(PluginRoot, pluginName, "i18n");
+
+            foreach (var file in Directory.GetFiles(source, "*.json", SearchOption.AllDirectories))
+            {
+                var destination = Path.Combine(target, Path.GetRelativePath(source, file));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                File.Copy(file, destination);
+            }
         }
 
         [TearDown]
-        public void TearDown() => MessageStore.Reset();
+        public void TearDown()
+        {
+            MessageStore.Reset();
+            TryDeleteDirectory(PluginRoot);
+        }
 
         private static string FindRepoRoot()
         {
@@ -173,66 +198,49 @@ namespace ServiceTest.Infrastructure.I18n
         }
 
         /// <summary>
-        /// 插件文案目录由 PluginContainer 注册，优先级低于宿主根目录；目录名即类别名。
-        /// 每个插件一个 Messages 目录，同名文件不会互相覆盖。
+        /// 插件文案目录由 MessageStore 实时枚举 {插件根}/{插件名}/i18n 得到，目录名即类别名。
         /// </summary>
         [Test]
         public void PluginDirectory_IsDiscoveredAsCategory()
         {
-            MessageStore.AddDirectory(PluginMessageDir);
-
             var zh = MessageStore.Get("TreasureMapText", "LevelTooLow", ZhCn);
 
             Assert.That(zh, Is.Not.Null, "插件的消息类别没有被发现");
             Assert.That(zh, Is.EqualTo("30级之后再来吧"));
-
-            MessageStore.RemoveDirectory(PluginMessageDir);
-
-            Assert.That(MessageStore.Get("TreasureMapText", "LevelTooLow", ZhCn), Is.Null, "移除目录后不应再读到插件文案");
         }
 
         /// <summary>
-        /// 两个插件各带一个同名类别时，宿主目录优先、先注册的插件优先，且不会互相污染。
+        /// 「一直取最新的」：目录被移走/新增后，下一次查表立刻反映，不需要任何登记或失效调用。
         /// </summary>
         [Test]
-        public void DuplicateCategories_AcrossDirectories_UseFirstFound()
+        public void PluginDirectories_AreResolvedOnEachLookup()
         {
-            var first = Path.Combine(Path.GetTempPath(), "ruams-i18n-test-a", Guid.NewGuid().ToString());
-            var second = Path.Combine(Path.GetTempPath(), "ruams-i18n-test-b", Guid.NewGuid().ToString());
+            var added = Path.Combine(PluginRoot, "Application.Plugin.Added", "i18n");
+            WriteMessage(added, "AddedCategory", "zh-CN", "Added");
 
-            try
-            {
-                WriteMessage(first, "SharedCategory", "zh-CN", "FromFirst");
-                WriteMessage(second, "SharedCategory", "zh-CN", "FromSecond");
+            Assert.That(MessageStore.Get("AddedCategory", "Key", ZhCn), Is.EqualTo("Added"));
 
-                MessageStore.AddDirectory(first);
-                MessageStore.AddDirectory(second);
+            TryDeleteDirectory(Path.Combine(PluginRoot, "Application.Plugin.Added"));
 
-                Assert.That(MessageStore.Get("SharedCategory", "Key", ZhCn), Is.EqualTo("FromFirst"));
-            }
-            finally
-            {
-                MessageStore.RemoveDirectory(first);
-                MessageStore.RemoveDirectory(second);
-                TryDeleteDirectory(first);
-                TryDeleteDirectory(second);
-            }
+            MessageStore.Reset();
+            MessageStore.Initialize([HostMessageDir], PluginRoot, hotReload: false);
+
+            Assert.That(MessageStore.Get("AddedCategory", "Key", ZhCn), Is.Null, "目录移除后不应再读到");
         }
 
         /// <summary>
-        /// 同一目录新旧两个插件容器共享时，旧容器卸载不能把新容器还在用的文案目录摘掉。
+        /// 两个插件各带一个同名类别时，宿主目录优先；插件之间按目录名排序，先者胜出且不互相污染。
         /// </summary>
         [Test]
-        public void RemoveDirectory_IsReferenceCounted()
+        public void DuplicateCategories_AcrossPlugins_UseFirstByDirectoryName()
         {
-            MessageStore.AddDirectory(PluginMessageDir);
-            MessageStore.AddDirectory(PluginMessageDir);
+            WriteMessage(Path.Combine(PluginRoot, "Application.Plugin.A", "i18n"), "SharedCategory", "zh-CN", "FromA");
+            WriteMessage(Path.Combine(PluginRoot, "Application.Plugin.B", "i18n"), "SharedCategory", "zh-CN", "FromB");
 
-            MessageStore.RemoveDirectory(PluginMessageDir);
-            Assert.That(MessageStore.Get("TreasureMapText", "LevelTooLow", ZhCn), Is.Not.Null, "引用计数未归零时不应移除");
+            MessageStore.Reset();
+            MessageStore.Initialize([HostMessageDir], PluginRoot, hotReload: false);
 
-            MessageStore.RemoveDirectory(PluginMessageDir);
-            Assert.That(MessageStore.Get("TreasureMapText", "LevelTooLow", ZhCn), Is.Null);
+            Assert.That(MessageStore.Get("SharedCategory", "Key", ZhCn), Is.EqualTo("FromA"));
         }
 
         private static void WriteMessage(string root, string category, string culture, string value)

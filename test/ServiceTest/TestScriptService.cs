@@ -24,7 +24,6 @@ internal static class TestScriptService
             node,
             typeof(ScriptService).Assembly,
             new PluginLoadContext(typeof(ScriptService).Assembly.Location),
-            shadowPath,
             shadowPath);
 
         var service = new ScriptService(container);

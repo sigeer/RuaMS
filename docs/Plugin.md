@@ -97,7 +97,6 @@ Plugins/
 3. `PluginContainer.DisposeAsync()`：
    - `RequestTracker.DisposeAsync()` 排水（等待在途脚本结束，默认最多 30 秒）；
    - 入口服务 `DisposeAsync()`（插件自己的清理逻辑）；
-   - `MessageStore.RemoveDirectory(...)` 摘掉插件文案目录；
    - `LoadContext.Unload()`；
    - 删除整份卷影副本目录。
 
@@ -140,7 +139,7 @@ internal sealed class MyService : PluginServiceBase, IScriptNpcService
 | 成员 | 说明 |
 |---|---|
 | `Priority` | `High = 0 / Normal = 1 / Low = 2`，数值越小优先级越高，默认 `Normal`。`Application.Plugin.Script` 用 `Low`，所以第三方插件用默认值即可覆盖内置脚本 |
-| `Container` | `PluginContainer`：`Logger`、`Node`（`WorldChannelServer`）、`Tracker`、`PluginAssembly`、`MessageDirectory` |
+| `Container` | `PluginContainer`：`Logger`、`Node`（`WorldChannelServer`）、`Tracker`、`PluginAssembly` |
 | `OnMounted()` | 加载完成后调用 |
 | `DisposeAsync()` | 卸载前调用，必须实现 |
 | `_node` / `_pluginName` / `LogInfo` / `LogWarning` / `LogError` | 便捷字段与方法；日志分类为 `Plugin/<插件名>` |
@@ -313,16 +312,15 @@ internal class FakerService : PluginServiceBase, IPluginMapObjectService
 
 ## 8. 插件自带的文案（i18n）
 
-插件目录里的 `i18n/` 会被自动注册到宿主的多语言存储，插件卸载时自动摘除：
+插件目录里的 `i18n/` 会被宿主的多语言存储自动发现，插件不需要写任何代码：
 
-- `PluginContainer` 构造时解析 `<插件源目录>/i18n`，非空则 `MessageStore.AddDirectory(...)`；
-  卸载时 `MessageStore.RemoveDirectory(...)`。整个过程不需要插件写任何代码。
+- `MessageStore` 每次查表实时枚举 `Plugins/*/i18n`，插件装/卸/改名下一次查表就生效，
+  不需要登记，也不需要在 `PluginContainer` 里挂生命周期。
 - 目录约定与宿主一致：**类别目录名 = 生成的常量类名**，**文件名 = `CultureInfo.Name`**
   （`i18n/ScriptMessage/zh-CN.json`、`en-US.json`）。
 - 类别名是插件自己的概念，Core 不认识它：取文案统一走
   `IClientCulture.GetMessageByCategory(category, key, culture)`。
-- 查找顺序：宿主根目录优先，插件目录按注册顺序在后，**首个命中的文件生效**；同一类别被两个来源提供时，
-  后注册的会打一条 warning 且不生效。
+- 查找顺序：宿主根目录优先，插件目录按目录名排序在后，**首个命中的文件生效**。
 - `MessageStore` 对插件目录按**引用计数**管理：热重载期间新旧容器会短暂共享同一个目录，
   旧容器卸载不会摘掉新容器还在用的目录。
 - 文案目录来自**源目录**而不是卷影副本，因此修改 `Plugins/<插件名>/i18n/` 下的 JSON 会被
@@ -513,7 +511,8 @@ dotnet build "./src/Application.Plugin.MyFeature/Application.Plugin.MyFeature.cs
   断言每个 `ScriptKind` 的生效表非空、与程序集扫描结果一致、每条描述符都带来源插件。
 - 扫描层：`ScriptFeatureDiscoveryTests.cs` 校验处理器与事件模板能被发现，并用
   `event-template-names.txt` 作为事件名的基线快照。
-- 文案：`PluginMessageDirectoryTests.cs` 校验插件目录里的 `i18n/` 在加载/卸载时正确注册与摘除。
+- 文案：`PluginMessageDirectoryTests.cs` 校验插件目录里的 `i18n/` 会被 `MessageStore` 实时发现；
+  `MessageStoreTests` 覆盖宿主目录、插件目录与两种语言的键对齐。
 - WZ 一致性：`test/ServiceTest/Infrastructure/WZ/ScriptRegistrationCheck.cs` 用基线文件
   `script-registration-baseline.txt` 校验 WZ 中声明的脚本名都有实现；新增/修复脚本时需更新基线。
 - 日志：`logs/Plugin/<插件名>/`；被压制脚本会输出

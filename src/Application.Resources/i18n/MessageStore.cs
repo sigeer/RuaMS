@@ -11,8 +11,8 @@ namespace Application.Resources.Messages
     /// 因此不受 git 换行归一化影响（客户端只认 0x0D，见 docs/ida/CTextAnalyzer_文本换行_分析.md）。
     /// <para>
     /// 类别是普通字符串：内置的见 <see cref="MessageCategories"/>；插件用自己的类别名，
-    /// 把 <c>i18n/{Category}/{Culture}.json</c> 放在 <c>Plugins/{插件名}/i18n</c> 下，
-    /// 由 <c>PluginManager</c> 通过 <see cref="AddDirectory"/> 注册，卸载时 <see cref="RemoveDirectory"/>。
+    /// 把 <c>i18n/{Category}/{Culture}.json</c> 放在 <c>Plugins/{插件名}/i18n</c> 下即可。
+    /// 插件目录每次查表时实时枚举，装/卸/改名都立刻生效，不需要任何登记。
     /// 每个插件独占一个目录，因此不同插件的同名文件不会互相覆盖。
     /// </para>
     /// 查找顺序：宿主的 <see cref="Initialize"/> 根目录在前，插件目录按注册顺序在后，首个命中的文件生效。
@@ -24,11 +24,14 @@ namespace Application.Resources.Messages
 
         private static readonly ConcurrentDictionary<(string Category, string Culture), Lazy<IReadOnlyDictionary<string, string>?>> _cache = new();
 
-        /// <summary>宿主初始化时给定的根目录，不受插件装卸影响。</summary>
+        /// <summary>宿主初始化时给定的根目录。</summary>
         private static readonly List<string> _roots = [];
 
-        /// <summary>插件目录，按注册顺序排在根目录之后；同一目录可能被新旧两个容器共享，因此带引用计数。</summary>
-        private static readonly List<(string Path, int RefCount)> _pluginDirectories = [];
+        /// <summary>
+        /// 插件根目录（默认 <c>BaseDirectory/Plugins</c>）。每次查表时实时展开成
+        /// <c>{PluginRoot}/{插件名}/i18n</c>，不维护插件列表——插件热插拔、目录改名都能立刻反映。
+        /// </summary>
+        private static string _pluginRoot = Path.Combine(AppContext.BaseDirectory, "Plugins");
 
         private static readonly Dictionary<string, FileSystemWatcher> _watchers = new(StringComparer.OrdinalIgnoreCase);
         private static readonly object _sync = new();
@@ -36,18 +39,26 @@ namespace Application.Resources.Messages
         private static bool _hotReload = true;
 
         /// <summary>
-        /// 启用磁盘加载。目录默认为 <c>AppContext.BaseDirectory/Messages</c>。
+        /// 启用磁盘加载。目录默认为 <c>AppContext.BaseDirectory/i18n</c>。
         /// </summary>
         public static void Initialize(string? directory = null, bool hotReload = true)
         {
-            Initialize(directory == null ? null : [directory], hotReload);
+            Initialize(directory == null ? null : [directory], null, hotReload);
         }
 
         /// <summary>
         /// 启用磁盘加载，按顺序查找多个根目录（越靠前优先级越高）。
-        /// 会替换此前通过本方法设置的根目录，并清空所有插件目录。
+        /// 插件根目录默认为 <c>BaseDirectory/Plugins</c>。
         /// </summary>
         public static void Initialize(IReadOnlyList<string>? directories, bool hotReload = true)
+        {
+            Initialize(directories, null, hotReload);
+        }
+
+        /// <summary>
+        /// 启用磁盘加载，并指定插件根目录（<c>{pluginRoot}/{插件名}/i18n</c>）。
+        /// </summary>
+        public static void Initialize(IReadOnlyList<string>? directories, string? pluginRoot, bool hotReload)
         {
             lock (_sync)
             {
@@ -60,78 +71,20 @@ namespace Application.Resources.Messages
                 if (targets.Count == 0)
                     targets.Add(Path.Combine(AppContext.BaseDirectory, "i18n"));
 
-                foreach (var path in _pluginDirectories.Select(x => x.Path).ToList())
+                foreach (var path in _watchers.Keys.ToList())
                     StopWatching(path);
 
                 _roots.Clear();
                 _roots.AddRange(targets);
-                _pluginDirectories.Clear();
+                _pluginRoot = Path.GetFullPath(pluginRoot ?? Path.Combine(AppContext.BaseDirectory, "Plugins"));
 
                 _hotReload = hotReload;
                 _cache.Clear();
 
                 foreach (var target in targets)
                     StartWatching(target);
-            }
-        }
 
-        /// <summary>
-        /// 追加一个搜索目录（插件文案用），优先级低于 <see cref="Initialize"/> 的根目录。
-        /// 同一目录重复调用只增加引用计数。
-        /// </summary>
-        public static void AddDirectory(string? directory)
-        {
-            if (string.IsNullOrWhiteSpace(directory))
-                return;
-
-            var path = Path.GetFullPath(directory);
-
-            lock (_sync)
-            {
-                var index = IndexOfPluginDirectory(path);
-                if (index >= 0)
-                {
-                    var entry = _pluginDirectories[index];
-                    _pluginDirectories[index] = (entry.Path, entry.RefCount + 1);
-                    return;
-                }
-
-                if (Directory.Exists(path))
-                    WarnShadowedCategories(path);
-
-                _pluginDirectories.Add((path, 1));
-                _cache.Clear();
-                StartWatching(path);
-            }
-        }
-
-        /// <summary>
-        /// 移除一个搜索目录。引用计数归零才真正移除并清空缓存。
-        /// 插件热重载时新旧容器会短暂共享同一目录，因此必须按计数处理。
-        /// </summary>
-        public static void RemoveDirectory(string? directory)
-        {
-            if (string.IsNullOrWhiteSpace(directory))
-                return;
-
-            var path = Path.GetFullPath(directory);
-
-            lock (_sync)
-            {
-                var index = IndexOfPluginDirectory(path);
-                if (index < 0)
-                    return;
-
-                var entry = _pluginDirectories[index];
-                if (entry.RefCount > 1)
-                {
-                    _pluginDirectories[index] = (entry.Path, entry.RefCount - 1);
-                    return;
-                }
-
-                _pluginDirectories.RemoveAt(index);
-                StopWatching(path);
-                _cache.Clear();
+                StartWatching(_pluginRoot);
             }
         }
 
@@ -146,7 +99,7 @@ namespace Application.Resources.Messages
                     StopWatching(path);
 
                 _roots.Clear();
-                _pluginDirectories.Clear();
+                _pluginRoot = Path.Combine(AppContext.BaseDirectory, "Plugins");
                 _cache.Clear();
             }
         }
@@ -201,81 +154,63 @@ namespace Application.Resources.Messages
         /// </summary>
         public static IReadOnlyDictionary<string, string>? GetTable(string category, string cultureName)
         {
+            var key = (category, cultureName);
+
+            // 快路径：命中后不碰 _sync。Get 是热路径，而 Initialize
+            // 会在持有 _sync 期间创建/销毁 FileSystemWatcher（毫秒级），不能让它挡在查表前面。
+            if (_cache.TryGetValue(key, out var cached))
+                return cached.Value;
+
             var directories = SnapshotDirectories();
             if (directories.Count == 0)
             {
                 Log.Logger.Warning("i18n没有可用的消息目录，{Category}/{Culture}.json 无法加载", category, cultureName);
-                return null;
+
+                // 连空结果一起缓存：否则每次查表都会重复打这条日志。
+                // Initialize 会清缓存；热重载由文件监听单独失效，不会留下过期状态。
+                return _cache.GetOrAdd(key, static _ =>
+                    new Lazy<IReadOnlyDictionary<string, string>?>(static () => null)).Value;
             }
 
-            var entry = _cache.GetOrAdd((category, cultureName), static (k, dirs) =>
-                new Lazy<IReadOnlyDictionary<string, string>?>(() => ReadTable(k.Category, k.Culture, dirs)),
-                directories);
-
-            return entry.Value;
-        }
-
-        private static IReadOnlyList<string> SnapshotDirectories()
-        {
-            lock (_sync)
-            {
-                if (_roots.Count == 0 && _pluginDirectories.Count == 0)
-                    return [];
-
-                var result = new List<string>(_roots.Count + _pluginDirectories.Count);
-                result.AddRange(_roots);
-                result.AddRange(_pluginDirectories.Select(x => x.Path));
-                return result;
-            }
+            return _cache.GetOrAdd(key, static (k, dirs) =>
+                    new Lazy<IReadOnlyDictionary<string, string>?>(() => ReadTable(k.Category, k.Culture, dirs)),
+                    directories)
+                .Value;
         }
 
         /// <summary>
-        /// 新目录里的类别如果前面已经有目录提供，后者会被优先级更高的目录盖住——只记一条日志，便于巡检。
+        /// 查表顺序：宿主根目录在前，插件文案目录（<c>{PluginRoot}/{插件名}/i18n</c>）按目录名在后。
+        /// 每次实时枚举插件目录，插件装了/卸了/改名都立刻反映，不需要登记。
         /// </summary>
-        private static void WarnShadowedCategories(string path)
+        private static IReadOnlyList<string> SnapshotDirectories()
         {
-            foreach (var category in EnumerateCategories(path))
-            {
-                var owner = FindCategoryOwner(category);
-                if (owner != null)
-                    Log.Logger.Warning("i18n类别 {Category} 已由 {Owner} 提供，{Path} 中的同名类别不会生效", category, owner, path);
-            }
-        }
+            List<string> roots;
+            string pluginRoot;
 
-        private static IEnumerable<string> EnumerateCategories(string directory)
-        {
-            foreach (var sub in Directory.EnumerateDirectories(directory))
+            lock (_sync)
             {
-                var category = Path.GetFileName(sub);
-                if (!string.IsNullOrEmpty(category))
-                    yield return category;
-            }
-        }
-
-        private static string? FindCategoryOwner(string category)
-        {
-            foreach (var directory in _roots.Concat(_pluginDirectories.Select(x => x.Path)))
-            {
-                if (Directory.Exists(Path.Combine(directory, category)))
-                    return directory;
+                roots = _roots;
+                pluginRoot = _pluginRoot;
             }
 
-            return null;
-        }
+            if (roots.Count == 0 && !Directory.Exists(pluginRoot))
+                return [];
 
-        private static int IndexOfPluginDirectory(string path)
-        {
-            for (var i = 0; i < _pluginDirectories.Count; i++)
+            var result = new List<string>(roots.Count + 4);
+            result.AddRange(roots);
+
+            if (Directory.Exists(pluginRoot))
             {
-                if (IsSamePath(_pluginDirectories[i].Path, path))
-                    return i;
+                foreach (var plugin in Directory.EnumerateDirectories(pluginRoot).OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                {
+                    var directory = Path.Combine(plugin, "i18n");
+                    if (Directory.Exists(directory))
+                        result.Add(directory);
+                }
             }
 
-            return -1;
+            return result;
         }
-
-        private static bool IsSamePath(string left, string right) =>
-            string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
 
         private static void StartWatching(string directory)
         {

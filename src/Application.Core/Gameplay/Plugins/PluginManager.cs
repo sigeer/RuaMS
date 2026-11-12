@@ -251,7 +251,7 @@ namespace Application.Core.Gameplay.Plugins
             }
 
             // ShadowCopyPath 传根目录：卸载时把该插件整份卷影副本（{guid}/{插件名}/）一起删掉。
-            var container = new PluginContainer<PluginServiceBase>(_server, pluginAssembly, loadContext, shadowRoot, sourceDirectory);
+            var container = new PluginContainer<PluginServiceBase>(_server, pluginAssembly, loadContext, shadowRoot);
             var pluginServiceImplement = (PluginServiceBase)Activator.CreateInstance(pluginServiceTypes[0], container)!;
             container.LoadServices(pluginServiceImplement);
             return container;

@@ -30,7 +30,10 @@ RUN dotnet publish "./src/Application.Plugin.Script/Application.Plugin.Script.cs
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=publish /app/plugins/Application.Plugin.Script.dll /app/Plugins/
+# 插件是「一个目录一个插件」：Plugins/{插件名}/{插件名}.dll，文案在同级 i18n/
+# 只拷插件自己的 dll 与 i18n，避免把 publish 出来的宿主依赖也带进插件目录
+COPY --from=publish /app/plugins/Application.Plugin.Script.dll /app/Plugins/Application.Plugin.Script/
+COPY --from=publish /app/plugins/i18n/ScriptMessage /app/Plugins/Application.Plugin.Script/i18n/ScriptMessage
 
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
