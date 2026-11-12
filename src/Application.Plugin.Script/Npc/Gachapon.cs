@@ -1,5 +1,6 @@
 using Application.Core.Models;
 using Application.Resources.Messages;
+using Application.Plugin.Script;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -54,12 +55,12 @@ namespace Application.Plugin.Script.Npc
         {
             if (!haveItem(ticketId, count))
             {
-                await SayOK(GetTalkMessage(nameof(ScriptTalk.Tip_CheckItemWithId), ticketId, count));
+                await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Tip_CheckItemWithId), ticketId, count));
                 return;
             }
             if (!CheckGachaponStorage(count))
             {
-                await SayOK(GetTalkMessage(nameof(ScriptTalk.Storage_CheckGachaponStorage), count));
+                await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Storage_CheckGachaponStorage), count));
                 return;
             }
 
@@ -70,7 +71,7 @@ namespace Application.Plugin.Script.Npc
                 rewards.Add(await doGachapon());
             }
 
-            await SaySpeech(rewards.Select(itemObj => itemObj == null ? GetTalkMessage(nameof(ScriptTalk.Tip_ThankPatronage)) : GetTalkMessage(nameof(ScriptTalk.Tip_ObtainItem), itemObj.ItemId, itemObj.Quantity)).ToArray());
+            await SaySpeech(rewards.Select(itemObj => itemObj == null ? this.GetTalkMessage(nameof(ScriptMessage.Tip_ThankPatronage)) : this.GetTalkMessage(nameof(ScriptMessage.Tip_ObtainItem), itemObj.ItemId, itemObj.Quantity)).ToArray());
         }
 
         // Npc: 9100101 

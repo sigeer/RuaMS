@@ -29,9 +29,24 @@ namespace Application.Core.Channel
         {
         }
 
+        /// <summary>
+        /// 按任意类别取消息。类别名由调用方决定（例如插件自己的 <c>ScriptMessage</c>），
+        /// Core 只负责按当前玩家语言查表并格式化。
+        /// </summary>
+        public string GetMessageByCategory(string category, string key, params object[] paramsValue)
+        {
+            var message = MessageStore.Get(category, key, CultureInfo);
+            if (string.IsNullOrEmpty(message))
+            {
+                Log.Logger.Verbose("i18n未找到{Key}", key);
+                return key;
+            }
+            return string.Format(message, paramsValue);
+        }
+
         public string GetMessageByKey(string key, params object[] paramsValue)
         {
-            var message = ClientMessage.ResourceManager.GetString(key, CultureInfo);
+            var message = MessageStore.Get(MessageCategories.ClientMessage, key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
                 Log.Logger.Verbose("i18n未找到{Key}", key);
@@ -42,20 +57,10 @@ namespace Application.Core.Channel
 
         public string? GetNullableMessageByKey(string key, params string[] paramsValue)
         {
-            var message = ClientMessage.ResourceManager.GetString(key, CultureInfo);
+            var message = MessageStore.Get(MessageCategories.ClientMessage, key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
                 return null;
-            }
-            return string.Format(message, paramsValue);
-        }
-
-        public string GetScriptTalkByKey(string key, params object[] paramsValue)
-        {
-            var message = ScriptTalk.ResourceManager.GetString(key, CultureInfo);
-            if (string.IsNullOrEmpty(message))
-            {
-                return key;
             }
             return string.Format(message, paramsValue);
         }
@@ -126,7 +131,7 @@ namespace Application.Core.Channel
 
         public string GetJobName(Job job)
         {
-            return ClientMessage.ResourceManager.GetString($"Job_{job.Id}", CultureInfo) ?? job.ToString();
+            return MessageStore.Get(MessageCategories.ClientMessage, $"Job_{job.Id}", CultureInfo) ?? job.ToString();
         }
 
         public string Ordinal(int i)

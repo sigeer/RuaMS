@@ -11,10 +11,30 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
+    <ProjectReference Include="..\..\tools\Message.SourceGenerator\Message.SourceGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- 插件自带文案：i18n/{Category}/{Culture}.json -> 生成 ScriptMessage 常量类 -->
+  <Import Project="..\..\tools\Message.SourceGenerator\MessageSource.props" />
+
+  <!-- 插件文案放 Plugins/{插件名}/i18n/，运行时由 PluginContainer 按该目录注册 -->
+  <ItemGroup>
+    <_PluginMessageFile Include="$(MSBuildProjectDirectory)\i18n\**\*.json" />
+  </ItemGroup>
+
+  <!-- 一个插件一个目录：Plugins/{插件名}/，插件自带文案放同级的 i18n/ -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(MSBuildProjectDirectory)\..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\" />
+    <PropertyGroup>
+      <_PluginTargetDir>$(MSBuildProjectDirectory)\..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\$(AssemblyName)\</_PluginTargetDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+          DestinationFolder="$(_PluginTargetDir)"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_PluginMessageFile)"
+          DestinationFiles="@(_PluginMessageFile->'$(_PluginTargetDir)i18n\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

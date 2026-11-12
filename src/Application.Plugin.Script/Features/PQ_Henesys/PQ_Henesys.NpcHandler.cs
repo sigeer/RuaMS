@@ -3,6 +3,7 @@ using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
+using Application.Plugin.Script;
 
 namespace Application.Plugin.Script.Features.PQ_Henesys
 {
@@ -28,7 +29,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         break;
                     case 1:
-                        await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Intro)));
+                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Intro)));
                         break;
                     case 2:
                         if (hasItem(4001101, 20) && canHold(1002798))
@@ -36,11 +37,11 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                             await gainItem(4001101, -20);
                             await gainItem(1002798, 1);
 
-                            await SayNext(GetTalkMessage(nameof(ScriptTalk.Redeem_Success)));
+                            await SayNext(this.GetTalkMessage(nameof(ScriptMessage.Redeem_Success)));
                         }
                         else
                         {
-                            await SayNext(GetTalkMessage(nameof(ScriptTalk.Redeem_NotEnough), "#t4001101#"));
+                            await SayNext(this.GetTalkMessage(nameof(ScriptMessage.Redeem_NotEnough), "#t4001101#"));
                         }
                         break;
                     default:
@@ -49,7 +50,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             }
             else if (getMapId() == 910010100)
             {
-                if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Complete))))
+                if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Complete))))
                 {
                     var eim = GetEventInstanceTrust();
                     if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
@@ -58,14 +59,14 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                     }
                     else
                     {
-                        await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
+                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Redeem_InventoryFull)));
                     }
                     return;
                 }
             }
             else if (getMapId() == 910010400)
             {
-                if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturningMap), GetTalkMessage(ScriptTalk.Henesys))))
+                if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.AreYouReturningMap), this.GetTalkMessage(ScriptMessage.Henesys))))
                 {
                     var eim = GetEventInstanceTrust();
                     if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
@@ -74,7 +75,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                     }
                     else
                     {
-                        await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
+                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Redeem_InventoryFull)));
                     }
                     return;
                 }
@@ -120,27 +121,27 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             int option;
             if (isEventLeader())
             {
-                option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk0)));
+                option = await AskMenu(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk0)));
             }
             else
             {
-                option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk1)));
+                option = await AskMenu(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk1)));
             }
 
             switch (option)
             {
                 case 0:
                     await SaySpeech([
-                    GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Tutorial0)),
-            GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Tutorial1)),
-            GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Tutorial2)),
-            GetTalkMessage(nameof(ScriptTalk.HenesysPQ_Tutorial3)),
+                    this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial0)),
+            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial1)),
+            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial2)),
+            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial3)),
             ]);
                     break;
                 case 1:
                     if (haveItem(4001101, 10))
                     {
-                        await SayNext(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_CommitTask_Success)));
+                        await SayNext(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_CommitTask_Success)));
 
                         if (haveItem(4001101, 10))
                         {
@@ -159,16 +160,16 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
 
 
                     }
-                    await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_CommitTask_Fail)));
+                    await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_CommitTask_Fail)));
                     break;
                 case 2:
-                    if (await AskYesNo(GetTalkMessage(nameof(ScriptTalk.AreYouReturning))))
+                    if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.AreYouReturning))))
                     {
                         await warp(910010300);
                     }
                     else
                     {
-                        await SayOK(GetTalkMessage(nameof(ScriptTalk.HenesysPQ_TutorialTalk2)));
+                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk2)));
                     }
                     break;
                 default:

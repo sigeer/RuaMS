@@ -3,6 +3,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.npc;
 using Application.Core.Scripting.Events;
 using Application.Resources.Messages;
+using Application.Plugin.Script;
 
 namespace Application.Plugin.Script.Features.Exped_Scarga
 {
@@ -160,7 +161,7 @@ namespace Application.Plugin.Script.Features.Exped_Scarga
                 }
                 else
                 {
-                    await SayOK(GetTalkMessage(nameof(ScriptTalk.Redeem_InventoryFull)));
+                    await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Redeem_InventoryFull)));
                 }
             }
         }

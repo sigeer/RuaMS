@@ -3,47 +3,20 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Application.Resources</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Application.Shared\Application.Shared.csproj" />
     <ProjectReference Include="..\Application.Utility\Application.Utility.csproj" />
     <ProjectReference Include="..\XmlWzReader\XmlWzReader.csproj" />
+    <ProjectReference Include="..\..\tools\Message.SourceGenerator\Message.SourceGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Messages\ClientMessage.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ClientMessage.resx</DependentUpon>
-    </Compile>
-	<Compile Update="Messages\ScriptTalk.Designer.cs">
-		<DesignTime>True</DesignTime>
-		<AutoGen>True</AutoGen>
-		<DependentUpon>ScriptTalk.resx</DependentUpon>
-	</Compile>
-    <Compile Update="Messages\SystemMessage.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SystemMessage.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Messages\ClientMessage.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ClientMessage.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Messages\ScriptTalk.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ScriptTalk.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Messages\SystemMessage.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SystemMessage.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
+  <!-- 源生成器输入，见 tools/Message.SourceGenerator/MessageSource.props -->
+  <Import Project="..\..\tools\Message.SourceGenerator\MessageSource.props" />
 
 	<ItemGroup>
 	  <None Update="config.yaml">

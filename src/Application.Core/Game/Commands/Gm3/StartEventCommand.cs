@@ -20,7 +20,7 @@ public class StartEventCommand : CommandBase
         }
         c.getChannelServer().setEvent(new Event(player.getMapId(), players));
 
-        var noticeMsg = string.Format(nameof(ClientMessage.StartEventCommand_Notice), ClientCulture.SystemCulture.GetMapName(player.getMap().Id), players.ToString());
+        var noticeMsg = ClientCulture.SystemCulture.GetMessageByKey(nameof(ClientMessage.StartEventCommand_Notice), ClientCulture.SystemCulture.GetMapName(player.getMap().Id), players.ToString());
         c.CurrentServer.NodeService.SendDropMessage(-2, noticeMsg);
         c.CurrentServer.NodeService.SendDropMessage(6, noticeMsg);
     }

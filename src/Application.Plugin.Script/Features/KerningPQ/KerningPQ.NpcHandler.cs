@@ -5,6 +5,7 @@ using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.npc;
 using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
+using Application.Plugin.Script;
 
 namespace Application.Plugin.Script.Features.KerningPQ
 {
@@ -20,8 +21,8 @@ namespace Application.Plugin.Script.Features.KerningPQ
         public async Task party1_enter()
         {
             var em = GetEventManager(KerningPQFeature.EventName);
-            var option = await AskMenu(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Description), em.Template.GetRequirementDescription(getClient())),
-                [GetTalkMessage(nameof(ScriptTalk.PartyQuest_Participate)), GetTalkMessage(nameof(ScriptTalk.PartyQuest_Intro))
+            var option = await AskMenu(this.GetTalkMessage(nameof(ScriptMessage.KerningPQ_Description), em.Template.GetRequirementDescription(getClient())),
+                [this.GetTalkMessage(nameof(ScriptMessage.PartyQuest_Participate)), this.GetTalkMessage(nameof(ScriptMessage.PartyQuest_Intro))
             ]);
 
             switch (option)
@@ -30,7 +31,7 @@ namespace Application.Plugin.Script.Features.KerningPQ
                     await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                     break;
                 case 1:
-                    await SayOK(GetTalkMessage(nameof(ScriptTalk.KerningPQ_Intro)));
+                    await SayOK(this.GetTalkMessage(nameof(ScriptMessage.KerningPQ_Intro)));
                     break;
                 default:
                     break;

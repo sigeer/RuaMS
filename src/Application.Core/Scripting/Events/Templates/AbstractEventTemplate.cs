@@ -90,11 +90,11 @@ namespace Application.Core.scripting.Events.Templates
                 case CreateInstanceResult.RequiredParty:
                     return "需要组队";
                 case CreateInstanceResult.RequiredLeader:
-                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk));
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_NeedLeaderTalk));
                 case CreateInstanceResult.Requirement:
-                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_Req));
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_Req));
                 case CreateInstanceResult.LobbyLimited:
-                    return c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull));
+                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_ChannelFull));
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
 
@@ -150,7 +150,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             var countRange = MinCount == MaxCount ? MinCount.ToString() : MinCount + " ~ " + MaxCount;
             var levelRange = MinLevel == MaxLevel ? MinLevel.ToString() : MinLevel + " ~ " + MaxLevel;
-            return client.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_Requirement),
+            return client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_Requirement),
                 countRange,
                 levelRange,
                 (EventTime / 60).ToString());

@@ -161,20 +161,20 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                 case CreateInstanceResult.Success:
                     break;
                 case CreateInstanceResult.RequiredParty:
-                    c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.HenesysPQ_EnterTalk1));
+                    c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, nameof(ScriptMessage.HenesysPQ_EnterTalk1));
                     break;
                 case CreateInstanceResult.RequiredLeader:
-                    c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_NeedLeaderTalk));
+                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_NeedLeaderTalk));
                     break;
                 case CreateInstanceResult.Requirement:
-                    c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_Req));
+                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_Req));
                     break;
                 case CreateInstanceResult.LobbyLimited:
-                    c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.PartyQuest_CannotStart_ChannelFull));
+                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_ChannelFull));
                     break;
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    c.CurrentCulture.GetScriptTalkByKey("未知错误");
+                    c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, "未知错误");
                     break;
                 default:
                     break;

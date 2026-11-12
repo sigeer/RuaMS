@@ -1,0 +1,8 @@
+{
+  "LevelTooLow": "Come back after level 30.",
+  "WrongChannel": "This event only runs on #rchannel {0}#k.",
+  "QuestOffer": "Some villagers mentioned rumors about a gangster. Interested? It'll cost you {0} mesos for a tip.",
+  "QuestAccept": "Tell me.",
+  "QuestLocation": "I heard he hangs around #r#m{0}##k.",
+  "NotEnoughMeso": "Not enough mesos."
+}

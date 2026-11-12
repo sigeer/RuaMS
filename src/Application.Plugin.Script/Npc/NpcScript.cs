@@ -2115,6 +2115,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2022004 
         public async Task s4common1_out()
         {
+            // 技能 稳如泰山
             await SayNext("你在那里做得很好，#h #，干得漂亮。现在我会把你送回#m211000000#。当你准备好学习新技能时，带着护身符和我交谈。");
             await warp(211000000, "in01");
         }
@@ -2548,6 +2549,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2060100 
         public async Task s4common2()
         {
+            // 技能 勇士的意志
             if (isQuestStarted(6301))
             {
                 if (haveItem(4000175))

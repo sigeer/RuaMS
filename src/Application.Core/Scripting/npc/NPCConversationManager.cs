@@ -128,13 +128,6 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
     public string GetDefault1() => c.CurrentCulture.GetNpcDefaultTalk(npc, 1);
     public string GetDefaultRandom() => c.CurrentCulture.GetNpcDefaultTalk(npc, -1);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="text"></param>
-    /// <param name="param">使用 params string[] 时，可能报错</param>
-    /// <returns></returns>
-    public string GetTalkMessage(string text, params object[] param) => c.CurrentCulture.GetScriptTalkByKey(text, param);
     public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
     public async Task sendNext(string text, byte speaker = 0, int speakerNpc = 0)

@@ -9,9 +9,11 @@
     <ProjectReference Include="..\Application.Core\Application.Core.csproj" />
   </ItemGroup>
 
+	<!-- 一个插件一个目录：Plugins/{插件名}/，插件自带文案放同级的 i18n/ -->
 	<Target Name="CopyToPlugins" AfterTargets="Build">
 		<Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
-			  DestinationFolder="$(MSBuildProjectDirectory)\..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\" />
+			  DestinationFolder="$(MSBuildProjectDirectory)\..\Application.Host\bin\$(Configuration)\$(TargetFramework)\Plugins\$(AssemblyName)\"
+			  SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

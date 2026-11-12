@@ -1,0 +1,26 @@
+<Project>
+
+  <!--
+    引用方式（任何需要自带多语言文本的项目，包括插件）：
+
+      <ItemGroup>
+        <ProjectReference Include="...(相对路径).../tools/Message.SourceGenerator/Message.SourceGenerator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+      </ItemGroup>
+      <Import Project="...(相对路径).../tools/Message.SourceGenerator/MessageSource.props" />
+
+    约定：项目目录下 i18n/{Category}/{Culture}.json
+      - 目录名 = 生成的静态类名（也是 MessageStore 的类别名）；
+      - 文件名 = CultureInfo.Name。
+
+    本 props 只负责把 JSON 交给源生成器做键检查，并让它们随编译输出到本项目目录。
+    运行时一律读磁盘文件，不嵌入资源；对外发布时怎么摆放由各项目自己决定
+    （宿主拷到 i18n/，插件拷到 Plugins/{插件名}/i18n/）。
+  -->
+
+  <ItemGroup>
+    <AdditionalFiles Include="i18n\**\*.json" />
+    <None Update="i18n\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

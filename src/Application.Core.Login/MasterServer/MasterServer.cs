@@ -282,21 +282,21 @@ namespace Application.Core.Login
         {
             if (!IsRunning)
             {
-                _logger.LogInformation(SystemMessage.Server_InActive);
+                _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_InActive)));
                 return;
             }
 
             if (isShuttingdown)
             {
-                _logger.LogInformation(SystemMessage.Server_Shutingdown);
+                _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_Shutingdown)));
                 return;
             }
 
             isShuttingdown.Set(true);
-            _logger.LogInformation(SystemMessage.Server_StopListenStart);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_StopListenStart)));
 
             await NettyServer.Stop();
-            _logger.LogInformation(SystemMessage.Server_StopListenComplete);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_StopListenComplete)));
 
             _shutdownTcs = new TaskCompletionSource();
 
@@ -336,7 +336,7 @@ namespace Application.Core.Login
         {
             await _shutdownTcs.Task;
 
-            _logger.LogInformation(SystemMessage.Server_AllChannelShutdown);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_AllChannelShutdown)));
             foreach (var module in Modules)
             {
                 await module.UninstallAsync();
@@ -347,14 +347,14 @@ namespace Application.Core.Login
             await TimerManager.Stop();
             await CommandLoop.DisposeAsync();
 
-            _logger.LogInformation(SystemMessage.Server_SaveUserDataStart);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_SaveUserDataStart)));
             await ServerManager.CommitAllImmediately();
-            _logger.LogInformation(SystemMessage.Server_SaveUserDataComplete);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_SaveUserDataComplete)));
 
             IsRunning = false;
             isShuttingdown.Set(false);
             _shutdownDelayCtrl?.Dispose();
-            _logger.LogInformation(SystemMessage.Server_ShutdownComplete);
+            _logger.LogInformation(ClientMessage.GetDefault(nameof(ClientMessage.Server_ShutdownComplete)));
         }
 
         public async Task StartServer(CancellationToken cancellationToken = default)
@@ -372,9 +372,9 @@ namespace Application.Core.Login
                     await module.InitializeAsync();
                 }
 
-                _logger.LogInformation(SystemMessage.Server_Start);
+                _logger.LogInformation(ClientMessage.GetDefault(ClientMessage.Server_Start));
                 await NettyServer.Start();
-                _logger.LogInformation(SystemMessage.Server_StartSuccess, "成功", Port);
+                _logger.LogInformation(ClientMessage.GetDefault(ClientMessage.Server_StartSuccess), "成功", Port);
 
                 CommandLoop.Start();
                 StartupTime = DateTimeOffset.UtcNow;

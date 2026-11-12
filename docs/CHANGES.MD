@@ -16,6 +16,17 @@
 - `ChannelClient`：此时客户端与`WorldChannelServer`连接
 - `OfflineClient`：离线
 
+### 多语言文本
+
+资源文件从 `.resx` 迁到 JSON，见 `docs/I18n.md`。
+- 目录布局 `i18n/{Category}/{Language}.json`，类别目录名即生成的常量类名；
+- 源生成器 `tools/Message.SourceGenerator` 产出 `public const string` 键，`nameof(ClientMessage.X)` 用法不变；
+- 值里的换行必须写成 JSON 转义 `"\\r\\n"`：客户端只把 `0x0D` 当换行，物理换行会被 git 归一化成裸 `0A` 而失效；
+- `ClientMessage` + `SystemMessage` 合并为 `ClientMessage`，`ScriptTalk` 改名 `ScriptMessage`；
+- 加载只读磁盘，宿主读 `i18n/`，插件读 `Plugins/{插件名}/i18n/`，支持热重载；
+- `ScriptMessage` 的文案随 `Application.Plugin.Script` 发布，Core 需要的 4 个组队任务提示已并入 `ClientMessage`；
+- 插件单位从 `{插件名}.dll` 改为 `{插件名}/` 目录（DLL、私有依赖、文案都放在里面）。
+
 ### 数据库支持
 
 增加Sqlite支持。如果需要支持更多数据库，只需要使用相应EF Provider，并生成迁移即可。

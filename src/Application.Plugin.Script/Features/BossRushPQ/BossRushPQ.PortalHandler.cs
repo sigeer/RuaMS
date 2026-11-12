@@ -32,7 +32,7 @@ namespace Application.Plugin.Script.Features.BossRushPQ
 
             if (await eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
             {
-                await Pink(c.CurrentCulture.GetScriptTalkByKey(nameof(ScriptTalk.Redeem_InventoryFull)));
+                await Pink(c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, nameof(ScriptMessage.Redeem_InventoryFull)));
                 return false;
             }
 

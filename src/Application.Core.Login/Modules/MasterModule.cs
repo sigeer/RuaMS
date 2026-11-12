@@ -33,7 +33,7 @@ namespace Application.Core.Login.Modules
         public override async Task OnPlayerLogin(CharacterLiveObject obj)
         {
             if (_server.AccountManager.TryGetGMInfo(obj.Character.AccountId, out var gmLevel))
-                await _server.DropWorldMessage(-2, string.Format(SystemMessage.System_GmLoggedin, gmLevel < 6 ? "GM" : "Admin", obj.Character.Name), true);
+                await _server.DropWorldMessage(-2, ClientMessage.Format(nameof(ClientMessage.System_GmLoggedin), null, gmLevel < 6 ? "GM" : "Admin", obj.Character.Name), true);
 
             await _server.NoteManager.SendNote(obj);
 

@@ -203,7 +203,7 @@ namespace Application.Core.Login.ServerData
             }
 
             await _server.Transport.SendMessageN(ChannelRecvCode.BanPlayer, res, [request.OperatorId, targetChr.Character.Id]);
-            await _server.DropWorldMessage(6, nameof(SystemMessage.Ban_NoticeGM), true);
+            await _server.DropWorldMessage(6, ClientMessage.Format(nameof(ClientMessage.Ban_NoticeGM), null, targetChr.Character.Name), true);
         }
 
         public List<int> GetBannedAccounts()
