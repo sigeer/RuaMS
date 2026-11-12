@@ -4,21 +4,8 @@
     <File Path="DevLog.MD" />
     <File Path="docs/CHANGES.MD" />
     <File Path="docs/CodeMigration.MD" />
-    <File Path="docs/ScriptFeatureRefactor.md" />
-    <File Path="docs/ScriptMigrationStatus.md" />
+    <File Path="docs/Plugin.md" />
     <File Path="README.MD" />
-  </Folder>
-  <Folder Name="/docs/ida/">
-    <File Path="docs/ida/CalcDamage_随机种子与暴击同步_分析.md" />
-    <File Path="docs/ida/CMob_OnStatSet_分析.md" />
-    <File Path="docs/ida/CUserLocal_攻击包_客户端发包结构_分析.md" />
-    <File Path="docs/ida/CUserRemote_DecodeForRemote_分析与实现.md" />
-    <File Path="docs/ida/CUserRemote_OnAttack_暴击伤害编码_分析与实现.md" />
-    <File Path="docs/ida/CWvsContext_OnTemporaryStatSet_分析.md" />
-    <File Path="docs/ida/UseItem.md" />
-    <File Path="docs/ida/怪物元素抗性_elemAttr_同步_分析.md" />
-    <File Path="docs/ida/怪物攻击动画_其他玩家不可见_分析.md" />
-    <File Path="docs/ida/portal_pt_类型_客户端行为_分析.md" />
   </Folder>
   <Folder Name="/SolutionItems/">
     <File Path=".dockerignore" />
