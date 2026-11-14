@@ -257,9 +257,15 @@ namespace Application.Core.Game.Players
         /// <returns></returns>
         public async Task<bool> SkillUsed(int skillId, int skillLevel, AttackInfo? attackInfo = null)
         {
-            var skillEffect = GetPlayerSkillEffect(skillId, !isGM());
-            if (skillEffect == null)
-                return false;
+            StatEffect? skillEffect = null;
+
+            if (skillId > 0)
+            {
+                skillEffect = GetPlayerSkillEffect(skillId, !isGM());
+                if (skillEffect == null)
+                    return false;
+            }
+
 
             if (attackInfo != null)
             {
@@ -276,30 +282,33 @@ namespace Application.Core.Game.Players
                 }
             }
 
-            if (skillLevel > skillEffect.SkillLevel)
+            if (skillEffect != null)
             {
-                await Client.Disconnect(false, false);
-                return false;
-            }
-
-            // 技能是否处于CD
-            if (skillEffect.getCooldown() > 0)
-            {
-                if (skillIsCooling(skillEffect.getBuffSourceId()))
+                if (skillLevel > skillEffect.SkillLevel)
                 {
+                    await Client.Disconnect(false, false);
                     return false;
                 }
-                else if (skillEffect.getBuffSourceId() != Corsair.BATTLE_SHIP)
-                {
-                    // 武装 是在被破坏后进入CD
-                    int cooldownTime = skillEffect.getCooldown();
-                    if (StatEffect.isHerosWill(skillEffect.getBuffSourceId()) && YamlConfig.config.server.USE_FAST_REUSE_HERO_WILL)
-                    {
-                        cooldownTime /= 60;
-                    }
 
-                    await SendPacket(PacketCreator.skillCooldown(skillEffect.getBuffSourceId(), cooldownTime));
-                    addCooldown(skillEffect.getBuffSourceId(), Client.CurrentServer.Node.getCurrentTime(), 1000 * cooldownTime);
+                // 技能是否处于CD
+                if (skillEffect.getCooldown() > 0)
+                {
+                    if (skillIsCooling(skillEffect.getBuffSourceId()))
+                    {
+                        return false;
+                    }
+                    else if (skillEffect.getBuffSourceId() != Corsair.BATTLE_SHIP)
+                    {
+                        // 武装 是在被破坏后进入CD
+                        int cooldownTime = skillEffect.getCooldown();
+                        if (StatEffect.isHerosWill(skillEffect.getBuffSourceId()) && YamlConfig.config.server.USE_FAST_REUSE_HERO_WILL)
+                        {
+                            cooldownTime /= 60;
+                        }
+
+                        await SendPacket(PacketCreator.skillCooldown(skillEffect.getBuffSourceId(), cooldownTime));
+                        addCooldown(skillEffect.getBuffSourceId(), Client.CurrentServer.Node.getCurrentTime(), 1000 * cooldownTime);
+                    }
                 }
             }
 
