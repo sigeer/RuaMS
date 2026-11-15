@@ -46,7 +46,7 @@ namespace scripting.npc;
  */
 public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsyncDisposable
 {
-    private ILogger log = LogFactory.GetLogger(LogType.Conversation);
+    protected ILogger log = LogFactory.GetLogger(LogType.Conversation);
 
     protected int npc;
     private int npcOid;
