@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client;
 using Application.Core.Server.maps;
@@ -21,8 +22,8 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             {
                 eim.StartStage(getMapId());
                 await spawnMonster(MobId.MOON_BUNNY, 1, -183, -433); // (0, 0) is temp position
-                await getMap().startMapEffect("月妙开始制作美味的年糕，其香味会吸引各种怪物，请务必守护好月妙！！！", ItemId.Weather_HenesysPQ, 7000);
-                await getMap().broadcastMessage(MessagePacket.SystemMessage("保护月妙！")); // Protect the Moon Bunny!
+                await getMap().startMapEffect(this.GetTalkMessage(ScriptMessage.PQHenesysReactorActHandler_MoonBunny), ItemId.Weather_HenesysPQ, 7000);
+                await getMap().broadcastMessage(MessagePacket.SystemMessage(getClient().CurrentCulture.GetTalkMessage(ScriptMessage.PQHenesys_ProtectMoonBunny))); // Protect the Moon Bunny!
                 getMap().allowSummonState(true);
             }
         }

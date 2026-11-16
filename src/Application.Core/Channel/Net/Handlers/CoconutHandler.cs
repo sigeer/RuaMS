@@ -78,12 +78,12 @@ public class CoconutHandler : ChannelHandlerBase
                 if (c.OnlinedCharacter.getTeam() == 0)
                 {
                     coconutMap.Coconut.addMapleScore();
-                    await map.Pink(nameof(ClientMessage.Coconut_Effect_Maple), c.OnlinedCharacter.Name);
+                    await map.Pink(ClientMessage.Coconut_Effect_Maple, c.OnlinedCharacter.Name);
                 }
                 else
                 {
                     coconutMap.Coconut.addStoryScore();
-                    await map.Pink(nameof(ClientMessage.Coconut_Effect_Story), c.OnlinedCharacter.Name);
+                    await map.Pink(ClientMessage.Coconut_Effect_Story, c.OnlinedCharacter.Name);
                 }
                 await map.broadcastMessage(PacketCreator.coconutScore(coconutMap.Coconut.getMapleScore(), coconutMap.Coconut.getStoryScore()));
             }

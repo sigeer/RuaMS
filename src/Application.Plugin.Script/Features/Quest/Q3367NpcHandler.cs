@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -22,7 +24,7 @@ namespace Application.Plugin.Script.Features.Quest
                 var c = getQuestProgressInt(3367, 30);
                 if (c >= 30)
                 {
-                    await SayNext("（所有文件已整理好。向尤莱特报告找到的文件。）");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Q3367_AllOrganized));
                     return;
                 }
 
@@ -36,7 +38,7 @@ namespace Application.Plugin.Script.Features.Quest
                     {
                         if (!canHold(4031797, 1))
                         {
-                            await SayNext("（你找到了一份报告文件，但由于你的其他栏已满，你选择将文件放在你找到的地方。）");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Q3367_EtcFull));
                             return;
                         }
                         else
@@ -48,7 +50,7 @@ namespace Application.Plugin.Script.Features.Quest
 
                     await setQuestProgress(3367, book, 1);
                     await setQuestProgress(3367, 30, c);
-                    await SayNext("（整理文件。#r" + (30 - c) + "#k 剩余。）");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Q3367_Organized, 30 - c));
                 }
             }
         }

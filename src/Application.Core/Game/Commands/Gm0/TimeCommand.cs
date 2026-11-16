@@ -12,7 +12,7 @@ public class TimeCommand : CommandBase
     public override async Task Execute(IChannelClient client, string[] paramsValue)
     {
         await client.OnlinedCharacter.Yellow(
-            client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ServerTime))
+            client.CurrentCulture.GetMessageByKey(ClientMessage.ServerTime)
             + client.CurrentServer.Node.GetCurrentTimeDateTimeOffset().Humanize(culture: client.CurrentCulture.CultureInfo));
     }
 }

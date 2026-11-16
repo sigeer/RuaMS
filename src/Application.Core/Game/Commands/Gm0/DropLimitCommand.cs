@@ -14,12 +14,12 @@ public class DropLimitCommand : CommandBase
         int dropCount = c.OnlinedCharacter.getMap().countItems();
         if (((float)dropCount) / YamlConfig.config.server.ITEM_LIMIT_ON_MAP < 0.75f)
         {
-            await c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.DropLimitCommand_Message1))
+            await c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(ClientMessage.DropLimitCommand_Message1)
                 + " #b" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
         else
         {
-            await c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.DropLimitCommand_Message1))
+            await c.OnlinedCharacter.showHint(c.CurrentCulture.GetMessageByKey(ClientMessage.DropLimitCommand_Message1)
                 + " #r" + dropCount + "#k / #e" + YamlConfig.config.server.ITEM_LIMIT_ON_MAP + "#n", 300);
         }
     }

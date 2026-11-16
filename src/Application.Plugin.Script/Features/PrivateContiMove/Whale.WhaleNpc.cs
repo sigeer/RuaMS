@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.PrivateContiMove
 {
@@ -14,13 +16,13 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
         public async Task contimoveRieRit()
         {
             var contiMove = GetEventManager(WhaleFeature.EventName);
-            if (await AskYesNo("搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Whale_Offer)))
             {
                 if (haveItem(4032338))
                 {
                     await SaySpeech([
-                        "搭上了这艘船，你可以前往更大的大陆冒险。 只要給我 #e80 金币#n，我会帶你去 #b金银岛#k 你想要去金银岛吗？",
-                        "既然你有推荐信，我不会收你任何的费用。收起來，我们前往金银岛，坐好，旅途中可能会有点动荡！"
+                        this.GetTalkMessage(ScriptMessage.Whale_Offer),
+                        this.GetTalkMessage(ScriptMessage.Whale_FreeRide)
                         ], current: 1);
 
                     var r = await contiMove.StartInstance(getPlayer());
@@ -28,18 +30,18 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                 }
                 else
                 {
-                    await SayNext("真的只要 #e80 金币#n 就能搭船!!");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Whale_Cheap));
 
                     if (getLevel() >= 8)
                     {
                         if (getMeso() < 80)
                         {
-                            await SayOK("什么？你说你想搭免费的船？ 你真是个怪人！");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Whale_FreeShip));
                             return;
                         }
                         else
                         {
-                            await SayNext("哇! #e80#n 金币我收到了！ 好，准备触发去明珠港喽！");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Whale_Paid));
 
 
                             var r = await contiMove.StartInstance(getPlayer());
@@ -55,7 +57,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                     }
                     else
                     {
-                        await SayOK("让我看看... 我觉得你还不够强。 你至少要达到7级我才能让你到明珠港哦。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Whale_TooWeak));
                         return;
                     }
                 }
@@ -67,10 +69,10 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
         {
             var contiMove = GetEventManager(WhaleFeature.EventName);
 
-            await SayNext("你考虑离开金银岛前往我们的城镇吗？如果你登上这艘船，我可以带你从#b明珠港#k到#b里恩#k，然后再返回。但你必须支付#b800#k金币的费用。你想去#b里恩#k吗？");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Whale_ReturnOffer));
             if (getMeso() < 800)
             {
-                await SayNext("嗯... 你确定你有 #b800#k 金币吗？检查一下你的背包，确保你有足够的金币。你必须支付费用，否则我不能让你上船...");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Whale_NoMeso));
             }
             else
             {

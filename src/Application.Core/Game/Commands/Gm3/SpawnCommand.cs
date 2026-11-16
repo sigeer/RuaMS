@@ -16,7 +16,7 @@ public class SpawnCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1 || paramsValue.Length > 2)
         {
-            await player.Yellow(nameof(ClientMessage.SpawnCommand_Syntax));
+            await player.Yellow(ClientMessage.SpawnCommand_Syntax);
             return;
         }
 
@@ -30,7 +30,7 @@ public class SpawnCommand : CommandBase
             else if (list.MatchedItems.Count > 0)
             {
                 var messages = new StringBuilder();
-                messages.Append(player.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
+                messages.Append(player.GetMessageByKey(ClientMessage.FindSimilarItem)).Append("\r\n");
                 for (int i = 0; i < list.MatchedItems.Count; i++)
                 {
                     var item = list.MatchedItems[i];
@@ -50,7 +50,7 @@ public class SpawnCommand : CommandBase
             }
             else
             {
-                await player.Yellow(nameof(ClientMessage.MobNotFound), paramsValue[0]);
+                await player.Yellow(ClientMessage.MobNotFound, paramsValue[0]);
                 return;
             }
 

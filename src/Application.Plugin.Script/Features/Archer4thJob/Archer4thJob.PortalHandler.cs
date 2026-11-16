@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -20,7 +21,7 @@ namespace Application.Plugin.Script.Features.Archer4thJob
             }
             else
             {
-                await Pink("A mysterious force won't let you in.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
                 return false;
             }
         }
@@ -34,7 +35,7 @@ namespace Application.Plugin.Script.Features.Archer4thJob
                 return await TryStartSoloQuest(Archer4thJobEvent6241.QuestIdValue);
             }
 
-            await Pink("A mysterious force won't let you in.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
             return false;
         }
 
@@ -48,7 +49,7 @@ namespace Application.Plugin.Script.Features.Archer4thJob
             }
             else
             {
-                await Pink("A mysterious force won't let you in.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
                 return false;
             }
         }

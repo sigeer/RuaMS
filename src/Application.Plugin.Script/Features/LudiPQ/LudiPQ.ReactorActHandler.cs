@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -31,7 +32,7 @@ namespace Application.Plugin.Script.Features.LudiPQ
         // Reactor: 2201002 
         public async Task ludiMob2()
         {
-            await mapMessage(5, "Rombard has been summoned somewhere in the map.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.LudiPQReactorActHandler_RombardHas));
             await spawnMonster(9300010, 1, -211);
 
 
@@ -42,12 +43,12 @@ namespace Application.Plugin.Script.Features.LudiPQ
         {
             if (getMapId() == 922010900)
             {
-                await Pink("Alishar has been summoned.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.LudiPQReactorActHandler_AlisharHas));
                 await spawnMonster(9300012, 941, 184);
             }
             else if (getMapId() == 922010700)
             {
-                await Pink("Rombard has been summoned somewhere in the map.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.LudiPQReactorActHandler_RombardHas));
                 await spawnMonster(9300010, 1, -211);
             }
 

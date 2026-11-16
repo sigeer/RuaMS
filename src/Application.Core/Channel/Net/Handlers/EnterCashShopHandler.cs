@@ -50,14 +50,14 @@ public class EnterCashShopHandler : ChannelHandlerBase
 
             if (mc.getEventInstance() != null)
             {
-                await mc.Pink(nameof(ClientMessage.CashShop_CannotEnter_WithEventInstance));
+                await mc.Pink(ClientMessage.CashShop_CannotEnter_WithEventInstance);
                 await mc.SendPacket(PacketCreator.enableActions());
                 return;
             }
 
             if (MiniDungeonInfo.isDungeonMap(mc.getMapId()))
             {
-                await mc.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
+                await mc.Pink(ClientMessage.ChangeChannel_MiniDungeon);
                 await mc.SendPacket(PacketCreator.enableActions());
                 return;
             }

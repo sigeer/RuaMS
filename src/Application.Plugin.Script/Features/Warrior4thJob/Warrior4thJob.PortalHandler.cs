@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -20,7 +21,7 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
             }
             else
             {
-                await Pink("A mysterious force won't let you in.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
                 return false;
             }
         }
@@ -35,7 +36,7 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
                 await warp(105090800, "out00");
                 return true;
             }
-            await Pink("You must defeat all the monsters first.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Warrior4thJobPortalHandler_DefeatAll));
             return true;
         }
 
@@ -52,7 +53,7 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
             }
             else
             {
-                await Pink("A mysterious force won't let you in.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
                 return false;
             }
         }

@@ -14,7 +14,7 @@ public class HairCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.HairCommand_Syntax));
+            await player.Yellow(ClientMessage.HairCommand_Syntax);
             return;
         }
 
@@ -32,19 +32,19 @@ public class HairCommand : CommandBase
 
         if (!int.TryParse(hairStr, out var hairId))
         {
-            await player.Yellow(nameof(ClientMessage.HairCommand_Syntax));
+            await player.Yellow(ClientMessage.HairCommand_Syntax);
             return;
         }
 
         if (!ItemInformationProvider.getInstance().IsHair(hairId))
         {
-            await player.Yellow(nameof(ClientMessage.HairNotFound));
+            await player.Yellow(ClientMessage.HairNotFound);
             return;
         }
 
         if (targetPlayer == null)
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
             return;
         }
 

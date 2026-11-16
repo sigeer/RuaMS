@@ -39,6 +39,7 @@ using Application.Core.Server.partyquest;
 using Application.Core.Server.quest;
 using Application.Shared.Events;
 using Application.Shared.MapObjects.Players;
+using Application.Shared.Message;
 using client;
 using client.inventory;
 using client.inventory.manipulator;
@@ -645,12 +646,6 @@ public class AbstractPlayerInteraction : IClientMessenger
         await getPlayer().getMap().broadcastMessage(FieldEffectPacket.Bgm(songName));
     }
 
-
-    public async Task mapMessage(int type, string message)
-    {
-        await getPlayer().getMap().TypedMessage(type, message);
-    }
-
     public async Task mapEffect(string path)
     {
         await c.SendPacket(FieldEffectPacket.Screen(path));
@@ -1046,28 +1041,19 @@ public class AbstractPlayerInteraction : IClientMessenger
         await getPlayer().LearnSkill(skillId);
     }
 
-    public Task TypedMessage(int type, string messageKey, params string[] param)
+    public Task TypedMessage(NoticeType type, string? messageKey, params object?[] param)
     {
         return getPlayer().TypedMessage(type, messageKey, param);
     }
 
-    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
-
-    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
-
-    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
-
-    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
-
-    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
-
-    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public Task Dialog(string key, int npcId, params string[] param) => getPlayer().Dialog(key, npcId, param);
-
-    public Task LightBlue(Func<IClientCulture, string> action)
+    public Task Dialog(string? key, int npc, params object?[] param)
     {
-        return getPlayer().LightBlue(action);
+        return getPlayer().Dialog(key, npc, param);
+    }
+
+    public string? GetMessageByCategory(string category, string? key, params object?[] paramsValue)
+    {
+        return getPlayer().GetMessageByCategory(category, key, paramsValue);
     }
 
     #region Quest

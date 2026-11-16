@@ -14,7 +14,7 @@ public class FaceCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.FaceCommand_Syntax));
+            await player.Yellow(ClientMessage.FaceCommand_Syntax);
             return;
         }
 
@@ -32,19 +32,19 @@ public class FaceCommand : CommandBase
 
         if (!int.TryParse(faceStr, out var faceId))
         {
-            await player.Yellow(nameof(ClientMessage.FaceCommand_Syntax));
+            await player.Yellow(ClientMessage.FaceCommand_Syntax);
             return;
         }
 
         if (!ItemInformationProvider.getInstance().IsFace(faceId))
         {
-            await player.Yellow(nameof(ClientMessage.FaceNotFound));
+            await player.Yellow(ClientMessage.FaceNotFound);
             return;
         }
 
         if (targetPlayer == null)
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
             return;
         }
 

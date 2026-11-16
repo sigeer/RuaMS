@@ -16,7 +16,7 @@ public class SearchCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.SearchCommand_Syntax));
+            await player.Yellow(ClientMessage.SearchCommand_Syntax);
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -55,12 +55,12 @@ public class SearchCommand : CommandBase
 
             sw.Stop();
             sb.Append("\r\n").Append("#k");
-            sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.LoadedWithin), sw.Elapsed.TotalSeconds.ToString()));
+            sb.Append(c.CurrentCulture.GetMessageByKey(ClientMessage.LoadedWithin, sw.Elapsed.TotalSeconds.ToString()));
         }
         else
         {
             sb.Append("#b");
-            sb.Append(c.OnlinedCharacter.GetMessageByKey(nameof(ClientMessage.SearchCommand_Wrong)));
+            sb.Append(c.OnlinedCharacter.GetMessageByKey(ClientMessage.SearchCommand_Wrong));
         }
 
         if (sb.Length == 0)

@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -19,7 +20,7 @@ namespace Application.Plugin.Script.Features.TreasurePQ
             var eim = getEventInstance();
             if (eim == null || eim.EventName != TreasurePQFeature.EventName || eim.getIntProperty("statusStg1") != 1)
             {
-                await Pink("The tunnel is currently blocked.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.TreasurePQPortalHandler_TunnelCurrently));
                 return false;
             }
 

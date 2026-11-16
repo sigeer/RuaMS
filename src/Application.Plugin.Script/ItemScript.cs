@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.scripting.item;
 using Application.Utility.Extensions;
 using client.inventory;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script
 {
@@ -24,16 +26,16 @@ namespace Application.Plugin.Script
                     }
                     await removeAll(2430014);
                     await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon3");
-                    await Pink("好像有什么动静...嗯？是结界被消除了");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Item_BarrierGone));
                 }
                 else
                 {
-                    await Pink("尽可能的接近魔法结界才能将其消除");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Item_NeedCloserToBarrier));
                 }
             }
             else
             {
-                await Pink("这里似乎没有需要消除的魔法结界");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Item_NoBarrierHere));
             }
 
         }
@@ -49,17 +51,17 @@ namespace Application.Plugin.Script
                     await player.gainExp((int)(3300 * player.getExpRate()));
                     await forceCompleteQuest(2324);
                     await removeAll(2430015);
-                    await LightBlue("使用尖刺消除剂清除道路上的荆棘。");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.Item_ThornsCleared));
                     await warp(106020502);
                 }
                 else
                 {
-                    await Pink("尽可能得离荆棘更近些才能完全清除");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Item_NeedCloserToThorns));
                 }
             }
             else
             {
-                await TypedMessage(5, "这里没有荆棘需要清除");
+                await TypedMessage(NoticeType.Pink, this.GetTalkMessage(ScriptMessage.Item_NoThornsHere));
             }
         }
 
@@ -71,12 +73,12 @@ namespace Application.Plugin.Script
             if (haveItem(2430033, 7))
             {
                 await gainMeso(1000000);
-                await SayOK("这是赏你的，拿去吧.");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Item_BeiDouSatellite_Reward));
                 await gainItem(2430033, -7);
             }
             else
             {
-                await SayOK("请搜集7本以后再使用吧.");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Item_BeiDouSatellite_NeedMore));
             }
         }
     }

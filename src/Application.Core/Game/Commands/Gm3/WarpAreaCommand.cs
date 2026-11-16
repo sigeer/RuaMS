@@ -13,7 +13,7 @@ public class WarpAreaCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.WarpAreaCommand_Syntax));
+            await player.Yellow(ClientMessage.WarpAreaCommand_Syntax);
             return;
         }
 
@@ -22,7 +22,7 @@ public class WarpAreaCommand : CommandBase
             var target = await c.getChannelServer().getMapFactory().getMap(int.Parse(paramsValue[0]));
             if (target == null)
             {
-                await player.Yellow(nameof(ClientMessage.MapNotFound));
+                await player.Yellow(ClientMessage.MapNotFound);
                 return;
             }
 
@@ -42,7 +42,7 @@ public class WarpAreaCommand : CommandBase
         catch (Exception e)
         {
             log.Error(e.ToString());
-            await player.Yellow(nameof(ClientMessage.MapNotFound));
+            await player.Yellow(ClientMessage.MapNotFound);
         }
     }
 }

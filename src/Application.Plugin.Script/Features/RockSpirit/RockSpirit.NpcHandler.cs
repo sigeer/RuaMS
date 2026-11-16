@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.RockSpirit
 {
@@ -14,7 +16,7 @@ namespace Application.Plugin.Script.Features.RockSpirit
         public async Task Depart_topFloorIn()
         {
 
-            var option = await AskMenu("等一下！由于装修，该区域的进入受到限制。我只能允许符合特定条件的人进入这里。#b\n\r\n#L0#我现在正在帮助#eBlake#n。#l\r\n#L1#我是这家购物中心的#rVIP#b！#l");
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.RockSpirit_HoldAccess));
             switch (option)
             {
                 case 0:
@@ -27,7 +29,7 @@ namespace Application.Plugin.Script.Features.RockSpirit
                     }
                     else
                     {
-                        await SayOK("我没有听到布莱克说你在帮助他。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.RockSpirit_HearAnything));
                     }
                     break;
                 case 1:
@@ -35,16 +37,16 @@ namespace Application.Plugin.Script.Features.RockSpirit
                     {
                         if (getPlayer().getLevel() > 50)
                         {
-                            await SayOK("VIP区域仅供50级或以下的玩家使用。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.RockSpirit_VipArea));
                         }
                         else
                         {
-                            await SayOK("VIP区域只有在完成“进入VIP区域”的任务并交出#r#t4032521#s#k后才能进入。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.RockSpirit_VipAreaOnly));
                         }
                     }
                     else
                     {
-                        await SayOK("#rVIP#k？是的，这很有趣 #rVIP先生#k，现在赶紧滚开，否则我就叫保安了。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.RockSpirit_VipHa));
                     }
                     break;
                 default:

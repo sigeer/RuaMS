@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -31,7 +32,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("门锁住了.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q3360PortalHandler_DoorLocked));
                 return false;
             }
         }

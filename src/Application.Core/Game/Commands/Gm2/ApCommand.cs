@@ -13,7 +13,7 @@ public class ApCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.ApCommand_Syntax));
+            await player.Yellow(ClientMessage.ApCommand_Syntax);
             return;
         }
 
@@ -50,7 +50,7 @@ public class ApCommand : CommandBase
             }
             else
             {
-                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
             }
         }
     }

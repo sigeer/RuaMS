@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -22,7 +23,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
         // Reactor: 3001000 
         public async Task pFBoss()
         {
-            await Pink("Poison Golem has been spawned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.EllinPQReactorActHandler_PoisonGolem));
             await spawnMonster(9300180, 1);
         }
 

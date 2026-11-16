@@ -246,7 +246,7 @@ namespace Application.Core.Channel.Net
             }
             else if (MiniDungeonInfo.isDungeonMap(Character.getMapId()))
             {
-                await Character.Pink(nameof(ClientMessage.ChangeChannel_MiniDungeon));
+                await Character.Pink(ClientMessage.ChangeChannel_MiniDungeon);
                 await SendPacket(PacketCreator.enableActions());
                 return;
             }
@@ -254,7 +254,7 @@ namespace Application.Core.Channel.Net
             var socket = CurrentServer.GetChannelEndPoint(channel);
             if (socket == null)
             {
-                await Character.Popup(nameof(ClientMessage.ChangeChannel_ChannelDisabled), channel.ToString());
+                await Character.Popup(ClientMessage.ChangeChannel_ChannelDisabled, channel.ToString());
                 await SendPacket(PacketCreator.enableActions());
                 return;
             }

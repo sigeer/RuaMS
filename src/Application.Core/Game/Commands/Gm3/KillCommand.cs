@@ -13,7 +13,7 @@ public class KillCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.KillCommand_Syntax));
+            await player.Yellow(ClientMessage.KillCommand_Syntax);
             return;
         }
 
@@ -25,7 +25,7 @@ public class KillCommand : CommandBase
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
         }
     }
 }

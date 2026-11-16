@@ -61,6 +61,20 @@ dotnet run --project ./src/Application.Benchmark/Application.Benchmark.csproj -c
 
 ## Architecture
 
+### 当前暂缓范围：`src/modules/`
+
+**暂时跳过 `src/modules/` 下的所有模块项目**（BBS、Family、Fishing、MTS、Marriage、PlayerNPC …）。
+
+这些项目目前无法编译，报错集中在与游戏逻辑无关的基础设施层：`DataStorageBase<TKey, TModel, TEntity>` 的泛型签名不匹配、`InternalSessionHandler.HandleMessage` 签名已变更、`IMapper` / `Application.Scripting` 缺失引用。它们与本仓库当前的 i18n / 消息接口重构无关。
+
+因此：
+
+- 修改 `Application.Core`、`Application.Shared`、`Application.Plugin.*` 的公共接口时，**不需要**同步修 `src/modules/`；
+- 全解决方案构建（`dotnet build RuaMS.slnx`）在模块修复前会报错，验证时应逐项目构建，例如
+  `dotnet build src/Application.Host/Application.Host.csproj`、`src/Application.Plugin.Script/...`、
+  `test/ServiceTest/ServiceTest.csproj`；
+- 在模块重新纳入范围之前，不要往模块项目里加 i18n JSON、改 csproj 或迁移文案。
+
 ### Server Deployment Modes
 
 The server supports two deployment modes, controlled by the `IsStandalone` MSBuild property:

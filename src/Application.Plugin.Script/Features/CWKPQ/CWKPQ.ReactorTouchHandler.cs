@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -35,7 +36,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var fid = "glpq_s";
             if (eim.getIntProperty(fid) == 5)
             {
-                await mapMessage(6, "All stirges have disappeared.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.CWKPQReactorTouchHandler_AllStirges));
                 await getMap().killAllMonsters();
                 eim.setIntProperty(fid, 777);
             }

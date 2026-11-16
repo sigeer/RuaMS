@@ -27,7 +27,7 @@ namespace Application.Plugin.Script.Features.PapulatusBattle
                 }
                 else
                 {
-                    await Pink(em.HandleCreateInstanceResult(r, c));
+                    await this.Pink(em.HandleCreateInstanceResult(r, c));
                     return false;
                 }
             }

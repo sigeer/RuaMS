@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -20,7 +21,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
                 await setQuestProgress(6400, 6401, "q3");
             }
 
-            await Pink("Real Bart has been found. Return to Jonathan through the portal.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Pirate4thJobFeatureReactorActHandler_RealBart));
 
 
         }

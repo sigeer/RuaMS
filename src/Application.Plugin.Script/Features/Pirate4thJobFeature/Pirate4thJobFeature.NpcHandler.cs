@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Pirate4thJobFeature
 {
@@ -26,7 +28,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
                     "One day, I went to the ocean and caught 62 Octopi for dinner. But then some kid came by and gave me 10 Octopi as a gift! How many Octopi do I have then, in total?"
                     ];
                     string[] seagullAnswer = ["72"];
-                    await SayNext("好的！我现在就给你第一个问题！你最好准备好，因为这个问题很难。甚至这里的海鸥都觉得这个问题相当棘手。这是一个相当困难的问题。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Pirate4_IllGive));
                     for (int i = 0; i < seagullQuestion.Length; i++)
                     {
                         var inputAnswer = await AskText(seagullQuestion[i]);
@@ -36,27 +38,27 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
                         }
                         else
                         {
-                            await SayOK("嗯，那不太符合我的记忆。再试一次吧！");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Pirate4_HmmThats));
                             return;
                         }
                     }
                     await setQuestProgress(6400, 1, 1);
-                    await SayNext("什么！我简直不敢相信你有多聪明！不可思议！在海鸥世界里，这种智慧会让你获得博士学位，甚至更多。你真是太了不起了……我简直不敢相信……我简直不敢相信！");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Pirate4_CantBelieve));
                     return;
                 }
                 else if (seagullProgress == 1)
                 {
                     await SaySpeech([
-                        "现在~让我们继续下一个问题。这个问题真的很难。我要让巴特来帮我。你认识巴特，对吧？",
-                        "我要把你送到诺特勒斯号的一个空房间里。你会在那里看到9个巴特。哈哈哈~他们是双胞胎吗？不，不，当然不是。我在这个意志测试中使用了一点魔法。",
-                        "无论如何，9个巴特中只有一个是真正的巴特。你知道海盗以他们与其他海盗的友谊和同伴关系而闻名。如果你是一个真正的海盗，你应该能够轻松地找到自己的伙伴。好了，那么我会把你送到巴特所在的房间。"
+                        this.GetTalkMessage(ScriptMessage.Pirate4_LetsGoOnto),
+                        this.GetTalkMessage(ScriptMessage.Pirate4_ImGoing),
+                        this.GetTalkMessage(ScriptMessage.Pirate4_AnywayOnly)
                         ]);
                     var em = GetEventManager(Pirate4thJobFeature.StrikeEventName);
                     await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
                 }
                 else
                 {
-                    await SayOK("哦！哇，这真是令人印象深刻！我认为我的考验相当困难，而你竟然通过了……你确实是海盗家族中不可或缺的一员，也是海鸥的朋友。我们现在因着持久的友谊而结为知己！最重要的是，朋友就是在你陷入困境时伸出援手的。如果你遇到紧急情况，就呼唤我们海鸥吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Pirate4_OhhhhImpressive));
                 }
 
             }
@@ -77,9 +79,9 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             {
                 var em = GetEventManager(Pirate4thJobFeature.MindEventName);
 
-                var option = await AskMenu($"#e#b<组队任务：拯救 红粉天书>\r\n#k#n{em.Template.GetRequirementDescription(c)}\r\n\r\n啊，#r#p1095000##k 让你来的？她担心我吗？... 很抱歉听到这个消息，但我现在真的不能回去，一些怪物受到黑魔法师的影响，我需要解救它们！... 你似乎也不会接受这个事实，对吗？你愿意和队友一起帮助我吗？如果愿意，请让你的 #b队长#k 和我交谈。", [
-                    "我想参加组队任务。",
-                    "我想了解更多细节。"
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Pirate4_EnterMenu, em.Template.GetRequirementDescription(c)), [
+                    this.GetTalkMessage(ScriptMessage.PartyQuest_Start),
+                    this.GetTalkMessage(ScriptMessage.PartyQuest_MoreInfo)
                 ]);
 
                 if (option == 0)
@@ -89,12 +91,12 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
                 }
                 else
                 {
-                    await SayOK("#e#b<组队任务：拯救 红粉天书>#k#n\r\n一场伏击正在进行中！我必须在战场上站立大约6分钟才能完成解放，请在此期间保护我，以便完成我的任务。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Pirate4_PartyQuest));
                 }
             }
             else
             {
-                if (await AskYesNo("任务成功了，感谢你的护送！我可以带你去#b#m120000104##k，你准备好了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Pirate4_MissionSucceeded)))
                 {
                     await warp(120000104);
                 }
@@ -111,7 +113,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             }
             else
             {
-                if (await AskYesNo("让我们去救 #r#p2095000##k 吧？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Pirate4_LetsGo)))
                 {
                     await warp(925010000, 0);
                 }
@@ -121,7 +123,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
         // Npc: 1095000 
         public async Task s4mind_out()
         {
-            if (await AskYesNo("#b#p2095000##k一定有办法爬上这个悬崖，根据我们最新的报告... 或者你是想要 #r离开这里#k 吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Pirate4_SomeWay)))
             {
                 await warp(120000104);
             }

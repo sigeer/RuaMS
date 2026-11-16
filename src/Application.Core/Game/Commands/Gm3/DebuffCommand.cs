@@ -14,13 +14,13 @@ public class DebuffCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax));
+            await player.Yellow(ClientMessage.DebuffCommand_Syntax);
             return;
         }
 
         if (!BuffStatUtils.TryParse(paramsValue[0], out BuffStat disease) || !DiseaseInfo.IsDisease(disease))
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
+            await player.Yellow(ClientMessage.DebuffCommand_Syntax, string.Join('|', DiseaseInfo.Diseases));
             return;
         }
 
@@ -31,14 +31,14 @@ public class DebuffCommand : CommandBase
         var mobSkillType = DiseaseInfo.GetMobSkillType(disease);
         if (mobSkillType == null)
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
+            await player.Yellow(ClientMessage.DebuffCommand_Syntax, string.Join('|', DiseaseInfo.Diseases));
             return;
         }
 
         var skill = MobSkillFactory.getMobSkill(mobSkillType.Value, level);
         if (skill == null)
         {
-            await player.Yellow(nameof(ClientMessage.DebuffCommand_Syntax), string.Join('|', DiseaseInfo.Diseases));
+            await player.Yellow(ClientMessage.DebuffCommand_Syntax, string.Join('|', DiseaseInfo.Diseases));
             return;
         }
 

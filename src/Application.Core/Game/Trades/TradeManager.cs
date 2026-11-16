@@ -82,7 +82,7 @@ namespace Application.Core.Game.Trades
 
             if (c1.isGM() && !c2.isGM() && c1.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
             {
-                await c1.MessageI18N(nameof(ClientMessage.Trade_GMCheck));
+                await c1.MessageI18N(ClientMessage.Trade_GMCheck);
                 log.Information("GM {GMName} blocked from trading with {CharacterName} due to GM level.", c1.getName(), c2.getName());
                 await CancelTrade(c1, TradeResult.NO_RESPONSE);
                 return;
@@ -90,7 +90,7 @@ namespace Application.Core.Game.Trades
 
             if (!c1.isGM() && c2.isGM() && c2.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_TRADE)
             {
-                await c1.MessageI18N(nameof(ClientMessage.Trade_GMCheck2));
+                await c1.MessageI18N(ClientMessage.Trade_GMCheck2);
                 await CancelTrade(c1, TradeResult.NO_RESPONSE);
                 return;
             }
@@ -99,18 +99,18 @@ namespace Application.Core.Game.Trades
             {
                 if (hasTradeInviteBack(c1, c2))
                 {
-                    await c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyManaged));
+                    await c1.MessageI18N(ClientMessage.Trade_AlreadyManaged);
                 }
                 else
                 {
-                    await c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyManaged2));
+                    await c1.MessageI18N(ClientMessage.Trade_AlreadyManaged2);
                 }
 
                 return;
             }
             else if (c1.getTrade()!.isFullTrade())
             {
-                await c1.MessageI18N(nameof(ClientMessage.Trade_Ing));
+                await c1.MessageI18N(ClientMessage.Trade_Ing);
                 return;
             }
 
@@ -123,14 +123,14 @@ namespace Application.Core.Game.Trades
                 }
                 else
                 {
-                    await c1.MessageI18N(nameof(ClientMessage.Trade_TargetInTrading));
+                    await c1.MessageI18N(ClientMessage.Trade_TargetInTrading);
                     await CancelTrade(c1, TradeResult.NO_RESPONSE);
                     InviteType.TRADE.AnswerInvite(c2.getId(), c1.getId(), false);
                 }
             }
             else
             {
-                await c1.MessageI18N(nameof(ClientMessage.Trade_TargetInTradeManaging));
+                await c1.MessageI18N(ClientMessage.Trade_TargetInTradeManaging);
                 await CancelTrade(c1, TradeResult.NO_RESPONSE);
             }
         }
@@ -166,12 +166,12 @@ namespace Application.Core.Game.Trades
                 }
                 else
                 {
-                    await c1.MessageI18N(nameof(ClientMessage.Trade_AlreadyClosed));
+                    await c1.MessageI18N(ClientMessage.Trade_AlreadyClosed);
                 }
             }
             else
             {
-                await c1.MessageI18N(nameof(ClientMessage.Trade_InviteCanceld));
+                await c1.MessageI18N(ClientMessage.Trade_InviteCanceld);
                 await CancelTrade(c1, TradeResult.NO_RESPONSE);
             }
         }
@@ -232,15 +232,15 @@ namespace Application.Core.Game.Trades
                 if (!local.fitsMeso())
                 {
                     await local.CancelTrade(TradeResult.UNSUCCESSFUL);
-                    await chr.MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit));
-                    await partner.getChr().MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit2));
+                    await chr.MessageI18N(ClientMessage.Trade_MesoExceedLimit);
+                    await partner.getChr().MessageI18N(ClientMessage.Trade_MesoExceedLimit2);
                     return;
                 }
                 else if (!partner.fitsMeso())
                 {
                     await partner.CancelTrade(TradeResult.UNSUCCESSFUL);
-                    await chr.MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit2));
-                    await partner.getChr().MessageI18N(nameof(ClientMessage.Trade_MesoExceedLimit));
+                    await chr.MessageI18N(ClientMessage.Trade_MesoExceedLimit2);
+                    await partner.getChr().MessageI18N(ClientMessage.Trade_MesoExceedLimit);
                     return;
                 }
 
@@ -249,13 +249,13 @@ namespace Application.Core.Game.Trades
                     if (local.fitsUniquesInInventory())
                     {
                         await local.CancelTrade(TradeResult.UNSUCCESSFUL);
-                        await chr.MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit));
-                        await partner.getChr().MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit2));
+                        await chr.MessageI18N(ClientMessage.Trade_InventoryExceedLimit);
+                        await partner.getChr().MessageI18N(ClientMessage.Trade_InventoryExceedLimit2);
                     }
                     else
                     {
                         await local.CancelTrade(TradeResult.UNSUCCESSFUL_UNIQUE_ITEM_LIMIT);
-                        await partner.getChr().MessageI18N(nameof(ClientMessage.Trade_UniqueLimit));
+                        await partner.getChr().MessageI18N(ClientMessage.Trade_UniqueLimit);
                     }
                     return;
                 }
@@ -264,13 +264,13 @@ namespace Application.Core.Game.Trades
                     if (partner.fitsUniquesInInventory())
                     {
                         await partner.CancelTrade(TradeResult.UNSUCCESSFUL);
-                        await chr.MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit2));
-                        await partner.getChr().MessageI18N(nameof(ClientMessage.Trade_InventoryExceedLimit));
+                        await chr.MessageI18N(ClientMessage.Trade_InventoryExceedLimit2);
+                        await partner.getChr().MessageI18N(ClientMessage.Trade_InventoryExceedLimit);
                     }
                     else
                     {
                         await partner.CancelTrade(TradeResult.UNSUCCESSFUL_UNIQUE_ITEM_LIMIT);
-                        await chr.MessageI18N(nameof(ClientMessage.Trade_UniqueLimit));
+                        await chr.MessageI18N(ClientMessage.Trade_UniqueLimit);
                     }
                     return;
                 }

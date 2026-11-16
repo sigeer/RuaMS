@@ -33,3 +33,5 @@ global using System;
 global using System.Drawing;
 global using XmlWzReader;
 global using XmlWzReader.wz;
+global using Application.Shared.Message;
+global using Application.Shared.MapObjects.Players;

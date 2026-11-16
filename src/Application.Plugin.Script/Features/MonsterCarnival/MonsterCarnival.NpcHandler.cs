@@ -21,10 +21,10 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             var talkMap = getMapId();
             if (talkMap == 980000000)
             {
-                var msg = GetClientMessage(nameof(ClientMessage.CPQ_PickRoom)) + "#b";
+                var msg = this.GetTalkMessage(ScriptMessage.CPQ_PickRoom) + "#b";
                 var o = msg.Length;
-                var roomName = GetClientMessage(nameof(ClientMessage.CPQ_Room));
-                var levelName = GetClientMessage(nameof(ClientMessage.Level));
+                var roomName = this.GetTalkMessage(ScriptMessage.CPQ_Room);
+                var levelName = this.GetTalkMessage(ScriptMessage.Level);
 
                 var allCPQ1 = Enumerable.Range(0, 3).ToDictionary(x => x, x => GetEventManager<MonsterCarnivalEventManager>(MonsterCarnivalFeature.Cpq1EventNames[x]));
                 var allCPQ1Keys = allCPQ1.Keys.ToArray();
@@ -39,7 +39,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
 
                 if (allCPQ1.Count == 0)
                 {
-                    await SayOK("所有的战斗竞技场都已经被占用。我建议你稍后再回来，或者换个频道。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.MC_AllBattle));
                     return;
                 }
 
@@ -59,7 +59,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
 
                 if (msg.Length == o)
                 {
-                    await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_NoEmptyRoom)));
+                    await SayOK(this.GetTalkMessage(ScriptMessage.CPQ_NoEmptyRoom));
                     return;
                 }
 
@@ -75,7 +75,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
                     }
                     else
                     {
-                        await Pink(em.HandleCreateInstanceResult(r, c) ?? "");
+                        await this.Pink(em.HandleCreateInstanceResult(r, c) ?? "");
                     }
                 }
                 else if (eim.InstanceStatus == InstanceStatus.Recruitment)
@@ -84,7 +84,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
                 }
                 else
                 {
-                    await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_Error)));
+                    await SayOK(this.GetTalkMessage(ScriptMessage.CPQ_Error));
                 }
             }
             else
@@ -100,7 +100,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             var eim = GetEventInstanceTrust<MonsterCarnivalEventInstanceManager>();
             if (eim.RequestTeam == null)
             {
-                await Pink(GetClientMessage(nameof(ClientMessage.CPQ_EntryLobby)));
+                await this.Pink(this.GetTalkMessage(ScriptMessage.CPQ_EntryLobby));
                 return;
             }
 
@@ -108,10 +108,10 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             var snd = "";
             for (var i = 0; i < teamMembers.Count; i++)
             {
-                snd += $"#b{GetClientMessage(nameof(ClientMessage.Name))}: {teamMembers[i].Name} / ({GetClientMessage(nameof(ClientMessage.Level))}: {teamMembers[i].Level}) / {GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n";
+                snd += $"#b{this.GetTalkMessage(ScriptMessage.Name)}: {teamMembers[i].Name} / ({this.GetTalkMessage(ScriptMessage.Level)}: {teamMembers[i].Level}) / {GetJobName(teamMembers[i].JobModel)}#k\r\n\r\n";
             }
 
-            await eim.AcceptChallenge(await SayAcceptDecline(snd + "你想在怪物嘉年华上和这个队伍战斗吗？"));
+            await eim.AcceptChallenge(await SayAcceptDecline(snd + this.GetTalkMessage(ScriptMessage.MC_WantFight)));
         }
 
         // Npc: 2042002
@@ -120,13 +120,13 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             var talkMap = getMapId();
             if (talkMap == 980000010)
             {
-                await SayNext("希望你在怪物嘉年华玩得开心！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.MC_HopeHad));
                 await warp(980000000, 0);
                 return;
             }
             else if (talkMap == 980030010)
             {
-                await SayNext("希望你在怪物嘉年华玩得开心！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.MC_HopeHad));
                 await warp(980030000, 0);
                 return;
             }
@@ -135,16 +135,16 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             if (pEim is MonsterCarnivalEventInstanceManager eim)
             {
                 var idx = Array.FindIndex([300, 100, 50, 0], x => eim.GetPlayerData(getPlayer().Id)?.TotalCP >= x) + (eim.IsWinner(getPlayer()) ? 0 : 4);
-                List<string> messageList = [
-                    "恭喜你的胜利！表现太棒了！对方队伍毫无还手之力！希望下次也能有同样出色的表现！\r\n\r\n#b你的成绩：#rA#k",
-                    "恭喜你的胜利！太棒了！你对抗对方团队做得很好！再坚持一会儿，下次你肯定能拿到A！\r\n\r\n#b你的成绩：#rB#k",
-                    "恭喜你的胜利。你做了一些事情，但这不能算是一个好的胜利。我期待你下次能做得更好。\r\n\r\n#b你的成绩：#rC#k",
-                    "恭喜你的胜利，尽管你的表现并没有完全体现出来。在下一次怪物嘉年华中更加积极参与吧！\r\n\r\n#b你的成绩：#rD#k",
+                List<string?> messageList = [
+                    this.GetTalkMessage(ScriptMessage.MC_CongratulationsVictory),
+                    this.GetTalkMessage(ScriptMessage.MC_CongratulationsVictoryAwesome),
+                    this.GetTalkMessage(ScriptMessage.MC_CongratulationsVictorySome),
+                    this.GetTalkMessage(ScriptMessage.MC_CongratulationsVictoryThough),
 
-                    "很遗憾，尽管你表现出色，但你要么平局要么输掉了这场战斗。下次胜利就属于你了！\r\n\r\n#b你的成绩：#rA#k",
-                    "很遗憾，即使你表现出色，你要么平局要么失败了这场战斗。只差一点点，胜利就可能属于你了！\r\n\r\n#b你的成绩：#rB#k",
-                    "很遗憾，你要么平局要么失败了。胜利属于那些努力奋斗的人。我看到了你的努力，所以胜利离你并不遥远。继续努力吧！\r\n##b你的成绩：#rC#k",
-                    "很遗憾，你要么打成了平局，要么输掉了战斗，你的表现清楚地反映了这一点。我希望你下次能做得更好。\r\n\r\n#b你的成绩：#rD#k",
+                    this.GetTalkMessage(ScriptMessage.MC_UnfortunatelyEither),
+                    this.GetTalkMessage(ScriptMessage.MC_UnfortunatelyEitherDrew),
+                    this.GetTalkMessage(ScriptMessage.MC_UnfortunatelyEitherDrewLost),
+                    this.GetTalkMessage(ScriptMessage.MC_UnfortunatelyEitherEqualized)
                 ];
 
                 await SayNext(messageList[idx]);
@@ -154,9 +154,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             }
             else
             {
-                var talk = $"你想做什么呢？ 如果你没有参加过怪物嘉年华, 在参加之前，你需要知道一些事情! \r\n#b" +
-                $"#L0# 前往怪物嘉年华地图 1.#l \r\n" +
-                $"#L2# 了解怪物嘉年华.#l";
+                var talk = this.GetTalkMessage(ScriptMessage.MC_MainMenu);
 
                 var option = await AskMenu(talk);
 
@@ -166,11 +164,11 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
                         var targetEm = GetEventManager<MonsterCarnivalEventManager>(MonsterCarnivalFeature.Cpq1EventNames[0]);
                         if (getLevel() < targetEm.MinLevel)
                         {
-                            await SayOK($"你必须至少达到{targetEm.MinLevel}级才能参加怪物嘉年华。当你足够强大时，和我交谈。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.MC_NeedLevel, targetEm.MinLevel));
                         }
                         else if (getLevel() > targetEm.MaxLevel)
                         {
-                            await SayOK($"很抱歉，只有等级在{targetEm.MinLevel}到{targetEm.MaxLevel}级之间的玩家才能参加怪物嘉年华活动。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.MC_LevelRange, targetEm.MinLevel, targetEm.MaxLevel));
                         }
                         else
                         {
@@ -206,31 +204,31 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
         {
             if (getParty() == null)
             {
-                await SayOK("在参加怪物嘉年华之前，你需要创建一个队伍！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_NeedCreate));
                 return;
             }
 
             if (!isLeader())
             {
-                await SayOK("如果你想开始战斗，让#b组队队长#k来找我谈谈。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_WantStart));
                 return;
             }
 
             if (!CheckTeamMemberCount(2, 6))
             {
-                await SayOK("你的队伍人数不够。你需要一个有 #b2#k - #r6#k 名成员的队伍，并且他们应该和你在同一地图上。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_HaveEnough));
                 return;
             }
 
             if (!CheckTeamMemberLevel(51, 70))
             {
-                await SayOK("确保你的队伍中的每个人都处于正确的等级范围内（51~70）！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_MakeSure));
                 return;
             }
 
             if (!CheckTeamMemberMap())
             {
-                await SayOK("有一些队员不在地图上！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_SomeParty));
                 return;
             }
 
@@ -250,20 +248,20 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
 
             if (available.Count == 0)
             {
-                await SayOK("所有的怪物嘉年华场地目前都在使用中！请稍后再试。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_AllMonster));
                 return;
             }
 
-            var msg = "你想进入哪一间怪物嘉年华 2 场地？#b\r\n";
+            var msg = this.GetTalkMessage(ScriptMessage.MC_MonsterCarnival);
             foreach (var idx in available)
             {
-                msg += $"#L{idx}# 场地 {idx + 1}#l\r\n";
+                msg += this.GetTalkMessage(ScriptMessage.MC_RoomEntry, idx, idx + 1);
             }
 
             var option = await AskMenu(msg);
             if (!available.Contains(option))
             {
-                await SayOK("房间目前已满。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.MC_RoomCurrently));
                 return;
             }
 
@@ -280,7 +278,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             }
             else
             {
-                await SayOK(GetClientMessage(nameof(ClientMessage.CPQ_Error)));
+                await SayOK(this.GetTalkMessage(ScriptMessage.CPQ_Error));
             }
         }
 
@@ -290,7 +288,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             var talkMap = getMapId();
             if (talkMap == 980030010)
             {
-                await SayNext("希望你在怪物嘉年华上玩得开心！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.MC_HopeHad));
                 await warp(980030000, 0);
                 return;
             }
@@ -312,7 +310,7 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
             };
 
             var result = eim.IsWinner(getPlayer()) ? idx : idx + 4;
-            await SayNext("恭喜你的胜利！希望下次也能有同样出色的表现！\r\n\r\n#b你的成绩：#r" + "ABCD"[idx] + "#k");
+            await SayNext(this.GetTalkMessage(ScriptMessage.MC_ResultVictory, "ABCD"[idx]));
             await gainExp(exp);
             await eim.GiveClearReward(getPlayer(), result);
             await warp(980030000, 0);

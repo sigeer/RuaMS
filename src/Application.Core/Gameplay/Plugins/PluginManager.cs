@@ -559,7 +559,7 @@ namespace Application.Core.Gameplay.Plugins
             }
             catch (BusinessException be)
             {
-                await client.OnlinedCharacter.Debug(5, be.Message);
+                await client.OnlinedCharacter.Debug(NoticeType.Pink, be.Message);
                 LogScriptError(script.Kind, context, be);
                 return false;
             }
@@ -642,7 +642,7 @@ namespace Application.Core.Gameplay.Plugins
             }
             catch (BusinessException be)
             {
-                await c.OnlinedCharacter.Debug(5, be.Message);
+                await c.OnlinedCharacter.Debug(NoticeType.Pink, be.Message);
                 LogScriptError(ScriptKind.Npc, scriptName, be);
                 return false;
             }
@@ -727,7 +727,7 @@ namespace Application.Core.Gameplay.Plugins
             }
             catch (BusinessException be)
             {
-                await c.OnlinedCharacter.Debug(5, be.Message);
+                await c.OnlinedCharacter.Debug(NoticeType.Pink, be.Message);
                 LogScriptError(ScriptKind.Quest, scriptName, be);
                 return false;
             }

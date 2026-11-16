@@ -322,7 +322,7 @@ namespace Application.Core.Game.Players
                     }
 
                     setDojoEnergy(0);
-                    await Pink("As you used the secret skill, your energy bar has been reset.");
+                    await this.Pink("As you used the secret skill, your energy bar has been reset.");
                 }
                 else if (attackInfo?.numAttacked > 0)
                 {

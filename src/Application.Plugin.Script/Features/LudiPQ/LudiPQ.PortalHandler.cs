@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -47,7 +48,7 @@ namespace Application.Plugin.Script.Features.LudiPQ
 
             if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
-                await Pink("Some seal is blocking this door.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.LudiPQPortalHandler_SomeSeal));
                 return false;
             }
 

@@ -128,48 +128,48 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
     public string GetDefault1() => c.CurrentCulture.GetNpcDefaultTalk(npc, 1);
     public string GetDefaultRandom() => c.CurrentCulture.GetNpcDefaultTalk(npc, -1);
 
-    public string GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
+    public string? GetClientMessage(string text, params object[] param) => c.CurrentCulture.GetMessageByKey(text, param);
 
-    public async Task sendNext(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendNext(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 01", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text ?? "", "00 01", speaker, speakerNpc));
     }
 
-    public async Task sendPrev(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendPrev(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 00", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text ?? "", "01 00", speaker, speakerNpc));
     }
 
-    public async Task sendNextPrev(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendNextPrev(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "01 01", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text ?? "", "01 01", speaker, speakerNpc));
     }
 
-    public async Task sendOk(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendOk(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text, "00 00", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 0, text ?? "", "00 00", speaker, speakerNpc));
     }
 
-    public async Task sendYesNo(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendYesNo(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 1, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 1, text ?? "", "", speaker, speakerNpc));
     }
 
-    public async Task sendAcceptDecline(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendAcceptDecline(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 12, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 12, text ?? "", "", speaker, speakerNpc));
     }
 
-    public async Task sendSimple(string text, byte speaker = 0, int speakerNpc = 0)
+    public async Task sendSimple(string? text, byte speaker = 0, int speakerNpc = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 4, text, "", speaker, speakerNpc));
+        await getClient().SendPacket(PacketCreator.getNPCTalk(npc, 4, text ?? "", "", speaker, speakerNpc));
     }
 
-    public async Task sendStyle(string text, int[] styles)
+    public async Task sendStyle(string? text, int[] styles)
     {
         if (styles.Length > 0)
         {
-            await getClient().SendPacket(PacketCreator.getNPCTalkStyle(npc, text, styles));
+            await getClient().SendPacket(PacketCreator.getNPCTalkStyle(npc, text ?? "", styles));
         }
         else
         {
@@ -179,14 +179,14 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
         }
     }
 
-    public async Task sendGetNumber(string text, int def, int min, int max, byte speaker = 0)
+    public async Task sendGetNumber(string? text, int def, int min, int max, byte speaker = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalkNum(npc, text, def, min, max, speaker));
+        await getClient().SendPacket(PacketCreator.getNPCTalkNum(npc, text ?? "", def, min, max, speaker));
     }
 
-    public async Task sendGetText(string text, byte speaker = 0)
+    public async Task sendGetText(string? text, byte speaker = 0)
     {
-        await getClient().SendPacket(PacketCreator.getNPCTalkText(npc, text, "", speaker));
+        await getClient().SendPacket(PacketCreator.getNPCTalkText(npc, text ?? "", "", speaker));
     }
 
     /*
@@ -200,7 +200,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
      */
     public async Task sendDimensionalMirror(string text)
     {
-        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
+        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text ?? ""));
     }
 
     public async Task<bool> forceStartQuest(int id)
@@ -731,7 +731,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
     /// <param name="speaker"></param>
     /// <param name="finalNext">最后一段显示下一步</param>
     /// <returns></returns>
-    public async Task SaySpeech(string[] messages, int current = 0, bool finalNext = true)
+    public async Task SaySpeech(string?[] messages, int current = 0, bool finalNext = true)
     {
         while (current >= 0 && current < messages.Length)
         {
@@ -825,19 +825,19 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
         await WaitingForAnswer();
     }
 
-    public async Task<bool> AskYesNo(string text, byte speaker = 0)
+    public async Task<bool> AskYesNo(string? text, byte speaker = 0)
     {
         await sendYesNo(text, speaker);
         return await WaitingForAnswer();
     }
 
-    public async Task<bool> SayAcceptDecline(string text, byte speaker = 0)
+    public async Task<bool> SayAcceptDecline(string? text, byte speaker = 0)
     {
         await sendAcceptDecline(text, speaker);
         return await WaitingForAnswer();
     }
 
-    public async Task<int> AskMenu(string text, byte speaker = 0)
+    public async Task<int> AskMenu(string? text, byte speaker = 0)
     {
         await sendSimple(text, speaker);
         return (int)await WaitingForOption();
@@ -845,11 +845,11 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
 
     public async Task<int> AskDimensionalMirror(string text)
     {
-        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text));
+        await getClient().SendPacket(PacketCreator.getDimensionalMirror(text ?? ""));
         return (int)await WaitingForOption();
     }
 
-    public async Task<int> AskMenu(string mainContent, IEnumerable<string> options, byte speaker = 0)
+    public async Task<int> AskMenu(string? mainContent, IEnumerable<string?> options, byte speaker = 0)
     {
         if (options.Count() == 0)
         {
@@ -866,7 +866,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
         return (int)(await AskMenu(finalContent, speaker));
     }
 
-    public async Task<int> AskMenu(string mainContent, Dictionary<int, string> options, byte speaker = 0)
+    public async Task<int> AskMenu(string? mainContent, Dictionary<int, string?> options, byte speaker = 0)
     {
         if (options.Count() == 0)
         {
@@ -883,7 +883,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
         return (int)await AskMenu(finalContent, speaker);
     }
 
-    public async Task<int> AskAvatar(string text, int[] styles)
+    public async Task<int> AskAvatar(string? text, int[] styles)
     {
         if (styles.Length > 0)
         {
@@ -898,13 +898,13 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
         }
     }
 
-    public async Task<int> AskNumber(string text, int def, int min, int max, byte speaker = 0)
+    public async Task<int> AskNumber(string? text, int def, int min, int max, byte speaker = 0)
     {
         await sendGetNumber(text, def, min, max, speaker);
         return (int)await WaitingForOption();
     }
 
-    public async Task<string?> AskText(string text, byte speaker = 0)
+    public async Task<string?> AskText(string? text, byte speaker = 0)
     {
         await sendGetText(text, speaker);
         return await WaitingForInputText();
@@ -917,7 +917,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
     /// <param name="activePets"></param>
     /// <returns>被选择的PetId</returns>
     /// <exception cref="ConversationInterruptException"></exception>
-    public async Task<long> AskPet(string mainContent, IEnumerable<MapPet> activePets)
+    public async Task<long> AskPet(string? mainContent, IEnumerable<MapPet> activePets)
     {
         if (activePets.Count() == 0)
         {
@@ -970,7 +970,7 @@ public abstract class NPCConversationManager : AbstractPlayerInteraction, IAsync
 
         if (getMeso() < cost)
         {
-            await TypedMessage(1, "You don't have enough mesos.");
+            await this.Popup("You don't have enough mesos.");
             return;
         }
 

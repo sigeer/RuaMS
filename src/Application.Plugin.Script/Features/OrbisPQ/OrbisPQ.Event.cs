@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Players;
 using Application.Core.model;
 using Application.Core.scripting.Events.Instances;
@@ -75,7 +76,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
         {
             await base.OnPlayerEntry(eim, chr);
 
-            await chr.Dialog("你好，我是女神的内侍官#e#b#p2013001##n#k。\r\n别紧张，你现在还看不到我。\r\n当女神石化时，我也同时失去了力量，所以现在你只能看到我微弱的闪光。\r\n如果你能收集到魔法云的力量，我就能恢复形体变回原样。\r\n请帮我收集 #b#e20#n#k 朵 #b#e#v4001063##t4001063##k#n 带回来。", 2013001);
+            await chr.Dialog(chr.getAbstractPlayerInteraction().GetTalkMessage(ScriptMessage.OrbisPQ_GuideIntro), 2013001);
         }
 
         public override async Task OnTimeOut(AbstractEventInstanceManager eim)

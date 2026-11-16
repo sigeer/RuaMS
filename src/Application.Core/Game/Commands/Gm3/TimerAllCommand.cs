@@ -13,7 +13,7 @@ public class TimerAllCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.TimerAllCommand_Syntax));
+            await player.Yellow(ClientMessage.TimerAllCommand_Syntax);
             return;
         }
 
@@ -31,7 +31,7 @@ public class TimerAllCommand : CommandBase
             catch (FormatException e)
             {
                 log.Error(e.ToString());
-                await player.Yellow(nameof(ClientMessage.TimerAllCommand_Syntax));
+                await player.Yellow(ClientMessage.TimerAllCommand_Syntax);
             }
         }
     }

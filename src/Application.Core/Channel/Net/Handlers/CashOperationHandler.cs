@@ -314,13 +314,13 @@ public class CashOperationHandler : ChannelHandlerBase
                     }
                     else if (item is Pet pet && pet.Summoned)
                     {
-                        await chr.Popup(nameof(ClientMessage.Cash_PutPetIntoCashInventory));
+                        await chr.Popup(ClientMessage.Cash_PutPetIntoCashInventory);
                         await c.OnlinedCharacter.enableCSActions();
                         return;
                     }
                     else if (ItemId.isWeddingRing(item.getItemId()) || ItemId.isWeddingToken(item.getItemId()))
                     {
-                        await chr.Popup(nameof(ClientMessage.Cash_PutRelationshipItemIntoCashInventory));
+                        await chr.Popup(ClientMessage.Cash_PutRelationshipItemIntoCashInventory);
                         await c.OnlinedCharacter.enableCSActions();
                         return;
                     }

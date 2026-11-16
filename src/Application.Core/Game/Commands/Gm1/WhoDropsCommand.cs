@@ -14,7 +14,7 @@ public class WhoDropsCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.WhoDropsCommand_Syntax));
+            await player.Yellow(ClientMessage.WhoDropsCommand_Syntax);
             return;
         }
 

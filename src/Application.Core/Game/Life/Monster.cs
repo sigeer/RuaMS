@@ -1096,27 +1096,27 @@ public class Monster : AbstractLifeObject, ICombatantObject, ILoopTickable
             switch (getId())
             {
                 case MobId.WATCH_HOG:
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_WatchHog), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_WatchHog, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
                 case MobId.MOON_BUNNY: //moon bunny
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_MoonBunny), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_MoonBunny, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
                 case MobId.TYLUS: //tylus
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Tylus), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_Tylus, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
                 case MobId.JULIET: //juliet
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Juliet), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_Juliet, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
                 case MobId.ROMEO: //romeo
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Romeo), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_Romeo, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
                 case MobId.GIANT_SNOWMAN_LV1_EASY:
                 case MobId.GIANT_SNOWMAN_LV1_MEDIUM:
                 case MobId.GIANT_SNOWMAN_LV1_HARD:
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Snownman)));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_Snownman));
                     break;
                 case MobId.DELLI: //delli
-                    await MapModel.LightBlue(e => e.GetMessageByKey(nameof(ClientMessage.FriendMob_Damaged_Delli), e.GetMobName(getId())));
+                    await MapModel.LightBlue(e => e.GetMessageByKey(ClientMessage.FriendMob_Damaged_Delli, e.Client.CurrentCulture.GetMobName(getId())));
                     break;
             }
         }

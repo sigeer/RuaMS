@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -25,7 +27,7 @@ namespace Application.Plugin.Script.Features.Quest
                 }
                 else
                 {
-                    await SayOK("有一个ETC槽位可用，可以获取Alcadno的秘密文件。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q3309_EtcSlot));
                 }
             }
 

@@ -3,6 +3,7 @@ using Application.Core.Client;
 using Application.Core.Gameplay.Plugins;
 using Application.Core.scripting.item;
 using Application.Core.Server.life;
+using Application.Resources.Messages;
 using Application.Shared.Constants.Inventory;
 using Application.Shared.Constants.Map;
 using Application.Templates.Character;
@@ -87,7 +88,7 @@ namespace Application.Plugin.TreasureMap
                     {
                         await getMap().spawnMonsterOnGroundBelow(mobTemplate, getPlayer().getPosition());
                     }
-                    await getMap().LightBlue($"{getPlayer().Name} 挖出了一群 #o{mobId}#");
+                    await getMap().LightBlue(chr => TreasureMapText.Format(TreasureMapText.MobAppeared, chr.Client.CurrentCulture.CultureInfo, chr.Name, mobId));
                     break;
                 case TreasureMapRewardType.Meso:
                     await getMap().spawnMesoDrop(Randomizer.rand(20000, 50000), getPlayer().getPosition(), getPlayer(), getPlayer(), true, Shared.MapObjects.DropType.OnlyOwner);

@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Server.maps;
+using Application.Resources.Messages;
 using Application.Shared.Constants.Map;
 using scripting.portal;
 
@@ -42,7 +43,7 @@ namespace Application.Plugin.Script.Features.Dojo
 
             if (!eim.ClearedMaps.ContainsKey(mapId))
             {
-                await Pink("门还没有打开。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Dojo_DoorNotOpen));
                 return false;
             }
 
@@ -67,7 +68,7 @@ namespace Application.Plugin.Script.Features.Dojo
                 return true;
             }
 
-            await Pink("你获得了 " + getPlayer().addDojoPointsByMap(mapId) + " 修炼点数。当前总修炼点数为：" + getPlayer().getDojoPoints() + "。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Dojo_PointsGained, getPlayer().addDojoPointsByMap(mapId), getPlayer().getDojoPoints()));
             await playPortalSound();
             await warp(nextMap, 0);
             return true;
@@ -92,7 +93,7 @@ namespace Application.Plugin.Script.Features.Dojo
 
                 for (var j = from; j >= 0; j--)
                 {
-                    await chr.Pink("你获得了 " + chr.addDojoPointsByMap(mapId - 100 * j) + " 修炼点数。当前总修炼点数为： " + chr.getDojoPoints() + "。");
+                    await chr.Pink(this.GetTalkMessage(ScriptMessage.Dojo_PointsGainedAlt, chr.addDojoPointsByMap(mapId - 100 * j), chr.getDojoPoints()));
                 }
 
                 await chr.changeMap(restMapId, 0);
@@ -104,7 +105,7 @@ namespace Application.Plugin.Script.Features.Dojo
             var eim = GetEventInstanceTrust();
             if (!eim.isEventCleared())
             {
-                await Pink("萧公: 哈哈！你要像懦夫一样逃跑？我可不会让你轻易逃脱！");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Dojo_SoGongTaunt));
                 return false;
             }
 
@@ -121,7 +122,7 @@ namespace Application.Plugin.Script.Features.Dojo
             var eim = GetEventInstanceTrust();
             if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
-                await Pink("这里还有怪物没有清理。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Dojo_MonstersRemain));
                 return false;
             }
 

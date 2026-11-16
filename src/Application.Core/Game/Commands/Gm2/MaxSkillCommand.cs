@@ -37,6 +37,6 @@ public class MaxSkillCommand : CommandBase
             await player.changeSkillLevel(skill, -1, -1, -1);
         }
 
-        await player.Yellow(nameof(ClientMessage.MaxSkillCommand_Result));
+        await player.Yellow(ClientMessage.MaxSkillCommand_Result);
     }
 }

@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -14,13 +16,13 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (isQuestCompleted(6002))
             {
-                await SayOK("谢谢你救了那只猪。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Q6002_Head_ThankSaving));
             }
             else if (isQuestStarted(6002))
             {
                 if (haveItem(4031507, 5) && haveItem(4031508, 5))
                 {
-                    await SayOK("谢谢你救了那只猪。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q6002_Head_ThankSaving));
                 }
                 else
                 {
@@ -33,7 +35,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await SayOK("只有少数冒险者有资格保护守望者猪。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Q6002_Head_OnlyVery));
             }
         }
     }

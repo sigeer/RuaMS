@@ -5,6 +5,8 @@ using Application.Core.scripting.npc;
 using Application.Core.Server.life;
 using Application.Shared.Constants;
 using System.Drawing;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -20,9 +22,9 @@ namespace Application.Plugin.Script.Features.Quest
             if (getMapId() == 910400000)
             {
                 await SaySpeech([
-                    new SpeechText("哼……真的找来了，太容易了？看来你的变身术还是有点用处的嘛。巴洛克，我们走。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
-                    new SpeechText("切……这笔帐将来再算。", NpcTalkSpeaker.ExtraNpc | NpcTalkSpeaker.NoEnd, 1204004),
-                    new SpeechText("来得正好。上一次因为刚和冒险骑士团的骑士们战斗完，已经没什么余力了，才会让你得逞。这次我可没那么好惹了！碍眼的家伙，消失掉吧！",NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd)
+                    new SpeechText(this.GetTalkMessage(ScriptMessage.Q21733Npc_HmphReally), NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd),
+                    new SpeechText(this.GetTalkMessage(ScriptMessage.Q21733Npc_TchIll), NpcTalkSpeaker.ExtraNpc | NpcTalkSpeaker.NoEnd, 1204004),
+                    new SpeechText(this.GetTalkMessage(ScriptMessage.Q21733Npc_GoodTiming),NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd)
                     ]);
                 await setQuestProgress(Q21733.QuestIdValue, 21762, 1);
 
@@ -42,7 +44,7 @@ namespace Application.Plugin.Script.Features.Quest
             else
             {
                 // 910510001, 1104000
-                await SayNext("什么……你不属于这里！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Q21733Npc_DontBelong));
                 var puppet = GetEventManager(PuppeteerFeature.EventName);
                 var r = await puppet.StartInstance(getPlayer());
                 await SayOK(puppet.HandleCreateInstanceResult(r, c));
@@ -59,7 +61,7 @@ namespace Application.Plugin.Script.Features.Quest
                 return;
             }
 
-            await SayNext("啊……那些家伙全都消灭了？哈哈……真不愧是英雄大人！呃，先整理整理再说。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Q21733Npc_AhAll));
             await setQuestProgress(Q21733.QuestIdValue, 21762, 2);
             await warp(104000004);
         }

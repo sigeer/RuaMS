@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -16,7 +17,7 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
             await changeMusic("Bgm09/TimeAttack");
             await spawnMonster(9420513, -146, 225);
             GetEventInstanceTrust().setIntProperty("boss", 1);
-            await Pink("As you wish, here comes Capt Latanica.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.LatanicaBattleReactorActHandler_WishComes));
         }
     }
 }

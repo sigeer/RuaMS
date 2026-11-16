@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -34,7 +35,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("You don't have permission to access this room.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_DontHave));
                 return false;
             }
         }

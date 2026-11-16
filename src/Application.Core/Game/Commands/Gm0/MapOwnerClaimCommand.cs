@@ -31,33 +31,33 @@ public class MapOwnerClaimCommand : CommandBase
 
                                 if (map == ownedMap)
                                 {
-                                    await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message1)));
+                                    await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.MapOwnerClaimCommand_Message1));
                                     return;
                                 }
                             }
 
                             if (map.claimOwnership(chr))
                             {
-                                await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message2)));
+                                await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.MapOwnerClaimCommand_Message2));
                             }
                             else
                             {
-                                await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message3)));
+                                await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.MapOwnerClaimCommand_Message3));
                             }
                         }
                         else
                         {
-                            await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message4)));
+                            await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.MapOwnerClaimCommand_Message4));
                         }
                     }
                     else
                     {
-                        await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.MapOwnerClaimCommand_Message5)));
+                        await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.MapOwnerClaimCommand_Message5));
                     }
                 }
                 else
                 {
-                    await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FeatureUnavailable)));
+                    await chr.dropMessage(5, c.CurrentCulture.GetMessageByKey(ClientMessage.FeatureUnavailable));
                 }
             }
             finally

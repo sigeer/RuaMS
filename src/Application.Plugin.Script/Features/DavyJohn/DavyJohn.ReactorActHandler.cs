@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects;
@@ -58,10 +59,10 @@ namespace Application.Plugin.Script.Features.DavyJohn
             eim.setIntProperty(DavyJohnFeature.OpenedChestsProperty, eim.getIntProperty(DavyJohnFeature.OpenedChestsProperty) + 1);
             await dropItems(true, 1, 50, 100, 15);
         }
-
+        // Reactor: 2516000
         public async Task davyNPC0()
         {
-            await Pink("老海盗已经被打败, 无恙被释放了！");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnEvent_PirateLord));
             await spawnNpc(2094001);
         }
 

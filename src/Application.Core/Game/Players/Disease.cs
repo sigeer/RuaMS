@@ -103,7 +103,7 @@ namespace Application.Core.Game.Players
 
         public async Task DebugListAllDisease()
         {
-            await Debug(6, string.Join(", ", Diseases.Values
+            await Debug(NoticeType.LightBlue, string.Join(", ", Diseases.Values
                       .Select(entry => $"type= {entry.BuffStat}, active:{entry.ExpiredAt > getChannelServer().Node.getCurrentTime()}"))
               );
         }

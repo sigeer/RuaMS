@@ -21,13 +21,13 @@ namespace Application.Core.Game.Commands.Gm2
                 var searched = client.CurrentCulture.StringProvider.Search(Templates.String.StringCategory.Npc, input).OfType<StringNpcTemplate>().ToArray();
                 if (searched.Length == 0)
                 {
-                    await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), input);
+                    await client.OnlinedCharacter.Yellow(ClientMessage.NpcNotFound, input);
                     return;
                 }
                 else if (searched.Length > 1)
                 {
                     var sb = new StringBuilder();
-                    sb.Append(client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
+                    sb.Append(client.CurrentCulture.GetMessageByKey(ClientMessage.FindSimilarItem)).Append("\r\n");
                     for (int i = 0; i < searched.Length; i++)
                     {
                         var npcItem = searched[i];
@@ -56,19 +56,19 @@ namespace Application.Core.Game.Commands.Gm2
             var template = ProviderSource.Instance.GetProvider<IProvider<NpcLocationTemplate>>(ProviderType.EtcNpcLocation).GetItem(npcId);
             if (template == null)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFound), npcName);
+                await client.OnlinedCharacter.Yellow(ClientMessage.NpcNotFound, npcName);
                 return;
             }
 
             if (template.Maps.Length == 0)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcOutOfMap), npcName);
+                await client.OnlinedCharacter.Yellow(ClientMessage.NpcOutOfMap, npcName);
                 return;
             }
             else if (template.Maps.Length > 1)
             {
                 var sb = new StringBuilder();
-                sb.Append(client.CurrentCulture.GetMessageByKey(nameof(ClientMessage.WarpNpcCommand_NpcResult), npcName)).Append("\r\n");
+                sb.Append(client.CurrentCulture.GetMessageByKey(ClientMessage.WarpNpcCommand_NpcResult, npcName)).Append("\r\n");
                 for (int i = 0; i < template.Maps.Length; i++)
                 {
                     var mapId = template.Maps[i];
@@ -99,20 +99,20 @@ namespace Application.Core.Game.Commands.Gm2
         {
             if (mapId == client.OnlinedCharacter.getMapId())
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.AlreadyInMap));
+                await client.OnlinedCharacter.Yellow(ClientMessage.AlreadyInMap);
                 return;
             }
             var map = await client.CurrentServer.getMapFactory().getMap(mapId);
             if (map == null)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
+                await client.OnlinedCharacter.Yellow(ClientMessage.MapNotFound, mapId.ToString());
                 return;
             }
 
             var npc = map.getNPCById(npcId);
             if (npc == null)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.NpcNotFoundInMap), npcId.ToString(), map.Id.ToString());
+                await client.OnlinedCharacter.Yellow(ClientMessage.NpcNotFoundInMap, npcId.ToString(), map.Id.ToString());
                 return;
             }
             await client.OnlinedCharacter.changeMap(map, npc.getPosition());

@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -14,14 +16,14 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (isQuestStarted(Q21747Feature.QuestIdValue) && getQuestProgressInt(Q21747Feature.QuestIdValue, 9300351) == 0)
             {
-                var inputText = await AskText("封印神殿的入口... #b暗号#k!");
-                if (inputText == "道可道非常道")
+                var inputText = await AskText(this.GetTalkMessage(ScriptMessage.Q21747Npc_EntranceSealed));
+                if (inputText == this.GetTalkMessage(ScriptMessage.Q21747Npc_ActionsSpeak))
                 {
                     await TryStartSoloQuest(Q21747Feature.QuestIdValue);
                 }
                 else
                 {
-                    await SayOK("#r错误！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103008_Error));
                 }
             }
             else

@@ -25,7 +25,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 await _server.BroadcastAsync(w =>
                 {
                     w.reloadEventScriptManager();
-                    w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId)?.TypedMessage(5, "Reloaded Events");
+                    w.getPlayerStorage().GetCharacterClientById(res.Request.MasterId)?.TypedMessage(NoticeType.Pink, "Reloaded Events");
                 });
             }
 
@@ -46,7 +46,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     await _server.SendToPlayerAsync(res.Request.MasterId, async chr =>
                     {
-                        await chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
+                        await chr.Yellow(ClientMessage.PlayerNotOnlined, res.Request.Victim);
                     });
                 }
                 else
@@ -78,7 +78,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     if (res.Code != 0)
                     {
-                        await chr.Yellow(nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim);
+                        await chr.Yellow(ClientMessage.PlayerNotOnlined, res.Request.Victim);
                     }
                     else
                     {
@@ -103,11 +103,11 @@ namespace Application.Core.Channel.Internal.Handlers
                 if (res.Code == 0)
                 {
                     await _server.PushChannelCommandAsync(
-                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored.")));
+                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, NoticeType.Yellow, res.Request.TargetName + " is " + (res.IsMonitored ? "now being monitored." : "no longer being monitored.")));
                 }
                 else
                     await _server.PushChannelCommandAsync(
-                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
+                        new InvokeDropMessageAsyncCommand(res.Request.MasterId, NoticeType.Pink, $"未找到玩家：{res.Request.TargetName}"));
             }
 
             protected override ProtoService.ToggleMonitorPlayerResponse Parse(ByteString data) => ProtoService.ToggleMonitorPlayerResponse.Parser.ParseFrom(data);
@@ -141,7 +141,7 @@ namespace Application.Core.Channel.Internal.Handlers
                         else if (chr.Id == data.VictimId)
                         {
                             await chr.SendPacket(PacketCreator.sendPolice(string.Format("You have been blocked by the#b {0} Police for {1}.#k", "RuaMS", data.Request.ReasonDesc)));
-                            await chr.Yellow(nameof(ClientMessage.Ban_NoticePlayer), data.OperatorName);
+                            await chr.Yellow(ClientMessage.Ban_NoticePlayer, data.OperatorName);
                             await chr.Yellow(chr.GetMessageByKey(ClientMessage.BanReason) + data.Request.ReasonDesc);
 
                             Timer? timer = null;
@@ -174,7 +174,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 if (res.Code == 0)
                 {
-                    await _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.OperatorId, 5, "Unbanned " + res.Request.Victim));
+                    await _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.OperatorId, NoticeType.Pink, "Unbanned " + res.Request.Victim));
                 }
             }
 
@@ -196,13 +196,13 @@ namespace Application.Core.Channel.Internal.Handlers
                     if (chr.Id == res.Request.MasterId)
                     {
                         if (res.Code != 0)
-                            await chr.Pink(nameof(ClientMessage.PlayerNotFound));
+                            await chr.Pink(ClientMessage.PlayerNotFound);
                         else
                         {
                             if (res.IsExtend)
-                                await chr.Pink(nameof(ClientMessage.Jail_ExtendResult), res.Request.TargetName, res.Request.Minutes.ToString());
+                                await chr.Pink(ClientMessage.Jail_ExtendResult, res.Request.TargetName, res.Request.Minutes.ToString());
                             else
-                                await chr.Pink(nameof(ClientMessage.Jail_Result), res.Request.TargetName, res.Request.Minutes.ToString());
+                                await chr.Pink(ClientMessage.Jail_Result, res.Request.TargetName, res.Request.Minutes.ToString());
                         }
                     }
                     else if (chr.Id == res.TargetId)
@@ -231,12 +231,12 @@ namespace Application.Core.Channel.Internal.Handlers
                      {
                          if (chr.Id == res.Request.MasterId)
                          {
-                             await chr.Yellow(nameof(ClientMessage.Command_Done), chr.getLastCommandMessage());
+                             await chr.Yellow(ClientMessage.Command_Done, chr.getLastCommandMessage());
                          }
                          else if (chr.Id == res.TargetId)
                          {
                              chr.removeJailExpirationTime();
-                             await chr.Pink(nameof(ClientMessage.Unjail_Notify));
+                             await chr.Pink(ClientMessage.Unjail_Notify);
                          }
                      });
                 }
@@ -246,11 +246,11 @@ namespace Application.Core.Channel.Internal.Handlers
                     {
                         if (res.Code == 1)
                         {
-                            await chr.Pink(nameof(ClientMessage.PlayerNotFound));
+                            await chr.Pink(ClientMessage.PlayerNotFound);
                         }
                         else if (res.Code == 2)
                         {
-                            await chr.Pink(nameof(ClientMessage.UnjailCommand_AlreadyFree));
+                            await chr.Pink(ClientMessage.UnjailCommand_AlreadyFree);
                         }
                     });
                 }

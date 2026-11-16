@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -77,7 +78,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
 
             if (timeLeft > 0)
             {
-                await Pink("The portal will open in about " + timeLeft + " seconds.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuest_PortalOpensIn, timeLeft));
                 return false;
             }
 
@@ -116,7 +117,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
 
             if (getPlayer().getMap().getReactorByName("kinggate")?.getState() != 1)
             {
-                await Pink(denied);
+                await this.Pink(denied);
                 return false;
             }
 
@@ -143,7 +144,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This way forward is not open yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_WayForward));
                 return false;
             }
         }
@@ -158,7 +159,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
                 await warp(990000431, 0);
                 return true;
             }
-            await Pink("This way forward is not open yet.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_WayForward));
             return false;
         }
 
@@ -174,7 +175,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This door is closed.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_DoorClosed));
                 return false;
             }
         }
@@ -191,7 +192,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This door is closed.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_DoorClosed));
                 return false;
             }
         }
@@ -208,7 +209,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This door is closed.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_DoorClosed));
                 return false;
             }
         }
@@ -225,7 +226,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This way forward is not open yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_WayForward));
                 return false;
             }
         }
@@ -242,7 +243,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("The gate is closed.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_GateClosed));
                 return false;
             }
         }
@@ -259,7 +260,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("The door is still blocked.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_DoorStill));
                 return false;
             }
         }
@@ -276,7 +277,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("You cannot proceed past this point.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_CannotProceed));
                 return false;
             }
         }
@@ -293,7 +294,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             }
             else
             {
-                await Pink("This way forward is not open yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestPortalHandler_WayForward));
             }
             return false;
         }

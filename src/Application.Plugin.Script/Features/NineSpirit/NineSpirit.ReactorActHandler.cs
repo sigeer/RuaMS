@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -15,7 +16,7 @@ namespace Application.Plugin.Script.Features.NineSpirit
         {
             await spawnNpc(2081008);
             await startQuest(100203);
-            await LightBlue("光芒闪烁间，龙蛋破壳而出，一只璀璨的幼龙降临世间！");
+            await this.LightBlue(this.GetTalkMessage(ScriptMessage.NineSpiritReactorActHandler_LightFlickers));
         }
     }
 }

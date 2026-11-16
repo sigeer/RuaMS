@@ -13,7 +13,7 @@ public class SetSlotCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.SetSlotCommand_Syntax));
+            await player.Yellow(ClientMessage.SetSlotCommand_Syntax);
             return;
         }
 
@@ -29,6 +29,6 @@ public class SetSlotCommand : CommandBase
             await player.gainSlots(i, slots - curSlots, true);
         }
 
-        await player.Yellow(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+        await player.Yellow(ClientMessage.Command_Done, player.getLastCommandMessage());
     }
 }

@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Players;
 using Application.Core.Game.Skills;
 using Application.Core.scripting.Events.Instances;
@@ -43,7 +44,7 @@ namespace Application.Plugin.Script.Features.RescueGaga
             await base.OnPlayerEntry(eim, chr);
 
             await chr.getAbstractPlayerInteraction().ShowEffect("event/space/start");
-            await chr.startMapEffect("请在时间限制内营救佳佳。", 5120027);
+            await chr.startMapEffect(chr.getAbstractPlayerInteraction().GetTalkMessage(ScriptMessage.RescueGagaEvent_PleaseRescue), 5120027);
         }
 
         public override async Task OnPlayerMapChanged(AbstractEventInstanceManager eim, Player player, int mapid)

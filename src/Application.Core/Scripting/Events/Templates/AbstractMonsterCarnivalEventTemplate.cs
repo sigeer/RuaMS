@@ -72,52 +72,11 @@ namespace Application.Core.scripting.Events.Templates
             }
             return [];
         }
-        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
-        {
-            switch (r)
-            {
-                case CreateInstanceResult.Success:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_EntryLobby));
-                case CreateInstanceResult.RequiredParty:
-                    return "在你加入战斗之前，你需要先创建一个队伍！";
-                case CreateInstanceResult.RequiredLeader:
-                    return "如果你想开始战斗，让#b队长#k和我对话。";
-                case CreateInstanceResult.Requirement:
-                    return "队伍不满足条件。";
-                case CreateInstanceResult.LobbyLimited:
-                case CreateInstanceResult.Disposed:
-                case CreateInstanceResult.Unknown:
-                default:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
-            }
-        }
-        public string? HandleJoinRequestResult(MCJoinInstanceResult r, IChannelClient c)
-        {
-            switch (r)
-            {
-                case MCJoinInstanceResult.Success:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomSent));
-
-                case MCJoinInstanceResult.RequiredParty:
-                    return "在你加入战斗之前，你需要先创建一个队伍！";
-
-                case MCJoinInstanceResult.RequiredLeader:
-                    return "如果你想开始战斗，让#b队长#k和我对话。";
-
-                case MCJoinInstanceResult.Requirement:
-                    return "队伍不满足条件。需要与被挑战的队伍人数一致！";
-
-                case MCJoinInstanceResult.NotInWaiting:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_FindError));
-
-                case MCJoinInstanceResult.AnthorRequest:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_ChallengeRoomAnswer));
-                case MCJoinInstanceResult.Unknown:
-
-                default:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CPQ_Error));
-            }
-        }
+        /// <summary>
+        /// 挑战另一支队伍（由被挑战方确认）的结果文案。
+        /// 怪物嘉年华的文案属于脚本插件，因此只在这里声明契约，具体文案由 <c>MonsterCarnivalRoomTemplate</c> 提供。
+        /// </summary>
+        public abstract string? HandleJoinRequestResult(MCJoinInstanceResult r, IChannelClient c);
         public virtual async Task OnBattleStarted(MonsterCarnivalEventInstanceManager pEim)
         {
             var map = await pEim.GetEventMap();
@@ -128,7 +87,7 @@ namespace Application.Core.scripting.Events.Templates
                 mc.setTeam(playerData.TeamFlag);
                 await mc.changeMap(map, map.GetInitPortal(playerData.TeamFlag));
                 await mc.SendPacket(PacketCreator.startMonsterCarnival(playerData, pEim.GetPlayerTeamData(mc.Id)!, pEim.GetPlayerEnemyTeamData(mc.Id)!));
-                await mc.LightBlue(nameof(ClientMessage.CPQ_Entry));
+                await mc.LightBlue(ClientMessage.CPQ_Entry);
             }
         }
         public override async Task OnPlayerUnregister(AbstractEventInstanceManager eim, Player chr)
@@ -143,7 +102,7 @@ namespace Application.Core.scripting.Events.Templates
                 case InstanceStatus.Prepare:
                 case InstanceStatus.InProgress:
                     var pEim = eim as MonsterCarnivalEventInstanceManager;
-                    await eim.Pink(nameof(ClientMessage.CPQ_PlayerExit), pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
+                    await eim.Pink(ClientMessage.CPQ_PlayerExit, pEim.GetPlayerTeam(chr.Id) == 0 ? "TeamRed" : "TeamBlue");
                     if (eim.InstanceStatus != InstanceStatus.InProgress)
                     {
                         await eim.DisposeAsync();
@@ -233,7 +192,7 @@ namespace Application.Core.scripting.Events.Templates
                     }
                     else
                     {
-                        await eim.Pink(nameof(ClientMessage.CPQ_ExtendTime));
+                        await eim.Pink(ClientMessage.CPQ_ExtendTime);
                         await eim.restartEventTimer(MapMonsterCarnivalTemplate.TimeExpand * 1000);
                     }
                     break;

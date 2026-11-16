@@ -35,7 +35,7 @@ public class AdminChatHandler : ChannelHandlerBase
             case 2:
                 {
                     // /alertm /alertmap, /noticem /noticemap, /slidem /slidemap
-                    await c.OnlinedCharacter.getMap().TypedMessage(type, message);
+                    await c.OnlinedCharacter.getMap().TypedMessage((NoticeType)type, message);
                     // ChatLogger.log(c, "Alert Map", message);
                     break;
                 }

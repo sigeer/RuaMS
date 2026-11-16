@@ -14,7 +14,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
         protected override Task HandleMessage(ProtoModel.DropMessageBroadcastProto msg)
         {
-            _server.PushChannelCommand(new InvokeMultiDropMessageCommand(msg.Receivers, msg.Type, msg.Message));
+            _server.PushChannelCommand(new InvokeMultiDropMessageCommand(msg.Receivers, (NoticeType)msg.Type, msg.Message));
             return Task.CompletedTask;
         }
 

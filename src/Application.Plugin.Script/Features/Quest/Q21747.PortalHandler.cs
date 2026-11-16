@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -22,7 +23,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("You don't have permission to access this area.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q21747PortalHandler_DontHave));
                 return false;
             }
         }

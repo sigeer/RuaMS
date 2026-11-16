@@ -13,13 +13,13 @@ public class LevelCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.LevelCommand_Syntax));
+            await player.Yellow(ClientMessage.LevelCommand_Syntax);
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var newlevel))
         {
-            await player.Yellow(nameof(ClientMessage.LevelCommand_Syntax));
+            await player.Yellow(ClientMessage.LevelCommand_Syntax);
             return;
         }
 

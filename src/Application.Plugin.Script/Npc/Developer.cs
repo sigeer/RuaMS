@@ -1,3 +1,5 @@
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Application.Plugin.Script.Npc
     {
         static readonly (string Title, string[] Features)[] DevFeatureTabs =
         [
-            ("组队任务",
+            ("Developer_Tab1",
             [
                 "HPQ/KPQ/LPQ/LMPQ/OPQ/APQ/EllinPQ/PiratePQ.",
                 "RnJPQ/HorntailPQ/TreasurePQ/ElnathPQ/HolidayPQ.",
@@ -24,7 +26,7 @@ namespace Application.Plugin.Script.Npc
                 "Filled up missing obligatory event script methods.",
                 "Secured uniquety of active lobby-name instances.",
             ]),
-            ("技能",
+            ("Developer_Tab2",
             [
                 "Reviewed many skills, such as Steal and M. Door.",
                 "Heal GMS-like: fixed HP gain & Heal skill packet.",
@@ -37,7 +39,7 @@ namespace Application.Plugin.Script.Npc
                 "HP/MP consumption from skills triggers pet autopot.",
                 "Elemental weapon imbue visibility for other players.",
             ]),
-            ("任务",
+            ("Developer_Tab3",
             [
                 "Doll house quest functional.",
                 "Q. items required to start quests shows up properly.",
@@ -53,7 +55,7 @@ namespace Application.Plugin.Script.Npc
                 "Cleared issue with player movement during NPC talk.",
                 "Reviewed usage of quest progress data as requisite.",
             ]),
-            ("玩家社交",
+            ("Developer_Tab4",
             [
                 "Party Search fully functional.",
                 "Guild and Alliance system fully functional.",
@@ -75,7 +77,7 @@ namespace Application.Plugin.Script.Npc
                 "Trade complete using handshake synchronization.",
                 "GMS-like trade results displaying after transactions.",
             ]),
-            ("现金道具与物品",
+            ("Developer_Tab5",
             [
                 "EXP/DROP/Cosmetic Coupons.",
                 "EXP/DROP Coupon as buff effect during active time.",
@@ -105,7 +107,7 @@ namespace Application.Plugin.Script.Npc
                 "Maple Life.",
                 "EXP Increase.",
             ]),
-            ("怪物、地图与反应堆",
+            ("Developer_Tab6",
             [
                 "Every monsterbook card is now droppable.",
                 "Added meso drop data for many missing mobs.",
@@ -142,7 +144,7 @@ namespace Application.Plugin.Script.Npc
                 "Continent separated global drops.",
                 "Giant Cake boss drops s. bags and Maple items.",
             ]),
-            ("组队任务机制",
+            ("Developer_Tab7",
             [
                 "Advanced and well-safe PQ registration system.",
                 "Lobby system: Same channel, multiple PQ instances.",
@@ -151,7 +153,7 @@ namespace Application.Plugin.Script.Npc
                 "EIM Pool system: optimized instance loadouts.",
                 "Recall system: players can rejoin PQ after d/c.",
             ]),
-            ("玩家机制",
+            ("Developer_Tab8",
             [
                 "Adventurer Mount quests functional.",
                 "All Equipment levels up.",
@@ -165,7 +167,7 @@ namespace Application.Plugin.Script.Npc
                 "Player buffs with conditional active effects.",
                 "Rock-paper-scissors minigame - thanks Arnah!",
             ]),
-            ("服务端机制",
+            ("Developer_Tab9",
             [
                 "Multi-worlds.",
                 "Each world can hold it's own rates from server bootup.",
@@ -207,7 +209,7 @@ namespace Application.Plugin.Script.Npc
                 "Automatic account registration - thanks shavit!",
                 "Any NPC scriptable - thanks GabrielSin!",
             ]),
-            ("指令",
+            ("Developer_Tab10",
             [
                 "Spawn Zakum/Horntail/Pinkbean.",
                 "Permanent NPCs & mobs.",
@@ -217,7 +219,7 @@ namespace Application.Plugin.Script.Npc
                 "Revamped command files layout - thanks Arthur L!",
                 "Improved 'Search' performance & added map search.",
             ]),
-            ("自定义 NPC",
+            ("Developer_Tab11",
             [
                 "Spiegelmann: automatized rock-refiner.",
                 "Asia: scroll & rarities shop NPC.",
@@ -228,7 +230,7 @@ namespace Application.Plugin.Script.Npc
                 "Coco & Ace of Hearts: C. scroll crafters.",
                 "Barry (MapleTV): fill book & exchange items for scroll.",
             ]),
-            ("客户端改动",
+            ("Developer_Tab12",
             [
                 "Removed the 'n' NPC dialog issue.",
                 "Removed caps for MATK, WMDEF, ACC and AVOID.",
@@ -241,7 +243,7 @@ namespace Application.Plugin.Script.Npc
                 "Removed 'GMs can't attack' - thanks kevintjuh93!",
                 "Removed 'Gained a level!' - thanks PrinceReborn!",
             ]),
-            ("项目",
+            ("Developer_Tab13",
             [
                 "Organized project code.",
                 "Highly updated drop data.",
@@ -270,7 +272,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9977777 — 开发者总部信息 NPC
         public async Task rank_developer()
         {
-            var menu = "HeavenMS 的开发历时 4 年，延续自 Solaxia 的成果。开发过程中持续得到了数十位贡献者与支持者的帮助（真心感谢各位的信任！）。\r\n\r\n下面按主题列出了当前服务端已实现的特性：\r\n\r\n";
+            var menu = this.GetTalkMessage(ScriptMessage.Developer_Intro);
             for (var i = 0; i < DevFeatureTabs.Length; i++)
             {
                 menu += $"#L{i}##b{DevFeatureTabs[i].Title}#k#l\r\n";

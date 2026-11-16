@@ -15,7 +15,7 @@ public class WarpMapCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.WarpMapCommand_Syntax));
+            await player.Yellow(ClientMessage.WarpMapCommand_Syntax);
             return;
         }
 
@@ -30,7 +30,7 @@ public class WarpMapCommand : CommandBase
                 }
                 else if (findResult.MatchedItems.Count > 0)
                 {
-                    var messages = new StringBuilder(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem)));
+                    var messages = new StringBuilder(c.CurrentCulture.GetMessageByKey(ClientMessage.FindSimilarItem));
                     for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
                         var item = findResult.MatchedItems[i];
@@ -50,7 +50,7 @@ public class WarpMapCommand : CommandBase
                 }
                 else
                 {
-                    await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+                    await player.Yellow(ClientMessage.MapNotFound, paramsValue[0]);
                     return;
                 }
             }
@@ -60,7 +60,7 @@ public class WarpMapCommand : CommandBase
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
-            await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+            await player.Yellow(ClientMessage.MapNotFound, paramsValue[0]);
         }
     }
 
@@ -70,7 +70,7 @@ public class WarpMapCommand : CommandBase
         var target = await c.getChannelServer().getMapFactory().getMap(mapId);
         if (target == null)
         {
-            await player.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
+            await player.Yellow(ClientMessage.MapNotFound, mapId.ToString());
             return;
         }
         var characters = player.getMap().getAllPlayers();

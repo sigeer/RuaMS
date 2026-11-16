@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -26,7 +27,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("This pipe seems too dark to venture inside.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q7770PortalHandler_PipeSeems));
                 return false;
             }
         }

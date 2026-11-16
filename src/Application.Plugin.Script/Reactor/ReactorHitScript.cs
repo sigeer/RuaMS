@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -332,7 +333,7 @@ namespace Application.Plugin.Script
 
             await weakenAreaBoss(
                 6090000,
-                "As the tombstone lit up and vanished, Lich lost all his magic abilities."
+                this.GetTalkMessage(ScriptMessage.Weaken_LichSealBroken)
             );
         }
 
@@ -344,7 +345,7 @@ namespace Application.Plugin.Script
 
             await weakenAreaBoss(
                 6090000,
-                "As the tombstone lit up and vanished, Lich lost all his magic abilities."
+                this.GetTalkMessage(ScriptMessage.Weaken_LichSealBroken)
             );
         }
 
@@ -356,7 +357,7 @@ namespace Application.Plugin.Script
 
             await weakenAreaBoss(
                 6090000,
-                "As the tombstone lit up and vanished, Lich lost all his magic abilities."
+                this.GetTalkMessage(ScriptMessage.Weaken_LichSealBroken)
             );
         }
 
@@ -368,7 +369,7 @@ namespace Application.Plugin.Script
 
             await weakenAreaBoss(
                 6090000,
-                "As the tombstone lit up and vanished, Lich lost all his magic abilities."
+                this.GetTalkMessage(ScriptMessage.Weaken_LichSealBroken)
             );
         }
 

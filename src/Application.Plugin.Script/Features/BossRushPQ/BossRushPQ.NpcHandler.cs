@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.BossRushPQ
 {
@@ -45,16 +47,16 @@ namespace Application.Plugin.Script.Features.BossRushPQ
 
                 if (isEventLeader())
                 {
-                    await SayOK("你的队伍完成了如此惊人的壮举，走到了这一步，#b你已经打败了所有的boss#k，恭喜！现在我将给你们奖励，因为你们即将被传送出去…");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_PartyCompleted));
                 }
                 else
                 {
-                    await SayOK("在这个副本中#b打败所有的boss#k，恭喜你！现在你将获得与你在这里表现相匹配的奖品，我会将你传送出去。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_DefeatingAll));
                 }
 
                 if (await eim.GiveClearReward(getPlayer(), 6) == ClaimRewardResult.BagFull)
                 {
-                    await SayOK("请提前在你的背包所有标签中安排一个空位。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_PleaseArrange));
                     return;
                 }
 
@@ -67,7 +69,7 @@ namespace Application.Plugin.Script.Features.BossRushPQ
                     var eim = getPlayer().getEventInstance();
                     if (eim != null && eim.isEventTeamTogether())
                     {
-                        if (await AskYesNo("你的队伍准备好继续前进到下一阶段了吗？如果你认为已经完成了，就走过传送门，现在是时候了。现在，你们真的想要继续吗？"))
+                        if (await AskYesNo(this.GetTalkMessage(ScriptMessage.BossRush_PartyReady)))
                         {
                             var restSpot = ((getMapId() - 1) % 5) + 1;
                             await eim.restartEventTimer(restSpot * 4 * 60000);
@@ -76,17 +78,17 @@ namespace Application.Plugin.Script.Features.BossRushPQ
                     }
                     else
                     {
-                        await SayOK("请等待您的队伍重新集合后再继续。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_PleaseWait));
                     }
                 }
                 else
                 {
-                    await SayOK("等待你的队长发出信号让我继续。如果你感觉不太好，想要退出，走过传送门，你将被传送出去，并且你会因为走到这一步而获得奖品。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_WaitParty));
                 }
             }
             else if (state == 1)
             {
-                if (await AskYesNo("你希望放弃这个副本吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.BossRush_WishAbandon)))
                 {
                     await warp(970030000);
                 }
@@ -95,32 +97,20 @@ namespace Application.Plugin.Script.Features.BossRushPQ
             {
                 var em = GetEventManager(BossRushPQFeature.EventName);
                 var option = await AskMenu(
-                    "#e#b<组队任务：首领突袭>\r\n#k#n" + em.Template.GetRequirementDescription(c) +
-                    "\r\n\r\n你想要和队友合作完成远征任务，还是勇敢到足以独自完成？让你的#b队伍领袖#k与我交谈或者自己创建一个队伍。",
+                    this.GetTalkMessage(ScriptMessage.BossRush_PartyQuestBoss, em.Template.GetRequirementDescription(c)),
                     [
-                        "我想参加组队任务。",
-                        "我想了解更多详情。"
+                        this.GetTalkMessage(ScriptMessage.PartyQuest_Start),
+                        this.GetTalkMessage(ScriptMessage.PartyQuest_MoreInfo)
                     ]);
 
                 if (option == 0)
                 {
-                    if (getParty() == null)
-                    {
-                        await SayOK("只有当你加入一个队伍时，你才能参加派对任务。");
-                    }
-                    else if (!isLeader())
-                    {
-                        await SayOK("你的队长必须与我交谈才能开始这个组队任务。");
-                    }
-                    else
-                    {
-                        var r = await em.StartInstance(getPlayer());
-                        await SayOK(em.HandleCreateInstanceResult(r, c));
-                    }
+                    var r = await em.StartInstance(getPlayer());
+                    await SayOK(em.HandleCreateInstanceResult(r, c));
                 }
                 else
                 {
-                    await SayOK("#e#b<组队任务：Boss Rush>#k#n\r\n来自世界各地的勇敢冒险者来到这里，测试他们在战斗中的技能和能力，面对来自冒险岛的更强大的boss。与其他冒险者联手或者独自承担所有的压力并获得所有的荣耀，这取决于你。奖励根据冒险者们的进展程度给予，而额外奖品可能会随机给予队伍中的一名成员，所有这些都在远征结束时进行分配。\r\n\r\n这个任务还支持#b多个大厅，以匹配不同团队等级的玩家#k：如果你想更快地为你的团队设置boss rush，可以与等级较低的玩家组队。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.BossRush_PartyQuest));
                 }
             }
         }

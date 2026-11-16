@@ -16,7 +16,7 @@ public class UnJailCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.UnJailCommand_Syntax));
+            await player.Yellow(ClientMessage.UnJailCommand_Syntax);
             return;
         }
 

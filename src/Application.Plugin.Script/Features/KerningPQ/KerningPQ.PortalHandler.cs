@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -37,7 +38,7 @@ namespace Application.Plugin.Script.Features.KerningPQ
 
             if (!eim.ClearedMaps.ContainsKey(getMapId()))
             {
-                await Pink("The portal is not opened yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
                 return false;
             }
 

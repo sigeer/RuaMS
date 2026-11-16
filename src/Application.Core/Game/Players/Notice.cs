@@ -1,63 +1,66 @@
 using Application.Core.scripting.npc;
-using Application.Shared.MapObjects.Players;
 using tools;
 
 namespace Application.Core.Game.Players
 {
     public partial class Player
     {
-        public async Task TypedMessage(int type, string messageKey, params string[] param)
+        public async Task TypedMessage(NoticeType type, string? messageKey, params object?[] param)
         {
             if (string.IsNullOrEmpty(messageKey))
             {
                 return;
             }
 
-            if (type == -1)
+            var formatedMessage = GetMessageByKey(messageKey, param);
+            if (string.IsNullOrEmpty(formatedMessage))
             {
-                await SendPacket(PacketCommon.SendYellowTip(GetMessageByKey(messageKey, param)));
+                return;
             }
-            else if (type == -2)
+            if (type == NoticeType.Yellow)
             {
-                await SendPacket(PacketCreator.earnTitleMessage(GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCommon.SendYellowTip(formatedMessage));
             }
-            else if (type == -3)
+            else if (type == NoticeType.EarnTitle)
             {
-                await Dialog(messageKey, param: param);
+                await SendPacket(PacketCreator.earnTitleMessage(formatedMessage));
             }
-            else if (type == 4)
+            else if (type == NoticeType.NpcTalk)
             {
-                await SendPacket(PacketCommon.serverMessage(GetMessageByKey(messageKey, param)));
+                await TempConversation.CreateScope(Client, async ctx =>
+                {
+                    await ctx.SayOK(formatedMessage);
+                }, NpcId.MAPLE_ADMINISTRATOR);
+            }
+            else if (type == NoticeType.TopScrolling)
+            {
+                await SendPacket(PacketCommon.serverMessage(formatedMessage));
             }
             else
             {
-                await SendPacket(PacketCommon.serverNotice(type, GetMessageByKey(messageKey, param)));
+                await SendPacket(PacketCommon.serverNotice((int)type, formatedMessage));
             }
         }
-        public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
-
-        public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
-
-        public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
-
-        public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
-
-        public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
-
-        public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-        public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-        public async Task Dialog(string key, int npcId = NpcId.MAPLE_ADMINISTRATOR, params string[] param)
+        public async Task Dialog(string? key, int npcId = NpcId.MAPLE_ADMINISTRATOR, params object?[] param)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                return;
+            }
+
+            var formatedMessage = GetMessageByKey(key, param);
+            if (string.IsNullOrEmpty(formatedMessage))
+            {
+                return;
+            }
+
             await TempConversation.CreateScope(Client, async ctx =>
             {
-                await ctx.SayOK(GetMessageByKey(key, param));
+                await ctx.SayOK(formatedMessage);
             }, npcId);
         }
 
-        public Task LightBlue(Func<IClientCulture, string> action)
-        {
-            return SendPacket(PacketCommon.serverNotice(6, action(Client.CurrentCulture)));
-        }
-
+        public string? GetMessageByCategory(string category, string? key, params object?[] paramsValue)
+            => Client.CurrentCulture.GetMessageByCategory(category, key, paramsValue);
     }
 }

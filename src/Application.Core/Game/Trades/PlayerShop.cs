@@ -176,7 +176,7 @@ public class PlayerShop : AbstractMapObject, IPlayerShop
 
                 if (!Inventory.checkSpot(chr, iitem))
                 {
-                    await chr.Popup(nameof(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull));
+                    await chr.Popup(ClientMessage.PlayerShop_TakeItemBackFail_InventoryFull);
                     await chr.SendPacket(PacketCreator.enableActions());
                     return;
                 }

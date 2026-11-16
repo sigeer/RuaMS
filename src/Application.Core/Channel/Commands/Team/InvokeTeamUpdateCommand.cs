@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Commands
                         await operatorPlayer.SendPacket(TeamPacketCreator.TeamFullCapacity());
                     // 队伍已解散
                     if (errorCode == UpdateTeamCheckResult.TeamNotExsited)
-                        await operatorPlayer.Pink(nameof(ClientMessage.Team_TeamNotFound));
+                        await operatorPlayer.Pink(ClientMessage.Team_TeamNotFound);
                     // 已有队伍
                     if (errorCode == UpdateTeamCheckResult.Join_HasTeam)
                         await operatorPlayer.SendPacket(TeamPacketCreator.AlreadInTeam());

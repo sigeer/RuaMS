@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -19,7 +20,7 @@ namespace Application.Plugin.Script.Features.Magician4thJob
                 return await TryStartSoloQuest(Magician4thJobEvent6132.QuestIdValue);
             }
 
-            await Pink("A mysterious force won't let you in.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
             return false;
         }
 
@@ -36,7 +37,7 @@ namespace Application.Plugin.Script.Features.Magician4thJob
                 return true;
             }
 
-            await Pink("A mysterious force won't let you in.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
             return false;
         }
 
@@ -56,7 +57,7 @@ namespace Application.Plugin.Script.Features.Magician4thJob
                 }
                 else
                 {
-                    await Pink("Make room on your ETC to receive the quest item.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Magician4thJobPortalHandler_MakeRoom));
                     return false;
                 }
             }

@@ -1,4 +1,5 @@
 using Application.Core.Client;
+using Application.Resources.Messages;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
@@ -68,11 +69,11 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                 case CreateInstanceResult.Success:
                     return null;
                 case CreateInstanceResult.LobbyLimited:
-                    return "已经满员了。稍后再试一次。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.ContiMoveBase_WagonAlready);
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
                 default:
-                    return "未知错误";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_UnknownError);
             }
         }
     }

@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -14,7 +15,7 @@ namespace Application.Plugin.Script.Features.Quest
         // Reactor: 2200000 
         public async Task go221024400()
         {
-            await Pink("差一点就成功了！下次再挑战吧！");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Q3230ReactorActHandler_CloseTry));
             await warp(221024400, 1);
         }
 

@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
 using Application.Shared.GameProps;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -21,7 +23,7 @@ namespace Application.Plugin.Script.Npc
 
             if (isQuestStarted(3900) && getQuestProgressInt(3900) != 5)
             {
-                await SayOK("#b(你喝了绿洲中的水，感到精神焕发。)");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103000_OasisWater));
                 await setQuestProgress(3900, 5);
             }
             else if (isQuestCompleted(3938))
@@ -31,12 +33,12 @@ namespace Application.Plugin.Script.Npc
                     if (!haveItem(2210005) && !isTigunMorphed())
                     {
                         await gainItem(2210005, 1);
-                        await SayOK("你找到了一缕头发（可能是Tigun的）在水中漂浮着，你捉住了它。记得上次#bJano#k是怎么做的，你制作了一个新的#t2210005#。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103000_FoundHair));
                     }
                 }
                 else
                 {
-                    await SayOK("你没有可用的使用槽位。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103000_NoUseSlot));
                 }
             }
             else if (isQuestStarted(3934) || (isQuestCompleted(3934) && !isQuestCompleted(3935)))
@@ -46,12 +48,12 @@ namespace Application.Plugin.Script.Npc
                     if (!haveItem(2210005) && !isTigunMorphed())
                     {
                         await gainItem(2210005, 1);
-                        await SayOK("你成功找到了一只在河流上漂浮的奇怪瓶子。它看起来像是一个模仿城堡卫兵之一的变身瓶，也许你可以用它自由地在城堡内漫游。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103000_FoundFlask));
                     }
                 }
                 else
                 {
-                    await SayOK("你发现了一只在河流上漂浮的奇怪烧瓶。但你决定忽略它，因为你没有可用的使用槽。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103000_IgnoredFlask));
                 }
             }
         }
@@ -61,7 +63,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3927))
             {
-                await SayNext("如果我有一把铁锤和一把匕首，一张弓和一支箭……");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2103001_HammerAndDagger));
                 await setQuestProgress(3927, 1);
             }
         }
@@ -74,12 +76,12 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(4031578, 1))
                 {
-                    await SayOK("你刚刚偷走了戒指。尽快清理这个区域！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103002_StoleRing));
                     await gainItem(4031578, 1);
                 }
                 else
                 {
-                    await SayOK("你没有可用的ETC槽。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103002_NoEtcSlot));
                 }
             }
         }

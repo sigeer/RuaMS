@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
@@ -70,7 +71,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 return true;
             }
 
-            await Pink("The portal is not opened yet.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
             return false;
         }
 
@@ -85,7 +86,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 return true;
             }
 
-            await Pink("The portal is not opened yet.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
             return false;
         }
 
@@ -105,7 +106,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 return true;
             }
 
-            await Pink("The portal is not opened yet.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
             return false;
         }
 
@@ -125,7 +126,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 return true;
             }
 
-            await Pink("The portal is not opened yet.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
             return false;
         }
 
@@ -138,7 +139,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
                 || getMap().getReactorByName("sMob4")?.getState() < 1
                 || getMap().countMonsters() != 0)
             {
-                await Pink("The portal is not opened yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
                 return false;
             }
 

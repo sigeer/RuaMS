@@ -15,6 +15,6 @@ public class DisposeCommand : CommandBase
         {
             await c.NPCConversationManager.DisposeAsync();
         }
-        await c.OnlinedCharacter.Pink(nameof(ClientMessage.DisposeCommand_Message1));
+        await c.OnlinedCharacter.Pink(ClientMessage.DisposeCommand_Message1);
     }
 }

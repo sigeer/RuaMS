@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.EllinPQ
 {
@@ -15,8 +17,11 @@ namespace Application.Plugin.Script.Features.EllinPQ
         public async Task party6_entry()
         {
             var em = GetEventManager(EllinPQFeature.EventName);
-            var option = await AskMenu("#e#b<组队任务：毒雾森林>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n你想要组建或加入一个队伍来解决#b毒雾森林#k的谜题吗？让你的#b队长#k和我交谈或者自己组建一个队伍。",
-                ["我想参加组队任务。", "我想了解更多细节。", "我想要领取奖励。"]);
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.EllinPQ_PartyQuest) + em.Template.GetRequirementDescription(c) + this.GetTalkMessage(ScriptMessage.EllinPQ_LikeAssemble),
+                [
+                this.GetTalkMessage(ScriptMessage.PartyQuest_Start),
+                this.GetTalkMessage(ScriptMessage.PartyQuest_MoreInfo),
+                this.GetTalkMessage(ScriptMessage.EllinPQ_LikeClaim)]);
 
             switch (option)
             {
@@ -38,12 +43,12 @@ namespace Application.Plugin.Script.Features.EllinPQ
             var curStage = eim.ClearedMaps.GetValueOrDefault(getMapId(), StageStatus.NotStarted);
             if (getMapId() == 930000000)
             {
-                await SayNext("Welcome to the Forest of Poison Haze. Proceed by entering the portal.");
+                await SayNext(this.GetTalkMessage(ScriptMessage.EllinPQ_StageIntro));
                 return;
             }
             else if (getMapId() == 930000100)
             {
-                await SayNext("The #b#o9300172##k have taken the area. We have to eliminate all these contaminated monsters to proceed further.");
+                await SayNext(this.GetTalkMessage(ScriptMessage.EllinPQ_ClearContaminated));
                 return;
             }
 
@@ -55,7 +60,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
                     eim.ClearedMaps[getMapId()] = StageStatus.Completed;
                 }
 
-                await SayNext("哦，太好了，你找到我了。我们现在可以在森林里继续前进了。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.EllinPQ_GreatFound));
                 await eim.warpEventTeam(930000400);
             }
             else if (getMapId() == 930000400)
@@ -64,7 +69,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
                 {
                     if (isEventLeader())
                     {
-                        await SayNext("哦，你带来了它们！我们现在可以继续了，我们要继续吗？");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.EllinPQ_HaveBrought));
 
                         if (haveItem(4001169, 20) && isEventLeader())
                         {
@@ -75,7 +80,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
                     }
                     else
                     {
-                        await SayOK("你已经带来了他们，但你不是队长！请让队长把#t4001169#给我……");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.EllinPQ_HaveBroughtYoure));
                         return;
                     }
                 }
@@ -84,13 +89,13 @@ namespace Application.Plugin.Script.Features.EllinPQ
                     if (canHold(2270004, 10))
                     {
                         await gainItem(2270004, 10);
-                        await SayOK("拿10个#t2270004#。首先，#r削弱#o9300174#的力量，一旦它的生命值降低，使用我给你的物品来捕捉它们。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.EllinPQ_TakeFirst));
                         return;
 
                     }
                     else
                     {
-                        await SayOK("在领取#t2270004#之前，请确保你的使用物品栏有足够的空间！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.EllinPQ_PleaseMake));
                         return;
                     }
                 }
@@ -105,7 +110,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
         // Npc: 2133002 
         public async Task party6_giveUp()
         {
-            if (await AskYesNo("你想要退出这个副本吗？你的队友可能也需要放弃，所以要考虑一下。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.EllinPQ_LikeExit)))
             {
                 await WarpOut();
             }
@@ -115,14 +120,14 @@ namespace Application.Plugin.Script.Features.EllinPQ
         {
             if (!haveItem(4001163) || !isEventLeader())
             {
-                if (await AskYesNo("让你的队长在这里给我看#t4001163#。\r\n\r\n或者你想要#r离开这片森林#k吗？现在离开意味着抛弃你的伙伴，记住这一点。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.EllinPQ_LetParty)))
                 {
                     await WarpOut();
                 }
             }
             else
             {
-                await SayNext("太好了，你有了#t4001163#。我会带你们去通往石头祭坛的路。跟我来吧。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.EllinPQ_GreatHave));
                 await GetEventInstanceTrust().warpEventTeam(930000600);
             }
         }

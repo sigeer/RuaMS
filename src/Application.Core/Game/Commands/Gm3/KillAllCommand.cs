@@ -12,6 +12,6 @@ public class KillAllCommand : CommandBase
     public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         var count = await AdminManager.KillAllMonster(c.OnlinedCharacter);
-        await c.OnlinedCharacter.Pink(nameof(ClientMessage.KillAllCommand_MonsterKilled), count.ToString());
+        await c.OnlinedCharacter.Pink(ClientMessage.KillAllCommand_MonsterKilled, count.ToString());
     }
 }

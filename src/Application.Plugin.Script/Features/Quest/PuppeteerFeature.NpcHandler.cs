@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -22,13 +24,13 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (isQuestStarted(21728))
             {
-                await SayOK("你寻找着线索，试图找到操纵者的蛛丝马迹，但似乎有一股强大的力量挡住了你的去路……最好返回找 #b#p1061019##k。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Puppet_BlockedPath));
                 await setQuestProgress(21728, 21761, 0);
                 return;
             }
 
-            var pwd = await AskText("一个可疑的声音打破了沉默。 #b暗号#k ！");
-            if (pwd == "弗朗西斯是天才傀儡师！")
+            var pwd = await AskText(this.GetTalkMessage(ScriptMessage.Puppet_PasswordPrompt));
+            if (pwd == this.GetTalkMessage(ScriptMessage.Puppet_Password))
             {
                 if (isQuestStarted(PuppeteerFeature.PuppeteerCygnus) && getQuestProgressInt(PuppeteerFeature.PuppeteerCygnus, 9300285) == 0)
                 {
@@ -40,19 +42,19 @@ namespace Application.Plugin.Script.Features.Quest
                 }
                 else
                 {
-                    await Pink("尽管你说出了正确的答案，但一些神秘的力量正在阻挡进入的道路。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Puppet_RightAnswerBlocked));
                 }
             }
             else
             {
-                await SayOK("#r错误！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103008_Error));
             }
         }
 
         // Npc: 1063016 
         public async Task DollWayKeeper1()
         {
-            if (await AskYesNo("你要退出这个试炼吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Puppet_ExitTrial)))
             {
                 await warp(105040201, 2);
             }
@@ -61,12 +63,12 @@ namespace Application.Plugin.Script.Features.Quest
         // Npc: 1063017 
         public async Task DollWayKeeper2()
         {
-            if (await AskYesNo("欢迎回来，弗朗西斯主人。要进入主人的洞窟吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Puppet_AheadAwaits)))
             {
                 // 925020010？
                 if ((await getMap(910510202)).getAllPlayers().Count > 0)
                 {
-                    await SayOK("有人在里面了。请稍后再进入。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Puppet_SomeoneAlready));
                 }
                 else
                 {

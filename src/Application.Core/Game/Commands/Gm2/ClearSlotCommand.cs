@@ -14,7 +14,7 @@ public class ClearSlotCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.ClearSlotCommand_Syntax));
+            await player.Yellow(ClientMessage.ClearSlotCommand_Syntax);
             return;
         }
 
@@ -27,30 +27,30 @@ public class ClearSlotCommand : CommandBase
                 await RemovePlayerSlot(c, InventoryType.ETC);
                 await RemovePlayerSlot(c, InventoryType.SETUP);
                 await RemovePlayerSlot(c, InventoryType.CASH);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_AllCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_AllCleared);
                 break;
             case "equip":
                 await RemovePlayerSlot(c, InventoryType.EQUIP);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_EquipCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_EquipCleared);
                 break;
             case "use":
                 await RemovePlayerSlot(c, InventoryType.USE);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_ConsumeCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_ConsumeCleared);
                 break;
             case "setup":
                 await RemovePlayerSlot(c, InventoryType.SETUP);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_InstallCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_InstallCleared);
                 break;
             case "etc":
                 await RemovePlayerSlot(c, InventoryType.ETC);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_EtcCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_EtcCleared);
                 break;
             case "cash":
                 await RemovePlayerSlot(c, InventoryType.CASH);
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_CashCleared));
+                await player.Yellow(ClientMessage.ClearSlotCommand_CashCleared);
                 break;
             default:
-                await player.Yellow(nameof(ClientMessage.ClearSlotCommand_Syntax));
+                await player.Yellow(ClientMessage.ClearSlotCommand_Syntax);
                 break;
         }
     }

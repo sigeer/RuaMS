@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -12,7 +14,7 @@ namespace Application.Plugin.Script.Features.Quest
         // Quest: 21739 
         public async Task q21739e()
         {
-            await SayNext("那么，你打败巨人了吗？哦，黑色之翼卧底？他抢走了天空之城的封印石？！哦，不。太可怕了！我们需要尽快想个对策！把情况告诉明珠港的特鲁。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Q21739_HaveDefeated));
             await forceCompleteQuest();
             await gainExp(29500);
         }

@@ -16,7 +16,7 @@ public class JailCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.JailCommand_Syntax));
+            await player.Yellow(ClientMessage.JailCommand_Syntax);
             return;
         }
 
@@ -25,7 +25,7 @@ public class JailCommand : CommandBase
         {
             if (!int.TryParse(paramsValue[1], out minutesJailed))
             {
-                await player.Yellow(nameof(ClientMessage.JailCommand_Syntax));
+                await player.Yellow(ClientMessage.JailCommand_Syntax);
                 return;
             }
         }

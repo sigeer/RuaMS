@@ -26,14 +26,14 @@ namespace Application.Core.Channel.ServerData
         {
             if (player.BuddyList.isFull())
             {
-                await player.Popup(nameof(ClientMessage.Buddy_Full));
+                await player.Popup(ClientMessage.Buddy_Full);
                 return;
             }
 
             var ble = player.BuddyList.GetByName(addName);
             if (ble != null && addGroup == ble.Group)
             {
-                await player.Popup(nameof(ClientMessage.Buddy_Exsited), ble.Name);
+                await player.Popup(ClientMessage.Buddy_Exsited, ble.Name);
                 return;
             }
 

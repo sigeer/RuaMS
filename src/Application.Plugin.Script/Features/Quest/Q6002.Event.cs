@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
@@ -21,7 +22,7 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (mob.getHp() < mob.getMaxHp() / 2.0)
             {
-                await eim.Notice("小心！外星人想抓走猪猪去烤乳猪！快挡住它们！");
+                await eim.Notice(ScriptMessageCategories.ScriptMessage, ScriptMessage.Q6002Event_WatchOut);
             }
         }
 

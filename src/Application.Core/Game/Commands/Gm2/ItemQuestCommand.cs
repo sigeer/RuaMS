@@ -22,7 +22,7 @@ namespace Application.Core.Game.Commands.Gm2
                 var matchedQuestList = client.CurrentCulture.StringProvider.Search(StringCategory.Quest, questInput).OfType<StringQuestTemplate>().ToList();
                 if (matchedQuestList.Count == 0)
                 {
-                    await client.OnlinedCharacter.Yellow(nameof(ClientMessage.QuestNotFound), questInput);
+                    await client.OnlinedCharacter.Yellow(ClientMessage.QuestNotFound, questInput);
                 }
                 else if (matchedQuestList.Count == 1)
                 {

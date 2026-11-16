@@ -20,7 +20,7 @@ public class ItemCommand : CommandBase
 
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.ItemCommand_Syntax));
+            await player.Yellow(ClientMessage.ItemCommand_Syntax);
             return;
         }
 
@@ -51,7 +51,7 @@ public class ItemCommand : CommandBase
             }
             else
             {
-                await player.Yellow(nameof(ClientMessage.ItemNotFound), paramsValue[0]);
+                await player.Yellow(ClientMessage.ItemNotFound, paramsValue[0]);
                 return;
             }
         }
@@ -65,7 +65,7 @@ public class ItemCommand : CommandBase
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            await player.Yellow(nameof(ClientMessage.ItemCommand_CannotCreateCashItem));
+            await player.Yellow(ClientMessage.ItemCommand_CannotCreateCashItem);
             return;
         }
 

@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -12,7 +14,7 @@ namespace Application.Plugin.Script.Features.Quest
         // Quest: 21746 
         public async Task q21746s()
         {
-            await SayNext("封印石......那是很久很久以前，由武陵看管的东西......难道说觊觎它的人又出现了......");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Q21746_SealStone));
 
             await TryStartSoloQuest(getQuest(), forceStartQuest);
         }

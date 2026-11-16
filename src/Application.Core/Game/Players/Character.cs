@@ -60,6 +60,7 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Numerics;
 using tools;
+using Application.Shared.MapObjects.Players;
 
 namespace Application.Core.Game.Players;
 
@@ -507,7 +508,7 @@ public partial class Player
                 if (InventoryManipulator.isSandboxItem(item))
                 {
                     await InventoryManipulator.removeFromSlot(Client, invType, item.getPosition(), item.getQuantity(), false);
-                    await Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
+                    await this.Pink("[" + Client.CurrentCulture.GetItemName(item.getItemId()) + "] has passed its trial conditions and will be removed from your inventory.");
                 }
             }
         }
@@ -1158,7 +1159,7 @@ public partial class Player
         await SendPacket(PacketCommon.serverNotice(type, message));
     }
 
-    public async Task Debug(int type, string message)
+    public async Task Debug(NoticeType type, string message)
     {
         if (isGM())
         {
@@ -2282,12 +2283,12 @@ public partial class Player
                         await gainSlots(i, 4, true);
                     }
 
-                    await Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
+                    await this.Yellow("You reached level " + Level + ". Congratulations! As a token of your success, your inventory has been expanded a little bit.");
                 }
             }
             if (YamlConfig.config.server.USE_ADD_RATES_BY_LEVEL == true)
             {
-                await Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
+                await this.Yellow("You managed to get level " + Level + "! Getting experience and items seems a little easier now, huh?");
             }
         }
 
@@ -2371,7 +2372,7 @@ public partial class Player
         await updateRemainingSp(remainingSp, GameConstants.getSkillBook(JobId));
     }
 
-    public string GetMessageByKey(string key, params string[] paramsValue)
+    public string? GetMessageByKey(string? key, params object?[] paramsValue)
     {
         return Client.CurrentCulture.GetMessageByKey(key, paramsValue);
     }

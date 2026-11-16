@@ -220,7 +220,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
             if (map == null || map.countPlayers() <= 0)
                 return;
 
-            await eim.Pink(nameof(ClientMessage.Event_CWKPQ_DetectedByGuardian));
+            await eim.Pink(ScriptMessage.Event_CWKPQ_DetectedByGuardian);
 
             for (var i = 0; i < 20; i++)
             {
@@ -231,7 +231,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
         public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
-            await eim.Pink(nameof(ClientMessage.Expedition_EnterMap), chr.Name);
+            await eim.Pink(ClientMessage.Expedition_EnterMap, chr.Name);
 
             var map = await eim.getInstanceMap(ENTRY_MAP + eim.getIntProperty("current_instance") * 100);
             if (map == null)

@@ -18,7 +18,7 @@ public class ClearCacheCommand : ParamsCommandBase
         if (p.Equals("quest", StringComparison.OrdinalIgnoreCase))
         {
             QuestFactory.Instance.clearCache();
-            await c.OnlinedCharacter.Yellow(nameof(ClientMessage.Command_Done), c.OnlinedCharacter.getLastCommandMessage());
+            await c.OnlinedCharacter.Yellow(ClientMessage.Command_Done, c.OnlinedCharacter.getLastCommandMessage());
         }
     }
 }

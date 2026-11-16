@@ -14,7 +14,7 @@ public class GiveMesosCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.GiveMesosCommand_Syntax));
+            await player.Yellow(ClientMessage.GiveMesosCommand_Syntax);
             return;
         }
 
@@ -60,11 +60,11 @@ public class GiveMesosCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             await victim.GainMeso((int)mesos_, GainItemShow.ShowInMessage);
-            await player.Pink(nameof(ClientMessage.GiveMesosCommand_MesoGiven));
+            await player.Pink(ClientMessage.GiveMesosCommand_MesoGiven);
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel));
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel);
         }
     }
 }

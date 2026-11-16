@@ -28,7 +28,7 @@ public class WarpCommand : ParamsCommandBase
                 {
 
                     var messages = new StringBuilder();
-                    messages.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.FindSimilarItem))).Append("\r\n");
+                    messages.Append(c.CurrentCulture.GetMessageByKey(ClientMessage.FindSimilarItem)).Append("\r\n");
                     for (int i = 0; i < findResult.MatchedItems.Count; i++)
                     {
                         var item = findResult.MatchedItems[i];
@@ -44,7 +44,7 @@ public class WarpCommand : ParamsCommandBase
                             var target = await mapFactory.getMap(mapItem.Id);
                             if (target == null)
                             {
-                                await player.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
+                                await player.Yellow(ClientMessage.MapNotFound, mapId.ToString());
                                 return;
                             }
                             await player.changeMap(target, target.getRandomPlayerSpawnpoint());
@@ -54,7 +54,7 @@ public class WarpCommand : ParamsCommandBase
                 }
                 else
                 {
-                    await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+                    await player.Yellow(ClientMessage.MapNotFound, paramsValue[0]);
                     return;
                 }
             }
@@ -63,7 +63,7 @@ public class WarpCommand : ParamsCommandBase
             var target = await mapFactory.getMap(mapId);
             if (target == null)
             {
-                await player.Yellow(nameof(ClientMessage.MapNotFound), mapId.ToString());
+                await player.Yellow(ClientMessage.MapNotFound, mapId.ToString());
                 return;
             }
 
@@ -85,7 +85,7 @@ public class WarpCommand : ParamsCommandBase
         catch (Exception ex)
         {
             log.Warning(ex.ToString());
-            await player.Yellow(nameof(ClientMessage.MapNotFound), paramsValue[0]);
+            await player.Yellow(ClientMessage.MapNotFound, paramsValue[0]);
         }
     }
 }

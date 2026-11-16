@@ -11,6 +11,7 @@ using Application.Core.Scripting.Events;
 using Application.Core.Server;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects.Players;
+using Application.Shared.Message;
 using Application.Utility.Tickables;
 using System.Timers;
 using tools;
@@ -18,7 +19,7 @@ using ZLinq;
 
 namespace Application.Core.scripting.Events.Instances;
 
-public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDisposable, ITickableTree
+public abstract class AbstractEventInstanceManager : IMessageBroadcaster<Player>, IAsyncDisposable, ITickableTree
 {
     protected ILogger log = LogFactory.GetLogger("EventInstanceManger");
     protected Dictionary<int, Player> chars = new();
@@ -389,7 +390,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     {
         foreach (var chr in getPlayers())
         {
-            await chr.TypedMessage(type, message);
+            await chr.TypedMessage((NoticeType)type, message);
         }
     }
 
@@ -1055,42 +1056,7 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
 
         return true;
     }
-
-    public async Task TypedMessage(int type, string messageKey, params string[] param)
-    {
-        foreach (var chr in getPlayers())
-        {
-            await chr.TypedMessage(type, messageKey, param);
-        }
-    }
-    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
-
-    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
-
-    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
-
-    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
-
-    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
-
-    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public async Task Dialog(string key, int npc, params string[] param)
-    {
-        foreach (var chr in getPlayers())
-        {
-            await chr.Dialog(key, npc, param);
-        }
-    }
-    public async Task LightBlue(Func<IClientCulture, string> action)
-    {
-        foreach (var chr in getPlayers())
-        {
-            await chr.LightBlue(action);
-        }
-    }
-
-
+    public List<Player> GetItems() => getPlayers();
     public bool CanGiveReward(Player chr, int stage = 1)
     {
         return chars.ContainsKey(chr.Id) && !rewardedChr.GetValueOrDefault(stage, []).Contains(chr.Id);
@@ -1110,7 +1076,6 @@ public abstract class AbstractEventInstanceManager : IClientMessenger, IAsyncDis
     {
         await this.ProcessSubTickables(now);
     }
-
 
     class EventInstanceScheduleRequest : DelayedTickable
     {

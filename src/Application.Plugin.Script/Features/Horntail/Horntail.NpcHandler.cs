@@ -5,6 +5,8 @@ using Application.Core.scripting.npc;
 using Application.Core.Scripting.Events;
 using Application.Shared.GameProps;
 using Application.Utility.Configs;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Horntail
 {
@@ -28,25 +30,25 @@ namespace Application.Plugin.Script.Features.Horntail
                 return;
             }
 
-            var sel = await AskMenu("欢迎来到生命之洞穴 - 入口！你想要进去和 #r暗黑龙王#k 战斗吗？如果你想要和他战斗，你可能需要一些 #b#v2000005##k，这样如果你被 #r暗黑龙王#k 击中了，你就可以恢复一些HP。\r\n#L1#我想花100,000金币购买10个！#l\r\n#L2#不用了，让我进去吧！#l");
+            var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Horntail_WelcomeCave));
 
             if (sel == 1)
             {
                 if (getMeso() < 100000)
                 {
-                    await SayOK("抱歉，你没有足够的金币来购买它们！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_SorryDont));
                     return;
                 }
 
                 if (!canHold(2000005, 10))
                 {
-                    await SayOK("抱歉，你的背包里没有空位来存放这个物品！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_SorryDontHave));
                     return;
                 }
 
                 await gainMeso(-100000);
                 await gainItem(2000005, 10);
-                await SayOK("谢谢购买这个药水。记得好好使用它！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_ThankBuying));
             }
             else if (sel == 2)
             {
@@ -56,7 +58,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await SayOK("对不起，您需要至少达到100级或以上才能进入。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_ImSorry));
                 }
             }
         }
@@ -67,17 +69,17 @@ namespace Application.Plugin.Script.Features.Horntail
         {
             if (haveItem(4001086))
             {
-                if (await AskYesNo("你现在想要进入 #b#m240050400##k 吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Horntail_WantAccess)))
                     await warp(240050400);
             }
             else if (YamlConfig.config.server.USE_ENABLE_SOLO_EXPEDITIONS && canBypassHTPQ())
             {
-                if (await AskYesNo("你现在想要进入 #b#m240050400##k 吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Horntail_WantAccess)))
                     await warp(240050400);
             }
             else
             {
-                await SayOK("那些没有#r#t4001086##k的人必须在挑战#b暗黑龙王#k之前证明他们的勇气。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_DontHave));
             }
         }
 
@@ -95,7 +97,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 var em = GetEventManager(HorntailFeature.PartyQuestEventName);
                 if (em == null)
                 {
-                    await SayOK("霍恩尾巴洞窟遭遇了一个错误。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_HorntailPq));
                     return;
                 }
 
@@ -105,7 +107,7 @@ namespace Application.Plugin.Script.Features.Horntail
                     return;
                 }
 
-                var sel = await AskMenu("#e#b<组队任务：暴君蛋龙试炼场>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n这是通往暴君蛋龙巢穴的路径。如果你想面对他，你和你的队伍将在前方的试炼场上接受考验。#b\r\n#L0#让我们通过试炼场。\r\n#L2#我想听更多细节。");
+                var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Horntail_PartyQuest) + em.Template.GetRequirementDescription(c) + this.GetTalkMessage(ScriptMessage.Horntail_PathHorntails));
 
                 if (sel == 0)
                 {
@@ -113,7 +115,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await SayOK("#e#b<组队任务：暴君之地>#k#n\r\n作为暴君巢穴的守门人，我只会允许值得的人进入。即使是对于那些人来说，内部的路径也像迷宫一样，充满了分支和考验。然而，那些擅长与团队BOSS战斗的人有更好的机会站在我们的领袖面前，尽管我们这种人也有机会。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_PartyQuestHorntails));
                 }
             }
             else
@@ -126,7 +128,7 @@ namespace Application.Plugin.Script.Features.Horntail
         {
             if (!isEventLeader())
             {
-                await SayOK("只有你的队伍领袖才能与日程表进行交互。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_OnlyParty));
                 return;
             }
 
@@ -145,7 +147,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await SayOK("你没有所有需要的钥匙来继续前进。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_DontHaveAll));
                 }
             }
             else if (mapId == 240050300 || mapId == 240050310)
@@ -158,7 +160,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await SayOK("检查一下你是否带着" + (mapId == 240050300 ? "" : "所有") + "6把红钥匙和1把蓝钥匙。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_CheckHave) + (mapId == 240050300 ? "" : this.GetTalkMessage(ScriptMessage.Horntail_All)) + this.GetTalkMessage(ScriptMessage.Horntail_RedKeys));
                 }
             }
         }
@@ -167,7 +169,7 @@ namespace Application.Plugin.Script.Features.Horntail
         // Npc: 2083002 — Crystal of Roots (Horntail Exit)
         public async Task hontale_out()
         {
-            if (!await AskYesNo("你想要离开吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_ConfirmLeave)))
                 return;
 
             if (getMapId() > 240050400)
@@ -187,20 +189,20 @@ namespace Application.Plugin.Script.Features.Horntail
 
             if (player.getLevel() < em.MinLevel || player.getLevel() > em.MaxLevel)
             {
-                await SayOK("您不符合与" + expedBoss + "战斗的条件！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_MeetCriteria, expedBoss) + expedBoss + this.GetTalkMessage(ScriptMessage.Horntail_Text, expedBoss));
                 return;
             }
 
             if (expedition == null)
             {
-                var sel = await AskMenu("#e#b<远征：Horntail>\r\n#k#n" + (em.Template.GetRequirementDescription(c) ?? "") + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Horntail_ExpeditionHorntail) + (em.Template.GetRequirementDescription(c) ?? "") + this.GetTalkMessage(ScriptMessage.Horntail_LikeAssemble) + expedBoss + this.GetTalkMessage(ScriptMessage.Horntail_LetsGet));
 
                 if (sel == 1)
                 {
                     expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
                     if (expedition != null)
                     {
-                        await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_SomeoneAlready));
                         return;
                     }
 
@@ -209,18 +211,18 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await SayOK("当然，并非每个人都能挑战" + expedBoss + "。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_SureEveryones, expedBoss));
                 }
             }
             else if (expedition.isLeader(player))
             {
                 if (expedition.isInProgress())
                 {
-                    await SayOK("你的探险已经在进行中，对于那些仍在战斗中的人，让我们为那些勇敢的灵魂祈祷吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_ExpeditionAlreadyProgress));
                 }
                 else
                 {
-                    var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
+                    var list = this.GetTalkMessage(ScriptMessage.Exped_Menu);
                     var sel = await AskMenu(list);
 
                     if (sel == 1)
@@ -229,11 +231,11 @@ namespace Application.Plugin.Script.Features.Horntail
                         var size = expedMembers.Count;
                         if (size == 1)
                         {
-                            await SayOK("你是探险队中唯一的成员。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_OnlyMember));
                             return;
                         }
 
-                        var text = "以下成员组成了你的探险队（点击成员名字可以将其踢出探险队）：\r\n";
+                        var text = this.GetTalkMessage(ScriptMessage.Horntail_FollowingMembers);
                         text += "\r\n\t\t1." + expedMembers[0].Name;
                         for (var i = 1; i < size; i++)
                         {
@@ -245,7 +247,7 @@ namespace Application.Plugin.Script.Features.Horntail
                         {
                             var banned = expedMembers[kickSelection - 1];
                             await expedition.ban(banned.Id);
-                            await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Exped_Banned, banned.Name));
                         }
                     }
                     else if (sel == 2)
@@ -253,19 +255,19 @@ namespace Application.Plugin.Script.Features.Horntail
                         var size = expedition.getPlayers().Count;
                         if (size < expedition.EventManager.MinCount)
                         {
-                            await SayOK("你的远征队至少需要有" + expedition.EventManager.MinCount + "名玩家注册。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_NeedLeast, expedition.EventManager.MinCount) + expedition.EventManager.MinCount + this.GetTalkMessage(ScriptMessage.Horntail_PlayersRegistered));
                             return;
                         }
 
-                        await SayOK("祝你好运！整个里弗尔都指望你了。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_GoodLuck));
 
                         await expedition.StartBattle();
                     }
                     else if (sel == 3)
                     {
-                        await player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
+                        await player.getMap().LightBlue(chr => expedition.getLeader().getName() + chr.GetTalkMessage(ScriptMessage.Zakum_ExpeditionOver));
                         await expedition.DisposeAsync();
-                        await SayOK("这次远征已经结束。有时候最好的策略就是逃跑。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_ExpeditionEnded));
                     }
                 }
             }
@@ -273,7 +275,7 @@ namespace Application.Plugin.Script.Features.Horntail
             {
                 if (expedition.contains(player))
                 {
-                    await SayOK("你已经注册了这次远征。请等待 #r" + expedition.getLeader().getName() + "#k 开始。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_HaveAlready, expedition.getLeader().getName()) + expedition.getLeader().getName() + this.GetTalkMessage(ScriptMessage.Horntail_Begin));
                 }
                 else
                 {
@@ -290,12 +292,12 @@ namespace Application.Plugin.Script.Features.Horntail
                     }
                     else
                     {
-                        await SayOK("你的远征队已经开始对抗" + expedBoss + "的战斗。让我们为这些勇敢的灵魂祈祷。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_ExpeditionAlready, expedBoss) + expedBoss + this.GetTalkMessage(ScriptMessage.Horntail_LetsPray));
                     }
                 }
                 else
                 {
-                    await SayOK("另一支远征队正在挑战了" + expedBoss + "，让我们为这些勇敢的灵魂祈祷吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Horntail_AnotherExpedition, expedBoss) + expedBoss + this.GetTalkMessage(ScriptMessage.Horntail_LetsPrayBrave));
                 }
             }
         }

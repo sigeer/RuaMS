@@ -1,6 +1,7 @@
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Server.life;
+using Application.Resources.Messages;
 using Application.Utility;
 using scripting.map;
 
@@ -25,16 +26,16 @@ namespace Application.Plugin.Script.Features.Dojo
                 if (mapObj.findClosestPlayerSpawnpoint(getPlayer().getPosition())?.getId() == 0)
                 {
                     string[] messages = [
-                        "勇闯武陵道场，阁下好胆识！",
-                        "想尝尝败北的滋味？尽管放马过来！",
-                        "定让你后悔挑战武陵道场！速来受死！"
+                        this.GetTalkMessage(ScriptMessage.Dojo_MuGongTaunt1),
+                        this.GetTalkMessage(ScriptMessage.Dojo_MuGongTaunt2),
+                        this.GetTalkMessage(ScriptMessage.Dojo_MuGongTaunt3)
                     ];
                     await getPlayer().startMapEffect(Randomizer.Select(messages), DojoFeature.MapEffectItem);
                 }
             }
             else
             {
-                await getPlayer().startMapEffect("哈！让我们看看你有什么！除非你先打败我，否则我不会让你离开的！", DojoFeature.MapEffectItem);
+                await getPlayer().startMapEffect(this.GetTalkMessage(ScriptMessage.Dojo_MuGongTaunt4), DojoFeature.MapEffectItem);
             }
         }
 

@@ -14,6 +14,6 @@ public class UptimeCommand : CommandBase
     {
         var dur = TimeSpan.FromMilliseconds(c.CurrentServer.Node.getCurrentTimestamp());
 
-        await c.OnlinedCharacter.Yellow(nameof(ClientMessage.UptimeCommand_Message1), dur.Humanize(culture: c.CurrentCulture.CultureInfo));
+        await c.OnlinedCharacter.Yellow(ClientMessage.UptimeCommand_Message1, dur.Humanize(culture: c.CurrentCulture.CultureInfo));
     }
 }

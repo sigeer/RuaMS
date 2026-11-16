@@ -536,7 +536,7 @@ public class InventoryManipulator
 
         if (chr.isGM() && chr.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            await chr.MessageI18N(nameof(ClientMessage.DropItem_NoAccess));
+            await chr.MessageI18N(ClientMessage.DropItem_NoAccess);
             LogFactory.GM.Information("GM {CharacterName} tried to drop item id {ItemId}", chr.getName(), source.getItemId());
             return;
         }

@@ -20,7 +20,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
             AbstractEventManager? contiMove = null;
             if (curMap == MapId.HERB_TOWN)
             {
-                if (await AskYesNo($"你好。旅行进行得怎么样？我一直在像你这样的旅行者运送到#b{c.CurrentCulture.GetMapStreetName(250000100)}#k，而且……你有兴趣吗？这种方式没有船稳定，所以你得紧紧抓住，但我可以比船快得多地到达那里。只要你支付#b金币#k，我就会带你去那里。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Crane_IntroHerbTown, c.CurrentCulture.GetMapStreetName(250000100))))
                 {
                     if (getMeso() > 1500)
                     {
@@ -29,12 +29,12 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                     }
                     else
                     {
-                        await SayNext(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                        await SayNext(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
                     }
                 }
                 else
                 {
-                    await SayNext("改变想法随时跟我搭话吧。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Crane_ChangedMind));
                 }
                 return;
 
@@ -42,12 +42,12 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
             else if (curMap == 200000141)
             {
                 // 天空之城
-                await AskMenu("你好。旅行进行得怎么样？我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。", [
-                    $"#m250000100# (1500 金币)",
+                await AskMenu(this.GetTalkMessage(ScriptMessage.Crane_PickTown), [
+                    this.GetTalkMessage(ScriptMessage.Crane_Option, 250000100),
                     ]);
-                if (!await AskYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(250000100)}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
+                if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Crane_Confirm, c.CurrentCulture.GetMapStreetName(250000100))))
                 {
-                    await SayNext("改变想法随时跟我搭话吧。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Crane_ChangedMind));
                     return;
                 }
                 contiMove = GetEventManager(CraneFeature.EventName);
@@ -56,8 +56,8 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
             {
                 // 武陵
                 int[] options = [200000141, 251000000];
-                var option = await AskMenu("你好。旅行进行得怎么样？我明白，与能翱翔天际的我相比，双腿行走要艰难得多。我已无数次将像你这样的冒险家快速送达其他区域，现在……你有兴趣吗？若愿意，请选择你想前往的城镇。",
-                                    options.Select(x => $"{c.CurrentCulture.GetMapStreetName(x)} (1500 金币)"));
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Crane_IntroMuLung),
+                                    options.Select(x => this.GetTalkMessage(ScriptMessage.Crane_OptionByName, c.CurrentCulture.GetMapStreetName(x))));
 
                 if (option == 1)
                 {
@@ -68,15 +68,15 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                     }
                     else
                     {
-                        await SayNext(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                        await SayNext(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
                     }
                     return;
                 }
                 else
                 {
-                    if (!await AskYesNo($"你确定要去 #b{c.CurrentCulture.GetMapStreetName(options[option])}#k 吗？如果你有 #b1500 金币#k, 我现在就带你去。"))
+                    if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Crane_Confirm, c.CurrentCulture.GetMapStreetName(options[option]))))
                     {
-                        await SayNext("改变想法随时跟我搭话吧。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Crane_ChangedMind));
                         return;
                     }
                     contiMove = GetEventManager(CraneFeature.EventName);

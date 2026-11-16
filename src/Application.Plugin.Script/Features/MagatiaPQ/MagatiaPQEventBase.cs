@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -175,11 +176,11 @@ namespace Application.Plugin.Script.Features.MagatiaPQ
             if (eim.getIntProperty("yuleteTalked") == 1)
             {
                 eim.setIntProperty("yuletePassed", 1);
-                await eim.dropMessage(5, "犹泰：呃...你们真让我作呕。我想要的不过是让这个国家成为全世界最伟大的炼金术强国。如果他们不接受，我不惜一切代价也要独自实现这个目标！！！");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.MagatiaPQEventBase_YuleteUgh);
             }
             else
             {
-                await eim.dropMessage(5, "犹泰：哈哈哈...你们真以为我会毫无准备，不知道玛加提亚协会的走狗们会来追捕我吗？愚蠢！");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.MagatiaPQEventBase_YuleteHahaha);
             }
             eim.setIntProperty("yuleteTalked", -1);
 

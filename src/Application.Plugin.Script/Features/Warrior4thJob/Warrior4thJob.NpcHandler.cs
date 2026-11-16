@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Warrior4thJob
 {
@@ -16,7 +18,7 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
         {
             if (isQuestStarted(6180) && getQuestProgressInt(6180, 9300096) < 200)
             {
-                if (await AskYesNo("请注意：在你待在训练场内的时候，确保你已经装备了#t1092041#，这非常重要。你准备好去训练场了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Warrior4th_PayAttention)))
                 {
                     if (getPlayer().haveItemEquipped(1092041))
                     {
@@ -24,21 +26,21 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
                     }
                     else
                     {
-                        await SayOK("请在进入训练场之前装备#r#t1092041##k。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Warrior4th_PleaseEquip));
                         return;
                     }
                 }
             }
             else
             {
-                await SayOK("只有指定人员才能进入训练场地。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Warrior4th_OnlyAssigned));
             }
         }
 
         // Npc: 2081010 
         public async Task s4blocking()
         {
-            if (await AskYesNo("你想要退出这个区域吗？如果你退出，你将需要从头开始这个任务。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Warrior4th_WantExit)))
             {
                 await warp(240010400, "st00");
             }
@@ -54,7 +56,7 @@ namespace Application.Plugin.Script.Features.Warrior4thJob
             {
                 if (hasItem(4031454))
                 {
-                    await SayOK("你从喷泉里往杯子里倒了一些水。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Warrior4th_PouredSome));
                     await gainItem(4031454, -1);
                     await gainItem(4031455, 1);
                 }

@@ -1,6 +1,8 @@
 using Application.Core.Channel.DataProviders;
 using Application.Shared.Constants.Item;
 using Application.Shared.Models;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -23,7 +25,7 @@ namespace Application.Plugin.Script.Npc
             var category = categories[categoryIdx];
             var selectItemIdx = await AskMenu(category.SelectionPrompt,
                 category.Formulas.Select(x => ItemConstants.isEquipment(x.TargetItemId)
-                ? $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"
+                ? this.GetTalkMessage(ScriptMessage.Maker_Refine_LevelRequirement, x.TargetItemId, ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId))
                 : $"#t{x.TargetItemId}#"));
 
             if (selectItemIdx < 0 || selectItemIdx >= category.Formulas.Count) return;
@@ -32,7 +34,7 @@ namespace Application.Plugin.Script.Npc
             int count = 1;
             if (category.AskQuantity)
             {
-                count = await AskNumber($"所以，你需要我帮你做一些 #t{selected.TargetItemId}#？那你想要我帮你做多少个呢？", 1, 1, 100);
+                count = await AskNumber(this.GetTalkMessage(ScriptMessage.Maker_Refine_QuantityPrompt, selected.TargetItemId), 1, 1, 100);
             }
 
             var costPromt = string.Join("\r\n", selected.Items.Select(x => $"#i{x.ItemId}# x {x.Quantity * count} #t{x.ItemId}#"));
@@ -44,24 +46,24 @@ namespace Application.Plugin.Script.Npc
             var cost = (int)(discount * selected.Cost);
             if (cost > 0)
             {
-                costPromt += $"\r\n#i4031138# {cost * count} 金币";
+                costPromt += this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_Meso, cost * count);
             }
 
-            if (!await AskYesNo($"你需要我帮你做{count}个#t{selected.TargetItemId}#？ 如果是那样的话，我需要你提供一些特定的物品才能制作。另外，请确保你的背包中有足够的空间！\r\n\r\n{costPromt}"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_CountPrompt, count, selected.TargetItemId)))
             {
                 return;
             }
 
             if (getMeso() < (cost * count))
             {
-                await SayOK("抱歉，但这是我谋生的方式。没有金币，就没有物品。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Result_NoMeso));
                 return;
             }
 
             var resultQty = category.GetResultQuantity(selected.TargetItemId, count);
             if (!canHold(selected.TargetItemId, resultQty))
             {
-                await SayOK("请确保你的背包有空间，然后再和我交谈。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CheckInventory));
                 return;
             }
 
@@ -87,17 +89,17 @@ namespace Application.Plugin.Script.Npc
 
                 if (stimulatorId > 0 && Random.Shared.Next(10) == 0)
                 {
-                    await SayOK("哎呀！我想我不小心加了太多的辅助剂，嗯，整个东西现在都不能用了……抱歉，但我不能退款。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Result_TooManyAdditives));
                 }
                 else
                 {
                     await gainItem(selected.TargetItemId, (short)resultQty, stimulatorId > 0, true);
-                    await SayOK("一如既往，物品完美无缺。如果你需要其他东西，就来找我吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Result_Success));
                 }
             }
             else
             {
-                await SayOK("毫无疑问，你作为其中一员，应该能理解拥有优质物品的价值吧？没有我需要的物品，我就无法做到这一点。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Result_MissingItems));
             }
         }
 
@@ -107,8 +109,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作一把弓",
-                    SelectionPrompt = "好眼光,弓的攻击速度快,也比弩灵敏许多,但是攻击比弩低一点点哦，但箭矢和弩没有太大区别。 总之, 你想做哪一种？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateBow),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_HaveSniper),
                     Formulas = [
                         new(1452002, [new(4003001, 5), new(4000000, 30)], 800),
                         new(1452003, [new(4011001, 1), new(4003000, 3)], 2000),
@@ -120,8 +122,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作一把弩",
-                    SelectionPrompt = "弩是我的专长~它的攻击速度比弓要慢一点，但是伤害却比弓要来的高哦， 你想让我为你做哪一个?",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateCrossbow),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_SniperCrossbows),
                     Formulas = [
                         new(1462001, [new(4003001, 7), new(4003000, 2)], 1000),
                         new(1462002, [new(4011001, 1), new(4003001, 20), new(4003000, 5)], 2000),
@@ -134,8 +136,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作一双手套",
-                    SelectionPrompt = "好的,你想要製作哪一种手套呢?",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_MakeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_GloveWant),
                     Formulas = [
                         new(1082012, [new(4000021, 15), new(4000009, 20)], 5000),
                         new(1082013, [new(4000021, 20), new(4000009, 20), new(4011001, 2)], 10000),
@@ -148,8 +150,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级一双手套",
-                    SelectionPrompt = "升级手套？这应该不会太难。你想过要升级哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGloveShouldnt),
                     Formulas = [
                         new(1082015, [new(1082013, 1), new(4021003, 2)], 7000),
                         new(1082014, [new(1082013, 1), new(4021000, 1)], 7000),
@@ -168,8 +170,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "材料制作",
-                    SelectionPrompt = "材料？我知道有几种材料我可以给你做...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateMaterials),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_MaterialsKnow),
                     Formulas = [
                         new(4003001, [new(4000003, 10)], 0),
                         new(4003001, [new(4000018, 5)], 0),
@@ -178,8 +180,8 @@ namespace Application.Plugin.Script.Npc
                     GetResultQuantity = (itemId, count) => itemId == 4003000 ? count * 15 : count
                 },
                 new() {
-                    Name = "制作箭矢",
-                    SelectionPrompt = "箭矢?没问题的。",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateArrows),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_ArrowsProblem),
                     Formulas = [
                         new(2060000, [new(4003001, 1), new(4003004, 1)], 0),
                         new(2061000, [new(4003001, 1), new(4003004, 1)], 0),
@@ -196,7 +198,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好. 我是比休斯，退休的射手，但我曾经是雅典娜皮尔斯顶尖的学生，我不再打猎了，但我可以帮你制作一些对你有帮助的物品...", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_ViciousRetired, npc), categories);
         }
 
         // Npc: 1022003 
@@ -205,8 +207,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "提炼矿石",
-                    SelectionPrompt = "那么，你想要提炼哪种矿石？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineMineral),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindMineral),
                     Formulas = [
                         new(4011000, [new(4010000, 10)], 300),
                         new(4011001, [new(4010001, 10)], 300),
@@ -218,8 +220,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "提炼宝石",
-                    SelectionPrompt = "那么，你想要提炼哪种宝石？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineJewel),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindJewel),
                     Formulas = [
                         new(4021000, [new(4020000, 10)], 500),
                         new(4021001, [new(4020001, 10)], 500),
@@ -233,8 +235,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级头盔",
-                    SelectionPrompt = "啊，你想要升级头盔？那么告诉我，哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_UpgradeHelmet),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_AhWish),
                     AskQuantity = false,
                     Formulas = [
                         new(1002042, [new(1002001, 1), new(4011002, 1)], 500),
@@ -264,8 +266,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级盾牌",
-                    SelectionPrompt = "啊，你想要升级盾牌？那么告诉我，哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_UpgradeShield),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_AhWishUpgrade),
                     AskQuantity = false,
                     Formulas = [
                         new(1092014, [new(1092012, 1), new(4011003, 10)], 100000),
@@ -276,7 +278,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嗯？你是谁？哦，你听说过我的锻造技术？如果是这样的话，我会很乐意帮你加工一些矿石……不过需要收费。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_HmYouve), categories);
         }
 
 
@@ -286,8 +288,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作手套",
-                    SelectionPrompt = "好的，那么你想让我制作哪种手套呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_MakeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_GloveWant),
                     AskQuantity = false,
                     Formulas = [
                         new(1082003, [new(4000021, 15), new(4011001, 1)], 1000),
@@ -302,8 +304,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级手套",
-                    SelectionPrompt = "升级手套？那应该不太难。你具体想要升级哪种手套呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGloveShouldnt),
                     AskQuantity = false,
                     Formulas = [
                         new(1082005, [new(1082007, 1), new(4011001, 1)], 20000),
@@ -319,8 +321,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作材料",
-                    SelectionPrompt = "材料？我知道一些可以为你制作的材料……",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateMaterials),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_MaterialsKnow),
                     Formulas = [
                         new(4003001, [new(4000003, 10)], 0),
                         new(4003001, [new(4000018, 5)], 0),
@@ -330,7 +332,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嗯……你好 #b#h ##k ，我是 #p1022003# 先生的学徒。他年纪大了，所以他主要负责一些繁重的工作，而我处理一些较轻的任务。我能为你做些什么呢？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_UmIm), categories);
         }
 
         // Npc: 1032002 
@@ -339,8 +341,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作手套",
-                    SelectionPrompt = "那么，你希望我做什么样的手套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_MakeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_KindGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082019, [new(4000021, 15)], 7000),
@@ -354,8 +356,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级手套",
-                    SelectionPrompt = "那么，你打算升级到什么样的手套呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_KindGloveLooking),
                     AskQuantity = false,
                     Formulas = [
                         new(1082021, [new(1082020, 1), new(4011001, 1)], 20000),
@@ -375,8 +377,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级帽子",
-                    SelectionPrompt = "一顶帽子？你在想哪顶？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_UpgradeHat),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_HatOne),
                     AskQuantity = false,
                     Formulas = [
                         new(1002065, [new(1002064, 1), new(4011001, 3)], 40000),
@@ -384,8 +386,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作魔杖",
-                    SelectionPrompt = "魔杖，是吗？更喜欢口袋里的小武器？你想要哪种类型的武器？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_MakeWand),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_WandHuh),
                     AskQuantity = false,
                     Formulas = [
                         new(1372005, [new(4003001, 5)], 1000),
@@ -399,8 +401,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作法杖",
-                    SelectionPrompt = "啊，一把法杖，一个人权力的伟大象征！你想做哪一把呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_MakeStaff),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_AhStaff),
                     AskQuantity = false,
                     Formulas = [
                         new(1382000, [new(4003001, 5)], 2000),
@@ -413,7 +415,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("欢迎来到我的生态安全精炼工厂！今天你想要什么？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_WelcomeEco), categories);
         }
 
         // Npc: 1052002 
@@ -422,8 +424,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作手套",
-                    SelectionPrompt = "那么，你希望我制作哪种手套呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_MakeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1032002_KindGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082002, [new(4000021, 15)], 1000),
@@ -440,8 +442,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级手套",
-                    SelectionPrompt = "升级手套？没问题，但请注意，升级不会转移到新物品上...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_UpgradeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_UpgradedGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082033, [new(1082032, 1), new(4011002, 1)], 5000),
@@ -461,8 +463,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作拳套",
-                    SelectionPrompt = "那么，你想让我制作哪种拳套呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_CreateClaw),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_KindClaw),
                     AskQuantity = false,
                     Formulas = [
                         new(1472001, [new(4011001, 1), new(4000021, 20), new(4003000, 5)], 2000),
@@ -475,8 +477,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "升级拳套",
-                    SelectionPrompt = "升级拳套？当然可以，但请注意，升级不会转移到新物品上……",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_UpgradeClaw),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_UpgradedClaw),
                     AskQuantity = false,
                     Formulas = [
                         new(1472002, [new(1472001, 1), new(4011002, 1)], 1000),
@@ -495,8 +497,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作材料",
-                    SelectionPrompt = "材料吗？我有几种材料可以为你制作……",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateMaterials),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_MaterialsKnow),
                     Formulas = [
                         new(4003001, [new(4000003, 10)], 0),
                         new(4003001, [new(4000018, 5)], 0),
@@ -506,7 +508,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嘘……如果你有合适的货物，我可以把它变成一些好东西……", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_PstHave), categories);
         }
 
 
@@ -516,8 +518,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "精炼矿石",
-                    SelectionPrompt = "所以，你想要精炼什么矿石??",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineMineral),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindMineral),
                     Formulas = [
                         new(4011000, [new(4010000, 10)], 300),
                         new(4011001, [new(4010001, 10)], 300),
@@ -529,8 +531,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "精炼宝石",
-                    SelectionPrompt = "所以，你想要精炼什么宝石??",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineJewel),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindJewel),
                     Formulas = [
                         new(4021000, [new(4020000, 10)], 500),
                         new(4021001, [new(4020001, 10)], 500),
@@ -544,15 +546,15 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "我有铁甲猪蹄...",
-                    SelectionPrompt = "你知道嘛? 很多人不知道铁甲猪蹄的潜力... 我可以使它成为一些特别的东西, 如果你要我做的话...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1052003_HaveIron),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1052003_KnowAbout),
                     Formulas = [
                         new(4011001, [new(4000039, 100)], 1000)
                     ]
                 },
                 new() {
-                    Name = "升級拳套",
-                    SelectionPrompt = "呃, 你要升级拳套? 告诉我你要升级哪一个?",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1052002_UpgradeClaw),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1052003_AhWish),
                     AskQuantity = false,
                     Formulas = [
                         new(1472023, [new(1472022, 1), new(4011007, 1), new(4021000, 8), new(2012000, 10)], 80000),
@@ -562,7 +564,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("是的，我确实拥有这个锻炉。如果你愿意付钱，我可以为你提供一些服务。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1052003_OwnForge), categories);
         }
 
         // Npc: 1091003 
@@ -571,8 +573,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "做一个拳甲",
-                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的拳甲。你想做哪个拳甲？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_MakeKnuckler),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_LongBring),
                     AskQuantity = false,
                     Formulas = [
                         new(1482001, [new(4000021, 20)], 1000),
@@ -585,8 +587,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "做一把手铳",
-                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的手铳。你想做哪个手铳？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_MakeGun),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_LongBringMaterials),
                     AskQuantity = false,
                     Formulas = [
                         new(1492001, [new(4011000, 1), new(4003000, 5), new(4003001, 1)], 1000),
@@ -599,8 +601,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作一副手套",
-                    SelectionPrompt = "只要你带上所需的材料，我就给你做一个好的手套。你想做哪个手套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_MakeGlove),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_LongBringMaterialsRequired),
                     AskQuantity = false,
                     Formulas = [
                         new(1082180, [new(4000021, 15), new(4021003, 1)], 1000),
@@ -615,7 +617,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("什么？你想自己做武器和手套吗？说真的。。。如果你没有经验，很难自己去做。。。我会帮你的。我当海盗已经20年了，20年来，我为这里的船员制作了各种物品。这对我来说很容易。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1091003_WantMake), categories);
         }
 
         // Npc: 1061000 
@@ -624,8 +626,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作战士鞋子",
-                    SelectionPrompt = "你想制作哪种战士鞋子？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateWarrior),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_WarriorShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072051, [new(4011004, 2), new(4011001, 1), new(4000021, 15), new(4003000, 10)], 10000),
@@ -651,8 +653,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作弓箭手鞋子",
-                    SelectionPrompt = "你想制作哪种弓箭手鞋子？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateBowman),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_BowmanShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072027, [new(4000021, 35), new(4011000, 3), new(4003000, 10)], 9000),
@@ -680,8 +682,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作法师鞋子",
-                    SelectionPrompt = "你想制作哪种魔法师鞋子？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateMagician),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_MagicianShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072019, [new(4021005, 1), new(4000021, 30), new(4003000, 5)], 3000),
@@ -712,8 +714,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作飞侠鞋子",
-                    SelectionPrompt = "你想制作哪种飞侠鞋子？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateThief),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_ThiefShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072084, [new(4021005, 1), new(4000021, 35), new(4003000, 10)], 9000),
@@ -742,16 +744,16 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好，可别因为我住在这种地方，就低估了我的技艺。让我来帮你制作一双新鞋怎么样？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_LiveDont), categories);
         }
 
         // Npc: 2010000 
         public async Task carlie()
         {
-            await SayNext("嘿，有点时间吗？嗯，我的工作是在这里收集物品然后在其他地方出售，但最近怪物变得更加敌对，所以很难得到好的物品…… 你觉得呢？想和我做点生意吗？");
-            if (!await AskYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Maker_TradeIntro));
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_TradeExplain)))
             {
-                await SayOK("嗯...这对你来说不应该是个坏交易。在合适的时间来找我，你可能会得到一个更好的物品。无论如何，当你改变主意的时候告诉我。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_ComeBackLater));
                 return;
             }
 
@@ -788,18 +790,18 @@ namespace Application.Plugin.Script.Npc
             eQuestPrizes[23] = [[2000006, 25], [2050004, 50], [2022001, 35], [4020000, 8], [4020001, 8], [4020002, 8], [4020007, 2], [2041023, 1]];
             eQuestPrizes[24] = [[2000006, 35], [4020006, 9], [4010008, 4], [4020007, 4], [2041008, 1]];
 
-            var sel = await AskMenu("好的！首先你需要选择你想要用来交易的物品。物品越好，你获得更好回报的机会就越大。\r\n",
+            var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Maker_ChooseItem),
                 eQuestChoices.Select(id => $"#v{id}#  #t{id}#"));
 
             if (sel < 0 || sel >= eQuestChoices.Length) return;
 
             var requiredItem = eQuestChoices[sel];
-            if (!await AskYesNo($"让我看看，你想用我的东西交换你的#b100#t{requiredItem}##k对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_ConfirmTrade, requiredItem)))
                 return;
 
             if (!haveItem(requiredItem, 100))
             {
-                await SayOK($"嗯... 你确定你有 #b100 #t{requiredItem}##k 吗？如果是的话，请检查一下你的物品栏是否已满。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_CheckItems, requiredItem));
                 return;
             }
 
@@ -810,14 +812,14 @@ namespace Application.Plugin.Script.Npc
 
             if (!canHold(prizeItem, prizeQuantity))
             {
-                await SayOK("你的物品栏似乎已经满了。你需要腾出空间才能和我交易！清理一下，然后找到我。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_InventoryFull));
                 return;
             }
 
             await gainItem(requiredItem, -100);
             await gainExp(500);
             await gainItem(prizeItem, prizeQuantity);
-            await SayOK($"对于你的#b100 #t{requiredItem}##k，这里是我的#b{prizeQuantity} #t{prizeItem}##k。你觉得怎么样？你喜欢我给你的物品吗？我打算在这里待一段时间，所以如果你收集到更多物品，我随时可以交易…");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Maker_HereIsPrize, requiredItem, prizeQuantity, prizeItem));
         }
 
 
@@ -827,8 +829,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作或升级战士手套",
-                    SelectionPrompt = "战士手套？好的，那么哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_CreateUpgrade),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_WarriorGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082103, [new(4005000, 2), new(4011000, 8), new(4011006, 3), new(4000030, 70), new(4003000, 55)], 90000),
@@ -841,8 +843,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作或升级弓箭手手套",
-                    SelectionPrompt = "弓箭手手套？好的，那么哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_CreateUpgradeBowman),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_BowmanGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082106, [new(4005002, 2), new(4021005, 8), new(4011004, 3), new(4000030, 70), new(4003000, 55)], 90000),
@@ -855,8 +857,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作或升级法师手套",
-                    SelectionPrompt = "魔法师手套？好的，那么哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_CreateUpgradeMagician),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_MagicianGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082098, [new(4005001, 2), new(4011000, 6), new(4011004, 6), new(4000030, 70), new(4003000, 55)], 90000),
@@ -868,8 +870,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作或升级飞侠手套",
-                    SelectionPrompt = "飞侠手套？好的，那么哪一个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_CreateUpgradeThief),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_ThiefGlove),
                     AskQuantity = false,
                     Formulas = [
                         new(1082095, [new(4005003, 2), new(4011000, 6), new(4011003, 6), new(4000030, 70), new(4003000, 55)], 90000),
@@ -882,7 +884,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好。我是天空之城头号手套制造师。你想让我为你做点什么吗？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc2010003_ImOrbis), categories);
         }
 
         // Npc: 2020000 
@@ -891,8 +893,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "精炼矿石",
-                    SelectionPrompt = "那么，你想要精炼哪种矿石呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineMineral),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindMineral),
                     Formulas = [
                         new(4011000, [new(4010000, 10)], 300),
                         new(4011001, [new(4010001, 10)], 300),
@@ -904,8 +906,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "精炼宝石",
-                    SelectionPrompt = "那么，你想要精炼哪种宝石呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineJewel),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindJewel),
                     Formulas = [
                         new(4021000, [new(4020000, 10)], 500),
                         new(4021001, [new(4020001, 10)], 500),
@@ -919,16 +921,16 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "精炼稀有宝石",
-                    SelectionPrompt = "想制作稀有宝石吗？你想制作哪一种呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RefineRare),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RareJewel),
                     Formulas = [
                         new(4011007, [new(4011000, 1), new(4011001, 1), new(4011002, 1), new(4011003, 1), new(4011004, 1), new(4011005, 1), new(4011006, 1)], 10000),
                         new(4021009, [new(4021000, 1), new(4021001, 1), new(4021002, 1), new(4021003, 1), new(4021004, 1), new(4021005, 1), new(4021006, 1), new(4021007, 1), new(4021008, 1)], 15000)
                     ]
                 },
                 new() {
-                    Name = "精炼水晶矿石",
-                    SelectionPrompt = "水晶矿石吗？在这里很难找到啊...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RefineCrystal),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_CrystalOre),
                     Formulas = [
                         new(4005000, [new(4004000, 10)], 5000),
                         new(4005001, [new(4004001, 10)], 5000),
@@ -938,8 +940,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作材料",
-                    SelectionPrompt = "材料吗？我有几种可以为你制作的材料……",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateMaterials),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_MaterialsKnow),
                     Formulas = [
                         new(4003001, [new(4000003, 10)], 0),
                         new(4003001, [new(4000018, 5)], 0),
@@ -948,8 +950,8 @@ namespace Application.Plugin.Script.Npc
                     GetResultQuantity = (itemId, count) => itemId == 4003000 ? count * 15 : count
                 },
                 new() {
-                    Name = "制作箭矢",
-                    SelectionPrompt = "箭矢吗？包在我身上！",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateArrows),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_ArrowsProblem),
                     Formulas = [
                         new(2060000, [new(4003001, 1), new(4003004, 1)], 0),
                         new(2061000, [new(4003001, 1), new(4003004, 1)], 0),
@@ -966,7 +968,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嗯？你是谁？哦，你听说过我的锻造技术？如果是这样的话，我会很乐意帮你加工一些矿石……不过需要收费。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_HmYouve), categories);
         }
 
 
@@ -976,8 +978,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作战士鞋子",
-                    SelectionPrompt = "战士鞋子？好的，那么哪一套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateWarrior),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020002_WarriorShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072147, [new(4021008, 1), new(4011007, 1), new(4021005, 8), new(4000030, 80), new(4003000, 55)], 60000),
@@ -992,8 +994,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作弓箭手鞋子",
-                    SelectionPrompt = "弓箭手鞋子？好的，那么哪一套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateBowman),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020002_BowmanShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072144, [new(4011006, 5), new(4021000, 8), new(4021007, 1), new(4000030, 75), new(4003000, 50)], 60000),
@@ -1010,8 +1012,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作法师鞋子",
-                    SelectionPrompt = "魔法师鞋子？好的，那么哪一套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateMagician),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020002_MagicianShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072136, [new(4021009, 1), new(4011006, 4), new(4011005, 5), new(4000030, 70), new(4003000, 50)], 60000),
@@ -1028,8 +1030,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作飞侠鞋子",
-                    SelectionPrompt = "飞侠鞋子？好的，那么哪一套？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateThief),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020002_ThiefShoes),
                     AskQuantity = false,
                     Formulas = [
                         new(1072150, [new(4021007, 1), new(4011007, 1), new(4021000, 8), new(4000030, 75), new(4003000, 50)], 60000),
@@ -1045,7 +1047,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("你好。#m211000000#的冬天非常寒冷，你需要一双暖和的鞋子才能生存。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc2020002_ElNath), categories);
         }
 
         // Npc: 2040016 
@@ -1054,8 +1056,8 @@ namespace Application.Plugin.Script.Npc
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "精炼矿石",
-                    SelectionPrompt = "那么，你想要精炼哪种矿石呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineMineral),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindMineral),
                     Formulas = [
                         new(4011000, [new(4010000, 10)], 270),
                         new(4011001, [new(4010001, 10)], 270),
@@ -1067,8 +1069,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "精炼宝石",
-                    SelectionPrompt = "那么，你想要精炼哪种宝石呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_RefineJewel),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_KindJewel),
                     Formulas = [
                         new(4021000, [new(4020000, 10)], 450),
                         new(4021001, [new(4020001, 10)], 450),
@@ -1082,16 +1084,16 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "精炼稀有宝石",
-                    SelectionPrompt = "想制作稀有宝石吗？你想制作哪一种呢？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RefineRare),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RareJewel),
                     Formulas = [
                         new(4011007, [new(4011000, 1), new(4011001, 1), new(4011002, 1), new(4011003, 1), new(4011004, 1), new(4011005, 1), new(4011006, 1)], 9000),
                         new(4021009, [new(4021000, 1), new(4021001, 1), new(4021002, 1), new(4021003, 1), new(4021004, 1), new(4021005, 1), new(4021006, 1), new(4021007, 1), new(4021008, 1)], 13500)
                     ]
                 },
                 new() {
-                    Name = "精炼水晶矿石",
-                    SelectionPrompt = "水晶矿石吗？在这里很难找到啊...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2020000_RefineCrystal),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040016_CrystalOre),
                     Formulas = [
                         new(4005000, [new(4004000, 10)], 4500),
                         new(4005001, [new(4004001, 10)], 4500),
@@ -1100,8 +1102,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作材料",
-                    SelectionPrompt = "材料吗？我有几种可以为你制作的材料……",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateMaterials),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1022004_MaterialsKnow),
                     Formulas = [
                         new(4003001, [new(4000003, 10)], 0),
                         new(4003001, [new(4000018, 5)], 0),
@@ -1110,8 +1112,8 @@ namespace Application.Plugin.Script.Npc
                     GetResultQuantity = (itemId, count) => itemId == 4003000 ? count * 15 : count
                 },
                 new() {
-                    Name = "制作箭矢",
-                    SelectionPrompt = "箭矢吗？包在我身上！",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_CreateArrows),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc1012002_ArrowsProblem),
                     Formulas = [
                         new(2060000, [new(4003001, 1), new(4003004, 1)], 0),
                         new(2061000, [new(4003001, 1), new(4003004, 1)], 0),
@@ -1128,22 +1130,30 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嗯？你是谁？哦，你听说过我的锻造技术？如果是这样的话，我会很乐意帮你加工一些矿石……不过需要收费。", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc1022003_HmYouve), categories);
         }
 
         // Npc: 2040020 
         public async Task make_ludi2()
         {
-            string greeting = "你好，欢迎来到卢比克姆手套店。今天有什么可以帮您的吗？";
-            string[] mainOptions = ["什么是辅助剂？", "制作战士手套", "制作弓箭手手套", "制作法师手套", "制作飞侠手套",
-                "使用辅助剂制作战士手套", "使用辅助剂制作弓箭手手套", "使用辅助剂制作法师手套", "使用辅助剂制作飞侠手套"];
+            string greeting = this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WelcomeLudibrium);
+            string[] mainOptions = [
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WhatsStimulator), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateWarrior), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateBowman), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateMagician), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateThiefGlove),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateWarriorGlove), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateBowmanGlove), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateMagicianGlove),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_CreateThief)];
 
             var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
             {
-                await SayNext("辅助剂是一种特殊的药剂，我可以在制作某些物品的过程中加入它。它会使物品拥有像怪物掉落一样的属性。然而，属性可能没有变化，也有可能低于平均水平。使用辅助剂时，还有10%的几率得不到任何物品，所以请明智选择。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_StimulatorSpecial));
                 return;
             }
 
@@ -1153,8 +1163,8 @@ namespace Application.Plugin.Script.Npc
 
             var warriorGloveCat = new RecipeCategory
             {
-                Name = "战士手套",
-                SelectionPrompt = stimulator ? "使用辅助剂制作战士手套？当然，哪一种？" : "战士手套？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WarriorGlove),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WarriorGloveStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WarriorGloveSure),
                 AskQuantity = false,
                 Formulas = stimulator ? [
                     new(1082005, [new(1082007, 1), new(4011001, 1)], 18000),
@@ -1175,8 +1185,8 @@ namespace Application.Plugin.Script.Npc
 
             var bowmanGloveCat = new RecipeCategory
             {
-                Name = "弓箭手手套",
-                SelectionPrompt = stimulator ? "使用辅助剂制作弓箭手手套？当然，哪一种？" : "弓箭手手套？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_BowmanGlove),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_BowmanGloveStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_BowmanGloveSure),
                 AskQuantity = false,
                 Formulas = stimulator ? [
                     new(1082049, [new(1082048, 1), new(4021003, 3)], 13500),
@@ -1197,8 +1207,8 @@ namespace Application.Plugin.Script.Npc
 
             var mageGloveCat = new RecipeCategory
             {
-                Name = "法师手套",
-                SelectionPrompt = stimulator ? "使用辅助剂制作魔法师手套？当然，哪一种？" : "魔法师手套？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_MagicianGlove),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_MagicianGloveStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_MagicianGloveSure),
                 AskQuantity = false,
                 Formulas = stimulator ? [
                     new(1082052, [new(1082051, 1), new(4021005, 3)], 31500),
@@ -1219,8 +1229,8 @@ namespace Application.Plugin.Script.Npc
 
             var thiefGloveCat = new RecipeCategory
             {
-                Name = "飞侠手套",
-                SelectionPrompt = stimulator ? "使用辅助剂制作飞侠手套？当然，哪一种？" : "飞侠手套？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_ThiefGlove),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_ThiefGloveStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_ThiefGloveSure),
                 AskQuantity = false,
                 Formulas = stimulator ? [
                     new(1082043, [new(1082042, 1), new(4011004, 2)], 13500),
@@ -1247,16 +1257,24 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2040021 
         public async Task make_ludi3()
         {
-            string greeting = "你好，欢迎来到卢比克姆鞋店。今天有什么可以帮您的吗？";
-            string[] mainOptions = ["什么是辅助剂？", "制作战士鞋子", "制作弓箭手鞋子", "制作法师鞋子", "制作飞侠鞋子",
-                "使用辅助剂制作战士鞋子", "使用辅助剂制作弓箭手鞋子", "使用辅助剂制作法师鞋子", "使用辅助剂制作飞侠鞋子"];
+            string greeting = this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_WelcomeLudibrium);
+            string[] mainOptions = [
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WhatsStimulator),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateWarrior),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateBowman),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateMagician), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc1061000_CreateThief),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_CreateWarrior), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_CreateBowman), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_CreateMagician), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_CreateThief)];
 
             var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
             {
-                await SayNext("辅助剂是一种特殊的药剂，我可以在制作某些物品的过程中加入它。它会使物品拥有像怪物掉落一样的属性。然而，属性可能没有变化，也有可能低于平均水平。使用辅助剂时，还有10%的几率得不到任何物品，所以请明智选择。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_StimulatorSpecial));
                 return;
             }
 
@@ -1266,8 +1284,8 @@ namespace Application.Plugin.Script.Npc
 
             var warriorShoeCat = new RecipeCategory
             {
-                Name = "战士鞋子",
-                SelectionPrompt = stimulator ? "使用辅助剂制作战士鞋子？当然，哪一种？" : "战士鞋子？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_WarriorShoes),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_WarriorShoesStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_WarriorShoesSure),
                 AskQuantity = false,
                 Formulas = [
                     new(1072003, [new(4021003, 4), new(4011001, 2), new(4000021, 45), new(4003000, 15)], 20000),
@@ -1289,8 +1307,8 @@ namespace Application.Plugin.Script.Npc
 
             var bowmanShoeCat = new RecipeCategory
             {
-                Name = "弓箭手鞋子",
-                SelectionPrompt = stimulator ? "使用辅助剂制作弓箭手鞋子？当然，哪一种？" : "弓箭手鞋子？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_BowmanShoes),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_BowmanShoesStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_BowmanShoesSure),
                 AskQuantity = false,
                 Formulas = [
                     new(1072079, [new(4000021, 50), new(4021000, 2), new(4003000, 15)], 19000),
@@ -1314,8 +1332,8 @@ namespace Application.Plugin.Script.Npc
 
             var mageShoeCat = new RecipeCategory
             {
-                Name = "法师鞋子",
-                SelectionPrompt = stimulator ? "使用辅助剂制作魔法师鞋子？当然，哪一种？" : "魔法师鞋子？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_MagicianShoes),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_MagicianShoesStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_MagicianShoesSure),
                 AskQuantity = false,
                 Formulas = [
                     new(1072075, [new(4021000, 2), new(4000021, 50), new(4003000, 15)], 18000),
@@ -1338,8 +1356,8 @@ namespace Application.Plugin.Script.Npc
 
             var thiefShoeCat = new RecipeCategory
             {
-                Name = "飞侠鞋子",
-                SelectionPrompt = stimulator ? "使用辅助剂制作飞侠鞋子？当然，哪一种？" : "飞侠鞋子？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_ThiefShoes),
+                SelectionPrompt = stimulator ? this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_ThiefShoesStimulator) : this.GetTalkMessage(ScriptMessage.Maker_Npc2040021_ThiefShoesSure),
                 AskQuantity = false,
                 Formulas = [
                     new(1072032, [new(4011000, 3), new(4000021, 50), new(4003000, 15)], 19000),
@@ -1368,16 +1386,24 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2040022 
         public async Task make_ludi4()
         {
-            string greeting = "啊，你找到我了！我大部分时间都在这里，为像你这样的旅行者制作武器。你有什么要求吗？";
-            string[] mainOptions = ["什么是辅助剂？", "制作战士武器", "制作弓箭手武器", "制作法师武器", "制作飞侠武器",
-                "使用辅助剂制作战士武器", "使用辅助剂制作弓箭手武器", "使用辅助剂制作法师武器", "使用辅助剂制作飞侠武器"];
+            string greeting = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_AhYouve);
+            string[] mainOptions = [
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_WhatsStimulator), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateWarrior),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateBowman), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateMagician), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateThiefWeapon),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateWarriorWeapon),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateBowmanWeapon), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateMagicianWeapon), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateThief)];
 
             var mainSel = await AskMenu(greeting, mainOptions);
             if (mainSel < 0) return;
 
             if (mainSel == 0)
             {
-                await SayNext("辅助剂是一种特殊的药剂，我可以在制作某些物品的过程中加入它。它会使物品拥有像怪物掉落一样的属性。然而，属性可能没有变化，也有可能低于平均水平。使用辅助剂时，还有10%的几率得不到任何物品，所以请明智选择。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2040020_StimulatorSpecial));
                 return;
             }
 
@@ -1386,8 +1412,8 @@ namespace Application.Plugin.Script.Npc
 
             var warriorWeaponCat = new RecipeCategory
             {
-                Name = "战士武器",
-                SelectionPrompt = "战士武器？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_WarriorWeapon),
+                SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_VeryWarrior),
                 AskQuantity = false,
                 Formulas = [
                     new(1302008, [new(4131000, 1), new(4011001, 2), new(4011004, 2), new(4003000, 30)], 18000),
@@ -1427,8 +1453,8 @@ namespace Application.Plugin.Script.Npc
 
             var bowmanWeaponCat = new RecipeCategory
             {
-                Name = "弓箭手武器",
-                SelectionPrompt = "弓箭手武器？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_BowmanWeapon),
+                SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_VeryBowman),
                 AskQuantity = false,
                 Formulas = [
                     new(1452005, [new(4131010, 1), new(4011001, 5), new(4011006, 5), new(4021003, 3), new(4021006, 3), new(4003000, 30)], 15000),
@@ -1444,8 +1470,8 @@ namespace Application.Plugin.Script.Npc
 
             var mageWeaponCat = new RecipeCategory
             {
-                Name = "法师武器",
-                SelectionPrompt = "魔法师武器？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_MagicianWeapon),
+                SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_VeryMagician),
                 AskQuantity = false,
                 Formulas = [
                     new(1372003, [new(4131008, 1), new(4011002, 3), new(4021002, 1), new(4003000, 10)], 15000),
@@ -1460,8 +1486,8 @@ namespace Application.Plugin.Script.Npc
 
             var thiefWeaponCat = new RecipeCategory
             {
-                Name = "飞侠武器",
-                SelectionPrompt = "飞侠武器？没问题，哪一种？",
+                Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_ThiefWeapon),
+                SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_VeryThief),
                 AskQuantity = false,
                 Formulas = [
                     new(1332012, [new(4131012, 1), new(4011002, 2), new(4011001, 3), new(4003000, 30)], 20000),
@@ -1480,7 +1506,7 @@ namespace Application.Plugin.Script.Npc
             var categoriesList = new List<RecipeCategory> { warriorWeaponCat, bowmanWeaponCat, mageWeaponCat, thiefWeaponCat };
             var selectedCategory = categoriesList[categoryIdx];
             var selectItemIdx = await AskMenu(selectedCategory.SelectionPrompt,
-                selectedCategory.Formulas.Select(x => $"#t{x.TargetItemId}# - 需要等级 {ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId)}"));
+                selectedCategory.Formulas.Select(x => this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_RequiredLevel, x.TargetItemId, ItemInformationProvider.getInstance().getEquipLevelReq(x.TargetItemId))));
 
             if (selectItemIdx < 0) return;
 
@@ -1500,13 +1526,13 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2040050 
         public async Task make_ston()
         {
-            await SayNext("好的，把青蛙的舌头和松鼠的牙齿混合在一起，哦对了！忘了放闪闪发光的白色粉末！！天哪，那本来可能会很糟糕……哇！！你站在那里多久了？我可能有点沉迷于我的工作……嘿嘿。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_AlrightMix));
 
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作魔法石",
-                    SelectionPrompt = "哈哈... #b#t4006000##k 是一种神秘的岩石，只有我才能制造。许多旅行者似乎需要它来获得比魔法值和生命值更强大的技能。有5种方法可以制作 #t4006000#。你想用哪种方法制作？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_MakeMagic),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_HahaMystical),
                     AskQuantity = false,
                     GetResultQuantity = (id, count) => 5,
                     Formulas = [
@@ -1518,8 +1544,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "制作召唤石",
-                    SelectionPrompt = "哈哈... #b#t4006001##k 是一种神秘的岩石，只有我才能制造。许多旅行者似乎需要它来获得比魔法值和生命值更强大的技能。有5种方法可以制作 #t4006001#。你想用哪种方法制作？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_MakeSummoning),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_HahaMysticalRock),
                     AskQuantity = false,
                     GetResultQuantity = (id, count) => 5,
                     Formulas = [
@@ -1532,14 +1558,14 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("正如你所看到的，我只是一个旅行的炼金术士。我可能还在训练中，但我仍然可以制作一些你可能需要的东西。你想看看吗？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc2040050_SeeIm), categories);
         }
 
 
         // Npc: 9201052 
         public async Task refine_TCG1()
         {
-            await SayOK("新叶城的巡逻队随时准备好。没有任何生物能够突破到城市里。");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201052_PatrolNew));
         }
 
 
@@ -1548,15 +1574,15 @@ namespace Application.Plugin.Script.Npc
         {
             if (getQuestStatus(8225) != 2)
             {
-                await SayOK("让开，新手，我们这里在做生意。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_StepAside));
                 return;
             }
 
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "武器制作",
-                    SelectionPrompt = "那么，你想让我为你制作哪种武器？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_WeaponForging),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_KindWeapon),
                     AskQuantity = false,
                     Formulas = [
                         new(2070018, [new(4032015, 1), new(4032016, 1), new(4032017, 1), new(4021008, 100), new(4032005, 30)], 70000),
@@ -1566,8 +1592,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "武器升级",
-                    SelectionPrompt = "升级武器？当然可以，但请注意，升级不会转移到新物品上...",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_WeaponUpgrading),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_UpgradedWeapon),
                     AskQuantity = false,
                     Formulas = [
                         new(1472074, [new(4032017, 1), new(4005001, 10), new(4021008, 20)], 75000),
@@ -1586,7 +1612,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("嘿，搭档！如果你有合适的货物，我可以把它变成一些非常好的东西...", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc9201095_PartnerHave), categories);
         }
 
 
@@ -1594,25 +1620,25 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("Jack_Additional ")]
         public async Task s_Jack_Additional()
         {
-            await SayNext("嘿，你知道现在在绯红之核运行的远征吗？这是一个提升自己的绝佳机会，可以在那里快速积累经验和战利品。");
-            if (!await AskYesNo("话虽如此，我认为使用一些强大的实用药水可能会在战线上创造一些差异，我的意思是开始制作 #b#t2022284##k's 来帮助努力。所以，言归正传，我目前正在追求 #r大量#k 的这些物品：#r#t4032010##k, #r#t4032011##k, #r#t4032012##k，以及一些资金来支持这项事业。你想得到一些这些助推器吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_AwareAbout));
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_SaidMethinks)))
             {
-                await SayOK("好的，再见。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_VerySee));
                 return;
             }
 
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "制作药水",
-                    SelectionPrompt = "好的，我来制作一些 #t2022284#。在这种情况下，你想要我制作多少个？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_CraftPotions),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_IllCrafting),
                     Formulas = [
                         new(2022284, [new(4032010, 60), new(4032011, 60), new(4032012, 45)], 75000)
                     ]
                 }
             };
 
-            await PerformRefine("好的，我来制作一些 #t2022284#。在这种情况下，你想要我制作多少个？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc9201096_IllCrafting), categories);
         }
 
         // Npc: 9201097 
@@ -1620,14 +1646,14 @@ namespace Application.Plugin.Script.Npc
         {
             if (getQuestStatus(8225) != 2)
             {
-                await SayOK("嘿，我不是强盗，好吗？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_ImBandit));
                 return;
             }
 
-            await SayNext("嘿，有点时间吗？我的工作是在这里收集物品然后在其他地方出售，但最近怪物变得更加敌对，所以很难得到好的物品... 你觉得呢？想和我做点生意吗？");
-            if (!await AskYesNo("这个交易很简单。你给我我需要的东西，我给你你需要的东西。问题是，我和很多人打交道，所以我能提供的物品可能每次见到我的时候都会改变。你觉得怎么样？还想做吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_GotLittle));
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_DealSimple)))
             {
-                await SayOK("嗯...这对你来说不应该是个坏交易。在合适的时间来找我，你可能会得到一个更好的物品。无论如何，如果你改变主意了，就让我知道。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_HmmmShouldnt));
                 return;
             }
 
@@ -1642,7 +1668,7 @@ namespace Application.Plugin.Script.Npc
             eQuestPrizes[6] = [[0, 3500000]];
             eQuestPrizes[7] = [[0, 3500000]];
 
-            var sel = await AskMenu("好的！首先你需要选择你要交易的物品。物品越好，我就越有可能给你一些更好的回报。\r\n",
+            var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_FirstNeed),
                 eQuestChoices.Select((id, i) => $"#v{id}#  #b#t{id}# #kx {(i < 4 ? 50 : 25)}"));
 
             if (sel < 0) return;
@@ -1650,12 +1676,12 @@ namespace Application.Plugin.Script.Npc
             int requiredItem = eQuestChoices[sel];
             int qnt = sel < 4 ? 50 : 25;
 
-            if (!await AskYesNo($"让我看看，你想用我的东西交换你的 #b{qnt} #t{requiredItem}##k，对吧？在交易之前，请确保你的消耗品或其他物品栏有空位。现在，你想和我交易吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_LetsSee, qnt, requiredItem)))
                 return;
 
             if (!haveItem(requiredItem, qnt))
             {
-                await SayOK($"“嗯... 你确定你有 #b{qnt} #t{requiredItem}##k 吗？如果是的话，请检查一下你的物品栏是否已满。”");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_HmmmSure, qnt, requiredItem));
                 return;
             }
 
@@ -1668,18 +1694,18 @@ namespace Application.Plugin.Script.Npc
             {
                 await gainItem(requiredItem, -qnt);
                 await gainMeso(prizeQuantity);
-                await SayOK($"对于你的 #b{qnt} #t{requiredItem}##k，这里有 #b{prizeQuantity} 金币#k。你觉得怎么样？你喜欢我给你的物品吗？我打算在这里待一段时间，所以如果你收集更多物品，我随时可以交易…");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_HeresMesos, qnt, requiredItem, prizeQuantity));
             }
             else
             {
                 if (!canHold(prizeItem, prizeQuantity))
                 {
-                    await SayOK("你的物品栏似乎已经满了。你需要腾出空间才能和我交易！清理一下，然后找到我。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_UseEtc));
                     return;
                 }
                 await gainItem(requiredItem, -qnt);
                 await gainItem(prizeItem, (short)prizeQuantity);
-                await SayOK($"对于你的 #b{qnt} #t{requiredItem}##k，这是我的 #b{prizeQuantity} #t{prizeItem}##k。你觉得怎么样？你喜欢我给你的回报物品吗？我打算在这里待一段时间，所以如果你收集到更多物品，我随时可以交易…");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201097_HeresThink, qnt, requiredItem, prizeQuantity, prizeItem));
             }
         }
 
@@ -1691,41 +1717,41 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(3992041))
                 {
-                    await SayOK("我们，昔日的守护者，目前正在要塞内的内殿会面，准备对扭曲之主及其军队发起进攻。随时加入我们。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201098_DefendersYore));
                 }
                 else
                 {
                     if (!canHold(3992041, 1))
                     {
-                        await SayOK("请为你的设置留出一个位置，准备好我要给你的钥匙。这对于进入内圣所非常重要，内圣所位于城堡内部。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201098_PleaseMake));
                     }
                     else
                     {
-                        await SayOK("所以你确实丢了你的钥匙，对吧？很好，我会给你制作另一个，但请不要再丢了。进入要塞内部的内殿是至关重要的。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201098_LostKey));
                         await gainItem(3992041, 1);
                     }
                 }
             }
             else
             {
-                await SayOK("哦，勇敢的冒险者。我所属的风暴法师之家守护着古老之地周围的区域，抵御扭曲主宰的卫兵每天对市民构成的威胁。请帮助我们保卫古老之地。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc9201098_OBrave));
             }
         }
 
         // Npc: 2100001 
         public async Task make_ariant1()
         {
-            if (!await AskYesNo("你是来这里冶炼矿石母矿或宝石母矿的吧？不论有多少母矿，只有经过我这样的冶炼大师之手，才能让它们重现世间。怎么样，你想要开始冶炼它们吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_RefineOres)))
             {
-                await SayNext("如果你现在还不急，就等会儿再来。你也看到了，现在我手上的工作多得要命，可能没法按时交付你给我的任务。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_ArentHurry));
                 return;
             }
 
             var categories = new List<RecipeCategory>
             {
                 new() {
-                    Name = "冶炼矿石母矿",
-                    SelectionPrompt = "我喜欢你的作风！我们现在就开工吧。你想要冶炼哪种矿石？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_RefineMineral),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_LikeAttitude),
                     Formulas = [
                         new(4011000, [new(4010000, 10)], 270),
                         new(4011001, [new(4010001, 10)], 270),
@@ -1738,8 +1764,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "冶炼宝石母矿",
-                    SelectionPrompt = "我喜欢你的作风！我们现在就开工吧。你想要冶炼哪种宝石？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_RefineJewel),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_LikeAttitudeLets),
                     Formulas = [
                         new(4021000, [new(4020000, 10)], 450),
                         new(4021001, [new(4020001, 10)], 450),
@@ -1753,8 +1779,8 @@ namespace Application.Plugin.Script.Npc
                     ]
                 },
                 new() {
-                    Name = "冶炼水晶母矿",
-                    SelectionPrompt = "水晶？这可真是稀有。别担心，我冶炼它们的手艺就像对矿石和宝石那样熟练。你想要冶炼哪种水晶？",
+                    Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_RefineCrystal),
+                    SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_CrystalThats),
                     Formulas = [
                         new(4005000, [new(4004000, 10)], 4500),
                         new(4005001, [new(4004001, 10)], 4500),
@@ -1764,7 +1790,7 @@ namespace Application.Plugin.Script.Npc
                 }
             };
 
-            await PerformRefine("我喜欢你的作风！我们现在就开工吧。你想要冶炼哪种母矿？", categories);
+            await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc2100001_LikeAttitudeLetsJust), categories);
         }
 
         // Npc: 2090004 
@@ -1774,32 +1800,36 @@ namespace Application.Plugin.Script.Npc
             {
                 if (canHold(4031554, 1))
                 {
-                    await SayOK("哦，那个男孩想让你给他带一个 #t4031554#？没问题，我本来就欠他的。现在，告诉他我正在还债，好吗？");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_BoyWanted));
                     await gainItem(4031554, 1);
                 }
                 else
                 {
-                    await SayOK("哦，这个男孩想让你给他带一个#t4031554#？先在你的杂项物品栏腾出位置。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_BoyWantedBring));
                 }
                 return;
             }
 
-            var option = await AskMenu("我是一个多才多艺的人。让我知道你想做什么。", ["制作药物", "制作卷轴", "捐赠药物成分"]);
+            var option = await AskMenu(
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_ManMany), 
+                [this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_MakeMedicine), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_MakeScroll), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_DonateMedicine)]);
             if (option < 0) return;
 
             if (option == 0) // Make a medicine
             {
                 if (!haveItem(4161030, 1))
                 {
-                    await SayNext("如果你想制作药物，你必须先学习《本草纲目》。没有比在没有适当知识的情况下进行药物实践更危险的事情了。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_WantMake));
                     return;
                 }
 
                 var categories = new List<RecipeCategory>
                 {
                     new() {
-                        Name = "制作药物",
-                        SelectionPrompt = "你对制作哪种药物感兴趣？",
+                        Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_MakeMedicine),
+                        SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_KindMedicine),
                         Formulas = [
                             new(2022145, [new(2022116, 3)], 0),
                             new(2022146, [new(2022116, 3)], 0),
@@ -1813,15 +1843,15 @@ namespace Application.Plugin.Script.Npc
                     }
                 };
 
-                await PerformRefine("你对制作哪种药物感兴趣？", categories);
+                await PerformRefine(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_KindMedicine), categories);
             }
             else if (option == 1) // Make a scroll
             {
                 var categories = new List<RecipeCategory>
                 {
                     new() {
-                        Name = "制作卷轴",
-                        SelectionPrompt = "你对制作哪种卷轴感兴趣？",
+                        Name = this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_MakeScroll),
+                        SelectionPrompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_KindScrolls),
                         AskQuantity = false,
                         Formulas = [
                             new(2043000, [new(4001124, 100), new(4010001, 10)], 0),
@@ -1878,18 +1908,18 @@ namespace Application.Plugin.Script.Npc
                 int[] items = [4000276, 4000277, 4000278, 4000279, 4000280, 4000291, 4000292, 4000286, 4000287, 4000293, 4000294, 4000298, 4000284, 4000288, 4000285, 4000282, 4000295, 4000289, 4000296, 4000297];
                 int[][] rewdRange = [[7, 7], [7, 7], [7, 8], [10, 10], [11, 11], [8, 8], [7, 8], [7, 9], [7, 8], [9, 9], [10, 10], [10, 11], [11, 11], [11, 12], [13, 13], [13, 13], [14, 14], [15, 15], [15, 16], [17, 17]];
 
-                var sel = await AskMenu("那么你想捐赠一些药物成分吗？这是个好消息！捐款将以 #b100#k 为单位接受。捐赠者将获得一颗可以制作卷轴的大理石。您想捐赠其中的哪一个？",
+                var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_WishDonate),
                     items.Select(id => $"#v{id}# #t{id}#"));
 
                 if (sel < 0) return;
 
                 int itemToDonate = items[sel];
-                if (!await AskYesNo($"你确定要捐赠 #b100 #t {itemToDonate}##k 吗？"))
+                if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_SureWant, itemToDonate)))
                     return;
 
                 if (!haveItem(itemToDonate, 100))
                 {
-                    await SayOK("请确保你既不缺少原料，也不缺少杂项物品栏的空间。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_PleaseMake));
                     return;
                 }
 
@@ -1898,13 +1928,13 @@ namespace Application.Plugin.Script.Npc
 
                 if (!canHold(4001124, (short)rewardQty))
                 {
-                    await SayOK("请确保你既不缺少原料，也不缺少杂项物品栏的空间。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_PleaseMake));
                     return;
                 }
 
                 await gainItem(itemToDonate, -100);
                 await gainItem(4001124, (short)rewardQty);
-                await SayOK("非常感谢你的捐赠！这里是你的奖励。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2090004_ThankMuch));
             }
         }
 
@@ -1915,17 +1945,24 @@ namespace Application.Plugin.Script.Npc
 
             var options = new List<string>
             {
-                "什么是刺激剂？",
-                "制作战士武器", "制作弓箭手武器", "制作法师武器", "制作盗贼武器", "制作海盗武器",
-                "制作战士武器（使用刺激剂）", "制作弓箭手武器（使用刺激剂）", "制作法师武器（使用刺激剂）",
-                "制作盗贼武器（使用刺激剂）", "制作海盗武器（使用刺激剂）",
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_WhatsStimulator),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateWarrior),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateBowman),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2040022_CreateMagician),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreateThiefWeapon), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreatePirateWeapon),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreateWarrior), 
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreateBowman),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreateMagician),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreateThief),
+                this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CreatePirate)
             };
             if (isQuestStarted(7301) || isQuestStarted(7303))
             {
-                options.Add("制作 #t4001078#");
+                options.Add(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_Make));
             }
 
-            var selStr = "龙的力量不可小觑。如果你愿意，我可以把它注入你的武器。不过，武器必须足够强大才能承载这份潜力……#b";
+            var selStr = this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonsPower);
             for (var i = 0; i < options.Count; i++)
             {
                 selStr += $"\r\n#L{i}# {options[i]}#l";
@@ -1943,18 +1980,26 @@ namespace Application.Plugin.Script.Npc
 
             if (selectedType == 0)
             {
-                await SayNext("刺激剂是一种特殊的药水，我可以在制作某些道具时加入。它能让成品拥有如同怪物掉落般的属性。但也有可能毫无变化，甚至低于平均水平。此外还有 10% 的几率什么都得不到，请谨慎选择。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_StimulatorSpecial));
                 return;
             }
 
             // 各职业的武器列表
             string[] weaponNames = selectedType switch
             {
-                1 => ["龙之弯刀#k - 110级单手剑#b", "龙之战斧#k - 110级单手斧#b", "龙之锤#k - 110级单手钝器#b", "龙之双手剑#k - 110级双手剑#b", "龙之双手斧#k - 110级双手斧#b", "龙之双手钝器#k - 110级双手钝器#b", "龙之长枪#k - 110级枪#b", "龙之戟#k - 110级矛#b"],
-                2 => ["龙之弓#k - 110级弓#b", "龙之弩#k - 110级弩#b"],
-                3 => ["龙之杖#k - 108级短杖#b", "龙之魔杖#k - 110级长杖#b"],
-                4 => ["龙之短刀#k - 110级力量短刀#b", "龙之短剑#k - 110级幸运短刀#b", "龙之拳套#k - 110级拳套#b"],
-                5 => ["龙之指虎#k - 110级指虎#b", "龙之短枪#k - 110级短枪#b"],
+                1 => [
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonCarabella), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonAxe), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonMace), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonClaymore), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonBattle), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonFlame), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonFaltizan), 
+                    this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonChelbird)],
+                2 => [this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonShiner), this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonShinerCross)],
+                3 => [this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonWand), this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonStaff)],
+                4 => [this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonKanzir), this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonKreda), this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonGreen)],
+                5 => [this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonSlash), this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_DragonfireRevolver)],
                 _ => [],
             };
 
@@ -2009,7 +2054,7 @@ namespace Application.Plugin.Script.Npc
                     return;
             }
 
-            var selectedItem = await AskMenu("那么，哪一件武器要承载龙的力量？#b\r\n"
+            var selectedItem = await AskMenu(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_VeryWeapon)
                 + string.Join("\r\n", weaponNames.Select((n, i) => $"#L{i}# {n}#l")));
             if (selectedItem < 0 || selectedItem >= itemSet.Length)
                 return;
@@ -2019,7 +2064,7 @@ namespace Application.Plugin.Script.Npc
             var matQty = matQtySet[selectedItem];
 
             var stimID = stimulator ? GetStimulatorId(item) : 0;
-            var prompt = $"你想让我制作一个#t{item}#吗？那样的话，我需要你提供特定的材料。不过请先确认你的背包有足够空间！#b";
+            var prompt = this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_WantMake, item);
             if (stimulator)
             {
                 prompt += $"\r\n#i{stimID}# 1 #t{stimID}#";
@@ -2030,7 +2075,7 @@ namespace Application.Plugin.Script.Npc
             }
             if (cost > 0)
             {
-                prompt += $"\r\n#i4031138# {cost} 冒险币";
+                prompt += this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_Meso, cost);
             }
 
             if (!await AskYesNo(prompt))
@@ -2038,13 +2083,13 @@ namespace Application.Plugin.Script.Npc
 
             if (!canHold(item))
             {
-                await SayOK("首先检查你的物品栏是否有空位。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_CheckInventory));
                 return;
             }
 
             if (getMeso() < cost)
             {
-                await SayOK("我的费用是为了利益所有的利弗尔人。如果你付不起，那就滚吧。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_FeeGood));
                 return;
             }
 
@@ -2052,14 +2097,14 @@ namespace Application.Plugin.Script.Npc
             {
                 if (!haveItem(mats[i], matQty[i]))
                 {
-                    await SayOK("恐怕没有正确的物品，龙之精华就不能成为一个非常可靠的武器。下次请带来正确的物品。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_ImAfraid));
                     return;
                 }
             }
 
             if (stimulator && !haveItem(stimID))
             {
-                await SayOK("恐怕没有正确的物品，龙之精华就不能成为一个非常可靠的武器。下次请带来正确的物品。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_ImAfraid));
                 return;
             }
 
@@ -2075,17 +2120,17 @@ namespace Application.Plugin.Script.Npc
                 if (Random.Shared.Next(10) != 0)
                 {
                     await gainItem(item, 1, true);
-                    await SayOK("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_ProcessComplete));
                 }
                 else
                 {
-                    await SayOK("不幸的是，龙的精华与你的武器产生了冲突。对你的损失我深感抱歉。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_UnfortunatelyDragons));
                 }
             }
             else
             {
                 await gainItem(item, 1);
-                await SayOK("过程已经完成。好好对待你的武器，免得招惹龙的愤怒。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Maker_Npc2080000_ProcessComplete));
             }
         }
 

@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Server.maps;
@@ -17,7 +18,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
             var contiMove = GetEventManager(KerningTrainFeature.EventName);
             if (await contiMove.StartInstance(getPlayer()) != CreateInstanceResult.Success)
             {
-                await Pink("The passenger wagon is already full. Try again a bit later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.KerningTrainKerningTrainPortal_PassengerWagon));
                 return false;
             }
 

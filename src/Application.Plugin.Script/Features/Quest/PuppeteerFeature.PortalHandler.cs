@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -19,7 +20,7 @@ namespace Application.Plugin.Script.Features.Quest
             var eim = getEventInstance();
             if (eim == null || eim.EventName != PuppeteerFeature.EventName || !eim.isEventCleared())
             {
-                await Pink("Defeat the Puppeteer before leaving.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PuppeteerFeaturePortalHandler_DefeatPuppeteer));
                 return false;
             }
 
@@ -64,7 +65,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("一股不祥的力量阻止你通过此处。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PuppeteerFeaturePortalHandler_OminousForce));
                 return false;
             }
         }

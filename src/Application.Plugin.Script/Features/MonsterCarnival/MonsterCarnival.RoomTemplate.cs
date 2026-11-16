@@ -1,6 +1,9 @@
+using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.model;
+using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Templates;
+using Application.Resources.Messages;
 using Application.Shared.Quest;
 
 namespace Application.Plugin.Script.Features.MonsterCarnival
@@ -36,6 +39,48 @@ namespace Application.Plugin.Script.Features.MonsterCarnival
         public override RewardOptions GetAllClearRewardOptions(Player chr, int point = 1)
         {
             return new RewardOptions(ExpPoolIndex: point);
+        }
+
+        public override string? HandleCreateInstanceResult(CreateInstanceResult r, IChannelClient c)
+        {
+            switch (r)
+            {
+                case CreateInstanceResult.Success:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_EntryLobby);
+                case CreateInstanceResult.RequiredParty:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_NeedCreate);
+                case CreateInstanceResult.RequiredLeader:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_WantStart);
+                case CreateInstanceResult.Requirement:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_CreateRequirement);
+                case CreateInstanceResult.LobbyLimited:
+                case CreateInstanceResult.Disposed:
+                case CreateInstanceResult.Unknown:
+                default:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_Error);
+            }
+        }
+
+        public override string? HandleJoinRequestResult(MCJoinInstanceResult r, IChannelClient c)
+        {
+            switch (r)
+            {
+                case MCJoinInstanceResult.Success:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_ChallengeRoomSent);
+                case MCJoinInstanceResult.RequiredParty:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_NeedCreate);
+                case MCJoinInstanceResult.RequiredLeader:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_WantStart);
+                case MCJoinInstanceResult.Requirement:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.MC_JoinRequirement);
+                case MCJoinInstanceResult.NotInWaiting:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_FindError);
+                case MCJoinInstanceResult.AnthorRequest:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_ChallengeRoomAnswer);
+                case MCJoinInstanceResult.Unknown:
+                default:
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.CPQ_Error);
+            }
         }
     }
 }

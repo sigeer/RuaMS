@@ -64,14 +64,14 @@ public class Storage : AbstractStorage, IItemStore
         if (Owner.isGM() && Owner.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_USE_STORAGE)
         {
             log.Information("GM {GM} blocked from using storage", Owner);
-            await Owner.Popup(nameof(ClientMessage.Storage_Restriction_GMLevel));
+            await Owner.Popup(ClientMessage.Storage_Restriction_GMLevel);
             await UpdateMeso();
             return false;
         }
 
         if (Owner.getLevel() < 15)
         {
-            await Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            await Owner.Popup(ClientMessage.Storage_NeedLevel);
             await UpdateMeso();
             return false;
         }
@@ -118,7 +118,7 @@ public class Storage : AbstractStorage, IItemStore
     {
         if (Owner.getLevel() < 15)
         {
-            await Owner.Popup(nameof(ClientMessage.Storage_NeedLevel));
+            await Owner.Popup(ClientMessage.Storage_NeedLevel);
             await Owner.SendPacket(PacketCreator.enableActions());
             return;
         }
