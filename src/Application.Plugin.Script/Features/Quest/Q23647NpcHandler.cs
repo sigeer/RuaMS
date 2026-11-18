@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -25,13 +27,13 @@ namespace Application.Plugin.Script.Features.Quest
 
             if (!haveItem(4031793, 1))
             {
-                await SayOK("嗯...嘿...你能帮我找到我在树林里丢失的一块柔软而闪亮的银色毛皮吗？我需要它，我需要它，我非常非常需要它！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Q23647_UmmHelp));
                 return;
             }
 
-            if (await AskYesNo("嘿... 嗯... 你能帮我找到我在树林里丢失的一块#b柔软而闪亮的银色毛皮#k吗？我需要它，我需要它，我非常非常需要它！... 哦，你找到了它！！！你会把它给我吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Q23647_UmmHelpFind)))
             {
-                await SayNext("嘿嘿嘿~这是你从我这里拿走的报酬，你值得拥有。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Q23647_TeeheheeThats));
                 await gainItem(4031793, -1);
                 await gainFame(-5);
                 await setQuestProgress(23647, 1, 1);

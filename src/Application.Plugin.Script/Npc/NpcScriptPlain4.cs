@@ -1,3 +1,7 @@
+
+using Application.Plugin.Script;
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -16,27 +20,27 @@ namespace Application.Plugin.Script.Npc
             var onBirthMap = getMapId() == 0 || getMapId() == 3;
             if (!onBirthMap)
             {
-                await SayNext("这是您的第一个训练课程开始的图像室。在这个房间里，您将提前了解您选择的职业。");
-                await SayNext("一旦你训练得足够努力，你就有资格获得一份工作。你可以成为赫内西斯的弓箭手，艾琳尼亚的魔法师，佩里恩的战士，以及科尔宁城的盗贼……");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_ImageRoom));
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_OnceTrain));
                 return;
             }
 
-            var enterCamp = await AskYesNo("欢迎来到冒险岛的世界。这个训练营的目的是帮助新手。你想要进入这个训练营吗？有些人在开始他们的冒险之旅时并没有参加训练计划。但我强烈建议你先参加训练计划。");
+            var enterCamp = await AskYesNo(this.GetTalkMessage(ScriptMessage.Plain4_WelcomeWorld));
             if (enterCamp)
             {
-                await SayNext("好的，那么，我会让你进入训练营地。请跟着你的教练。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_LetEnter));
                 await warp(1, 0);
                 return;
             }
 
-            if (await AskYesNo("你真的想立刻开始你的冒险吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Plain4_ReallyWant)))
             {
-                await SayNext("看起来你想要开始你的冒险之旅而不接受训练计划。那么，我会让你前往训练场地。小心~");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_SeemsLike));
                 await warp(40000, 0);
                 return;
             }
 
-            await SayNext("请在你最终做出决定后再和我交谈。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_PleaseTalk));
         }
 
         // Npc: 2101
@@ -46,17 +50,17 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() == 10000)
             {
-                await SayOK("您是一位新的冒险家，我会为你提供一些非常有用指示。如果您想与我们说话，你可以双击我们。您可以按#b左箭头和右箭头#k进行移动，通过按#bAlt#k来跳跃。来吧~试试吧！另外，有时候你需要爬梯子或使用绳子到达你想去的地方。你可以通过按#b上箭头#k来做到这一点。请记住这一点。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain4_YoureNew));
                 return;
             }
 
-            if (!await AskYesNo("你的训练完成了吗？如果你愿意的话，我会让你离开这个训练营。"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Plain4_DoneTraining)))
             {
-                await SayOK("你还没完成训练计划吗？如果你想离开这个地方，请毫不犹豫地告诉我。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain4_HaventFinished));
                 return;
             }
 
-            await SayNext("接下来，我会把你从这里送出去，祝您一路顺风。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Plain4_SendOut));
             await warp(0);
         }
     }

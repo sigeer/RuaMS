@@ -16,7 +16,7 @@ public class SummonCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.SummonCommand_Syntax), CurrentCommand);
+            await player.Yellow(ClientMessage.SummonCommand_Syntax, CurrentCommand);
             return;
         }
 

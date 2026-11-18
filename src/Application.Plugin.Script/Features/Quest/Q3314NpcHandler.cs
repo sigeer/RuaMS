@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
 using Application.Shared.GameProps;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -23,11 +25,11 @@ namespace Application.Plugin.Script.Features.Quest
                 if (canHold(2022198, 1))
                 {
                     await gainItem(2022198, 1);
-                    await SayOK("你拿了桌子上放着的药丸。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q3314_TookPill));
                 }
                 else
                 {
-                    await SayOK("你没有可用的消耗槽来获取#t2022198#。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q3314_NoUseSlot, 2022198));
                 }
             }
         }

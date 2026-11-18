@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -22,7 +23,7 @@ namespace Application.Plugin.Script.Features.Zakum
             await changeMusic("Bgm06/FinalFight");
             await SpawnZakum();
 
-            await Pink("Zakum is summoned by the force of Eye of Fire.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ZakumReactorActHandler_ZakumSummoned));
         }
     }
 }

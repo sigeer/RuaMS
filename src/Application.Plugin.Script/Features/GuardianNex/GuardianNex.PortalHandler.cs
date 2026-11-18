@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Server.maps;
@@ -25,13 +26,13 @@ namespace Application.Plugin.Script.Features.GuardianNex
                 {
                     if (getQuestProgressInt(quests[i], mobs[i]) != 0)
                     {
-                        await Pink("You already faced Nex. Complete your mission.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.GuardianNexPortalHandler_AlreadyFaced));
                         return false;
                     }
 
                     if (await nex.StartInstance(getPlayer(), lobbyId: i) != CreateInstanceResult.Success)
                     {
-                        await Pink("Someone is already challenging Nex. Wait for them to finish before you enter.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.GuardianNexPortalHandler_SomeoneAlready));
                         return false;
                     }
                     else
@@ -42,7 +43,7 @@ namespace Application.Plugin.Script.Features.GuardianNex
                 }
             }
 
-            await Pink("A mysterious force won't let you in.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
             return false;
         }
 

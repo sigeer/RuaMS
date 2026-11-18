@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Client;
 using Application.Core.Server.life;
@@ -141,7 +142,7 @@ namespace Application.Plugin.Script
             { // 0x04 appears to be the destroyed state
                 await killMonster(3230300);
                 await killMonster(3230301);
-                await LightBlue("Once the rock crumbled, Jr. Boogie was in great pain and disappeared.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.ReactorActScript_OnceRock));
             }
 
 
@@ -230,7 +231,7 @@ namespace Application.Plugin.Script
         public async Task ntQuest02()
         {
             // string visibility thanks to ProXAIMeRx & Glvelturall
-            await Pink("Failed to find Bart. Returning to the original location.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_FailedFind));
             await warp(120000102);
 
 
@@ -332,7 +333,7 @@ namespace Application.Plugin.Script
         // Reactor: 2110000 
         public async Task go280010000()
         {
-            await Pink("未知力量将你传送至起始点！");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_UnknownForce));
             await warp(280010000, 0);
         }
 
@@ -340,7 +341,7 @@ namespace Application.Plugin.Script
         // Reactor: 2111000 
         public async Task boxMob0()
         {
-            await Pink("Oh noes! Monsters in the chest!");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_NoesMonsters));
             await spawnMonster(9300004, 3);
 
 
@@ -472,14 +473,14 @@ namespace Application.Plugin.Script
         [ScriptName("snowscaScript0", "snowscaScript1", "snowscaScript2")]
         public async Task SnowscaScript()
         {
-            await weakenAreaBoss(6090001, "The light at the altar appeases the hatred of the Snow Witch. The force of the Witch has weakened.");
+            await weakenAreaBoss(6090001, this.GetTalkMessage(ScriptMessage.Weaken_SnowWitch));
         }
 
 
         // Reactor: 2200001 
         public async Task ludiPotal0()
         {
-            await Pink("已发现隐藏的机械工厂！");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_HiddenMachine));
             await warp(Random.Shared.NextDouble() < .5 ? 922000020 : 922000021, 0);
         }
 
@@ -487,7 +488,7 @@ namespace Application.Plugin.Script
         // Reactor: 2200002 
         public async Task go922010201()
         {
-            await mapMessage(5, "An unknown force has warped you into a trap.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_UnknownForceHas));
             warpMap(922010201);
 
 
@@ -595,7 +596,7 @@ namespace Application.Plugin.Script
         public async Task fvMob0()
         {
             await spawnMonster(7130400);
-            await mapMessage(5, "Here comes Yellow King Goblin!");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_ComesYellow));
 
 
         }
@@ -605,7 +606,7 @@ namespace Application.Plugin.Script
         public async Task fvMob1()
         {
             await spawnMonster(7130401);
-            await mapMessage(5, "Here comes Blue King Goblin!");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_ComesBlue));
 
 
         }
@@ -615,7 +616,7 @@ namespace Application.Plugin.Script
         public async Task fvMob2()
         {
             await spawnMonster(7130402, -340, 100);
-            await mapMessage(5, "Here comes Green King Goblin!");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_ComesGreen));
 
 
         }
@@ -674,7 +675,7 @@ namespace Application.Plugin.Script
         public async Task fvscaScript0()
         {
 
-            await weakenAreaBoss(6090003, "The grieving Scholar Ghost has been slightly appeased. You may be able to defeat the Scholar Ghost.");
+            await weakenAreaBoss(6090003, this.GetTalkMessage(ScriptMessage.Weaken_ScholarGhost));
 
 
         }
@@ -890,7 +891,7 @@ namespace Application.Plugin.Script
         // Reactor: 2619003 
         public async Task magascaScript0()
         {
-            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, this.GetTalkMessage(ScriptMessage.Weaken_RurumoPoisoned));
 
 
         }
@@ -899,7 +900,7 @@ namespace Application.Plugin.Script
         // Reactor: 2619004 
         public async Task magascaScript1()
         {
-            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, this.GetTalkMessage(ScriptMessage.Weaken_RurumoPoisoned));
 
 
         }
@@ -908,7 +909,7 @@ namespace Application.Plugin.Script
         // Reactor: 2619005 
         public async Task magascaScript2()
         {
-            await weakenAreaBoss(6090004, "Rurumo has been poisoned. It may finally be defeatable!");
+            await weakenAreaBoss(6090004, this.GetTalkMessage(ScriptMessage.Weaken_RurumoPoisoned));
 
 
         }
@@ -948,7 +949,7 @@ namespace Application.Plugin.Script
         public async Task halloweenbox()
         {
             //wtf is this?
-            await Pink("Enjoy Halloween!");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_EnjoyHalloween));
             await spawnMonster(9400202, 10);
 
 
@@ -962,7 +963,7 @@ namespace Application.Plugin.Script
         {
             await spawnMonster(9400210, 2);
             await spawnMonster(9400209, 2);
-            await mapMessage(5, "Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
 
 
         }
@@ -973,7 +974,7 @@ namespace Application.Plugin.Script
         {
             await spawnMonster(9400211, 2);
             await spawnMonster(9400212, 2);
-            await mapMessage(5, "Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
 
 
         }
@@ -984,7 +985,7 @@ namespace Application.Plugin.Script
         {
             await spawnMonster(9400213, 2);
             await spawnMonster(9400214, 2);
-            await mapMessage(5, "Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
 
 
         }
@@ -995,7 +996,7 @@ namespace Application.Plugin.Script
         {
             await spawnMonster(9400215, 2);
             await spawnMonster(9400216, 2);
-            await mapMessage(5, "Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
 
 
         }
@@ -1006,7 +1007,7 @@ namespace Application.Plugin.Script
         {
             await spawnMonster(9400217, 2);
             await spawnMonster(9400218, 2);
-            await mapMessage(5, "Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
 
 
         }
@@ -1127,7 +1128,7 @@ namespace Application.Plugin.Script
         // Reactor: 9201001 
         public async Task syarenNPC0()
         {
-            await mapMessage(5, "A bright flash of light, then someone familiar appears in front of the blocked gate.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_BrightFlash));
             await spawnNpc(9040003);
         }
 

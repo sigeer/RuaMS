@@ -1,5 +1,7 @@
 using Application.Core.Channel.QuestRecordEx;
 using Application.Shared.Quest;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Quest
 {
@@ -42,13 +44,13 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                await SayOK("要想获得人气王称号，必须在限定时间内使人气度提高1000。如果你觉得太困难，可以放弃任务，挑战其他称号。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ObtainMost));
             }
         }
         // Quest: 29400 
         public async Task q29400s()
         {
-            if (await HandleMedalQuestStart("30天内击杀100000只符合等级条件的怪物"))
+            if (await HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_KillEligible)))
             {
                 var chr = getPlayer();
                 var questEx = chr.GetQuestRecordEx(ExQuestId.VeteranHunter) as MedalQuest29400Ex;
@@ -57,7 +59,7 @@ namespace Application.Plugin.Script.Quest
                     questEx.Mg = 100000;
                     await chr.FlushQuestRecordEx(questEx);
                 }
-                await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ChallengeHas));
             }
         }
         // Quest: 29400 
@@ -71,16 +73,16 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                await SayOK("挑战已经开始。请在限制时间内尽可能多地狩猎符合条件的怪物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ChallengeHas));
             }
 
         }
         // Quest: 29500 
         public async Task q29500s()
         {
-            if (await HandleMedalQuestStart("人气达到 1000"))
+            if (await HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_ReachFame)))
             {
-                await SayOK("人气达到 1000 后，请再来找我接受审查。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_OnceFame));
             }
         }
         // Quest: 29500 
@@ -88,7 +90,7 @@ namespace Application.Plugin.Script.Quest
         {
             if (getPlayer().Fame < 1000)
             {
-                await SayOK("你的人气还没有达到 1000。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_FameHas));
                 return;
             }
             await HandleMedalQuestComplete();
@@ -104,9 +106,9 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29503 
         public async Task q29503s()
         {
-            if (await HandleMedalQuestStart("贡献 10000000 金币"))
+            if (await HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_DonateMesos)))
             {
-                await SayOK("准备好 10000000 金币后，请再来找我。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ComeBack));
             }
         }
         // Quest: 29503 
@@ -120,16 +122,16 @@ namespace Application.Plugin.Script.Quest
             }
             else
             {
-                await SayOK("完成这次公益贡献需要 10000000 金币。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_PublicContribution));
             }
 
         }
         // Quest: 29505 
         public async Task q29505s()
         {
-            if (await HandleMedalQuestStart("怪物嘉年华2胜利 100 场"))
+            if (await HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_WinMonster)))
             {
-                await SayOK("在怪物嘉年华2中取得 100 场胜利后，请回来接受审查。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ComeBackReview));
             }
         }
         // Quest: 29505 
@@ -149,15 +151,15 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29506 
         public async Task q29506s()
         {
-            if (await HandleMedalQuestStart("怪物嘉年华2至少 50 场\n - 胜率至少 70%"))
+            if (await HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_MonsterCarnival)))
             {
-                await SayOK("保持稳定的胜率，才是真正的嘉年华天才。符合条件后，请回来接受审查。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A51_ConsistentlyWinning));
             }
         }
         // Quest: 29506 
         public async Task q29506e()
         {
-            if (await AskYesNo("让我看看你是否达到了怪物嘉年华2的场次和胜率要求。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.A51_LetSee)))
             {
                 var chr = getPlayer();
 
@@ -231,32 +233,32 @@ namespace Application.Plugin.Script.Quest
         // Quest: 29923 
         public Task q29923s() => HandleMedalQuestStart();
         // Quest: 29924 
-        public Task q29924s() => HandleMedalQuestStart("成为 10 级以上战神后", GetQuestMessage);
+        public Task q29924s() => HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_AfterBecoming, GetQuestMessage));
         public Task q29924e() => HandleMedalQuestComplete();
         // Quest: 29925 
-        public Task q29925s() => HandleMedalQuestStart("成为 30 级以上战神后", GetQuestMessage);
+        public Task q29925s() => HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_AfterBecomingAran, GetQuestMessage));
         public Task q29925e() => HandleMedalQuestComplete();
         // Quest: 29926 
-        public Task q29926s() => HandleMedalQuestStart("成为 70 级以上战神后", GetQuestMessage);
+        public Task q29926s() => HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_AfterBecomingAranLevel, GetQuestMessage));
         public Task q29926e() => HandleMedalQuestComplete();
         // Quest: 29927 
-        public Task q29927s() => HandleMedalQuestStart("成为 120 级以上战神后", GetQuestMessage);
+        public Task q29927s() => HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_AfterBecomingAranLevelHigher, GetQuestMessage));
         public Task q29927e() => HandleMedalQuestComplete();
         // Quest: 29928 
-        public Task q29928s() => HandleMedalQuestStart("成为 200 级战神后", GetQuestMessage);
+        public Task q29928s() => HandleMedalQuestStart(this.GetTalkMessage(ScriptMessage.A51_AfterBecomingLevel, GetQuestMessage));
         public Task q29928e() => HandleMedalQuestComplete();
         // Quest: 29933 
         public Task q29933s() => HandleMedalQuestStart();
 
         async Task NotImplement()
         {
-            await SayNext("尚未实现");
+            await SayNext(this.GetTalkMessage(ScriptMessage.A51_ImplementedYet));
         }
 
-        string GetChanllengeMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能获得本勋章，不想挑战一下试试吗？";
-        string GetQuestMessage(int medalItemId, string slot) => $"#v{medalItemId}# #e#b#t{medalItemId}##k\n\n - {slot}就能找#p{npc}#领取称号。";
+        string GetChanllengeMessage(int medalItemId, string slot) => this.GetTalkMessage(ScriptMessage.A51_ChallengePrompt, medalItemId, medalItemId, slot);
+        string GetQuestMessage(int medalItemId, string slot) => this.GetTalkMessage(ScriptMessage.A51_QuestPrompt, medalItemId, medalItemId, slot, npc);
 
-        async Task<bool> HandleMedalQuestStart(string slot = "完成任务", Func<int, string, string>? slotFunc = null)
+        async Task<bool> HandleMedalQuestStart(string? slot = null, Func<int, string, string>? slotFunc = null)
         {
             var questObj = Application.Core.Server.quest.Quest.getInstance(getQuest());
             if (questObj == null)
@@ -272,7 +274,7 @@ namespace Application.Plugin.Script.Quest
 
             if (questObj?.ViewMedalItem > 0)
             {
-                if (await SayAcceptDecline(slotFunc == null ? GetChanllengeMessage(questObj.ViewMedalItem, slot) : slotFunc(questObj.ViewMedalItem, slot)))
+                if (await SayAcceptDecline(slotFunc == null ? GetChanllengeMessage(questObj.ViewMedalItem, slot ?? this.GetTalkMessage(ScriptMessage.A51_CompleteQuest)) : slotFunc(questObj.ViewMedalItem, slot ?? this.GetTalkMessage(ScriptMessage.A51_CompleteQuest))))
                 {
                     await startQuest();
                     return true;
@@ -289,17 +291,17 @@ namespace Application.Plugin.Script.Quest
             {
                 var medalname = c.CurrentCulture.GetItemName(questObj.ViewMedalItem);
 
-                await SayNext($"恭喜你获得了 #b<{medalname}>#k 勋章！继续加油吧勇士.\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n #v{questObj.ViewMedalItem}:# #t{questObj.ViewMedalItem}# 1");
+                await SayNext(this.GetTalkMessage(ScriptMessage.A51_MedalEarned, medalname, questObj.ViewMedalItem, questObj.ViewMedalItem));
                 if (canHold(questObj.ViewMedalItem))
                 {
                     await gainItem(questObj.ViewMedalItem);
-                    await EarnTitle("<" + medalname + "> 奖励已获取.");
+                    await this.EarnTitle("<" + medalname + this.GetTalkMessage(ScriptMessage.A51_RewardAlready));
 
-                    await forceCompleteQuest();
+                    await this.EarnTitle(this.GetTalkMessage(ScriptMessage.A51_MedalClaimed, medalname));
                 }
                 else
                 {
-                    await SayNext("背包空间不足或者已经领取过了");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.A51_NoSpace));
                 }
             }
         }

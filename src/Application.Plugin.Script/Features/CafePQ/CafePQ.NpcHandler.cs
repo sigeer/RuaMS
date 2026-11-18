@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.CafePQ
 {
@@ -16,11 +18,11 @@ namespace Application.Plugin.Script.Features.CafePQ
         // Npc: 1052012 
         public async Task go_pc()
         {
-            if (await AskYesNo("那么，你打算使用网吧吗？在那里使用空间是需要付费的，费用是#b5,000金币#k。你要进入网吧吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.CafePQ_GoingUse)))
             {
                 if (getMeso() < 5000)
                 {
-                    await SayOK("哦，你没有钱，对吧？抱歉，我不能让你进去。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.CafePQ_DontHave));
                 }
                 else
                 {
@@ -47,13 +49,13 @@ namespace Application.Plugin.Script.Features.CafePQ
                         {
                             if (haveItem(4001007, couponsNeeded))
                             {
-                                await SayNext("你的团队收集了所有需要的优惠券，干得好！");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.CafePQ_TeamCollected));
                                 await gainItem(4001007, couponsNeeded);
                                 await eim.clearPQ();
                             }
                             else
                             {
-                                if (await AskYesNo($"你的团队必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。当你手头有足够的数量时，和我交谈...或者你想#b现在退出#k？请注意，如果你现在退出，#r你的团队也将被迫退出#k。"))
+                                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.CafePQ_NeedCouponsLeader, couponsNeeded)))
                                 {
                                     await warp(193000000);
                                 }
@@ -61,7 +63,7 @@ namespace Application.Plugin.Script.Features.CafePQ
                         }
                         else
                         {
-                            if (await AskYesNo($"你的队伍必须收集#r{couponsNeeded}#k张优惠券才能完成这个副本。让你的队长带着正确数量的优惠券来找我谈谈……或者你想要#b现在退出#k吗？请注意，如果你现在退出，你的队伍#r可能会人手不足#k以继续进行这个副本。"))
+                            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.CafePQ_NeedCouponsMember, couponsNeeded)))
                             {
                                 await warp(193000000);
                             }
@@ -71,7 +73,7 @@ namespace Application.Plugin.Script.Features.CafePQ
                     {
                         if (await eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
                         {
-                            await SayOK("请在您的ETC库存中腾出一个空间来接收奖品。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.CafePQ_PleaseMake));
                         }
                         else
                         {
@@ -83,13 +85,12 @@ namespace Application.Plugin.Script.Features.CafePQ
             else
             {
                 string[] levels = ["#m190000000#", "#m191000000#", "#m192000000#", "#m195000000#", "#m196000000#", "#m197000000#"];
-                var area = await AskMenu("高级道路是一个聚集了各种类型怪物，刷经验、刷装备的理想场所。#p1052014# 选择您想要面对的区域：", levels.Select(x => x));
-
+                var area = await AskMenu(this.GetTalkMessage(ScriptMessage.CafePQ_PickArea, levels.Select(x => x)));
                 var pqArea = area + 1;
                 var em = GetEventManager(CafePQFeature.EventNames[pqArea - 1]);
-                var pqOption = await AskMenu($"#e#b<组队任务：高级之路 - {levels[area]}>\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n#p1052014# 的操作方式与普通的不同。它们不使用金币或扭蛋券，而是使用 #r橡皮擦#k，可以通过完成高级之路上的任务获得。要前往那里，你必须找到队友并参加一个组队任务。当组队并准备好后，让你的 #b队长#k 与我交谈。", [
-                    "我想参加组队任务。",
-                    "我想了解更多详情。"
+                var pqOption = await AskMenu(this.GetTalkMessage(ScriptMessage.CafePQ_EnterMenu, levels[area], em.Template.GetRequirementDescription(c)), [
+                    this.GetTalkMessage(ScriptMessage.PartyQuest_Start),
+                    this.GetTalkMessage(ScriptMessage.PartyQuest_MoreInfo)
                 ]);
 
                 if (pqOption == 0)
@@ -99,7 +100,7 @@ namespace Application.Plugin.Script.Features.CafePQ
                 }
                 else
                 {
-                    await SayOK("#e#b<组队任务：高级之路>#k#n\r\n在前方的地图上，你将面对许多普通等级的怪物。击败它们，收集所有需要的优惠券交给我。然后所有成员将获得一个橡皮擦，与所面对的等级相对应。在机器上插入#b多个相同的橡皮擦或多种不同的橡皮擦#k，以获得更大奖品的机会。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.CafePQ_PartyQuest));
                 }
             }
         }
@@ -120,9 +121,9 @@ namespace Application.Plugin.Script.Features.CafePQ
             int[] itemSet_lv1 = [1302021, 1302024, 1302033, 1082150, 1002419, 2022053, 2022054, 2020032, 2022057, 2022096, 2022097, 2022192, 2020030, 2010005, 2022041, 2030000, 2040100, 2040004, 2040207, 2048004, 4031203, 4000021, 4003005, 4003000, 4003001, 4010000, 4010001, 4010002, 4010005, 4020004];
             int[] itemQty_lv1 = [1, 1, 1, 1, 1, 20, 20, 20, 20, 20, 25, 25, 25, 50, 50, 12, 1, 1, 1, 1, 3, 4, 2, 2, 1, 2, 2, 2, 2, 2];
 
-            string[] levels = ["第1层", "第2层", "第3层", "第4层", "第5层", "第6层"];
+            string[] levels = [this.GetTalkMessage(ScriptMessage.CafePQ_Tier), this.GetTalkMessage(ScriptMessage.CafePQ_Tier2), this.GetTalkMessage(ScriptMessage.CafePQ_Tier3), this.GetTalkMessage(ScriptMessage.CafePQ_Tier4), this.GetTalkMessage(ScriptMessage.CafePQ_Tier5), this.GetTalkMessage(ScriptMessage.CafePQ_Tier6)];
 
-            var selection = await AskMenu("这里是#b网咖派对任务#k，奖励玩家与票类似的#b怪物橡皮#k，可以用在自动售货机上兑换奖品。通过选择不同的#r层级#k，进一步获得更好的奖品。\r\n\r\n这里描述了每个级别可能的奖励:\r\n",
+            var selection = await AskMenu(this.GetTalkMessage(ScriptMessage.CafePQ_InternetCafe),
                 levels.Select(x => x));
 
             int[] lvTarget, lvQty;
@@ -136,7 +137,7 @@ namespace Application.Plugin.Script.Features.CafePQ
                 default: lvTarget = itemSet_lv6; lvQty = itemQty_lv6; break;
             }
 
-            var sendStr = $"下列物品将在#b{levels[selection]}#k层获得:\r\n\r\n";
+            var sendStr = this.GetTalkMessage(ScriptMessage.CafePQ_RewardAtTier, levels[selection]);
             for (var i = 0; i < lvTarget.Length; i++)
             {
                 sendStr += $"#i{lvTarget[i]}# #t{lvTarget[i]}#";

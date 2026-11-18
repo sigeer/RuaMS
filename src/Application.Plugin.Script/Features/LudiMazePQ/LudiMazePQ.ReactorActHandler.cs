@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -27,7 +28,7 @@ namespace Application.Plugin.Script.Features.LudiMazePQ
                 await spawnMonster(9400210, 9);
             }
 
-            await Pink("Some monsters are summoned.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.ReactorActScript_SomeMonsters));
         }
     }
 }

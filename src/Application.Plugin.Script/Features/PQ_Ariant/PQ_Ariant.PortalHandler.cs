@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Game.Players;
 using Application.Core.Server.maps;
@@ -55,7 +56,7 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
             }
             else
             {
-                await Pink("仅限沙匪队成员进入。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PQAriantPortalHandler_OnlyMembers));
                 return false;
             }
         }
@@ -72,7 +73,7 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
             }
             else
             {
-                await Pink("只有持有宫殿通行证才能进入。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PQAriantPortalHandler_OnlyHolding));
                 return false;
             }
         }
@@ -93,7 +94,7 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
             {
                 await playPortalSound();
                 await warp(260000300, 7);
-                await Pink("你，入侵者！你没有权限在宫殿中随意走动！滚出去！！");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PQAriantPortalHandler_IntruderHave));
                 return true;
             }
         }

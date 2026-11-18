@@ -4,5 +4,6 @@
   "QuestOffer": "Some villagers mentioned rumors about a gangster. Interested? It'll cost you {0} mesos for a tip.",
   "QuestAccept": "Tell me.",
   "QuestLocation": "I heard he hangs around #r#m{0}##k.",
-  "NotEnoughMeso": "Not enough mesos."
+  "NotEnoughMeso": "Not enough mesos.",
+  "MobAppeared": "{0} dug up a swarm of #o{1}#."
 }

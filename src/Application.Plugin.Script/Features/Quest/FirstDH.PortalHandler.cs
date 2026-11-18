@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -36,7 +37,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("只有参加Kiku的适应训练，才能进入1号演武场。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.FirstDHPortalHandler_EnterTraining));
                 return false;
             }
         }

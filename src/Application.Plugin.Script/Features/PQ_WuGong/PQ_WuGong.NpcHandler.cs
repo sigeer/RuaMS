@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.PQ_WuGong
 {
@@ -19,27 +21,27 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
             {
                 if (haveItem(itemId, 1))
                 {
-                    await SayNext($"嗯？\r\n看不出来你还有些本事哦，连#b#e#v{itemId}##t{itemId}##k#n都能搞到手。\r\n既然如此，那你就先去#b#e#m{enterMap}##k#n调查看看。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_LivestockHave, itemId, itemId, enterMap));
                 }
 
                 else
                 {
-                    await SayNext("最近的家畜又突然变得非常暴躁，我们推测是#b#e#o9300188##k#n又又又卷土重来了，麻烦你去处理一下吧。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_LivestockHave));
                 }
 
-                if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_EnterPrompt, enterMap)))
                 {
                     await gainItem(itemId, -1);
                     await warp(enterMap);
                 }
                 else
                 {
-                    await SayOK($"当你准备好去#b#e#m{enterMap}##k#n的时候再来找我。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_ComeBack, enterMap));
                 }
             }
             else
             {
-                await SayOK($"敬礼！\r\n你好，#b#h ##k，我是#e#b#p{getNpc()}##k#n，在这片区域进行巡逻。\r\n如果你没什么事的话，还是快点回去吧！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_SalutePatrolling, getNpc()));
             }
         }
 
@@ -56,29 +58,28 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
             var chrQuestStatus = getQuestStatus(questId);
             if (chrQuestStatus == 0)
             {
-                await SayNext("敬礼！\r\n要做一些检查！\r\n这里是禁区，闲人免进。\r\n没有许可的人是不允许进入的！\r\n什么？已经获得许可了？");
-                if (await AskYesNo("哦...刚刚接到信息。您是特别行动小组的人啊。看来是位了不起的人啊，如果您帮我个小忙的话，我就让您通过。您可以帮我吗？"))
+                await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_SaluteRoutine));
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_JustGot)))
                 {
                     await startQuest(questId);
                 }
                 else
                 {
-                    await SayNext("如果不协助执行公务的话，就不能让你通过。请回吧。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_WontCooperate));
                 }
             }
             else
             {
-                var option = await AskMenu($"你需要收集 #e#b#v{itemID}##t{itemID}##k#n × #r#e50#k#n \r\n才能证明你有点本事，否则我不放心让你去白给！\r\n", [
-                $"进入 #b#e#m{enterMap}##k#n 继续调查",
-            $"离开 #b#e#m{lobbyMap}##k#n 回到 #b#e#m{outMap}"
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.WuGong_NeedCollect, itemID, itemID), [
+                    this.GetTalkMessage(ScriptMessage.WuGong_EnterContinue, enterMap),
+                    this.GetTalkMessage(ScriptMessage.WuGong_LeaveReturn, lobbyMap, outMap)
                 ]);
                 switch (option)
                 {
                     case 0:
-
                         if (chrQuestStatus == 2)
                         {
-                            if (await AskYesNo($"我现在送你进入#b#e#m{enterMap}##k#n，准备好了吗？"))
+                            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_EnterPrompt, enterMap)))
                             {
                                 var quest = Application.Core.Server.quest.Quest.getInstance(questId);
                                 await quest.reset(getPlayer());
@@ -88,12 +89,12 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
                         }
                         else
                         {
-                            await SayOK("连这小小的要求都做不到，没点儿本事你难道还想去白给啊？");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_CantEven));
                         }
 
                         break;
                     case 1:
-                        if (await AskYesNo($"你已经决定要离开吗？\r\n当你准备好去#b#e#m{enterMap}##k#n的时候再来找我。"))
+                        if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_HaveDecided, enterMap)))
                         {
                             await warp(outMap);
                         }
@@ -108,23 +109,23 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
         public async Task shanghai003()
         {
             var em = GetEventManager(PQ_WuGongFeature.EventName);
-            var option = await AskMenu($"敬礼！\r\n你好，#e#b#h ##k#n，我是#b#e#p{getNpc()}##k#n\r\n\r\n#L0##b秘密任务#l\r\b\r\n#L1#离开#l#k");
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.WuGong_SaluteSecret, getNpc()));
             switch (option)
             {
                 case 0:
-                    await SayNext("你居然能来到这儿……果然不简单!\r\n不过你听说过这附近有很危险的怪物吗？");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_SaluteSecret));
                     var party = getParty();
                     if (party == null)
                     {
-                        await SayOK("该项#b秘密任务#k十分危险，你需要进行一个组队才能进入执行。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_SecretMission));
                     }
                     else if (!isLeader())
                     {
-                        await SayOK("请让你的队长来开始这个任务。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_PleaseHave));
                     }
                     else
                     {
-                        await SayNext("走到下一个地方时，你会遇到很危险的怪物。千万小心。\r\n再见!");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.WuGong_MoveNext));
                         if (!isQuestCompleted(4103) && !isQuestCompleted(8512))
                         {
                             //完成了赤珠任务将传送到一个地图
@@ -135,7 +136,7 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
                             }
                             else
                             {
-                                await SayOK($"你目前无法执行这个#b秘密任务#k，因你不符合要求：\r\n\r\n:等级要求：{em.MinLevel}~ {em.MaxLevel}");
+                                await SayOK(this.GetTalkMessage(ScriptMessage.WuGong_CannotUndertake, em.MinLevel, em.MaxLevel));
                             }
                         }
                         else
@@ -148,7 +149,7 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
                     break;
                 case 1:
                     var mapId = 701010320;
-                    if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_LeavePrompt, getMapId(), mapId)))
                     {
                         await warp(mapId);
                     }
@@ -162,7 +163,7 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
         public async Task shanghai004()
         {
             var mapId = 701010320;
-            if (await AskYesNo($"你要离开#b#e#m{getMapId()}##k#n 回到 #b#e#m{mapId}##k#n 吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.WuGong_LeavePrompt, getMapId(), mapId)))
             {
                 await warp(mapId);
             }

@@ -12,6 +12,7 @@ using Application.Core.Server.maps;
 using Application.Core.ServerTransports;
 using Application.Shared.Events;
 using Application.Shared.MapObjects.Players;
+using Application.Shared.Message;
 using Application.Shared.Servers;
 using Application.Utility.Performance;
 using Application.Utility.Pipeline;
@@ -26,7 +27,7 @@ using tools;
 
 namespace Application.Core.Channel;
 
-public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInstance, IChannelServer, IScriptableNpcConfig, IScriptableNpcData
+public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, INamedInstance, IChannelServer, IScriptableNpcConfig, IScriptableNpcData
 {
     public int Id => channel;
     public string InstanceName { get; }
@@ -682,42 +683,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
         return NodeService.GetChannelEndPoint(channel);
     }
 
-    public async Task TypedMessage(int type, string messageKey, params string[] param)
-    {
-        foreach (var chr in Players.getAllCharacters())
-        {
-            await chr.TypedMessage(type, messageKey, param);
-        }
-    }
-
-    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
-
-    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
-
-    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
-
-    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
-
-    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
-
-    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public async Task Dialog(string key, int npcId, params string[] param)
-    {
-        foreach (var chr in Players.getAllCharacters())
-        {
-            await chr.Dialog(key, npcId, param);
-        }
-    }
-
-    public async Task LightBlue(Func<IClientCulture, string> action)
-    {
-        foreach (var chr in Players.getAllCharacters())
-        {
-            await chr.LightBlue(action);
-        }
-    }
-
     public Task Send(ICommand command) => CommandLoop.Register(command);
     public async Task OnTick(long now)
     {
@@ -761,4 +726,6 @@ public partial class WorldChannel : ISocketServer, IClientMessenger, INamedInsta
     {
         await BroadcastPlayersAsync(chr => chr.SendPacket(PacketCreator.SetScriptableNPC(_channelScriptNpc.Values)));
     }
+
+    public List<Player> GetItems() => Players.getAllCharacters();
 }

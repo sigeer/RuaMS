@@ -13,13 +13,13 @@ public class FameCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.FameCommand_Syntax));
+            await player.Yellow(ClientMessage.FameCommand_Syntax);
             return;
         }
 
         if (!int.TryParse(paramsValue[1], out var fame))
         {
-            await player.Yellow(nameof(ClientMessage.FameCommand_Syntax));
+            await player.Yellow(ClientMessage.FameCommand_Syntax);
             return;
         }
 
@@ -28,11 +28,11 @@ public class FameCommand : CommandBase
         {
             victim.SetFame(fame);
             await victim.updateSingleStat(Stat.FAME, victim.Fame);
-            await player.Pink(nameof(ClientMessage.FameCommand_FameGiven));
+            await player.Pink(ClientMessage.FameCommand_FameGiven);
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel));
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel);
         }
     }
 }

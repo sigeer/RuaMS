@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Shared.Constants.Map;
@@ -40,16 +41,16 @@ namespace Application.Plugin.Script.Features.Dojo
                     return null;
                 case CreateInstanceResult.RequiredParty:
                 case CreateInstanceResult.RequiredLeader:
-                    return "你以为你要去哪里？你甚至不是队伍的领袖！去告诉你的队伍领袖来找我谈话。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_NeedLeader);
                 case CreateInstanceResult.Requirement:
-                    return "你的队伍成员等级范围太广，无法进入。请确保你的所有队伍成员等级相差不超过#r30级#k。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_LevelGapTooWide);
                 case CreateInstanceResult.LobbyLimited:
-                    return "所有道馆都已经被使用了。请稍等一会再尝试。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_AllInUse);
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    return "你的队伍可能已经在使用道馆，或者你的队伍在道馆的允许时间还没有结束。请等待他们完成后再进入。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_PartyStillInside);
                 default:
-                    return "未知错误";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_UnknownError);
             }
         }
 

@@ -85,7 +85,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                 var bunnyDamage = eim.getIntProperty("bunnyDamaged") + 1;
                 if (bunnyDamage > 5)
                 {
-                    await eim.dropMessage(5, "玉兔月妙受到了伤害，请保护好它，这样它才能继续做出美味的年糕！");
+                    await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.HenesysPQ_ProtectMoonBunny);
                     eim.setIntProperty("bunnyDamaged", 0);
                 }
                 else
@@ -101,7 +101,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             {
                 var cakes = eim.getIntProperty("bunnyCake") + 1;
                 eim.setIntProperty("bunnyCake", cakes);
-                await eim.dropMessage(6, $"玉兔月妙成功捣出了第 {cakes} 份年糕！");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.HenesysPQ_CakeMade, cakes.ToString());
             }
         }
 
@@ -109,7 +109,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
         {
             if (mob.getId() == MobId.MOON_BUNNY)
             {
-                await eim.dropMessage(5, "因未能保护好月妙导致其重伤，你已被传送至流放之地！");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.HenesysPQ_MoonBunnyHurt);
                 // JS 延迟 5 秒再失败传送，给玩家一个缓冲
                 eim.Schedule(async instance =>
                 {
@@ -159,27 +159,20 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             switch (r)
             {
                 case CreateInstanceResult.Success:
-                    break;
+                    return null;
                 case CreateInstanceResult.RequiredParty:
-                    c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, nameof(ScriptMessage.HenesysPQ_EnterTalk1));
-                    break;
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.HenesysPQ_EnterTalk1, 1012112);
                 case CreateInstanceResult.RequiredLeader:
-                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_NeedLeaderTalk));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(ClientMessage.PartyQuest_NeedLeaderTalk);
                 case CreateInstanceResult.Requirement:
-                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_Req));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(ClientMessage.PartyQuest_CannotStart_Req);
                 case CreateInstanceResult.LobbyLimited:
-                    c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.PartyQuest_CannotStart_ChannelFull));
-                    break;
+                    return c.CurrentCulture.GetMessageByKey(ClientMessage.PartyQuest_CannotStart_ChannelFull);
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
-                    c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, "未知错误");
-                    break;
                 default:
-                    break;
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_UnknownError);
             }
-            return null;
         }
 
     }

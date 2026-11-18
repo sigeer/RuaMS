@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -25,7 +26,7 @@ namespace Application.Plugin.Script.Features.NineSpirit
                 var em = GetEventManager(NineSpiritFeature.EventName);
                 if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
-                    await Pink("There is currently someone in this map, come back later.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.NineSpiritPortalHandler_CurrentlySomeone));
                     return false;
                 }
                 else
@@ -36,7 +37,7 @@ namespace Application.Plugin.Script.Features.NineSpirit
             }
             else
             {
-                await Pink("A strange force is blocking you from entering.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.NineSpiritPortalHandler_StrangeForce));
                 return false;
             }
         }

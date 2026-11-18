@@ -27,13 +27,13 @@ namespace Application.Plugin.Script.Features.EllinPQ
             var eim = GetEventInstance();
             if (eim == null || !eim.isEventCleared())
             {
-                await Pink(nameof(ClientMessage.EllinPQ_NeedDefeatBossFirst));
+                await this.Pink(ScriptMessage.EllinPQ_NeedDefeatBossFirst);
                 return false;
             }
 
             if (!isEventLeader())
             {
-                await Pink(nameof(ClientMessage.Tip_WaitForLeaderEnterPortal));
+                await this.Pink(ScriptMessage.Tip_WaitForLeaderEnterPortal);
                 return false;
             }
 
@@ -56,7 +56,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
                 {
                     if (!canHold(4001198, 1))
                     {
-                        await Pink("Tip_CheckEtcSizeBeforeEnterPortal");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.EllinPQPortalHandler_CheckFree));
                         return false;
                     }
 
@@ -89,13 +89,13 @@ namespace Application.Plugin.Script.Features.EllinPQ
                     }
                     else
                     {
-                        await Pink(nameof(ClientMessage.Tip_EliminateAllMonster));
+                        await this.Pink(ScriptMessage.Tip_EliminateAllMonster);
                         return false;
                     }
                 case 930000200:
                     if (getMap().getReactorByName("spine") != null && getMap().getReactorByName("spine")?.getState() < 4)
                     {
-                        await Pink(nameof(ClientMessage.EllinPQ_SpineBlockWay));
+                        await this.Pink(ScriptMessage.EllinPQ_SpineBlockWay);
                         return false;
                     }
                     else
@@ -105,7 +105,7 @@ namespace Application.Plugin.Script.Features.EllinPQ
                         return true;
                     }
                 default:
-                    await Pink(nameof(ClientMessage.Tip_UnknownPortal));
+                    await this.Pink(ScriptMessage.Tip_UnknownPortal);
                     return false;
             }
         }

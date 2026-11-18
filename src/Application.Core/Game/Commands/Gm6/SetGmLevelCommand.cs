@@ -16,13 +16,13 @@ public class SetGmLevelCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.SetGmLevelCommand_Syntax));
+            await player.Yellow(ClientMessage.SetGmLevelCommand_Syntax);
             return;
         }
 
         if (!int.TryParse(paramsValue[1], out var newLevel))
         {
-            await player.Yellow(nameof(ClientMessage.SetGmLevelCommand_Syntax));
+            await player.Yellow(ClientMessage.SetGmLevelCommand_Syntax);
             return;
         }
         _adminService.SetGmLevel(c.OnlinedCharacter, paramsValue[0], newLevel);

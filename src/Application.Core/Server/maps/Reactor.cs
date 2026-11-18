@@ -248,7 +248,7 @@ public class Reactor : AbstractMapObject
             await cancelReactorTimeout();
             attackHit = wHit;
 
-            await c.OnlinedCharacter.Debug(5, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
+            await c.OnlinedCharacter.Debug(NoticeType.Pink, "Hitted REACTOR " + this.getId() + " with POS " + charPos + " , STANCE " + stance + " , SkillID " + skillid + " , STATE " + state + " STATESIZE " + stats.getStateSize(state));
             await c.CurrentServer.NodeService.PluginManager.ReactorHit(c, this);
 
             int reactorType = stats.getType(state);

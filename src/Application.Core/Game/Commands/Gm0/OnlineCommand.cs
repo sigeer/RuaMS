@@ -25,7 +25,7 @@ public class OnlineCommand : CommandBase
         int i = 0;
         foreach (var item in channelGroup)
         {
-            sb.Append($"===> {c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Channel))}{item.Key}：\r\n");
+            sb.Append($"===> {c.CurrentCulture.GetMessageByKey(ClientMessage.Channel)}{item.Key}：\r\n");
             foreach (var chr in item)
             {
                 sb.Append($"\r\n#L{i}# {chr.Name}：{c.CurrentCulture.GetMapName(chr.MapId)} - {c.CurrentCulture.GetMapStreetName(chr.MapId)} #l\r\n");
@@ -40,11 +40,11 @@ public class OnlineCommand : CommandBase
              var item = list[idx];
              if (item.Id == c.OnlinedCharacter.Id)
              {
-                 await ctx.SayOK(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.CannotWarpMySelf)));
+                 await ctx.SayOK(c.CurrentCulture.GetMessageByKey(ClientMessage.CannotWarpMySelf));
              }
              else
              {
-                 if (await ctx.AskYesNo(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.ConfirmWarpTo), item.Name)))
+                 if (await ctx.AskYesNo(c.CurrentCulture.GetMessageByKey(ClientMessage.ConfirmWarpTo, item.Name)))
                  {
                      await _adminService.WarpPlayerByName(c.OnlinedCharacter, item.Name);
                  }

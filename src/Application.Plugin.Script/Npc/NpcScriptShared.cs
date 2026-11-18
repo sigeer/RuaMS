@@ -1,3 +1,7 @@
+
+using Application.Plugin.Script;
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -11,24 +15,24 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("unidentifiedNpc")]
         public async Task unidentifiedNpc()
         {
-            await SayOK($"NPC: {getNpc()} is not found, please report this.");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Shared_UnidentifiedNpc, getNpc()));
         }
 
         // Npc: 共享脚本 ThiefPassword
-        /// <summary>飞侠据点暗号门：答对暗号且完成前置任务后传送。</summary>
+        /// <summary>盗贼据点暗号门：答对暗号且完成前置任务后传送。</summary>
         [ScriptName("ThiefPassword")]
         public async Task ThiefPassword()
         {
-            var input = await AskText("一个神秘的声音要求你回答口令。 #b暗号#k 是？");
-            if (input != "芝麻开门")
+            var input = await AskText(this.GetTalkMessage(ScriptMessage.Shared_SuspiciousVoice));
+            if (input != this.GetTalkMessage(ScriptMessage.Shared_OpenSesame))
             {
-                await SayOK("#r错误");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Shared_Wrong));
                 return;
             }
 
             if (!isQuestCompleted(3925))
             {
-                await mapMessage(5, "虽然你说出了正确的答案，但是依然没有动静。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Shared_AlthoughSaid));
                 return;
             }
 
@@ -40,7 +44,7 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("9220005_old")]
         public async Task OldSnowfieldGuide()
         {
-            if (await AskYesNo("你要去冰雪峡谷吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Shared_WantGo)))
             {
                 await warp(209080000, 0);
             }
@@ -51,7 +55,7 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("9010022_old")]
         public async Task OldDimensionalMirror()
         {
-            await sendDimensionalMirror("你想去哪个地方？");
+            await sendDimensionalMirror(this.GetTalkMessage(ScriptMessage.Shared_LikeGo));
         }
 
         // Npc: 共享脚本 9000021_old
@@ -60,10 +64,10 @@ namespace Application.Plugin.Script.Npc
         public async Task OldJobAdvancement()
         {
             var jobName = getJobName(getJobId());
-            await SayNext($"你是 {getLevel()} 级的 {jobName}。");
-            await SayNext("在转职之前，需要先重置你的属性点。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Shared_JobAdv_Intro, getLevel(), jobName));
+            await SayNext(this.GetTalkMessage(ScriptMessage.Shared_BeforeJob));
 
-            if (!await AskYesNo("你想现在就转职吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Shared_WantAdvance)))
                 return;
 
             await resetStats();
@@ -75,18 +79,18 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("rebirth")]
         public async Task Rebirth()
         {
-            var sel = await AskMenu($"你当前的职业是 #b{getJobName(getJobId())}#k，等级 #b{getLevel()}#k。\r\n#L0#我想重生。#l\r\n#L1#算了，我再想想。#l");
+            var sel = await AskMenu(this.GetTalkMessage(ScriptMessage.Shared_Rebirth_Menu, getJobName(getJobId()), getLevel()));
             if (sel != 0)
                 return;
 
-            if (!await AskYesNo("重生会让你回到 1 级并重置属性，但保留部分能力。确定吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Shared_RebirthSet)))
             {
-                await SayOK("好的，那你再考虑一下吧。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Shared_AlrightThink));
                 return;
             }
 
             await resetStats();
-            await SayNext("重生完成，愿你新的旅程顺利。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Shared_RebirthComplete));
         }
 
         // Npc: 共享脚本 changeName
@@ -96,25 +100,25 @@ namespace Application.Plugin.Script.Npc
         {
             const int coupon = 4031800;
 
-            await SayNext("使用改名卡可以为你的角色取一个新名字。");
-            if (!await AskYesNo("你想现在改名吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Shared_GiveCharacter));
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Shared_WantChange)))
                 return;
 
             if (!haveItem(coupon))
             {
-                await SayOK($"你需要一张#t{coupon}#才能改名。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Shared_ChangeName_NeedCoupon, coupon));
                 return;
             }
 
-            var newName = await AskText("请输入你想要的新名字：");
+            var newName = await AskText(this.GetTalkMessage(ScriptMessage.Shared_PleaseInput));
             if (string.IsNullOrWhiteSpace(newName))
             {
-                await SayOK("名字不能为空。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Shared_NameCannot));
                 return;
             }
 
             await gainItem(coupon, -1);
-            await SayOK($"改名申请已提交：{newName}");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Shared_ChangeName_Done, newName));
         }
 
         // Npc: 共享脚本 cpqchallenge2
@@ -122,7 +126,7 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("cpqchallenge2")]
         public async Task CpqChallenge2()
         {
-            await SayOK("怪物嘉年华挑战需要由队长在入口 NPC 处发起，请让队长来和我谈谈。");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Shared_MonsterCarnival));
         }
 
         // Npc: 共享脚本 waterOfLife
@@ -135,17 +139,17 @@ namespace Application.Plugin.Script.Npc
             var driedPets = getDriedPets();
             if (driedPets.Count == 0)
             {
-                await mapMessage(5, "你目前没有需要用生命之水治疗的宠物。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Shared_CurrentlyOwn));
                 return;
             }
 
-            if (!await AskYesNo("你有一只需要用#b生命之水#k唤醒的宠物……它让我想起了我的魔法宠物朋友。要现在治疗它吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Shared_HaveWater)))
                 return;
 
-            var menu = "那么你想唤醒哪只宠物？请选择你最想唤醒的宠物……\r\n\r\n";
+            var menu = this.GetTalkMessage(ScriptMessage.Shared_PetWant);
             for (var i = 0; i < driedPets.Count; i++)
             {
-                menu += $"#L{i}##t{driedPets[i].getItemId()}##l\r\n";
+                menu += this.GetTalkMessage(ScriptMessage.Shared_WaterOfLife_Entry, i, driedPets[i].getItemId());
             }
 
             var sel = await AskMenu(menu);
@@ -154,12 +158,12 @@ namespace Application.Plugin.Script.Npc
 
             if (!haveItem(waterOfLife))
             {
-                await SayOK($"你没有#t{waterOfLife}#，无法治疗这只宠物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Shared_WaterOfLife_NoItem, waterOfLife));
                 return;
             }
 
             await gainItem(waterOfLife, -1);
-            await SayOK("你的宠物已经被唤醒，好好照顾它吧！");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Shared_DollHas));
         }
 
         // Npc: 共享脚本 mapleTV
@@ -179,9 +183,9 @@ namespace Application.Plugin.Script.Npc
         public async Task Credits()
         {
             await SaySpeech([
-                "RuaMS —— 由 Cosmic / HeavenMS / OdinMS 一脉相承的 MapleStory 服务端。",
-                "感谢所有为本项目提交代码、报告问题与提供数据的人。",
-                "按「上一步」可以返回。"
+                this.GetTalkMessage(ScriptMessage.Shared_RuamsMaplestory),
+                this.GetTalkMessage(ScriptMessage.Shared_ThanksEveryone),
+                this.GetTalkMessage(ScriptMessage.Shared_PressPrev)
             ]);
         }
 
@@ -190,8 +194,8 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("commands")]
         public async Task Commands()
         {
-            await SayNext("常用命令：@help 查看全部命令，@save 保存角色，@ea 解锁界面。");
-            await SayOK("更多命令请查看服务器文档。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Shared_CommonCommands));
+            await SayOK(this.GetTalkMessage(ScriptMessage.Shared_SeeServer));
         }
     }
 }

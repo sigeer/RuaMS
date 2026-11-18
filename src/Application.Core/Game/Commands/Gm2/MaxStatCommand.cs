@@ -11,6 +11,6 @@ public class MaxStatCommand : CommandBase
     public override async Task Execute(IChannelClient c, string[] paramsValue)
     {
         await c.OnlinedCharacter.MaxStat();
-        await c.OnlinedCharacter.Yellow(nameof(ClientMessage.MaxStatCommand_Result));
+        await c.OnlinedCharacter.Yellow(ClientMessage.MaxStatCommand_Result);
     }
 }

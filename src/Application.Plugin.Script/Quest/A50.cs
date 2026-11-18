@@ -1,3 +1,7 @@
+
+using Application.Plugin.Script;
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Quest
 {
     // 活动
@@ -1377,8 +1381,8 @@ namespace Application.Plugin.Script.Quest
                 return;
             }
 
-            await SayNext("好吧...所以这是我们打败史克鲁奇的计划和他卑鄙的计划。我给你的精神力量是一个充满法力的物品。这是你一定会用在地图上的一个道具，我等下会给你。要做到这一点，你还得带上你的队友。你应该把你的队友带到这里来，或者现在就组织一个！");
-            if (await SayAcceptDecline("你想离开了吗?"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.A50_HeresPlan));
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.A50_LikeMove)))
             {
                 var level = getPlayer().getLevel();
 
@@ -1700,15 +1704,15 @@ namespace Application.Plugin.Script.Quest
             var canEvolvedPets = getPlayer().getPets().Where(x => x?.getItemId() == 5000048 && x.Level >= 15).ToList();
             if (canEvolvedPets.Count == 0)
             {
-                await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000048#");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetEvolved));
                 return;
             }
 
-            var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+            var petId = await AskPet(this.GetTalkMessage(ScriptMessage.A50_PetLike), canEvolvedPets!);
             var (petSlot, _) = getPlayer().GetPetById(petId);
             if (petSlot == -1)
             {
-                await SayOK("未选择宠物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetSelected));
                 return;
             }
 
@@ -1734,37 +1738,37 @@ namespace Application.Plugin.Script.Quest
         {
             if (getMeso() < 10000)
             {
-                await SayOK("喂！我需要 #b10,000 金币#k 来进行宠物进化！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_NeedMesos));
 
                 return;
             }
 
             if (!haveItem(5380000))
             {
-                await SayOK("若没有进化之石是无法让宠物进化的！难道你没听懂吗？快去拿回来吧！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_CantEvolve));
 
                 return;
             }
 
             await SaySpeech([
-                "#e#b嘿，你成功了！#n#k \r\n#r哇！#k 现在我可以完成对你的宠物的研究了！",
-                "顺便说一下，你的新龙的颜色会是 #e#r随机#k#n！可能是 #g绿色，#b蓝色，#r红色，#d或者非常罕见的#k，黑色。\r\n\r\n#fUI/UIWindow.img/QuestIcon/5/0#\r\n\r 如果你不喜欢你宠物的新颜色，或者如果你想再次改变宠物的颜色，#e你可以改变它！#n 只需 #d购买另一个进化之石，10,000 金币，#k然后 #d卸下你的新宠物#k 再与我对话，但是当然，我不能将你的宠物变回小龙，只能变成另一只成年龙。"
+                this.GetTalkMessage(ScriptMessage.A50_WowFinish),
+                this.GetTalkMessage(ScriptMessage.A50_JustSaying)
                 ]);
-            if (await AskYesNo("现在让我试着进化你的宠物。你准备好了吗？想看你可爱的小龙变成成熟的深黑、蓝色、宁静的绿色或火红的成年龙吗？它的亲密度、等级、名字、饱食度、饥饿度和装备都会保持不变，以防你担心。\r\n\r #b#e你想继续还是有一些最后的事情要做？#k#n"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.A50_LetTry)))
             {
-                await SayNext("好的，我们开始吧...！ #rHYAHH!#k");
+                await SayNext(this.GetTalkMessage(ScriptMessage.A50_AlrightGo));
 
                 var canEvolvedPets = getPlayer().getPets().Where(x => x?.getItemId() == 5000029 && x.Level >= 15).ToList();
                 if (canEvolvedPets.Count == 0)
                 {
-                    await SayOK("没有找到符合条件的宠物。我只能进化15级以上的#t5000029#");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetEvolvedLooks));
                     return;
                 }
-                var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+                var petId = await AskPet(this.GetTalkMessage(ScriptMessage.A50_PetLike), canEvolvedPets!);
                 var (petSlot, _) = getPlayer().GetPetById(petId);
                 if (petSlot == -1)
                 {
-                    await SayOK("未选择宠物。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetSelected));
                     return;
                 }
                 //unequipPet(getClient());
@@ -1776,7 +1780,7 @@ namespace Application.Plugin.Script.Quest
                     await gainMeso(-10000);
                     await completeQuest();
 
-                    await SayOK("#b太棒了！#k 你的龙变得更加美丽！ #r你可以在 '现金' 背包下找到你的新宠物。\r 它曾经是 #b #i5000029##t5000029##k，现在是 \r 一个 #b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.A50_8185_Result, 5000029, after.getItemId()));
                 }
             }
         }
@@ -1785,19 +1789,19 @@ namespace Application.Plugin.Script.Quest
         {
             if (getMeso() < 10000)
             {
-                await SayOK("嗨！我需要 #b10,000 金币#k 来进行您的宠物再进化！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_NeedMesosPets));
                 return;
             }
 
             if (!haveItem(5380000))
             {
-                await SayOK("若没有进化之石是无法让宠物进化的！难道你没听懂吗？快去拿回来吧！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_CantEvolve));
                 return;
             }
 
-            if (await AskYesNo("好的，那么，让我们再来一次吧，好吗？和往常一样，这将是随机的，我将拿走你的一个进化之石。\r\n\r #r#e准备好了吗？#n#k"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.A50_AlrightLets)))
             {
-                await SayNext("好的，我们开始吧...！ #rHYAHH!#k");
+                await SayNext(this.GetTalkMessage(ScriptMessage.A50_GoHyahh));
             }
             else
             {
@@ -1809,16 +1813,16 @@ namespace Application.Plugin.Script.Quest
                     || x?.getItemId() >= 5000049 && x?.getItemId() <= 5000052) && x?.Level >= 15).ToList();
             if (canEvolvedPets.Count == 0)
             {
-                await SayOK("没有找到符合条件的宠物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetEvolveFailed));
                 return;
             }
 
-            var petId = await AskPet("选择要进化哪只宠物？", canEvolvedPets!);
+            var petId = await AskPet(this.GetTalkMessage(ScriptMessage.A50_PetLike), canEvolvedPets!);
 
             var (petSlot, oPet) = getPlayer().GetPetById(petId);
             if (petSlot == -1)
             {
-                await SayOK("未选择宠物。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_PetSelected));
                 return;
             }
 
@@ -1829,7 +1833,7 @@ namespace Application.Plugin.Script.Quest
                 await gainItem(5380000, -1);
                 await completeQuest();
 
-                await SayOK("哇！又成功了！#r你可以在'现金'物品栏下找到你的新宠物。\r #k它曾经是一个#b#i" + oPet!.getItemId() + "##t" + oPet.getItemId() + "##k，现在它是一个#b#i" + after.getItemId() + "##t" + after.getItemId() + "##k！\r\n 如果你不喜欢，带着1万枚金币和另一个进化之石回来吧！\r\n\r\n#fUI/UIWindow.img/QuestIcon/4/0#\r\n#v" + after.getItemId() + "# #t" + after.getItemId() + "#");
+                await SayOK(this.GetTalkMessage(ScriptMessage.A50_8189_Result, oPet!.getItemId(), after.getItemId()));
             }
         }
         // Quest: 8247 

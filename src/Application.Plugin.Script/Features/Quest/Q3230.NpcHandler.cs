@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -22,7 +24,7 @@ namespace Application.Plugin.Script.Features.Quest
                 return;
             }
 
-            if (await AskYesNo("你准备好进入玩偶屋了吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Q3230_ReadyEnter)))
             {
                 await TryStartSoloQuest(Q3230.QuestIdValue);
             }
@@ -31,7 +33,7 @@ namespace Application.Plugin.Script.Features.Quest
         // Npc: 2040028 
         public async Task ludi024()
         {
-            var greeting = "感谢你找到了钟摆。你准备好返回玩具塔了吗？";
+            var greeting = this.GetTalkMessage(ScriptMessage.Q3230_ThankFinding);
             if (isQuestStarted(Q3230.QuestIdValue))
             {
                 if (haveItem(4031094))
@@ -41,7 +43,7 @@ namespace Application.Plugin.Script.Features.Quest
                 }
                 else
                 {
-                    greeting = "你还没有找到那个钟摆。你想回到玩具塔吗？";
+                    greeting = this.GetTalkMessage(ScriptMessage.Q3230_HaventFound);
                 }
             }
 

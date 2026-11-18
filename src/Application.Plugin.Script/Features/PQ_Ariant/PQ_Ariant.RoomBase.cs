@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel;
 using Application.Core.Game.Players;
 using Application.Core.model;
@@ -131,7 +132,7 @@ namespace Application.Plugin.Script.Features.PQ_Ariant
             }
 
             player.AriantPoints += point;
-            await player.Pink($"竞技点数(+{point})");
+            await player.Pink(player.getAbstractPlayerInteraction().GetTalkMessage(ScriptMessage.PQAriant_ArenaPoints, point));
 
             return r;
         }

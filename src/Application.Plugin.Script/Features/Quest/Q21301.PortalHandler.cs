@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using scripting.portal;
@@ -20,7 +21,7 @@ namespace Application.Plugin.Script.Features.Quest
                 var r = await em.StartInstance(getPlayer());
                 if (r != CreateInstanceResult.Success)
                 {
-                    await Pink("门从另一边被堵住了。有人已经和小偷乌鸦打起来了？");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Q21301PortalHandler_DoorBlocked));
                     return false;
                 }
 

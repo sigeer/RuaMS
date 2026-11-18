@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
@@ -183,7 +184,7 @@ namespace Application.Plugin.Script.Features.HolidayPQ
                 eim.setIntProperty("snowmanStep", step - 1);
             }
 
-            await eim.dropMessage(5, "雪人吸收了假的雪之力量！");
+            await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.HolidayPQEventBase_SnowmanAbsorbed);
         }
 
         /// <summary>

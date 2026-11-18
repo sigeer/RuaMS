@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -615,7 +616,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
             await getMap().killAllMonsters();
             getMap().allowSummonState(false);
             await spawnMonster(9300039, 260, 490);
-            await mapMessage(5, "As the air on the tower outskirts starts to become more dense, Papa Pixie appears.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.OrbisPQReactorActHandler_AirTower));
 
 
         }
@@ -810,7 +811,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
         public async Task fgodNPC0()
         {
 
-            await Pink("As the light flickers, someone appears out of the light.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.OrbisPQReactorActHandler_LightFlickers));
             await spawnNpc(2013001);
 
 

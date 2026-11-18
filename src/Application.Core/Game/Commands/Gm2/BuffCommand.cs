@@ -14,7 +14,7 @@ public class BuffCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.BuffCommand_Syntax));
+            await player.Yellow(ClientMessage.BuffCommand_Syntax);
             return;
         }
         int skillid = int.Parse(paramsValue[0]);

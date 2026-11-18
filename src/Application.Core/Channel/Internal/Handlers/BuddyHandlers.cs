@@ -46,7 +46,7 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     await _server.SendToPlayerAsync(res.MasterId, async chr =>
                     {
-                        await chr.Popup(nameof(ClientMessage.PlayerNotFound), res.TargetName);
+                        await chr.Popup(ClientMessage.PlayerNotFound, res.TargetName);
                     });
                 }
             }

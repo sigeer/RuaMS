@@ -1,6 +1,8 @@
 using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.RescueGaga
 {
@@ -16,15 +18,15 @@ namespace Application.Plugin.Script.Features.RescueGaga
             var mapId = getPlayer().getMapId();
             if (mapId == RescueGagaFeature.EXIT_MAP)
             {
-                var selection = await AskMenu("你有什么要说的吗...? #b\r\n#L0#我想要救出佳佳。#l\r\n");
+                var selection = await AskMenu(this.GetTalkMessage(ScriptMessage.RescueGaga_Head_SomethingWant));
                 if (selection != 0)
                 {
                     return;
                 }
 
-                await SayNext("欢迎！我从小月兔那里听说了发生的事情，很高兴你来了，因为我正打算请求一些帮助。Gaga是我的朋友，以前帮过我，经常过来打个招呼。不幸的是，他被外星人绑架了。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.RescueGaga_Head_WelcomeHeard));
 
-                if (await AskYesNo("如果我们把佳佳留给外星人，他会遭遇可怕的事情！我会让你借用一艘月兔用来旅行的太空飞船，这样你就可以救出佳佳。虽然他有时看起来有点犹豫不决、慢吞吞和不成熟，但他其实是一个很好的年轻人。你现在想去救他吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.RescueGaga_Head_LeaveGaga)))
                 {
                     var em = GetEventManager(RescueGagaFeature.EventName);
                     await SayOK(em.HandleCreateInstanceResult(await em.StartInstance(getPlayer()), c));
@@ -32,7 +34,7 @@ namespace Application.Plugin.Script.Features.RescueGaga
             }
             else if (mapId >= 922240000 && mapId <= 922240019)
             {
-                if (await AskYesNo("如果你失败了也不要担心。你还有3次机会。你还想放弃吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.RescueGaga_Head_DontWorry)))
                 {
                     await warp(RescueGagaFeature.EXIT_MAP, 0);
                 }

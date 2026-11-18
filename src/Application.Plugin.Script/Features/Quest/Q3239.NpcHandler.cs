@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -14,7 +16,7 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (getMapId() == 922000000)
             {
-                if (await AskYesNo("你准备好离开这个地方了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Latanica_ReadyLeave)))
                 {
                     await WarpOut();
                 }
@@ -27,7 +29,7 @@ namespace Application.Plugin.Script.Features.Quest
                     return;
                 }
 
-                if (await AskYesNo("你准备好进入#b#m922000000##k了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Q3239Npc_ReadyToEnter, 922000000)))
                 {
                     await TryStartSoloQuest(Q3239.QuestIdValue);
                 }

@@ -4,6 +4,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.Server.maps;
 using Application.Shared.Constants.Job;
+using Application.Resources.Messages;
 using Application.Shared.GameProps;
 using scripting.portal;
 using System.Drawing;
@@ -19,70 +20,70 @@ namespace Application.Plugin.Script
         public async Task<bool> advice00()
         {
 
-            await showInstruction("您可以使用箭头键移动。", 250, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipMove), 250, 5);
             return true;
         }
 
         public async Task<bool> advice01()
         {
 
-            await showInstruction("单击 \r\\#b<Heena>#k", 100, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipClickHeena), 100, 5);
             return true;
         }
 
         public async Task<bool> advice02()
         {
 
-            await showInstruction("按下 #e#b[Alt]#k#n to\r\\ 跳跃。", 100, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipJump), 100, 5);
             return true;
         }
 
         public async Task<bool> advice03()
         {
 
-            await showInstruction("按方向键 #e#b[Up]#k#n 爬上梯子或绳索", 350, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipLadder), 350, 5);
             return true;
         }
 
         public async Task<bool> advice04()
         {
 
-            await showInstruction("单击 \r\\#b<Sera>", 100, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipClickSera), 100, 5);
             return true;
         }
 
         public async Task<bool> advice05()
         {
 
-            await showInstruction("按 #e#b[Q]#k#n 打开任务窗口。", 250, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipQuest), 250, 5);
             return true;
         }
 
         public async Task<bool> advice06()
         {
 
-            await showInstruction("按 #e#b[Up]#k 进入光圈\r\\移动到下一张地图。", 230, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipPortalNext), 230, 5);
             return true;
         }
 
         public async Task<bool> advice07()
         {
 
-            await showInstruction("您可以按#e#b[W]#k#n键查看世界地图。", 350, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipWorldMap), 350, 5);
             return true;
         }
 
         public async Task<bool> advice08()
         {
 
-            await showInstruction("您可以通过按#e#b[S]#k#n键来查看角色的属性面板。", 350, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipStats), 350, 5);
             return true;
         }
 
         public async Task<bool> advice09()
         {
 
-            await showInstruction("同时按下方向键的#n#e#b[Alt]#k和#e#b[Down]#k#n向下跳跃。", 450, 6);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipJumpDown), 450, 6);
             return true;
         }
 
@@ -90,7 +91,7 @@ namespace Application.Plugin.Script
         public async Task<bool> adviceMap()
         {
 
-            await showInstruction("按#e#b[Up]#k箭头#n进入光圈移动到下一个地图。", 230, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.Portal_TipPortalNext), 230, 5);
             return true;
         }
 
@@ -115,7 +116,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("请救救小猪！");//not gms like
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_SaveThePig));//not gms like
             }
             return true;
         }
@@ -129,7 +130,7 @@ namespace Application.Plugin.Script
                 await warp(120000101, 0);
                 return true;
             }
-            await EarnTitle("你似乎还有一些未完成的事情，我从你的眼神中可以看出来。等等……不，那些只是眼屎。");
+            await this.EarnTitle(this.GetTalkMessage(ScriptMessage.Portal_UnfinishedBusiness));
             return false;
         }
 
@@ -158,7 +159,7 @@ namespace Application.Plugin.Script
                 var hourDay = getHourOfDay();
                 if (!((hourDay >= 0 && hourDay < 7) || hourDay >= 17))
                 {
-                    await Pink("You cannot access this area right now.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotAccess));
                     return false;
                 }
                 else
@@ -169,7 +170,7 @@ namespace Application.Plugin.Script
                 }
             }
 
-            await Pink("You cannot access this area.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotAccessArea));
             return false;
         }
 
@@ -203,7 +204,7 @@ namespace Application.Plugin.Script
             var elevator = GetContiMove();
             if (elevator is not Elevator)
             {
-                await Pink("电梯正在维护。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_ElevatorMaintenance));
                 return false;
             }
 
@@ -213,7 +214,7 @@ namespace Application.Plugin.Script
                 return true;
             }
 
-            await Pink("电梯已经启动。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_ElevatorRunning));
             return false;
         }
 
@@ -249,7 +250,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Your milk jug is not full...");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MilkJug));
                     return false;
                 }
             }
@@ -274,7 +275,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Due to the lock down you can not enter without a permit.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_DueLock));
                     return false;
                 }
             }
@@ -321,13 +322,13 @@ namespace Application.Plugin.Script
             var map = await getClient().getChannelServer().getMapFactory().getMap(108010600 + (10 * jobtype));
             if (map.countPlayers() > 0)
             {
-                await Pink("Someone else is already searching the area.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_SomeoneElse));
                 return false;
             }
 
             if (haveItem(4032101 + jobtype, 1))
             {
-                await Pink("You have already challenged the Master of Disguise, report your success to the Chief Knight.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_HaveAlready));
                 return false;
             }
 
@@ -379,7 +380,7 @@ namespace Application.Plugin.Script
 
             if (hasItem(4032125) || hasItem(4032126) || hasItem(4032127) || hasItem(4032128) || hasItem(4032129))
             {
-                await Pink("你已经有了能力的证物");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_AlreadyHaveProofOfAbility));
                 return false;
             }
 
@@ -397,13 +398,13 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("已经有人在尝试击败Boss，请你稍后再来。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_BossFightInProgress));
                     return false;
                 }
             }
             else
             {
-                await Pink("只有参加骑士指定的等级考试方可进入");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_NeedKnightExam));
                 return false;
             }
         }
@@ -432,7 +433,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You will be allowed to enter the Penguin Training Ground only if you are receiving a lesson from Puo.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllowedEnter));
                 return false;
             }
         }
@@ -455,7 +456,7 @@ namespace Application.Plugin.Script
                     await setQuestProgress(21202, 21203, 0);
                     return true;
                 }
-                await Pink("The mirror is blank due to many players recalling their memories. Please wait and try again.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MirrorBlank));
                 return false;
             }
             else if (isQuestStarted(21302) && !isQuestCompleted(21303))
@@ -463,7 +464,7 @@ namespace Application.Plugin.Script
                 // Third Job
                 if (await getPlayerCount(108010701) > 0 || await getPlayerCount(108010702) > 0)
                 {
-                    await Pink("The mirror is blank due to many players recalling their memories. Please wait and try again.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MirrorBlank));
                     return false;
                 }
                 else
@@ -479,7 +480,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("你已经通过了测试，不需要再来了。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_TestPassed));
                 return false;
             }
         }
@@ -518,12 +519,12 @@ namespace Application.Plugin.Script
                 var rand = Random.Shared.Next(maps.Length);
                 await playPortalSound();
                 await warp(maps[rand], 0);
-                await TypedMessage(0, "重新进入第2演武场时将会清空背包里所有考试的证物，请务必注意。");
+                await TypedMessage(NoticeType.Notice, this.GetTalkMessage(ScriptMessage.Portal_SecondDojoReset));
                 return true;
             }
             else
             {
-                await Pink("只有参加骑士指定的等级考试方可进入第2演武场。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_NeedKnightExam2));
                 return false;
             }
         }
@@ -534,7 +535,7 @@ namespace Application.Plugin.Script
 
             if (hasItem(4032120) || hasItem(4032121) || hasItem(4032122) || hasItem(4032123) || hasItem(4032124))
             {
-                await Pink("你已经有了资格的证物。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_AlreadyHaveProofOfQualification));
                 return false;
             }
             if (isQuestStarted(20601) || isQuestStarted(20602) || isQuestStarted(20603) || isQuestStarted(20604) || isQuestStarted(20605))
@@ -550,13 +551,13 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("已经有人在尝试击败Boss，请你稍后再来。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_BossFightInProgress));
                     return false;
                 }
             }
             else
             {
-                await Pink("你必须达到100级且正在进行技能训练方可进入第3演武场。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_NeedLevel100));
                 return false;
             }
         }
@@ -587,7 +588,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("只有接受了麦加训练的人才可以进入训练场");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_NeedMegaTraining));
                 return false;
             }
             return true;
@@ -608,7 +609,7 @@ namespace Application.Plugin.Script
 
             if (!haveItem(4031890))
             {
-                await LightBlue("You need a warp card to activate this portal.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.PortalScript_NeedWarp));
                 return false;
             }
 
@@ -623,7 +624,7 @@ namespace Application.Plugin.Script
 
             if (!haveItem(4031890))
             {
-                await LightBlue("You need a warp card to activate this portal.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.PortalScript_NeedWarp));
                 return false;
             }
 
@@ -675,7 +676,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("Cannot enter the Lush Forest without a reason.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotEnter));
             }
             return true;
         }
@@ -698,7 +699,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You cannot go to the Back Yard without a reason");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotGo));
             }
             return true;
         }
@@ -741,7 +742,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You cannot proceed past here.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotProceed));
                 return false;
             }
         }
@@ -761,7 +762,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("This portal leads to the girls' area, try the portal at the other side.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PortalLeads));
                     return false;
                 }
             }
@@ -775,7 +776,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("This portal leads to the boys' area, try the portal at the other side.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PortalLeadsBoys));
                     return false;
                 }
             }
@@ -812,7 +813,7 @@ namespace Application.Plugin.Script
         public async Task<bool> halloween_Omni1()
         {
 
-            await Pink("It seems to be locked.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_SeemsLocked));
             return true;
         }
 
@@ -982,7 +983,7 @@ namespace Application.Plugin.Script
                 var minutes = (Math.Floor(jailedTime / (1000.0 * 60)) % 60);
                 var hours = (Math.Floor(jailedTime / (1000.0 * 60 * 60)) % 24);
 
-                await Pink("You have been caught in bad behaviour by the Maple POLICE. You've got to stay here for " + hours + " hours " + minutes + " minutes " + seconds + " seconds yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_Jailed, hours, minutes, seconds));
                 return false;
             }
         }
@@ -1022,7 +1023,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You cannot proceed past here.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotProceed));
                 return false;
             }
         }
@@ -1735,7 +1736,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -1751,7 +1752,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -1786,7 +1787,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -1802,7 +1803,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -1837,7 +1838,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -1853,7 +1854,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -1888,7 +1889,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -1904,7 +1905,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -1939,7 +1940,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -1955,7 +1956,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -1990,7 +1991,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2006,7 +2007,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2041,7 +2042,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2057,7 +2058,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2092,7 +2093,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2108,7 +2109,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2143,7 +2144,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2159,7 +2160,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2194,7 +2195,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2210,7 +2211,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2246,7 +2247,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2262,7 +2263,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2297,7 +2298,7 @@ namespace Application.Plugin.Script
                     }
                     else
                     {
-                        await Pink("Only solo or party leaders are supposed to enter the Mini-Dungeon.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_OnlySolo));
                         return false;
                     }
                 }
@@ -2313,7 +2314,7 @@ namespace Application.Plugin.Script
                         }
                     }
                 }
-                await Pink("All of the Mini-Dungeons are in use right now, please try again later.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_AllMini));
                 return false;
             }
             else
@@ -2378,7 +2379,7 @@ namespace Application.Plugin.Script
 
             if (!haveItem(4031346))
             {
-                await LightBlue("You need a magic seed to use this portal.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.PortalScript_NeedMagic));
                 return false;
             }
             if (getPlayer().getMapId() == 240010100)
@@ -2457,7 +2458,7 @@ namespace Application.Plugin.Script
 
             await playPortalSound();
             await warp(300000100, "out00");
-            await Pink("移动到时间之门的另一端。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Portal_TimeGate));
             return true;
         }
 
@@ -2569,7 +2570,7 @@ namespace Application.Plugin.Script
         public async Task<bool> outPerrion_1()
         {
 
-            await Pink("You found a shortcut to the start of the underground temple.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_FoundShortcut));
             await playPortalSound();
             await warp(105100000, 2);
             return true;
@@ -2597,7 +2598,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("Free a slot on your inventory before receiving the couse clear's token.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_FreeSlot));
                 return false;
             }
         }
@@ -2636,13 +2637,13 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Free a slot on your inventory before receiving the couse clear's token.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_FreeSlot));
                     return false;
                 }
             }
             else
             {
-                await Pink("Defeat all wolves before exiting the stage.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_DefeatAll));
                 return false;
             }
         }
@@ -2669,7 +2670,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("Private property. This place can only be entered when running an errand from Camila.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PrivateProperty));
                 return false;
             }
         }
@@ -2686,7 +2687,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You don't have permission to access this room.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_DontHave));
                 return false;
             }
         }
@@ -2721,7 +2722,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("You don't have permission to access this room.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_DontHave));
                 return false;
             }
         }
@@ -2743,7 +2744,7 @@ namespace Application.Plugin.Script
             {
                 if (!CanEnterDeveloperRoom())
                 {
-                    await Pink("The next room is currently unavailable.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_NextRoom));
                     return false;
                 }
 
@@ -2826,7 +2827,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("Something seems to be blocking this portal!");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_SomethingSeems));
                 return false;
             }
         }
@@ -2837,7 +2838,7 @@ namespace Application.Plugin.Script
 
             if (!isQuestCompleted(21010))
             {
-                await Pink("You must complete the quest before proceeding to the next map.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CompleteQuest));
                 return false;
             }
             await playPortalSound();
@@ -2851,7 +2852,7 @@ namespace Application.Plugin.Script
 
             if (!isQuestCompleted(21011))
             {
-                await Pink("You must complete the quest before proceeding to the next map..");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CompleteQuest));
                 return false;
             }
             await playPortalSound();
@@ -2865,7 +2866,7 @@ namespace Application.Plugin.Script
 
             if (!isQuestCompleted(21012))
             {
-                await Pink("You must complete the quest before proceeding to the next map..");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CompleteQuest));
                 return false;
             }
             await playPortalSound();
@@ -2879,7 +2880,7 @@ namespace Application.Plugin.Script
 
             if (!isQuestCompleted(21013))
             {
-                await Pink("You must complete the quest before proceeding to the next map..");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CompleteQuest));
                 return false;
             }
             await playPortalSound();
@@ -2891,7 +2892,7 @@ namespace Application.Plugin.Script
         public async Task<bool> rienTutor5()
         {
 
-            await talkGuide("前面不远就是村子了。我先走一步了，还有一些需要整理的东西。战神，慢慢过来就行。");
+            await talkGuide(this.GetTalkMessage(ScriptMessage.Portal_RienVillageAhead));
             await blockPortal();
             return false;
         }
@@ -2999,7 +3000,7 @@ namespace Application.Plugin.Script
             }
             else
             {
-                await Pink("A mysterious force won't let you in.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
                 return false;
             }
         }
@@ -3087,7 +3088,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Please click on the NPC first to receive a quest.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PleaseClick));
                 }
             }
             else if (getPlayer().getMapId() == 130030002)
@@ -3100,7 +3101,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Please complete the required quest before proceeding.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PleaseComplete));
                 }
             }
             else if (getPlayer().getMapId() == 130030003)
@@ -3113,7 +3114,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Please complete the required quest before proceeding.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PleaseComplete));
                 }
             }
             else if (getPlayer().getMapId() == 130030004)
@@ -3126,7 +3127,7 @@ namespace Application.Plugin.Script
                 }
                 else
                 {
-                    await Pink("Please complete the required quest before proceeding.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_PleaseComplete));
                 }
             }
 

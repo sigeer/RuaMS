@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -14,18 +16,18 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (!haveItem(4032521, 10))
             {
-                await SayNext("嘿，你还没有得到#b10张#t4032521##k吗？");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Q2291_DidntGet));
                 return;
             }
             else
             {
 
-                await SayNext("你身上有#b#i4032521##k，很好，让我给你带路。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Q2291_GotGreat));
 
                 var em = GetSoloQuestEventManager(Q2291.QuestIdValue);
                 if (await em.StartInstance(getPlayer()) != Core.scripting.Events.Abstraction.CreateInstanceResult.Success)
                 {
-                    await SayOK("嗯...看起来前面的房间现在有点拥挤。请在这儿等一会，好吗？");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q2291_UhLooks));
                     return;
                 }
 

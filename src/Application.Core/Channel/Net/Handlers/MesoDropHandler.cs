@@ -53,7 +53,7 @@ public class MesoDropHandler : ChannelHandlerBase
 
         if (player.isGM() && player.gmLevel() < YamlConfig.config.server.MINIMUM_GM_LEVEL_TO_DROP)
         {
-            await player.MessageI18N(nameof(ClientMessage.DropMeso_NotAccess));
+            await player.MessageI18N(ClientMessage.DropMeso_NotAccess);
             return;
         }
 

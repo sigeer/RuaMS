@@ -3,6 +3,7 @@ using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Exped_Showa
 {
@@ -92,9 +93,7 @@ namespace Application.Plugin.Script.Features.Exped_Showa
             {
                 var map = await eim.getMapInstance(801040101);
                 await map.spawnMonsterOnGroundBelow(9400114, 500, -50);
-                await eim.Pink(
-                    "Konpei: The Boss has been defeated with no casualties, well done! We found a suspicious machine inside, we're moving it out."
-                );
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.ShowaBattle_BossDefeated);
             }
         }
 

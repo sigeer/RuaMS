@@ -4,11 +4,11 @@ namespace Application.Core.Channel.Commands
     {
         public string Name => nameof(InvokeDropMessageAsyncCommand);
         int playerId;
-        int type;
+        NoticeType type;
         string message;
         string[] paramsValue;
 
-        public InvokeDropMessageAsyncCommand(int playerId, int type, string message, params string[] paramsValue)
+        public InvokeDropMessageAsyncCommand(int playerId, NoticeType type, string message, params string[] paramsValue)
         {
             this.playerId = playerId;
             this.type = type;
@@ -30,11 +30,11 @@ namespace Application.Core.Channel.Commands
     {
         public string Name => nameof(InvokeMultiDropMessageCommand);
         IEnumerable<int> playerIds;
-        int type;
+        NoticeType type;
         string message;
         string[] paramsValue;
 
-        public InvokeMultiDropMessageCommand(IEnumerable<int> playerIds, int type, string message, params string[] paramsValue)
+        public InvokeMultiDropMessageCommand(IEnumerable<int> playerIds, NoticeType type, string message, params string[] paramsValue)
         {
             this.playerIds = playerIds;
             this.type = type;
@@ -86,7 +86,7 @@ namespace Application.Core.Channel.Commands
             {
                 foreach (var player in ctx.getPlayerStorage().getAllCharacters())
                 {
-                    await player.TypedMessage((int)type, _getMessage(player));
+                    await player.TypedMessage(type, _getMessage(player));
                 }
             }
             else
@@ -96,7 +96,7 @@ namespace Application.Core.Channel.Commands
                     var player = ctx.getPlayerStorage().getCharacterById(id);
                     if (player != null)
                     {
-                        await player.TypedMessage((int)type, _getMessage(player));
+                        await player.TypedMessage(type, _getMessage(player));
                     }
                 }
             }

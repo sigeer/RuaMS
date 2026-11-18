@@ -13,7 +13,7 @@ public class GiveNxCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.GiveNxCommand_Syntax));
+            await player.Yellow(ClientMessage.GiveNxCommand_Syntax);
             return;
         }
 
@@ -64,11 +64,11 @@ public class GiveNxCommand : CommandBase
         if (victim != null && victim.IsOnlined)
         {
             victim.getCashShop().gainCash(type, value);
-            await player.Yellow(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+            await player.Yellow(ClientMessage.Command_Done, player.getLastCommandMessage());
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
         }
     }
 }

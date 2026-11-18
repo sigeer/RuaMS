@@ -19,18 +19,18 @@ public class CheckDmgCommand : CommandBase
             var matkBuff = victim.getBuffedValue(BuffStat.MATK) ?? 0;
             int blessing = victim.getSkillLevel(10000000 * player.getJobType() + 12);
 
-            await player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message1),
+            await player.dropMessage(5, player.GetMessageByKey(ClientMessage.CheckDmgCommand_Message1,
                  victim.getTotalStr().ToString(),
                  victim.getTotalDex().ToString(),
                  victim.getTotalInt().ToString(),
                  victim.getTotalLuk().ToString()));
-            await player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message2), victim.getTotalWatk().ToString(), victim.getTotalMagic().ToString()));
-            await player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message3), watkBuff.ToString(), matkBuff.ToString(), blessing.ToString()));
-            await player.dropMessage(5, player.GetMessageByKey(nameof(ClientMessage.CheckDmgCommand_Message4), victim.Name, maxBase.ToString()));
+            await player.dropMessage(5, player.GetMessageByKey(ClientMessage.CheckDmgCommand_Message2, victim.getTotalWatk().ToString(), victim.getTotalMagic().ToString()));
+            await player.dropMessage(5, player.GetMessageByKey(ClientMessage.CheckDmgCommand_Message3, watkBuff.ToString(), matkBuff.ToString(), blessing.ToString()));
+            await player.dropMessage(5, player.GetMessageByKey(ClientMessage.CheckDmgCommand_Message4, victim.Name, maxBase.ToString()));
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
         }
     }
 }

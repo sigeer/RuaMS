@@ -16,13 +16,13 @@ public class PnpcCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.PnpcCommand_Syntax));
+            await player.Yellow(ClientMessage.PnpcCommand_Syntax);
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var npcId))
         {
-            await player.Yellow(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
+            await player.Yellow(ClientMessage.DataTypeIncorrect, player.GetMessageByKey(ClientMessage.DataType_Number));
             return;
         }
 

@@ -42,7 +42,7 @@ namespace Application.Core.Channel.Modules
             {
                 _server.PushChannelCommand(new InvokeMultiDropMessageCommandPlus(
                     [-1], NoticeType.LightBlue, e => e.GetMessageByKey(
-                            nameof(ClientMessage.Levelup_Congratulation),
+                            ClientMessage.Levelup_Congratulation,
                             CharacterViewDtoUtils.GetPlayerNameWithMedal(data.Name, e.Client.CurrentCulture.GetItemName(data.MedalItemId)),
                             data.Level.ToString(),
                             data.Name)));

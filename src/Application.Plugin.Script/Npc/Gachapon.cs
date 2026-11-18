@@ -18,24 +18,24 @@ namespace Application.Plugin.Script.Npc
 
             var curMapName = GetGachaponMapName();
 
-            var option = await AskMenu($"欢迎来到{curMapName}扭蛋机。我可以为您做些什么呢？", [
-                "什么是扭蛋机？",
-                $"在哪里可以购买#t{ticketId}#",
-                $"使用1张#t{ticketId}#",
-                $"使用10张#t{ticketId}#",
-                "查看我的#r奖品仓库"
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Gacha_Menu, curMapName), [
+                this.GetTalkMessage(ScriptMessage.Gacha_OptWhatIs),
+                this.GetTalkMessage(ScriptMessage.Gacha_OptWhereToBuy, ticketId),
+                this.GetTalkMessage(ScriptMessage.Gacha_OptUse1, ticketId),
+                this.GetTalkMessage(ScriptMessage.Gacha_OptUse10, ticketId),
+                this.GetTalkMessage(ScriptMessage.Gacha_OptStorage)
             ]);
 
             switch (option)
             {
                 case 0:
                     await SaySpeech([
-                        $"玩转扭蛋机，赢得稀有卷轴、装备、椅子、熟练书和其他酷炫物品！你只需要一张 #i{ticketId}##b#t{ticketId}##k 就有机会成为随机物品的幸运获得者。",
-                        $"你会在#p{npc}#中找到各种物品，但最有可能找到与" + curMapName + "相关的物品和卷轴。"
+                        this.GetTalkMessage(ScriptMessage.Gacha_Intro1, ticketId, ticketId),
+                        this.GetTalkMessage(ScriptMessage.Gacha_Intro2, npc, curMapName)
                         ]);
                     break;
                 case 1:
-                    await SayNext($"#i{ticketId}##b#t{ticketId}##k 可以在#r现金商店#k使用NX或枫叶点购买。点击屏幕右下角的红色商店图标访问#r现金商店#k。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Gacha_WhereToBuy, ticketId, ticketId));
                     break;
                 case 2:
                     await DoGachapon(ticketId, 1);
@@ -55,12 +55,12 @@ namespace Application.Plugin.Script.Npc
         {
             if (!haveItem(ticketId, count))
             {
-                await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Tip_CheckItemWithId), ticketId, count));
+                await SayOK(this.GetTalkMessage(ScriptMessage.Tip_CheckItemWithId, ticketId, count));
                 return;
             }
             if (!CheckGachaponStorage(count))
             {
-                await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Storage_CheckGachaponStorage), count));
+                await SayOK(this.GetTalkMessage(ScriptMessage.Storage_CheckGachaponStorage, count));
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace Application.Plugin.Script.Npc
                 rewards.Add(await doGachapon());
             }
 
-            await SaySpeech(rewards.Select(itemObj => itemObj == null ? this.GetTalkMessage(nameof(ScriptMessage.Tip_ThankPatronage)) : this.GetTalkMessage(nameof(ScriptMessage.Tip_ObtainItem), itemObj.ItemId, itemObj.Quantity)).ToArray());
+            await SaySpeech(rewards.Select(itemObj => itemObj == null ? this.GetTalkMessage(ScriptMessage.Tip_ThankPatronage) : this.GetTalkMessage(ScriptMessage.Tip_ObtainItem, itemObj.ItemId, itemObj.Quantity)).ToArray());
         }
 
         // Npc: 9100101 

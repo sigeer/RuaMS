@@ -17,7 +17,7 @@ namespace Application.Core.Channel.Internal.Handlers
         {
             if (res.Code != 0)
             {
-                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, nameof(ClientMessage.PlayerNotOnlined), res.Request.Victim));
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, NoticeType.Pink, ClientMessage.PlayerNotOnlined, res.Request.Victim));
             }
             else
             {

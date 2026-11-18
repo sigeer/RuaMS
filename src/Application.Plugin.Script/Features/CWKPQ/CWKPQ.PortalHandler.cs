@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.maps;
@@ -22,7 +23,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
             }
             else
             {
-                await Pink("巨大的铁门纹丝不动，但可以看到一个明显的键石形凹槽。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.CWKPQPortalHandler_MassiveIron));
                 return false;
             }
         }
@@ -33,7 +34,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
         public async Task<bool> glTutoMsg0()
         {
 
-            await showInstruction("离开这个区域，将无法再回来。", 150, 5);
+            await showInstruction(this.GetTalkMessage(ScriptMessage.CWKPQPortalHandler_LeaveWarn), 150, 5);
             return true;
         }
 
@@ -92,26 +93,26 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
             if (eim.getIntProperty("glpq3") >= 5 && eim.getIntProperty("glpq3_p") >= 5)
             {
-                await LightBlue("The portal at the bottom has already been opened! Proceed there!");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.CWKPQPortalHandler_PortalBottom));
                 return true;
             }
 
             if (eim.getIntProperty("glpq3_p") >= 5)
             {
-                await mapMessage(6, "Not all Sigils have been activated yet. Make sure they have all been activated to proceed to the next stage.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.CWKPQPortalHandler_AllSigils));
                 return true;
             }
 
             eim.setIntProperty("glpq3_p", eim.getIntProperty("glpq3_p") + 1);
             if (eim.getIntProperty("glpq3") >= 5 && eim.getIntProperty("glpq3_p") >= 5)
             {
-                await mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.CWKPQPortalHandler_AntellionGrants));
                 await eim.showClearEffect(610030300, "3pt", 2);
                 await eim.GiveStageClearRewardAll(3);
             }
             else
             {
-                await mapMessage(6, "An adventurer has passed through! " + (5 - eim.getIntProperty("glpq3_p")) + " to go.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.CWKPQ_AdventurerPassedLeft, (5 - eim.getIntProperty("glpq3_p")).ToString()));
             }
 
             return true;
@@ -134,14 +135,14 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
             if (react.getState() >= 1)
             {
-                await eim.dropMessage(5, "The portal apparatus is malfunctional, due to the last transportation. The finding another way through.");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_PortalApparatus);
                 return false;
             }
 
             await react.forceHitReactor(1);
             eim.setIntProperty("glpq1", 1);
 
-            await eim.dropMessage(5, "A strange force starts being emitted from the portal apparatus, showing a hidden path once blocked now open.");
+            await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_StrangeForce);
             await playPortalSound();
             await warp(610030100, 0);
 
@@ -154,7 +155,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
         {
             if (getPlayer().getJob().GetJobNiche() != jobNiche)
             {
-                await Pink(denied);
+                await this.Pink(denied);
                 return false;
             }
 
@@ -168,7 +169,7 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = getEventInstance();
             if (eim == null || !condition(eim))
             {
-                await Pink(denied);
+                await this.Pink(denied);
                 return false;
             }
 

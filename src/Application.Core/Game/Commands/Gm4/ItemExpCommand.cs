@@ -15,7 +15,7 @@ public class ItemExpCommand : ParamsCommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.ProItemCommand_Syntax));
+            await player.Yellow(ClientMessage.ProItemCommand_Syntax);
             return;
         }
 

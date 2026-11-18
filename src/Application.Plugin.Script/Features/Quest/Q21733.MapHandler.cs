@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Server.life;
@@ -50,7 +51,7 @@ namespace Application.Plugin.Script.Features.Quest
                 mob.setStance(4);
             });
 
-            await Pink("情报商店被人偶师占领了！确认情况后，击退人偶师！");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Q21733MapHandler_InformationShop));
 
         }
 

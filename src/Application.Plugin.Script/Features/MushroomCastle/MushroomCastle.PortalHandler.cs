@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Server.maps;
+using Application.Resources.Messages;
 using Application.Utility;
 using scripting.portal;
 
@@ -58,11 +59,11 @@ namespace Application.Plugin.Script.Features.MushroomCastle
             {
                 if (!canHold(MushroomCastleFeature.PepeKingQuestRewardItem))
                 {
-                    await Pink("请确保背包其它物品栏还有可用空间。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_NeedEtcSlot));
                     return false;
                 }
 
-                await Pink("你已经拿到了结婚礼堂的钥匙。企鹅国王肯定是把它丢掉了。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_GotKey));
                 await gainItem(MushroomCastleFeature.PepeKingQuestRewardItem, 1);
             }
 
@@ -125,7 +126,7 @@ namespace Application.Plugin.Script.Features.MushroomCastle
                 await warp(106020000, 0);
                 return true;
             }
-            await Pink("一股神秘力量阻挡了你的进入。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_MysticBlock));
             return false;
         }
 
@@ -135,7 +136,7 @@ namespace Application.Plugin.Script.Features.MushroomCastle
         {
             if (!isQuestCompleted(2324))
             {
-                await Pink("城墙上仍然长满了荆棘。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_ThornsStillThere));
                 return false;
             }
 
@@ -152,7 +153,7 @@ namespace Application.Plugin.Script.Features.MushroomCastle
         public async Task<bool> TD_MC_faild()
         {
             await ShowDirectionEffect("Effect/Direction2.img/mushCatle/nugu");
-            await Pink("你被警卫发现了，现在将被送到悬崖底部。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_CaughtByGuard));
 
             var chrId = getPlayer().Id;
             _ = Task.Run(async () =>
@@ -182,7 +183,7 @@ namespace Application.Plugin.Script.Features.MushroomCastle
             }
             else
             {
-                await Pink("前路布满荆棘，无法通过！");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_ThornsBlockPath));
                 return false;
             }
         }
@@ -194,7 +195,7 @@ namespace Application.Plugin.Script.Features.MushroomCastle
 
             if (!isQuestCompleted(2335) && !(isQuestStarted(2335) && hasItem(4032405)))
             {
-                await Pink("门锁了，需要钥匙才能进去。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_DoorLocked));
                 return false;
             }
 
@@ -224,13 +225,13 @@ namespace Application.Plugin.Script.Features.MushroomCastle
                 await gainItem(4000507, -1);
                 await playPortalSound();
                 await warp(106020400, 2);
-                await Pink("消耗一个 蘑菇的毒孢子 通过了结界。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_SporeUsed));
                 return true;
             }
             else
             {
                 await ShowEffect("Effect/OnUserEff/normalEffect/mushroomcastle/chatBalloon1");
-                await Pink("似乎有一个魔力强大的结界阻止你进入。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MushNpc_StrongBarrier));
             }
             return false;
         }

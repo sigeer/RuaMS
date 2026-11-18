@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -24,13 +25,13 @@ namespace Application.Plugin.Script.Features.Zakum
 
             if (!eim.isEventCleared())
             {
-                await Pink("你的队伍尚未完成试炼，请先完成奥拉的需求。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.ZakumPQPortalHandler_PartyHas));
                 return false;
             }
 
             if (eim.gridCheck(getPlayer()) == -1)
             {
-                await Pink("你还没有领取战利品，请先与Aura交谈。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.ZakumPQPortalHandler_HaveClaimed));
                 return false;
             }
 

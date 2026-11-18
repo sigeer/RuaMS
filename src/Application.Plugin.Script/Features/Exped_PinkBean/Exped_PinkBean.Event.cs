@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -67,7 +68,7 @@ namespace Application.Plugin.Script.Features.Exped_PinkBean
             await base.OnBattleStarted(eim);
 
             // 第一波在 15 秒后开始
-            await eim.dropMessage(5, "第一波攻击将在15秒后开始，请做好准备。");
+            await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_Wave1Soon);
             eim.Schedule(StartWave, 15_000);
         }
 
@@ -104,12 +105,12 @@ namespace Application.Plugin.Script.Features.Exped_PinkBean
                     await bossMap.spawnItemDrop(dropper, dropper, item, reactor.getPosition(), true, true);
                 }
 
-                await eim.dropMessage(6, "随着最后的守护者倒下，品克缤失去了无敌状态。真正的战斗现在开始！");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_InvincibilityGone);
                 return;
             }
 
             eim.setIntProperty("stage", stage + 1);
-            await eim.Pink("下一波守卫将在 15 秒后出现，做好准备。");
+            await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_NextWaveSoon);
             eim.Schedule(StartWave, 15_000);
         }
 
@@ -147,16 +148,16 @@ namespace Application.Plugin.Script.Features.Exped_PinkBean
 
             if (count == 5)
             {
-                await eim.dropMessage(5, "[远征队] 太多队员阵亡，品克缤现在被视为不可战胜，远征结束。");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_TooManyFallen);
                 await End(eim, TerminationReason.Failure);
             }
             else if (count == 4)
             {
-                await eim.dropMessage(5, "[远征队] 品克缤变得比以往更强大，大家进入背水一战模式！");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_PowerUp);
             }
             else if (count == 3)
             {
-                await eim.dropMessage(5, "[远征队] 伤亡人数开始失控，请小心战斗。");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.PinkBean_CasualtiesRising);
             }
 
             await base.OnPlayerDied(eim, chr);

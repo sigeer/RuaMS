@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.maps;
@@ -34,7 +35,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             var exit = eim.getIntProperty("canLeave");
             if (exit == 0)
             {
-                await Pink("You have to wait one minute before you can leave this place.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Pirate4thJobFeaturePortalHandler_HaveWait));
                 return false;
             }
 
@@ -49,7 +50,7 @@ namespace Application.Plugin.Script.Features.Pirate4thJobFeature
             var eim = GetEventInstance(Pirate4thJobFeature.MindEventName);
             if (eim == null || !eim.isEventCleared())
             {
-                await Pink("You have to clear this mission before entering this portal.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Pirate4thJobFeaturePortalHandler_HaveClear));
                 return false;
             }
 

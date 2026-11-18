@@ -16,7 +16,7 @@ public class ItemDropCommand : CommandBase
 
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.ItemDropCommand_Syntax));
+            await player.Yellow(ClientMessage.ItemDropCommand_Syntax);
             return;
         }
 
@@ -31,7 +31,7 @@ public class ItemDropCommand : CommandBase
 
         if (YamlConfig.config.server.BLOCK_GENERATE_CASH_ITEM && ii.isCash(itemId))
         {
-            await player.Yellow(nameof(ClientMessage.ItemDropCommand_CannotCreateCashItem));
+            await player.Yellow(ClientMessage.ItemDropCommand_CannotCreateCashItem);
             return;
         }
 

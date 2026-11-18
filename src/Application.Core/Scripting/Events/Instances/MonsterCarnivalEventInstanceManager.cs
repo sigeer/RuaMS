@@ -93,7 +93,7 @@ namespace Application.Core.scripting.Events.Instances
                 {
                     foreach (var item in RequestTeam.EligibleMembers)
                     {
-                        await item.Pink(nameof(ClientMessage.CPQ_ChallengeRoomDenied));
+                        await item.Pink(ClientMessage.CPQ_ChallengeRoomDenied);
                     }
                 }
                 RequestTeam = null;

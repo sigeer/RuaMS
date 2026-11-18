@@ -1,3 +1,7 @@
+
+using Application.Plugin.Script;
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -23,7 +27,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getLevel() >= 20)
             {
-                await SayOK("只有低于20级才能进入训练中心。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain2_OnlyCharacters));
                 return;
             }
 
@@ -31,7 +35,7 @@ namespace Application.Plugin.Script.Npc
             var hasSpecialBranch = getNpc() == 1012118;
             if (hasSpecialBranch && BeginnerTutorialQuests.Any(isQuestActive))
             {
-                if (await AskYesNo("你要进入特殊的训练中心吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Plain2_WantEnter)))
                 {
                     await warp(TRAINING_SPECIAL_MAP, 0);
                 }
@@ -48,10 +52,10 @@ namespace Application.Plugin.Script.Npc
                 _ => 912030000,
             };
 
-            var menu = "你要进入训练中心吗？";
+            var menu = this.GetTalkMessage(ScriptMessage.Plain2_WantEnterTraining);
             for (var i = 0; i < TRAINING_ROOMS; i++)
             {
-                menu += $"\r\n#b#L{i}#训练中心 {i} ({await getPlayerCount(baseMap + i)}/{TRAINING_MAX_PLAYERS})#l#k";
+                menu += this.GetTalkMessage(ScriptMessage.Plain2_TrainingRoomEntry, i, i, await getPlayerCount(baseMap + i), TRAINING_MAX_PLAYERS);
             }
 
             var sel = await AskMenu(menu);
@@ -62,7 +66,7 @@ namespace Application.Plugin.Script.Npc
 
             if (await getPlayerCount(baseMap + sel) >= TRAINING_MAX_PLAYERS)
             {
-                await SayNext("里面满人了，换个训练中心或频道试试。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_ItsFull));
                 return;
             }
 
@@ -113,8 +117,8 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("n1013001")]
         public async Task DragonMasterIntro()
         {
-            await SayNext("你，注定成为龙之大师的人……你终于来了。");
-            await SayNext("去履行你作为龙之主的职责吧...");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_DestinedDragon));
+            await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_GoFulfill));
             await warp(900090101, 0);
         }
 
@@ -123,7 +127,7 @@ namespace Application.Plugin.Script.Npc
         public async Task DragonEggObtained()
         {
             await forceCompleteQuest(22011);
-            await mapMessage(5, "你获得了龙蛋。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Plain2_HaveAcquired));
             await warp(900090103, 0);
         }
 
@@ -133,18 +137,18 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestStarted(22007))
             {
-                await SayNext("#b(你现在不需要拿蛋。)#k");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_DontNeed));
                 return;
             }
 
             if (!haveItem(4032451))
             {
                 await gainItem(4032451, 1, true);
-                await SayNext("#b(你获得了一个蛋。把它交给尤塔。)");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_GotEgg));
             }
             else
             {
-                await SayNext("#b(你已经获得了一个蛋。拿出你手上的蛋，然后把它交给尤塔。)");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Plain2_AlreadyHave));
             }
         }
 
@@ -154,13 +158,13 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestStarted(22015))
             {
-                await SayOK("#b(你离小猪太远了。靠近一点抓住它。)");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain2_YoureToo));
                 return;
             }
 
             await gainItem(4032449, 1, true);
             await forceCompleteQuest(22015);
-            await mapMessage(5, "你救了小猪。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Plain2_HaveRescued));
         }
 
         // Npc: 1096010
@@ -174,14 +178,14 @@ namespace Application.Plugin.Script.Npc
 
             if (haveItem(4032985))
             {
-                await EarnTitle("你已经拿过点火装置了。");
+                await this.EarnTitle(this.GetTalkMessage(ScriptMessage.Plain2_AlreadyHaveIgnition));
                 return;
             }
 
             if (canHold(4032985))
             {
                 await gainItem(4032985, 1, true);
-                await EarnTitle("你找到了点火装置。把它交给 Cutter。");
+                await this.EarnTitle(this.GetTalkMessage(ScriptMessage.Plain2_FoundIgnition));
             }
         }
 
@@ -196,7 +200,7 @@ namespace Application.Plugin.Script.Npc
             }
             else if (isQuestStarted(3749))
             {
-                await SayOK("我们已经找到了敌人的终极武器！沿着船头区域前进，你会找到我的妹妹 #b#p2082013##k。向她报告，获取有关任务的进一步指示。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain2_WeveAlready));
             }
             else
             {

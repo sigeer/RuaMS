@@ -1,5 +1,7 @@
 using Application.Core.Client;
 using Application.Shared.Constants.Inventory;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -40,16 +42,16 @@ namespace Application.Plugin.Script.Features.Quest
                     await gainExp(2700);
                     await forceCompleteQuest();
 
-                    await SayOK("干得好！你带回了所有丢失的#t4031092#。在这里，拿着这卷轴作为我的谢意……");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q3239_DoneBrought));
                 }
                 else
                 {
-                    await SayOK("在领取奖品之前，请确保消耗栏有一个空位.");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Q3239_FreeSpace));
                 }
             }
             else
             {
-                await SayOK("请归还我丢失在这个房间的10个#t4031092#.");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Q3239_PleaseReturn));
             }
         }
     }

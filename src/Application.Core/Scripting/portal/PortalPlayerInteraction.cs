@@ -101,7 +101,7 @@ public abstract class PortalPlayerInteraction : AbstractPlayerInteraction
             return true;
         }
 
-        await Pink(em.HandleCreateInstanceResult(r, c));
+        await this.Pink(em.HandleCreateInstanceResult(r, c));
         return false;
     }
 

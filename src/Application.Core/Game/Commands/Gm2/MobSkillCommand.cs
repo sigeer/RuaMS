@@ -13,20 +13,20 @@ public class MobSkillCommand : CommandBase
     {
         if (paramsValue.Length < 2)
         {
-            await client.OnlinedCharacter.Yellow(nameof(ClientMessage.MobSkillCommand_Syntax));
+            await client.OnlinedCharacter.Yellow(ClientMessage.MobSkillCommand_Syntax);
             return;
         }
 
         if (!int.TryParse(paramsValue[0], out var skillId) || !int.TryParse(paramsValue[1], out var skillLevel))
         {
-            await client.OnlinedCharacter.Yellow(nameof(ClientMessage.MobSkillCommand_Syntax));
+            await client.OnlinedCharacter.Yellow(ClientMessage.MobSkillCommand_Syntax);
             return;
         }
 
         var possibleSkill = MobSkillFactory.GetMobSkill(skillId, skillLevel);
         if (possibleSkill == null)
         {
-            await client.OnlinedCharacter.Yellow(nameof(ClientMessage.MobSkillNotFound), skillId.ToString());
+            await client.OnlinedCharacter.Yellow(ClientMessage.MobSkillNotFound, skillId.ToString());
             return;
         }
 

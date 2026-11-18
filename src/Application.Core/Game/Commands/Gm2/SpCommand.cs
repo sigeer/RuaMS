@@ -13,7 +13,7 @@ public class SpCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.SpCommand_Syntax));
+            await player.Yellow(ClientMessage.SpCommand_Syntax);
             return;
         }
 
@@ -48,11 +48,11 @@ public class SpCommand : CommandBase
 
                 await victim.updateRemainingSp(newSp);
 
-                await player.MessageI18N(nameof(ClientMessage.Command_Done), player.getLastCommandMessage());
+                await player.MessageI18N(ClientMessage.Command_Done, player.getLastCommandMessage());
             }
             else
             {
-                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
             }
         }
     }

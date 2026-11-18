@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -42,7 +43,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("I shouldn't go here.. it's creepy!");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q20407PortalHandler_ShouldntGo));
                 return false;
             }
         }

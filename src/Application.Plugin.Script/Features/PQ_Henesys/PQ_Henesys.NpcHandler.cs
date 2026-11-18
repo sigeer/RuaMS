@@ -20,8 +20,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             {
                 var em = GetEventManager(PQ_HenesysFeature.EventName);
 
-                var option = await AskMenu($"#e#b<组队任务: 迎月花山丘>\r\n#k#n{em.Template.GetRequirementDescription(c)}\r\n\r\n我是达尔利。这里有一座美丽的山丘，迎月花在那里盛开。山丘上住着一只老虎，名叫兴儿，它似乎在找吃的。你想前往迎月花山丘，与你的队友们联手帮助兴儿吗？#b\r\n" +
-                "#L0#我想参加组队任务。\r\n#L1#我想了解更多详情。\r\n#L2#我想兑换一件年糕的帽子。");
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.HenesysPQ_EnterMenu, em.Template.GetRequirementDescription(c), npc));
                 switch (option)
                 {
                     case 0:
@@ -29,7 +28,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                         await SayOK(em.HandleCreateInstanceResult(r, c));
                         break;
                     case 1:
-                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Intro)));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.HenesysPQ_Intro));
                         break;
                     case 2:
                         if (hasItem(4001101, 20) && canHold(1002798))
@@ -37,11 +36,11 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                             await gainItem(4001101, -20);
                             await gainItem(1002798, 1);
 
-                            await SayNext(this.GetTalkMessage(nameof(ScriptMessage.Redeem_Success)));
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Redeem_Success));
                         }
                         else
                         {
-                            await SayNext(this.GetTalkMessage(nameof(ScriptMessage.Redeem_NotEnough), "#t4001101#"));
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Redeem_NotEnough, "#t4001101#"));
                         }
                         break;
                     default:
@@ -50,7 +49,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             }
             else if (getMapId() == 910010100)
             {
-                if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Complete))))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.HenesysPQ_Complete)))
                 {
                     var eim = GetEventInstanceTrust();
                     if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
@@ -59,14 +58,14 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                     }
                     else
                     {
-                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Redeem_InventoryFull)));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Redeem_InventoryFull));
                     }
                     return;
                 }
             }
             else if (getMapId() == 910010400)
             {
-                if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.AreYouReturningMap), this.GetTalkMessage(ScriptMessage.Henesys))))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.AreYouReturningMap, this.GetTalkMessage(ScriptMessage.Henesys))))
                 {
                     var eim = GetEventInstanceTrust();
                     if (await eim.GiveClearReward(getPlayer()) == ClaimRewardResult.Success)
@@ -75,7 +74,7 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
                     }
                     else
                     {
-                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.Redeem_InventoryFull)));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Redeem_InventoryFull));
                     }
                     return;
                 }
@@ -87,30 +86,30 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
         {
             if (getMapId() == 910010100)
             {
-                await SayNext("你好！我是汤米。我们站的附近有一个猪镇。那里的猪很吵闹，无法控制，甚至偷了许多旅行者的武器。它们被赶出了自己的城镇，目前躲藏在猪镇里。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.HenesysPQ_ImTommy, npc));
 
                 if (isEventLeader())
                 {
-                    await SayNext("你觉得和你的队员一起去那里，给那些吵闹的猪一个教训怎么样？");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.HenesysPQ_ThinkAbout));
                     var eim = GetEventInstanceTrust();
                     await eim.startEventTimer(5 * 60000);
                     await eim.warpEventTeam(910010200);
                 }
                 else
                 {
-                    await SayOK("感兴趣吗？告诉你的队长和我联系，前往那里！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.HenesysPQ_InteressedTell));
                 }
             }
             else if (getMapId() == 910010200)
             {
-                if (await AskYesNo("你想现在退出奖励吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.HenesysPQ_LikeExit)))
                 {
                     await warp(910010400);
                 }
             }
             else if (getMapId() == 910010300)
             {
-                await SayOK("你现在将被传送出去，谢谢你的帮助！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.HenesysPQ_WarpedOut));
                 await warp(100000200);
             }
         }
@@ -121,28 +120,26 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
             int option;
             if (isEventLeader())
             {
-                option = await AskMenu(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk0)));
+                option = await AskMenu(this.GetTalkMessage(ScriptMessage.HenesysPQ_TutorialTalk0, npc));
             }
             else
             {
-                option = await AskMenu(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk1)));
+                option = await AskMenu(this.GetTalkMessage(ScriptMessage.HenesysPQ_TutorialTalk1, npc));
             }
-
             switch (option)
             {
                 case 0:
                     await SaySpeech([
-                    this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial0)),
-            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial1)),
-            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial2)),
-            this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_Tutorial3)),
-            ]);
+                    this.GetTalkMessage(ScriptMessage.HenesysPQ_Tutorial0),
+                    this.GetTalkMessage(ScriptMessage.HenesysPQ_Tutorial0),
+                    this.GetTalkMessage(ScriptMessage.HenesysPQ_Tutorial1),
+                    this.GetTalkMessage(ScriptMessage.HenesysPQ_Tutorial2),
+                    this.GetTalkMessage(ScriptMessage.HenesysPQ_Tutorial3)]);
                     break;
                 case 1:
                     if (haveItem(4001101, 10))
                     {
-                        await SayNext(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_CommitTask_Success)));
-
+                        await SayNext(this.GetTalkMessage(ScriptMessage.HenesysPQ_CommitTask_Success));
                         if (haveItem(4001101, 10))
                         {
                             await gainItem(4001101, int.MinValue);
@@ -160,16 +157,16 @@ namespace Application.Plugin.Script.Features.PQ_Henesys
 
 
                     }
-                    await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_CommitTask_Fail)));
+                    await SayOK(this.GetTalkMessage(ScriptMessage.HenesysPQ_CommitTask_Fail));
                     break;
                 case 2:
-                    if (await AskYesNo(this.GetTalkMessage(nameof(ScriptMessage.AreYouReturning))))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.AreYouReturning)))
                     {
                         await warp(910010300);
                     }
                     else
                     {
-                        await SayOK(this.GetTalkMessage(nameof(ScriptMessage.HenesysPQ_TutorialTalk2)));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.HenesysPQ_TutorialTalk2));
                     }
                     break;
                 default:

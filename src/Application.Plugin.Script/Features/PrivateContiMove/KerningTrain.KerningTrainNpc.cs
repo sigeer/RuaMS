@@ -3,6 +3,8 @@ using Application.Core.Game.ContiMove;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
 using Application.Utility.Exceptions;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.PrivateContiMove
 {
@@ -15,7 +17,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
         // Npc: 1052007
         public async Task subway_in()
         {
-            var option = await AskMenu("选择你的目的地。\r\n#L0##b废都广场#l\r\n#L1#进入建筑工地#l\r\n#L2#新叶城#l");
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.KerningTrain_PickDestination));
             switch (option)
             {
                 case 0:
@@ -26,7 +28,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                 case 1:
                     if (haveItem(4031036) || haveItem(4031037) || haveItem(4031038))
                     {
-                        var text = "这是检票口。您将立即被带进去。您想使用哪张票？#b";
+                        var text = this.GetTalkMessage(ScriptMessage.KerningTrain_HeresTicket);
                         for (var i = 0; i < 3; i++)
                         {
                             if (haveItem(4031036 + i))
@@ -41,7 +43,7 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                     }
                     else
                     {
-                        await SayOK("看起来你好像没有票！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.KerningTrain_SeemsThough));
                     }
                     break;
                 case 2:
@@ -58,12 +60,12 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
             var p = subway.GetTicket(getPlayer());
             if (p == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.KerningTrain_CantTalk));
                 return;
             }
             if (subway.CanEnter)
             {
-                if (await AskYesNo("列车已经进站,请出示你的票，这样我就可以让你进去了。乘坐时间不会很长，你会安全到达目的地的。你觉得怎么样？想要乘坐这趟列车吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.KerningTrain_TrainHas)))
                 {
                     if (haveItem(p.Value.TicketItemId))
                     {
@@ -73,19 +75,19 @@ namespace Application.Plugin.Script.Features.PrivateContiMove
                         }
                         else
                         {
-                            await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.KerningTrain_BeginBoarding));
                         }
                     }
                     else
                     {
-                        await SayOK("抱歉，您需要一张门票才能进入！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.KerningTrain_SorryNeed));
                     }
                     return;
                 }
             }
             else
             {
-                await SayNext("我们将在列车开车前1分钟开始检票进入。进入之后请耐心等待几分钟。请注意，地铁将准时发车，我们将在那之前1分钟停止接收车票，请做好时间管理。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.KerningTrain_BeginBoarding));
                 return;
             }
         }

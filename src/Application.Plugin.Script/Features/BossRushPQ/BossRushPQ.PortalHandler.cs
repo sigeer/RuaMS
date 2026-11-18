@@ -26,13 +26,13 @@ namespace Application.Plugin.Script.Features.BossRushPQ
 
             if (eim.isEventLeader(getPlayer()) && eim.getPlayerCount() > 1)
             {
-                await Pink("Being the party leader, you cannot leave before your teammates leave first or you pass leadership.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.BossRushPQPortalHandler_BeingParty));
                 return false;
             }
 
             if (await eim.GiveClearReward(getPlayer()) != ClaimRewardResult.Success)
             {
-                await Pink(c.CurrentCulture.GetMessageByCategory(ScriptMessageCategories.ScriptMessage, nameof(ScriptMessage.Redeem_InventoryFull)));
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Redeem_InventoryFull));
                 return false;
             }
 
@@ -79,7 +79,7 @@ namespace Application.Plugin.Script.Features.BossRushPQ
             }
             else
             {
-                await LightBlue("Defeat all monsters before proceeding to the next stage.");
+                await this.LightBlue(this.GetTalkMessage(ScriptMessage.BossRushPQPortalHandler_DefeatAll));
                 return false;
             }
         }

@@ -39,119 +39,100 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2003 
         public async Task begin5()
         {
-            switch (await AskMenu("现在...问我任何你可能对旅行有的问题！", [
-                "我该怎么移动？",
-                "我怎么打倒怪物？",
-                "我怎么捡起物品？",
-                "我死后会发生什么？",
-                "我死后会发生什么？",
-                "告诉我更多关于这个岛！",
-                "我应该怎么做才能成为一个战士？",
-                "我应该怎么做才能成为一个弓箭手？",
-                "我应该怎么做才能成为一个魔法师？",
-                "我应该怎么做才能成为一个盗贼？",
-                "我怎么提升角色属性？(S)",
-                "我怎么查看刚刚捡起的物品？",
-                "我怎么穿上物品？",
-                "我怎么查看我穿着的物品？",
-                "我怎么查看我穿着的物品？",
-                "我怎么去维多利亚岛？",
-                "什么是金币？"
-                ]))
+            switch (await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2003_TravelQuestions)))
             {
                 case 0:
                     await SaySpeech([
-                        "好的，这是你移动的方法。使用#bleft, right arrow#k在平地和斜坡上移动，并按#bAlt#k跳跃。一些特定的鞋子可以提高你的速度和跳跃能力。",
-                        "为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Move1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Move2)
                         ]);
                     break;
                 case 1:
                     await SaySpeech([
-                        "这里是如何击败怪物的方法。每个怪物都有自己的生命值，你可以用武器或法术来攻击它们。当然，它们越强大，就越难击败。",
-                        "一旦你进行职业转职，你将获得不同类型的技能，你可以将它们分配到快捷键上以便更容易地使用。如果是攻击技能，你不需要按下Ctrl键来攻击，只需按下分配为快捷键的按钮。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Attack1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Attack2)
                         ]);
                     break;
                 case 2:
                     await SaySpeech([
-                        "这就是你收集物品的方法。一旦你打倒一个怪物，一个物品就会掉到地上。当这种情况发生时，站在物品前面，按#bZ#k或#b小键盘上的0#k来获取物品。",
-                        "请记住，如果你的物品栏已满，你将无法获得更多物品。因此，如果你有一件不需要的物品，就卖掉它，这样你就可以从中获利。当你进行职业转职后，物品栏可能会扩展。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_PickUp1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_PickUp2)
                         ]);
                     break;
                 case 3:
                     await SaySpeech([
-                        "当你死亡时，你会变成一个幽灵。当你的生命值降到0时，会在那个地方出现一块墓碑，你将无法移动，但仍然可以进行聊天。",
-                        "如果你只是一个新手，死亡并不会让你失去太多。但一旦你有了职业，情况就不一样了。当你死亡时，你会失去一部分经验，所以一定要尽量避免危险和死亡。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Die1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Die2)
                         ]);
                     break;
                 case 4:
                     await SaySpeech([
-                        "想知道什么时候能转职？哈哈~！你真性急。每个职业都有固有的转职条件。一般8~10级你就可以选择职业。努力啊！",
-                        "等级并不是唯一决定进步的因素。你还需要根据职业提升特定能力的等级。例如，要成为一名战士，你的力量属性必须超过35，你知道我在说什么吗？确保提升与你的职业直接相关的能力。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Job1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Job2)
                         ]);
                     break;
                 case 5:
                     await SaySpeech([
-                        "想知道这个岛的情况？这里是叫彩虹岛的空中浮动岛。从远古就在天空上飞行了，因此这里很少出现凶猛的怪物。所以是相对安全的岛，是新手练习的好地方。",
-                        "但是，如果你想成为一个强大的玩家，最好不要考虑在这里呆太久。你也不会找到工作。这个岛屿下面有一个叫做金银岛的巨大岛屿。那个地方比这里大得多，甚至有些荒谬。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Island1),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Island2)
                         ]);
                     break;
                 case 6:
                     await SaySpeech([
-                        "你想当#b战士#k吗？嗯。。。那么你必须要去金银岛。金银岛北部有战士之村，叫#r勇士部落#k。去那里找#b武术教练#k后收下他的培训，你就会当战士。但要当战士你的等级必需达到10级.",
-                        "为了攻击怪物，你需要装备武器。装备后，按下#bCtrl#k来使用武器。在正确的时机，你就能轻松地击败怪物。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Warrior1)
                         ]);
                     break;
                 case 7:
                     await SaySpeech([
-                        "你想当弓箭手吗？在金银岛你会当弓箭手。在金银岛南部有弓箭手的村落，射手村。在那里赫丽娜会告诉你当弓箭手的方法。但关键是要当弓箭手你的等级应该是10级。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Bowman)
                         ]);
                     break;
                 case 8:
                     await SaySpeech([
-                        "你想当魔法师是吗？那你要去金银岛东部的魔法密林。在那里你会见到很多魔法师。而且在那里你要见汉斯。他就会让你当魔法师。",
-                        "哦，顺便说一下，与其他职业不同，要成为一个魔法师，你只需要达到8级。提前进行职业转职所带来的好处也伴随着成为一名真正强大的法师所需付出的艰辛。在选择你的道路之前，请仔细考虑。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Magician),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Magician2)
                         ]);
                     break;
                 case 9:
                     await SaySpeech([
-                        "你你想当飞侠吗？那你要去金银岛西部的废弃都市。废都的达克鲁就会告诉你当飞侠的办法。关键的是为了当飞侠，你的等级应该是10级。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Thief)
                         ]);
                     break;
                 case 10:
                     await SaySpeech([
-                        "你想知道如何提升你角色的能力属性吗？首先按下#bS#k来查看能力窗口。每次升级时，你会获得5个能力点，也就是AP。将这些AP分配到你选择的能力上。就是这么简单。",
-                        "将鼠标光标放在所有技能上方，以获得简要解释。例如，战士的STR，弓箭手的DEX，魔法师的INT，以及盗贼的LUK。但这并不是你需要了解的全部，所以你需要仔细思考如何通过分配点数来强调你角色的优势。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Stats),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Stats2)
                         ]);
                     break;
                 case 11:
                     await SaySpeech([
-                        "你想知道如何查看你捡起的物品，是吗？当你打败一个怪物时，它会掉落一个物品在地上，你可以按#bZ#k来捡起这个物品。这个物品将被存储在你的物品库存中，你可以通过简单地按#bI#k来查看它。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_CheckItems)
                         ]);
                     break;
                 case 12:
                     await SaySpeech([
-                        "你想知道如何穿戴物品，对吧？按下#bI#k来查看你的物品库存。将鼠标光标放在物品上，双击它就可以穿在你的角色身上。如果你发现自己无法穿戴该物品，很可能是你的角色不符合等级和属性要求。你也可以通过打开装备库存(#bE#k)并将物品拖入其中来穿戴物品。要脱下物品，双击装备库存中的物品。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_WearItem)
                         ]);
                     break;
                 case 13:
                     await SaySpeech([
-                        "你想要检查已装备的物品，对吧？按下#bE#k打开装备栏，你会看到你当前穿着的物品。要脱下一个物品，双击该物品。该物品将被发送到物品栏。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_CheckEquip)
                         ]);
                     break;
                 case 14:
                     await SaySpeech([
-                        "获得职业后获得的特殊“能力”被称为技能。你将获得专门针对该职业的技能。你现在还没有达到那个阶段，所以还没有任何技能，但记住，要查看你的技能，请按#bK#k打开技能书。这将在日后帮助你。",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Skills)
                         ]);
                     break;
                 case 15:
                     await SaySpeech([
-                        "你如何到达金银岛？在这个岛的东部有一个叫做南港的港口。在那里，你会找到一艘在空中飞行的船。船前站着船长。问他关于这件事。",
-                        "哦，是的！在我离开之前，还有一条信息要告诉你。如果你不确定自己在哪里，记得按下#bW#k。世界地图会弹出来，显示你所在的位置。有了这个，你就不用担心迷路了。"
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_ToVictoria),
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_WorldMap)
                         ]);
                     break;
                 case 16:
                     await SaySpeech([
-                        "是冒险岛中使用的货币。你可以通过金币购买物品。要赚取金币，你可以击败怪物，将物品出售给商店，或者完成任务...",
+                        this.GetTalkMessage(ScriptMessage.Npc2003_A_Meso)
                         ]);
                     break;
                 default:
@@ -164,7 +145,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2104 
         public async Task HL_LADDER()
         {
-            await SayNext("好的，那么我们出发吧。冒险旅途开始了！");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc2104_LetsGo));
             await warp(1);
         }
 
@@ -172,26 +153,26 @@ namespace Application.Plugin.Script.Npc
         public async Task rein()
         {
             await SaySpeech([
-                "这是位于冒险岛东北部的名为#b彩虹岛#k的小村子。你知道这里可是新手的天堂哦，因为这个地方周围只有一些弱小的怪物~。",
-                "如果你想变得更强大，那就去#b南港#k吧，那里有一个港口。你可以乘坐一搜巨大的游轮前往一个叫做#b金银岛#k的地方。与这个小岛相比，它的面积可是一望无际。",
-                "在金银岛上，你可以游历并选择你的职业。我听说有一个荒凉的村落，有许多战士住在那里。还有悬崖、高地……那会是什么样的地方？"
+                this.GetTalkMessage(ScriptMessage.Npc12101_LithHarbor),
+                this.GetTalkMessage(ScriptMessage.Npc12101_GoSouthperry),
+                this.GetTalkMessage(ScriptMessage.Npc12101_ChooseJob)
                 ]);
         }
 
         // Npc: 22000 
         public async Task begin7()
         {
-            if (await AskYesNo("要去金银岛吗？只需要支付 #e150 金币#n，我会把你送到 #b明珠港#k。#r但是#k一旦离开这里，你就不能再回来了，要出发吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc22000_ToVictoria)))
             {
                 if (haveItem(4031801))
                 {
-                    await SayNext("这是#t4031801#？那你可以免费搭乘这次航班。");
-                    await SayNext("事不宜迟，我们出发吧！");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc22000_LucasLetter));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc22000_LetsGo));
 
                     // ！！！ 判断物品是否存在之后又等待了对话，虽然此时玩家无法操作物品，但是可能有其他后台操作（比如道具过期）恰好在等待期间移除了道具。需要重新判断
                     if (!haveItem(4031801))
                     {
-                        await SayNext("推荐信呢？");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc22000_WhatLetter));
                         return;
                     }
                     else
@@ -202,10 +183,10 @@ namespace Application.Plugin.Script.Npc
                 }
                 else if (getLevel() > 6)
                 {
-                    await SayNext("事不宜迟，我们出发吧！");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc22000_LetsGo));
                     if (getMeso() < 150)
                     {
-                        await SayNext("你的金币不足以支付这次航行");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc22000_NotEnoughMeso));
                         return;
                     }
                     else
@@ -216,7 +197,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("你的等级太低了，请7级后再来。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc22000_LevelTooLow));
                     return;
                 }
             }
@@ -226,23 +207,19 @@ namespace Application.Plugin.Script.Npc
         public async Task rithTeleport()
         {
 
-            await SayNext("你想去其他城镇吗？只要有一点钱，我就可以安排。虽然有点贵，但我给新手提供90%的特别折扣。");
-            switch (await AskMenu("如果这是你第一次来到这个地方，可能会对这里感到困惑是可以理解的。如果你对这个地方有任何问题，尽管问吧。",
-                [
-                "金银岛上有哪些城镇？",
-                "请带我去别的地方。"
-                ]))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002000_Message0));
+            switch (await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1002000_Message2)))
             {
                 case 0:
                     {
                         int[] imaps = [104000000, 102000000, 101000000, 100000000, 103000000, 120000000, 105040300];
-                        switch (await AskMenu("金银岛中存在7大主城区域. 你想了解哪一个？", imaps.Select(x => $"#m{x}#")))
+                        switch (await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1002000_Message3), imaps.Select(x => $"#m{x}#")))
                         {
                             case 0:
                                 await SaySpeech([
-                                    "你所在的城镇是明珠港！好的，我会为你详细介绍一下#b明珠港#k。明珠港是你乘坐维多利亚号登陆金银岛的地方。很多刚从彩虹岛来到这里的新手都会在这里开始他们的旅程。这个小镇为新手提供了许多便利和指引，帮助他们熟悉游戏世界，并踏上冒险的旅途。在这里，你可以接取任务、学习技能、购买装备，为接下来的旅程做好准备",
-                                    "这是一个宁静的小镇，背后是宽阔的水域，这要归功于港口位于岛屿的西端。这里的大多数人都是或者曾经是渔民，因此他们可能看起来有些令人畏惧，但如果你主动与他们交谈，他们会变得非常友好。这些渔民们经历了海上的风雨，有着丰富的故事和经验，他们乐于与新来的人分享自己的生活和见闻。在明珠港，你可以感受到一种淳朴而热情的氛围，这里的人们都乐于助人，愿意为需要帮助的人伸出援手。",
-                                    "镇子周围是一片广袤而美丽的草原。这里的怪物大多体型小巧且性格温顺，对于初来乍到的新手冒险家来说，是绝佳的练级场所。如果你还未决定自己的职业方向，那么这片草原将是你快速提升等级、熟悉游戏机制的好地方。在这里，你可以轻松击败怪物，积累经验值，同时还有机会获得丰厚的奖励，为你的冒险之旅打下坚实的基础。"
+                                    this.GetTalkMessage(ScriptMessage.Npc1002000_LithHarbor1),
+                                    this.GetTalkMessage(ScriptMessage.Npc1002000_LithHarbor2),
+                                    this.GetTalkMessage(ScriptMessage.Npc1002000_LithHarbor3)
                                     ]);
                                 break;
                             default:
@@ -251,18 +228,18 @@ namespace Application.Plugin.Script.Npc
                     }
                     break;
                 case 1:
-                    var selStr = getJobId() == 0 ? "所有新手都可以享受90%的特别折扣。好的，你想去哪里？" : "看来你不是新手, 嗯? 那我只能收你全价了. 你想去哪儿?";
+                    var selStr = getJobId() == 0 ? this.GetTalkMessage(ScriptMessage.Npc1002000_CoditionNoviceTrue) : this.GetTalkMessage(ScriptMessage.Npc1002000_CoditionNoviceFalse);
                     int[] maps = [102000000, 100000000, 101000000, 103000000, 120000000];
                     int[] cost = [1000, 1000, 800, 1000, 800];
 
                     var option = await AskMenu(selStr, maps.Select(x => $"#m{x}#"));
 
                     var realCost = DiscountForNovice(cost[option]);
-                    if (await AskYesNo("我猜你不需要在这里。你真的想要移动到 #b#m" + maps[option] + "##k 吗？好吧，这将花费你 #b" + realCost + " 金币#k。你觉得怎么样？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1002000_ConfirmMove, maps[option], realCost)))
                     {
                         if (getMeso() < realCost)
                         {
-                            await SayOK("你的金币不够。以你的能力来说，不该只挣这么点！");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Npc1002000_MesoNotEnough));
                         }
                         else
                         {
@@ -282,14 +259,14 @@ namespace Application.Plugin.Script.Npc
             var cost = 1500;
             var ticket = 4031134;
             var option = await AskMenu(
-                $"你听说过位于明珠港附近，能够欣赏到壮观海景的海滩#b黄金海滩#k吗？我可以带你去那里，只需#b{cost}金币#k，或者如果你有#b#t{ticket}##k的话，那就可以免费。",
-                [$"我支付{cost}金币。", $"我有#t{ticket}#。", $"什么是#t{ticket}#？"]);
+                this.GetTalkMessage(ScriptMessage.Npc1002002_FlorinaIntro),
+                [this.GetTalkMessage(ScriptMessage.Npc1002002_OptPay, cost), this.GetTalkMessage(ScriptMessage.Npc1002002_OptTicket, ticket), this.GetTalkMessage(ScriptMessage.Npc1002002_OptWhatIs, ticket)]);
             switch (option)
             {
                 case 0:
                     if (getMeso() < 1500)
                     {
-                        await SayNext("我觉得你缺少金币。有很多方法可以赚钱，比如...卖掉你的盔甲...打败怪物...做任务...你知道我在说什么。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002002_LackMeso));
                         return;
                     }
                     else
@@ -300,11 +277,11 @@ namespace Application.Plugin.Script.Npc
                     }
                     break;
                 case 1:
-                    if (await AskYesNo($"所以你有一张#b#t{ticket}##k吗？你可以随时用它前往黄金海滩。好的，但要注意可能会遇到一些怪物。好的，你现在想前往黄金海滩吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1002002_ConfirmFlorina)))
                     {
                         if (!haveItem(ticket))
                         {
-                            await SayNext($"嗯，你的 #b#t{ticket}##k 到底在哪里？你确定你有吗？请再检查一遍。");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002002_WhereIsTicket));
                             return;
                         }
                         getPlayer().saveLocation("FLORINA");
@@ -312,11 +289,11 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await SayNext("你一定有一些事情要处理。你一定因为旅行和打猎而感到疲倦。去休息一下，如果你改变主意了，再来找我谈谈吧。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002002_TakeARest));
                     }
                     break;
                 case 2:
-                    await SayNext($"你一定对#b#t{ticket}##k很感兴趣。哈哈，这很可以理解。#t{ticket}#是一种物品，只要你拥有它，就可以免费前往黄金海滩。这是一种非常稀有的物品，甚至我们也不得不购买，但不幸的是，我在几周前在我珍贵的暑假期间丢失了我的。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002002_WhatIsTicket));
                     break;
                 default:
                     break;
@@ -326,31 +303,31 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1002003 
         public async Task friend00()
         {
-            if (await AskYesNo("我希望我能赚到像昨天一样多的钱...嗨，你好！你不想扩展你的好友列表吗？你看起来像是有很多朋友的人...那么，你觉得呢？只要有一些钱，我就可以帮你实现。不过要记住，这只适用于一个角色，不会影响你账号上的其他角色。你想扩展你的好友列表吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1002003_ExtendIntro)))
             {
-                if (await AskYesNo("好的，不错的选择！其实并不是很贵。#b24万金币，我就可以给你的好友列表增加5个名额#k。不，我不会单独出售它们。一旦你购买了，它就会永久地出现在你的好友列表上。所以如果你是那些需要更多空间的人，那么你最好去做。你觉得呢？你会花24万金币吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1002003_ExtendConfirm)))
                 {
                     var capacity = getPlayer().getBuddylist().Capacity;
                     if (capacity >= 50 || getMeso() < 240000)
                     {
-                        await SayNext("嘿... 你确定你有 #b240,000金币#k 吗？如果是的话，那么检查一下你是否已经将好友列表扩展到了最大。即使你付了钱，你的好友列表上限也只能有 #b50#k 个。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002003_CheckMeso));
                     }
                     else
                     {
                         var newcapacity = capacity + 5;
                         await gainMeso(-240000);
                         await getPlayer().setBuddyCapacity(newcapacity);
-                        await SayOK("好的！你的好友列表现在应该有5个额外的槽位。自己去检查一下。如果你还需要更多的好友列表空间，你知道该找谁。当然，这并不是免费的……好了，再见……");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1002003_ExtendSuccess));
                     }
                 }
                 else
                 {
-                    await SayNext("我明白了...我觉得你的朋友可能没有我想象的那么多。如果不是这样，你现在手头上就没有24万金币？不管怎样，如果你改变主意了，回来找我，我们可以谈生意。当然，前提是你得解决一些财务问题... 嘿嘿...");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002003_NoMesoFriends));
                 }
             }
             else
             {
-                await SayNext("我明白了...你的朋友似乎没有我想象的那么多。哈哈哈，开玩笑的！无论如何，如果你改变主意了，随时可以回来找我谈生意。如果你交了很多朋友，你就知道了... 嘿嘿...");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002003_NotManyFriends));
             }
         }
 
@@ -368,14 +345,14 @@ namespace Application.Plugin.Script.Npc
                 await SayNext(GetDefault1());
 
                 (int item, int price, string desc)[] items = [(2000002, 310, "300 HP."), (2022003, 1060, "1000 HP."), (2022000, 1600, "800 MP."), (2001000, 3120, "1000 HP and MP.")];
-                var option = await AskMenu("你想购买哪些药水?#b", items.Select(x => "#i" + x.item + "# (价格 : " + x.price + " 金币)"));
-                var inputNumber = await AskNumber("你想买 #b#t" + items[option].item + "##k? #t" + items[option].item + "# 允许您恢复 " + items[option].desc + " 你想买多少个?", 1, 1, 100);
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1002100_BuyPotions));
+                var inputNumber = await AskNumber(this.GetTalkMessage(ScriptMessage.Npc1002100_PickQuantity, items[option].item, items[option].desc), 1, 1, 100);
                 var totalCost = inputNumber * items[option].price;
-                if (await AskYesNo($"你将购买这些 #r{inputNumber}#k #b#t{items[option].item}#(s)#k 吗？#t{items[option].item}# 一个需要 {items[option].price} 金币，所以总共需要 #r{totalCost}#k 金币。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1002100_ConfirmBuy, inputNumber, items[option].item, items[option].price, totalCost)))
                 {
                     if (getMeso() < totalCost)
                     {
-                        await SayNext("你是否缺少金币？请检查一下你的消耗物品栏中是否有空位，并且你是否携带了至少 #r" + totalCost + "#k 金币。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002100_CheckMeso, totalCost));
                     }
                     else
                     {
@@ -383,24 +360,24 @@ namespace Application.Plugin.Script.Npc
                         {
                             await gainMeso(totalCost);
                             await gainItem(items[option].item, inputNumber);
-                            await SayNext("谢谢你的光临。如果你有什么需要，随时可以再来。");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002100_ComeAgain));
                         }
                         else
                         {
-                            await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.USE))));
+                            await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.USE)));
                         }
                     }
                 }
                 else
                 {
-                    await SayNext("我还有你之前给我的很多材料。物品都在那里，所以你可以慢慢挑选。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002100_Materials));
                 }
             }
             else
             {
                 if (isQuestCompleted(2010))
                 {
-                    await SayNext("你似乎不够强大，无法购买我的药水……");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1002100_NotStrong));
                 }
                 else
                 {
@@ -413,28 +390,22 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1012008, 2040014 
         public async Task minigame00()
         {
-            var option = await AskMenu("嘿，看起来你需要休息一下，远离那些狩猎。你应该像我一样享受生活。嗯，如果你有一些物品，我可以和你交换一个可以玩迷你游戏的物品。现在...我能为你做些什么？", [
-                "制作一个迷你游戏物品",
-                "向我解释一下迷你游戏是什么"
-            ]);
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1012008_Menu));
 
             if (option == 0)
             {
-                var gameType = await AskMenu("你想制作迷你游戏道具吗？迷你游戏并不是你随便就能玩的。每个迷你游戏都需要一组特定的道具。你想制作哪个迷你游戏的道具？", [
-                    "五子棋套装",
-                    "配对卡套装"
-                ]);
+                var gameType = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1012008_ChooseGame));
 
-                if (gameType == 0)
+                if (gameType == 4)
                 {
                     int[] omok = [4080000, 4080001, 4080002, 4080003, 4080004, 4080005];
                     int[] omok1piece = [4030000, 4030000, 4030000, 4030010, 4030011, 4030011];
                     int[] omok2piece = [4030001, 4030010, 4030011, 4030001, 4030010, 4030001];
                     int omokamount = 99;
 
-                    await SayNext("你想玩#b五子棋#k，是吧？要玩这个游戏，你需要五子棋套装。只有拥有这个物品的人才能开设五子棋游戏房间，而且你几乎可以在市场以外的任何地方玩这个游戏。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1012008_OmokIntro));
 
-                    var omokType = await AskMenu("棋具的选择也取决于你想要使用哪种棋子。你想制作哪种棋具呢？",
+                    var omokType = await AskMenu(this.GetTalkMessage(ScriptMessage.Omok_ChooseSet),
                         omok.Select(x => $"#t{x}#"));
 
                     if (haveItem(omok1piece[omokType], omokamount) && haveItem(omok2piece[omokType], omokamount) && haveItem(4030009, 1))
@@ -443,11 +414,11 @@ namespace Application.Plugin.Script.Npc
                         await gainItem(omok2piece[omokType], -omokamount);
                         await gainItem(4030009, -1);
                         await gainItem(omok[omokType], 1);
-                        await SayOK("制作成功！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1012008_CraftSuccess));
                     }
                     else
                     {
-                        await SayOK($"#b你准备好 #t{omok[omokType]}##k了嘛？嗯...给我材料，我就可以那么做。仔细听，你需要的材料将会是：#r{omokamount} #t{omok1piece[omokType]}#, {omokamount} #t{omok2piece[omokType]}#, 1 #t{4030009}##k。怪物们可能会时不时地掉落那些东西……");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1012008_MaterialsNeeded, omok[omokType], omokamount, omok1piece[omokType], omok2piece[omokType], 4030009));
                     }
                 }
                 else
@@ -456,36 +427,33 @@ namespace Application.Plugin.Script.Npc
                     {
                         await gainItem(4030012, -15);
                         await gainItem(4080100, 1);
-                        await SayOK("制作成功！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1012008_CraftSuccess));
                     }
                     else
                     {
-                        await SayOK("你想要 #b一套配对卡#k 吗？嗯...要制作一套配对卡，你需要一些 #b怪物卡#k。怪物卡可以通过在整个岛上打倒怪物来获得。收集15张怪物卡，你就可以制作一套配对卡。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1012008_MatchCardsIntro));
                     }
                 }
             }
             else
             {
-                var explainType = await AskMenu("你想了解更多关于小游戏吗？太棒了！问我任何事情。你想了解哪个小游戏？", [
-                    "五子棋",
-                    "配对卡片"
-                ]);
+                var explainType = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1012008_ExplainMenu));
 
-                if (explainType == 0)
+                if (explainType == 2)
                 {
                     await SaySpeech([
-                        "这里是Omok的规则，请仔细听。Omok是一种游戏，你和对手轮流在桌子上放置棋子，直到有人找到一种方法在一条线上放置5个连续的棋子，无论是水平、对角线还是垂直线。首先，只有拥有#bOmok Set#k的人才能开设游戏房间。",
-                        "每局五子棋游戏将花费你#r100金币#k。即使你没有#b五子棋套装#k，你也可以进入房间并进行游戏。然而，如果你没有100金币，那么你将根本无法进入房间。开设游戏房间的人也需要100金币来开房间（否则就没有游戏）。如果在游戏过程中你的金币用完了，那么你将被自动踢出房间！",
-                        "进入房间，当你准备好玩的时候，点击#b准备#k。一旦访客点击#b准备#k，房间所有者可以按#b开始#k开始游戏。如果一个不受欢迎的访客走进来，而你不想和那个人玩，房间所有者有权将访客踢出房间。",
-                        "当第一局开始时，#b房主先走#k。请注意，你会被给予一个时间限制，如果你没有在规定时间内行动，你可能会失去你的回合。通常情况下，3 x 3 是不允许的，但如果有一个必须把你的棋子放在那里或者面临游戏结束的时刻，那么你可以把它放在那里。3 x 3 是允许作为最后的防线！哦，如果是#r6或7连#k，那就不算。只有5连！"
+                        this.GetTalkMessage(ScriptMessage.Omok_Rules),
+                        this.GetTalkMessage(ScriptMessage.Omok_Cost),
+                        this.GetTalkMessage(ScriptMessage.Omok_Ready),
+                        this.GetTalkMessage(ScriptMessage.Omok_FirstMove)
                     ]);
                 }
                 else
                 {
                     await SaySpeech([
-                        "这里是Match Cards的规则，请仔细听。顾名思义，Match Cards就是在桌子上找到一对匹配的牌。当所有匹配的对都被找到时，拥有更多匹配对的人将赢得游戏。就像五子棋一样，你需要一副Match Cards牌来开启游戏房间。",
-                        "每一局配对卡游戏都需要花费你 #r100金币#k。即使你没有 #b一套配对卡#k，你也可以进入房间并进行游戏。然而，如果你没有100金币，那么你将根本无法进入房间。开设游戏房间的人也需要100金币来开房间（否则就没有游戏）。如果你在游戏过程中金币用完了，那么你将被自动踢出房间！",
-                        "进入房间，当你准备好玩的时候，点击#b准备#k。一旦访客点击#b准备#k，房间所有者可以按#b开始#k开始游戏。如果一个不受欢迎的访客走进来，而你不想和那个人玩，房间所有者有权将访客踢出房间。"
+                        this.GetTalkMessage(ScriptMessage.MatchCards_Rules),
+                        this.GetTalkMessage(ScriptMessage.MatchCards_Cost2),
+                        this.GetTalkMessage(ScriptMessage.MatchCards_Ready2)
                     ]);
                 }
             }
@@ -498,29 +466,29 @@ namespace Application.Plugin.Script.Npc
 
             if (status == 0)
             {
-                await SayNext("看起来这个地区没有什么可疑的东西。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1012115_NothingSuspicious));
             }
             else if (status == 1)
             {
                 await forceCompleteQuest(20706);
-                await SayNext("你已经发现了影子！最好向#p1103001#报告。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1012115_FoundShadow));
             }
             else if (status == 2)
             {
-                await SayNext("影子已经被发现了。最好向#p1103001#报告一下。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1012115_ShadowAlreadyFound));
             }
         }
 
         // Npc: 1012116 
         public async Task blackShadowHene2()
         {
-            await SayNext("看起来这个地区没有什么可疑的东西。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1012115_NothingSuspicious));
         }
 
         // Npc: 1022101 
         public async Task go_xmas()
         {
-            if (await AskYesNo("圣诞老人告诉我来到这里，只是他没有告诉我什么时候……我希望我来的时间对了！哦！顺便说一下，我是鲁尼，我可以带你去#b快乐村#k。你准备好了吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1022101_RoonieIntro, npc)))
             {
                 getPlayer().SaveLocation(SavedLocationType.HAPPYVILLE);
                 await warp(209000000, 0);
@@ -534,15 +502,15 @@ namespace Application.Plugin.Script.Npc
         {
             if (getLevel() < 25)
             {
-                await SayOK("你必须达到更高的等级才能进入忍苦树林。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1032003_LevelTooLow));
             }
             else
             {
-                if (await AskYesNo($"嗨，我是#p{npc}#。我可以让你进入忍苦树林，只需要支付一小笔费用。你想用 #b5000#k 金币进入吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1032003_ConfirmEnter)))
                 {
                     if (getMeso() < 5000)
                     {
-                        await SayOK(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
                     }
                     else
                     {
@@ -567,7 +535,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("好的，下次见。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Pet_SeeYou));
                 }
             }
         }
@@ -575,7 +543,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1032004 
         public async Task herb_out()
         {
-            if (await AskYesNo("你想回到#m101000000#吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1032004_ConfirmReturn)))
             {
                 await warp(101000000, 0);
             }
@@ -591,7 +559,7 @@ namespace Application.Plugin.Script.Npc
                 // 天空之城
 
                 ContiMoveBase[] list = c.CurrentServer.ContiMoves.Values.Where(x => x.StationAMap.Id == getMapId()).ToArray();
-                var option = await AskMenu("您好，我是天空之城售票员，我负责销售开往各地船票。你想购买去那里的船票呢？",
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Ticket_Greeting),
                     list.Select(x => x.GetDestinationMapName(getPlayer())!));
 
                 currentContiMove = list[option];
@@ -603,24 +571,24 @@ namespace Application.Plugin.Script.Npc
 
             if (currentContiMove == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             var target = currentContiMove.GetDestinationMapName(getPlayer());
             if (target == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             var p = currentContiMove.GetTicket(getPlayer());
             if (p == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
-            if (await AskYesNo($"你好，我负责出售前往{target}的船票。前往{target}的船每{TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize()}出发一次，票价为#b{p.Value.TicketPrice}金币#k。你确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_Offer, target, TimeSpan.FromMilliseconds(currentContiMove.GetTransportationTime(currentContiMove.RideTime)).Humanize(), p.Value.TicketPrice, p.Value.TicketItemId)))
             {
                 if (getMeso() >= p.Value.TicketPrice && canHold(p.Value.TicketItemId))
                 {
@@ -629,12 +597,12 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("你确定你有 #b" + p.Value.TicketPrice + " 金币#k 吗？如果是的话，请检查你的其它物品栏，看看是否已经满了。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_NotEnoughMeso, p.Value.TicketPrice));
                 }
             }
             else
             {
-                await SayNext("你一定是有一些事情要在这里处理，对吧？");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Ticket_Busy));
             }
         }
 
@@ -644,21 +612,21 @@ namespace Application.Plugin.Script.Npc
             var currentContiMove = GetContiMove();
             if (currentContiMove == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             var target = currentContiMove.GetDestinationMapName(getPlayer());
             if (target == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             var p = currentContiMove.GetTicket(getPlayer());
             if (p == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
@@ -668,7 +636,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (currentContiMove.CanEnter)
                 {
-                    if (await AskYesNo($"你想去{target}吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_ConfirmDest, target)))
                     {
                         if (await currentContiMove.Enter(getPlayer()))
                         {
@@ -676,32 +644,32 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 {next}抵达。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_Departed, target, next));
                         }
                         return;
                     }
                     else
                     {
-                        await SayOK("好的，如果你改变主意，就跟我说话！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_TalkIfChangeMind));
                     }
                 }
                 else
                 {
-                    await SayOK($"飞往{target}的船只已经启程，请耐心等待下一班。下一班将在 {next}抵达。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_Departed, target, next));
                 }
             }
             else
             {
-                await SayOK($"确保你有一张飞往{target}的船票才能乘坐这艘船。检查你的物品栏。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_NeedTicket, target));
             }
         }
 
         // Id 1032009, 2012002, 2012022, 2012024, 2041001, 2082002, 2102001
         public async Task goOutWaitingRoom()
         {
-            if (await AskYesNo("你想离开吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_ConfirmLeave)))
             {
-                await SayNext("好的，下次见。保重。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Ticket_TakeCare));
                 await WarpOut();
             }
 
@@ -722,21 +690,21 @@ namespace Application.Plugin.Script.Npc
                     if (canHold(4032142))
                     {
                         await gainItem(4032142, 1);
-                        await SayOK("你装瓶了一些清澈的树液。#i4032142#");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc1032111_BottledSap));
                     }
                     else
                     {
-                        await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
                     }
                 }
                 else
                 {
-                    await SayOK("这个小树桩上不断流出的树液。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc1032111_SapFlowing));
                 }
             }
             else
             {
-                await SayOK("这个小树桩上不断流出的树液。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1032111_SapFlowing));
             }
         }
 
@@ -748,16 +716,16 @@ namespace Application.Plugin.Script.Npc
                 if (canHold(4032479))
                 {
                     await gainItem(4032479, 1);
-                    await SayOK("哼，你在找我吗？是长官派你来的，对吧？但是嘿，我不是你要找的嫌疑人。如果我有证据呢？拿着这个，把它还给 #b#p1012003##k。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc1040000_NotSuspect));
                 }
                 else
                 {
-                    await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                    await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
                 }
             }
             else
             {
-                await SayOK("呼呼呼...");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1040000_Sleeping));
             }
 
         }
@@ -839,7 +807,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1052006 
         public async Task subway_ticket()
         {
-            await SayNext("嗨，我是售票员。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Ticket_ConductorHi));
             var zones = 0;
             var cost = 1000;
 
@@ -862,15 +830,15 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var selStr = "您想要哪张票?#b";
+            var selStr = this.GetTalkMessage(ScriptMessage.Npc1052006_SelectTicket);
             for (var i = 0; i < zones; i++)
             {
-                selStr += "\r\n#L" + i + "#建筑工地 B" + (i + 1) + " (" + cost + " 金币)#l";
+                selStr += "\r\n#L" + i + "#" + this.GetTalkMessage(ScriptMessage.Npc1052006_BuildSite, i + 1, cost) + "#l";
             }
             var option = await AskMenu(selStr);
             if (getMeso() < cost)
             {
-                await SayOK(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                await SayOK(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
             }
             else
             {
@@ -927,8 +895,8 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1052011 
         public async Task subway_out()
         {
-            await SaySpeech(["这个设备连接到外部。", "你打算放弃并离开这个地方吗？"]);
-            if (await AskYesNo("下次进来的时候，你将不得不从头开始..."))
+            await SaySpeech([this.GetTalkMessage(ScriptMessage.Npc1052011_Connected), this.GetTalkMessage(ScriptMessage.Npc1052011_GiveUpLeave)]);
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1052011_ConfirmLeave)))
             {
                 await warp(103000100, 0);
             }
@@ -939,9 +907,9 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1052107 
         public async Task sca_Shade()
         {
-            if (await SayAcceptDecline("这是一个带着开关的小路灯。你要打开他吗？"))
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Npc1052107_TurnOnLamp)))
             {
-                await weakenAreaBoss(5090000, "You have turned the lamp on. Shade's strength will rapidly weaken due to the light.");
+                await weakenAreaBoss(5090000, this.GetTalkMessage(ScriptMessage.Weaken_LampOn));
             }
         }
 
@@ -967,11 +935,11 @@ namespace Application.Plugin.Script.Npc
                     if (canHold(4032136))
                     {
                         await gainItem(4032136, 1);
-                        await SayNext("你在垃圾桶里找到了一个#b#t4032136##k！ #i4032136#");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052111_FoundItem));
                     }
                     else
                     {
-                        await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                        await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
                     }
                     return;
                 }
@@ -999,7 +967,7 @@ namespace Application.Plugin.Script.Npc
             //    var itemid = 4001321;
             //    if (!canHold(itemid))
             //    {
-            //        await SayOK("请为1个其他槽腾出空间。");
+            //        await SayOK(this.GetTalkMessage(ScriptMessage.NpcScript_PleaseFree));
             //    }
             //    else
             //    {
@@ -1024,7 +992,7 @@ namespace Application.Plugin.Script.Npc
             //        case 1:
             //            if (getPlayer().getLevel() < 25 || getPlayer().getLevel() > 30 || !isLeader())
             //            {
-            //                await SayOK("你必须处于25-30级的等级范围，并且是队伍的队长。");
+            //                await SayOK(this.GetTalkMessage(ScriptMessage.NpcScript_BetweenLevels));
             //            }
             //            else
             //            {
@@ -1045,7 +1013,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1061006 
         public async Task flower_in()
         {
-            await SayNext("你感觉到一股神秘的力量笼罩着这座雕像。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1061006_StatueForce));
 
             var zones = -1;
             int[] maps = [105040310, 105040312, 105040314];
@@ -1063,7 +1031,7 @@ namespace Application.Plugin.Script.Npc
             }
             if (zones > 0)
             {
-                var option = await AskMenu("它的力量让你能够深入森林深处。", maps.Take(zones).Select(x => $"#m{x}#"));
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1061006_DeeperForest), maps.Take(zones).Select(x => $"#m{x}#"));
                 await warp(maps[option], 0);
             }
         }
@@ -1071,7 +1039,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1061007 
         public async Task flower_out()
         {
-            if (await AskYesNo("你想离开吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_ConfirmLeave)))
             {
                 await warp(105040300, 0);
             }
@@ -1081,15 +1049,14 @@ namespace Application.Plugin.Script.Npc
         public async Task hotel1()
         {
 
-            await SayNext("您好。这里是林中之城宾馆。如果您想恢复体力，就入住我们宾馆吧。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1061100_Welcome));
             var regcost = 499;
             var vipcost = 999;
-            var option = await AskMenu("我们提供两种房间供您选择。请选择您喜欢的一种。",
-                [$"普通桑拿房（{regcost}金币）", $"VIP桑拿房（{vipcost}金币）"]);
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1061100_RoomMenu, regcost, vipcost));
             switch (option)
             {
                 case 0:
-                    if (await AskYesNo("你选择了普通桑拿房。你的生命值和魔法值将会快速恢复，你甚至可以在那里购买一些物品。你确定要进去吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1061100_ConfirmRegular)))
                     {
                         if (getMeso() >= regcost)
                         {
@@ -1098,13 +1065,13 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            await SayNext("对不起，看起来你的金币不够。至少需要" + regcost + "金币才能在我们的旅馆住宿。");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1061100_NotEnoughMeso, regcost));
                         }
                         return;
                     }
                     break;
                 case 1:
-                    if (await AskYesNo("你选择了VIP桑拿房。你的HP和MP恢复速度甚至比普通桑拿还要快，而且你甚至可以在那里找到一个特别的物品。你确定要进去吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1061100_ConfirmVip)))
                     {
                         if (getMeso() >= vipcost)
                         {
@@ -1113,7 +1080,7 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            await SayNext("对不起，看起来你的金币不够。至少需要" + vipcost + "金币才能在我们的旅馆住宿。");
+                            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1061100_NotEnoughMeso, vipcost));
                         }
                         return;
                     }
@@ -1121,7 +1088,7 @@ namespace Application.Plugin.Script.Npc
                 default:
                     break;
             }
-            await SayNext("我们也提供其他类型的服务，所以请仔细考虑后再做决定。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1061100_OtherServices));
 
         }
 
@@ -1132,7 +1099,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (!canHold(4031025, 30))
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1142,7 +1109,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getPlayer().getInventory(InventoryType.ETC).getNumFreeSlot() < 1)
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1161,7 +1128,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (!canHold(4031026, 30))
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1171,7 +1138,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getPlayer().getInventory(InventoryType.ETC).getNumFreeSlot() < 1)
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1190,7 +1157,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (!canHold(4031028, 30))
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1200,7 +1167,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getPlayer().getInventory(InventoryType.ETC).getNumFreeSlot() < 1)
                 {
-                    await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                    await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     return;
                 }
 
@@ -1258,7 +1225,7 @@ namespace Application.Plugin.Script.Npc
                 var nextProgress = progress.Substring(0, slot) + '1' + progress.Substring(slot + 1);
                 await gainItem(4032263, -1);
                 await setQuestProgress(2236, 1, nextProgress);
-                await SayOK("由于灵符的法力，封印了该地区的邪恶势力。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1063012_SealedByTalisman));
             }
         }
 
@@ -1271,14 +1238,14 @@ namespace Application.Plugin.Script.Npc
             {
                 returnmap = 104000000;
             }
-            if (await AskYesNo("所以你想离开 #b#m110000000##k 吗？如果你想的话，我可以带你回到 #b#m" + returnmap + "##k。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1081001_ConfirmLeave, 110000000, returnmap)))
             {
                 getPlayer().clearSavedLocation(SavedLocationType.FLORINA);
                 await warp(returnmap);
             }
             else
             {
-                await SayNext("你一定有一些事情要在这里处理。在#m" + returnmap + "#休息一下也不错。看看我，我是如此喜欢这里，结果我最终在这里定居了。哈哈哈，无论如何，当你想回去的时候再来找我说话。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1081001_RestHere, returnmap));
             }
         }
 
@@ -1286,8 +1253,8 @@ namespace Application.Plugin.Script.Npc
         public async Task nautil_cow()
         {
             await SaySpeech([
-                "好的，我现在会把你送到我的牛棚去。小心那些喝光所有牛奶的小牛犊。你可不想白费力气。",
-                "这不容易一眼就分辨出小牛和母牛。这些小牛可能只有一个月或两个月大，但它们已经长到和它们的母亲一样大了。它们甚至看起来很像……有时候连我自己都会感到困惑！祝你好运！"
+                this.GetTalkMessage(ScriptMessage.Npc1092000_ToStable),
+                this.GetTalkMessage(ScriptMessage.Npc1092000_CalfVsCow)
                 ]);
             if (canHold(4031847))
             {
@@ -1296,7 +1263,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
             }
         }
 
@@ -1305,11 +1272,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (!haveItem(4220153))
             {
-                await SayOK("(抓抓抓...)");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1092010_Hmm));
             }
             else
             {
-                if (await AskYesNo("嘿，你那张不错的#b藏宝图#k是从哪里得到的？如果你不需要了，我可以替诺特勒斯船员保管吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1092010_TreasureMap)))
                 {
                     await gainItem(4220153, -1);
                 }
@@ -1321,12 +1288,12 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(2166))
             {
-                await SayNext("这是一块美丽而闪亮的岩石。我能感受到它周围的神秘力量。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092016_ShinyRock));
                 await completeQuest(2166);
             }
             else
             {
-                await SayNext("我用手碰了一下闪闪发光的石头，感觉到一股神秘的力量流入我的身体。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092016_TouchedRock));
             }
         }
 
@@ -1340,11 +1307,11 @@ namespace Application.Plugin.Script.Npc
                 if (canHold(4031839, 1))
                 {
                     await gainItem(4031839, 1);
-                    await SayNext("你检索到了一个从垃圾桶中取出的皱巴巴的纸张。它的内容似乎很重要。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_GotPaper));
                 }
                 else
                 {
-                    await SayNext("(你看到一个从垃圾桶中伸出的皱巴巴的纸张。内容似乎很重要，但由于你的背包已满，无法将其取出。)");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_PaperNoSlot));
                 }
             }
         }
@@ -1353,7 +1320,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (getQuestProgressInt(2180, 1) == idx)
             {
-                await SayNext("你最近已经从这头牛身上挤过奶了，请检查另一头牛。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_AlreadyMilked));
                 return;
             }
 
@@ -1364,7 +1331,7 @@ namespace Application.Plugin.Script.Npc
 
                 await setQuestProgress(2180, 1, idx);
 
-                await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之一的牛奶。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_BottleOneThird));
             }
             else if (canHold(4031849, 1) && haveItem(4031848))
             {
@@ -1373,7 +1340,7 @@ namespace Application.Plugin.Script.Npc
 
                 await setQuestProgress(2180, 1, idx);
 
-                await SayNext("现在用牛奶把瓶子装满。瓶子现在装了三分之二的牛奶。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_BottleTwoThirds));
             }
             else if (canHold(4031850) && haveItem(4031849))
             {
@@ -1382,11 +1349,11 @@ namespace Application.Plugin.Script.Npc
 
                 await setQuestProgress(2180, 1, idx);
 
-                await SayNext("现在用牛奶把瓶子装满。瓶子现在完全装满了牛奶。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092018_BottleFull));
             }
             else
             {
-                await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
             }
         }
 
@@ -1401,7 +1368,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4031847))
             {
-                await SayNext("小牛饿了，正在喝光所有的牛奶！奶瓶里一滴奶都没有了……");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092093_CalfDrinking));
             }
             else if (haveItem(4031848) || haveItem(4031849) || haveItem(4031850))
             {
@@ -1410,7 +1377,7 @@ namespace Application.Plugin.Script.Npc
                 await gainItem(4031850, -1);
 
                 await gainItem(4031847, 1);
-                await SayNext("小牛很饿，正在喝光所有的牛奶！奶瓶现在空了。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1092093_CalfEmpty));
             }
         }
 
@@ -1419,11 +1386,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestStarted(2186))
             {
-                await SayOK("只是一堆箱子，没什么特别的……");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1094002_JustBoxes));
                 return;
             }
 
-            await SayNext("你想要获得一副眼镜吗？");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1094002_WantGlasses));
             if (!(haveItem(4031853) || haveItem(4031854) || haveItem(4031855)))
             {
                 var rolled = Random.Shared.Next(3);
@@ -1443,7 +1410,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("你已经拥有了这里的眼镜！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1094002_AlreadyHave));
             }
         }
 
@@ -1467,24 +1434,24 @@ namespace Application.Plugin.Script.Npc
             if (getPlayer().isCygnus() && GameConstants.getJobBranch(getJob()) > 2)
             {
                 await useItem(2022458);
-                await SayOK("让我为你祈福，我的骑士。请保护冒险岛的世界……");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1101001_Blessing));
             }
             else
             {
-                await SayOK("不要停止训练。你的每一分能量都需要用来保护冒险岛的世界……");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1101001_KeepTraining));
             }
         }
 
         // Npc: 1101008 
         public async Task helperCygnus()
         {
-            var option = await AskMenu("等等！等你达到10级的时候，你会自己搞清楚这些东西的，但如果你绝对想提前准备，你可以查看以下信息。\r\n\r\n 告诉我，你想知道什么？\r\n#b#L0#关于你#l\r\n#L1#小地图#l\r\n#L2#任务窗口#l\r\n#L3#背包#l\r\n#L4#普通攻击狩猎#l\r\n#L5#如何拾取物品#l\r\n#L6#如何装备物品#l\r\n#L7#技能窗口#l\r\n#L8#如何使用快捷栏#l\r\n#L9#如何打开箱子#l\r\n#L10#如何坐在椅子上#l\r\n#L11#世界地图#l\r\n#L12#任务通知#l\r\n#L13#增强属性#l\r\n#L14#谁是皇家骑士？#l");
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc1101008_Intro));
             switch (option)
             {
                 case 0:
                     await SaySpeech([
-                        "我侍奉着守护女皇希纳斯。我的主人命令我引导所有来到枫之世界的人加入皇家骑士团。在你成为骑士或达到11级之前，我会一直在你身边协助和跟随你。如果你有任何问题，请告诉我。",
-                        "现在没有必要检查这些信息。这些都是你在游戏中会逐渐学会的基础知识。当你达到10级后，你可以随时问我遇到的问题，所以放松一点吧。"
+                        this.GetTalkMessage(ScriptMessage.Npc1101008_AboutMe),
+                        this.GetTalkMessage(ScriptMessage.Npc1101008_NoNeedInfo)
                         ]);
                     break;
                 case 1:
@@ -1503,7 +1470,7 @@ namespace Application.Plugin.Script.Npc
                     await guideHint(option);
                     break;
                 case 14:
-                    await SayOK("黑魔法师正试图复活并征服我们和平的枫之世界。作为对这一威胁的回应，女皇希纳斯组建了一个骑士团，现在被称为皇家骑士团。当你达到10级时，你可以成为一名骑士。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc1101008_CygnusKnights));
                     break;
                 default:
                     break;
@@ -1513,7 +1480,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1102001 
         public async Task outSecondDH()
         {
-            if (await AskYesNo("你想要退出训练大厅吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc1102001_ConfirmExit)))
             {
                 await warp(130020000, 0);
             }
@@ -1528,7 +1495,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1103005 
         public async Task erebWarp()
         {
-            if (await SayAcceptDecline("Becoming a Knight of Cygnus requires talent, faith, courage, and will power... and it looks like you are more than qualified to become a Knight of Cygnus. What do you think? If you wish to become one right this minute, I'll take you straight to Erev. Would you like to head over to Erev right now?"))
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.CygnusJoin_Offer)))
             {
                 await warp(130000000);
             }
@@ -1541,8 +1508,8 @@ namespace Application.Plugin.Script.Npc
         // Npc: 1104200 
         public async Task enterBlackEreb()
         {
-            await SayNext("#b#p1104002##k... The black witch... Trapped me here... There's no time now, she's already on her way to #rattack Ereve#k!");
-            if (await AskYesNo("Fellow Knight, you must reach to #rEreve#k right now, #rthe Empress is in danger#k!! Even in this condition, I can still Magic Warp you there. When you're ready talk to me. #bAre you ready to face Eleanor?#k"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Eleanor_WarpPrompt));
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Eleanor_WarpPrompt)))
             {
                 var map = await getWarpMap(913030000);
                 if (map.countPlayers() == 0)
@@ -1551,7 +1518,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("There's someone already challenging her. Please wait awhile.");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Eleanor_Busy));
                 }
             }
         }
@@ -1577,7 +1544,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("这是什么？如果你是来浪费我的时间的，滚开！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1202009_WhatIsIt));
             }
         }
 
@@ -1585,8 +1552,8 @@ namespace Application.Plugin.Script.Npc
         public async Task dollMaster00()
         {
             await SaySpeech([
-                new SpeechText("我是黑色之翼的人偶师弗朗西斯。你把我安置的好几个人偶都给找出来了……坏了我的好事。虽然我很恼火，不过这次先放你一马。你要是再敢和我作对………我以黑魔法师大人的名义发誓，绝不放过你。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
-                new SpeechText("#b（……黑色之翼？作对？……到底是怎么回事？在怪兽的身上找到人偶与黑魔法师有什么关系？该去找特鲁商议商议。）#k", NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd)
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204001_Francis, npc), NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd | NpcTalkSpeaker.Face),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204001_InnerThought), NpcTalkSpeaker.PlayerRight | NpcTalkSpeaker.NoEnd)
                 ]);
 
             await completeQuest(21719);
@@ -1597,9 +1564,9 @@ namespace Application.Plugin.Script.Npc
         public async Task giantDagoth()
         {
             await SaySpeech([
-                new SpeechText("嗯？怎么回事，你？", NpcTalkSpeaker.NoEnd),
-                new SpeechText("前不久倒是听说金银岛上的人偶师被人打倒了，难道是你……", NpcTalkSpeaker.NoEnd),
-                new SpeechText("嘿嘿，那反倒好办了！既拿到了#b天空之城封印石#k，又能顺便打倒你的话，我就能在人偶师之上了！出招吧！", NpcTalkSpeaker.NoEnd)
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204010_WhoAreYou), NpcTalkSpeaker.NoEnd),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204010_HeardAboutPuppeteer), NpcTalkSpeaker.NoEnd),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204010_LetsFight), NpcTalkSpeaker.NoEnd)
                 ]);
 
             var mapObj = getMap();
@@ -1615,17 +1582,17 @@ namespace Application.Plugin.Script.Npc
         public async Task desc_tree()
         {
             await SaySpeech([
-                "你看到那边站着一群雪人吗？去和他们中的一个交谈，它会带你去这里著名的巨大圣诞树。这棵树可以用各种装饰品来装饰。你觉得怎么样？听起来很有趣，对吧？",
-                "只有6个人可以同时在树所在的地方，你不能在那里进行交易或者开设商店。你丢下的饰品只能由你自己捡起来，所以不用担心在这里丢失你的饰品。",
-                "当然，掉落在那里的物品永远不会消失。一旦你通过里面的雪人离开那里，你在那张地图上掉落的所有物品都会回到你身边，所以你离开那个地方之前不必捡起所有这些物品。是不是很方便呢？",
-                "Well then, go see #p2002001#, buy some Christmas ornaments there, and then decorate the tree with those~ Oh yeah! The biggest, the most beautiful ornament cannot be bought from him. It's probably ... taken by a monster ... huh huh .."
+                this.GetTalkMessage(ScriptMessage.Npc2001000_Snowmen),
+                this.GetTalkMessage(ScriptMessage.Npc2001000_OrnamentRules),
+                this.GetTalkMessage(ScriptMessage.Npc2001000_ItemsReturn),
+                this.GetTalkMessage(ScriptMessage.Npc2001000_BuyOrnaments)
                 ], finalNext: false);
         }
 
         // Npc: 2001001 
         public async Task go_tree1()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2001000_XmasTree)))
             {
                 await warp(209000001);
             }
@@ -1634,7 +1601,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001002 
         public async Task go_tree2()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2001000_XmasTree)))
             {
                 await warp(209000002);
             }
@@ -1643,7 +1610,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001003 
         public async Task go_tree3()
         {
-            if (await AskYesNo("我们有一棵漂亮的圣诞树。你想看看/装饰它吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2001000_XmasTree)))
             {
                 await warp(209000003);
             }
@@ -1652,7 +1619,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2001004 
         public async Task out_tree()
         {
-            if (await AskYesNo("那么，你准备好离开这里了吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2001004_ReadyToLeave)))
             {
                 await warp(209000000);
             }
@@ -1668,7 +1635,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2002000 
         public async Task go_victoria()
         {
-            if (await AskYesNo("你想离开快乐村吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2002000_LeaveHappyville)))
             {
                 var map = getPlayer().GetSavedLocation(SavedLocationType.HAPPYVILLE);
                 if (map == -1)
@@ -1684,16 +1651,16 @@ namespace Application.Plugin.Script.Npc
         public async Task getAboard()
         {
             (string map, string transport)[] options = [
-                ("魔法密林","飞船"),
-                ("玩具城","飞船"),
-                ("神木村","飞艇"),
-                ("武陵","鹤"),
-                ("阿里安特","精灵"),
-                ("圣地","渡船"),
+                (this.GetTalkMessage(ScriptMessage.Job_Magician_Ellinia), this.GetTalkMessage(ScriptMessage.Npc2012006_Ship)),
+                (this.GetTalkMessage(ScriptMessage.Npc2012006_DestLudibrium), this.GetTalkMessage(ScriptMessage.Npc2012006_Ship)),
+                (this.GetTalkMessage(ScriptMessage.Npc2012006_DestLeafre), this.GetTalkMessage(ScriptMessage.Npc2012006_Bird)),
+                (this.GetTalkMessage(ScriptMessage.Npc2012006_DestMuLung), this.GetTalkMessage(ScriptMessage.Npc2012006_Hak)),
+                (this.GetTalkMessage(ScriptMessage.Npc2012006_DestAriant), this.GetTalkMessage(ScriptMessage.Npc2012006_Genie)),
+                (this.GetTalkMessage(ScriptMessage.Npc2012006_DestEreve), this.GetTalkMessage(ScriptMessage.Npc2012006_Boat)),
                 ];
-            var option = await AskMenu("天空之城的站台有许多个月台，请按照你的目的地进行选择。你想要前往哪里？", options.Select(x => $"前往{x.map}的{x.transport}站台"));
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2012006_ChooseDestination), options.Select(x => this.GetTalkMessage(ScriptMessage.Npc2012006_OptPlatform, x.map, x.transport)));
             var targetMap = 200000110 + (option * 10);
-            await SayNext($"好的，我会把你送到 #b#m{targetMap}##k 的月台上。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc2012006_WarpToPlatform, targetMap));
             await warp(targetMap, "west00");
         }
 
@@ -1708,13 +1675,13 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001019))
             {
-                await SayOK("你可以使用#b#t4001019##k来激活#b#p2012014##k。你要传送到#b#p2012015##k所在的地方吗？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2012014_TeleportPrompt));
                 await gainItem(4001019, -1);
                 await warp(200082100, 0);
             }
             else
             {
-                await SayOK("有一个#b#p2012014##k可以让你传送到#b#p2012015##k所在的地方，但如果没有卷轴就无法激活它。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2012014_NeedScroll));
             }
         }
 
@@ -1723,13 +1690,13 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001019))
             {
-                await SayOK("你可以使用#b#t4001019##k来激活#b#p2012014##k。你要传送到#b#p2012015##k所在的地方吗？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2012015_TeleportPrompt));
                 await gainItem(4001019, -1);
                 await warp(200080200, 0);
             }
             else
             {
-                await SayOK("有一个#b#p2012015##k可以让你传送到#b#p2012014##k所在的地方，但如果没有卷轴就无法激活它。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2012015_NeedScroll));
             }
         }
 
@@ -1754,7 +1721,7 @@ namespace Application.Plugin.Script.Npc
                         await getPlayer().SendPacket(FieldEffectPacket.Screen("quest/party/wrong_kor"));
                         await getPlayer().SendPacket(FieldEffectPacket.Sound("Party1/Failed"));
 
-                        await Pink("You've missed the note... Start over again.");
+                        await this.Pink(this.GetTalkMessage(ScriptMessage.NpcScript_YouveMissed));
                     }
                     else
                     {
@@ -1767,7 +1734,7 @@ namespace Application.Plugin.Script.Npc
                             if (idx == 45)
                             {
                                 // finished lullaby
-                                await Pink("Twinkle, twinkle, little star, how I wonder what you are.");
+                                await this.Pink(this.GetTalkMessage(ScriptMessage.NpcScript_TwinkleTwinkle));
                                 await setQuestProgress(3114, 42);
 
                                 await getPlayer().SendPacket(FieldEffectPacket.Screen("quest/party/clear"));
@@ -1778,15 +1745,15 @@ namespace Application.Plugin.Script.Npc
                             {
                                 if (idx == 14)
                                 {
-                                    await Pink("Twinkle, twinkle, little star, how I wonder what you are!");
+                                    await this.Pink(this.GetTalkMessage(ScriptMessage.NpcScript_TwinkleTwinkleLittle));
                                 }
                                 else if (idx == 22)
                                 {
-                                    await Pink("Up above the world so high,");
+                                    await this.Pink(this.GetTalkMessage(ScriptMessage.NpcScript_AboveWorld));
                                 }
                                 else if (idx == 30)
                                 {
-                                    await Pink("like a diamond in the sky.");
+                                    await this.Pink(this.GetTalkMessage(ScriptMessage.NpcScript_LikeDiamond));
                                 }
                             }
                         }
@@ -1849,14 +1816,14 @@ namespace Application.Plugin.Script.Npc
             var questId = QuestId.Get2ndJobQuest(job);
             if (haveItem(4031012) || isQuestCompleted(questId))
             {
-                await SayOK("你真是个英雄！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Job2_TrulyHero));
                 return;
             }
 
             var questProgress = getQuestProgressInt(questId);
             if (questProgress == 1)
             {
-                await SayNext("好的，我会让你进去！打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。祝你好运。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Job2_LetYouIn));
 
                 await TryStartSoloQuest(questId);
             }
@@ -1864,16 +1831,16 @@ namespace Application.Plugin.Script.Npc
             {
                 if (!haveItem(letter))
                 {
-                    await SayOK($"没有#b#t{letter}##k我是不会让你来冒险的！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Job2_NeedLetter, letter));
                     return;
                 }
 
                 await SaySpeech([
-                    $"嗯...这绝对是#b#t{letter}##k...所以你来到这里是为了接受测试，进行{c.CurrentCulture.GetJobName(job)}第二次职业转职。好吧，我来给你解释一下测试。不要太担心，它并不是那么复杂。",
-                    "我会把你送到一个隐藏的地图。你会看到一些平常不会见到的怪物。它们看起来和普通的怪物一样，但态度完全不同。它们既不会提升你的经验等级，也不会给你提供物品。",
-                    "打败里面的怪物，收集30个#t4031013#，然后和我里面的一位同事交谈。他会给你#b#t4031012##k，证明你通过了测试。",
+                    this.GetTalkMessage(ScriptMessage.Job2_HiddenLetter, letter, c.CurrentCulture.GetJobName(job)),
+                    this.GetTalkMessage(ScriptMessage.Job2_HiddenMap),
+                    this.GetTalkMessage(ScriptMessage.Job2_CollectMarbles),
                     ]);
-                if (await AskYesNo("一旦你进去，就不能离开，直到完成你的任务。如果你死了，你的经验会减少...所以你最好做好准备...那么，你现在想去吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Job2_ConfirmEnter)))
                 {
                     await TryStartSoloQuest(questId, async () =>
                     {
@@ -1883,7 +1850,7 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("等你准备好了再来找我，我会带你过去。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Job2_ComeBackLater));
                 }
             }
         }
@@ -1894,7 +1861,7 @@ namespace Application.Plugin.Script.Npc
             var eim = GetEventInstanceTrust();
             if (haveItem(4031013, 30))
             {
-                await SayOK("哦哦哦.. 你收集了所有30个#t4031013#！！这应该很困难... 简直不可思议！好吧。你通过了测试，为此，我会奖励你 #b#t4031012##k。拿着它回去吧。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Job2_CollectedAll));
                 await removeAll(4031013);
                 await gainItem(4031012);
 
@@ -1902,16 +1869,16 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await AskMenu("你需要收集 #b30 个 #t4031013##k。祝你好运。", ["我想离开"]);
+                await AskMenu(this.GetTalkMessage(ScriptMessage.Job2_NeedMarbles), [this.GetTalkMessage(ScriptMessage.Job2_OptLeave)]);
             }
             await eim.exitPlayer(getPlayer());
         }
 
         async Task Job3(int type, string preNpcMap, int preNpc)
         {
-            var option = await AskMenu("我可以帮你吗？", [
-                "我想进行第三次职业转职。",
-                "请允许我进行挑战扎昆任务。"
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Job3_PickJobMenu), [
+                this.GetTalkMessage(ScriptMessage.Job3_OptThirdJob),
+                this.GetTalkMessage(ScriptMessage.Job3_OptZakum)
                 ]);
             switch (option)
             {
@@ -1922,11 +1889,11 @@ namespace Application.Plugin.Script.Npc
 
                     if (IsQuestNotStarted(questId))
                     {
-                        if (await AskYesNo($"欢迎。我是#b#p{getNpc()}##k，所有{baseJobStr}的首领。你似乎已经准备好迈出这一步，准备好迎接第三职业转职的挑战。太多的{baseJobStr}来来去去，无法达到第三职业转职的标准。你呢？你准备好接受考验，进行第三职业转职了吗？"))
+                        if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Job3_Welcome, getNpc(), baseJobStr)))
                         {
                             await SaySpeech([
-                                $"好的。你将在{baseJobStr}的两个重要方面进行测试：力量和智慧。我现在会向你解释测试的力量部分。还记得在{preNpcMap}的#b#p{preNpc}##k吗？去找他，他会告诉你第一部分测试的细节。请完成任务，并从#p{preNpc}#那里得到#b#t4031057##k。",
-                                $"测试智慧的部分只能在你通过了力量测试之后才能开始。#b#t4031057##k 将证明你确实通过了测试。我会提前告诉#b#p{preNpc}##k你要前往那里，所以做好准备。这不会很容易，但我对你有信心。祝你好运。"
+                                this.GetTalkMessage(ScriptMessage.Job3_TestIntro1, baseJobStr, preNpcMap, preNpc),
+                                this.GetTalkMessage(ScriptMessage.Job3_TestIntro2, preNpc)
                                 ]);
                             await startQuest(questId);
                         }
@@ -1938,32 +1905,32 @@ namespace Application.Plugin.Script.Npc
                         {
                             if (haveItem(4031057))
                             {
-                                await SayNext("完成了测试的体能部分，做得很棒。我知道你能做到。现在你已经通过了测试的前半部分，接下来是后半部分。请先把项链给我。");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.Job3_PhysicalDone));
                                 if (haveItem(4031057))
                                 {
                                     await gainItem(4031057, -1);
                                     await setQuestProgress(questId, 1);
 
-                                    await SayNext("这是测试的第二部分。这个测试将决定你是否足够聪明，可以迈向伟大的下一步。在冰封雪域的雪地上有一个被雪覆盖的黑暗区域，被称为圣地，甚至怪物也无法到达。在这个区域的中心，有一块被称为圣石的巨大石头。你需要献上一件特殊的物品作为祭品，然后圣石将在当场测试你的智慧。");
+                                    await SayNext(this.GetTalkMessage(ScriptMessage.Job3_WisdomIntro));
                                     return;
                                 }
                                 else
                                 {
                                     // 原先这里只需要判断进度，并不强制需要物品（力量项链），我这里强制任务道具丢失需要重做
-                                    await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
+                                    await SayNext(this.GetTalkMessage(ScriptMessage.Job3_BringNecklace, preNpc));
                                     return;
                                 }
                             }
                             else
                             {
-                                await SayNext($"去，和#b#p{preNpc}#对话#k，然后给我带来#b#t4031057#。");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.Job3_BringNecklace, preNpc));
                             }
                         }
                         else if (questProgress == 1)
                         {
                             if (haveItem(4031058))
                             {
-                                await SayNext("做得好，完成了测试的智力部分。你正确地回答了所有问题。我必须说，你展现出的智慧水平让我印象深刻。在我们进行下一步之前，请先把项链交给我。");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.Job3_WisdomDone));
                                 if (haveItem(4031058))
                                 {
                                     await gainItem(4031058, -1);
@@ -1973,13 +1940,13 @@ namespace Application.Plugin.Script.Npc
                                 }
                                 else
                                 {
-                                    await SayNext("东西不见了？找#b#p2030006##k重做");
+                                    await SayNext(this.GetTalkMessage(ScriptMessage.Job3_ItemLost));
                                     return;
                                 }
                             }
                             else
                             {
-                                await SayNext("去，和#b#p2030006#对话#k，然后给我带来#b#t4031058##。");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.Job3_BringSecondNecklace));
                             }
                         }
                         else if (questProgress == 2)
@@ -1996,7 +1963,7 @@ namespace Application.Plugin.Script.Npc
                 default:
                     if (getPlayer().getLevel() >= 50)
                     {
-                        await SayOK("长老会授予你#b特许#k，让你成为#r反击扎昆团队的一员#k。祝你前程似锦。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Job3_ZakumApproved));
                         if (IsQuestNotStarted(ZakumFeature.QuestId))
                         {
                             await startQuest(ZakumFeature.QuestId);
@@ -2004,7 +1971,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await SayOK("你太弱了，无法成为#r反击扎昆团队#k的一员#k。至少达到#b50级#k，然后再和我说话。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Job3_ZakumTooWeak));
                     }
                     break;
             }
@@ -2015,14 +1982,14 @@ namespace Application.Plugin.Script.Npc
             var nextJob = getJobId() + 1;
             var job = JobFactory.GetById(nextJob);
             var jobStr = c.CurrentCulture.GetJobName(job);
-            if (!await AskYesNo($"好的！现在，我将让你成为{jobStr}。在这之前，请确保你的SP已经被充分使用了，你需要用完70级之前获得的所有SP。哦，还有，由于你已经在第二次转职时选择了职业方向，所以在第三次转职时就不需要再次选择了。你现在要进行转职吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Job3_ConfirmJobChange, jobStr)))
             {
                 return;
             }
 
             if (getPlayer().getRemainingSp() > (getLevel() - 70) * 3)
             {
-                await SayNext("请在继续之前使用你所有的SP。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Job3_UseAllSp));
                 return;
             }
 
@@ -2031,44 +1998,44 @@ namespace Application.Plugin.Script.Npc
             if (job == Job.CRUSADER)
             {
                 await SaySpeech([
-                    "你刚刚成为了#b勇士#k。一些新的攻击技能，比如#b怒吼#k和#b连击#k都非常强大，而#b破甲#k将会削弱怪物的防御能力。最好集中精力学习你在战士时期掌握的武器技能。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_Warrior_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
             else if (job == Job.WHITEKNIGHT)
             {
                 await SaySpeech([
-                    "你刚刚成为了#b圣骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议圣骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使圣骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_Paladin_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
             else if (job == Job.DRAGONKNIGHT)
             {
                 await SaySpeech([
-                    $"你刚刚成为了#b龙骑士#k。你将会接触到一本新的技能书，其中包含各种新的攻击技能以及基于元素的攻击。建议龙骑士继续使用与骑士团成员相配的武器类型，无论是剑还是钝器。有一个名为#b冲锋#k的技能，可以给武器增加冰、火和闪电元素，使圣骑士成为唯一能够进行基于元素的攻击的战士。用元素弱化怪物，然后用#b冲锋打击#k造成巨大伤害。这将使你在这里成为一股毁灭性的力量。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的战士。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_DragonKnight_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
 
             else if (getJob() == Job.FP_MAGE)
             {
                 await SaySpeech([
-                    "你现在是#b巫师（火毒）#k了。新的技能书包含了新的和改进的火毒系法术，还有像#b魔力激化#k（增强元素法术）和#b魔法狂暴#k（提高攻击法术的速度）这样的技能，能够让你快速有效地攻击怪物。防御性法术如#b火毒抗性#k（使你对某些元素攻击更强）和#b封印#k（封印怪物）将有助于弥补法师生命值不足的弱点。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_FirePoison_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
             else if (getJob() == Job.IL_MAGE)
             {
                 await SaySpeech([
-                    "你现在是#b巫师（冰雷）#k了。新的技能书包含了全新和改进的冰雷系法术，还有像#b魔力激化#k（增强元素法术）和#b魔法狂暴#k（提高攻击法术的速度）这样的技能，能够让你快速有效地攻击怪物。防御性法术如#b冰雷抗性#k（增强对特定元素攻击的抵抗力）和#b封印术#k（封印怪物）将有助于弥补法师生命值不足的弱点。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_IceLightning_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
             else if (getJob() == Job.PRIEST)
             {
                 await SaySpeech([
-                    "你现在是#b祭司#k了。新的技能书包含了新的和改进的神圣法术，比如#b圣光#k和#b圣龙召唤#k，以及#b时空门#k（创建通往最近城镇的门）和#b神圣祈祷#k（提高经验值获取）等技能对于组队游戏至关重要。像#b巫毒术#k（将怪物变成蜗牛）这样与众不同的法术使牧师成为所有职业中最独特的职业。",
-                        "我也给了你一些SP和AP，这将帮助你开始。你现在确实已经成为一个强大的法师。但请记住，现实世界将等待着你，那里会有更艰难的障碍需要克服。当你觉得无法自我训练来达到更高的境界时，那时候，只有那时候，来找我。我会在这里等着。"
+                    this.GetTalkMessage(ScriptMessage.Job3_Cleric_Bonus),
+                        this.GetTalkMessage(ScriptMessage.Job3_SpApGranted, c.CurrentCulture.GetJobName(getJob()))
                 ]);
             }
 
@@ -2106,7 +2073,7 @@ namespace Application.Plugin.Script.Npc
         public async Task s_3jobExit()
         {
             var eim = GetEventInstanceTrust();
-            if (await AskYesNo("你想离开吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Ticket_ConfirmLeave)))
             {
                 await eim.exitPlayer(getPlayer());
             }
@@ -2116,7 +2083,7 @@ namespace Application.Plugin.Script.Npc
         public async Task s4common1_out()
         {
             // 技能 稳如泰山
-            await SayNext("你在那里做得很好，#h #，干得漂亮。现在我会把你送回#m211000000#。当你准备好学习新技能时，带着护身符和我交谈。");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc2022004_Done));
             await warp(211000000, "in01");
         }
 
@@ -2129,17 +2096,17 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            await SayNext("嘿，你看起来好像想要继续前进，深入这个地方的更深处。不过，在那边，你会发现自己被攻击性强、危险的怪物包围，所以即使你觉得自己已经准备好了，也请小心。很久以前，我们镇上的一些勇敢的人进去想要消灭威胁镇上的任何人，但是从来没有回来过…");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc2030000_Warning));
             if (getLevel() > 49)
             {
-                if (await AskYesNo("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你看起来相当强壮。好吧，你想进去吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2030000_ConfirmEnter)))
                 {
                     await warp(211040300, 5);
                 }
             }
             else
             {
-                await SayOK("如果你打算进去，我建议你改变主意。但如果你真的想进去……我只会让那些足够强大以在那里生存下来的人进去。我不希望看到其他人死去。让我看看……嗯……！你还没到50级，我不能让你进去送死。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2030000_LevelTooLow));
             }
         }
 
@@ -2147,51 +2114,47 @@ namespace Application.Plugin.Script.Npc
         public async Task holyStone()
         {
             List<(string quest, string[] options, int answer)> questList = [
-        ("在冒险岛中，从Lv1升到Lv2需要多少经验值？", ["20", "15", "4", "12", "16"], 1),
-        ("各职业一转时，下列哪项要求是错误的？", ["魔法师 - 等级8级", "海盗 - 敏捷不低于20", "弓箭手 - 敏捷不低于25", "飞侠 - 敏捷不低于20", "战士 - 力量不低于35"], 3),
-        ("被怪物攻击时特别的异常状态没有被正确说明的是哪一项？", ["封印 - 不能释放技能", "不死族 - 变成不死族 & 恢复效果减半", "虚弱-移动速度降低", "诅咒 - 经验减少", "昏迷 - 无法移动"], 2),
-        ("各职业一转时，下列哪项要求是正确的？", ["海盗 - 25幸运", "魔法师 - 10级", "飞侠 - 25 幸运", "战士 - 30力量", "弓箭手 - 25敏捷"], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q1), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Text), this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Opt15), this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Opt4), this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Opt12), this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Opt16)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q2), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q2_MagicianLevel), this.GetTalkMessage(ScriptMessage.Npc2030006_Q2_PirateDex), this.GetTalkMessage(ScriptMessage.Npc2030006_Q2_ArcherDex), this.GetTalkMessage(ScriptMessage.Npc2030006_Q2_ThiefLuk), this.GetTalkMessage(ScriptMessage.Npc2030006_Q2_SwordmanStr)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q3), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q3_SealedSkills), this.GetTalkMessage(ScriptMessage.Npc2030006_Q3_UndeadTurns), this.GetTalkMessage(ScriptMessage.Npc2030006_Q3_WeakenSlow), this.GetTalkMessage(ScriptMessage.Npc2030006_Q3_CursedExp), this.GetTalkMessage(ScriptMessage.Npc2030006_Q3_StunnedCannot)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q4), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q4_PirateLuk), this.GetTalkMessage(ScriptMessage.Npc2030006_Q4_MagicianLevel), this.GetTalkMessage(ScriptMessage.Npc2030006_Q4_ThiefLuk), this.GetTalkMessage(ScriptMessage.Npc2030006_Q4_WarriorStr), this.GetTalkMessage(ScriptMessage.Npc2030006_Q4_BowmanDex)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q5), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q5_RoyalCactus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q5_WildBoar), this.GetTalkMessage(ScriptMessage.Npc2030006_Q5_LazyBuffy), this.GetTalkMessage(ScriptMessage.Npc2030006_Q5_ChipmunkNut), this.GetTalkMessage(ScriptMessage.Npc2030006_Q5_StirgeStirges)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q6), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q6_GreatestOldies), this.GetTalkMessage(ScriptMessage.Npc2030006_Q6_NependeathNependeaths), this.GetTalkMessage(ScriptMessage.Npc2030006_Q6_GhostStump), this.GetTalkMessage(ScriptMessage.Npc2030006_Q6_SparkerSeal), this.GetTalkMessage(ScriptMessage.Npc2030006_Q6_MinerZombie)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q7), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q7_WarriorElixir), this.GetTalkMessage(ScriptMessage.Npc2030006_Q7_PureWater), this.GetTalkMessage(ScriptMessage.Npc2030006_Q7_CakeRecover), this.GetTalkMessage(ScriptMessage.Npc2030006_Q7_SaladRecover), this.GetTalkMessage(ScriptMessage.Npc2030006_Q7_PizzaRecover)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q8), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q8_ManaElixir), this.GetTalkMessage(ScriptMessage.Npc2030006_Q8_TonicCures), this.GetTalkMessage(ScriptMessage.Npc2030006_Q8_AppleRecover), this.GetTalkMessage(ScriptMessage.Npc2030006_Q8_SunriseDew), this.GetTalkMessage(ScriptMessage.Npc2030006_Q8_RamenRecover)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q9), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q9_TreeStump), this.GetTalkMessage(ScriptMessage.Npc2030006_Q9_Bubbling), this.GetTalkMessage(ScriptMessage.Npc2030006_Q9_AxeStump), this.GetTalkMessage(ScriptMessage.Npc2030006_Q9_Octopus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q9_GreenMushroom)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q10), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_Werewolf), this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_Slime), this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_CrimsonBalrog), this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_Zakum), this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_StarPixie)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q11), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_Shroom), this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_BlueSnail), this.GetTalkMessage(ScriptMessage.Npc2030006_Q10_Slime), this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_RedSnail), this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_Pig)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q12), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_EvilEye), this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_Sentinel), this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_JrBalrog), this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_GhostStump), this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_Snail)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q13), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_DarkYeti), this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_DarkLigator), this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_YetiPepe), this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_Bain), this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_CoolieZombie)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q14), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q14_Malady), this.GetTalkMessage(ScriptMessage.Npc2030006_Q14_Ligator), this.GetTalkMessage(ScriptMessage.Npc2030006_Q14_ColdEye), this.GetTalkMessage(ScriptMessage.Npc2030006_Q14_Meerkat), this.GetTalkMessage(ScriptMessage.Npc2030006_Q14_Alishar)], 0),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q15), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q15_LunarPixie), this.GetTalkMessage(ScriptMessage.Npc2030006_Q15_Lioner), this.GetTalkMessage(ScriptMessage.Npc2030006_Q15_Cellion), this.GetTalkMessage(ScriptMessage.Npc2030006_Q13_DarkLigator), this.GetTalkMessage(ScriptMessage.Npc2030006_Q15_Hector)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q16), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_Snail), this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_Shroom), this.GetTalkMessage(ScriptMessage.Npc2030006_Q12_EvilEye), this.GetTalkMessage(ScriptMessage.Npc2030006_Q16_OrangeMushroom), this.GetTalkMessage(ScriptMessage.Npc2030006_Q11_BlueSnail)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q17), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q17_FlamingFeather), this.GetTalkMessage(ScriptMessage.Npc2030006_Q17_OldGladius), this.GetTalkMessage(ScriptMessage.Npc2030006_Q17_PieceIce), this.GetTalkMessage(ScriptMessage.Npc2030006_Q17_AncientScroll), this.GetTalkMessage(ScriptMessage.Npc2030006_Q17_FairyWing)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q18), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q18_MysteryNiora), this.GetTalkMessage(ScriptMessage.Npc2030006_Q18_RightfulDonation), this.GetTalkMessage(ScriptMessage.Npc2030006_Q18_GhostWhereabout), this.GetTalkMessage(ScriptMessage.Npc2030006_Q18_ArwenGlass), this.GetTalkMessage(ScriptMessage.Npc2030006_Q18_MayaWeird)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q19), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q19_Mage), this.GetTalkMessage(ScriptMessage.Npc2030006_Q19_Cleric), this.GetTalkMessage(ScriptMessage.Npc2030006_Q19_Assassin), this.GetTalkMessage(ScriptMessage.Npc2030006_Q19_Gunslinger), this.GetTalkMessage(ScriptMessage.Npc2030006_Q19_Fighter)], 0),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q20), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q20_CupidsCourier), this.GetTalkMessage(ScriptMessage.Npc2030006_Q20_LostOcean), this.GetTalkMessage(ScriptMessage.Npc2030006_Q20_AlcasterDark), this.GetTalkMessage(ScriptMessage.Npc2030006_Q20_EliminatingDrumming), this.GetTalkMessage(ScriptMessage.Npc2030006_Q20_WarPang)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q21), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q21_FlorinaBeach), this.GetTalkMessage(ScriptMessage.Npc2030006_Q21_AmherstSouthperry), this.GetTalkMessage(ScriptMessage.Npc2030006_Q21_KerningCity), this.GetTalkMessage(ScriptMessage.Npc2030006_Q21_PerionEllinia), this.GetTalkMessage(ScriptMessage.Npc2030006_Q21_Sleepywood)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q22), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Sera), this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Heena), this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Lucas), this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Roger), this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Shanks)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q23), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_Vogen), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_Sophia), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_Pedro), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_MasterSergeant), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_Rumi)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q24), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q24_HiddenRock), this.GetTalkMessage(ScriptMessage.Npc2030006_Q24_Glibber), this.GetTalkMessage(ScriptMessage.Npc2030006_Q24_Jeff), this.GetTalkMessage(ScriptMessage.Npc2030006_Q24_HolyStone), this.GetTalkMessage(ScriptMessage.Npc2030006_Q24_ElmaHousekeeper)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q25), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q25_Ayan), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_Sophia), this.GetTalkMessage(ScriptMessage.Npc2030006_Q25_MrSmith), this.GetTalkMessage(ScriptMessage.Npc2030006_Q25_Francois), this.GetTalkMessage(ScriptMessage.Npc2030006_Q25_Manji)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q26), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Teo), this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Vicious), this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Mia), this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Doofus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Casey)], 0),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q27), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_MrPark), this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_MarFairy), this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_Roel), this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_Ria), this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_Shane)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q28), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_DrFaymus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_MongKong), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_Ervine), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_Luke), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_Nella)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q29), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Doofus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Vicious), this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Patricia), this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Weaver), this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Cloy)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q30), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q30_ChiefStan), this.GetTalkMessage(ScriptMessage.Npc2030006_Q30_JmTha), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_DrFaymus), this.GetTalkMessage(ScriptMessage.Npc2030006_Q29_Vicious), this.GetTalkMessage(ScriptMessage.Npc2030006_Q28_Luke)], 0),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q31), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q31_StaffSergeant), this.GetTalkMessage(ScriptMessage.Npc2030006_Q31_SergeantBravo), this.GetTalkMessage(ScriptMessage.Npc2030006_Q31_CorporalEasy), this.GetTalkMessage(ScriptMessage.Npc2030006_Q23_MasterSergeant), this.GetTalkMessage(ScriptMessage.Npc2030006_Q31_Peter)], 4),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q32), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q32_OldRing), this.GetTalkMessage(ScriptMessage.Npc2030006_Q32_MemoryPowder), this.GetTalkMessage(ScriptMessage.Npc2030006_Q32_FairyDust), this.GetTalkMessage(ScriptMessage.Npc2030006_Q32_ProofHero), this.GetTalkMessage(ScriptMessage.Npc2030006_Q32_ScrollSecrets)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q33), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q33_Apple), this.GetTalkMessage(ScriptMessage.Npc2030006_Q33_PowerElixir), this.GetTalkMessage(ScriptMessage.Npc2030006_Q33_WeirdMedicine), this.GetTalkMessage(ScriptMessage.Npc2030006_Q33_Chrysanthemum), this.GetTalkMessage(ScriptMessage.Npc2030006_Q33_OrangeJuice)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q34), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q34_Neve), this.GetTalkMessage(ScriptMessage.Npc2030006_Q34_Serryl), this.GetTalkMessage(ScriptMessage.Npc2030006_Q27_Shane), this.GetTalkMessage(ScriptMessage.Npc2030006_Q25_Francois), this.GetTalkMessage(ScriptMessage.Npc2030006_Q30_JmTha)], 2),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q35), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q35_Bari), this.GetTalkMessage(ScriptMessage.Npc2030006_Q26_Teo), this.GetTalkMessage(ScriptMessage.Npc2030006_Q35_Pio), this.GetTalkMessage(ScriptMessage.Npc2030006_Q35_Sid), this.GetTalkMessage(ScriptMessage.Npc2030006_Q35_Maria)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q36), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q22_Lucas), this.GetTalkMessage(ScriptMessage.Npc2030006_Q36_DrKim), this.GetTalkMessage(ScriptMessage.Npc2030006_Q30_ChiefStan), this.GetTalkMessage(ScriptMessage.Npc2030006_Q36_Scadur), this.GetTalkMessage(ScriptMessage.Npc2030006_Q36_ProfessorFoxwit)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q37), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Blue), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Green), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Brown), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Red), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Black)], 1),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q38), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q38_Text), this.GetTalkMessage(ScriptMessage.Npc2030006_Q38_Opt8), this.GetTalkMessage(ScriptMessage.Npc2030006_Q38_Opt3), this.GetTalkMessage(ScriptMessage.Npc2030006_Q38_Opt13), this.GetTalkMessage(ScriptMessage.Npc2030006_Q1_Opt16)], 3),
+                (this.GetTalkMessage(ScriptMessage.Npc2030006_Q39), [this.GetTalkMessage(ScriptMessage.Npc2030006_Q39_White), this.GetTalkMessage(ScriptMessage.Npc2030006_Q39_Orange), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Blue), this.GetTalkMessage(ScriptMessage.Npc2030006_Q39_Purple), this.GetTalkMessage(ScriptMessage.Npc2030006_Q37_Green)], 2),
+            ];
 
-        ("下列怪物中，哪组怪物与打倒他所能得到的战利品是正确的对应关系？", ["仙人掌宝宝 - 刺针", "钢甲猪 - 野猪牙", "红小丑 - 黄小丑的帽子", "松松 - 坚果", "蝙蝠 - 蝙蝠翅膀"], 4),
-        ("下列怪物中，哪组怪物与打倒他所能得到的战利品是错误的对应关系", ["大侠 - 大侠勋章", "食人花 - 食人花的叶子", "古木妖 - 苗木", "小海象 - 海象尖牙", "僵尸 - 僵尸丢失的臼齿"], 1),
-        // ("In GM Event, how many FRUIT CAKE you can get as reward?", ["20", "200", "5", "25", "100"], 2),
-        ("下列药品中，哪组药品与功能是正确的对应关系？", ["活力神水 - 攻击 +5 持续 3 分钟", "纯净水 - 回复 700 MP", "蛋糕 - 回复 150 HP & MP", "沙拉 - 回复 300 MP", "披萨饼 - 回复400 HP"], 4),
-        ("下列药品中，哪组药品与功能是错误的对应关系？", ["活力神水 - 回复 300 MP", "补药 - 恢复虚弱状态", "苹果 - 回复 30 HP", "清晨之露 - 回复3000 MP", "拉面 - 回复 1000 HP"], 3),
-
-        ("绿蘑菇，木妖，蓝水灵，斧木妖，三眼章鱼中级别最高的怪物是哪一个？", ["三眼章鱼", "蓝水灵", "斧木妖", "木妖", "绿蘑菇"], 2),
-        ("往返于魔法密林/天空之城的船上会出现哪个怪物？", ["狼人", "绿水灵", "蝙蝠魔", "扎昆", "皮克西"], 2),
-        ("在彩虹岛没有出现的怪物是？", ["蘑菇仔", "蓝蜗牛", "绿水灵", "红蜗牛", "飘飘猪"], 4),
-        ("在金银岛没有出现的怪物是？", ["火独眼兽", "石球", "蝙蝠怪", "黑木妖", "绿蜗牛"], 1),
-        ("在冰封雪域没有出现的怪物是？", ["黑雪人", "黑鳄鱼", "法老王企鹅", "火焰猎犬", "僵尸"], 1),
-        ("以下哪种怪物会飞?", ["巫婆", "鳄鱼", "冰独眼兽", "猫鼬", "阿丽莎乐"], 0),
-        ("在神秘岛没有出现的怪物是？", ["星光精灵", "幼黄独角狮", "幼红独角狮", "鳄鱼", "野狼"], 3),
-        ("在彩虹岛没有出现的怪物是？", ["绿蜗牛", "蘑菇仔", "火独眼兽", "花蘑菇", "蓝水灵"], 2),
-
-        ("唤醒麦吉不需要的材料是哪一个？", ["火焰羽毛", "旧战剑", "冰块", "星石", "妖精之翼"], 4),
-        ("以下哪项任务是可以重复完成的?", ["医院之谜", "正义的捐赠", "幽灵的行踪", "艾温的玻璃鞋", "玛雅和奇怪的药物"], 3),
-        ("以下哪项不是二转职业", ["巫师", "牧师", "刺客", "枪手", "勇士"], 0),
-        ("以下哪项任务要求的等级最高？", ["丘比特信使", "迷失在海洋中", "阿尔卡斯特和黑暗水晶", "消灭兔子", "庞庞的战争"], 2),
-
-        ("金银岛没有的村落是？", ["金海滩", "彩虹村", "明珠港", "勇士部落", "魔法密林"], 1),
-        ("你在彩虹岛遇到的第一个NPC是谁？", ["塞拉", "希娜", "路卡斯", "罗杰", "尚克斯"], 1),
-        ("在冰封雪域看不到的NPC是？", ["伯坚", "索菲亚", "佩德罗", "珀斯上尉", "卢米"], 1),
-        ("在冰封雪域看不到的NPC是？", ["魔法石", "格里巴", "杰夫", "神圣的石头", "保姆珥玛"], 4),
-        ("在勇士部落看不到的NPC是？", ["伊安", "索菲亚", "斯密斯", "易德", "麦吉"], 3),
-        ("在射手村看不到的NPC是？", ["特奥", "赫丽娜", "玛亚", "皮亚", "莉娜"], 0),
-        ("在魔法密林看不到的NPC是？", ["汉斯", "易德", "露饵", "妖精路易", "赛恩"], 2),
-        ("在废弃都市看不到的NPC是？", ["后街吉姆", "马龙", "休咪", "鲁克", "钱老板"], 3),
-        ("哪个NPC与宠物无关?", ["科尔", "比休斯", "帕特里沙", "威巴", "科洛伊"], 1),
-        ("废弃都市中，离家出走的少年阿列克斯的父亲是谁？", ["长老斯坦", "后街吉姆", "铭仁", "比休斯", "卢克"], 0),
-        ("哪个NPC不属于天空之城阿尔法小队？", ["查理中士", "巴伯下士", "伊吉上等兵", "珀斯上尉", "彼特"], 4),
-        ("在二转过程中，收集30个黑色珠子给转职教官后可以得到什么？", ["古老的戒指", "记忆粉", "仙尘", "英雄证书", "秘密卷轴"], 3),
-        ("为了给射手村的玛雅治病，需要给她什么？", ["苹果", "强力灵药", "奇怪的药", "菊花", "橙汁"], 2),
-        ("以下与合成或冶炼工作没有关系的NPC是？", ["奈巴", "塞利尔", "塞恩", "易德", "后街吉姆"], 2),
-        ("在彩虹岛看不到的NPC是？", ["巴里", "特奥", "皮奥", "赛德", "玛利亚"], 1),
-        ("在导航室的监视器里能看到谁和Kyrin在一起？", ["路卡斯", "金博士", "长老斯坦", "斯卡德", "弗利维教授"], 1),
-        ("你知道射手村的赫丽娜吗？他的眼睛是什么颜色？", ["蓝色", "绿色", "棕色", "红色", "黑色"], 1),
-        ("勇士部落武术教练的帽子上有多少根羽毛？", ["7", "8", "3", "13", "16"], 3),
-        ("魔法密林汉斯持有的宝珠是什么颜色?", ["白色", "橙色", "蓝色", "紫色", "绿色"], 2)
-    ];
 
             var questId = QuestId.Get3rdJobQuest(getJob());
             var questProgres = getQuestProgressInt(questId);
@@ -2201,12 +2164,12 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (!canHold(4031058))
                     {
-                        await SayNext("接受此试炼前，请确保有一个空闲的ETC槽位。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc2030006_NeedEtcSlot));
                         return;
                     }
                     else
                     {
-                        await SayNext("好的...我将在这里测试你的智慧。所有问题回答正确，你就会通过测试，但是，如果你答错一次，那么你就得重新开始，好吗，我们开始吧。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc2030006_QuizIntro));
                         await gainItem(4005004, -1);
                         var questions = questList.OrderBy(x => Guid.NewGuid()).Take(5).ToList();
                         for (int i = 0; i < 5; i++)
@@ -2215,17 +2178,17 @@ namespace Application.Plugin.Script.Npc
                             var inputAnswer = await AskMenu(q.quest, q.options);
                             if (inputAnswer != q.answer)
                             {
-                                await SayNext("答错了");
+                                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2030006_WrongAnswer));
                                 return;
                             }
                         }
                         await gainItem(4031058, 1);
-                        await SayOK("好的。你所有问题都答对了。你的智慧得到了验证。拿着这条项链回去吧。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2030006_Passed));
                     }
                 }
                 else
                 {
-                    await SayNext("给我带来一个 #b#t4005004##k 以继续进行试炼。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc2030006_BringItem));
                     return;
                 }
             }
@@ -2238,29 +2201,29 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestCompleted(3034))
             {
-                if (await AskYesNo("你对我帮助很大……如果你有任何黑暗水晶矿石，我可以为你精炼，每个只需#b500000金币#k。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2032001_RefineOffer)))
                 {
-                    var inputNumber = await AskNumber("好的，那么你打算做多少个？", 1, 1, 100);
+                    var inputNumber = await AskNumber(this.GetTalkMessage(ScriptMessage.Npc2032001_AskQuantity), 1, 1, 100);
                     if (getMeso() < 500_000 * inputNumber)
                     {
-                        await SayOK("对不起，但我不会免费做这件事。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2032001_NotFree));
                         return;
                     }
                     else if (!haveItem(4004004, 10 * inputNumber))
                     {
-                        await SayOK("我需要那些矿石来提炼水晶。没有例外。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2032001_NeedOre));
                         return;
                     }
                     else if (!canHold(4005004, inputNumber))
                     {
-                        await SayOK("你的库存没有空位吗？先解决这个问题！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2032001_NoSlot));
                         return;
                     }
 
                     await gainItem(4004004, -10 * inputNumber);
                     await gainMeso(-500000 * inputNumber);
                     await gainItem(4005004, inputNumber);
-                    await SayOK("明智地使用它。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2032001_UseWisely));
                 }
             }
             else
@@ -2274,7 +2237,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001020))
             {
-                if (await AskYesNo("您可以使用#b#t4001020##k来激活#b第一个玩具塔石#k。您要传送到第71层的#b第二个玩具塔石#k吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2040024_TeleportPrompt)))
                 {
                     if (haveItem(4001020))
                     {
@@ -2286,7 +2249,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("可以让你传送到#b第二个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2040024_NeedScroll));
             }
         }
 
@@ -2295,10 +2258,10 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001020))
             {
-                (string desc, int map)[] options = [("第一个玩具塔石（第100层）", 221024400), ("第三个玩具塔石（第41层）", 221021700)];
-                var option = await AskMenu("您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+                (string desc, int map)[] options = [(this.GetTalkMessage(ScriptMessage.Npc2040025_OptFirst), 221024400), (this.GetTalkMessage(ScriptMessage.Npc2040025_OptThird), 221021700)];
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2040025_ChoosePrompt), options.Select(x => x.desc));
 
-                if (await AskYesNo($"您可以使用#b#t4001020##k来激活#b第二个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2040025_ConfirmPrompt, options[option].desc)))
                 {
                     if (haveItem(4001020))
                     {
@@ -2309,7 +2272,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("可以让你传送到#b第一或者第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2040025_NeedScroll));
             }
         }
 
@@ -2318,10 +2281,10 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001020))
             {
-                (string desc, int map)[] options = [("第二个玩具塔石（第71层）", 221022900), ("第四个玩具塔石（第1层）", 221020000)];
-                var option = await AskMenu("您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。你想要传送到哪块石头？", options.Select(x => x.desc));
+                (string desc, int map)[] options = [(this.GetTalkMessage(ScriptMessage.Npc2040026_OptSecond), 221022900), (this.GetTalkMessage(ScriptMessage.Npc2040026_OptFourth), 221020000)];
+                var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2040026_ChoosePrompt), options.Select(x => x.desc));
 
-                if (await AskYesNo($"您可以使用#b#t4001020##k来激活#b第三个玩具塔石#k。您要传送到#b{options[option].desc}#k？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2040026_ConfirmPrompt, options[option].desc)))
                 {
                     if (haveItem(4001020))
                     {
@@ -2332,7 +2295,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("可以让你传送到#b第二或者第四个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2040026_NeedScroll));
             }
         }
 
@@ -2341,7 +2304,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4001020))
             {
-                if (await AskYesNo("您可以使用#b#t4001020##k来激活#b第四个玩具塔石#k。您要传送到第41层的#b第三个玩具塔石#k吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2040027_TeleportPrompt)))
                 {
                     if (haveItem(4001020))
                     {
@@ -2353,7 +2316,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("玩具塔石可以让你传送到#b第三个玩具塔石#k，但如果没有卷轴，它是无法激活的。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2040027_NeedScroll));
             }
         }
 
@@ -2374,19 +2337,19 @@ namespace Application.Plugin.Script.Npc
             var completed = questList.Where(x => isQuestCompleted(x.quest)).ToArray();
             if (completed.Length == 0)
             {
-                await SayOK("#b#h ##k还没有归还一本故事书。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2040052_NoneReturned));
                 return;
             }
             await SaySpeech([
-                $"让我看看.. #b#h ##k 一共归还了 #b{completed.Length}#k 本书。归还的书目如下：{string.Join("\r\n", completed.Select(x => $"#v{x.item}# #b#t{x.item}##k"))}",
-                "图书馆现在已经安定下来，这主要要归功于你，#b#h ##k的巨大帮助。如果故事再次混乱，那么我希望你能再次来修复它。"
+                this.GetTalkMessage(ScriptMessage.Npc2040052_ReturnList, completed.Length, string.Join("\r\n", completed.Select(x => $"#v{x.item}# #b#t{x.item}##k"))),
+                this.GetTalkMessage(ScriptMessage.Npc2040052_Calm2)
                 ]);
         }
 
         // Npc: 2041025 
         public async Task Populatus01()
         {
-            if (await AskYesNo("滴滴……滴滴……你可以通过我逃到一个更安全的地方。滴滴……滴滴……你想离开这个地方吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2041025_Escape)))
             {
                 await WarpOut();
             }
@@ -2398,12 +2361,12 @@ namespace Application.Plugin.Script.Npc
             if (haveItem(4220046, 1))
             {
                 // quest completing here when "forfeiting Timer's Egg", as well as reporting missing quests on M. Shrine are thanks to drmdsr & Thora
-                await SayOK("你想把#r#t4220046##k交给我，对吧？好的，我会替你拿着。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2041026_HoldItem));
                 await gainItem(4220046, -1);
             }
             else
             {
-                await SayOK($"你好！我是#b#p{npc}##k，负责观察和报告这个地区的任何超自然活动。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2041026_ObserverIntro, npc));
             }
         }
 
@@ -2425,7 +2388,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await Popup("Have a ETC slot available for this item.");
+                        await this.Popup(this.GetTalkMessage(ScriptMessage.NpcScript_HaveEtc));
                     }
                 }
             }
@@ -2476,13 +2439,13 @@ namespace Application.Plugin.Script.Npc
             // 251000100 百草堂/呼啸的大海
             Dictionary<int, (int Destination, string Desc)> dict = new()
             {
-                {0,(230030200, "我想用 #t4031242##k 移动到 #b#m230030200##k.") },
-                {1,(230030200, "去 #b#m230030200##k 需支付 #b10000金币#k.") },
+                {0,(230030200, this.GetTalkMessage(ScriptMessage.Npc2060009_UseTicket, 230030200)) },
+                {1,(230030200, this.GetTalkMessage(ScriptMessage.Npc2060009_PayMeso, 230030200, 10000)) },
 
-                {2,(230000000, "去 #b#m230000000##k 需支付 #b10000金币#k.") },
-                {3,(251000000, "去 #b#m251000000##k 需支付 #b10000金币#k.") },
+                {2,(230000000, this.GetTalkMessage(ScriptMessage.Npc2060009_PayMeso, 230000000, 10000)) },
+                {3,(251000000, this.GetTalkMessage(ScriptMessage.Npc2060009_PayMeso, 251000000, 10000)) },
 
-                {4,(230010000, "去 #b#m230010000##k 需支付 #b10000金币#k.") },
+                {4,(230010000, this.GetTalkMessage(ScriptMessage.Npc2060009_PayMeso, 230010000, 10000)) },
             };
 
             List<string> optioins = [];
@@ -2528,11 +2491,11 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2093004 — Cabin Assistant (Herb Town)
         public async Task aqua_taxi2()
         {
-            if (await AskYesNo("你现在要移动到 #b#m230000000##k 吗？价格是 10000 金币。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2093004_ConfirmMove)))
             {
                 if (getMeso() < 10000)
                 {
-                    await SayOK("我认为你没有足够的钱……");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2110005_ShortOnMeso));
                 }
                 else
                 {
@@ -2542,7 +2505,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayNext("嗯...现在太忙了？如果你想做的话，回来找我吧。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2110005_ComeBack));
             }
         }
 
@@ -2559,45 +2522,46 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("为了打开维度裂缝，你必须拥有一块#t4000175#。这些可以通过击败皮亚奴斯来获得。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2060100_NeedItem));
                 }
             }
             else
             {
-                await SayOK($"我是#b#p{npc}##k。别和我胡闹，因为我有把人变成蠕虫的习惯。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2060100_DontMessWithMe, npc));
             }
         }
+
 
         // Npc: 2081000 
         public async Task job4_item()
         {
-            var option = await AskMenu("...我可以帮你吗？\r\n#L0##b购买魔法种子#k#l\r\n#L1##b为利夫雷做点什么#k#l");
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2081000_Menu));
             switch (option)
             {
                 case 0:
-                    await AskMenu("你好像不是本地人。我能帮你吗？#L0##b我想要一些#t4031346#。#k#l");
-                    var inputNumber = await AskNumber("#b#t4031346##k is a precious iteml I cannot give it to you just like that. How about doing me a little favor? Then I'll give it to you. I'll sell the #b#t4031346##k to you for #b30,000 mesos#k each. Are you willing to make the purchase? How many would you like, then?", 1, 1, 99);
+                    await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2081000_SeedMenu));
+                    var inputNumber = await AskNumber(this.GetTalkMessage(ScriptMessage.Npc2081000_AskQuantity), 1, 1, 99);
                     var cost = inputNumber * 30000;
-                    if (await AskYesNo("购买 #b" + inputNumber + "个 #t4031346##k 将花费你 #b" + cost + " 金币#k。你确定要购买吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2081000_ConfirmBuy, inputNumber, cost)))
                     {
                         if (getMeso() < cost || !canHold(4031346, inputNumber))
                         {
-                            await SayOK("请检查并查看您是否有足够的金币来进行购买。另外，我建议您检查其他物品栏，看看是否有足够的空间来进行购买。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Npc2081000_CheckMeso));
                         }
                         else
                         {
-                            await SayOK("再见~");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Npc2081000_SeeYou));
                             await gainItem(4031346, inputNumber);
                             await gainMeso(-cost);
                         }
                     }
                     else
                     {
-                        await SayOK("请仔细考虑。一旦你做出了决定，请告诉我。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2081000_ThinkCarefully));
                     }
                     break;
                 case 1:
-                    await SayNext("正在开发中...");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc2081000_UnderDevelopment));
                     break;
                 default:
                     break;
@@ -2608,7 +2572,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2082003 
         public async Task flyminidraco()
         {
-            await AskMenu("如果你有翅膀，我相信你可以去那里。但是，仅仅这样还不够。如果你想穿越比刀锋还锋利的风，你还需要坚硬的鳞片。我是唯一知道回去的半人半龙……如果你想去那里，我可以变你。无论你是什么，此刻，你将成为一只#b龙#k……\r\n#L0##b我想成为一只龙。#k#l");
+            await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2082003_Transform2));
             await useItem(2210016);
             await warp(200090500, 0);
         }
@@ -2616,7 +2580,7 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2082004 
         public async Task TD_neo_Andy()
         {
-            await SayOK($"嗨，我是#p{npc}#，来自一个并不那么遥远的未来的时间旅行者。我来阻止这个时代贪婪的人们制造机器。他们在我的时代变得疯狂，把一切都消耗成了灰尘。我必须不惜一切代价阻止它！");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Npc2082004_TimeTraveler, npc));
         }
 
 
@@ -2626,18 +2590,18 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestCompleted(3718))
             {
-                await SayOK("时间机器尚未启动。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2083006_TimeMachineInactive));
                 return;
             }
 
             int[] quests = [3719, 3724, 3730, 3736, 3742, 3748];
             string[] areas = [
-                "Year 2021 - Average Town Entrance",
-                "Year 2099 - Midnight Harbor Entrance",
-                "Year 2215 - Bombed City Center Retail District",
-                "Year 2216 - Ruined City Intersection",
-                "Year 2230 - Dangerous Tower Lobby",
-                "Year 2503 - Air Battleship Bow"
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2021),
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2099),
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2215),
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2216),
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2230),
+                this.GetTalkMessage(ScriptMessage.Npc2083006_Area2503)
             ];
 
             int limit;
@@ -2651,12 +2615,12 @@ namespace Application.Plugin.Script.Npc
 
             if (limit == 0)
             {
-                await SayOK("在解锁下一个新奥城地图之前，向#b守护者尼克斯#k证明你的勇气。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2083006_ProveValor));
                 return;
             }
 
             var menuItems = areas.Take(limit).Select((x, i) => x).ToList();
-            var selection = await AskMenu("", menuItems);
+            var selection = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc2083006_SelectArea), menuItems);
 
             int[] mapids = [240070100, 240070200, 240070300, 240070400, 240070500, 240070600];
             if (selection >= 0 && selection < mapids.Length)
@@ -2665,7 +2629,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("先完成你的任务。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2083006_CompleteMission));
             }
         }
 
@@ -2673,10 +2637,10 @@ namespace Application.Plugin.Script.Npc
         public async Task ShadowWarrier()
         {
             await SaySpeech([
-                new SpeechText("我一直在等你……英雄的后裔啊……", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
-                new SpeechText("#b（英雄的后裔……？#o9300351#似乎知道一些关于英雄的事情。不过，他好像也和#p2091007#一样，不认为我是英雄本人啊。）", NpcTalkSpeaker.PlayerRight),
-                new SpeechText("这个#b武陵封印石#k是英雄们撒下的种子……但收获的却是我们黑色之翼的东西。虽然你很漂亮地打败了#p1104000#和#p1204010#……再也不能让你为所欲为了。", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
-                new SpeechText("英雄的后裔终于和敌人见面了，真是让人感慨万分……这也是没办法的事情。我要以黑色之翼的名义，干掉你！", NpcTalkSpeaker.PlayerRight)
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204020_Waiting), NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204020_InnerThought), NpcTalkSpeaker.PlayerRight),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204020_SealingStone), NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.Face),
+                new SpeechText(this.GetTalkMessage(ScriptMessage.Npc1204020_LetsFight), NpcTalkSpeaker.PlayerRight)
                 ]);
 
             var mapObj = getMap();
@@ -2703,10 +2667,10 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2101013 
         public async Task karakasa()
         {
-            await SayNext("我不知道你是怎么发现这个的，但你来对地方了！对于那些在尼哈尔沙漠徘徊并开始想家的人，我提供直飞金银岛的航班，不停歇！别担心飞船——它只摔过一两次！你在那艘小飞船上长时间飞行时不觉得幽闭恐惧吗？");
-            if (await AskYesNo("请记住两件事。一，这条线路实际上是用于海外运输，所以 #r我不能保证你会降落在哪个城镇#k。二，由于我要安排你乘坐这个特殊航班，费用会有点高。服务费是 #e#b10,000 枚金币#n#k。有一架航班即将起飞。你对这个直达航班感兴趣吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc2101013_FlightOffer));
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2101013_FlightTerms)))
             {
-                await SayNext("好的，准备起飞~");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2101013_ReadyTakeoff));
                 if (getMeso() >= 10000)
                 {
                     await gainMeso(-10000);
@@ -2715,32 +2679,32 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayNext("嘿，你手头紧吗？我告诉过你，你需要 #b10,000#k 金币才能参与这个活动。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc2101013_ShortOnMeso));
                 }
             }
             else
             {
-                await SayNext("嗯...你是害怕速度还是高度？你不相信我的飞行技能？相信我，我已经解决了所有的问题！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2101013_ScaredOfHeights));
             }
         }
 
         // Npc: 2103013 
         public async Task dooat()
         {
-            await SayOK("Pyramid PQ is currently unavailable.");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Pyramid_Unavailable));
         }
 
         // Npc: 2110005 
         public async Task nihal_taxi()
         {
-            var toMagatia = "要搭乘 #b骆驼中巴#k 前往炼金术之城 #b玛加提亚#k 吗？车费是#b1500金币#k。";
-            var toAriant = "要搭乘 #b骆驼出租车#k 前往灼热之路的城镇 #b阿里安特#k 吗？车费是#b1500金币#k。";
+            var toMagatia = this.GetTalkMessage(ScriptMessage.Npc2110005_ToMagatia);
+            var toAriant = this.GetTalkMessage(ScriptMessage.Npc2110005_ToAriant);
 
             if (await AskYesNo(getPlayer().getMapId() == 260020000 ? toMagatia : toAriant))
             {
                 if (getMeso() < 1500)
                 {
-                    await SayNext("对不起，你的金币不够。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc2110005_ShortOnMeso));
                 }
                 else
                 {
@@ -2750,7 +2714,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayNext("嗯...现在太忙了？有需要的话随时来找我。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2110005_ComeBack));
             }
         }
 
@@ -2774,17 +2738,17 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("唔呼呼……为什么这里只有鬼魂？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111006_OnlyGhosts));
             }
         }
 
         // Npc: 2111011 
         public async Task absence_wall()
         {
-            if (await AskYesNo("在一片蜘蛛网的拥挤中，有一堵墙后面似乎写着什么东西。也许你应该仔细看看墙？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2111011_InspectWall)))
             {
                 await setQuestProgress(3311, 5);
-                await SayOK("在一面满是涂鸦的墙上，似乎有一句话格外显眼。#b它是以一种吊坠的形式出现……#k 这是什么意思？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111011_PendantPhrase));
             }
         }
 
@@ -2797,14 +2761,14 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2111013 
         public async Task absence_frame()
         {
-            await SayOK("挂在画框后面的钩子被解开，揭示了画框内部的一个秘密空间。在那里，发现了一枚银色吊坠。小心地取下吊坠后，画框被合上，放回桌子上。");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111013_SilverPendant));
             if (canHold(4031697, 1))
             {
                 await gainItem(4031697);
             }
             else
             {
-                await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
             }
         }
 
@@ -2813,7 +2777,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (isQuestStarted(3311))
             {
-                await SayOK("德朗博士的日记。整本日记都充斥着大量的公式和浮夸的科学文本。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111014_DeLangDiary));
             }
         }
 
@@ -2826,15 +2790,15 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 3)
                 {
-                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
-                    if (inputText == "琵丽雅是我的爱")
+                    var inputText = await AskText(this.GetTalkMessage(ScriptMessage.Npc2111017_PasswordPrompt));
+                    if (inputText == this.GetTalkMessage(ScriptMessage.Npc2111017_Password))
                     {
                         await setQuestProgress(23339, 1, 4);
                         await warp(261000001, 1);
                     }
                     else
                     {
-                        await SayOK("#r错误！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103008_Error));
                     }
                 }
                 else if (progress == 0)
@@ -2868,29 +2832,29 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 3)
                 {
-                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
-                    if (inputText == "琵丽雅是我的爱")
+                    var inputText = await AskText(this.GetTalkMessage(ScriptMessage.Npc2111018_PasswordPrompt));
+                    if (inputText == this.GetTalkMessage(ScriptMessage.Npc2111017_Password))
                     {
                         await setQuestProgress(23339, 1, 4);
                         await warp(261000001, 1);
                     }
                     else
                     {
-                        await SayOK("#r错误！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111018_Wrong));
                     }
                 }
                 else if (progress == 2)
                 {
                     await setQuestProgress(23339, 1, 3);
-                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
-                    if (inputText == "琵丽雅是我的爱")
+                    var inputText = await AskText(this.GetTalkMessage(ScriptMessage.Npc2111018_PasswordPrompt));
+                    if (inputText == this.GetTalkMessage(ScriptMessage.Npc2111017_Password))
                     {
                         await setQuestProgress(23339, 1, 4);
                         await warp(261000001, 1);
                     }
                     else
                     {
-                        await SayOK("#r错误！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111018_Wrong));
                     }
                 }
                 else if (progress < 3)
@@ -2920,15 +2884,15 @@ namespace Application.Plugin.Script.Npc
 
                 if (progress == 3)
                 {
-                    var inputText = await AskText("当水流开始流动时，那根管道发生了反应；一个装有键盘的秘密隔间随即显现了出来。#b密码#k!");
-                    if (inputText == "琵丽雅是我的爱")
+                    var inputText = await AskText(this.GetTalkMessage(ScriptMessage.Npc2111018_PasswordPrompt));
+                    if (inputText == this.GetTalkMessage(ScriptMessage.Npc2111017_Password))
                     {
                         await setQuestProgress(23339, 1, 4);
                         await warp(261000001, 1);
                     }
                     else
                     {
-                        await SayOK("#r错误！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111018_Wrong));
                     }
                 }
                 else if (progress == 1)
@@ -3021,7 +2985,7 @@ namespace Application.Plugin.Script.Npc
                     await gainItem(4031740, -1);
                     await gainItem(4031741, -1);
 
-                    await SayOK("当你放置碎片时，一道光芒照耀着圆圈，驱散了这件神器内部酝酿的不祥之兆。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc2111023_ShardPlaced));
                 }
                 else if (progress < 4)
                 {
@@ -3033,18 +2997,18 @@ namespace Application.Plugin.Script.Npc
         // Npc: 2111025 
         public async Task sca_auto()
         {
-            if (await SayAcceptDecline("You can operate the automated security system using the control unit. Would you like to deactivate the automated security system?"))
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Security_Deactivate)))
             {
-                await weakenAreaBoss(7090000, "The automated security system has been deactivated. The intruder alarm will shut down.");
+                await weakenAreaBoss(7090000, this.GetTalkMessage(ScriptMessage.Weaken_SecurityOff));
             }
         }
 
         // Npc: 2111026 
         public async Task sca_DitRoi()
         {
-            if (await SayAcceptDecline("This Magic Pentagram is incomplete. Would you like to finish off the drawing of the Magic Pentagram?"))
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Pentagram_Finish)))
             {
-                await weakenAreaBoss(8090000, "The Magic Pentagram has been completed. The spell to eliminate Deet and Roi has been summoned.");
+                await weakenAreaBoss(8090000, this.GetTalkMessage(ScriptMessage.Weaken_PentagramDone));
             }
         }
 
@@ -3060,11 +3024,11 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9000021 
         public async Task getRank()
         {
-            await SayNext($"嘿，旅行者！我是#p{npc}#，我的工作是招募像你这样渴望每天迎接新挑战的旅行者。现在，我的团队正在举办比赛，充分测试像你这样的冒险者的心理和身体能力。");
-            await SayNext("这些比赛涉及#b连续的boss战#k，其中一些部分之间有一些休息点。这将需要一些策略时间和足够的物资在手，因为它们不是普通的战斗。");
-            if (await SayAcceptDecline("如果你觉得自己足够强大，你可以像其他人一样在我们举办权力竞赛的地方加入。...那么，你的决定是什么？您现在进入举行比赛的地方吗？"))
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc9000021_RecruitIntro, npc));
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc9000021_BossGauntlet));
+            if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Npc9000021_JoinPrompt)))
             {
-                await SayOK("非常好。记住，在那里你可以组建一个团队，或者独自进行战斗，这取决于你。祝你好运！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000021_GoodLuck));
                 getPlayer().SaveLocation(SavedLocationType.BOSSPQ);
                 await warp(970030000, "out00");
             }
@@ -3081,7 +3045,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT)
             {
-                await SayOK("勋章排名系统目前不可用。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000040_MedalUnavailable));
                 return;
             }
 
@@ -3106,33 +3070,31 @@ namespace Application.Plugin.Script.Npc
         {
             if (!YamlConfig.config.server.USE_ENABLE_CUSTOM_NPC_SCRIPT)
             {
-                await SayOK("勋章排名系统目前不可用。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000040_MedalUnavailable));
                 return;
             }
 
-            string[] options = ["装备", "消耗", "设置", "其他"];
-            var selStr = "你好，我是#b巴扎 NPC#k！把背包里不需要的道具卖给我吧。#r警告#b：请确保你选中出售的道具槽位#r之后#b的格子都已准备好出售。#k 选中道具#b下方#k的道具会被一并售出。";
-            for (var i = 0; i < options.Length; i++)
-            {
-                selStr += $"\r\n#L{i}# {options[i]}#l";
-            }
-
-            var selectedType = await AskMenu(selStr);
+            string[] options = [
+                this.GetTalkMessage(ScriptMessage.Npc9000041_InvEquip),
+                this.GetTalkMessage(ScriptMessage.Npc9000041_InvUse),
+                this.GetTalkMessage(ScriptMessage.Npc9000041_InvSetup),
+                this.GetTalkMessage(ScriptMessage.Npc9000041_InvEtc)
+            ];
+            var selectedType = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9000041_Menu));
             if (selectedType < 0 || selectedType >= options.Length)
                 return;
 
-            var name = await AskText($"从你的#r{options[selectedType]}#k背包中的哪一件道具开始交易？");
+            var name = await AskText(this.GetTalkMessage(ScriptMessage.Npc9000041_ChooseInv, options[selectedType]));
             if (string.IsNullOrWhiteSpace(name))
                 return;
-
             var res = await getPlayer().sellAllItemsFromName((sbyte)(selectedType + 1), name);
             if (res > -1)
             {
-                await SayOK($"交易完成！你从这个行动中获得了#r{numberWithCommas(res)}金币#k。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000041_DoneTrade, numberWithCommas(res)));
             }
             else
             {
-                await SayOK($"你的#b'{name}'#k物品栏中没有#b{options[selectedType]}#k！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000041_NoItems, name, options[selectedType]));
             }
         }
 
@@ -3144,20 +3106,20 @@ namespace Application.Plugin.Script.Npc
                 var stage = c.CurrentServer.getStoredVar(9000049);
                 var eventStatus = stage switch
                 {
-                    1 => "简单",
-                    2 => "中等",
-                    3 => "困难",
-                    _ => "关闭"
+                    1 => this.GetTalkMessage(ScriptMessage.Npc9000049_Easy),
+                    2 => this.GetTalkMessage(ScriptMessage.Npc9000049_Medium),
+                    3 => this.GetTalkMessage(ScriptMessage.Npc9000049_Hard),
+                    _ => this.GetTalkMessage(ScriptMessage.Npc9000049_Off)
                 };
 
-                int selection = await AskMenu($"你好GM。\r\n当前活动状态：#r{eventStatus}#k\r\n你想做什么？\r\n#b#L0#参加活动#l\r\n#L1#关闭活动#l\r\n#L2#将活动设置为简单#l\r\n#L3#将活动设置为中等#l\r\n#L4#将活动设置为困难#l");
+                int selection = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9000049_Menu, eventStatus));
 
                 if (selection == 0)
                 {
                     stage = c.CurrentServer.getStoredVar(9000049);
                     if (stage == 0)
                     {
-                        await SayOK("看起来塔还没有解锁。请等待GM解锁！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000049_TowerLocked));
                     }
                     else
                     {
@@ -3174,7 +3136,7 @@ namespace Application.Plugin.Script.Npc
                 var stage = c.CurrentServer.getStoredVar(9000049);
                 if (stage == 0)
                 {
-                    await SayOK("看起来塔还没有解锁。请等待GM解锁！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9000049_TowerLocked));
                 }
                 else
                 {
@@ -3191,19 +3153,19 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            await SayNext("看那儿！你看到了吗？没有？一个飞碟刚刚飞过去了……那边！！看，有人被拖进了飞碟……啊啊啊啊，是嘎嘎！#r嘎嘎刚刚被飞碟绑架了！#k");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc9001102_UfoKidnap));
 
             if (getPlayer().getLevel() >= 12)
             {
-                if (await AskYesNo("我们现在该怎么办？这只是一个谣言，但是……我听说如果你被外星人绑架，会发生可怕的事情……或许这就是现在发生在Gaga身上的事情！请，请救救Gaga！#bGaga可能有点不确定和迷茫，但#k他的心真的很好。我不能让可怕的事情发生在他身上。对了！月球上的爷爷可能知道如何救他！我会送你去月球，所以请去见爷爷，救出Gaga！！！"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9001102_RescueGaga)))
                 {
-                    await SayNext("非常感谢。请救救嘎嘎！月球上的爷爷会帮助你。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9001102_Thanks));
                     await warp(922240200, 0);
                 }
             }
             else
             {
-                await SayOK("哦！看来你还没有达到救出嘎嘎的等级要求。请在达到12级或更高级时再回来。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9001102_LevelTooLow));
             }
         }
 
@@ -3222,29 +3184,29 @@ namespace Application.Plugin.Script.Npc
             var level = getLevel();
             if (level < 20)
             {
-                await SayOK("你没有地方可以从这里过去。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9010022_NoWay));
                 return;
             }
 
             var menu = "";
             if (level >= 20 && level <= 30)
             {
-                menu += "#0# 阿里安特竞技场";
+                menu += this.GetTalkMessage(ScriptMessage.Npc9010022_Coliseum);
             }
 
             if (level >= 25)
             {
-                menu += "#1# 武陵道场";
+                menu += this.GetTalkMessage(ScriptMessage.Npc9010022_Dojo);
             }
 
             if (level >= 30 && level <= 50)
             {
-                menu += "#2# 怪物嘉年华 1";
+                menu += this.GetTalkMessage(ScriptMessage.Npc9010022_Carnival1);
             }
 
             if (level >= 51 && level <= 70)
             {
-                menu += "#3# 怪物嘉年华 2";
+                menu += this.GetTalkMessage(ScriptMessage.Npc9010022_Carnival2);
             }
 
             int selection = await AskDimensionalMirror(menu);
@@ -3274,13 +3236,13 @@ namespace Application.Plugin.Script.Npc
         {
             if (haveItem(4031508, 5) && haveItem(4031507, 5))
             {
-                await SayNext("哇~ 你成功收集了5个#b#t4031508##k和#b#t4031507##k。好的，那么我会送你去动物园。到了之后请再和我交谈。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9060000_Collected));
                 //
                 await getEventInstance()!.clearPQ();
             }
             else
             {
-                if (await AskYesNo("你还没有完成要求。你确定要离开吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9060000_ConfirmLeave)))
                 {
                     await warp(923010100, 0);
                 }
@@ -3291,8 +3253,8 @@ namespace Application.Plugin.Script.Npc
         public async Task begin_jp2()
         {
             await SaySpeech([
-                "你已经完成了所有的训练。干得好。你似乎已经准备好立刻开始旅程了！很好，我会让你继续前往下一个地方。",
-                "但记住，一旦你离开这里，你将进入一个充满怪物的村庄。那么，再见！"
+                this.GetTalkMessage(ScriptMessage.Npc9901000_TrainingDone),
+                this.GetTalkMessage(ScriptMessage.Npc9901000_WarningMonsters)
                 ]);
             await warp(40000, 0);
             await gainExp(3);
@@ -3310,11 +3272,11 @@ namespace Application.Plugin.Script.Npc
         public async Task in_bath()
         {
             var price = 300;
-            if (await AskYesNo("你想进入浴池吗？这将是" + price + "金币。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9120003_EnterBath, price)))
             {
                 if (getMeso() < price)
                 {
-                    await SayOK("请检查并查看您是否有" + price + "金币进入这个地方。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120003_CheckMeso, price));
                 }
                 else
                 {
@@ -3343,13 +3305,13 @@ namespace Application.Plugin.Script.Npc
                 { 10, new[] { new[] { 1102207, 1 }, new[] { 1442026, 1 }, new[] { 1302037, 1 }, new[] { 2070007, 1 }, new[] { 2340000, 1 }, new[] { 2330005, 1 }, new[] { 2022060, 25 }, new[] { 2022061, 20 }, new[] { 2022062, 15 } } }
             };
 
-            if (!await AskYesNo("如果你正在寻找一个能够准确描述各种物品特征的人，那么你现在就找到了。我目前正在寻找一样东西。你想听听我的故事吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9120010_StoryPrompt)))
             {
-                await SayOK("真的吗？如果你改变主意了，记得告诉我。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120010_ChangeMind));
                 return;
             }
 
-            var choiceStr = "The items I'm looking for are 1,2,3 ... phew, too many to\r\nmention. Anyhow, if you gather up 100 of the same items,\r\nthen i may trade it with something similiar. What? You may\r\nnot know this, but i keep my end of the promise, so you\r\nneed not worry. Now, shall we trade?\r\n";
+            var choiceStr = this.GetTalkMessage(ScriptMessage.Npc9120010_TradeIntro) + "\r\n";
             for (int i = 0; i < eQuestChoices.Length; i++)
             {
                 choiceStr += " #L" + i + "##v" + eQuestChoices[i] + "##t" + eQuestChoices[i] + "##l\r\n";
@@ -3366,17 +3328,17 @@ namespace Application.Plugin.Script.Npc
 
             if (!canHold(prizeItem))
             {
-                await SayNext("如果你的装备、使用或其他物品栏已满，我无法给你奖励。请立即去看一下。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9120010_InventoryFull));
             }
             else if (haveItem(requiredItem, 100))
             {
                 await gainItem(requiredItem, -100);
                 await gainItem(prizeItem, prizeQuantity);
-                await SayOK("嗯...如果不是这个小小的划痕...唉。恐怕我只能认定这是一个标准品质的物品。好吧，这是给你的#t" + prizeItem + "#。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120010_StandardQuality, prizeItem));
             }
             else
             {
-                await SayOK("嘿，你以为你在干什么？去欺骗那些不懂得在说什么的人。不要来骗我！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120010_StopLying));
             }
         }
 
@@ -3389,49 +3351,49 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            if (!await AskYesNo("你都找到了吗？你打算尝试回答我所有的问题吗？"))
+            if (!await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9120013_ConfirmQuiz)))
             {
                 return;
             }
 
             if (!haveItem(2020001, 300))
             {
-                await SayOK("什么？不行！300！三百。不少。如果你想要更多，就给我，但我至少需要300。我们不是所有人都像你一样又大又饱满…");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120013_Need300));
                 return;
             }
 
             await gainItem(2020001, -300);
-            await SayNext("干得好！现在等一下……嘿，看这里！我这里有些食物！自己拿吧。好了，现在是时候问你们一些问题了。我相信你们已经意识到了，但记住，如果你们答错了，一切都结束了。要么全赢，要么全输！", NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd);
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc9120013_QuizIntro), NpcTalkSpeaker.NpcLeft | NpcTalkSpeaker.NoEnd);
 
             // 问题和答案数据
             var questions = new List<string>
             {
-                "Which of these items does the Flaming Raccoon NOT drop?",
-                "Which NPC is responsible for transporting travellers from Kerning City to Zipangu, and back?",
-                "Which of the items sold at the Mushroom Shrine increases your attack power?",
-                "Which of these items do the Extras NOT drop?",
-                "Which of these items DO NOT exist??",
-                "What's the name of the vegetable store owner in Showa Town?",
-                "Which of these items DO exist?",
-                "What is the name of the strongest boss in the Mushroom Shrine?",
-                "Which one of these items has a mis-matched class or level description?",
-                "Which of these noodles are NOT being sold by Robo at the Mushroom Shrine?",
-                "Which of these NPCs do NOT stand in front of Showa Movie Theater?"
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q1),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q2),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q3),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q4),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q5),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q6),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q7),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q8),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q9),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q10),
+                this.GetTalkMessage(ScriptMessage.Npc9120013_Q11),
             };
 
             var answers = new List<string[]>
             {
-                new[] { "狸猫柴火", "独角狮硬角", "Red Brick" },
-                new[] { "Peli", "Spinel", "Poli" },
-                new[] { "Takoyaki", "Yakisoba", "Tempura" },
-                new[] { "Extra A's Badge", "Extra B's Corset", "Extra C's Necklace" },
-                new[] { "Frozen Tuna", "Fan", "Fly Swatter" },
-                new[] { "Sami", "Kami", "Umi" },
-                new[] { "Cloud Fox's Tooth", "Ghost's Bouquet", "Dark Cloud Fox's Tail" },
-                new[] { "Black Crow", "Blue Mushmom", "Himegami" },
-                new[] { "Bamboo Spear - Warrior-only Weapon", "Pico-Pico Hammer - One-handed Sword", "Mystic Cane - Level 51 equip" },
-                new[] { "Kinoko Ramen (Pig Skull)", "Kinoko Ramen (Salt)", "Mushroom Miso Ramen" },
-                new[] { "Skye", "Furano", "Shinta" }
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A1_RaccoonFirewood), this.GetTalkMessage(ScriptMessage.Npc9120013_A1_SolidHorn), this.GetTalkMessage(ScriptMessage.Npc9120013_A1_RedBrick) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A2_Peli), this.GetTalkMessage(ScriptMessage.Npc9120013_A2_Spinel), this.GetTalkMessage(ScriptMessage.Npc9120013_A2_Poli) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A3_Takoyaki), this.GetTalkMessage(ScriptMessage.Npc9120013_A3_Yakisoba), this.GetTalkMessage(ScriptMessage.Npc9120013_A3_Tempura) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A4_ExtraAs), this.GetTalkMessage(ScriptMessage.Npc9120013_A4_ExtraBs), this.GetTalkMessage(ScriptMessage.Npc9120013_A4_ExtraCs) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A5_FrozenTuna), this.GetTalkMessage(ScriptMessage.Npc9120013_A5_Fan), this.GetTalkMessage(ScriptMessage.Npc9120013_A5_FlySwatter) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A6_Sami), this.GetTalkMessage(ScriptMessage.Npc9120013_A6_Kami), this.GetTalkMessage(ScriptMessage.Npc9120013_A6_Umi) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A7_CloudFoxs), this.GetTalkMessage(ScriptMessage.Npc9120013_A7_GhostsBouquet), this.GetTalkMessage(ScriptMessage.Npc9120013_A7_DarkCloud) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A8_BlackCrow), this.GetTalkMessage(ScriptMessage.Npc9120013_A8_BlueMushmom), this.GetTalkMessage(ScriptMessage.Npc9120013_A8_Himegami) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A9_BambooSpear), this.GetTalkMessage(ScriptMessage.Npc9120013_A9_PicoPico), this.GetTalkMessage(ScriptMessage.Npc9120013_A9_MysticCane) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A10_KinokoRamen), this.GetTalkMessage(ScriptMessage.Npc9120013_A10_KinokoRamenSalt), this.GetTalkMessage(ScriptMessage.Npc9120013_A10_MushroomMiso) },
+                new[] { this.GetTalkMessage(ScriptMessage.Npc9120013_A11_Skye), this.GetTalkMessage(ScriptMessage.Npc9120013_A11_Furano), this.GetTalkMessage(ScriptMessage.Npc9120013_A11_Shinta) },
             };
 
             var correctAnswer = new List<int> { 1, 1, 0, 1, 2, 2, 2, 0, 0, 2, 2 };
@@ -3443,7 +3405,7 @@ namespace Application.Plugin.Script.Npc
             for (int i = 0; i < 5; i++)
             {
                 int idx = indices[i];
-                var prompt = $"Question no.{i + 1}: {questions[idx]}";
+                var prompt = this.GetTalkMessage(ScriptMessage.Npc9120013_QuestionNo, i + 1, questions[idx]);
                 for (int j = 0; j < answers[idx].Length; j++)
                 {
                     prompt += $"\r\n#b#L{j}#{answers[idx][j]}#l#k";
@@ -3453,14 +3415,14 @@ namespace Application.Plugin.Script.Npc
 
                 if (selection != correctAnswer[idx])
                 {
-                    await SayNext("嗯……反正所有人都会犯错！如果你想再试一次，那就给我拿300只炸鸡来。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9120013_TryAgain));
                     return;
                 }
             }
 
             await gainItem(4031064, 1);
-            await SayNext("哎呀，你所有的问题都答对了。总的来说，我可能不喜欢人类，但我讨厌食言，所以，正如我所承诺的，这是#i4031064#。");
-            await SayOK("我们的交易已经结束，非常感谢！你可以离开了！");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc9120013_AllCorrect));
+            await SayOK(this.GetTalkMessage(ScriptMessage.Npc9120013_BusinessDone));
         }
 
 
@@ -3472,90 +3434,84 @@ namespace Application.Plugin.Script.Npc
 
             if (isQuestCompleted(4911))
             {
-                await SayNext("干得好！你解决了我关于NLC的所有问题。祝你旅途愉快！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_SolvedAll));
                 return;
             }
 
             if (isQuestCompleted(4900) || isQuestStarted(4900))
             {
-                await SayNext("嘿，注意一下，我要考你另一个问题，伙计！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_AnotherQuestion));
                 return;
             }
 
             var info = new[]
             {
-                "What is this place?",
-                "Who is Professor Foxwit?",
-                "What's a Foxwit Door?",
-                "Where are the MesoGears?",
-                "What is the Krakian Jungle?",
-                "What's a Gear Portal?",
-                "What do the street signs mean?",
-                "What's the deal with Jack Masque?",
-                "Lita Lawless looks like a tough cookie, what's her story?",
-                "When will new boroughs open up in the city?",
-                "I want to take the quiz!"
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptPlace),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptFoxwit),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptDoor),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptMesoGears),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptJungle),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptPortal),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptSigns),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptJack),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptLita),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptBoroughs),
+                this.GetTalkMessage(ScriptMessage.Npc9201050_OptQuiz)
             };
 
-            var selStr = "What up! Name's Icebyrd Slimm, mayor of New Leaf City! Happy to see you accepted my invite. So, what can I do for you?#b";
-            for (int i = 0; i < info.Length; i++)
-            {
-                selStr += "\r\n#L" + i + "# " + info[i] + "#l";
-            }
-
-            int selection = await AskMenu(selStr);
+            int selection = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9201050_Menu));
 
             switch (selection)
             {
                 case 0:
-                    await SayNext("我一直梦想建造一座城市。不是普通的城市，而是一个每个人都受欢迎的城市。我曾经住在废弃都市，所以我决定看看我是否能创建一个城市。在寻找实现这一目标的途径时，我遇到了许多人，其中一些我已经视为朋友。比如福克斯维特教授-他是我们的天才；我救他脱离了一群吃人植物。杰克·马斯克是我在阿莫利亚的老猎友-说话太圆滑了，对自己不利。莉塔和我是废弃都市的老朋友-她用她的武器救过我几次；所以我觉得她是镇长的完美选择。需要一些说服，但她最终相信她的命运在这里。至于我们的探险家，巴里卡德来寻找某样东西；他同意把他找到的东西带到博物馆。我在废弃都市的时候就听说过他和他的兄弟的故事。至于#n9201055#……嗯，我们就说他不是这里的人。完全不是。我们之前交谈过，他似乎心地善良，所以我允许他留下。我刚意识到我说了很多废话！你还想知道什么？");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_BuildCity));
                     await About_NLC();
                     break;
                 case 1:
-                    await SayNext("一个97岁的老家伙，动作还挺敏捷。有一天我在城外遇到了他，他是个时空旅行者。这个老家伙在丛林里遇到了一些麻烦，好像有些丛林生物想要吃掉他。作为我救了他的回报，他答应建造一个时空博物馆。我感觉他来这里有其他目的，因为他多次提到新叶城在未来将扮演一个有趣的角色。也许你可以多了解一些……");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_Foxwit));
                     await About_NLC();
                     break;
                 case 2:
-                    await SayNext("嘿，当我看到教授在建造它们时，我也问了同样的问题。它们是传送点。按上键会将你传送到另一个位置。我建议你熟悉它们，它们是我们的交通系统。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_GearPortal));
                     await About_NLC();
                     break;
                 case 3:
-                    await SayNext("MesoGears位于比格本塔下方。这是巴里卡德发现的一个充满怪物的区域。看起来它似乎位于塔的一个独立部分，如果你问我，这相当奇怪。我听说他需要一点帮助来探索它，你应该去看看他。不过要小心，那里的狼蜘蛛可不是闹着玩的。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_MesoGears));
                     await About_NLC();
                     break;
                 case 4:
-                    await SayNext("啊...嗯。克拉基亚丛林位于新叶城的郊外。许多新的、强大的生物在那些地区漫游，所以如果你要去那里，最好做好战斗的准备。它位于城镇的右端。有传言说丛林通向一个失落的城市，但我们还没有找到任何东西。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_KrakianJungle));
                     await About_NLC();
                     break;
                 case 5:
-                    await SayNext("嗯，当约翰发现自己在大本钟的迷思齿轮部分时，他站在一个上，然后去了另一个地方。然而，他只能来回走动，它们不像狐狡之门那样循环。这就是古老的科技。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_JohnStory));
                     await About_NLC();
                     break;
                 case 6:
-                    await SayNext("嗯，你几乎可以在任何地方看到它们。它们是正在施工的区域。红灯表示还没完工，但绿灯表示已经开放。经常回来看看，我们一直在建设中！");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_StreetSigns));
                     await About_NLC();
                     break;
                 case 7:
-                    await SayNext("啊，杰克。你知道那些自以为很酷、总是能逃脱一切惩罚的家伙吗？还能追到女孩？嗯，那就是杰克，只是没有女孩。他觉得自己错失了机会，于是开始戴上面具隐藏真实身份。我对他的真实身份守口如瓶，但他来自阿莫利亚。如果你问他，他可能会告诉你更多。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_JackMasque));
                     await About_NLC();
                     break;
                 case 8:
-                    await SayNext("我认识莉塔有一段时间了，虽然我们最近才重新燃起友谊。我有一段时间没见到她，但我理解为什么。她作为一个盗贼进行了非常非常长时间的训练。事实上，那就是我们第一次见面的方式！我被一群迷失的蘑菇围攻，她跳了出来帮忙。当选举警长的时候，毫无疑问是她。她承诺要帮助其他人进行训练并保护城市，所以如果你对公民义务感兴趣，可以和她交谈一下。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_LitaLawless));
                     await About_NLC();
                     break;
                 case 9:
-                    await SayNext("很快，我的朋友。虽然你看不到他们，但城市开发者们正在努力工作。当他们准备好了，我们就会打开它们。我知道你期待着这一刻，我也是！");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_NewBoroughs));
                     await About_NLC();
                     break;
                 case 10:
                     if (getLevel() >= minlevel)
                     {
-                        await SayNext("没问题。如果你回答正确，我会给你一些好东西！");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_QuizOffer));
                         await startQuest(4900);
                     }
                     else
                     {
-                        await SayNext("急切了吗？在我让你参加测验之前，你想再多探索一下吗？");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201050_EagerQuiz));
                     }
                     break;
             }
@@ -3579,7 +3535,7 @@ namespace Application.Plugin.Script.Npc
             var fee = 15000;
             if (getMapId() == 682000000)
             {
-                if (await AskYesNo("你想回到 #b新叶城 市区中心#k 吗？费用是" + fee + "金币。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201056_ReturnToNlc, fee)))
                 {
                     if (getMeso() >= fee)
                     {
@@ -3588,13 +3544,13 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await SayOK("嘿，你想搞什么鬼？你没有足够的金币来支付费用。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201056_NotEnough));
                     }
                 }
             }
             else
             {
-                if (await AskYesNo("你想乘坐这辆车前往 #b鬼屋入口#k 吗? 这个费用是 " + fee + " 金币."))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201056_GoHauntedHouse, fee)))
                 {
                     if (getMeso() >= fee)
                     {
@@ -3603,7 +3559,7 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await SayOK("嘿，你想搞什么鬼？你没有足够的金币来支付费用。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201056_NotEnough));
                     }
                 }
             }
@@ -3618,38 +3574,38 @@ namespace Application.Plugin.Script.Npc
                 var p = subway.GetTicket(getPlayer());
                 if (p == null)
                 {
-                    await SayOK("无法与我对话");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                     return;
                 }
 
                 var target = subway.GetDestinationMapName(getPlayer());
                 if (target == null)
                 {
-                    await SayOK("无法与我对话");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                     return;
                 }
 
-                if (await AskYesNo($"每分钟都有前往{target}的地铁出发，票价为#b{p.Value.TicketPrice}金币#k。您确定要购买#b#t{p.Value.TicketItemId}##k吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201057_SubwayPrompt, p.Value.TicketPrice, p.Value.TicketItemId)))
                 {
                     if (!canHold(p.Value.TicketItemId))
                     {
-                        await SayNext(GetClientMessage(nameof(ClientMessage.SlotFull), nameof(ClientMessage.ETC)));
+                        await SayNext(this.GetTalkMessage(ScriptMessage.SlotFull, ScriptMessage.ETC));
                     }
                     else if (getMeso() >= p.Value.TicketPrice)
                     {
                         await gainMeso(-p.Value.TicketPrice);
                         await gainItem(p.Value.TicketItemId, 1);
-                        await SayNext("请收好您的票。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc9201057_HereIsTicket));
                     }
                     else
                     {
-                        await SayNext(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                        await SayNext(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
                     }
                 }
             }
             else
             {
-                if (await AskYesNo("列车启动前你想离开吗？车票将不会退款。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201057_ConfirmLeaveTrain)))
                 {
                     await WarpOut();
                 }
@@ -3714,7 +3670,7 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayOK("嗯，你觉得你在看谁？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201099_LookingAtMe));
             }
 
         }
@@ -3724,11 +3680,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (getQuestStatus(8224) == 2)
             {
-                await SayOK("你好，同伴。如果你需要帮助，可以尝试与我们的成员交谈。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201100_FellowClan));
             }
             else
             {
-                await SayOK("你好，陌生人。我们是著名的渡鸦爪佣兵团，我是他们的领袖。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201100_ClanLeader));
             }
         }
 
@@ -3749,11 +3705,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (getLevel() >= 100)
             {
-                await SayOK("远征活动经常在绯红要塞内由像你这样的冒险者举行，许多来自不同队伍的人合作解决谜题，击败强大的敌人，在此过程中能够获得许多奖品。要了解更多信息，请前往城堡内右上方的房间。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201103_ExpeditionInfo));
             }
             else
             {
-                await SayOK("在要塞内，可以组建远征队尝试绯红森林要塞组队任务，需要等级达到100级或更高的冒险岛玩家。看起来你还不适合尝试这个任务，如果想要尝试的话，还需要多加练习。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201103_ExpeditionRequirement));
             }
         }
 
@@ -3762,19 +3718,19 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() == 610020000)
             {
-                await SayOK("哦，勇敢的冒险者。仅仅到达这个地方，你就已经在众多人中脱颖而出，恭喜你。然而，要注意：前方通往强大的#b绯红要塞#k的道路上，部署了#r致命的巨石#k，对于那些对前方危险毫无防备的人来说，这些巨石就像陷阱一样。#r一次被击中就足以让你倒下#k，所以要小心。如果你打算到达城堡，一定要小心地跟随前方的小径。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201104_BraveAdventurer));
             }
             else if (getMapId() == 610020003)
             {
-                await SayOK("你现在似乎配得上得到一个关于前方的提示。一旦进入要塞的主房间，请确保记住你所看到的雕像的布局。就是这样。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201104_HintStatue));
             }
             else if (getMapId() == 610020004)
             {
-                await SayOK("你现在似乎配得上得到一个关于接下来的提示。被称为\"封印\"的装置会在某些职业的技能在附近被激活时被检测到而激活，请确保你的团队在时机到来时是完整的。就是这样。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201104_HintSigil));
             }
             else
             {
-                await SayOK("到目前为止，你的进展非常出色，干得好。然而，要想进入要塞，你必须面对并完成这一考验，继续前行。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201104_KeepOrdeal));
             }
         }
 
@@ -3783,11 +3739,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() == 610020005)
             {
-                await SayOK("绯红要塞就在前方，你今天取得了伟大的成就，向你致敬。穿过这片树林，进入城堡的大门。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201105_KeepAhead));
             }
             else
             {
-                await SayOK("到目前为止，你的进展非常出色，干得好。然而，要想进入要塞，你必须面对并完成这一考验，继续前行。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201104_KeepOrdeal));
             }
         }
 
@@ -3814,19 +3770,19 @@ namespace Application.Plugin.Script.Npc
                 if (getLevel() >= requiredLevel && canGetFirstJob(jobType))
                 {
                     var map = jobMap[job];
-                    if (await AskYesNo("你好 #h #，我可以把你送到#b#m" + map + "##k进行#b" + c.CurrentCulture.GetJobName(job) + "#k转职。你要过去吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201127_WarpPrompt, map, c.CurrentCulture.GetJobName(job))))
                     {
                         await warp(map, 0);
                     }
                 }
                 else
                 {
-                    await SayOK($"如果你想成为#b{c.CurrentCulture.GetJobName(job)}#k，你需要到达#b{requiredLevel}级，{getFirstJobStatRequirement(jobType)}#k。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201127_WarpRequirement, c.CurrentCulture.GetJobName(job), requiredLevel, getFirstJobStatRequirement(jobType)));
                 }
             }
             else
             {
-                await SayOK("我只招待新人！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201127_OnlyBeginners));
             }
         }
 
@@ -3866,7 +3822,7 @@ namespace Application.Plugin.Script.Npc
             {
                 if (haveItem(questItem))
                 {
-                    if (await AskYesNo("你想要移动到 #b#m" + mapId + "##k 吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201127_EnterPrompt, mapId)))
                     {
                         foreach (var item in enterConsumeItems)
                         {
@@ -3876,19 +3832,19 @@ namespace Application.Plugin.Script.Npc
                         switch (mapId)
                         {
                             case 677000000:
-                                await SpawnBossIfAbsent(mapId, 9400612, new Point(461, 61), "Marbas 出现了！");
+                                await SpawnBossIfAbsent(mapId, 9400612, new Point(461, 61), this.GetTalkMessage(ScriptMessage.BossAppear, "Marbas"));
                                 break;
                             case 677000002:
-                                await SpawnBossIfAbsent(mapId, 9400610, new Point(467, 0), "Amdusias 出现了！");
+                                await SpawnBossIfAbsent(mapId, 9400610, new Point(467, 0), this.GetTalkMessage(ScriptMessage.BossAppear, "Amdusias"));
                                 break;
                             case 677000004:
-                                await SpawnBossIfAbsent(mapId, 9400609, new Point(201, 80), "Andras 出现了！");
+                                await SpawnBossIfAbsent(mapId, 9400609, new Point(201, 80), this.GetTalkMessage(ScriptMessage.BossAppear, "Andras"));
                                 break;
                             case 677000006:
-                                await SpawnBossIfAbsent(mapId, 9400611, new Point(171, 50), "Crocell 出现了！");
+                                await SpawnBossIfAbsent(mapId, 9400611, new Point(171, 50), this.GetTalkMessage(ScriptMessage.BossAppear, "Crocell"));
                                 break;
                             case 677000008:
-                                await SpawnBossIfAbsent(mapId, 9400613, new Point(251, -841), "Valefor 出现了！");
+                                await SpawnBossIfAbsent(mapId, 9400613, new Point(251, -841), this.GetTalkMessage(ScriptMessage.BossAppear, "Valefor"));
                                 break;
                             default:
                                 break;
@@ -3899,12 +3855,12 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await SayOK("入口被一种力量封锁，只有持有徽章的人才能解除。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201133_LockedByEmblem));
                 }
             }
             else
             {
-                await SayOK("入口被一股奇怪的力量阻挡住了。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201133_Blocked));
             }
         }
 
@@ -3919,7 +3875,7 @@ namespace Application.Plugin.Script.Npc
 
             if (notice != null)
             {
-                await getPlayer().TypedMessage(5, notice);
+                await getPlayer().TypedMessage(NoticeType.Pink, notice);
             }
         }
 
@@ -3945,15 +3901,14 @@ namespace Application.Plugin.Script.Npc
             {
                 if (getMapId() == 677000011)
                 {
-                    if (await AskYesNo("你想要移动到 #b#m677000012##k 吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201133_ConfirmMove, 677000012)))
                     {
                         await warp(677000012, 0);
                     }
-    ;
                 }
                 else
                 {
-                    if (await AskYesNo("你想要#b离开这个地方#k吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201133_ConfirmExit)))
                     {
                         await warp(105050400, 0);
                     }
@@ -3966,18 +3921,18 @@ namespace Application.Plugin.Script.Npc
                 {
                     if (!getPlayer().haveItemEquipped(1003036))
                     {
-                        await SayOK("前方的道路有一股奇怪的气味... 进入之前装备 #r#t1003036##k。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201133_GasMask));
                         return;
                     }
 
-                    if (await AskYesNo("你想要移动到 #b#m677000010##k 吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201133_ConfirmMove, 677000010)))
                     {
                         await warp(677000010, 0);
                     }
                 }
                 else
                 {
-                    await SayOK("入口被一股奇怪的力量阻挡住了。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201133_Blocked));
                 }
             }
         }
@@ -3996,14 +3951,14 @@ namespace Application.Plugin.Script.Npc
         {
             if (getChar().getMapId() == 209000000)
             {
-                if (await AskYesNo($"你想前往 #b#m209080000##k 吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9220005_GoSnowSprinkler)))
                 {
                     await warp(209080000, 0);
                 }
             }
             else if (getChar().getMapId() == 209080000)
             {
-                if (await AskYesNo($"你想回到 #b#m209000000##k 吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9220005_ReturnHappyville)))
                 {
                     await warp(209000000, 0);
                 }
@@ -4020,15 +3975,15 @@ namespace Application.Plugin.Script.Npc
             var mapId = getMapId();
             if (mapId == 674030100)
             {
-                await SayNext("嗨，我是 #p9220019#。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220019_Hi));
             }
             else if (mapId == 674030300)
             {
-                await SayNext("嗨，#h0#。这里是MV的宝藏房间。利用你在这里的时间做任何你想做的事情，实际上这里有很多东西等着你去发现。或者你可以使用这里的传送门 #rgo back#k 返回入口处。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220019_TreasureRoom));
             }
             else
             {
-                if (await AskYesNo("你确定要返回吗？现在返回意味着你要把你的伙伴们留在这里，你真的想这样做吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9220019_ConfirmReturn)))
                 {
                     await warp(674030100);
                 }
@@ -4040,14 +3995,14 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isEventLeader())
             {
-                await SayNext("请让你们的队长和我交谈，以便得到进入下一阶段的进一步指示。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220020_WaitLeader));
                 return;
             }
 
             var eim = getEventInstance()!;
             if (eim.getIntProperty("statusStg1") == 1)
             {
-                await SayNext("穿过这条隧道进行Boss战。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220020_TunnelBoss));
             }
             else
             {
@@ -4056,11 +4011,11 @@ namespace Application.Plugin.Script.Npc
                     await gainItem(4032118, -15);
                     eim.setIntProperty("statusStg1", 1);
                     await eim.showClearEffect();
-                    await SayNext("你得到了这些信件，太棒了！现在，你可以通过这条隧道前往MV所在的房间。做好准备！");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220020_GotLetters));
                 }
                 else
                 {
-                    await SayNext("请把 #r15封秘密信#k 交给我。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9220020_BringLetters));
                 }
             }
         }
@@ -4068,14 +4023,14 @@ namespace Application.Plugin.Script.Npc
         // Npc: 9270017 
         public async Task goback_kerning()
         {
-            if (await AskYesNo("飞机马上就要起飞了，你现在要离开吗？你将不得不再次购买飞机票才能进来。"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9270017_ConfirmLeave)))
             {
-                await SayNext("机票不可退，希望再次见到你！");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9270017_NoRefund));
                 await WarpOut();
             }
             else
             {
-                await SayOK("请稍等一下，飞机即将起飞。谢谢您的耐心等待。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_TicketFailed));
             }
         }
 
@@ -4086,24 +4041,24 @@ namespace Application.Plugin.Script.Npc
             var target = airPlane.GetDestinationMapName(getPlayer());
             if (target == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             if (airPlane.IsTransporting(getMap()))
             {
-                await SayOK($"我们马上就要到{target}了，请坐下等候。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_SitDownSingapore));
                 return;
             }
             else if (airPlane.IsWaiting(getMap()))
             {
-                if (await AskYesNo("飞机马上就要起飞了，你确定要现在离开吗？机票是不可退的。"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9270018_ConfirmLeave)))
                 {
                     await WarpOut();
                 }
                 else
                 {
-                    await SayOK("请稍等一下，飞机即将起飞。谢谢您的耐心等待。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_TicketFailed));
                 }
             }
         }
@@ -4114,37 +4069,37 @@ namespace Application.Plugin.Script.Npc
             var target = airPlane.GetDestinationMapName(getPlayer());
             if (target == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
             var t = airPlane.GetTicket(getPlayer());
             if (t == null)
             {
-                await SayOK("无法与我对话");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Ticket_CannotTalk));
                 return;
             }
 
-            var option = await AskMenu($"你好，我是来自新加坡机场的#p{getNpc()}#。我可以帮助你迅速到达{target}。你想去{target}吗？\r\n#b#L0#我想买一张去{target}的飞机票\r\n#b#L1#让我进入出发点。");
+                        var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9270018_PurchasePrompt, getNpc(), target));
             switch (option)
             {
                 case 0:
-                    if (await AskYesNo($"机票的价格是{t.Value.TicketPrice}金币。你要购买吗？"))
+                    if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9270018_ConfirmPurchase, t.Value.TicketPrice)))
                     {
                         if (!canHold(t.Value.TicketItemId))
                         {
-                            await SayOK(GetClientMessage(nameof(ClientMessage.SlotFull), GetClientMessage(nameof(ClientMessage.ETC))));
+                            await SayOK(this.GetTalkMessage(ScriptMessage.SlotFull, this.GetTalkMessage(ScriptMessage.ETC)));
                             return;
                         }
                         if (getMeso() < t.Value.TicketPrice)
                         {
-                            await SayOK(GetClientMessage(nameof(ClientMessage.MesoNotEnough)));
+                            await SayOK(this.GetTalkMessage(ScriptMessage.MesoNotEnough));
                             return;
                         }
 
                         await gainMeso(-t.Value.TicketPrice);
                         await gainItem(t.Value.TicketItemId);
-                        await SayOK("Thank you for choosing Wizet Airline! Enjoy your flight!");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_PurchaseSuccess));
 
                     }
                     break;
@@ -4157,13 +4112,13 @@ namespace Application.Plugin.Script.Npc
                         }
                         else
                         {
-                            await SayOK("抱歉，飞机已经起飞，请稍等几分钟。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_PlaneGone));
                         }
                         return;
                     }
                     else
                     {
-                        await SayOK($"你需要一个#b#t{t.Value.TicketItemId}##k才能上飞机！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9270018_NeedTicket, t.Value.TicketItemId));
                     }
 
                     break;
@@ -4188,11 +4143,11 @@ namespace Application.Plugin.Script.Npc
         public async Task goshanghai1()
         {
             var fee = 2000;
-            if (await AskYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b上海#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往美丽的#b#e上海外滩#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9310000_ShanghaiFee, fee)))
             {
                 if (getMeso() < fee)
                 {
-                    await SayNext($"你确定你有 #b{fee} 金币#k？ 如果没有，我可不能免费送你去。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9310000_CheckFee, fee));
                 }
                 else
                 {
@@ -4206,11 +4161,11 @@ namespace Application.Plugin.Script.Npc
         public async Task goshanghai2()
         {
             var fee = 2000;
-            if (await AskYesNo($"嘿！我是#b#e驾驶员 洪#n#k，我负责驾驶飞往#b金银岛#k的飞机。\r\n经过长年的飞行，我的驾驶技术已经很了不得。\r\n有兴趣跟我一起前往古朴的#b#e勇士部落#k#n吗？\r\n只需要#r{fee}金币#k哦！"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9310013_PerionFee, fee)))
             {
                 if (getMeso() < fee)
                 {
-                    await SayNext($"你确定你有 #b{fee} 金币#k？ 如果没有，我可不能免费送你去。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc9310000_CheckFee, fee));
                 }
                 else
                 {
@@ -4220,14 +4175,14 @@ namespace Application.Plugin.Script.Npc
             }
             else
             {
-                await SayNext("充满勇者气息的#b#e金银岛勇士部落#k#n，难道你不想回去看看吗！真遗憾。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc9310013_MissPerion));
             }
         }
 
         // Npc: 9310058 
         public async Task Jump_event()
         {
-            await SayOK("欢迎来到#b快乐小镇#k，年轻的旅行者。你有什么愿望吗？");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Npc9310058_Welcome));
         }
 
         // Npc: 9901000, 9901001, 9901002, 9901003, 9901004, 9901005, 9901006, 9901007, 9901008, 9901009, 9901010, 9901011 ...
@@ -4237,13 +4192,13 @@ namespace Application.Plugin.Script.Npc
             if (pnpc is PlayerNpc playerNpc)
             {
                 var branchJobName = GetJobName(playerNpc.Job);
-                var rankStr = $"你好，我是#b{playerNpc.Name}#k，在#r{branchJobName}#k职业中第#r{c.CurrentCulture.Ordinal(playerNpc.JobRank)}#k位达到最高等级。\r\n";
-                rankStr += $"\r\n    世界排名：#e#b{c.CurrentCulture.Ordinal(playerNpc.OverallRank)}#k#n";
+                var rankStr = this.GetTalkMessage(ScriptMessage.Npc9901000_RankIntro,
+                    playerNpc.Name, branchJobName, c.CurrentCulture.Ordinal(playerNpc.JobRank), c.CurrentCulture.Ordinal(playerNpc.OverallRank));
                 await SayOK(rankStr);
             }
             else
             {
-                await SayOK("你好，你好吗？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc9901000_Hello));
             }
         }
 
@@ -4251,12 +4206,12 @@ namespace Application.Plugin.Script.Npc
         {
             if (getLevel() >= 20)
             {
-                await SayOK("只有低于20级才能进入训练中心。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Plain2_OnlyCharacters));
                 return;
             }
 
-            var option = await AskMenu("你要进入训练中心吗？",
-                Enumerable.Range(0, 5).Select(i => $"训练中心 {i}")
+            var option = await AskMenu(this.GetTalkMessage(ScriptMessage.Plain2_WantEnterTraining),
+                Enumerable.Range(0, 5).Select(i => this.GetTalkMessage(ScriptMessage.Npc9901000_TrainingCenter, i))
                 );
             await warp(start + option, 0);
         }
@@ -4265,8 +4220,8 @@ namespace Application.Plugin.Script.Npc
         public async Task MaybeItsGrendel_end()
         {
             await SaySpeech([
-                "一个黑色的阴影人物出现并攻击了你？这怎么可能发生在#b#p1032001##k的家里？这听起来像是一个大阴谋……",
-                "我得在脑子里整理一下这一切。等一会儿再和我说话。"
+                this.GetTalkMessage(ScriptMessage.Npc9901000_ShadowPerson),
+                this.GetTalkMessage(ScriptMessage.Npc9901000_SortThoughts2)
                 ]);
         }
 
@@ -4277,8 +4232,8 @@ namespace Application.Plugin.Script.Npc
         /// <returns></returns>
         public async Task thief_in2()
         {
-            var pwd = await AskText("一个可疑的声音打破了沉默。 #b暗号#k ！");
-            if (pwd == "芝麻开门")
+            var pwd = await AskText(this.GetTalkMessage(ScriptMessage.Npc2103008_SecretCode));
+            if (pwd == this.GetTalkMessage(ScriptMessage.Shared_OpenSesame))
             {
                 if (isQuestCompleted(3925))
                 {
@@ -4286,19 +4241,19 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    await Pink("尽管你说出了正确的答案，但门依然没有动静！");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Npc2103008_CodeAccepted));
                 }
             }
             else
             {
-                await SayOK("#r错误！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc2103008_Error));
             }
         }
 
         // Npc: 2043000 — Papulatus Time Leap
         public async Task s4time()
         {
-            await SayNext("You don't belong to this world... Return now.");
+            await SayNext(this.GetTalkMessage(ScriptMessage.WrongWorld_Return));
             await warp(220080000);
         }
 
@@ -4307,25 +4262,25 @@ namespace Application.Plugin.Script.Npc
         {
             if (getPlayer().Level <= 10)
             {
-                if (await AskYesNo("您想要跳过教程，直接前往明珠港吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc2007_SkipTutorial)))
                 {
                     await warp(MapId.LITH_HARBOUR, 0);
                 }
                 else
                 {
-                    await SayNext("旅行愉快。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc2007_HaveNiceTrip));
                 }
             }
             else
             {
-                await SayNext("旅行愉快。");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc2007_HaveNiceTrip));
             }
         }
 
         // Npc: 2096000 — 武陵修炼场告示牌
         public async Task sca_dollBear()
         {
-            await SayOK("新手在这张地图上训练。精通者在下一个地图上训练。专业人士在最后一个地图上训练，那里会有boss等待。");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Npc2096000_TrainingMaps));
         }
 
         // Npc: 9900001 — GM 升级 NPC
@@ -4333,11 +4288,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (getPlayer().gmLevel() <= 1)
             {
-                await SayOK("嘿，怎么了？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Salo_T43));
                 return;
             }
 
-            if (await AskYesNo("你想升级吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9900001_WantLevelUp)))
             {
                 await getPlayer().levelUp(true);
             }
@@ -4350,7 +4305,8 @@ namespace Application.Plugin.Script.Npc
         /// 冒险家（1102003）、骑士团（1102003）、战神（1202010）共用同一流程，
         /// 差别只在职业判定与"没有资格"时的提示语。
         /// </summary>
-        private async Task SpawnHonorPlayerNpc(Func<int, bool> hasRequiredJob, string noQualifyMessage)
+        private async Task SpawnHonorPlayerNpc(Func<int, bool> hasRequiredJob, string noQualifyMessage,
+            string honorOffer, string honorFee, string notEnoughMeso, string hallFull, string hereYouGo)
         {
             var jobType = getJobId() / 100;
             if (!hasRequiredJob(jobType))
@@ -4366,10 +4322,10 @@ namespace Application.Plugin.Script.Npc
                 return;
             }
 
-            var message = "你一路走来，才拥有今天的力量、智慧与勇气，不是吗？你想不想现在就把你的角色形象，以#rNPC#k的形式留在名人堂里呢？";
+            var message = honorOffer;
             if (HONOR_NPC_FEE > 0)
             {
-                message += $" 我可以为你办到，费用是#b {numberWithCommas(HONOR_NPC_FEE)} 冒险币#k。";
+                message += honorFee;
             }
 
             if (!await AskYesNo(message))
@@ -4379,32 +4335,43 @@ namespace Application.Plugin.Script.Npc
 
             if (getMeso() < HONOR_NPC_FEE)
             {
-                await SayOK("抱歉，您没有足够的冒险币购买在名人堂上的位置。");
+                await SayOK(notEnoughMeso);
                 return;
             }
 
             if (!await canSpawnPlayerNpc(honorMapId))
             {
-                await SayOK("抱歉，名人堂目前已满...");
+                await SayOK(hallFull);
                 return;
             }
 
             c.CurrentServer.NodeService.PlayerNPCService.SpawnPlayerNPCByHonor(getPlayer());
             await gainMeso(-HONOR_NPC_FEE);
-            await SayOK("给你了！希望你会喜欢它。");
+            await SayOK(hereYouGo);
         }
 
         // Npc: 1102003 — 骑士团名人堂（职业类型 11~15）
         public async Task cygnus_lv120()
         {
-            await SpawnHonorPlayerNpc(jobType => jobType >= 11 && jobType <= 15, "欢迎来到骑士之间。");
+            await SpawnHonorPlayerNpc(jobType => jobType >= 11 && jobType <= 15,
+                this.GetTalkMessage(ScriptMessage.Npc1102003_Qualify),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HonorOffer),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HonorFee, numberWithCommas(HONOR_NPC_FEE)),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_NotEnoughMeso),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HallFull),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HereYouGo));
         }
 
         // Npc: 1202010 — 战神名人堂（职业类型 21）
         public async Task aran_lv200()
         {
             await SpawnHonorPlayerNpc(jobType => jobType == 21,
-                "瞧，这里是利恩的杰出勇敢英雄！那些坚定的心灵一直以来一直在保护我们的人民，他们是我们勇敢的战友。");
+                this.GetTalkMessage(ScriptMessage.Npc1202010_Qualify),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HonorOffer),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HonorFee, numberWithCommas(HONOR_NPC_FEE)),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_NotEnoughMeso),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HallFull),
+                this.GetTalkMessage(ScriptMessage.Npc1102003_HereYouGo));
         }
     }
 

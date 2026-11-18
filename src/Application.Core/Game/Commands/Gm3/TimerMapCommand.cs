@@ -14,7 +14,7 @@ public class TimerMapCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.TimerMapCommand_Syntax));
+            await player.Yellow(ClientMessage.TimerMapCommand_Syntax);
             return;
         }
 
@@ -38,7 +38,7 @@ public class TimerMapCommand : CommandBase
             catch (FormatException e)
             {
                 log.Warning(e.ToString());
-                await player.Yellow(nameof(ClientMessage.TimerMapCommand_Syntax));
+                await player.Yellow(ClientMessage.TimerMapCommand_Syntax);
             }
         }
     }

@@ -71,7 +71,7 @@ public class Fitness
         await checkAndMessage();
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
-        await chr.Notice(nameof(ClientMessage.Notice_EventStart));
+        await chr.Notice(ClientMessage.Notice_EventStart);
     }
 
     public bool isTimerStarted()
@@ -118,51 +118,51 @@ public class Fitness
         {
             if (getTimeLeft() > 9000 && getTimeLeft() < 11000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_10sec));
+                chr.Notice(ClientMessage.Fitness_Left_10sec);
             }
             else if (getTimeLeft() > 99000 && getTimeLeft() < 101000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_100sec));
+                chr.Notice(ClientMessage.Fitness_Left_100sec);
             }
             else if (getTimeLeft() > 239000 && getTimeLeft() < 241000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_4min));
+                chr.Notice(ClientMessage.Fitness_Left_4min);
             }
             else if (getTimeLeft() > 299000 && getTimeLeft() < 301000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_5min));
+                chr.Notice(ClientMessage.Fitness_Left_5min);
             }
             else if (getTimeLeft() > 359000 && getTimeLeft() < 361000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_6min));
+                chr.Notice(ClientMessage.Fitness_Left_6min);
             }
             else if (getTimeLeft() > 499000 && getTimeLeft() < 501000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_500sec));
+                chr.Notice(ClientMessage.Fitness_Left_500sec);
             }
             else if (getTimeLeft() > 599000 && getTimeLeft() < 601000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_600sec));
+                chr.Notice(ClientMessage.Fitness_Left_600sec);
             }
             else if (getTimeLeft() > 659000 && getTimeLeft() < 661000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_660sec));
+                chr.Notice(ClientMessage.Fitness_Left_660sec);
             }
             else if (getTimeLeft() > 699000 && getTimeLeft() < 701000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_700sec));
+                chr.Notice(ClientMessage.Fitness_Left_700sec);
             }
             else if (getTimeLeft() > 779000 && getTimeLeft() < 781000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_780sec));
+                chr.Notice(ClientMessage.Fitness_Left_780sec);
             }
             else if (getTimeLeft() > 839000 && getTimeLeft() < 841000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_840sec));
+                chr.Notice(ClientMessage.Fitness_Left_840sec);
             }
             else if (getTimeLeft() > 869000 && getTimeLeft() < 871000)
             {
-                chr.Notice(nameof(ClientMessage.Fitness_Left_870sec));
+                chr.Notice(ClientMessage.Fitness_Left_870sec);
             }
         }
         else

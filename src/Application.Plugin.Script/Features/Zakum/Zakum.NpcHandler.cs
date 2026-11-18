@@ -3,6 +3,8 @@ using Application.Core.Game.Life;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.npc;
 using Application.Core.Scripting.Events;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Zakum
 {
@@ -24,27 +26,27 @@ namespace Application.Plugin.Script.Features.Zakum
 
             if (player.getLevel() < em.MinLevel || player.getLevel() > em.MaxLevel)
             {
-                await SayOK("您不符合与" + expedBoss + "战斗的条件！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_NotEligible, expedBoss));
                 return;
             }
 
             var expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
             if (expedition == null)
             {
-                var selection = await AskMenu("#e#b<远征：" + expedBoss + ">\r\n#k#n" + em.Template.GetRequirementDescription(c) + "\r\n\r\n你想组建一个远征队来挑战 #r" + expedBoss + "#k 吗？\r\n#b#L1#让我们开始吧！#l\r\n#L2#不，我想再等一会儿...#l");
+                var selection = await AskMenu(this.GetTalkMessage(ScriptMessage.Zakum_ExpeditionMenu, expedBoss, em.Template.GetRequirementDescription(c)));
 
                 if (selection == 1)
                 {
                     if (!haveItem(expedItem))
                     {
-                        await SayOK("作为远征队领袖，你必须携带#b#t" + expedItem + "##k在你的物品栏中，才能与" + expedBoss + "进行战斗！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_NeedItemOnLeader, expedItem, expedBoss));
                         return;
                     }
 
                     expedition = em.GetOnlyEventInstanceManager<ExpeditionEventInstanceManager>();
                     if (expedition != null)
                     {
-                        await SayOK("有人已经主动成为了远征队的领袖。试着加入他们吧！");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_SomeoneIsLeader));
                         return;
                     }
 
@@ -53,18 +55,18 @@ namespace Application.Plugin.Script.Features.Zakum
                 }
                 else
                 {
-                    await SayOK("当然，并非每个人都能挑战" + expedBoss + "。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_NotForEveryone, expedBoss));
                 }
             }
             else if (expedition.isLeader(player))
             {
                 if (expedition.isInProgress())
                 {
-                    await SayOK("你的远征已经在进行中，对于那些仍在战斗中的人，让我们为那些勇敢的灵魂祈祷吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_AlreadyInProgress));
                 }
                 else
                 {
-                    var list = "你想做什么？#b\r\n\r\n#L1#查看当前远征队成员#l\r\n#L2#开始战斗！#l\r\n#L3#退出远征队#l";
+                    var list = this.GetTalkMessage(ScriptMessage.Exped_Menu);
                     var selection = await AskMenu(list);
 
                     if (selection == 1)
@@ -73,10 +75,10 @@ namespace Application.Plugin.Script.Features.Zakum
                         var size = expedMembers.Count;
                         if (size == 1)
                         {
-                            await SayOK("你是远征队中唯一的成员。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_OnlyMember));
                             return;
                         }
-                        var text = "以下成员组成了你的远征队（点击成员名字可以将其踢出远征队）：\r\n";
+                        var text = this.GetTalkMessage(ScriptMessage.Exped_MemberList);
                         text += "\r\n\t\t1." + expedMembers[0].Name;
                         for (var i = 1; i < size; i++)
                         {
@@ -87,7 +89,7 @@ namespace Application.Plugin.Script.Features.Zakum
                         {
                             var banned = expedMembers[kickSelection - 1];
                             await expedition.ban(banned.Id);
-                            await SayOK("你已经从远征中禁止了 " + banned.Name + "。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_Banned));
                         }
                     }
                     else if (selection == 2)
@@ -95,19 +97,19 @@ namespace Application.Plugin.Script.Features.Zakum
                         var size = expedition.getPlayers().Count;
                         if (size < expedition.EventManager.MinCount)
                         {
-                            await SayOK("你的远征队至少需要有" + expedition.EventManager.MinCount + "名玩家注册。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_NeedMinPlayers));
                             return;
                         }
 
-                        await SayOK($"远征队将开始，现在我将护送你前往 #b#m{expedition.EventManager.EntryMap}##k。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Exped_WillBegin, expedition.EventManager.EntryMap));
 
                         await expedition.StartBattle();
                     }
                     else if (selection == 3)
                     {
-                        await player.getMap().LightBlue(expedition.getLeader().getName() + "远征结束了。");
+                        await player.getMap().LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.Zakum_ExpeditionOver);
                         await expedition.DisposeAsync();
-                        await SayOK("这次远征已经结束。有时候最好的策略就是逃跑。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_ExpeditionEnded));
                     }
                 }
             }
@@ -115,7 +117,7 @@ namespace Application.Plugin.Script.Features.Zakum
             {
                 if (expedition.contains(player))
                 {
-                    await SayOK("你已经注册了这次远征。请等待 #r" + expedition.getLeader().getName() + "#k 开始。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_AlreadyRegistered));
                 }
                 else
                 {
@@ -132,12 +134,12 @@ namespace Application.Plugin.Script.Features.Zakum
                     }
                     else
                     {
-                        await SayOK("你的远征队已经开始对抗" + expedBoss + "的战斗。让我们为这些勇敢的灵魂祈祷。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_BattleStarted, expedBoss));
                     }
                 }
                 else
                 {
-                    await SayOK("另一支远征队正在挑战了" + expedBoss + "，让我们为这些勇敢的灵魂祈祷吧。");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Zakum_AnotherExpedition, expedBoss));
                 }
             }
         }

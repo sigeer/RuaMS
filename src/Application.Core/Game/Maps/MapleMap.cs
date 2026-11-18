@@ -989,12 +989,13 @@ public class MapleMap : IMap, INamedInstance
     /// <summary>
     /// 生成地图boss
     /// </summary>
-    /// <param name="bossId"></param>
-    /// <param name="mobTime"></param>
-    /// <param name="posX"></param>
-    /// <param name="posY"></param>
-    /// <param name="spawnMessage"></param>
-    public async Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> rawList, string spawnMessage)
+    /// <param name="name">boss 在该地图内的唯一名</param>
+    /// <param name="bossId">怪物 Id</param>
+    /// <param name="mobTime">刷新周期（秒）</param>
+    /// <param name="rawList">候选刷新点</param>
+    /// <param name="messageCategory">刷新公告所在的文案类别</param>
+    /// <param name="spawnMessage">刷新公告的文案键</param>
+    public async Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> rawList, string messageCategory, string spawnMessage)
     {
         if (_bossSp.TryGetValue(name, out var sp))
         {
@@ -1005,7 +1006,7 @@ public class MapleMap : IMap, INamedInstance
             return;
         }
 
-        sp = new AreaBossSpawnPoint(name, this, bossId, rawList, mobTime, SourceTemplate.CreateMobInterval, spawnMessage);
+        sp = new AreaBossSpawnPoint(name, this, bossId, rawList, mobTime, SourceTemplate.CreateMobInterval, messageCategory, spawnMessage);
         _bossSp[name] = sp;
         await sp.SpawnMonster();
     }
@@ -1634,7 +1635,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (unclaimOwnership() != null)
             {
-                await BroadcastAll(e => e.Pink(nameof(ClientMessage.Map_Ownership_Boss), e.Client.CurrentCulture.GetMobName(monster.getId())));
+                await BroadcastAll(e => e.Pink(ClientMessage.Map_Ownership_Boss, e.Client.CurrentCulture.GetMobName(monster.getId())));
             }
         }
     }
@@ -2396,7 +2397,7 @@ public class MapleMap : IMap, INamedInstance
         {
             if (unclaimOwnership() != null)
             {
-                await Pink(nameof(ClientMessage.Map_Ownership_Free));
+                await this.Pink(ClientMessage.Map_Ownership_Free);
             }
         }
     }
@@ -2971,37 +2972,13 @@ public class MapleMap : IMap, INamedInstance
             }
         }
     }
+
+    public List<Player> GetItems() => getAllPlayers();
+
     public async Task BroadcastAll(Func<Player, Task> effectPlayer, int exceptId = -1)
     {
         await Broadcast(exceptId, double.PositiveInfinity, null, effectPlayer);
     }
-
-    public async Task TypedMessage(int type, string messageKey, params string[] param)
-    {
-        await BroadcastAll(e => e.TypedMessage(type, messageKey, param));
-    }
-    public Task Notice(string key, params string[] param) => TypedMessage(0, key, param);
-
-    public Task Popup(string key, params string[] param) => TypedMessage(1, key, param);
-
-    public Task TopScrolling(string key, params string[] param) => TypedMessage(4, key, param);
-
-    public Task Pink(string key, params string[] param) => TypedMessage(5, key, param);
-
-    public Task LightBlue(string key, params string[] param) => TypedMessage(6, key, param);
-
-    public Task Yellow(string key, params string[] param) => TypedMessage(-1, key, param);
-    public Task EarnTitle(string key, params string[] param) => TypedMessage(-2, key, param);
-    public Task Dialog(string key, int npc, params string[] param)
-    {
-        return BroadcastAll(chr => chr.Dialog(key, npc, param));
-    }
-
-    public Task LightBlue(Func<IClientCulture, string> action)
-    {
-        return BroadcastAll(e => e.LightBlue(action));
-    }
-
     public Task Send(ICommand command) => CommandLoop.Register(command);
 
     public Task Send(Action<IMap> action) => Send(new MapDelegateCommand(action));
@@ -3021,7 +2998,7 @@ public class MapleMap : IMap, INamedInstance
             await chr.ChangeMap(newMap, toPos, false);
             if (chr.isGM())
             {
-                await chr.Notice(nameof(ClientMessage.ReloadMapCommand_Message1));
+                await chr.Notice(ClientMessage.ReloadMapCommand_Message1);
             }
         }
         await mapManager.RegisterMap(newMap);

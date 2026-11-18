@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.scripting.npc;
 using tools;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -17,7 +19,7 @@ namespace Application.Plugin.Script.Features.Quest
 
         public async Task secretNPC()
         {
-            var pwd = await AskText("门锁住了请输入#b密码#k!");
+            var pwd = await AskText(this.GetTalkMessage(ScriptMessage.Q3360_LockedDoor));
             var questPassword = getQuestProgress(3360, 0);
 
             if (pwd == questPassword)
@@ -31,7 +33,7 @@ namespace Application.Plugin.Script.Features.Quest
                         {
                             await setQuestProgress(3360, 1, "11");
                             await forceCompleteQuest(3360);
-                            await Pink("已完成任务");
+                            await this.Pink(this.GetTalkMessage(ScriptMessage.Q3360NpcHandler_QuestComplete));
                         }
                         else
                         {
@@ -44,7 +46,7 @@ namespace Application.Plugin.Script.Features.Quest
                         {
                             await setQuestProgress(3360, 1, "11");
                             await forceCompleteQuest(3360);
-                            await Pink("已完成任务");
+                            await this.Pink(this.GetTalkMessage(ScriptMessage.Q3360NpcHandler_QuestComplete));
                         }
                         else
                         {
@@ -58,7 +60,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await SayOK("#r错误的密码！");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Q3360_WrongPassword));
             }
         }
     }

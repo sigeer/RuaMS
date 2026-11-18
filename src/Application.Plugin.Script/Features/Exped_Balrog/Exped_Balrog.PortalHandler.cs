@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -26,7 +27,7 @@ namespace Application.Plugin.Script.Features.Exped_Balrog
         {
             if (!canHold(4001261, 1))
             {
-                await Pink("请给装备栏腾出至少1个空格子。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.ExpedBalrogPortalHandler_PleaseFree));
                 return false;
             }
             await gainItem(4001261, 1);

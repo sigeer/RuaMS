@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -62,7 +63,7 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
         public async Task<bool> apqClosed()
         {
 
-            await Pink("大门还没有打开。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.AmoriaPQPortalHandler_GateOpen));
             return false;
         }
 
@@ -80,7 +81,7 @@ namespace Application.Plugin.Script.Features.AmoriaPQ
             }
             else
             {
-                await Pink("大门还没有打开。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.AmoriaPQPortalHandler_GateOpen));
                 return false;
             }
         }

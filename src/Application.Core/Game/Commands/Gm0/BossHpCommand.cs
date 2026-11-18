@@ -22,8 +22,8 @@ public class BossHpCommand : CommandBase
                     bar += i < percent ? "|" : ".";
                 }
                 bar += "]";
-                await player.Yellow(nameof(ClientMessage.BossHpCommand_Message1), c.CurrentCulture.GetMobName(monster.getId()), monster.getId().ToString(), percent.ToString());
-                await player.Yellow(nameof(ClientMessage.BossHpCommand_Message2), bar);
+                await player.Yellow(ClientMessage.BossHpCommand_Message1, c.CurrentCulture.GetMobName(monster.getId()), monster.getId().ToString(), percent.ToString());
+                await player.Yellow(ClientMessage.BossHpCommand_Message2, bar);
             }
         });
     }

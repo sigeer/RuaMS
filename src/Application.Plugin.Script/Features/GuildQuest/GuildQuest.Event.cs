@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Players;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.scripting.Events.Instances;
@@ -110,9 +111,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
             // 进入要塞外围时给出护身符提示（JS 的 afterChangedMap）
             if (mapid == 990000100)
             {
-                await player.Dialog("所以，简报是这样的。你们要小心，一旦到了要塞外围，任何没有装备#b#t1032033##k的人都会因为周围恶劣的空气而立刻死亡。"
-                    + "话虽如此，队伍出发后，一定要#b敲击那片区域里发光的岩石#k，并在进入下一阶段前#b装备掉落的物品#k。"
-                    + "这样就能完全保护你免受空气病的影响。祝你好运！", SPEAKER_NPC);
+                await player.Dialog(player.getAbstractPlayerInteraction().GetTalkMessage(ScriptMessage.GuildQuest_Briefing), SPEAKER_NPC);
             }
 
             await base.OnPlayerMapChanged(eim, player, mapid);

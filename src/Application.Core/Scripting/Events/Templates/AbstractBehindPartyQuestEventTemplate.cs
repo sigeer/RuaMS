@@ -108,7 +108,7 @@ namespace Application.Core.scripting.Events.Templates
                 case JoinInstanceResult.Banned:
                     return "Sorry, you've been banned from this expedition.";
                 case JoinInstanceResult.RoomFull:
-                    return c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Expedition_MemberFull));
+                    return c.CurrentCulture.GetMessageByKey(ClientMessage.Expedition_MemberFull);
                 case JoinInstanceResult.ChannelFull:
                     return "Sorry, you've already reached the quota of attempts for this expedition! Try again another day...";
                 case JoinInstanceResult.LevelOutOfRange:

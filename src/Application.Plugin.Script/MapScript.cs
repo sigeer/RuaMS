@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.Server.life;
@@ -340,7 +341,7 @@ namespace Application.Plugin.Script
             var mobobj = LifeFactory.Instance.GetMonsterTrust(mobId);
             var mobName = c.CurrentCulture.GetMobName(mobId);
             await getMap().spawnMonsterOnGroundBelow(mobobj, pos);
-            await Pink(mobName + " 已现身！");
+            await this.Pink(mobName + this.GetTalkMessage(ScriptMessage.MapScript_HasAppeared));
         }
 
         // Map: 910031000, 910031001, 910031002, 910031003, 910031004, 910031005 … (共 30 张)

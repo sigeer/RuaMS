@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Abstraction;
 using Application.Core.Server.maps;
@@ -17,7 +18,7 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
 
             if (!haveItem(4000381))
             {
-                await Dialog("你没有#i4000381#。", 9270033);
+                await this.Dialog(this.GetTalkMessage(ScriptMessage.LatanicaPortalHandler_DontHave), 9270033);
                 return false;
             }
             else
@@ -31,7 +32,7 @@ namespace Application.Plugin.Script.Features.LatanicaBattle
                 }
                 else
                 {
-                    await Dialog(em.HandleCreateInstanceResult(r, c), 9270033);
+                    await this.Dialog(em.HandleCreateInstanceResult(r, c), 9270033);
                     return false;
                 }
             }

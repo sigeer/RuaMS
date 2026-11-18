@@ -115,7 +115,7 @@ public class UseCashItemHandler : ChannelHandlerBase
 
                 if (victim == null)
                 {
-                    await player.Popup(nameof(ClientMessage.PlayerNotFoundInChannel), name);
+                    await player.Popup(ClientMessage.PlayerNotFoundInChannel, name);
                     await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -248,7 +248,7 @@ public class UseCashItemHandler : ChannelHandlerBase
                     }
                     else
                     {
-                        await player.Popup(nameof(ClientMessage.UseItem_LevelCheck_10));
+                        await player.Popup(ClientMessage.UseItem_LevelCheck_10);
                         return;
                     }
                     break;

@@ -36,7 +36,7 @@ namespace Application.Core.Channel.Invitation
                     var chr = m.getCharacterById(data.ReceivePlayerId);
                     if (chr != null)
                     {
-                        await chr.Pink(nameof(ClientMessage.Team_InvitationExpired));
+                        await chr.Pink(ClientMessage.Team_InvitationExpired);
                     }
                 });
             }
@@ -80,7 +80,7 @@ namespace Application.Core.Channel.Invitation
                                 await sender.SendPacket(TeamPacketCreator.TeamFullCapacity());
                                 break;
                             case InviteResponseCode.Team_BeginnerLimit:
-                                await sender.Pink(nameof(ClientMessage.Team_Invitation_NoviceLimit));
+                                await sender.Pink(ClientMessage.Team_Invitation_NoviceLimit);
                                 break;
                             default:
                                 _logger.LogCritical("预料之外的邀请回调: Type:{Type}, Code: {Code}", Type, code);

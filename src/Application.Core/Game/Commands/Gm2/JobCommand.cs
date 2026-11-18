@@ -16,7 +16,7 @@ public class JobCommand : CommandBase
             int jobid = int.Parse(paramsValue[0]);
             if (jobid < 0 || jobid >= 2200)
             {
-                await player.Yellow(nameof(ClientMessage.JobNotFound), jobid.ToString());
+                await player.Yellow(ClientMessage.JobNotFound, jobid.ToString());
                 return;
             }
 
@@ -32,7 +32,7 @@ public class JobCommand : CommandBase
                 int jobid = int.Parse(paramsValue[1]);
                 if (jobid < 0 || jobid >= 2200)
                 {
-                    await player.Yellow(nameof(ClientMessage.JobNotFound), jobid.ToString());
+                    await player.Yellow(ClientMessage.JobNotFound, jobid.ToString());
                     return;
                 }
 
@@ -41,12 +41,12 @@ public class JobCommand : CommandBase
             }
             else
             {
-                await player.Yellow(nameof(ClientMessage.PlayerNotFoundInChannel), paramsValue[0]);
+                await player.Yellow(ClientMessage.PlayerNotFoundInChannel, paramsValue[0]);
             }
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.JobCommand_Syntax));
+            await player.Yellow(ClientMessage.JobCommand_Syntax);
         }
     }
 }

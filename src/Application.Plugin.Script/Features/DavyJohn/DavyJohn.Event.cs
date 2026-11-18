@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Game.Life;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Players;
@@ -145,7 +146,7 @@ namespace Application.Plugin.Script.Features.DavyJohn
 
             if (Array.IndexOf(LordPirates, mob.getId()) >= 0)
             {
-                await eim.dropMessage(5, "随着海盗领主死亡，无恙被释放了！");
+                await eim.Pink(ScriptMessageCategories.ScriptMessage, ScriptMessage.DavyJohnEvent_PirateLord);
                 await eim.spawnNpc(2094001, new Point(777, 140), map);
             }
 

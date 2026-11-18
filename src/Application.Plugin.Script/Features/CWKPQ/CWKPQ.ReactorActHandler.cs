@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -65,11 +66,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
                 if (mapId == 610030200)
                 {
-                    await eim.dropMessage(6, "The Warrior Sigil has been activated!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WarriorSigil);
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "2pt", 2);
                         await eim.GiveStageClearRewardAll(2);
@@ -77,12 +78,12 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
                 else if (mapId == 610030300)
                 {
-                    await eim.LightBlue("The Warrior Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WarriorSigilHas);
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     await getMap().moveEnvironment("menhir0", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "3pt", 2);
                         await eim.GiveStageClearRewardAll(3);
@@ -104,11 +105,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
                 if (mapId == 610030200)
                 {
-                    await eim.LightBlue("The Archer Sigil has been activated!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ArcherSigil);
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "2pt", 2);
                         await eim.GiveStageClearRewardAll(2);
@@ -116,13 +117,13 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
                 else if (mapId == 610030300)
                 {
-                    await eim.LightBlue("The Archer Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ArcherSigilHas);
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     await getMap().moveEnvironment("menhir1", 1);
                     await getMap().moveEnvironment("menhir2", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "3pt", 2);
                         await eim.GiveStageClearRewardAll(3);
@@ -144,11 +145,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
                 if (mapId == 610030200)
                 {
-                    await eim.LightBlue("The Mage Sigil has been activated!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_MageSigilHas);
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "2pt", 2);
                         await eim.GiveStageClearRewardAll(2);
@@ -156,12 +157,12 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
                 else if (mapId == 610030300)
                 {
-                    await eim.LightBlue("The Mage Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_MageSigil);
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     await getMap().moveEnvironment("menhir3", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "3pt", 2);
                         await eim.GiveStageClearRewardAll(3);
@@ -183,11 +184,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
                 if (mapId == 610030200)
                 {
-                    await eim.LightBlue("The Thief Sigil has been activated!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ThiefSigil);
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "2pt", 2);
                         await eim.GiveStageClearRewardAll(2);
@@ -195,12 +196,12 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
                 else if (mapId == 610030300)
                 {
-                    await eim.LightBlue("The Thief Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ThiefSigilHas);
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     await getMap().moveEnvironment("menhir4", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        await mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
+                        await this.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "3pt", 2);
                         await eim.GiveStageClearRewardAll(3);
@@ -222,11 +223,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
 
                 if (mapId == 610030200)
                 {
-                    await eim.LightBlue("The Pirate Sigil has been activated!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_PirateSigil);
                     eim.setIntProperty("glpq2", eim.getIntProperty("glpq2") + 1);
                     if (eim.getIntProperty("glpq2") == 5)
                     { //all 5 done
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "2pt", 2);
                         await eim.GiveStageClearRewardAll(2);
@@ -234,12 +235,12 @@ namespace Application.Plugin.Script.Features.CWKPQ
                 }
                 else if (mapId == 610030300)
                 {
-                    await eim.LightBlue("The Pirate Sigil has been activated! You hear gears turning! The Menhir Defense System is active! Run!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_PirateSigilHas);
                     eim.setIntProperty("glpq3", eim.getIntProperty("glpq3") + 1);
                     await getMap().moveEnvironment("menhir5", 1);
                     if (eim.getIntProperty("glpq3") == 5 && eim.getIntProperty("glpq3_p") == 5)
                     {
-                        await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                        await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                         await eim.showClearEffect(mapId, "3pt", 2);
                         await eim.GiveStageClearRewardAll(3);
@@ -257,11 +258,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WeaponHas);
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030500, "5pt", 2);
                     await eim.GiveStageClearRewardAll(5);
@@ -278,11 +279,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WeaponHas);
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030500, "5pt", 2);
                     await eim.GiveStageClearRewardAll(5);
@@ -299,11 +300,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WeaponHas);
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030500, "5pt", 2);
                     await eim.GiveStageClearRewardAll(5);
@@ -320,11 +321,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WeaponHas);
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030500, "5pt", 2);
                     await eim.GiveStageClearRewardAll(5);
@@ -341,11 +342,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("A weapon has been restored to the Relic of Mastery!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WeaponHas);
                 eim.setIntProperty("glpq5", eim.getIntProperty("glpq5") + 1);
                 if (eim.getIntProperty("glpq5") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030500, "5pt", 2);
                     await eim.GiveStageClearRewardAll(5);
@@ -385,11 +386,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("The Warrior Sigil has been activated!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_WarriorSigil);
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030400, "4pt", 2);
                     await eim.GiveStageClearRewardAll(4);
@@ -406,11 +407,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("The Archer Sigil has been activated!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ArcherSigil);
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030400, "4pt", 2);
                     await eim.GiveStageClearRewardAll(4);
@@ -427,11 +428,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("The Mage Sigil has been activated!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_MageSigilHas);
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030400, "4pt", 2);
                     await eim.GiveStageClearRewardAll(4);
@@ -448,11 +449,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("The Thief Sigil has been activated!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_ThiefSigil);
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030400, "4pt", 2);
                     await eim.GiveStageClearRewardAll(4);
@@ -469,11 +470,11 @@ namespace Application.Plugin.Script.Features.CWKPQ
             var eim = GetEventInstanceTrust();
             if (eim != null)
             {
-                await eim.LightBlue("The Pirate Sigil has been activated!");
+                await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQReactorActHandler_PirateSigil);
                 eim.setIntProperty("glpq4", eim.getIntProperty("glpq4") + 1);
                 if (eim.getIntProperty("glpq4") == 5)
                 { //all 5 done
-                    await eim.LightBlue("The Antellion grants you access to the next portal! Proceed!");
+                    await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.CWKPQPortalHandler_AntellionGrants);
 
                     await eim.showClearEffect(610030400, "4pt", 2);
                     await eim.GiveStageClearRewardAll(4);

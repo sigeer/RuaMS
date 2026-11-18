@@ -19,7 +19,7 @@ public class TravelRateCommand : CommandBase
 
         if (!int.TryParse(paramsValue[0], out int d))
         {
-            await player.Yellow(nameof(ClientMessage.DataTypeIncorrect), player.GetMessageByKey(nameof(ClientMessage.DataType_Number)));
+            await player.Yellow(ClientMessage.DataTypeIncorrect, player.GetMessageByKey(ClientMessage.DataType_Number));
             return;
         }
 

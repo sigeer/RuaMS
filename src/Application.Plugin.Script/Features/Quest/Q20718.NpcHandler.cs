@@ -2,6 +2,8 @@ using Application.Core.Client;
 using Application.Core.Game.Life;
 using Application.Core.Server.life;
 using System.Drawing;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -20,7 +22,7 @@ namespace Application.Plugin.Script.Features.Quest
                 return;
             }
 
-            await SayOK("一个神秘的黑色身影出现并召唤了许多愤怒的怪物！");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Q20718_ShadowAppears));
             var player = getPlayer();
             var map = player.getMap();
             var mobId = 2220100;

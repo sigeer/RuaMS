@@ -55,6 +55,9 @@ namespace Application.Core.Scripting.Events
             list.Add(leaderId);
             return list;
         }
+        /// <summary>当前排队中的公会数量。</summary>
+        public int QueueSize => queuedGuilds.Count;
+
         public bool isQueueFull()
         {
             return queuedGuilds.Count >= YamlConfig.config.server.EVENT_MAX_GUILD_QUEUE;

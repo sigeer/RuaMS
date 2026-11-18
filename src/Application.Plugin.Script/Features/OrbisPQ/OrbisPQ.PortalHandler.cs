@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.maps;
@@ -31,7 +32,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
 
             if (getPlayer().getParty() == null || !isEventLeader() || !haveItem(4001055, 1))
             {
-                await Pink("Please get the leader in this portal, make sure you have the Root of Life.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.OrbisPQPortalHandler_PleaseGet));
                 return false;
             }
 
@@ -60,7 +61,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
             var eim = GetEventInstance();
             if (eim == null || eim.getIntProperty("statusStg8") != 1)
             {
-                await Pink("The storage is currently inaccessible, as the powers of the Pixies remains active within the tower.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.OrbisPQPortalHandler_StorageCurrently));
                 return false;
             }
 
@@ -165,7 +166,7 @@ namespace Application.Plugin.Script.Features.OrbisPQ
 
             if (mobcount > 0)
             {
-                await Pink("请先使用控制杆清除所有威胁再继续前进");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.OrbisPQPortalHandler_PleaseUse));
                 return false;
             }
             else

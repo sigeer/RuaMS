@@ -123,7 +123,7 @@ namespace Application.Core.Game.Players
 
             if (banishInfo.Message != null)
             {
-                await Pink(banishInfo.Message);
+                await this.Pink(banishInfo.Message);
             }
 
             await ChangeMapByMapId(banishInfo.Map, findPortal: map => map.getPortal(banishInfo.PortalName) ?? map.getRandomPlayerSpawnpoint());

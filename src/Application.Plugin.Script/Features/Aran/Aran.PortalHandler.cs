@@ -1,5 +1,6 @@
 using Application.Core.Client;
 using Application.Core.Server.maps;
+using Application.Resources.Messages;
 using scripting.portal;
 
 namespace Application.Plugin.Script.Features.Aran
@@ -89,7 +90,7 @@ namespace Application.Plugin.Script.Features.Aran
                 return false;
             }
             await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide1");
-            await Pink("按一下Ctrl键，能够对怪兽进行一般攻击。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Aran_TipNormalAttack));
             await updateAreaInfo(21002, "normal=o;arr0=o;mo1=o;mo2=o;mo3=o");
             return true;
         }
@@ -104,7 +105,7 @@ namespace Application.Plugin.Script.Features.Aran
                 return false;
             }
             await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide2");
-            await Pink("按住Ctrl键，能够进行连续攻击。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Aran_TipComboAttack));
             await updateAreaInfo(21002, "normal=o;arr0=o;arr1=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return true;
         }
@@ -119,7 +120,7 @@ namespace Application.Plugin.Script.Features.Aran
                 return false;
             }
             await ShowEffect("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialGuide3");
-            await Pink("连续攻击后，通过方向键和攻击键可以实现命令攻击。");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.Aran_TipCommandAttack));
             await updateAreaInfo(21002, "cmd=o;normal=o;arr0=o;arr1=o;arr2=o;mo1=o;chain=o;mo2=o;mo3=o;mo4=o");
             return true;
         }
@@ -215,7 +216,7 @@ namespace Application.Plugin.Script.Features.Aran
             }
             else
             {
-                await Pink("你只有在接受你右边的雅典娜·皮尔斯的任务后才能退出。");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Aran_NeedAthenaQuest));
                 return false;
             }
         }

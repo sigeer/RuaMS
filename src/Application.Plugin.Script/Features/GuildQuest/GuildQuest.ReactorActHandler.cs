@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.reactor;
@@ -46,7 +47,7 @@ namespace Application.Plugin.Script.Features.GuildQuest
                 if (prevCombo.Length == 3 * (stage + 3))
                 {
                     eim.setProperty("stage1status", "active");
-                    await mapMessage(5, "The combo has been displayed; Proceed with caution.");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.GuildQuestReactorActHandler_ComboHas));
                     eim.setProperty("stage1guess", "");
                 }
             }

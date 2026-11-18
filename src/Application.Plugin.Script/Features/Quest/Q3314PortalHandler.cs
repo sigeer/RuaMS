@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -21,7 +22,7 @@ namespace Application.Plugin.Script.Features.Quest
             var mapid = getPlayer().getMapId();
             await playPortalSound();
             var map = (mapid - 270010000) / 100;
-            //await Pink(map + " " + isQuestCompleted(3534));
+            //await this.Pink(map + " " + isQuestCompleted(3534));
             if (map < 5 && isQuestCompleted(3500 + map))
             {
                 await warp(mapid + 10, "out00");
@@ -54,17 +55,17 @@ namespace Application.Plugin.Script.Features.Quest
             {
                 if (map > 200)
                 {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Q3314PortalHandler_TimeStarts));
                     await warp(270030000, "in00");
                 }
                 else if (map > 100)
                 {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Q3314PortalHandler_TimeStarts));
                     await warp(270020000, "in00");
                 }
                 else
                 {
-                    await Pink("随着时间开始变得异常流动，你被传送回到了一个安全的空间。");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.Q3314PortalHandler_TimeStarts));
                     await warp(270010000, "in00");
                 }
             }

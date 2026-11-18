@@ -15,9 +15,9 @@ namespace Application.Core.Channel.Internal.Handlers
         protected override Task HandleMessage(ProtoService.ToggleAutoBanIgnoreResponse res)
         {
             if (res.Code == 0)
-                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, -1, res.Request.TargetName + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored.")));
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, NoticeType.Yellow, res.Request.TargetName + " is " + (res.IsIgnored ? "now being ignored." : "no longer being ignored.")));
             else
-                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, 5, $"未找到玩家：{res.Request.TargetName}"));
+                return _server.PushChannelCommandAsync(new InvokeDropMessageAsyncCommand(res.Request.MasterId, NoticeType.Pink, $"未找到玩家：{res.Request.TargetName}"));
         }
 
         protected override ProtoService.ToggleAutoBanIgnoreResponse Parse(ByteString data) => ProtoService.ToggleAutoBanIgnoreResponse.Parser.ParseFrom(data);

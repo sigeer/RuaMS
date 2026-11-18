@@ -15,7 +15,7 @@ public class SeedCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (player.getMapId() != MapId.HENESYS_PQ)
         {
-            await player.Yellow(nameof(ClientMessage.SeedCommand_LimitMessage));
+            await player.Yellow(ClientMessage.SeedCommand_LimitMessage);
             return;
         }
         Point[] pos = {

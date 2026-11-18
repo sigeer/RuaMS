@@ -1,4 +1,6 @@
 using Application.Core.Client;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Features.Quest
 {
@@ -18,7 +20,7 @@ namespace Application.Plugin.Script.Features.Quest
                 return;
             }
 
-            if (await AskYesNo("你想要被传送到黑魔法师的弟子那里吗？"))
+            if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Q2175_WantWarped)))
             {
                 await TryStartSoloQuest(Q2175.QuestIdValue);
             }

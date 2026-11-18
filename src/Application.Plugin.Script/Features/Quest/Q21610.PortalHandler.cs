@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -19,7 +20,7 @@ namespace Application.Plugin.Script.Features.Quest
             }
             else
             {
-                await Pink("领取了任务《斯卡德的建议》才可以进入这里");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q21610PortalHandler_EnterOnly));
                 return false;
             }
         }

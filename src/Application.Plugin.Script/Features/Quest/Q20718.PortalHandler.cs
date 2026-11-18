@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -32,7 +33,7 @@ namespace Application.Plugin.Script.Features.Quest
         {
             if (getMap().countMonster(2220100) > 0)
             {
-                await Pink("Cannot leave until all Blue Mushrooms have been defeated.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Q20718PortalHandler_CannotLeave));
                 return false;
             }
             else

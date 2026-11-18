@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -66,7 +67,7 @@ namespace Application.Plugin.Script.Features.RockSpirit
                     await warp(mapid + 10, "right00");
                     return true;
                 }
-                await Pink("You cannot access this area.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotAccessArea));
                 return false;
             }
         }
@@ -109,7 +110,7 @@ namespace Application.Plugin.Script.Features.RockSpirit
                     await warp(mapid + 10, "right01");
                     return true;
                 }
-                await Pink("You cannot access this area.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_CannotAccessArea));
                 return false;
             }
         }

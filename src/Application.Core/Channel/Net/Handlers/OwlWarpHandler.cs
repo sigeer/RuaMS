@@ -56,7 +56,7 @@ public class OwlWarpHandler : ChannelHandlerBase
 
         if (c.OnlinedCharacter.Id == shop.OwnerId)
         {
-            await c.OnlinedCharacter.Popup(nameof(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself));
+            await c.OnlinedCharacter.Popup(ClientMessage.PlayerShopt_OwlWarp_CannotVisitYourself);
             return;
         }
 

@@ -13,14 +13,14 @@ namespace Application.Core.Game.Commands.Gm1
         {
             if (values.Length == 0)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.Language_ShowCurrent), client.CurrentCulture.CultureInfo.DisplayName);
+                await client.OnlinedCharacter.Yellow(ClientMessage.Language_ShowCurrent, client.CurrentCulture.CultureInfo.DisplayName);
                 return;
             }
 
             var setValue = values[0];
             if (!int.TryParse(setValue, out var lang) || lang != 0 && lang != 1)
             {
-                await client.OnlinedCharacter.Yellow(nameof(ClientMessage.LanguageCommand_Syntax));
+                await client.OnlinedCharacter.Yellow(ClientMessage.LanguageCommand_Syntax);
                 return;
             }
 

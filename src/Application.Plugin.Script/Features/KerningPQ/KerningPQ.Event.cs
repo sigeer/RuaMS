@@ -3,6 +3,7 @@ using Application.Core.model;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.scripting.Events.Templates;
 using Application.Utility;
+using Application.Resources.Messages;
 using Application.Utility.Extensions;
 
 namespace Application.Plugin.Script.Features.KerningPQ
@@ -62,13 +63,13 @@ namespace Application.Plugin.Script.Features.KerningPQ
         {
             string[] questions =
             [
-                "收集与#b战士#n首次转职所需最低等级相同数量的#b通行证#n。",
-                "收集与#b战士#n首次转职所需最低力量（STR）相同数量的#b通行证#n。",
-                "收集与#b魔法师#n首次转职所需最低智力（INT）相同数量的#b通行证#n。",
-                "收集与#b弓箭手#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
-                "收集与#b飞侠#n首次转职所需最低敏捷（DEX）相同数量的#b通行证#n。",
-                "收集与二次转职所需最低等级相同数量的#b通行证#n。",
-                "收集与#b魔法师#n首次转职所需最低等级相同数量的#b通行证#n。",
+                ScriptMessage.KerningPQ_Q1,
+                ScriptMessage.KerningPQ_Q2,
+                ScriptMessage.KerningPQ_Q3,
+                ScriptMessage.KerningPQ_Q4,
+                ScriptMessage.KerningPQ_Q5,
+                ScriptMessage.KerningPQ_Q6,
+                ScriptMessage.KerningPQ_Q7,
             ];
             int[] answers = [10, 35, 20, 25, 25, 30, 8];
             return (questions, answers);

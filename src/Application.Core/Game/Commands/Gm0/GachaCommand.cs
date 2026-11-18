@@ -19,18 +19,18 @@ public class GachaCommand : CommandBase
         string search = c.OnlinedCharacter.getLastCommandMessage();
         string gachaName = "";
         string[] names = {
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Henesys)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Ellinia)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Perion)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_KerningCity)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Sleepywood)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_MushroomShrine)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaMale)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ShowaSpaFemale)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_Ludibrium)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NewLeafCity)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_ElNath)),
-            c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.Map_NautilusHarbor))
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_Henesys),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_Ellinia),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_Perion),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_KerningCity),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_Sleepywood),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_MushroomShrine),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_ShowaSpaMale),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_ShowaSpaFemale),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_Ludibrium),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_NewLeafCity),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_ElNath),
+            c.CurrentCulture.GetMessageByKey(ClientMessage.Map_NautilusHarbor)
         };
         int[] ids = [
             NpcId.GACHAPON_HENESYS,
@@ -58,7 +58,7 @@ public class GachaCommand : CommandBase
 
         if (gacha == null)
         {
-            await c.OnlinedCharacter.Yellow(nameof(ClientMessage.GachaCommand_Syntax));
+            await c.OnlinedCharacter.Yellow(ClientMessage.GachaCommand_Syntax);
             foreach (string name in names)
             {
                 await c.OnlinedCharacter.Yellow(name);
@@ -66,7 +66,7 @@ public class GachaCommand : CommandBase
             return;
         }
         StringBuilder sb = new StringBuilder();
-        sb.Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message1), gachaName));
+        sb.Append(c.CurrentCulture.GetMessageByKey(ClientMessage.GachaCommand_Message1, gachaName));
         foreach (var chance in _gachaponManager.GetPoolLevelList(gacha.Id))
         {
             foreach (var item in _gachaponManager.GetItems(gacha.Id, chance.Level))
@@ -74,7 +74,7 @@ public class GachaCommand : CommandBase
                 sb.Append("-").Append(c.CurrentCulture.GetItemName(item.ItemId)).Append("\r\n");
             }
         }
-        sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(nameof(ClientMessage.GachaCommand_Message2)));
+        sb.Append("\r\n").Append(c.CurrentCulture.GetMessageByKey(ClientMessage.GachaCommand_Message2));
 
         await c.OnlinedCharacter.Dialog(sb.ToString(), NpcId.GACHAPON_HENESYS);
     }

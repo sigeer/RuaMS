@@ -33,8 +33,13 @@ namespace Application.Core.Channel
         /// 按任意类别取消息。类别名由调用方决定（例如插件自己的 <c>ScriptMessage</c>），
         /// Core 只负责按当前玩家语言查表并格式化。
         /// </summary>
-        public string GetMessageByCategory(string category, string key, params object[] paramsValue)
+        public string? GetMessageByCategory(string category, string? key, params object?[] paramsValue)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                return key;
+            }
+
             var message = MessageStore.Get(category, key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
@@ -44,23 +49,15 @@ namespace Application.Core.Channel
             return string.Format(message, paramsValue);
         }
 
-        public string GetMessageByKey(string key, params object[] paramsValue)
-        {
-            var message = MessageStore.Get(MessageCategories.ClientMessage, key, CultureInfo);
-            if (string.IsNullOrEmpty(message))
-            {
-                Log.Logger.Verbose("i18n未找到{Key}", key);
-                return key;
-            }
-            return string.Format(message, paramsValue);
-        }
+        public string? GetMessageByKey(string? key, params object?[] paramsValue) => GetMessageByCategory(MessageCategories.ClientMessage, key, paramsValue);
 
         public string? GetNullableMessageByKey(string key, params string[] paramsValue)
         {
             var message = MessageStore.Get(MessageCategories.ClientMessage, key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
-                return null;
+                Log.Logger.Verbose("i18n未找到{Key}", key);
+                return key;
             }
             return string.Format(message, paramsValue);
         }

@@ -18,7 +18,7 @@ public class BanCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.BanCommand_Syntax));
+            await player.Yellow(ClientMessage.BanCommand_Syntax);
             return;
         }
 
@@ -27,13 +27,13 @@ public class BanCommand : CommandBase
         {
             await TempConversation.CreateScope(c, async ctx =>
             {
-                var reason = await ctx.AskText(player.GetMessageByKey(nameof(ClientMessage.BanReason)));
+                var reason = await ctx.AskText(player.GetMessageByKey(ClientMessage.BanReason));
                 await _adminService.Ban(c.OnlinedCharacter.AccountId, paramsValue[0], BanReason.GM, reason, day);
             });
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.BanCommand_Syntax));
+            await player.Yellow(ClientMessage.BanCommand_Syntax);
             return;
         }
     }

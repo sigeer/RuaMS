@@ -76,7 +76,7 @@ public class GiveFameHandler : ChannelHandlerBase
             }
             else
             {
-                await player.Pink(nameof(ClientMessage.ChangeFame_OutOfRange));
+                await player.Pink(ClientMessage.ChangeFame_OutOfRange);
             }
         }
         else

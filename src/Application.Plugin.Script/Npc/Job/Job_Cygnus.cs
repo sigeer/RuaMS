@@ -1,4 +1,6 @@
 using Application.Shared.Constants.Job;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -8,11 +10,11 @@ namespace Application.Plugin.Script.Npc
         {
             if (!getJob().IsSameJobGroup(baseJob))
             {
-                await SayOK("Hello there, #h #. Are you helping us finding the intruder? He is not in this area, I've already searched here.");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Cygnus_NoIntruder));
                 return;
             }
 
-            await SayOK("Darn, you found me! Then, there's only one way out! Let's fight, like #rBlack Wings#k should!");
+            await SayOK(this.GetTalkMessage(ScriptMessage.Cygnus_FoundMe));
             var mapobj = getMap();
             var npcpos = mapobj.getMapObject(getNpcObjectId())!.getPosition();
 

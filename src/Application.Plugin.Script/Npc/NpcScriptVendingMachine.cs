@@ -1,3 +1,7 @@
+
+using Application.Plugin.Script;
+using Application.Resources.Messages;
+
 namespace Application.Plugin.Script.Npc
 {
     /// <summary>
@@ -13,7 +17,7 @@ namespace Application.Plugin.Script.Npc
         /// <summary>羽毛，按 0.46 分/个换算。</summary>
         const int FEATHER_ITEM = 4001158;
 
-        static readonly string[] PrizeTierNames = ["第1层", "第2层", "第3层", "第4层", "第5层", "第6层"];
+        
 
         static readonly int[][] PrizeItems =
         [
@@ -39,7 +43,7 @@ namespace Application.Plugin.Script.Npc
         [ScriptName("n1052014")]
         public async Task NpcCafeVendingMachine()
         {
-            await SayNext($"这是互联网咖啡厅的自动贩卖机。放置你在任务中获得的橡皮擦或#t{FEATHER_ITEM}#来兑换奖品。你可以放置#b任意数量的橡皮擦#k，但请注意放置#r不同的橡皮擦#k和#r更多数量的任何一种#k会提高奖励的可能性！");
+            await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_Intro, FEATHER_ITEM));
 
             // 每轮交互都重新读取背包，故状态只在本方法内维护
             int[] tickets = new int[ERASER_KINDS];
@@ -50,8 +54,8 @@ namespace Application.Plugin.Script.Npc
             {
                 var tier = GetPrizeTier(tickets, coins);
                 var header = tier >= 0
-                    ? $"使用您当前放置的物品，您可以检索#r{PrizeTierNames[tier]}#k 奖品。放置橡皮擦:"
-                    : "您还没有放置橡皮擦。放置橡皮擦:";
+                    ? this.GetTalkMessage(ScriptMessage.Npc1052014_CurrentTier, this.GetTalkMessage(ScriptMessage.Vending_PrizeTier, tier + 1))
+                    : this.GetTalkMessage(ScriptMessage.Npc1052014_NoErasersPlaced);
 
                 var list = "";
                 for (var i = 0; i < ERASER_KINDS; i++)
@@ -59,7 +63,7 @@ namespace Application.Plugin.Script.Npc
                     list += $"#b#L{i}##t{ERASER_BASE_ID + i}##k";
                     if (tickets[i] > 0)
                     {
-                        list += $" - {tickets[i]} 橡皮擦";
+                        list += this.GetTalkMessage(ScriptMessage.Npc1052014_EraserCount, tickets[i]);
                     }
                     list += "#l\r\n";
                 }
@@ -69,19 +73,19 @@ namespace Application.Plugin.Script.Npc
                     list += $"#b#L{ERASER_KINDS}##t{FEATHER_ITEM}##k";
                     if (coins > 0)
                     {
-                        list += $" - {coins} 羽毛";
+                        list += this.GetTalkMessage(ScriptMessage.Npc1052014_FeatherCount, coins);
                     }
                     list += "#l\r\n";
                 }
 
                 var claimIndex = hasFeather ? ERASER_KINDS + 1 : ERASER_KINDS;
-                var sel = await AskMenu(header + "\r\n\r\n" + list + $"#r#L{claimIndex}#找回奖品！#l#k\r\n");
+                var sel = await AskMenu(header + "\r\n\r\n" + list + "#r#L" + claimIndex + "#" + this.GetTalkMessage(ScriptMessage.Npc1052014_RetrievePrize) + "#l#k\r\n");
 
                 if (sel == claimIndex)
                 {
                     if (tier < 0)
                     {
-                        await SayNext("您没有提交橡皮擦。提交至少一个橡皮擦即可领取奖品。");
+                        await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_NoEraser));
                         continue;
                     }
 
@@ -93,20 +97,20 @@ namespace Application.Plugin.Script.Npc
                 var owned = getItemQuantity(itemId);
                 if (owned <= 0)
                 {
-                    await SayNext($" #r你没有可用的 #k #b#t{itemId}##k 提交到机器上。 点击 '#r上项#k' 返回主界面。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_NoneAvailable, itemId));
                     continue;
                 }
 
-                var input = await AskText($"要将提交多少个 #b#t{itemId}##k 提交到机器上? (剩余#r{owned}#k 可用)#k");
+                var input = await AskText(this.GetTalkMessage(ScriptMessage.Npc1052014_AskQuantity, itemId, owned));
                 if (!int.TryParse(input, out var placed) || placed < 0)
                 {
-                    await SayNext("你必须提交正确橡皮擦数量。 点击 '#r上项#k' 返回主界面。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_InvalidQuantity));
                     continue;
                 }
 
                 if (placed > owned)
                 {
-                    await SayNext($"你没有足够的橡皮可提交 (剩余#r{owned}#k 可用). 点击 '#r上项#k' 返回主界面。");
+                    await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_ExceedQuantity, owned));
                     continue;
                 }
 
@@ -119,7 +123,7 @@ namespace Application.Plugin.Script.Npc
                     coins = placed;
                 }
 
-                await SayNext("操作成功。 点击 '#r上项#k' 返回主界面 #r找回奖品！#k");
+                await SayNext(this.GetTalkMessage(ScriptMessage.Npc1052014_Success));
             }
         }
 
@@ -153,7 +157,7 @@ namespace Application.Plugin.Script.Npc
 
             if (!items.Zip(quantities).All(x => canHold(x.First, x.Second)))
             {
-                await SayOK("检查一下你的背包是否有空间，然后再领取奖品。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Npc1052014_CheckInventory));
                 return;
             }
 

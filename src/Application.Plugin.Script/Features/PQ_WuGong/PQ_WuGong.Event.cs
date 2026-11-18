@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
 using Application.Core.Game.Life;
@@ -99,21 +100,21 @@ namespace Application.Plugin.Script.Features.PQ_WuGong
                 case CreateInstanceResult.Success:
                     return null;
                 case CreateInstanceResult.RequiredParty:
-                    return "该项#b秘密任务#k十分危险，你需要进行一个组队才能进入执行。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.WuGong_NeedParty);
 
                 case CreateInstanceResult.RequiredLeader:
-                    return "请让你的队长来开始这个任务。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.WuGong_NeedLeader);
 
                 case CreateInstanceResult.Requirement:
-                    return "你目前无法执行这个#b秘密任务#k，因你不符合要求";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.WuGong_NotEligible);
 
                 case CreateInstanceResult.LobbyLimited:
-                    return "已经有其他人员在执行#b秘密任务#k了，请稍后再试。";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.WuGong_AlreadyRunning);
 
                 case CreateInstanceResult.Disposed:
                 case CreateInstanceResult.Unknown:
                 default:
-                    return "未知错误";
+                    return c.CurrentCulture.GetTalkMessage(ScriptMessage.Dojo_UnknownError);
             }
         }
 

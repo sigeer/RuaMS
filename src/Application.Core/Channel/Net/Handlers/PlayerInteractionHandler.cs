@@ -330,7 +330,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                     if (!c.CheckBirthday(birthday))
                     {
                         // birthday check here found thanks to lucasziron
-                        await chr.Popup(nameof(ClientMessage.BirthDay_Invalid));
+                        await chr.Popup(ClientMessage.BirthDay_Invalid);
                         return;
                     }
 
@@ -527,7 +527,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (item == null)
                 {
-                    await chr.Popup(nameof(ClientMessage.ItemInvalid));
+                    await chr.Popup(ClientMessage.ItemInvalid);
                     await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -536,11 +536,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (ItemConstants.isPet(item.getItemId()))
                     {
-                        await chr.Popup(nameof(ClientMessage.Trade_PetCheck));
+                        await chr.Popup(ClientMessage.Trade_PetCheck);
                     }
                     else
                     {
-                        await chr.Popup(nameof(ClientMessage.Trade_CashItemCheck));
+                        await chr.Popup(ClientMessage.Trade_CashItemCheck);
                     }
 
                     await c.SendPacket(PacketCreator.enableActions());
@@ -549,7 +549,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (quantity < 1 || quantity > item.getQuantity())
                 {
-                    await chr.Popup(nameof(ClientMessage.ItemQuantityNotEnough));
+                    await chr.Popup(ClientMessage.ItemQuantityNotEnough);
                     await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -562,7 +562,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                         if (item.isUntradeable())
                         {
-                            await chr.Popup(nameof(ClientMessage.Trade_ItemUntradeable));
+                            await chr.Popup(ClientMessage.Trade_ItemUntradeable);
                             await c.SendPacket(PacketCreator.enableActions());
                             return;
                         }
@@ -573,7 +573,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                             var checkItem = chr.getInventory(ivType).getItem(pos);
                             if (checkItem != item || checkItem.getPosition() != item.getPosition())
                             {
-                                await chr.Popup(nameof(ClientMessage.ItemInvalid));
+                                await chr.Popup(ClientMessage.ItemInvalid);
                                 await c.SendPacket(PacketCreator.enableActions());
                                 return;
                             }
@@ -629,7 +629,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
 
                 if (ivItem == null || ivItem.isUntradeable())
                 {
-                    await chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
+                    await chr.Popup(ClientMessage.PlayerShop_ItemInvalid);
                     await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }
@@ -637,11 +637,11 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 {
                     if (ItemConstants.isPet(ivItem.getItemId()))
                     {
-                        await chr.Popup(nameof(ClientMessage.PlayerShop_PetCheck));
+                        await chr.Popup(ClientMessage.PlayerShop_PetCheck);
                     }
                     else
                     {
-                        await chr.Popup(nameof(ClientMessage.PlayerShop_CashItemCheck));
+                        await chr.Popup(ClientMessage.PlayerShop_CashItemCheck);
                     }
 
                     await c.SendPacket(PacketCreator.enableActions());
@@ -659,7 +659,7 @@ public class PlayerInteractionHandler : ChannelHandlerBase
                 else if (ivItem.getQuantity() < (bundles * perBundle))
                 {
                     // thanks GabrielSin for finding a dupe here
-                    await chr.Popup(nameof(ClientMessage.PlayerShop_ItemInvalid));
+                    await chr.Popup(ClientMessage.PlayerShop_ItemInvalid);
                     await c.SendPacket(PacketCreator.enableActions());
                     return;
                 }

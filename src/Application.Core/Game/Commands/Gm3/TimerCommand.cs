@@ -14,7 +14,7 @@ public class TimerCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 2)
         {
-            await player.Yellow(nameof(ClientMessage.TimerCommand_Syntax));
+            await player.Yellow(ClientMessage.TimerCommand_Syntax);
             return;
         }
 
@@ -34,13 +34,13 @@ public class TimerCommand : CommandBase
                 catch (FormatException e)
                 {
                     log.Error(e.ToString());
-                    await player.Yellow(nameof(ClientMessage.TimerCommand_Syntax));
+                    await player.Yellow(ClientMessage.TimerCommand_Syntax);
                 }
             }
         }
         else
         {
-            await player.Yellow(nameof(ClientMessage.PlayerNotFoundInMap), paramsValue[0]);
+            await player.Yellow(ClientMessage.PlayerNotFoundInMap, paramsValue[0]);
         }
     }
 }

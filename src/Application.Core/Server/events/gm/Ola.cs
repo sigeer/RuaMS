@@ -68,7 +68,7 @@ public class Ola
         this.time = 360000;
 
         chr.getMap().getPortal("join00")!.setPortalStatus(true);
-        await chr.Notice(nameof(ClientMessage.Notice_EventStart));
+        await chr.Notice(ClientMessage.Notice_EventStart);
     }
 
     public bool isTimerStarted()

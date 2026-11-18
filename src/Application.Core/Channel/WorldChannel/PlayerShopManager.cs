@@ -116,7 +116,7 @@ namespace Application.Core.Channel
 
             if (!shop.Status.Is(PlayerShopStatus.Maintenance))
             {
-                await chr.Popup(nameof(ClientMessage.PlayerShop_CannotManage));
+                await chr.Popup(ClientMessage.PlayerShop_CannotManage);
                 return false;
             }
 
@@ -150,7 +150,7 @@ namespace Application.Core.Channel
             if (!shop.Status.Is(PlayerShopStatus.Maintenance) || !shop.AddCommodity(shopItem))
             {
                 // thanks Vcoc for pointing an exploit with unlimited shop slots
-                await chr.Popup(nameof(ClientMessage.PlayerShop_CannotSold));
+                await chr.Popup(ClientMessage.PlayerShop_CannotSold);
                 return false;
             }
 

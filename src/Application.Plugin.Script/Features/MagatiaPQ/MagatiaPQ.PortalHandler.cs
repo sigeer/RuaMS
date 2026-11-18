@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.scripting.Events.Instances;
 using Application.Core.Server.maps;
@@ -27,7 +28,7 @@ namespace Application.Plugin.Script.Features.MagatiaPQ
             var baseMap = MapBase;
             if (eim == null || baseMap == null || !condition(eim))
             {
-                await Pink("The portal is not opened yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.DavyJohnPortalHandler_PortalOpened));
                 return false;
             }
 
@@ -40,7 +41,7 @@ namespace Application.Plugin.Script.Features.MagatiaPQ
         {
             if (getMap().getReactorByName(reactorName)?.getState() != 1)
             {
-                await Pink("The door is not opened yet.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.Dojo_DoorNotOpen));
                 return false;
             }
 
@@ -70,7 +71,7 @@ namespace Application.Plugin.Script.Features.MagatiaPQ
             var area = eim.getIntProperty("statusStg5");
             if ((area >> slot) % 2 != 0)
             {
-                await Pink("This room is already being explored.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.MagatiaPQPortalHandler_RoomAlready));
                 return false;
             }
 

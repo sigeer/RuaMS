@@ -16,14 +16,14 @@ public class ShutdownCommand : CommandBase
         var player = c.OnlinedCharacter;
         if (paramsValue.Length < 1)
         {
-            await player.Yellow(nameof(ClientMessage.ShutdownCommand_Syntax));
+            await player.Yellow(ClientMessage.ShutdownCommand_Syntax);
             return;
         }
 
 
         if (!int.TryParse(paramsValue[0], out var seconds))
         {
-            await player.Yellow(nameof(ClientMessage.ShutdownCommand_Syntax));
+            await player.Yellow(ClientMessage.ShutdownCommand_Syntax);
             return;
         }
 

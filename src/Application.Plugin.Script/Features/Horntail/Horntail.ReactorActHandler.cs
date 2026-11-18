@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Channel.DataProviders;
 using Application.Core.Client;
 using Application.Core.Server.maps;
@@ -21,7 +22,7 @@ namespace Application.Plugin.Script.Features.Horntail
             var vvpStage = -1;
 
             await eim.showClearEffect(false, vvpMap);
-            await mapMessage(6, "The key has been teleported somewhere...");
+            await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailReactorActHandler_KeyHas));
 
             int vvpKey;
             switch (vvpMap)
@@ -57,7 +58,7 @@ namespace Application.Plugin.Script.Features.Horntail
 
             var key = ItemInformationProvider.getInstance().GenerateVirtualItemById(vvpKey, 1);
             await womanfred.spawnItemDrop(theWomanfred, dropper, key, theWomanfred.getPosition(), true, true);
-            await eim.dropMessage(6, "A bright flash of light, then a key suddenly appears somewhere in the map.");
+            await eim.LightBlue(ScriptMessageCategories.ScriptMessage, ScriptMessage.HorntailReactorActHandler_BrightFlash);
         }
 
         // Reactor: 2401000 
@@ -71,7 +72,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 var eim = GetEventInstanceTrust();
                 await eim.restartEventTimer(60 * 60000);
             }
-            await mapMessage(6, "From the depths of his cave, here comes Horntail!");
+            await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailReactorActHandler_DepthsHis));
         }
 
         // Reactor: 2402002 

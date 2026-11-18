@@ -1,4 +1,6 @@
 using Application.Shared.Constants.Map;
+using Application.Plugin.Script;
+using Application.Resources.Messages;
 
 namespace Application.Plugin.Script.Npc
 {
@@ -12,18 +14,18 @@ namespace Application.Plugin.Script.Npc
                 var isMap400 = getMapId() == 680000400;
                 var options = new List<string>();
                 if (!isMap400)
-                    options.Add("前往未开发的心脏狩猎场");
+                    options.Add(this.GetTalkMessage(ScriptMessage.Npc9201021_OptionHunting));
                 if (isMap400)
-                    options.Add("我有7把钥匙，带我去打破箱子");
-                options.Add("请将我传送出去");
+                    options.Add(this.GetTalkMessage(ScriptMessage.Npc9201021_OptionSmashBox));
+                options.Add(this.GetTalkMessage(ScriptMessage.Npc9201021_OptionWarpOut));
 
-                var selection = await AskMenu("你好，你想去哪里？", options);
+                var selection = await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9201021_WhereToGo, options));
 
                 if (!isMap400 && selection == 0)
                 {
                     if (!haveItem(4000313, 1))
                     {
-                        await SayOK("看起来你丢失了你的 #b#t4000313##k。很抱歉，但是没有那个物品我不能让你前往狩猎场地。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201021_NoInvitation));
                         return;
                     }
                     await warp(680000400, 0);
@@ -37,18 +39,19 @@ namespace Application.Plugin.Script.Npc
                     }
                     else
                     {
-                        await SayOK("看起来你没有7把钥匙。在未驯化之心狩猎地杀死蛋糕和蜡烛以获取钥匙。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201021_NotEnoughKeys));
                     }
                 }
                 else
                 {
                     await warp(680000500, 0);
-                    await SayOK("再见。希望你喜欢这场婚礼！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201021_WeddingGoodbye));
                 }
             }
             else
             {
-                await AskMenu("你好，你现在想回去吗？再次返回这里将花费你 #r另外7把钥匙#k。", ["请将我传送回训练场"]);
+                await AskMenu(this.GetTalkMessage(ScriptMessage.Npc9201021_ReturnConfirm),
+                    [this.GetTalkMessage(ScriptMessage.Npc9201021_OptionWarpBack)]);
                 await warp(680000400, 0);
             }
         }
@@ -58,24 +61,24 @@ namespace Application.Plugin.Script.Npc
         {
             if (getMapId() == MapId.HENESYS)
             {
-                if (await AskYesNo($"我可以带你去#m680000000#。你准备好了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201022_WarpToAmoria)))
                 {
                     await warp(680000000, 0);
                 }
                 else
                 {
-                    await SayOK("好的，随时可以在这里等到你准备好走！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201022_WaitHere));
                 }
             }
             else
             {
-                if (await AskYesNo($"我可以带你回到#m100000000#。你准备好了吗？"))
+                if (await AskYesNo(this.GetTalkMessage(ScriptMessage.Npc9201022_WarpToHenesys)))
                 {
                     await warp(100000000, 5);
                 }
                 else
                 {
-                    await SayOK("好的，随时可以在这里等到你准备好走！");
+                    await SayOK(this.GetTalkMessage(ScriptMessage.Npc9201022_WaitHere));
                 }
             }
         }
@@ -86,7 +89,7 @@ namespace Application.Plugin.Script.Npc
         {
             if (!isQuestStarted(100400))
             {
-                await SayOK($"你好 #b#h ##k，我是爱之仙子 #p{getNpc()}#。");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_IntroFairy));
                 return;
             }
 
@@ -106,24 +109,24 @@ namespace Application.Plugin.Script.Npc
                             await gainItem(questItems[idx], -50);
                             await gainItem(rewardItem, 1);
 
-                            await SayOK("咿呀~ 非常感谢，这里拿着 #b#t4031367##k。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_ThanksGift));
                             return true;
                         }
                         else
                         {
-                            await sendOk("请确保有一个空余的ETC槽位来存放爱之令牌。");
+                            await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_NoEtcSlot));
                         }
                     }
                     else
                     {
-                        await sendOk("请带着 #b50 #t" + questItems[idx] + "##k到我这里。");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_GatherItems, questItems[idx]));
                     }
 
                     return false;
                 };
                 if (isQuestCompleted(questId))
                 {
-                    if (await SayAcceptDecline($"你是不是把我给你的#k#t{rewardItem}##k弄丢了？也罢，我可以再给你一个，不过你得重新完成我上次交代的差事，没问题吧？我需要你去给我找来#r50个#t{questItems[idx]}#。#k"))
+                    if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Wedding_RedoFavor, rewardItem, questItems[idx])))
                     {
                         await processNanaQuest();
                     }
@@ -138,16 +141,16 @@ namespace Application.Plugin.Script.Npc
                 }
                 else
                 {
-                    if (await SayAcceptDecline($"你是在找#k#t{rewardItem}##k吗？我可以给你一个，不过你得先帮我办件事，没问题吧？"))
+                    if (await SayAcceptDecline(this.GetTalkMessage(ScriptMessage.Wedding_ShareOne)))
                     {
                         await startQuest(questId);
-                        await SayOK($"我需要你去给我找来#r50个#t{questItems[idx]}#");
+                        await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_CollectItems, questItems[idx]));
                     }
                 }
             }
             else
             {
-                await SayOK($"嘿，你好。你已经从其他娜娜那里得到了#t{rewardItem}#了吗？");
+                await SayOK(this.GetTalkMessage(ScriptMessage.Wedding_AlreadyHave, rewardItem));
             }
         }
 

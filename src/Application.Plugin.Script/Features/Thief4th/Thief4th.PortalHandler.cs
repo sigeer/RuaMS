@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Server.maps;
 using scripting.portal;
@@ -19,7 +20,7 @@ namespace Application.Plugin.Script.Features.Thief4th
                 return await TryStartSoloQuest(Thief4th.Assassinate);
             }
 
-            await Pink("A mysterious force won't let you in.");
+            await this.Pink(this.GetTalkMessage(ScriptMessage.PortalScript_MysteriousForce));
             return false;
         }
 

@@ -129,7 +129,7 @@ public class GuildOperationHandler : ChannelHandlerBase
                 }
                 if (mc.getMeso() < YamlConfig.config.server.CHANGE_EMBLEM_COST)
                 {
-                    await mc.Popup(nameof(ClientMessage.Guild_ChangeEmblemFail_Meso), mc.Client.CurrentCulture.Number(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
+                    await mc.Popup(ClientMessage.Guild_ChangeEmblemFail_Meso, mc.Client.CurrentCulture.Number(YamlConfig.config.server.CHANGE_EMBLEM_COST).ToString());
                     return;
                 }
                 short bg = p.readShort();

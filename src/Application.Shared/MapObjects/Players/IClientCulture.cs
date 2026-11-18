@@ -13,13 +13,13 @@ namespace Application.Shared.MapObjects.Players
         string GetJobName(Job job);
         string GetMapName(int mapId);
         string GetMapStreetName(int mapId);
-        string GetMessageByKey(string key, params object[] paramsValue);
+        string? GetMessageByKey(string? key, params object?[] paramsValue);
 
         /// <summary>
         /// 按指定类别取消息。类别名由调用方决定（插件文案用自己的类别），
         /// Core 不预设插件内部有哪些类别。
         /// </summary>
-        string GetMessageByCategory(string category, string key, params object[] paramsValue);
+        string? GetMessageByCategory(string category, string? key, params object?[] paramsValue);
         string GetMobName(int mobId);
         string GetNpcDefaultTalk(int npcId, int status = 0);
         string GetNpcName(int npcId);

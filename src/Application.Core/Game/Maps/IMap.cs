@@ -9,6 +9,7 @@ using Application.Core.Server.events.gm;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
 using Application.Shared.MapObjects.Players;
+using Application.Shared.Message;
 using Application.Shared.WzEntity;
 using Application.Templates.Map;
 using Application.Templates.Mob;
@@ -21,7 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Application.Core.Game.Maps
 {
-    public interface IMap : IAsyncDisposable, IClientMessenger, ILoopTickable, IActorInstance<IMap>
+    public interface IMap : IAsyncDisposable, IMessageBroadcaster<Player>, ILoopTickable, IActorInstance<IMap>
     {
         int Id { get; }
         bool IsPirateDocked { get; }
@@ -307,7 +308,7 @@ namespace Application.Core.Game.Maps
         /// <param name="exceptId"></param>
         Task BroadcastAll(Func<Player, Task> effectPlayer, int exceptId = -1);
         Task Broadcast(int exceptChrId, double rangeSq, Point? rangedFrom, Func<Player, Task> effectPlayer);
-        Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string spawnMessage);
+        Task SetupAreaBoss(string name, int bossId, int mobTime, List<RandomPoint> points, string messageCategory, string spawnMessage);
         void ClearAreaBoss(string names);
 
         #region Reactors

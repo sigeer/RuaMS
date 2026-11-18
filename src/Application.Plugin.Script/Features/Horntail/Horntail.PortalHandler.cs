@@ -1,3 +1,4 @@
+using Application.Resources.Messages;
 using Application.Core.Client;
 using Application.Core.Game.Maps;
 using Application.Core.scripting.Events.Instances;
@@ -46,7 +47,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
             }
@@ -60,7 +61,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
             }
@@ -75,13 +76,13 @@ namespace Application.Plugin.Script.Features.Horntail
         {
             if (getMap().countPlayers() == 1)
             {
-                await getPlayer().dropMessage(6, "As the last player on this map, you are compelled to wait for the incoming keys.");
+                await getPlayer().dropMessage(6, this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_LastPlayer));
                 return false;
             }
 
             if (haveItem(4001087))
             {
-                await getPlayer().dropMessage(6, "You cannot pass to the next map holding the 1st Crystal Key in your inventory.");
+                await getPlayer().dropMessage(6, this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_CannotPass));
                 return false;
             }
 
@@ -111,7 +112,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 if (avail == null)
                 {
                     // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
                 else
@@ -132,7 +133,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 if (avail == null)
                 {
                     // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
                 else
@@ -153,7 +154,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 if (avail == null)
                 {
                     // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
                 else
@@ -174,7 +175,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 if (avail == null)
                 {
                     // do nothing; send message to player
-                    await LightBlue("Horntail\'s Seal is Blocking this Door.");
+                    await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSeal));
                     return false;
                 }
                 else
@@ -197,7 +198,7 @@ namespace Application.Plugin.Script.Features.Horntail
                     if (haveItem(4001092) && isEventLeader())
                     {
                         await eim.showClearEffect();
-                        await LightBlue("The leader's key break the seal for a flash...");
+                        await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_LeadersKey));
                         await playPortalSound();
                         await getPlayer().changeMap(target, targetPortal);
                         eim.setIntProperty("5stageclear", 1);
@@ -205,7 +206,7 @@ namespace Application.Plugin.Script.Features.Horntail
                     }
                     else
                     {
-                        await LightBlue("Horntail\'s Seal is blocking this door. Only the leader with the key can lift this seal.");
+                        await this.LightBlue(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HorntailsSealBlocking));
                         return false;
                     }
                 }
@@ -239,7 +240,7 @@ namespace Application.Plugin.Script.Features.Horntail
                 }
                 else
                 {
-                    await Pink("Hit the Lightbulb to determine your fate!");
+                    await this.Pink(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_HitLightbulb));
                     return false;
                 }
 
@@ -249,7 +250,7 @@ namespace Application.Plugin.Script.Features.Horntail
             }
             else
             {
-                await Pink("You are not the party leader. Only the party leader may proceed through this portal.");
+                await this.Pink(this.GetTalkMessage(ScriptMessage.HorntailPortalHandler_PartyLeader));
                 return false;
             }
         }

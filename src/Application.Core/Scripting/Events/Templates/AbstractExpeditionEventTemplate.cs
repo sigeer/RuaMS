@@ -70,36 +70,36 @@ namespace Application.Core.scripting.Events.Templates
         {
             if (reason == TerminationReason.MemberCount)
             {
-                eim.Pink(nameof(ClientMessage.Expedition_MemberCountChanged_Abort));
+                eim.Pink(ClientMessage.Expedition_MemberCountChanged_Abort);
             }
             return base.End(eim, reason);
         }
 
         public override async Task OnPlayerBanned(AbstractEventInstanceManager eim, Player chr)
         {
-            await chr.Notice("[Expedition] You have been banned from this expedition.");
+            await chr.Notice(ClientMessage.Expedition_Banned_Self);
 
-            await eim.Notice("[Expedition] " + chr.Name + " has been banned from the expedition.");
+            await eim.Notice(ClientMessage.Expedition_Banned_Notice, chr.Name);
 
             await base.OnPlayerBanned(eim, chr);
         }
 
         public override async Task OnPlayerJoined(AbstractEventInstanceManager eim, Player chr)
         {
-            await eim.LightBlue(nameof(ClientMessage.Expedition_Join), chr.Name);
+            await eim.LightBlue(ClientMessage.Expedition_Join, chr.Name);
             await base.OnPlayerJoined(eim, chr);
         }
 
         public override async Task OnPlayerEntry(AbstractEventInstanceManager eim, Player chr)
         {
-            await eim.LightBlue(nameof(ClientMessage.Expedition_EnterMap), chr.Name);
+            await eim.LightBlue(ClientMessage.Expedition_EnterMap, chr.Name);
             await base.OnPlayerEntry(eim, chr);
         }
 
 
         public override async Task OnBattleStarted(AbstractEventInstanceManager eim)
         {
-            await eim.LightBlue(nameof(ClientMessage.Expedition_Start));
+            await eim.LightBlue(ClientMessage.Expedition_Start);
             await eim.ChannelServer.NodeActor
                 .Send(s =>
                 {
@@ -112,8 +112,8 @@ namespace Application.Core.scripting.Events.Templates
 
         public override async Task OnPlayerExit(AbstractEventInstanceManager eim, Player player)
         {
-            await eim.LightBlue(nameof(ClientMessage.Expedition_Left), player.Name);
-            await player.LightBlue(nameof(ClientMessage.Expedition_ChrLeft));
+            await eim.LightBlue(ClientMessage.Expedition_Left, player.Name);
+            await player.LightBlue(ClientMessage.Expedition_ChrLeft);
 
             await base.OnPlayerExit(eim, player);
         }
@@ -122,7 +122,7 @@ namespace Application.Core.scripting.Events.Templates
         {
             if (eim.InstanceStatus == InstanceStatus.Recruitment)
             {
-                await eim.LightBlue(nameof(ClientMessage.Expedition_Timeout_Disband));
+                await eim.LightBlue(ClientMessage.Expedition_Timeout_Disband);
             }
 
             await base.OnTimeOut(eim);
@@ -146,9 +146,9 @@ namespace Application.Core.scripting.Events.Templates
             await eim.getLeader().getMap().BroadcastAll(async e =>
             {
                 if (e != eim.getLeader())
-                    await e.LightBlue(nameof(ClientMessage.Expedition_Captain_NoticeMap));
+                    await e.LightBlue(ClientMessage.Expedition_Captain_NoticeMap);
             });
-            await eim.getLeader().LightBlue(nameof(ClientMessage.Expedition_Captain_Notice));
+            await eim.getLeader().LightBlue(ClientMessage.Expedition_Captain_Notice);
         }
     }
 }

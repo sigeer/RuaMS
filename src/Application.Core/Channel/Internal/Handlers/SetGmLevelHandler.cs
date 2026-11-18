@@ -20,12 +20,12 @@ namespace Application.Core.Channel.Internal.Handlers
                 {
                     if (chr.Id == res.Request.OperatorId)
                     {
-                        await chr.Yellow(nameof(ClientMessage.SetGmLevelCommand_Result), res.Request.TargetName, res.Request.Level.ToString());
+                        await chr.Yellow(ClientMessage.SetGmLevelCommand_Result, res.Request.TargetName, res.Request.Level.ToString());
                     }
                     else if (chr.Id == res.TargetId)
                     {
                         chr.Client.AccountEntity!.GMLevel = (sbyte)res.Request.Level;
-                        await chr.Notice(nameof(ClientMessage.Notice_GmLevelChanged), res.Request.Level.ToString());
+                        await chr.Notice(ClientMessage.Notice_GmLevelChanged, res.Request.Level.ToString());
                     }
                 });
             }
@@ -33,7 +33,7 @@ namespace Application.Core.Channel.Internal.Handlers
             {
                 await _server.SendToPlayerAsync(res.Request.OperatorId, chr =>
                 {
-                    return chr.Yellow(nameof(ClientMessage.PlayerNotFound), res.Request.TargetName);
+                    return chr.Yellow(ClientMessage.PlayerNotFound, res.Request.TargetName);
                 });
 
             }

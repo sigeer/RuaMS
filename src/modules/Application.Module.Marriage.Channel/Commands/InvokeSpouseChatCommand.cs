@@ -23,13 +23,13 @@ namespace Application.Module.Marriage.Channel.Commands
             {
                 if (data.Code == 1)
                 {
-                    sender.TypedMessage(5, "You don't have a spouse.");
+                    sender.TypedMessage(NoticeType.Pink, "You don't have a spouse.");
                     return;
                 }
 
                 if (data.Code == 2)
                 {
-                    sender.TypedMessage(5, "Your spouse is currently offline.");
+                    sender.TypedMessage(NoticeType.Pink, "Your spouse is currently offline.");
                     return;
                 }
 

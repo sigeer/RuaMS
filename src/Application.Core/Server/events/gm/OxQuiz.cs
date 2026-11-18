@@ -123,7 +123,7 @@ public class OxQuiz
         //send question
         if (map.getAllPlayers().Count - number <= 2)
         {
-            await map.LightBlue(nameof(ClientMessage.Notice_EventEnd));
+            await map.LightBlue(ClientMessage.Notice_EventEnd);
             map.getPortal("join00")!.setPortalStatus(true);
             map.Ox = null;
             map.setOxQuiz(false);
