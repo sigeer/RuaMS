@@ -42,7 +42,7 @@ namespace Application.Core.scripting.npc
             }
             catch (BusinessException be)
             {
-                await c.OnlinedCharacter.Debug(5, be.Message);
+                await c.OnlinedCharacter.Debug(NoticeType.Pink, be.Message);
                 Log.Logger.Error(be, "临时对话失败");
                 return value;
             }
