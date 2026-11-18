@@ -549,6 +549,11 @@ namespace Application.Core.Gameplay.Plugins
                 }
                 return true;
             }
+            catch (ConversationInterruptException)
+            {
+                // 结束对话
+                return true;
+            }
             catch (ConversationDiffInstanceException)
             {
                 await client.OnlinedCharacter.Pink("你是怎么到这里来的？让我带你离开这里。");

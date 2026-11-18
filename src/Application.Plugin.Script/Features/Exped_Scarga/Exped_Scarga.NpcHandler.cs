@@ -161,7 +161,6 @@ namespace Application.Plugin.Script.Features.Exped_Scarga
                 else
                 {
                     await SayOK(this.GetTalkMessage(ScriptMessage.Redeem_InventoryFull));
-                    await SayOK(this.GetTalkMessage(ScriptMessage.Redeem_InventoryFull));
                 }
             }
         }

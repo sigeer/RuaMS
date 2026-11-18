@@ -56,7 +56,8 @@ namespace Application.Core.Channel
             var message = MessageStore.Get(MessageCategories.ClientMessage, key, CultureInfo);
             if (string.IsNullOrEmpty(message))
             {
-                return null;
+                Log.Logger.Verbose("i18n未找到{Key}", key);
+                return key;
             }
             return string.Format(message, paramsValue);
         }
