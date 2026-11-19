@@ -61,7 +61,7 @@ public class TakeDamageHandler : ChannelHandlerBase
         int damage = p.readInt();                                   // [4] 伤害值
         double finalDamage = damage;
         // 向上取整
-        int finalDamageValue = 0;
+        int finalDamageValue = damage;
         int oid = 0, mobId = 0, stance = 0, direction = 0;
         int action = 0, pos_x = 0, pos_y = 0, fake = 0;
         byte pgmr = 0;
@@ -321,6 +321,15 @@ public class TakeDamageHandler : ChannelHandlerBase
 
             // Encode1(v182) - 稳如泰山
             stance = p.readByte();
+
+            if (stance > 0)
+            {
+                var stanceEffect = chr.GetBuffStatValue(BuffStat.STANCE);
+                if (stanceEffect != null && chr.CheckBuff(stanceEffect))
+                {
+                    await chr.BroadcastMap(EffectPacket.ForeignSkillSpecial(chr.Id, stanceEffect.Effect.getSourceId()), chr.Id);
+                }
+            }
         }
 
         if (damage == -1)
