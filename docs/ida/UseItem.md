@@ -97,69 +97,105 @@
 
 现金类型判定：`get_cashslot_item_type`（`0x48645b`，按 `itemId / 10000` 分类，返回内部类型号，非现金段返回 0）：
 
-| itemId/10000 | 类型号 | 说明 |
-|---|---|---|
-| 500 | 8 | 宠物激活 |
-| 501 | 9 | 武器特效 |
-| 502 | 10 | - |
-| 503 | 11 | 托管商店 |
-| 504 | 22 | — |
-| 505 | 23 / 24 | `%10==0`→23，`%10∈1..4`→24 |
-| 506 | 25 / 26 / 27 / 64 | `/1000==5061`→64；`%10==0`→25，`==1`→26，`==2`→27 |
-| 507 | 12 / 13 / 14 / 15 / 46..51 / 60 | 千位 1→12，2→13，6→14，8→15，7→60；千位 5 时 `%10` 0..5 → 46..51 |
-| 508 | 18 | — |
-| 509 | 21 | — |
-| 510 | 20 | — |
-| 512 | 16 | — |
-| 513 | 7 | — |
-| 514 | 4 | — |
-| 515 | 1 / 2 / 3 / 5 | 5150/5151→1，51520→2，5153→3，5154→5 |
-| 516 | 6 | — |
-| 517 | 17 | — |
-| 518 | 5 | — |
-| 519 | 28 | — |
-| 520 | 19 | — |
-| 522 | 39 | — |
-| 523 | 29 | — |
-| 524 | 30 | — |
-| 525 | 36 / 35 | — |
-| 528 | 33 / 34 | /1000==5280→33，5281→34 |
-| 530 | 40 | — |
-| 533 | 31 | — |
-| 537 | 32 | — |
-| 538 | 41 | — |
-| 539 | 42 | — |
-| 540 | 52 / 53 / 54 / 57 / 65 | /1000==5400→52，5401→53，5420→54，5431..5432→65，其余→57 |
-| 542 | 54 / 57 | 同 540 的 5420 分支 |
-| 543 | 57 / 65 | 同 540 的 5431..5432 分支 |
-| 545 | 37 / 59 | /1000==5451→59，否则 37 |
-| 546 | 57 | — |
-| 547 | 38 | — |
-| 549 | 58 | — |
-| 550 | 61 | — |
-| 551 | 62 | — |
-| 552 | 63 | — |
-| 553 | 69 | — |
-| 557 | 66 | — |
-| 561 | 68 | — |
+| itemId/10000 | 类型号 | 说明 | 请求 OP（双击后） |
+|---|---|---|---|
+| 500 | 8 | 宠物激活 | 正常 **0x62 (98)**；宠物已过期 **0x50 (80)**（SP_378）；不可交易时先弹 SP_5213 确认 |
+| 501 | 9 | 武器特效 | **0x34 (52)** |
+| 502 | 10 | - | 无发包 |
+| 503 | 11 | 托管商店 | **0x3F (63)** |
+| 504 | 22 | — | **0x4F (79)** |
+| 505 | 23 / 24 | `%10==0`→23，`%10∈1..4`→24 | **0x4F (79)** |
+| 506 | 25 / 26 / 27 / 64 | `/1000==5061`→64；`%10==0`→25，`==1`→26，`==2`→27 | **0x4F (79)** |
+| 507 | 12 / 13 / 14 / 15 / 46..51 / 60 | 千位 1→12，2→13，6→14，8→15，7→60；千位 5 时 `%10` 0..5 → 46..51 | **0x4F (79)** |
+| 508 | 18 | — | **0x4F (79)** |
+| 509 | 21 | — | **0x4F (79)** |
+| 510 | 20 | — | **0x4F (79)** |
+| 512 | 16 | — | **0x4F (79)** |
+| 513 | 7 | — | 无发包 |
+| 514 | 4 | — | **0x7B (123)** |
+| 515 | 1 / 2 / 3 | 5150/5151/5154→1，51520→2，5153→3 | 无发包 |
+| 516 | 6 | — | **0x33 (51)** |
+| 517 | 17 | 仅 `%10000==0`（5170000）返回 17 | **0x4F (79)**（仅 5170000） |
+| 518 | 5 | — | **0x75 (117)** |
+| 519 | 28 | — | **0x4F (79)** |
+| 520 | 19 | — | **0x4F (79)** |
+| 522 | 39 | — | 无发包 |
+| 523 | 29 | — | **0x4F (79)** |
+| 524 | 30 | — | **0x4F (79)** |
+| 525 | 36 / 35 | — | 无发包 |
+| 528 | 33 / 34 | /1000==5280→33，5281→34 | 33 无发包；34 → **0x4F (79)** |
+| 530 | 40 | — | **0x4F (79)** |
+| 533 | 31 | — | **0x4F (79)** |
+| 537 | 32 | — | **0x4F (79)** |
+| 538 | 41 | — | 无发包 |
+| 539 | 42 | — | **0x4F (79)** |
+| 540 | 52 / 53 / 54 / 57 / 65 | /1000==5400→52，5401→53，5420→54，5431..5432→65，其余→57 | 52/53/65 → **0x4F (79)**；54/57 无发包 |
+| 542 | 54 / 57 | 同 540 的 5420 分支 | 无发包 |
+| 543 | 57 / 65 | 同 540 的 5431..5432 分支 | 57 无发包；65 → **0x4F (79)** |
+| 545 | 37 / 59 | /1000==5451→59，否则 37 | 37 → **0x4F (79)**；59 → 打开远程扭蛋窗口（无即时发包） |
+| 546 | 57 | — | 无发包 |
+| 547 | 38 | — | **0x3B (59)** |
+| 549 | 58 | — | 无发包 |
+| 550 | 61 | — | **0x4F (79)** |
+| 551 | 62 | — | 无发包 |
+| 552 | 63 | — | **0x4F (79)** |
+| 553 | 69 | — | **0x4F (79)** |
+| 557 | 66 | — | **0x4F (79)** |
+| 561 | 68 | — | **0x4F (79)** |
 
-另两个分类函数：
-- `get_consume_cash_item_type`（`0x4863d5`）— 消耗型现金道具 → `SendConsumeCashItemUseRequest` `0xa0a63f` → OP 0x4F
-- `get_etc_cash_item_type`（`0x486845`）— 其他现金道具 → `SendEtcCashItemUseRequest` `0xa1dc5b`
+> 「无发包」指 `CDraggableItem::OnDoubleClicked` 在该分支里不发送任何请求包：`SendEtcCashItemUseRequest` 只对 etc 类型 4/5/6/59 有动作，类型 10 在 `SendCashSlotItemUseRequest` 中也没有对应分支。这类道具通常通过拖拽（宠物食品/宠物装备）或对应窗口使用。
+
+`OnDoubleClicked` 的现金分支（`this[6]==5` 且 `CanSendExclRequest(500)`）依次判定：
+
+1. `get_cashslot_item_type` 结果只保留 `{8, 9, 10, 11, 38}`，命中则调用 `SendCashSlotItemUseRequest` `0xa1dd28` 并返回，不再进入后续分支；
+2. 否则 `get_consume_cash_item_type`（`0x4863d5`，内部先调 `get_cashslot_item_type` 再做白名单）非 0 → `SendConsumeCashItemUseRequest` `0xa0a63f`，**固定 OP 0x4F (79)**；
+3. 否则 `get_etc_cash_item_type`（`0x486845`，同样基于 `get_cashslot_item_type`）非 0 → `SendEtcCashItemUseRequest` `0xa1dc5b`。
+
+两个过滤函数的接受集合（已从反编译逐条核对）：
+
+- consume：`12–32、34、37、40、42–44、46–53、60、61、63–66、68、69`
+- etc：`1–7、35、36、39、41、45、54、57–59、62`（其中只有 4/5/6/59 会发包）
 
 | 判定 | 处理函数 | 去向 |
 |---|---|---|
-| cashslot 类型 8 且不可交易 | 先 `CUtilDlgEx` SP_5213 二次确认 | → `SendCashSlotItemUseRequest` `0xa1dd28` |
-| cashslot 类型 8 | `SendActivatePetRequest` `0xa240a2` |  **OP 0x62 (98)** 激活宠物， **OP 0x50 (80)** 销毁无法复活的过期宠物 |
+| cashslot 类型 8 且可交易 | 先 `CUtilDlgEx` SP_5213 二次确认 | → `SendCashSlotItemUseRequest` |
+| cashslot 类型 8 | `SendActivatePetRequest` `0xa240a2` | **OP 0x62 (98)** 激活宠物；宠物过期则 **OP 0x50 (80)**（SP_378） |
 | cashslot 类型 9 | `SendActiveEffectItemChange` `0xa24530` | **OP 0x34 (52)** 武器特效 |
-| cashslot 类型 11 | `SendEntrustedShopCheckRequest` `0xa27b7d` | **OP 0x3B (59)** 远程打开托管商店 |
-| cashslot 类型 38 | `SendRemoteShopOpenRequest` `0xa24606` | **OP 0x3B (59)** |
-| 消耗现金类型 | `SendConsumeCashItemUseRequest` `0xa0a63f` | **OP 0x4F (79)** |
-| 其他现金类型 | `SendEtcCashItemUseRequest` `0xa1dc5b` | 见下 |
-| — etc 类型 4 | `SendOpenShopRequest` | 打开商店 |
-| — etc 类型 5 | `SendWaterOfLife` | **OP 0x75 (117)** 生命之水 |
-| — etc 类型 6 | `SendEmotionChange(id%100+8)` | 表情 |
-| — etc 类型 57 | `CUIGachaponRemote` `0x81104e` | 远程扭蛋 |
+| cashslot 类型 10 | `SendCashSlotItemUseRequest` 无对应分支 | 无发包 |
+| cashslot 类型 11 | `SendEntrustedShopCheckRequest` `0xa27b7d` | **OP 0x3F (63)**（`HIRED_MERCHANT_REQUEST`） |
+| cashslot 类型 38 | `SendRemoteShopOpenRequest` `0xa24606` | **OP 0x3B (59)**（`REMOTE_STORE`） |
+| consume 类型 | `SendConsumeCashItemUseRequest` `0xa0a63f` | **OP 0x4F (79)**；包体 `Encode2(数量)` + `Encode4(itemId)` + 按类型的字段 |
+| etc 类型 4 | `SendOpenShopRequest` `0xa1dd99` | **OP 0x7B (123)**（`PLAYER_INTERACTION`） |
+| etc 类型 5 | `SendWaterOfLife` `0xa1dce6` | **OP 0x75 (117)** 生命之水 |
+| etc 类型 6 | `SendEmotionChange(id%100+8)` `0xa24470` | **OP 0x33 (51)**（`FACE_EXPRESSION`）；受 2 秒冷却与 `id%100+8 <= 0x16` 限制，不满足时客户端不发包 |
+| etc 类型 59 | `CUIGachaponRemote` `0x81104e` | 打开远程扭蛋窗口，双击时无发包 |
+| etc 其他类型（1–3、7、35、36、39、41、45、54、57、58、62） | — | 无发包 |
+
+> 勘误（本次反编译核对）：cashslot 类型 11 是 **0x3F (63)** 而不是 0x3B；远程扭蛋是 etc 类型 **59**（`SendEtcCashItemUseRequest` 中 `type-6-0x35==0` 的分支）而不是 57；`5154xxx` 返回类型 **1**（`0x48660d jnz` 落到 `0x486613 push 1`），不是 5。
+
+**验证记录**（ida-083，IDA Pro 8.3）：
+
+```
+IDB:  D:\walker\code\`Angel\`Angel.idb
+输入: C:\Users\Admin\Desktop\v83 Server\`Angel.exe`（v83，imagebase 0x400000）
+```
+
+| 地址 | 符号 | 关键指令 |
+|---|---|---|
+| `0x4efd25` | `CDraggableItem::OnDoubleClicked` | `0x4efe0f` `get_cashslot_item_type`；`0x4efead` consume 判定；`0x4efeea` etc 判定 |
+| `0x48645b` | `get_cashslot_item_type` | `switch(itemId/10000)` → 类型号 |
+| `0x4863d5` | `get_consume_cash_item_type` | 类型白名单 |
+| `0x486845` | `get_etc_cash_item_type` | 类型白名单 |
+| `0xa1dd28` | `SendCashSlotItemUseRequest` | 分派 8/9/11/38 |
+| `0xa0a63f` | `SendConsumeCashItemUseRequest` | `0xa0a6a8 push 4Fh` |
+| `0xa1dc5b` | `SendEtcCashItemUseRequest` | `0xa1dc77 sub eax,4`；`0xa1dc82 sub eax,35h` |
+| `0xa240a2` | `SendActivatePetRequest` | `0xa24198 push 50h`；`0xa243fa` `COutPacket(98)` |
+| `0xa24530` | `SendActiveEffectItemChange` | `0xa245bb push 34h` |
+| `0xa27b7d` | `SendEntrustedShopCheckRequest` | `0xa27d17 push 3Fh` |
+| `0xa24606` | `SendRemoteShopOpenRequest` | `0xa2461c push 3Bh` |
+| `0xa1dd99` | `SendOpenShopRequest` | `0xa1e0c2 push 7Bh` |
+| `0xa1dce6` | `SendWaterOfLife` | `0xa1dcf3 push 75h` |
+| `0xa24470` | `SendEmotionChange` | `0xa244d3 push 33h` |
 
 ## 4. OP 码速查
 

@@ -89,9 +89,14 @@ namespace Application.Core.Game.Players
             return Bag[ItemConstants.getInventoryType(itemid)].countById(itemid);
         }
 
+        public bool CanHold(Dictionary<InventoryType, int> invSlotRequired)
+        {
+            return invSlotRequired.All(x => Bag[x.Key].getNumFreeSlot() >= x.Value);
+        }
+
         public bool canHold(int itemid, int quantity = 1)
         {
-            return Inventory.checkSpot(this, ItemInformationProvider.getInstance().GenerateVirtualItemById(itemid, (short)quantity));
+            return Inventory.checkSpots(this, [new ItemQuantity(itemid, quantity)]);
         }
 
         public bool canHoldUniques(List<int> itemids)
