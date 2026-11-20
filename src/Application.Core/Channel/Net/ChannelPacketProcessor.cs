@@ -146,6 +146,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.ARAN_COMBO_COUNTER, sp.GetRequiredService<AranComboHandler>()},
                 {(short)RecvOpcode.CLICK_GUIDE, sp.GetRequiredService<ClickGuideHandler>()},
                 {(short)RecvOpcode.FREDRICK_ACTION, sp.GetRequiredService<FredrickHandler>()},
+                {(short)RecvOpcode.DUEY_ACTION, sp.GetRequiredService<DueyHandler>()},
                 {(short)RecvOpcode.MONSTER_CARNIVAL, sp.GetRequiredService<MonsterCarnivalHandler>()},
                 {(short)RecvOpcode.REMOTE_STORE, sp.GetRequiredService<RemoteStoreHandler>()},
                 {(short)RecvOpcode.WATER_OF_LIFE, sp.GetRequiredService<UseWaterOfLifeHandler>()},
