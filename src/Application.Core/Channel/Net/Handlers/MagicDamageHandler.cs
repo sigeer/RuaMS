@@ -51,6 +51,8 @@ public class MagicDamageHandler : AbstractDealDamageHandler
             return;
         }
 
+        // if ( v70 == 2121001 || v70 == 2221001 || v70 == 2321001 || v70 == 22121000 || v70 == 22151001 )
+        // v53 = CInPacket::Decode4(v3);
         int charge = (attack.skill == Evan.FIRE_BREATH
             || attack.skill == Evan.ICE_BREATH
             || attack.skill == FPArchMage.BIG_BANG

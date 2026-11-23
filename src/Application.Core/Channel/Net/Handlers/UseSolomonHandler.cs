@@ -32,7 +32,7 @@ namespace Application.Core.Channel.Net.Handlers;
  * <p>
  * Modified by -- kevintjuh93, Ronan
  */
-public class UseSolomonHandler : ChannelHandlerBase
+public class UseSolomonHandler : UseItemHandlerBase
 {
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
@@ -46,27 +46,20 @@ public class UseSolomonHandler : ChannelHandlerBase
             try
             {
                 var chr = c.OnlinedCharacter;
-                var inv = chr.getInventory(InventoryType.USE);
 
-                var slotItem = inv.getItem(slot);
-                if (slotItem == null)
+                if (!TryGetItem(chr, slot , itemId, 1, out var slotItem))
                 {
                     return;
                 }
 
-                if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate)
+                if (slotItem.SourceTemplate is not SolomenItemTemplate itemTemplate
+                    || chr.getLevel() > itemTemplate.MaxLevel
+                    || itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
                     return;
 
-                if (slotItem.getItemId() != itemId || slotItem.getQuantity() <= 0 || chr.getLevel() > itemTemplate.MaxLevel)
-                {
-                    return;
-                }
-                if (itemTemplate.Exp + chr.getGachaExp() > int.MaxValue)
-                {
-                    return;
-                }
                 await chr.addGachaExp(itemTemplate.Exp);
-                await InventoryManipulator.removeFromSlot(c, InventoryType.USE, slot, 1, false);
+
+                await RemoveItemStrictly(chr, slotItem);
             }
             finally
             {

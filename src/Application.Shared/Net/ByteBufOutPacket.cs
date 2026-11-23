@@ -89,7 +89,14 @@ public class ByteBufOutPacket : PacketBase, OutPacket
     /// <param name="chars"></param>
     public void WriteString(ReadOnlySpan<char> chars)
     {
+        if (chars.IsEmpty)
+        {
+            byteBuf.WriteShortLE(0);
+            return;
+        }
+
         int virtualByteCount = GlobalVariable.Encoding.GetMaxByteCount(chars.Length);
+
         byte[] buffer = ArrayPool<byte>.Shared.Rent(virtualByteCount);
         try
         {

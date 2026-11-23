@@ -161,7 +161,8 @@ Each feature module follows a consistent layered structure:
 
 - `docs/` — general project notes (`CHANGES.MD`, `CodeMigration.MD`)
 - `docs/ida/` — client reverse-engineering notes. Anything read out of the client belongs here, not in `docs/`.
-- Every file under `docs/` is listed in `RuaMS.slnx` (folders `/docs/` and `/docs/ida/`); keep those lists in sync when adding, moving or renaming one.
+- Every file under `docs/` **except** `docs/ida/` is listed in `RuaMS.slnx` (folder `/docs/`); keep that list in sync when adding, moving or renaming one.
+- **`docs/ida/` documents are deliberately NOT added to `RuaMS.slnx`.** Do not create a `/docs/ida/` folder in the solution file, and remove one if it exists.
 - Existing `docs/ida/` documents are written in Chinese, with client symbols, addresses and packet field names kept as-is; follow that.
 
 ### Client (IDA) Analysis
@@ -173,7 +174,7 @@ The client is a v83 build.
 1. Write it before reporting the work as done — the client analysis is part of the deliverable, not an intermediate step.
 2. Name it after the client side that was analyzed.
 3. Record what the client actually proved: the IDB/version/base address; the functions and addresses inspected; the packet or field layout in decode order; how it maps to the server code under `src/`; which conclusions are client-verified versus still unconfirmed; and what was changed (or deliberately left alone) as a result.
-4. Fix cross-references from other documents and add the new file to `RuaMS.slnx`.
+4. Fix cross-references from other documents. Do **not** add the file to `RuaMS.slnx` — IDA analysis documents are intentionally kept out of the solution.
 
 ## Configuration Notes
 

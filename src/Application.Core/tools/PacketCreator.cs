@@ -1169,14 +1169,7 @@ public class PacketCreator
         p.writeByte(life.getController() == null ? 5 : 1);
         p.writeInt(life.getId());
 
-        if (requestController)
-        {
-            MobBuffPackets.EncodeTemporary(p, life.AllBuffs);    // thanks shot for noticing encode temporary buffs missing
-        }
-        else
-        {
-            p.skip(16);     // 非控制者只给 16 字节全 0 掩码，置位全空 → 客户端不会再读任何 per-status 字段
-        }
+        MobBuffPackets.EncodeTemporary(p, life.AllBuffs);
 
         p.writePos(life.getPosition());
         p.writeByte(life.getStance());
@@ -2104,6 +2097,13 @@ public class PacketCreator
     }
     */
 
+    public static Packet BodyAttack(Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.ENERGY_ATTACK);
+        addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, 0, damage, speed, direction, display);
+        return p;
+    }
+
     public static Packet closeRangeAttack(Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         OutPacket p = OutPacket.create(SendOpcode.CLOSE_RANGE_ATTACK);
@@ -2115,6 +2115,8 @@ public class PacketCreator
     {
         OutPacket p = OutPacket.create(SendOpcode.RANGED_ATTACK);
         addAttackBody(p, chr, skill, skilllevel, stance, numAttackedAndDamage, projectile, damage, speed, direction, display);
+        // v54 = CInPacket::Decode2(v3);
+        // v56 = CInPacket::Decode2(v3);
         p.writeInt(0);
         return p;
     }
@@ -2133,28 +2135,40 @@ public class PacketCreator
     private static void addAttackBody(OutPacket p, Player chr, int skill, int skilllevel, int stance, int numAttackedAndDamage, int projectile, Dictionary<int, AttackTarget?> damage, int speed, int direction, int display)
     {
         p.writeInt(chr.getId());
+        // v5 = CInPacket::Decode1(a3);
         p.writeByte(numAttackedAndDamage);
+        // *(this + 10976) = CInPacket::Decode1(v3);
         p.writeByte(chr.Level);//? chr.Level
+        // v7 = CInPacket::Decode1(v3);
         p.writeByte(skilllevel);
         if (skilllevel > 0)
         {
+            // v70 = CInPacket::Decode4(v3);
             p.writeInt(skill);
         }
+        // v45 = CInPacket::Decode1(v3) & 0x20;
         p.writeByte(display);
-        p.writeByte(direction);
+        // v12 = CInPacket::Decode2(v3); v63 = (v12 >> 15) & 1;v12 & 0x7FFF;
+        p.writeByte(direction); 
         p.writeByte(stance);
+        // 50 = CInPacket::Decode1(v3);
         p.writeByte(speed);
+        // v61 = CInPacket::Decode1(v3);
         p.writeByte(0x0A);
+        // v44 = CInPacket::Decode4(v3);
         p.writeInt(projectile);
         foreach (var oned in damage)
         {
             var onedList = oned.Value;
             if (onedList != null)
             {
+                // v15 = CInPacket::Decode4(v3);
                 p.writeInt(oned.Key);
+                // v16 = CInPacket::Decode1(v3);
                 p.writeByte(0x0);
                 if (skill == ChiefBandit.MESO_EXPLOSION)
                 {
+                    // v18 = CInPacket::Decode1(v3);
                     p.writeByte(onedList.damageLines.Count);
                 }
                 foreach (var eachd in onedList.damageLines)
@@ -3462,8 +3476,8 @@ public class PacketCreator
         p.writeInt(reactor.getId());
         p.writeByte(reactor.getState());
         p.writePos(reactor.getPosition());
-        p.writeByte(0);
-        p.writeShort(0);
+        p.writeByte(reactor.getFacingDirection());
+        p.WriteString(reactor.getName());
         return p;
     }
 

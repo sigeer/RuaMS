@@ -305,9 +305,13 @@ public enum SendOpcode
     REMOVE_DRAGON = 0xB7,
     MOVE_PLAYER = 0xB9,
     // CUserRemote::OnAttack
+    // CUserRemote::OnMeleeAttack
     CLOSE_RANGE_ATTACK = 0xBA,
+    // CUserRemote::OnShootAttack
     RANGED_ATTACK = 0xBB,
+    // CUserRemote::OnMagicAttack
     MAGIC_ATTACK = 0xBC,
+    // CUserRemote::OnBodyAttack
     ENERGY_ATTACK = 0xBD,
     /// <summary>
     /// sub_980A81

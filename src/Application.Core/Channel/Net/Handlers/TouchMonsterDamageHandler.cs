@@ -23,6 +23,7 @@
 
 using Application.Core.Channel.ServerData;
 using Microsoft.Extensions.Logging;
+using tools;
 
 namespace Application.Core.Channel.Net.Handlers;
 
@@ -41,6 +42,9 @@ public class TouchMonsterDamageHandler : AbstractDealDamageHandler
         if (chr.getEnergyBar() == 15000 || chr.getBuffedValue(BuffStat.BODY_PRESSURE) != null)
         {
             var attackInfo = await parseDamage(p, chr, false, false);
+
+            await chr.BroadcastMap(
+                PacketCreator.BodyAttack(chr, attackInfo.skill, attackInfo.skilllevel, attackInfo.stance, attackInfo.numAttackedAndDamage, attackInfo.targets, attackInfo.speed, attackInfo.direction, attackInfo.display), chr.Id);
             await applyAttack(attackInfo, c.OnlinedCharacter);
         }
     }

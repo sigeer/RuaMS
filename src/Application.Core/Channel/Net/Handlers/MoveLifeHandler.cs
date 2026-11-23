@@ -106,7 +106,7 @@ public class MoveLifeHandler : AbstractMovementPacketHandler
                 }
             }
         }
-        else
+        else if (isAttack)
         {
             int castPos = (rawActivity - 24) / 2;
             int atkStatus = monster.canUseAttack(castPos, now, isSkill);
