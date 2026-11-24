@@ -1,4 +1,5 @@
 using Application.Core.Channel.DataProviders;
+using Application.Core.Channel.ServerData;
 using Application.Core.Game.Items;
 using Application.Core.Mappers;
 using Application.Core.Model;
@@ -6,6 +7,7 @@ using Application.Core.Server;
 using Application.Core.ServerTransports;
 using Application.Templates.Etc;
 using client.inventory;
+using client.inventory.manipulator;
 using Microsoft.Extensions.Logging;
 using tools;
 using static Application.Core.Server.CashShop;
@@ -19,6 +21,10 @@ namespace Application.Core.Channel.Services
         readonly ILogger<ItemService> _logger;
         readonly WorldChannelServer _server;
         readonly CashItemProvider _cashItemProvider;
+        /// <summary>
+        /// 「中心服核销 → 频道发放」类操作的统一调度（CDK / NPC 补发），与 MTS 共用
+        /// </summary>
+        readonly ItemTransferRunner _transferRunner;
 
         public ItemService(IMapper mapper,
             IChannelServerTransport transport,
@@ -31,6 +37,7 @@ namespace Application.Core.Channel.Services
             _logger = logger;
             _server = server;
             _cashItemProvider = cashItemProvider;
+            _transferRunner = new ItemTransferRunner(logger);
         }
 
         public Item GenerateCouponItem(int itemId, short quantity)
@@ -317,105 +324,260 @@ namespace Application.Core.Channel.Services
             return false;
         }
 
-        internal async Task UseCdk(Player chr, string cdk)
+        internal async Task UseCouponCode(Player chr, string cdk)
         {
-            UseCdkResponseCode code = UseCdkResponseCode.Success;
             if (!chr.attemptCsCoupon())
             {
-                code = UseCdkResponseCode.TooManyError;
+                await chr.SendPacket(PacketCreator.showCashShopMessage((byte)UseCdkResponseCode.TooManyError));
+                return;
             }
 
-            ProtoService.UseCdkResponse res = new ProtoService.UseCdkResponse();
-            if (code == UseCdkResponseCode.Success)
+            var (code, grant) = await ClaimReward(chr, (token, stage) => Task.FromResult(_transport.UseCdk(new ProtoService.UseCdkRequest
             {
-                res = _transport.UseCdk(new ProtoService.UseCdkRequest { MasterId = chr.Id, Cdk = cdk });
-                code = (UseCdkResponseCode)res.Code;
-            }
+                MasterId = chr.Id,
+                Cdk = cdk,
+                Token = token,
+                Stage = stage,
+            })));
 
             if (code != UseCdkResponseCode.Success)
             {
                 await chr.SendPacket(PacketCreator.showCashShopMessage((byte)code));
+                return;
+            }
+
+            chr.resetCsCoupon();
+
+            var cashItems = grant!.CashItems;
+            if (cashItems.Count > 255)
+            {
+                cashItems = cashItems.Take(255).ToList();
+            }
+            if (grant.NxCredit != 0 || grant.NxPrepaid != 0)
+            { //coupon packet can only show maple points (afaik)
+                await chr.SendPacket(PacketCreator.showBoughtQuestItem(0));
             }
             else
             {
-                chr.resetCsCoupon();
-                List<Item> cashItems = new();
-                List<ItemQuantity> items = new();
-                int nxCredit = 0;
-                int maplePoints = 0;
-                int nxPrepaid = 0;
-                int mesos = 0;
+                await chr.SendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id,
+                    grant.MaplePoint, grant.Meso, cashItems, [.. grant.Items.Select(x => new ItemQuantity(x.ItemId, x.Quantity))]));
+            }
+            await chr.enableCSActions();
+        }
 
-                foreach (var pair in res.Items)
+        /// <summary>
+        /// 领取 NPC 补发的奖励（n9010000）。走和 CDK 同一条流程。
+        /// </summary>
+        public async Task<UseCdkResponseCode> ClaimReward(Player chr, int rewardId)
+        {
+            var (code, grant) = await ClaimReward(chr, (token, stage) => _transport.TakeReward(new ProtoService.UseIdRequest
+            {
+                MasterId = chr.Id,
+                Id = rewardId,
+                Token = token,
+                Stage = stage,
+            }));
+
+            if (code == UseCdkResponseCode.Success && grant != null)
+            {
+                foreach (var item in grant.Items)
                 {
-                    int quantity = pair.Quantity;
-
-                    CashShop cs = chr.getCashShop();
-                    if (pair.ItemId == ItemId.Meso)
-                    {
-                        await chr.GainMeso(quantity); //mesos
-                        mesos += quantity;
-                    }
-                    else if (pair.ItemId == ItemId.NxCredit)
-                    {
-                        cs.gainCash(1, quantity);    //nxCredit
-                        nxCredit += quantity;
-                    }
-                    else if (pair.ItemId == ItemId.MaplePoint)
-                    {
-                        cs.gainCash(2, quantity);    //maplePoints
-                        maplePoints += quantity;
-                    }
-                    else if (pair.ItemId == ItemId.NxPrepare)
-                    {
-                        cs.gainCash(4, quantity);    //nxPrepaid
-                        nxPrepaid += quantity;
-                    }
-                    else
-                    {
-                        int item = pair.ItemId;
-                        short qty;
-                        if (quantity > short.MaxValue)
-                        {
-                            qty = short.MaxValue;
-                        }
-                        else if (quantity < short.MinValue)
-                        {
-                            qty = 1;
-                        }
-                        else
-                        {
-                            qty = (short)quantity;
-                        }
-
-                        if (ItemInformationProvider.getInstance().isCash(item))
-                        {
-                            Item it = GenerateCouponItem(item, qty);
-
-                            cs.addToInventory(it);
-                            cashItems.Add(it);
-                        }
-                        else
-                        {
-                            await chr.GainItem(item, qty); ;
-                            items.Add(new(item, qty));
-                        }
-                    }
+                    await chr.GainItemShowMessage(item.ItemId, item.Quantity, GainItemShow.ShowInChat);
                 }
-                if (cashItems.Count > 255)
+            }
+
+            return code;
+        }
+
+        /// <summary>
+        /// 「中心服核销 → 频道发到背包」类操作的统一入口（CDK 兑换、NPC 补发）。
+        /// <para>
+        /// 和 MTS 的领取是同一个模式：中心服持有可领取的记录，频道持有背包。
+        /// 旧实现里中心服先标记已领、频道再发道具，发失败也没人管 —— 背包一满奖励就没了。
+        /// 现在按 <c>PREPARE → 发放 → COMMIT</c> 走：发放失败就 <c>ABORT</c> 释放占位，
+        /// 提交被拒就把已经发下去的东西收回来。
+        /// </para>
+        /// </summary>
+        async Task<(UseCdkResponseCode Code, RewardGrant? Grant)> ClaimReward(Player chr,
+            Func<long, ProtoModel.TransferStage, Task<ProtoService.UseCdkResponse>> request)
+        {
+            RewardGrant? grant = null;
+            ProtoService.UseCdkResponse? last = null;
+
+            var outcome = await _transferRunner.RunAsync(new ItemTransfer
+            {
+                Prepare = async token =>
                 {
-                    cashItems = cashItems.Take(255).ToList();
+                    var res = await request(token, ProtoModel.TransferStage.Prepare);
+                    last = res;
+                    return res.Code == (int)UseCdkResponseCode.Success;
+                },
+                ApplyLocal = async () =>
+                {
+                    if (last == null)
+                    {
+                        return false;
+                    }
+
+                    // 先整体预检：能放下才发。否则发到一半失败要回滚混合内容（金币/点券/道具）
+                    if (!await CanGainPackage(chr, last.Items))
+                    {
+                        return false;
+                    }
+
+                    grant = new RewardGrant();
+                    await GainPackage(chr, last.Items, grant);
+                    return true;
+                },
+                Commit = async token =>
+                {
+                    var res = await request(token, ProtoModel.TransferStage.Commit);
+                    last = res;
+                    return res.Code == (int)UseCdkResponseCode.Success;
+                },
+                Abort = token => request(token, ProtoModel.TransferStage.Abort),
+                RollbackLocal = () => RollbackPackage(chr, grant),
+            });
+
+            var code = outcome switch
+            {
+                TransferOutcome.Done => UseCdkResponseCode.Success,
+                // 中心服明确拒绝：把它的原因原样带回给客户端
+                TransferOutcome.Rejected => (UseCdkResponseCode)(last?.Code ?? (int)UseCdkResponseCode.FetalError),
+                // 本地放不下 / 结果未知：都算失败，背包提示已经单独发过
+                _ => UseCdkResponseCode.FetalError,
+            };
+            return (code, grant);
+        }
+
+        /// <summary>
+        /// 奖励包里所有道具是否都放得下（金币/点券不占格子，直接通过）
+        /// </summary>
+        async Task<bool> CanGainPackage(Player chr, IEnumerable<ProtoModel.CdkRewordPackageProto> items)
+        {
+            if (chr.getCashShop().isOpened())
+            {
+                return true;
+            }
+
+            var acItems = items.Where(x => x.ItemId > 0);
+            var virItems = items.Where(x => x.ItemId <= 0);
+
+            if (!Inventory.checkSpots(chr, acItems.Select(x => new TypedItemQuantity((sbyte)ItemConstants.getInventoryType(x.ItemId), new ItemQuantity(x.ItemId, x.Quantity)))))
+            {
+                await chr.Popup("Your inventory is full.");
+                return false;
+            }
+
+            if (chr.MesoValue + virItems.Where(x => x.ItemId == ItemId.Meso).Sum(x => (long)x.Quantity) > int.MaxValue)
+            {
+                return false;
+            }
+
+            if (chr.getCashShop().NxCredit + virItems.Where(x => x.ItemId == ItemId.Meso).Sum(x => x.Quantity) > DefaultConfigs.MaxCredits)
+            {
+                return false;
+            }
+            if (chr.getCashShop().NxCredit + virItems.Where(x => x.ItemId == ItemId.MaplePoint).Sum(x => x.Quantity) > DefaultConfigs.MaxCredits)
+            {
+                return false;
+            }
+            if (chr.getCashShop().NxCredit + virItems.Where(x => x.ItemId == ItemId.NxPrepare).Sum(x => x.Quantity) > DefaultConfigs.MaxCredits)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        async Task GainPackage(Player chr, IEnumerable<ProtoModel.CdkRewordPackageProto> items, RewardGrant grant)
+        {
+            var cs = chr.getCashShop();
+            foreach (var pair in items)
+            {
+                int quantity = pair.Quantity;
+                if (pair.ItemId == ItemId.Meso)
+                {
+                    await chr.GainMeso(quantity);
+                    grant.AddMeso(quantity);
                 }
-                if (nxCredit != 0 || nxPrepaid != 0)
-                { //coupon packet can only show maple points (afaik)
-                    await chr.SendPacket(PacketCreator.showBoughtQuestItem(0));
+                else if (pair.ItemId == ItemId.NxCredit)
+                {
+                    cs.gainCash(1, quantity);
+                    grant.AddNxCredit(quantity);
+                }
+                else if (pair.ItemId == ItemId.MaplePoint)
+                {
+                    cs.gainCash(2, quantity);
+                    grant.AddMaplePoint(quantity);
+                }
+                else if (pair.ItemId == ItemId.NxPrepare)
+                {
+                    cs.gainCash(4, quantity);
+                    grant.AddNxPrepaid(quantity);
                 }
                 else
                 {
-                    await chr.SendPacket(PacketCreator.showCouponRedeemedItems(chr.Client.AccountEntity!.Id, maplePoints, mesos, cashItems, items));
+                    short qty = quantity > short.MaxValue ? short.MaxValue
+                        : quantity < 1 ? (short)1
+                        : (short)quantity;
+
+                    if (ItemInformationProvider.getInstance().isCash(pair.ItemId))
+                    {
+                        var it = GenerateCouponItem(pair.ItemId, qty);
+                        cs.addToInventory(it);
+                        grant.CashItems.Add(it);
+                    }
+                    else
+                    {
+                        await chr.GainItem(pair.ItemId, qty);
+                        grant.Items.Add((pair.ItemId, qty));
+                    }
                 }
-                await chr.enableCSActions();
             }
+        }
+
+        /// <summary>
+        /// 把 <see cref="GainPackage"/> 发下去的东西收回。现金/点券/金币也一并退，
+        /// 只回滚道具而留下钱同样是白送。
+        /// </summary>
+        async Task RollbackPackage(Player chr, RewardGrant? grant)
+        {
+            if (grant == null)
+            {
+                return;
+            }
+
+            var cs = chr.getCashShop();
+            foreach (var cashItem in grant.CashItems)
+            {
+                cs.removeFromInventory(cashItem);
+            }
+
+            foreach (var (itemId, quantity) in grant.Items)
+            {
+                var invType = ItemConstants.getInventoryType(itemId);
+                await InventoryManipulator.removeById(chr.Client, invType, itemId, quantity, false, false);
+            }
+
+            if (grant.Meso != 0)
+            {
+                await chr.GainMeso(-grant.Meso);
+            }
+            if (grant.NxCredit != 0)
+            {
+                cs.gainCash(1, -grant.NxCredit);
+            }
+            if (grant.MaplePoint != 0)
+            {
+                cs.gainCash(2, -grant.MaplePoint);
+            }
+            if (grant.NxPrepaid != 0)
+            {
+                cs.gainCash(4, -grant.NxPrepaid);
+            }
+
+            _logger.LogWarning("奖励提交被拒，已回滚本次发放（玩家 {CharacterName}）", chr.getName());
         }
     }
 }

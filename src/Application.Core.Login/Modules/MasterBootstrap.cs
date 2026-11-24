@@ -23,6 +23,7 @@ namespace Application.Core.Login.Modules
                 app.MapGrpcService<CashGrcpService>();
                 app.MapGrpcService<DataGrpcService>();
                 app.MapGrpcService<DueyGrpcService>();
+                app.MapGrpcService<MTSGrpcService>();
             }
         }
     }

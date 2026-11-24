@@ -26,6 +26,7 @@ namespace Application.Core.ServerTransports
         readonly ProtoService.CashService.CashServiceClient _cashClient;
         readonly ProtoService.TeamService.TeamServiceClient _teamClient;
         readonly ProtoService.DueyService.DueyServiceClient _dueyClient;
+        readonly ProtoService.MTSService.MTSServiceClient _mtsClient;
 
         Lazy<InternalSession> _internalSession;
         public InternalSession InternalSession => _internalSession.Value;
@@ -44,7 +45,8 @@ namespace Application.Core.ServerTransports
             ProtoService.ItemService.ItemServiceClient itemClient,
             ProtoService.CashService.CashServiceClient cashClient,
             ProtoService.TeamService.TeamServiceClient teamClient,
-            ProtoService.DueyService.DueyServiceClient dueyClient)
+            ProtoService.DueyService.DueyServiceClient dueyClient,
+            ProtoService.MTSService.MTSServiceClient mtsClient)
         {
             _sp = sp;
             _config = options.Value;
@@ -60,6 +62,7 @@ namespace Application.Core.ServerTransports
 
             _internalSession = new Lazy<InternalSession>(() => new InternalSession(_sp.GetRequiredService<WorldChannelServer>()));
             _dueyClient = dueyClient;
+            _mtsClient = mtsClient;
         }
 
         public async Task SendAsync(int type, CancellationToken cancellationToken = default)
@@ -743,6 +746,73 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.TakeDueyPackageCallback);
         }
 
+        #endregion
+
+        #region MTS
+        public async Task<ProtoService.ChangePageResponse> ChangeMTSPage(ProtoService.ChangePageRequest request)
+        {
+            return await _mtsClient.ChangePageAsync(request);
+        }
+
+        public async Task<ProtoService.SaleItemResponse> SaleMTSItem(ProtoService.SaleItemRequest request)
+        {
+            return await _mtsClient.SaleItemAsync(request);
+        }
+
+        public async Task<ProtoService.CancelSaleItemResponse> CancelMTSSale(ProtoService.CancelSaleItemRequest request)
+        {
+            return await _mtsClient.CancelSaleItemAsync(request);
+        }
+
+        public async Task<ProtoService.AddItemToCartResponse> AddMTSCartItem(ProtoService.AddItemToCartRequest request)
+        {
+            return await _mtsClient.AddItemToCartAsync(request);
+        }
+
+        public async Task<ProtoService.RemoveItemFromCartResponse> RemoveMTSCartItem(ProtoService.RemoveItemFromCartRequest request)
+        {
+            return await _mtsClient.RemoveItemFromCartAsync(request);
+        }
+
+        public async Task<ProtoService.TakeItemResponse> TakeMTSItem(ProtoService.TakeItemRequest request)
+        {
+            return await _mtsClient.TakeItemAsync(request);
+        }
+
+        public async Task<ProtoService.BuyResponse> BuyMTSItem(ProtoService.BuyRequest request)
+        {
+            return await _mtsClient.BuyAsync(request);
+        }
+
+        public async Task<ProtoService.MTSOperationResponse> RegisterMTSWanted(ProtoService.WantedRequest request)
+        {
+            return await _mtsClient.RegisterWantedAsync(request);
+        }
+
+        public async Task<ProtoService.MTSOperationResponse> CancelMTSWanted(ProtoService.ProductRequest request)
+        {
+            return await _mtsClient.CancelWantedAsync(request);
+        }
+
+        public async Task<ProtoService.MTSOperationResponse> FulfillMTSWanted(ProtoService.FulfillWantedRequest request)
+        {
+            return await _mtsClient.FulfillWantedAsync(request);
+        }
+
+        public async Task<ProtoService.MTSOperationResponse> LoadMTSWanted(ProtoService.ProductRequest request)
+        {
+            return await _mtsClient.LoadWantedAsync(request);
+        }
+
+        public async Task<ProtoService.SaleItemResponse> RegisterMTSAuction(ProtoService.SaleItemRequest request)
+        {
+            return await _mtsClient.RegisterAuctionAsync(request);
+        }
+
+        public async Task<ProtoService.MTSOperationResponse> BidMTSAuction(ProtoService.BidRequest request)
+        {
+            return await _mtsClient.BidAuctionAsync(request);
+        }
         #endregion
 
 

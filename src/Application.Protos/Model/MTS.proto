@@ -10,6 +10,35 @@ message MTSItemProto {
 	ItemProto item = 1;
 	int32 id = 2;
 	int32 sellerId = 3;
+	// 展示用的出售者名称，客户端需要写两次字符串（账号名 + 角色名）
+	string sellerName = 4;
+	// 当前价。普通出售就是售价；拍卖是起拍价，有人出价后就被抬高成最高出价。
+	// 客户端条目 +0xFC（售价）与 +0x10（出价对话框的基准价）都取这个值。
+	int32 price = 5;
+	// 上架结束时间（unix 毫秒）
+	int64 sellEnds = 6;
+	int32 tab = 7;
+	int32 type = 8;
+	// true 表示该商品已被取消/买入，处于“待领取”状态
+	bool inTransfer = 9;
+	// 保留：原先用它单独存“当前最高价”，现在统一走 price
+	reserved 10;
+	reserved "currentBid";
+	// 拍卖：一口价。卖家在 CRegisterAuctionEntryDlg 里**单独**填的一个价，
+	// 与起拍价是两个输入框，客户端条目 +0x108 就是它。
+	int32 buyNow = 11;
+	// 上架/求购时长（小时）
+	int32 durationHours = 12;
+	// 求购单：求购者角色名（展示用，条目里与 sellerName 同字段写两次）
+	string buyerName = 13;
+	// 拍卖：当前最高出价者（masterId），到期结算与“不能连续出价”都靠它
+	int32 bidderId = 14;
+	// 拍卖：加价幅度（客户端条目 +0x0E，出价对话框的上下箭头按它步进）
+	int32 bidIncrement = 15;
+	int64 releaseDate = 16;
+	// 拍卖：出价人数。客户端条目 +0x0C 按 WORD 读，用来拼 "BID COUNT: %d"
+	// （sub_8F6DC9 的 0x8F7775），所以超过 65535 的部分客户端会看不到。
+	int32 bidCount = 17;
 }
 
 message MTSQueryProto {

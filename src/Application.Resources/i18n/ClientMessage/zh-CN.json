@@ -222,6 +222,8 @@
   "Cash_PutPetIntoCashInventory": "无法把装备中的宠物放入现金商城的仓库。",
   "Cash_PutRelationshipItemIntoCashInventory": "无法把关系物品放入现金商城仓库中。",
   "CashShop_CannotEnter_WithEventInstance": "处于事件中，无法进入现金商城或者拍卖行。",
+  "MTS_NotEnoughMeso": "金币不足，在拍卖行上架物品至少需要 {0} 金币。",
+  "MTS_ListingLimit": "拍卖行同时最多只能上架 {0} 件物品。",
   "BirthDay_Invalid": "生日不正确。",
   "Trade_PetCheck": "不允许交易宠物。",
   "Trade_CashItemCheck": "不允许交易现金道具。",

@@ -138,6 +138,8 @@ namespace Application.Core.Login
 
         readonly Lazy<DueyManager> _dueyManager;
         public DueyManager DueyManager => _dueyManager.Value;
+        readonly Lazy<MTSManager> _mtsManager;
+        public MTSManager MTSManager => _mtsManager.Value;
         readonly Lazy<IPlayerNPCManager> _playerNPCManager;
         public IPlayerNPCManager PlayerNPCManager => _playerNPCManager.Value;
         readonly Lazy<CreatePlayerService> _createPlayerService;
@@ -217,6 +219,7 @@ namespace Application.Core.Login
             _gachaponManager = new(() => ServiceProvider.GetRequiredService<GachaponManager>());
             _cdkManager = new(() => ServiceProvider.GetRequiredService<RewardManager>());
             _dueyManager = new(() => ServiceProvider.GetRequiredService<DueyManager>());
+            _mtsManager = new(() => ServiceProvider.GetRequiredService<MTSManager>());
             _playerNPCManager = new(() => ServiceProvider.GetRequiredService<IPlayerNPCManager>());
             _accountGameManager = new(() => ServiceProvider.GetRequiredService<AccountGameManager>());
             _createPlayerService = new(() => ServiceProvider.GetRequiredService<CreatePlayerService>());

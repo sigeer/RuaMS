@@ -6016,13 +6016,12 @@ public class PacketCreator
         p.writeString(c.AccountName);   // NexonClubID
         if (mts)
         {
-            p.writeBytes(new byte[]{ 0x88, 19, 0, 0,
-                    7, 0, 0, 0,
-                     0xF4, 1, 0, 0,
-                     0x18, 0, 0, 0,
-                     0xA8, 0, 0, 0,
-                     0x70,  0xAA,  0xA7,  0xC5,
-                     0x4E,  0xC1,  0xCA, 1});
+            p.writeInt(MTSConstants.SALE_FEE);
+            p.writeInt(MTSConstants.Fee_Rate);
+            p.writeInt(MTSConstants.Fee_Base);
+            p.writeInt(MTSConstants.AUCTION_MIN_HOURS);
+            p.writeInt(MTSConstants.AUCTION_MAX_HOURS);
+            p.writeLong(PacketCommon.getTime(c.CurrentServer.Node.getCurrentTime()));
         }
         else
         {

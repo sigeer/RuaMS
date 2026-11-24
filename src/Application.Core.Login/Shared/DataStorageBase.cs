@@ -93,7 +93,6 @@ namespace Application.Core.Login.Shared
             foreach (var dbItem in dbData)
             {
                 var model = MapModel(dbItem);
-                SetCache(model);
                 dbList.Add(model);
             }
 
@@ -119,7 +118,6 @@ namespace Application.Core.Login.Shared
             if (dbData != null)
             {
                 var dbModel = MapModel(dbData);
-                SetCache(dbModel);
                 return dbModel;
             }
             return null;
@@ -141,7 +139,6 @@ namespace Application.Core.Login.Shared
             if (dbData != null)
             {
                 var localData = MapModel(dbData);
-                SetCache(localData);
                 return localData;
             }
             return null;

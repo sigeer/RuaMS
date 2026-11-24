@@ -198,6 +198,22 @@ namespace Application.Core.ServerTransports
         Task TakeDueyPackageCommit(ProtoService.TakeDueyPackageCommitRequest takeDueyPackageCommit);
         #endregion
 
+        #region MTS
+        Task<ProtoService.ChangePageResponse> ChangeMTSPage(ProtoService.ChangePageRequest request);
+        Task<ProtoService.SaleItemResponse> SaleMTSItem(ProtoService.SaleItemRequest request);
+        Task<ProtoService.CancelSaleItemResponse> CancelMTSSale(ProtoService.CancelSaleItemRequest request);
+        Task<ProtoService.AddItemToCartResponse> AddMTSCartItem(ProtoService.AddItemToCartRequest request);
+        Task<ProtoService.RemoveItemFromCartResponse> RemoveMTSCartItem(ProtoService.RemoveItemFromCartRequest request);
+        Task<ProtoService.TakeItemResponse> TakeMTSItem(ProtoService.TakeItemRequest request);
+        Task<ProtoService.BuyResponse> BuyMTSItem(ProtoService.BuyRequest request);
+        Task<ProtoService.MTSOperationResponse> RegisterMTSWanted(ProtoService.WantedRequest request);
+        Task<ProtoService.MTSOperationResponse> CancelMTSWanted(ProtoService.ProductRequest request);
+        Task<ProtoService.MTSOperationResponse> FulfillMTSWanted(ProtoService.FulfillWantedRequest request);
+        Task<ProtoService.MTSOperationResponse> LoadMTSWanted(ProtoService.ProductRequest request);
+        Task<ProtoService.SaleItemResponse> RegisterMTSAuction(ProtoService.SaleItemRequest request);
+        Task<ProtoService.MTSOperationResponse> BidMTSAuction(ProtoService.BidRequest request);
+        #endregion
+
         Task JailPlayer(ProtoService.CreateJailRequest request);
         Task UnjailPlayer(ProtoService.CreateUnjailRequest request);
 

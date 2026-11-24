@@ -47,7 +47,7 @@
 		<Protobuf Include="Service\ItemService.proto" GrpcServices="Both" />
 		<Protobuf Include="Service\ItemStorage.proto" GrpcServices="None" />
 		<Protobuf Include="Service\Jail.proto" GrpcServices="None" />
-		<Protobuf Include="Service\MTSOperation.proto" GrpcServices="None" />
+		<Protobuf Include="Service\MTSOperation.proto" GrpcServices="Both" />
 		<Protobuf Include="Service\MonitorConfig.proto" GrpcServices="None" />
 		<Protobuf Include="Service\MonsterCardData.proto" GrpcServices="None" />
 		<Protobuf Include="Service\NameChange.proto" GrpcServices="None" />
@@ -113,6 +113,7 @@
 		<Protobuf Include="Model\Item.proto" GrpcServices="None" />
 		<Protobuf Include="Model\ItemMegaphone.proto" GrpcServices="None" />
 		<Protobuf Include="Model\ItemQuantity.proto" GrpcServices="None" />
+		<Protobuf Include="Model\ItemTransfer.proto" GrpcServices="None" />
 		<Protobuf Include="Model\KeyMap.proto" GrpcServices="None" />
 		<Protobuf Include="Model\MTS.proto" GrpcServices="None" />
 		<Protobuf Include="Model\Map.proto" GrpcServices="None" />

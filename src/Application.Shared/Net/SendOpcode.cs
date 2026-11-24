@@ -538,7 +538,13 @@ public enum SendOpcode
     SEND_TV = 0x155,
     REMOVE_TV = 0x156,
     ENABLE_TV = 0x157,
+    /// <summary>
+    /// sub_5A428C
+    /// </summary>
     MTS_OPERATION2 = 0x15B,
+    /// <summary>
+    /// sub_5A4311
+    /// </summary>
     MTS_OPERATION = 0x15C,
     MAPLELIFE_RESULT = 0x15D,
     MAPLELIFE_ERROR = 0x15E,

@@ -718,14 +718,6 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");
-            entity.Property(e => e.Acc)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("acc");
-            entity.Property(e => e.Avoid)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("avoid");
             entity.Property(e => e.BidIncre)
                 .HasDefaultValueSql("'0'")
                 .HasColumnType(DbColumnTypes.Int(provider))
@@ -734,110 +726,30 @@ public partial class DBContext : DbContext
                 .HasDefaultValueSql("'0'")
                 .HasColumnType(DbColumnTypes.Int(provider))
                 .HasColumnName("buy_now");
-            entity.Property(e => e.Dex)
+            entity.Property(e => e.Bidder)
                 .HasDefaultValueSql("'0'")
                 .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("dex");
-            entity.Property(e => e.Expiration)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType(DbColumnTypes.BigInt(provider))
-                .HasColumnName("expiration");
-            entity.Property(e => e.Flag)
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("flag");
-            entity.Property(e => e.GiftFrom)
-                .HasMaxLength(26)
-                .HasColumnName("giftFrom");
-            entity.Property(e => e.Hands)
+                .HasColumnName("bidder");
+            // 拍卖：出价人数
+            entity.Property(e => e.BidCount)
                 .HasDefaultValueSql("'0'")
                 .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("hands");
-            entity.Property(e => e.Hp)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("hp");
-            entity.Property(e => e.Int)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("int");
-            entity.Property(e => e.Isequip)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("isequip");
-            entity.Property(e => e.Itemexp)
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("itemexp");
-            entity.Property(e => e.Itemid)
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("itemid");
-            entity.Property(e => e.Itemlevel)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("itemlevel");
-            entity.Property(e => e.Jump)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("jump");
-            entity.Property(e => e.Level)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("level");
-            entity.Property(e => e.Locked)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("locked");
-            entity.Property(e => e.Luk)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("luk");
-            entity.Property(e => e.Matk)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("matk");
-            entity.Property(e => e.Mdef)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("mdef");
-            entity.Property(e => e.Mp)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("mp");
-            entity.Property(e => e.Owner)
-                .HasMaxLength(16)
-                .HasDefaultValueSql("''")
-                .HasColumnName("owner");
-            entity.Property(e => e.Position)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("position");
+                .HasColumnName("bid_count");
             entity.Property(e => e.Price)
                 .HasColumnType(DbColumnTypes.Int(provider))
                 .HasColumnName("price");
-            entity.Property(e => e.Quantity)
-                .HasDefaultValueSql("'1'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("quantity");
-            entity.Property(e => e.Ringid)
-                .HasDefaultValueSql("'-1'")
-                .HasColumnType(DbColumnTypes.BigInt(provider))
-                .HasColumnName("ringid");
+            // 上架结束时间（unix 毫秒）
             entity.Property(e => e.SellEnds)
-                .HasMaxLength(16)
+                .HasColumnType(DbColumnTypes.BigInt(provider))
                 .HasColumnName("sell_ends");
+            // 上架时间（unix 毫秒）
+            entity.Property(e => e.ReleaseDate)
+                .HasDefaultValueSql("'0'")
+                .HasColumnType(DbColumnTypes.BigInt(provider))
+                .HasColumnName("release_date");
             entity.Property(e => e.Seller)
                 .HasColumnType(DbColumnTypes.Int(provider))
                 .HasColumnName("seller");
-            entity.Property(e => e.Sellername)
-                .HasMaxLength(16)
-                .HasColumnName("sellername");
-            entity.Property(e => e.Speed)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("speed");
-            entity.Property(e => e.Str)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("str");
             entity.Property(e => e.Tab)
                 .HasColumnType(DbColumnTypes.Int(provider))
                 .HasColumnName("tab");
@@ -848,21 +760,11 @@ public partial class DBContext : DbContext
             entity.Property(e => e.Type)
                 .HasColumnType(DbColumnTypes.Int(provider))
                 .HasColumnName("type");
-            entity.Property(e => e.Upgradeslots)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("upgradeslots");
-            entity.Property(e => e.Vicious)
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("vicious");
-            entity.Property(e => e.Watk)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("watk");
-            entity.Property(e => e.Wdef)
-                .HasDefaultValueSql("'0'")
-                .HasColumnType(DbColumnTypes.Int(provider))
-                .HasColumnName("wdef");
+
+            // 物品本体按 ProtoModel.ItemProto 序列化后整块存，属性、潜能、宠物等全部原样保留
+            entity.Property(e => e.ItemBlob)
+                .HasColumnType(DbColumnTypes.Blob(provider))
+                .HasColumnName("item_blob");
         });
 
         modelBuilder.Entity<Namechange>(entity =>

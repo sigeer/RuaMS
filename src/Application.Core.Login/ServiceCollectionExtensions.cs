@@ -110,6 +110,9 @@ namespace Application.Core.Login
             services.AddSingleton<DueyManager>();
             services.AddSingleton<IDataStorage, DueyManager>(sp => sp.GetRequiredService<DueyManager>());
 
+            services.AddSingleton<MTSManager>();
+            services.AddSingleton<IDataStorage, MTSManager>(sp => sp.GetRequiredService<MTSManager>());
+
             services.AddSingleton<AccountGameManager>();
             services.AddSingleton<IDataStorage, AccountGameManager>(sp => sp.GetRequiredService<AccountGameManager>());
 

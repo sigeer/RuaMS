@@ -10,5 +10,7 @@ namespace Application.Shared.Constants
 
         public const int HPAlert = 16;
         public const int MPAlert = 16;
+
+        public const int MaxCredits = 1000000;
     }
 }

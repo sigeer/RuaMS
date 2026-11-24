@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "Model/CDK.proto";
+import "Model/ItemTransfer.proto";
 
 package ProtoService;
 
@@ -9,6 +10,9 @@ package ProtoService;
 message UseCdkRequest {
 	int32 masterId =1;
 	string cdk = 2;
+	// 与 MTS 同一套物品转移协议：PREPARE 只校验并占位，COMMIT 才真正核销
+	int64 token = 3;
+	ProtoModel.TransferStage stage = 4;
 }
 
 
@@ -23,4 +27,6 @@ message UseCdkResponse {
 message UseIdRequest  {
 	int32 masterId =1;
 	int32 id = 2;
+	int64 token = 3;
+	ProtoModel.TransferStage stage = 4;
 }

@@ -33,6 +33,7 @@ namespace Application.Core.Channel.Net.Handlers;
  * @author Penguins (Acrylic)
  * @author Ronan (HeavenMS)
  */
+[Obsolete]
 public class CouponCodeHandler : ChannelHandlerBase
 {
     readonly ILogger<CouponCodeHandler> _logger;
@@ -53,7 +54,7 @@ public class CouponCodeHandler : ChannelHandlerBase
             await c.tryacquireClient();
             try
             {
-                await _itemService.UseCdk(c.OnlinedCharacter, code);
+                await _itemService.UseCouponCode(c.OnlinedCharacter, code);
             }
             finally
             {

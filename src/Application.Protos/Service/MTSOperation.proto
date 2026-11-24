@@ -1,11 +1,78 @@
 syntax = "proto3";
 
 import "Model/Item.proto";
+import "Model/ItemTransfer.proto";
 import "Model/MTS.proto";
 
 import "google/protobuf/wrappers.proto";
 package ProtoService;
 
+
+// 拍卖行（MTS / ITC）的跨服接口，频道 -> 中心服务器
+service MTSService {
+	rpc ChangePage (ChangePageRequest) returns (ChangePageResponse);
+	rpc SaleItem (SaleItemRequest) returns (SaleItemResponse);
+	rpc CancelSaleItem (CancelSaleItemRequest) returns (CancelSaleItemResponse);
+	rpc AddItemToCart (AddItemToCartRequest) returns (AddItemToCartResponse);
+	rpc RemoveItemFromCart (RemoveItemFromCartRequest) returns (RemoveItemFromCartResponse);
+	rpc TakeItem (TakeItemRequest) returns (TakeItemResponse);
+	rpc Buy (BuyRequest) returns (BuyResponse);
+	// 求购：登记 / 撤销 / 与求购单成交
+	rpc RegisterWanted (WantedRequest) returns (MTSOperationResponse);
+	rpc CancelWanted (ProductRequest) returns (MTSOperationResponse);
+	rpc FulfillWanted (FulfillWantedRequest) returns (MTSOperationResponse);
+	// op 11 / op 12 只带商品id，频道侧得先知道求购的是什么物品才能从背包里取出来
+	rpc LoadWanted (ProductRequest) returns (MTSOperationResponse);
+	// 拍卖：上架 / 出价（即买走 Buy）
+	rpc RegisterAuction (SaleItemRequest) returns (SaleItemResponse);
+	rpc BidAuction (BidRequest) returns (MTSOperationResponse);
+}
+
+
+message MTSOperationResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.MTSItemProto product = 3;
+	ProtoModel.PlayerMTSInfoProto myMTSInfo = 4;
+	ProtoModel.PagedItemsProto pageData = 5;
+	// 操作后买家的抵用券余额（购买/出价成功时回填）
+	int32 updatedValue = 6;
+}
+
+
+message WantedRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 itemId = 2;
+	int32 price = 3;
+	int32 quantity = 4;
+	int32 tab = 5;
+	int32 type = 6;
+	string buyerName = 7;
+	int32 durationHours = 8;
+}
+
+
+message ProductRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+}
+
+
+message FulfillWantedRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+	// 成交时卖方交付的物品（op 3 由客户端带上；op 12 服务端按求购单的物品id 从背包里取）
+	ProtoModel.ItemProto item = 3;
+	int64 token = 4;
+	ProtoModel.TransferStage stage = 5;
+}
+
+
+message BidRequest {
+	ProtoModel.MTSQueryProto query = 1;
+	int32 productId = 2;
+	int32 bid = 3;
+}
 
 
 message MTSQueryResponse {
@@ -18,7 +85,19 @@ message MTSQueryResponse {
 message SaleItemRequest {
 	int32 masterId = 1;
 	ProtoModel.ItemProto item = 2;
+	// 普通出售：售价；拍卖：起拍价
 	int32 price = 3;
+	string sellerName = 4;
+	int32 tab = 5;
+	int32 type = 6;
+	// 拍卖专用：时长（小时）
+	int32 durationHours = 7;
+	// 拍卖专用：一口价（卖家填的即买价，与起拍价是两个独立的输入框）
+	int32 buyNow = 8;
+	// 拍卖专用：加价幅度
+	int32 bidIncrement = 9;
+	int64 token = 10;
+	ProtoModel.TransferStage stage = 11;
 }
 
 
@@ -107,6 +186,11 @@ message ChangePageResponse {
 message TakeItemRequest {
 	ProtoModel.MTSQueryProto query = 1;
 	int32 productId = 2;
+	// PREPARE：只校验归属并占位、返回商品（频道侧先确认背包能放下）
+	// COMMIT ：真正从待领取列表移除（同 token 重放返回同一结论）
+	// ABORT  ：放弃本次领取，释放占位
+	int64 token = 3;
+	ProtoModel.TransferStage stage = 4;
 }
 
 

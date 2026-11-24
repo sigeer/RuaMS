@@ -22,6 +22,10 @@ namespace Application.Core.Login.ServerData
     {
         readonly MasterServer _server;
         IMemoryCache _cache;
+        /// <summary>
+        /// 在途领取的占位，和 MTS 共用同一套机制（见 <see cref="ItemTransferJournal"/>）
+        /// </summary>
+        readonly ItemTransferJournal _transfers = new();
 
         public RewardManager(MasterServer server, IMapper mapper, IDbContextFactory<DBContext> dbContextFactory, IMemoryCache cache, ILogger<RewardManager> logger)
             : base(StorageCategory.Reward, dbContextFactory, mapper, logger)
@@ -104,30 +108,69 @@ namespace Application.Core.Login.ServerData
 
         public ProtoService.UseCdkResponse UseCdk(ProtoService.UseCdkRequest request)
         {
-            var now = _server.GetCurrentTimeDateTimeOffset();
-            var data = GetCdkData(request.Cdk);
-
-            if (data != null)
+            if (request.Stage == ProtoModel.TransferStage.Abort)
             {
-                return TakeReward(data, request.MasterId);
+                return AbortReward(request.MasterId, request.Token);
             }
-            return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+
+            var data = GetCdkData(request.Cdk);
+            if (data == null)
+            {
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+            }
+
+            return TakeReward(data, request.MasterId, request.Token, request.Stage);
         }
 
         public ProtoService.UseCdkResponse UseId(ProtoService.UseIdRequest request)
         {
-            var now = _server.GetCurrentTimeDateTimeOffset();
-            var data = GetRewardData(request.Id);
-
-            if (data != null)
+            if (request.Stage == ProtoModel.TransferStage.Abort)
             {
-                return TakeReward(data, request.MasterId);
+                return AbortReward(request.MasterId, request.Token);
             }
-            return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+
+            var data = GetRewardData(request.Id);
+            if (data == null)
+            {
+                return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.NotFound };
+            }
+
+            return TakeReward(data, request.MasterId, request.Token, request.Stage);
         }
 
-        public ProtoService.UseCdkResponse TakeReward(CdkCodeModel data, int playerId)
+        /// <summary>
+        /// 放弃领取：只释放占位，不核销
+        /// </summary>
+        ProtoService.UseCdkResponse AbortReward(int playerId, long token)
         {
+            _transfers.Drop(token, playerId);
+            return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.Success };
+        }
+
+        /// <summary>
+        /// 领取奖励 / 兑换 CDK。
+        /// <para>
+        /// 和 MTS 的领取是同一类操作：中心服先把奖励标记为已领，频道侧再把道具塞进背包。
+        /// 旧的实现只做了一次「标记 + 返回物品」，频道把物品发到背包时结果根本不检查 ——
+        /// 背包满、或者回复丢包，奖励就凭空消失了。
+        /// </para>
+        /// <para>
+        /// 现在按 <see cref="ProtoModel.TransferStage"/> 分三段：<c>PREPARE</c> 只校验并占位
+        /// （核销记录留到 <c>COMMIT</c>），<c>ABORT</c> 释放占位。同一 token 重放 <c>PREPARE</c>
+        /// 或 <c>COMMIT</c> 返回同一结论，所以频道侧超时后可以放心重试。
+        /// </para>
+        /// </summary>
+        public ProtoService.UseCdkResponse TakeReward(CdkCodeModel data, int playerId, long token = 0, ProtoModel.TransferStage stage = ProtoModel.TransferStage.Prepare)
+        {
+            // 重放：这一趟已经核销过了，按成功返回（否则频道会把已经发下去的道具又收回去）
+            var entry = _transfers.Get(token, playerId);
+            if (entry != null && entry.Stage == ProtoModel.TransferStage.Commit)
+            {
+                var replay = new ProtoService.UseCdkResponse();
+                replay.Items.AddRange(_mapper.Map<ProtoModel.CdkRewordPackageProto[]>(data.Items));
+                return replay;
+            }
+
             var chr = _server.CharacterManager.FindPlayerById(playerId);
             if (chr == null)
                 return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.FetalError };
@@ -153,6 +196,19 @@ namespace Application.Core.Login.ServerData
                 }
             }
 
+            if (stage != ProtoModel.TransferStage.Commit)
+            {
+                // PREPARE：只占位。核销记录留到频道侧确认道具已经进背包之后
+                if (_transfers.Prepare(token, playerId, 0, now.ToUnixTimeMilliseconds()) == null)
+                {
+                    return new ProtoService.UseCdkResponse { Code = (int)UseCdkResponseCode.TooManyError };
+                }
+
+                var prepared = new ProtoService.UseCdkResponse();
+                prepared.Items.AddRange(_mapper.Map<ProtoModel.CdkRewordPackageProto[]>(data.Items));
+                return prepared;
+            }
+
             SetDirty(new CdkRecordModel
             {
                 Id = Interlocked.Increment(ref _localId),
@@ -160,6 +216,8 @@ namespace Application.Core.Login.ServerData
                 RecipientId = playerId,
                 RecipientTime = now
             });
+
+            _transfers.Reach(token, playerId, ProtoModel.TransferStage.Commit);
 
             var res = new ProtoService.UseCdkResponse();
             res.Items.AddRange(_mapper.Map<ProtoModel.CdkRewordPackageProto[]>(data.Items));

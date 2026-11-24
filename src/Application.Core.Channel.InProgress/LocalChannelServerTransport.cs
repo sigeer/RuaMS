@@ -747,6 +747,71 @@ namespace Application.Core.Channel.InProgress
             await _server.DueyManager.TakeDueyPackageCommit(request);
         }
 
+        public Task<ProtoService.ChangePageResponse> ChangeMTSPage(ProtoService.ChangePageRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.ChangePage(request));
+        }
+
+        public Task<ProtoService.SaleItemResponse> SaleMTSItem(ProtoService.SaleItemRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.SaleItem(request));
+        }
+
+        public Task<ProtoService.CancelSaleItemResponse> CancelMTSSale(ProtoService.CancelSaleItemRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.CancelSaleItem(request));
+        }
+
+        public Task<ProtoService.AddItemToCartResponse> AddMTSCartItem(ProtoService.AddItemToCartRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.AddItemToCart(request));
+        }
+
+        public Task<ProtoService.RemoveItemFromCartResponse> RemoveMTSCartItem(ProtoService.RemoveItemFromCartRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.RemoveItemFromCart(request));
+        }
+
+        public Task<ProtoService.TakeItemResponse> TakeMTSItem(ProtoService.TakeItemRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.TakeItem(request));
+        }
+
+        public Task<ProtoService.BuyResponse> BuyMTSItem(ProtoService.BuyRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.Buy(request));
+        }
+
+        public Task<ProtoService.MTSOperationResponse> RegisterMTSWanted(ProtoService.WantedRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.RegisterWanted(request));
+        }
+
+        public Task<ProtoService.MTSOperationResponse> CancelMTSWanted(ProtoService.ProductRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.CancelWanted(request));
+        }
+
+        public Task<ProtoService.MTSOperationResponse> FulfillMTSWanted(ProtoService.FulfillWantedRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.FulfillWanted(request));
+        }
+
+        public Task<ProtoService.MTSOperationResponse> LoadMTSWanted(ProtoService.ProductRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.LoadWanted(request));
+        }
+
+        public Task<ProtoService.SaleItemResponse> RegisterMTSAuction(ProtoService.SaleItemRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.RegisterAuction(request));
+        }
+
+        public Task<ProtoService.MTSOperationResponse> BidMTSAuction(ProtoService.BidRequest request)
+        {
+            return Task.FromResult(_server.MTSManager.BidAuction(request));
+        }
+
         public async Task JailPlayer(ProtoService.CreateJailRequest request)
         {
             await _server.CharacterManager.JailPlayer(request);

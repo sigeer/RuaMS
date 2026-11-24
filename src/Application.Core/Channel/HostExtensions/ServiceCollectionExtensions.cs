@@ -89,6 +89,7 @@ namespace Application.Core.Channel.HostExtensions
             services.AddSingleton<AntiMacroService>();
 
             services.AddSingleton<DueyManager>();
+            services.AddSingleton<MTSManager>();
 
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();
@@ -156,6 +157,10 @@ namespace Application.Core.Channel.HostExtensions
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();
             services.AddGrpcClient<ProtoService.DueyService.DueyServiceClient>((sp, o) =>
+            {
+                o.Address = new(AppSettingKeys.Grpc_Master);
+            }).AddInterceptor<WithServerNameInterceptor>();
+            services.AddGrpcClient<ProtoService.MTSService.MTSServiceClient>((sp, o) =>
             {
                 o.Address = new(AppSettingKeys.Grpc_Master);
             }).AddInterceptor<WithServerNameInterceptor>();

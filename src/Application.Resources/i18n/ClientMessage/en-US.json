@@ -222,6 +222,8 @@
   "Cash_PutPetIntoCashInventory": "You cannot put the pet you currently equip into the Cash Shop inventory.",
   "Cash_PutRelationshipItemIntoCashInventory": "You cannot put relationship items into the Cash Shop inventory.",
   "CashShop_CannotEnter_WithEventInstance": "Entering Cash Shop or MTS are disabled when registered on an event.",
+  "MTS_NotEnoughMeso": "You need at least {0} mesos to put an item up for sale on the MTS.",
+  "MTS_ListingLimit": "You can put at most {0} items up for sale on the MTS at the same time.",
   "BirthDay_Invalid": "Please check again the birthday date.",
   "Trade_PetCheck": "Pets are not allowed to be traded.",
   "Trade_CashItemCheck": "Cash items are not allowed to be traded.",

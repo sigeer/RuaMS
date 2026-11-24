@@ -15,7 +15,7 @@ namespace Application.Core.EF.Sqlite.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
             modelBuilder.Entity("Application.Core.EF.Entities.AccountBanEntity", b =>
                 {
@@ -1460,16 +1460,10 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
 
-                    b.Property<int>("Acc")
+                    b.Property<int>("BidCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("acc")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Avoid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("avoid")
+                        .HasColumnName("bid_count")
                         .HasDefaultValueSql("'0'");
 
                     b.Property<int>("BidIncre")
@@ -1478,171 +1472,39 @@ namespace Application.Core.EF.Sqlite.Migrations
                         .HasColumnName("bid_incre")
                         .HasDefaultValueSql("'0'");
 
+                    b.Property<int>("Bidder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("bidder")
+                        .HasDefaultValueSql("'0'");
+
                     b.Property<int>("BuyNow")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("buy_now")
                         .HasDefaultValueSql("'0'");
 
-                    b.Property<int>("Dex")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("dex")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<long>("Expiration")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("expiration")
-                        .HasDefaultValueSql("'-1'");
-
-                    b.Property<int>("Flag")
-                        .HasColumnType("int")
-                        .HasColumnName("flag");
-
-                    b.Property<string>("GiftFrom")
-                        .IsRequired()
-                        .HasMaxLength(26)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("giftFrom");
-
-                    b.Property<int>("Hands")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("hands")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Hp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("hp")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Int")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("int")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Isequip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("isequip")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Itemexp")
-                        .HasColumnType("int")
-                        .HasColumnName("itemexp");
-
-                    b.Property<int>("Itemid")
-                        .HasColumnType("int")
-                        .HasColumnName("itemid");
-
-                    b.Property<int>("Itemlevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("itemlevel")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<int>("Jump")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("jump")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Level")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("level")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Locked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("locked")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Luk")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("luk")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Matk")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("matk")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Mdef")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("mdef")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Mp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("mp")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<string>("Owner")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(16)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("owner")
-                        .HasDefaultValueSql("''");
-
-                    b.Property<int>("Position")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("position")
-                        .HasDefaultValueSql("'0'");
+                    b.Property<byte[]>("ItemBlob")
+                        .HasColumnType("BLOB")
+                        .HasColumnName("item_blob");
 
                     b.Property<int>("Price")
                         .HasColumnType("int")
                         .HasColumnName("price");
 
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("quantity")
-                        .HasDefaultValueSql("'1'");
-
-                    b.Property<long>("Ringid")
+                    b.Property<long>("ReleaseDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("ringid")
-                        .HasDefaultValueSql("'-1'");
+                        .HasColumnName("release_date")
+                        .HasDefaultValueSql("'0'");
 
-                    b.Property<string>("SellEnds")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("TEXT")
+                    b.Property<long>("SellEnds")
+                        .HasColumnType("bigint")
                         .HasColumnName("sell_ends");
 
                     b.Property<int>("Seller")
                         .HasColumnType("int")
                         .HasColumnName("seller");
-
-                    b.Property<string>("Sellername")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("sellername");
-
-                    b.Property<int>("Speed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("speed")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Str")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("str")
-                        .HasDefaultValueSql("'0'");
 
                     b.Property<int>("Tab")
                         .HasColumnType("int")
@@ -1657,28 +1519,6 @@ namespace Application.Core.EF.Sqlite.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int")
                         .HasColumnName("type");
-
-                    b.Property<int>("Upgradeslots")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("upgradeslots")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Vicious")
-                        .HasColumnType("int")
-                        .HasColumnName("vicious");
-
-                    b.Property<int>("Watk")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("watk")
-                        .HasDefaultValueSql("'0'");
-
-                    b.Property<int>("Wdef")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("wdef")
-                        .HasDefaultValueSql("'0'");
 
                     b.HasKey("Id")
                         .HasName("PRIMARY");

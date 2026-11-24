@@ -145,7 +145,7 @@ namespace Application.Core.Login.ServerData
         ProtoModel.DueyPackageProto CreateDueyPackageModel(int senderId, int reciverId, ProtoModel.ItemProto? item, int meso, bool quick, string? message)
         {
             // Q.为什么特快是提前一天？而不是让普通包裹推迟一天？
-            var time = DateTimeOffset.FromUnixTimeMilliseconds(_server.getCurrentTime());
+            var time = _server.GetCurrentTimeDateTimeOffset();
             if (quick)
                 time = time.AddDays(-1);
 

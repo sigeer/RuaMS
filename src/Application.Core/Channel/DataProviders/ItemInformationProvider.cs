@@ -117,6 +117,16 @@ public class ItemInformationProvider : DataBootstrap, IStaticService
     public AbstractTemplate? GetTemplate(int itemId) => GetItemTemplate(itemId);
     public AbstractItemTemplate? GetItemTemplate(int itemId) => GetProvider(itemId).GetItem(itemId);
     public EquipTemplate? GetEquipTemplate(int equipId) => _equipProvider.GetRequiredItem<EquipTemplate>(equipId);
+
+    /// <summary>
+    /// 按物品名称模糊匹配，返回匹配的物品id
+    /// </summary>
+    public IEnumerable<int> SearchItemIdsByName(string keyword)
+    {
+        return _equipProvider.LoadAll().Select(x => x.TemplateId)
+            .Concat(_itemProvider.LoadAll().Select(x => x.TemplateId))
+            .Where(id => getName(id)?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true);
+    }
     public bool noCancelMouse(int itemId)
     {
         return GetProvider(itemId).GetRequiredItem<ConsumeItemTemplate>(itemId)?.NoCancelMouse ?? false;

@@ -29,6 +29,11 @@ namespace Application.Core.Login.Shared
         Gift,
         Marriage,
 
-        ExpeditionRecord
+        ExpeditionRecord,
+
+        /// <summary>
+        /// 拍卖行（MTS / ITC）
+        /// </summary>
+        MTS
     }
 }
