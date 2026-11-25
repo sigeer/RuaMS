@@ -66,6 +66,8 @@ namespace Application.Core.Channel
 
         readonly Lazy<DataService> _dataService;
         public DataService DataService => _dataService.Value;
+        readonly Lazy<CashShopManager> _cashShopManager;
+        public CashShopManager CashShopManager => _cashShopManager.Value;
         readonly Lazy<IPlayerNPCService> _playerNPCService;
         public IPlayerNPCService PlayerNPCService => _playerNPCService.Value;
         readonly Lazy<IMarriageService> _marriageService;
@@ -73,6 +75,8 @@ namespace Application.Core.Channel
 
         readonly Lazy<ItemService> _itemService;
         public ItemService ItemService => _itemService.Value;
+        readonly Lazy<MTSManager> _mtsManager;
+        public MTSManager MTSManager => _mtsManager.Value;
         readonly Lazy<PlayerShopService> _playerShopService;
         public PlayerShopService PlayerShopService => _playerShopService.Value;
         readonly Lazy<MonitorManager> _monitorManager;
@@ -169,8 +173,10 @@ namespace Application.Core.Channel
             _chatRoomService = new Lazy<ChatRoomService>(() => ServiceProvider.GetRequiredService<ChatRoomService>());
             _newYearService = new(() => ServiceProvider.GetRequiredService<NewYearCardService>());
             _dataService = new(() => ServiceProvider.GetRequiredService<DataService>());
+            _cashShopManager = new(() => ServiceProvider.GetRequiredService<CashShopManager>());
             _playerNPCService = new(() => ServiceProvider.GetRequiredService<IPlayerNPCService>());
             _itemService = new(() => ServiceProvider.GetRequiredService<ItemService>());
+            _mtsManager = new(() => ServiceProvider.GetRequiredService<MTSManager>());
             _playerShopService = new(() => ServiceProvider.GetRequiredService<PlayerShopService>());
             _remoteCallService = new(() => ServiceProvider.GetRequiredService<CrossServerCallbackService>());
             _itemDistributeService = new(() => ServiceProvider.GetRequiredService<IItemDistributeService>());

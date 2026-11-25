@@ -9,3 +9,12 @@ message GiftInfoProto {
 	string message = 2;
 	bool createRing = 3;
 }
+
+// 角色侧的钱：金币（角色上）+ 三种现金点数（账号上）。
+// 账本在中心服，频道不缓存；MTS 和现金商城都用这一份结构回传当前余额。
+message PlayerCashProto {
+	int32 meso = 1;
+	int32 nxCredit = 2;
+	int32 maplePoint = 3;
+	int32 nxPrepaid = 4;
+}

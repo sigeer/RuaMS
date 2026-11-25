@@ -53,12 +53,14 @@ namespace Application.Core.Channel.Services
         public async Task SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var dto = Deserialize(player);
-            if (trigger == SyncCharacterTrigger.Logoff)
+            if (trigger == SyncCharacterTrigger.LeaveChannel)
             {
                 dto.Channel = 0;
             }
-            if (trigger == SyncCharacterTrigger.PreEnterChannel || trigger == SyncCharacterTrigger.EnterCashShop)
-                await _transport.SyncPlayer(dto, trigger); // 切换服务器时会马上请求数据，批量保存存在延迟可能有问题
+            // 切换频道、进商城、离开商城时断线都要马上同步：
+            // 这几步之后频道侧的数据会被丢弃或重新拉取，走批量队列会有竞态
+            if (trigger == SyncCharacterTrigger.LeaveChannel)
+                await _transport.SyncPlayer(dto, trigger);
             else
                 _server.BatchSyncPlayerManager.Enqueue(dto);
         }
@@ -90,29 +92,9 @@ namespace Application.Core.Channel.Services
 
             player.Monsterbook.LoadData(o.Character.Data.MonsterBooks);
 
-            List<Item> cashItems;
-            switch (player.CashShopModel.Factory)
-            {
-                case Shared.Items.ItemType.CashExplorer:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashExplorerItems);
-                    break;
-                case Shared.Items.ItemType.CashCygnus:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashCygnusItems);
-                    break;
-                case Shared.Items.ItemType.CashAran:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashAranItems);
-                    break;
-                default:
-                    cashItems = _mapper.Map<List<Item>>(o.AccountGame.Data.CashOverallItems);
-                    break;
-            }
-            player.CashShopModel.LoadData(
-                o.AccountGame.NxCredit,
-                o.AccountGame.MaplePoint,
-                o.AccountGame.NxPrepaid,
-                o.Character.Data.WishItems.ToList(),
-                cashItems
-                );
+            // 余额、现金仓都不进频道状态：它们全程由中心服持有，需要时现查。
+            // 愿望单只是显示用的快照，进商城时也会被中心服那份覆盖
+            player.LoadWishList(o.Character.Data.WishItems);
 
             player.Link = o.Link == null ? null : new CharacterLink(o.Link.Name, o.Link.Level);
 
@@ -298,7 +280,7 @@ namespace Application.Core.Channel.Services
                 : null;
 
             var playerDto = _mapper.Map<ProtoModel.CharacterProto>(player);
-            if (player.MapModel == null || player.CashShopModel.isOpened())
+            if (player.MapModel == null || player.IsInExtraServer())
             {
                 playerDto.Map = player.Map;
             }
@@ -344,7 +326,7 @@ namespace Application.Core.Channel.Services
             data.KeyMaps.AddRange(player.KeyMap.ToDto());
             data.QuestStatuses.AddRange(questStatusList);
 
-            data.WishItems.AddRange(player.CashShopModel.getWishList());
+            data.WishItems.AddRange(player.WishList);
             data.CoolDowns.AddRange(_mapper.Map<ProtoModel.CoolDownProto[]>(player.getAllCooldowns()));
 
             var bagMapping = new Dictionary<InventoryType, RepeatedField<ProtoModel.ItemProto>>()
@@ -363,11 +345,10 @@ namespace Application.Core.Channel.Services
                     kw.Value.Add(_server.Mapper.Map<ProtoModel.ItemProto>(invItem));
                 }
             }
+            // 余额、现金仓不在频道侧，这里不带上去：中心服在同步时保留自己那份
+            // （见 CharacterManager.Update：在商城 / 拍卖行里断线的 trigger 一律以中心服为准）
             saveDto.AccountGame = new ProtoModel.AccountGameProto()
             {
-                NxCredit = player.CashShopModel.NxCredit,
-                NxPrepaid = player.CashShopModel.NxPrepaid,
-                MaplePoint = player.CashShopModel.MaplePoint,
                 Id = playerDto.AccountId,
                 Data = new ProtoModel.AccountGameDataProto()
                 {
@@ -384,15 +365,6 @@ namespace Application.Core.Channel.Services
             saveDto.AccountGame.Data.Storage.Items.AddRange(player.Storage.GetItems().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             data.GachaponStorage.Meso = player.GachaponStorage.Meso;
             data.GachaponStorage.Items.AddRange(player.GachaponStorage.GetItems().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
-            var cashFactoryType = player.CashShopModel.Factory;
-            if (cashFactoryType == ItemType.CashOverall)
-                saveDto.AccountGame.Data.CashOverallItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
-            if (cashFactoryType == ItemType.CashAran)
-                saveDto.AccountGame.Data.CashAranItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
-            if (cashFactoryType == ItemType.CashExplorer)
-                saveDto.AccountGame.Data.CashExplorerItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
-            if (cashFactoryType == ItemType.CashCygnus)
-                saveDto.AccountGame.Data.CashCygnusItems.AddRange(player.CashShopModel.getInventory().Select(x => _server.Mapper.Map<ProtoModel.ItemProto>(x)));
             return saveDto;
         }
 
@@ -431,35 +403,6 @@ namespace Application.Core.Channel.Services
                 }
             });
         }
-
-        //public PlayerSaveProto DeserializeCashShop(Player player)
-        //{
-        //    var cashShopItems = player.CashShopModel.getInventory();
-        //    var cashShopDto  = new CashShopDto()
-        //    {
-        //        Items = _mapper.Map<ItemProto[]>(cashShopItems, opt =>
-        //        {
-        //            opt.Items["Type"] = player.CashShopModel.Factory.getValue();
-        //        }),
-        //        WishItems = player.CashShopModel.getWishList().ToArray(),
-        //        FactoryType = player.CashShopModel.Factory.getValue(),
-        //        NxCredit = player.CashShopModel.NxCredit,
-        //        NxPrepaid = player.CashShopModel.NxPrepaid,
-        //        MaplePoint = player.CashShopModel.MaplePoint
-        //    };
-
-        //    var d = player.Bag.GetValues().SelectMany(x => _mapper.Map<List<ItemProto>>(x.list(), opt =>
-        //    {
-        //        opt.Items["InventoryType"] = (int)x.getType();
-        //        opt.Items["Type"] = 1;
-        //    })).ToArray();
-
-        //    return new PlayerSaveProto
-        //    {
-        //        CashShop = cashShopDto,
-        //        InventoryItems = _mapper.Map<ItemProto[]>(d),
-        //    };
-        //}
 
         public ProtoModel.PlayerBuffProto DeserializeBuff(Player player)
         {

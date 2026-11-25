@@ -224,6 +224,7 @@ public enum RecvOpcode
     OPEN_ITEMUI = 0xEC,
     CLOSE_ITEMUI = 0xED,
     USE_ITEMUI = 0xEE,
+    MTS_Check = 0xFC,
     MTS_OPERATION = 0xFD,
     USE_MAPLELIFE = 0x100,
     USE_HAMMER = 0x104,

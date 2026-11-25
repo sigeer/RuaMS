@@ -22,4 +22,8 @@ message ItemProto {
   PetProto petInfo = 10;
   google.protobuf.StringValue properties = 11;
   int64 lockExpiration = 12;
+  // 现金道具的商城 SN（CashCommodityTemplate.CashItemSN）。
+  // 中心服不生成真物品，只记「买的是哪一件」；玩家回到主世界时频道按这个 SN
+  // 用 WZ 模板生成 Item，所以这里是延迟生成的唯一依据。
+  int32 sn = 13;
 }

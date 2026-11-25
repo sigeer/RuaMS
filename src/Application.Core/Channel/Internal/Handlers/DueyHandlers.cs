@@ -122,7 +122,7 @@ namespace Application.Core.Channel.Internal.Handlers
 
 
                         await _server.Transport.TakeDueyPackageCommit(new ProtoService.TakeDueyPackageCommitRequest { MasterId = chr.Id, PackageId = dp.PackageId, Success = false });
-                        await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, 0, 0, "包裹满了");
+                        await _server.ItemDistributeService.Distribute(chr, dpItem == null ? [] : [dpItem], dp.Mesos, "包裹满了");
                     }
                     else
                     {

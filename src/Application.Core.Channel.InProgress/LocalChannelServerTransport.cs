@@ -527,6 +527,61 @@ namespace Application.Core.Channel.InProgress
             return _server.CashShopDataManager.BuyCashItem(buyCashItemRequest);
         }
 
+        public ProtoService.CashShopStateResponse GetCashShopState(ProtoService.CashShopStateRequest request)
+        {
+            return _server.CashShopManager.GetState(request);
+        }
+
+        public ProtoService.GainCashResponse GainCash(ProtoService.GainCashRequest request)
+        {
+            return _server.CashShopManager.GainCash(request);
+        }
+
+        public Task<ProtoService.TakeCashItemResponse> TakeCashItem(ProtoService.TakeCashItemRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.TakeCashItem(request));
+        }
+
+        public Task<ProtoService.PutCashItemResponse> PutCashItem(ProtoService.PutCashItemRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.PutCashItem(request));
+        }
+
+        public Task<ProtoService.BuyQuestItemResponse> BuyQuestItem(ProtoService.BuyQuestItemRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.BuyQuestItem(request));
+        }
+
+        public Task<ProtoService.AddCashItemsResponse> AddCashItems(ProtoService.AddCashItemsRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.AddCashItems(request));
+        }
+
+        public Task<ProtoService.UseCashShopSurpriseResponse> UseCashShopSurprise(ProtoService.UseCashShopSurpriseRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.UseCashShopSurprise(request));
+        }
+
+        public Task<ProtoService.UpdateWishListResponse> UpdateCashWishList(ProtoService.UpdateWishListRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.UpdateWishList(request));
+        }
+
+        public Task<ProtoService.GainSlotResponse> GainInventorySlots(ProtoService.GainInventorySlotsRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.GainInventorySlots(request));
+        }
+
+        public Task<ProtoService.GainSlotResponse> GainStorageSlots(ProtoService.GainStorageSlotsRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.GainStorageSlots(request));
+        }
+
+        public Task<ProtoService.GainSlotResponse> GainCharacterSlots(ProtoService.GainCharacterSlotsRequest request)
+        {
+            return Task.FromResult(_server.CashShopManager.GainCharacterSlots(request));
+        }
+
         public ProtoModel.RemoteHiredMerchantProto LoadPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest getPlayerShopRequest)
         {
             return _server.PlayerShopManager.GetPlayerHiredMerchant(getPlayerShopRequest);

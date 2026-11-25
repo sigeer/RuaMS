@@ -21,6 +21,8 @@
 */
 
 
+using Application.Core.Channel.ServerData;
+using Application.Core.Game.Trades;
 using Microsoft.Extensions.Logging;
 using tools;
 
@@ -30,30 +32,32 @@ namespace Application.Core.Channel.Net.Handlers;
 
 public class NoteActionHandler : ChannelHandlerBase
 {
+    readonly CashShopManager _cashShopManager;
     readonly ILogger<NoteActionHandler> _logger;
 
-    public NoteActionHandler(ILogger<NoteActionHandler> logger)
+    public NoteActionHandler(CashShopManager cashShopManager, ILogger<NoteActionHandler> logger)
     {
+        _cashShopManager = cashShopManager;
         _logger = logger;
     }
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
         int action = p.readByte();
-        if (action == 0 && c.OnlinedCharacter.getCashShop().getAvailableNotes() > 0)
+
+        // 回礼只能在商城里做：未读礼物条数记在商城会话（CashShopServer）上，不在 Player 里
+        if (action == 0 && c.TradeServer is CashShopServer cashShop && cashShop.Notes > 0)
         {
             // Reply to gift in cash shop
             string charname = p.readString();
             string message = p.readString();
-            if (c.OnlinedCharacter.getCashShop().isOpened())
-            {
-                await c.SendPacket(PacketCreator.showCashInventory(c));
-            }
+
+            await c.SendPacket(PacketCreator.showCashInventory(c.AccountEntity!.Id, _cashShopManager.GetState(c)));
 
             bool sendNoteSuccess = await c.CurrentServer.Node.Transport.SendNormalNoteMessage(c.OnlinedCharacter.Id, charname, message);
             if (sendNoteSuccess)
             {
-                c.OnlinedCharacter.getCashShop().decreaseNotes();
+                cashShop.Notes--;
             }
         }
         else if (action == 1)

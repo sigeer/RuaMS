@@ -6,6 +6,7 @@ using Application.Core.Channel.Services;
 using Application.Core.Channel.Tasks;
 using Application.Core.Game.ContiMove;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Trades;
 using Application.Core.Server.events.gm;
 using Application.Core.Server.life;
 using Application.Core.Server.maps;
@@ -49,7 +50,7 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
     /// <summary>
     /// 处于现金商城
     /// </summary>
-    public Dictionary<int, Player> PlayersAway { get; set; } = new();
+    public Dictionary<int, IChannelClient> PlayersAway { get; set; } = new();
 
     private Dictionary<int, MiniDungeon> dungeons = new();
 
@@ -527,13 +528,28 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
             }
         }
     }
-    public async Task EnterExtralWorld(Player chr)
+    public async Task EnterExtralWorld(Player chr, ITradeServer server)
     {
         // either they in CS or MTS
-        if (PlayersAway.TryAdd(chr.Id, chr))
+        if (PlayersAway.TryAdd(chr.Id, chr.Client))
+        {
             GameMetrics.OnlinePlayerCount.Add(1);
 
-        await RemovePlayer(chr.Id);
+            await chr.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.LeaveChannel);
+
+            await chr.closePlayerInteractions();
+            chr.closePartySearchInteractions();
+
+            await chr.unregisterChairBuff();
+            chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
+
+            await chr.CancelAllBuffs();
+            chr.cancelAllDebuffs();
+            await chr.forfeitExpirableQuests();
+
+            await RemovePlayer(chr.Id);
+            chr.Client.TradeServer = server;
+        }
     }
 
     public async Task RemovePlayerDeep(Player chr)
@@ -553,12 +569,9 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
 
     private async Task disconnectAwayPlayers()
     {
-        foreach (var chr in PlayersAway.Values)
+        foreach (var client in PlayersAway.Values)
         {
-            if (chr != null && chr.isLoggedinWorld())
-            {
-                await chr.getClient().ForceDisconnect();
-            }
+            await client.ForceDisconnect();
         }
     }
 

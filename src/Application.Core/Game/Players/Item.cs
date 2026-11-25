@@ -2,6 +2,7 @@ using Application.Core.Channel.DataProviders;
 using Application.Core.Client.inventory;
 using Application.Core.Game.Items;
 using Application.Core.Game.Relation;
+using Application.Core.Game.Trades;
 using Application.Core.Server;
 using Application.Templates.Etc;
 using Application.Templates.Item.Consume;
@@ -325,15 +326,15 @@ namespace Application.Core.Game.Players
                 }
                 else if (itemId == ItemId.NxCredit)
                 {
-                    CashShopModel.TryGainCash(CashShop.NX_CREDIT, quantity);
+                    TryGainCash(CashShopServer.NX_CREDIT, quantity);
                 }
                 else if (itemId == ItemId.MaplePoint)
                 {
-                    CashShopModel.TryGainCash(CashShop.MAPLE_POINT, quantity);
+                    TryGainCash(CashShopServer.MAPLE_POINT, quantity);
                 }
                 else if (itemId == ItemId.NxPrepare)
                 {
-                    CashShopModel.TryGainCash(CashShop.NX_PREPAID, quantity);
+                    TryGainCash(CashShopServer.NX_PREPAID, quantity);
                 }
                 else if (itemId == ItemId.Exp)
                 {
@@ -420,16 +421,46 @@ namespace Application.Core.Game.Players
             return null;
         }
 
-        public async Task BuyCashItem(int cashType, CashCommodityTemplate cItem, Func<Task<bool>> condition)
+        /// <summary>
+        /// 增减点数。账本在中心服，这里只是转发；余额不再落在频道侧。
+        /// <para>
+        /// 三种点数一次提交：礼包经常同时发点券和抵用券，分几次请求既慢又可能出现
+        /// 「发了点券、抵用券失败」的中间态。三者都是可选项，全为 0 时不发请求。
+        /// </para>
+        /// </summary>
+        public void GainCash(int nxCredit = 0, int maplePoint = 0, int nxPrepaid = 0)
         {
-            if (cItem.Price > CashShopModel.getCash(cashType))
+            if (nxCredit == 0 && maplePoint == 0 && nxPrepaid == 0)
+            {
                 return;
+            }
 
-            if (!await condition.Invoke())
-                return;
+            Client.CurrentServer.Node.Transport.GainCash(new ProtoService.GainCashRequest
+            {
+                MasterId = Id,
+                NxCredit = nxCredit,
+                MaplePoint = maplePoint,
+                NxPrepaid = nxPrepaid,
+            });
+        }
 
-            CashShopModel.BuyCashItem(cashType, cItem);
-            await SendPacket(PacketCreator.showCash(this));
+        /// <summary>
+        /// 增减单一类型的点数。内部转成一次三字段请求。
+        /// </summary>
+        public void TryGainCash(int cashType, int cashValue)
+        {
+            switch (cashType)
+            {
+                case CashShopServer.NX_CREDIT:
+                    GainCash(nxCredit: cashValue);
+                    break;
+                case CashShopServer.MAPLE_POINT:
+                    GainCash(maplePoint: cashValue);
+                    break;
+                case CashShopServer.NX_PREPAID:
+                    GainCash(nxPrepaid: cashValue);
+                    break;
+            }
         }
 
         /// <summary>

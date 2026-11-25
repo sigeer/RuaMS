@@ -1,5 +1,6 @@
 using Application.Core.Channel;
 using Application.Core.Game.Life;
+using Application.Core.Game.Trades;
 using Application.Core.Scripting.Events;
 using Application.Shared.MapObjects.Players;
 using Application.Shared.Servers;
@@ -21,6 +22,8 @@ namespace Application.Core.Game
         public Player? Character => null;
 
         public Player OnlinedCharacter => throw new BusinessCharacterOfflineException();
+        public int CharacterId => 0;
+        public ITradeServer? TradeServer { get; set; }
 
         public bool IsServerTransition => throw new BusinessCharacterOfflineException();
 

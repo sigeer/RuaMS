@@ -1,6 +1,7 @@
 using Application.Core.Channel.DataProviders;
 using Application.Core.Game.Maps;
 using Application.Core.Game.Maps.AnimatedObjects;
+using Application.Core.Game.Trades;
 using Application.Core.Server;
 using Application.Templates.Item.Consume;
 using Application.Templates.Item.Pet;
@@ -191,12 +192,15 @@ namespace Application.Core.Gameplay
             {
                 // Add NX to account, show effect and make item disappear
                 int nxGain = mapItem.getItemId() == ItemId.NX_CARD_100 ? 100 : 250;
-                // _player.RewardNxCredit.addAndGet(nxGain);
-                _player.getCashShop().gainCash(1, nxGain);
+                _player.TryGainCash(CashShopServer.NX_CREDIT, nxGain);
 
                 if (YamlConfig.config.server.USE_ANNOUNCE_NX_COUPON_LOOT)
                 {
-                    await _player.showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + _player.getCashShop().getCash(CashShop.NX_CREDIT) + " NX)", 300);
+                    // 余额在中心服，拾取后再查一次拿最新的数值
+                    var cash = _player.Client.CurrentServer.Node.Transport
+                        .GetCashShopState(new ProtoService.CashShopStateRequest { MasterId = _player.Id })
+                        .Cash;
+                    await _player.showHint("You have earned #e#b" + nxGain + " NX#k#n. (" + CashShopServer.GetCash(cash, CashShopServer.NX_CREDIT) + " NX)", 300);
                 }
                 return true;
             }

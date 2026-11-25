@@ -16,7 +16,7 @@ namespace Application.Core.Game.Players
 {
     public partial class Player : AbstractAnimatedMapObject, IAnimatedMapObject, IMapObject, ILife, IClientPlayer, ICombatantObject, ILoopTickable
     {
-        public int Channel => CashShopModel.isOpened() ? -1 : ActualChannel;
+        public int Channel => IsInExtraServer() ? -1 : ActualChannel;
         public int ActualChannel => Client.Channel;
         public virtual IChannelClient Client { get; private set; }
         /// <summary>
@@ -63,7 +63,6 @@ namespace Application.Core.Game.Players
 
             Bag = new PlayerBag(this, o.Character.Equipslots, o.Character.Useslots, o.Character.Setupslots, o.Character.Etcslots);
             Monsterbook = new MonsterBook(this);
-            CashShopModel = new CashShop(this);
 
             FameLogs = new();
 
@@ -75,6 +74,12 @@ namespace Application.Core.Game.Players
                 UpdateActualRate();
             }
         }
+
+        /// <summary>
+        /// 是否正在商城 / 拍卖行里（此时角色已脱离世界，频道号对外表现为 -1）。
+        /// <para>状态记在会话上：<see cref="IChannelClient.TradeServer"/> 非空即表示已进入。</para>
+        /// </summary>
+        public bool IsInExtraServer() => Client.TradeServer != null;
 
         public override int GetSourceId()
         {

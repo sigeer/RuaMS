@@ -6,13 +6,16 @@ namespace Application.Core.Channel.Services
     public interface IItemDistributeService
     {
         /// <summary>
-        /// 发放道具/金币，不能发放的部分以其他方式给予
+        /// 发放道具/金币/点数，不能发放的部分以其他方式给予
         /// </summary>
         /// <param name="chr"></param>
         /// <param name="items"></param>
         /// <param name="meso"></param>
         /// <param name="title"></param>
-        Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null);
+        /// <param name="nxCredit">点券，三种点数一起提交</param>
+        /// <param name="maplePoint">抵用券</param>
+        /// <param name="nxPrepaid">信用卡</param>
+        Task Distribute(Player chr, List<Item> items, int meso, string? title = null, int nxCredit = 0, int maplePoint = 0, int nxPrepaid = 0);
     }
 
     /// <summary>
@@ -20,7 +23,7 @@ namespace Application.Core.Channel.Services
     /// </summary>
     public class DefaultItemDistributeService : IItemDistributeService
     {
-        public async Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public async Task Distribute(Player chr, List<Item> items, int meso, string? title = null, int nxCredit = 0, int maplePoint = 0, int nxPrepaid = 0)
         {
             bool needNotice = false;
             foreach (var item in items)
@@ -45,7 +48,7 @@ namespace Application.Core.Channel.Services
                 }
             }
 
-            chr.getCashShop().gainCash(cashType, cashValue);
+            chr.GainCash(nxCredit, maplePoint, nxPrepaid);
             if (needNotice)
             {
                 await chr.Notice($"你的背包满了，物品掉落在{chr.getMap().getStreetName()}");

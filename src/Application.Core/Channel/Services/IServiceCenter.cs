@@ -21,6 +21,8 @@ namespace Application.Core.Channel.Services
         AdminService AdminService { get; }
         DataService DataService { get; }
         ItemService ItemService { get; }
+        CashShopManager CashShopManager { get; }
+        MTSManager MTSManager { get; }
         CrossServerCallbackService RemoteCallService { get; }
         ExpeditionService ExpeditionService { get; }
         IPlayerNPCService PlayerNPCService { get; }

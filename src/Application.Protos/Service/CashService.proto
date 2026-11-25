@@ -16,6 +16,31 @@ service CashService {
 	rpc CommitRetrieveGift(CommitRetrieveGiftRequest) returns(google.protobuf.Empty);
 
 	rpc BuyCashItem(BuyCashItemRequest) returns (BuyCashItemResponse);
+
+	// 商城的全部状态（余额、现金仓、格数、愿望单）：频道不缓存，按需查询
+	rpc GetCashShopState (CashShopStateRequest) returns (CashShopStateResponse);
+	// 增减点数：账本在中心服，频道直接转发
+	rpc GainCash (GainCashRequest) returns (GainCashResponse);
 	rpc LoadSpecialItems(google.protobuf.Empty) returns(ProtoModel.SpecialCashItemListProto);
 	rpc LoadMosterSellItems(google.protobuf.Empty) returns(ProtoModel.MosterSellerInfo);
+
+	// 现金仓 <-> 背包（op 0x0D / 0x0E）
+	rpc TakeCashItem (TakeCashItemRequest) returns (TakeCashItemResponse);
+	rpc PutCashItem (PutCashItemRequest) returns (PutCashItemResponse);
+
+	// 金币购买商城里的任务物品（op 0x20）：扣金币、落背包都在中心服
+	rpc BuyQuestItem (BuyQuestItemRequest) returns (BuyQuestItemResponse);
+
+	// 把频道生成好的物品落进中心服的现金仓 / 背包
+	rpc AddCashItems (AddCashItemsRequest) returns (AddCashItemsResponse);
+	// 现金扭蛋：消耗一件、由中心服新增一件，两步都在中心服完成
+	rpc UseCashShopSurprise (UseCashShopSurpriseRequest) returns (UseCashShopSurpriseResponse);
+
+	// 愿望单（op 0x05）
+	rpc UpdateWishList (UpdateWishListRequest) returns (UpdateWishListResponse);
+
+	// 栏位扩容（op 0x06 / 0x07 / 0x08）：改完之后以中心服为准，频道侧不再自行修改
+	rpc GainInventorySlots (GainInventorySlotsRequest) returns (GainSlotResponse);
+	rpc GainStorageSlots (GainStorageSlotsRequest) returns (GainSlotResponse);
+	rpc GainCharacterSlots (GainCharacterSlotsRequest) returns (GainSlotResponse);
 }

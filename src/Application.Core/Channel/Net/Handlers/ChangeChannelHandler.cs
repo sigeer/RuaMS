@@ -51,7 +51,7 @@ public class ChangeChannelHandler : ChannelHandlerBase
             await c.Disconnect(false, false);
             return;
         }
-        else if (c.OnlinedCharacter.getCashShop().isOpened() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.VisitingShop is PlayerShop)
+        else if (c.OnlinedCharacter.IsInExtraServer() || c.OnlinedCharacter.getMiniGame() != null || c.OnlinedCharacter.VisitingShop is PlayerShop)
         {
             return;
         }

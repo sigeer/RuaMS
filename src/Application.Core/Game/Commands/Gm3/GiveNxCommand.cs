@@ -63,7 +63,7 @@ public class GiveNxCommand : CommandBase
         var victim = c.getChannelServer().getPlayerStorage().getCharacterByName(recv);
         if (victim != null && victim.IsOnlined)
         {
-            victim.getCashShop().gainCash(type, value);
+            victim.TryGainCash(type, value);
             await player.Yellow(ClientMessage.Command_Done, player.getLastCommandMessage());
         }
         else

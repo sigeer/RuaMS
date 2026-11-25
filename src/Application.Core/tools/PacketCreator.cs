@@ -2696,8 +2696,8 @@ public class PacketCreator
         {
             p.writeByte(0);
         }
-        p.writeByte(chr.getCashShop().getWishList().Count);
-        foreach (int sn in chr.getCashShop().getWishList())
+        p.writeByte(chr.WishList.Count);
+        foreach (int sn in chr.WishList)
         {
             p.writeInt(sn);
         }
@@ -4843,12 +4843,15 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showCouponRedeemedItems(int accountId, int maplePoints, int mesos, List<Item> cashItems, List<ItemQuantity> items)
+    /// <summary>
+    /// CDK / 补发奖励的领取结果。现金道具是中心服存的轻量条目，不需要频道生成物品。
+    /// </summary>
+    public static Packet showCouponRedeemedItems(int accountId, int maplePoints, int mesos, IReadOnlyList<ProtoModel.ItemProto> cashItems, List<ItemQuantity> items)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
         p.writeByte(0x59);
         p.writeByte(cashItems.Count);
-        foreach (Item item in cashItems)
+        foreach (var item in cashItems)
         {
             addCashItemInformation(p, item, accountId);
         }
@@ -4865,18 +4868,17 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showCash(Player mc)
+    /// <summary>
+    /// 余额。账本在中心服，频道不缓存，数值来自 <c>GetCashShopState</c> / 购买返回值
+    /// （拍卖行是随 <c>PlayerMTSInfoProto</c> 一起下发）。
+    /// </summary>
+    public static Packet showCash(int nxCredit, int maplePoint, int nxPrepaid)
     {
         OutPacket p = OutPacket.create(SendOpcode.QUERY_CASH_RESULT);
-        p.writeInt(mc.getCashShop().getCash(CashShop.NX_CREDIT));
-        p.writeInt(mc.getCashShop().getCash(CashShop.MAPLE_POINT));
-        p.writeInt(mc.getCashShop().getCash(CashShop.NX_PREPAID));
+        p.writeInt(nxCredit);
+        p.writeInt(maplePoint);
+        p.writeInt(nxPrepaid);
         return p;
-    }
-
-    public static Packet enableCSUse(Player mc)
-    {
-        return showCash(mc);
     }
 
     public static Packet GetSameChannelFindResult(Player target, byte flag)
@@ -5363,6 +5365,28 @@ public class PacketCreator
         return p;
     }
 
+    /// <summary>
+    /// 礼包购买结果。条目直接来自中心服（轻量记录），不需要频道生成物品。
+    /// </summary>
+    public static Packet showBoughtCashPackage(IEnumerable<ProtoModel.ItemProto> cashPackage, int accountId)
+    {
+        var items = cashPackage as IList<ProtoModel.ItemProto> ?? cashPackage.ToList();
+
+        OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
+
+        p.writeByte(0x89);
+        p.writeByte(items.Count);
+
+        foreach (var item in items)
+        {
+            addCashItemInformation(p, item, accountId);
+        }
+
+        p.writeShort(0);
+
+        return p;
+    }
+
     public static Packet showBoughtQuestItem(int itemId)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
@@ -5383,7 +5407,10 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet onCashGachaponOpenSuccess(int accountid, long boxCashId, int remainingBoxes, Item reward,
+    /// <summary>
+    /// 扭蛋结果。奖品是中心服存的轻量条目，不需要频道生成物品。
+    /// </summary>
+    public static Packet onCashGachaponOpenSuccess(int accountid, long boxCashId, int remainingBoxes, ProtoModel.ItemProto reward,
                                                    int rewardItemId, int rewardQuantity, bool bJackpot)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_CASH_ITEM_GACHAPON_RESULT);
@@ -5755,6 +5782,38 @@ public class PacketCreator
         addCashItemInformation(p, item, accountId, null);
     }
 
+    /// <summary>
+    /// 直接写一条中心服存的现金仓条目。
+    /// <para>
+    /// 商城里的物品在中心服只是「买的是哪一件」的轻量记录（<see cref="ProtoModel.ItemProto.Sn"/>），
+    /// 客户端要的也只是这些字段，没有必要为了显示生成真物品。
+    /// </para>
+    /// </summary>
+    public static void addCashItemInformation(OutPacket p, ProtoModel.ItemProto item, int accountId, string? giftMessage = null)
+    {
+        bool isGift = giftMessage != null;
+        p.writeLong(item.UniqueId);
+        if (!isGift)
+        {
+            p.writeInt(accountId);
+            p.writeInt(0);
+        }
+        p.writeInt(item.Itemid);
+        if (!isGift)
+        {
+            p.writeInt(item.Sn);
+            p.writeShort((short)item.Quantity);
+        }
+        p.writeFixedString(item.GiftFrom);
+        if (isGift)
+        {
+            p.writeFixedString(giftMessage!, 73);
+            return;
+        }
+        addExpirationTime(p, item.Expiration);
+        p.writeLong(0);
+    }
+
     public static void addCashItemInformation(OutPacket p, Item item, int accountId, string? giftMessage)
     {
         bool isGift = giftMessage != null;
@@ -5782,6 +5841,11 @@ public class PacketCreator
 
     public static Packet showWishList(Player mc, bool update)
     {
+        return showWishList(mc.WishList, update);
+    }
+
+    public static Packet showWishList(IReadOnlyList<int> wishList, bool update)
+    {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
         if (update)
@@ -5793,12 +5857,12 @@ public class PacketCreator
             p.writeByte(0x4F);
         }
 
-        foreach (int sn in mc.getCashShop().getWishList())
+        foreach (int sn in wishList)
         {
             p.writeInt(sn);
         }
 
-        for (int i = mc.getCashShop().getWishList().Count; i < 10; i++)
+        for (int i = wishList.Count; i < 10; i++)
         {
             p.writeInt(0);
         }
@@ -5816,13 +5880,29 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showBoughtCashRing(Item ring, string recipient, int accountId)
+    /// <summary>
+    /// 购买结果。条目直接来自中心服（轻量记录），不需要频道生成物品。
+    /// </summary>
+    public static Packet showBoughtCashItem(ProtoModel.ItemProto item, int accountId)
+    {
+        OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
+
+        p.writeByte(0x57);
+        addCashItemInformation(p, item, accountId);
+
+        return p;
+    }
+
+    /// <summary>
+    /// 戒指送礼成功：op 0x87。条目来自中心服（戒指那份由它按戒指 id 落仓），频道不生成物品。
+    /// </summary>
+    public static Packet showBoughtCashRing(ProtoModel.ItemProto ring, string recipient, int accountId)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
         p.writeByte(0x87);
         addCashItemInformation(p, ring, accountId);
         p.writeString(recipient);
-        p.writeInt(ring.getItemId());
+        p.writeInt(ring.Itemid);
         p.writeShort(1); //quantity
         return p;
     }
@@ -5887,20 +5967,23 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet showCashInventory(IChannelClient c)
+    /// <summary>
+    /// 现金仓 + 格数 + 角色栏位。值全部来自中心服，频道不缓存。
+    /// </summary>
+    public static Packet showCashInventory(int accountId, ProtoService.CashShopStateResponse state)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
         p.writeByte(0x4B);
-        p.writeShort(c.OnlinedCharacter.getCashShop().getInventory().Count);
+        p.writeShort(state.CashItems.Count);
 
-        foreach (Item item in c.OnlinedCharacter.getCashShop().getInventory())
+        foreach (var item in state.CashItems)
         {
-            addCashItemInformation(p, item, c.AccountEntity!.Id);
+            addCashItemInformation(p, item, accountId);
         }
 
-        p.writeShort(c.OnlinedCharacter.Storage.Slots);
-        p.writeShort(c.AccountEntity!.Characterslots);
+        p.writeShort(state.StorageSlots);
+        p.writeShort(state.CharacterSlots);
 
         return p;
     }
@@ -5964,12 +6047,16 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet takeFromCashInventory(Item item, short toSlot)
+    /// <summary>
+    /// op 0x68：现金仓 → 背包。落点格就是 <paramref name="item"/> 自己的位置
+    /// （中心服放进背包时已经写进 <c>ItemProto.Position</c>）。
+    /// </summary>
+    public static Packet takeFromCashInventory(Item item)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 
         p.writeByte(0x68);
-        p.writeShort(toSlot);
+        p.writeShort(item.getPosition());
         addItemInfo(p, item, true);
 
         return p;
@@ -5992,7 +6079,10 @@ public class PacketCreator
         return p;
     }
 
-    public static Packet putIntoCashInventory(Item item, int accountId)
+    /// <summary>
+    /// 背包 → 现金仓的结果。条目来自中心服（它才是改背包的那一方），频道不碰 Player。
+    /// </summary>
+    public static Packet putIntoCashInventory(ProtoModel.ItemProto item, int accountId)
     {
         OutPacket p = OutPacket.create(SendOpcode.CASHSHOP_OPERATION);
 

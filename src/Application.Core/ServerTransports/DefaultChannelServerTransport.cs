@@ -514,6 +514,61 @@ namespace Application.Core.ServerTransports
             return _cashClient.BuyCashItem(buyCashItemRequest);
         }
 
+        public ProtoService.CashShopStateResponse GetCashShopState(ProtoService.CashShopStateRequest request)
+        {
+            return _cashClient.GetCashShopState(request);
+        }
+
+        public ProtoService.GainCashResponse GainCash(ProtoService.GainCashRequest request)
+        {
+            return _cashClient.GainCash(request);
+        }
+
+        public async Task<ProtoService.TakeCashItemResponse> TakeCashItem(ProtoService.TakeCashItemRequest request)
+        {
+            return await _cashClient.TakeCashItemAsync(request);
+        }
+
+        public async Task<ProtoService.PutCashItemResponse> PutCashItem(ProtoService.PutCashItemRequest request)
+        {
+            return await _cashClient.PutCashItemAsync(request);
+        }
+
+        public async Task<ProtoService.BuyQuestItemResponse> BuyQuestItem(ProtoService.BuyQuestItemRequest request)
+        {
+            return await _cashClient.BuyQuestItemAsync(request);
+        }
+
+        public async Task<ProtoService.AddCashItemsResponse> AddCashItems(ProtoService.AddCashItemsRequest request)
+        {
+            return await _cashClient.AddCashItemsAsync(request);
+        }
+
+        public async Task<ProtoService.UseCashShopSurpriseResponse> UseCashShopSurprise(ProtoService.UseCashShopSurpriseRequest request)
+        {
+            return await _cashClient.UseCashShopSurpriseAsync(request);
+        }
+
+        public async Task<ProtoService.UpdateWishListResponse> UpdateCashWishList(ProtoService.UpdateWishListRequest request)
+        {
+            return await _cashClient.UpdateWishListAsync(request);
+        }
+
+        public async Task<ProtoService.GainSlotResponse> GainInventorySlots(ProtoService.GainInventorySlotsRequest request)
+        {
+            return await _cashClient.GainInventorySlotsAsync(request);
+        }
+
+        public async Task<ProtoService.GainSlotResponse> GainStorageSlots(ProtoService.GainStorageSlotsRequest request)
+        {
+            return await _cashClient.GainStorageSlotsAsync(request);
+        }
+
+        public async Task<ProtoService.GainSlotResponse> GainCharacterSlots(ProtoService.GainCharacterSlotsRequest request)
+        {
+            return await _cashClient.GainCharacterSlotsAsync(request);
+        }
+
         public ProtoModel.RemoteHiredMerchantProto LoadPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest getPlayerShopRequest)
         {
             return _gameClient.LoadPlayerHiredMerchant(getPlayerShopRequest);

@@ -90,6 +90,7 @@ namespace Application.Core.Channel.HostExtensions
 
             services.AddSingleton<DueyManager>();
             services.AddSingleton<MTSManager>();
+            services.AddSingleton<Application.Core.Channel.ServerData.CashShopManager>();
 
             services.AddSingleton<ItemService>();
             services.AddSingleton<RankService>();

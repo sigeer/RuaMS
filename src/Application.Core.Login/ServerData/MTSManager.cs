@@ -1,6 +1,7 @@
-using Application.Core.Login.Shared;
+﻿using Application.Core.Login.Shared;
 using Application.EF;
 using Application.EF.Entities;
+using Application.Shared.Constants.Item;
 using Application.Shared.Items;
 using Application.Utility;
 using Google.Protobuf;
@@ -21,10 +22,6 @@ namespace Application.Core.Login.ServerData
         /// 购物车：角色id -> 商品id
         /// </summary>
         readonly ConcurrentDictionary<int, HashSet<int>> _carts = new();
-        /// <summary>
-        /// 在途物品转移的占位日志，四类操作（领取 / 上架 / 拍卖上架 / 求购成交）共用
-        /// </summary>
-        readonly ItemTransferJournal _transfers = new();
 
         public MTSManager(ILogger<MTSManager> logger, IDbContextFactory<DBContext> dbContextFactory, IMapper mapper, MasterServer server)
             : base(StorageCategory.MTS, dbContextFactory, mapper, logger)
@@ -216,6 +213,23 @@ namespace Application.Core.Login.ServerData
             var res = new ProtoModel.PlayerMTSInfoProto();
             res.InTransfer.AddRange(myItems.Where(x => x.InTransfer));
             res.OnSale.AddRange(myItems.Where(x => !x.InTransfer));
+
+            // MTS 期间账本在中心服，金币和现金余额也随信息一起给频道，频道不需要 Player 也能刷新界面
+            var chr = _server.CharacterManager.FindPlayerById(sellerId);
+            var accountGame = chr?.Character == null
+                ? null
+                : _server.AccountGameManager.GetAccountGameData(chr.Character.AccountId);
+            if (accountGame != null || chr?.Character != null)
+            {
+                res.Cash = new ProtoModel.PlayerCashProto
+                {
+                    Meso = chr?.Character?.Meso ?? 0,
+                    NxCredit = accountGame?.NxCredit ?? 0,
+                    MaplePoint = accountGame?.MaplePoint ?? 0,
+                    NxPrepaid = accountGame?.NxPrepaid ?? 0,
+                };
+            }
+
             return res;
         }
 
@@ -344,141 +358,105 @@ namespace Application.Core.Login.ServerData
         #region 上架 / 下架
 
         /// <summary>
-        /// 上架（op 2）。<c>PREPARE</c> 先把物品暂存进卖家自己的待领取列表，
-        /// <c>COMMIT</c> 才让它出现在商品列表里，<c>ABORT</c> 把暂存行删掉。
+        /// 上架（op 2）。
+        /// <para>
+        /// 玩家在 MTS 期间背包由中心服持有，所以这里按 <c>inventoryType + slot + quantity</c>
+        /// 直接从中心服的背包副本里取，频道侧不再碰背包。取到之后立刻生成商品行 —— 单进程，
+        /// 不存在「扣了物品但没上架」的中间态。
+        /// </para>
         /// </summary>
         public ProtoService.SaleItemResponse SaleItem(ProtoService.SaleItemRequest request)
         {
-            return request.Stage switch
-            {
-                ProtoModel.TransferStage.Commit => CommitSaleItem(request),
-                ProtoModel.TransferStage.Abort => AbortSaleItem(request),
-                _ => PrepareSaleItem(request),
-            };
-        }
-
-        /// <summary>
-        /// 上架 <c>PREPARE</c> 的重放守卫：网络重试会再发一次同一个 token，
-        /// 这里必须先认出“已经暂存过了”，否则每重试一次就多留一条暂存行。
-        /// </summary>
-        ProtoService.SaleItemResponse OkSaleItem(int masterId, int tab, int type) => new()
-        {
-            Code = (int)MTSResponseCode.Success,
-            MasterId = masterId,
-            MyMTSInfo = LoadPlayerInfo(masterId),
-            PageData = LoadPage(tab, type, 0),
-        };
-
-        ProtoService.SaleItemResponse PrepareSaleItem(ProtoService.SaleItemRequest request)
-        {
-            if (_transfers.Get(request.Token, request.MasterId) != null)
-            {
-                return OkSaleItem(request.MasterId,
-                    request.Tab == 0 ? MTSConstants.SALE_TAB : request.Tab, request.Type);
-            }
-
-            if (request.Item == null || request.Price <= 0)
+            if (request.Price <= 0)
             {
                 return FailSaleItem(MTSResponseCode.InvalidRequest, request.MasterId);
             }
 
-            // 暂存行也会挂在卖家名下，所以只数真正在架上的
             var onSale = LoadLocal().Count(x => !x.InTransfer && x.SellerId == request.MasterId);
             if (onSale >= MTSConstants.MAX_SALE_ITEMS)
             {
                 return FailSaleItem(MTSResponseCode.LimitReached, request.MasterId);
             }
 
+            var code = TakeForListing(request, out var taken);
+            if (code != MTSResponseCode.Success)
+            {
+                return FailSaleItem(code, request.MasterId);
+            }
+
             var tab = request.Tab == 0 ? MTSConstants.SALE_TAB : request.Tab;
-            var parked = ParkItem(request.MasterId, request.SellerName, request.Item, tab, request.Type);
-
-            parked.Price = request.Price;
-            parked.SellEnds = (_server.GetCurrentTimeDateTimeOffset() + MTSConstants.SALE_DURATION).ToUnixTimeMilliseconds();
-            SetDirty(parked);
-
-            if (_transfers.Prepare(request.Token, request.MasterId, parked.Id, NowMs()) == null)
+            var model = new ProtoModel.MTSItemProto
             {
-                SetRemoved(parked);
-                return FailSaleItem(MTSResponseCode.InProgress, request.MasterId);
-            }
-
-            _transfers.AttachParked(request.Token, request.MasterId, parked.Id);
+                Id = Interlocked.Increment(ref _localId),
+                Item = taken,
+                SellerId = request.MasterId,
+                SellerName = request.SellerName,
+                Price = request.Price,
+                ReleaseDate = NowMs(),
+                SellEnds = (_server.GetCurrentTimeDateTimeOffset() + MTSConstants.SALE_DURATION).ToUnixTimeMilliseconds(),
+                Tab = tab,
+                Type = request.Type,
+                InTransfer = false,
+            };
+            SetDirty(model);
 
             return new ProtoService.SaleItemResponse
             {
                 Code = (int)MTSResponseCode.Success,
                 MasterId = request.MasterId,
                 MyMTSInfo = LoadPlayerInfo(request.MasterId),
-                PageData = LoadPage(tab, request.Type, 0),
+                PageData = LoadPage(tab, model.Type, 0),
             };
         }
 
-        ProtoService.SaleItemResponse CommitSaleItem(ProtoService.SaleItemRequest request)
+        /// <summary>
+        /// 从中心服背包副本取出要上架的那一件；取不到返回 <c>null</c>
+        /// </summary>
+        /// <summary>
+        /// 上架前的校验 + 取件。频道侧只转发，等级、手续费、是否可交易这些判断全在中心服做 ——
+        /// 中心服的缓存里有 <c>Character.Level / Meso</c> 和物品的 <c>Flag</c>，够用了。
+        /// </summary>
+        MTSResponseCode TakeForListing(ProtoService.SaleItemRequest request, out ProtoModel.ItemProto? taken)
         {
-            var entry = _transfers.Get(request.Token, request.MasterId);
-            if (entry == null)
+            taken = null;
+
+            var chr = _server.CharacterManager.FindPlayerById(request.MasterId);
+            if (chr?.Character?.Data?.Bag == null)
             {
-                return FailSaleItem(MTSResponseCode.InProgress, request.MasterId);
+                return MTSResponseCode.NotFound;
             }
 
-            var parked = Find(entry.ParkedId);
-            if (parked == null)
+            if (chr.Character.Level < 10)
             {
-                // 暂存行没了（被卖家自己从待领取取回）。重放已提交的情况另走下面那条
-                _transfers.Drop(request.Token, request.MasterId);
-                return FailSaleItem(MTSResponseCode.NotFound, request.MasterId);
+                return MTSResponseCode.LevelTooLow;
             }
 
-            if (entry.Stage != ProtoModel.TransferStage.Commit)
+            if (chr.Character.Meso < MTSConstants.SALE_FEE)
             {
-                // 上架时间从真正生效的这一刻算起，而不是从 PREPARE
-                parked.InTransfer = false;
-                if (parked.Tab == MTSConstants.AUCTION_TAB)
-                {
-                    var hours = parked.DurationHours <= 0 ? MTSConstants.AUCTION_MIN_HOURS : parked.DurationHours;
-                    parked.SellEnds = NowMs() + hours * 3600L * 1000L;
-                }
-                else
-                {
-                    parked.SellEnds = (_server.GetCurrentTimeDateTimeOffset() + MTSConstants.SALE_DURATION).ToUnixTimeMilliseconds();
-                }
-                parked.ReleaseDate = NowMs();
-                SetDirty(parked);
-
-                _transfers.Reach(request.Token, request.MasterId, ProtoModel.TransferStage.Commit);
+                return MTSResponseCode.NotEnoughMeso;
             }
 
-            return new ProtoService.SaleItemResponse
+            var item = MtsBagStorage.GetInventory(chr.Character.Data.Bag, request.InventoryType)?
+                .FirstOrDefault(x => x.Position == request.Slot);
+            if (item == null)
             {
-                Code = (int)MTSResponseCode.Success,
-                MasterId = request.MasterId,
-                MyMTSInfo = LoadPlayerInfo(request.MasterId),
-                PageData = LoadPage(parked.Tab, parked.Type, 0),
-            };
-        }
-
-        ProtoService.SaleItemResponse AbortSaleItem(ProtoService.SaleItemRequest request)
-        {
-            var entry = _transfers.Get(request.Token, request.MasterId);
-            if (entry != null && entry.Stage != ProtoModel.TransferStage.Commit)
-            {
-                // 频道侧还在，物品也还/已退回背包，暂存行必须删掉，否则玩家会多出一份
-                var parked = Find(entry.ParkedId);
-                if (parked != null)
-                {
-                    SetRemoved(parked);
-                }
+                return MTSResponseCode.NotFound;
             }
 
-            _transfers.Drop(request.Token, request.MasterId);
-
-            return new ProtoService.SaleItemResponse
+            if ((item.Flag & ItemConstants.UNTRADEABLE) != 0 || ItemConstants.isRechargeable(item.Itemid))
             {
-                Code = (int)MTSResponseCode.Success,
-                MasterId = request.MasterId,
-                MyMTSInfo = LoadPlayerInfo(request.MasterId),
-                PageData = LoadPage(request.Tab == 0 ? MTSConstants.SALE_TAB : request.Tab, request.Type, 0),
-            };
+                return MTSResponseCode.ItemNotTradable;
+            }
+
+            // Quantity <= 0 表示「整摞」
+            taken = MtsBagStorage.TakeBySlot(chr.Character, request.InventoryType, request.Slot, request.Quantity);
+            if (taken == null)
+            {
+                return MTSResponseCode.NotFound;
+            }
+
+            taken.Position = 0;
+            return MTSResponseCode.Success;
         }
 
         static ProtoService.SaleItemResponse FailSaleItem(MTSResponseCode code, int masterId) => new()
@@ -561,25 +539,18 @@ namespace Application.Core.Login.ServerData
         #region 领取 / 购买
 
         /// <summary>
-        /// 从“待领取”列表取回物品（取消出售、购买后领取）
+        /// 从“待领取”列表取回物品（取消出售、购买后领取）。
         /// <para>
-        /// 按 <see cref="ProtoModel.TransferStage"/> 分三段：<c>PREPARE</c> 只占位并返回物品
-        /// （频道侧要先确认背包放得下），<c>COMMIT</c> 才真正移除，<c>ABORT</c> 释放占位。
-        /// 占位是必需的：没有它，同一件商品被并发探两次会各自往背包里塞一份，
-        /// 而提交只会成功一次 —— 多出来的那份就是凭空复制的道具。
+        /// 玩家在 MTS 期间频道侧的 Player 已脱离世界，背包由中心服持有，所以这里直接把物品
+        /// 放进持有者的背包副本，并把落点格子回给频道（op 39 要用）。玩家回到主世界时频道会
+        /// 重新向中心服请求角色数据，背包自然是最新的。
+        /// </para>
+        /// <para>
+        /// 单进程内完成，不再需要跨服的占位/提交/回滚 —— 要么这一行被删掉、物品进背包，
+        /// 要么什么都没发生。
         /// </para>
         /// </summary>
         public ProtoService.TakeItemResponse TakeItem(ProtoService.TakeItemRequest request)
-        {
-            return request.Stage switch
-            {
-                ProtoModel.TransferStage.Commit => CommitTakeItem(request),
-                ProtoModel.TransferStage.Abort => AbortTakeItem(request),
-                _ => PrepareTakeItem(request),
-            };
-        }
-
-        ProtoService.TakeItemResponse PrepareTakeItem(ProtoService.TakeItemRequest request)
         {
             var masterId = request.Query.MasterId;
 
@@ -587,68 +558,45 @@ namespace Application.Core.Login.ServerData
             if (product == null || !product.InTransfer)
             {
                 // 已经不在了（被别人领走 / 到期结算 / 取消）
-                return FailTakeItem(MTSResponseCode.NotFound, masterId);
-            }
-
-            if (product.SellerId != masterId)
-            {
-                return FailTakeItem(MTSResponseCode.NoAccess, masterId);
-            }
-
-            if (_transfers.Prepare(request.Token, masterId, product.Id, NowMs()) == null)
-            {
-                // 这件商品已经有别的请求在途
-                return FailTakeItem(MTSResponseCode.InProgress, masterId);
-            }
-
-            return new ProtoService.TakeItemResponse
-            {
-                MasterId = masterId,
-                Item = product.Item,
-                MyMTSInfo = LoadPlayerInfo(masterId),
-                CartItems = LoadCart(masterId),
-                PageData = LoadPage(request.Query.Tab, request.Query.Type, request.Query.Page),
-            };
-        }
-
-        ProtoService.TakeItemResponse CommitTakeItem(ProtoService.TakeItemRequest request)
-        {
-            var masterId = request.Query.MasterId;
-
-            var entry = _transfers.Get(request.Token, masterId);
-            if (entry == null)
-            {
-                // 占位已过期或压根没占：让频道侧从头来一次
-                return FailTakeItem(MTSResponseCode.InProgress, masterId);
-            }
-
-            if (entry.Stage == ProtoModel.TransferStage.Commit)
-            {
-                // 重放：上一趟其实已经成功了，结论原样返回
                 return new ProtoService.TakeItemResponse
                 {
-                    Code = (int)MTSResponseCode.Success,
+                    Code = (int)MTSResponseCode.NotFound,
                     MasterId = masterId,
-                    MyMTSInfo = LoadPlayerInfo(masterId),
-                    CartItems = LoadCart(masterId),
-                    PageData = LoadPage(request.Query.Tab, request.Query.Type, request.Query.Page),
                 };
             }
 
-            var product = Find(entry.ProductId);
-            if (product == null || !product.InTransfer)
-            {
-                _transfers.Drop(request.Token, masterId);
-                return FailTakeItem(MTSResponseCode.NotFound, masterId);
-            }
-
             if (product.SellerId != masterId)
             {
-                return FailTakeItem(MTSResponseCode.NoAccess, masterId);
+                return new ProtoService.TakeItemResponse
+                {
+                    Code = (int)MTSResponseCode.NoAccess,
+                    MasterId = masterId,
+                };
+            }
+
+            var chr = _server.CharacterManager.FindPlayerById(masterId);
+            if (chr?.Character?.Data?.Bag == null)
+            {
+                // 不在 MTS 里（或数据不完整）：让他回到待领取列表里再领一次
+                return new ProtoService.TakeItemResponse
+                {
+                    Code = (int)MTSResponseCode.InProgress,
+                    MasterId = masterId,
+                };
+            }
+
+            var invType = MtsBagStorage.GetInventoryType(product.Item);
+            var position = product.Item == null ? 0 : MtsBagStorage.Add(chr.Character, invType, product.Item);
+            if (position <= 0)
+            {
+                return new ProtoService.TakeItemResponse
+                {
+                    Code = (int)MTSResponseCode.InventoryFull,
+                    MasterId = masterId,
+                };
             }
 
             SetRemoved(product);
-            _transfers.Reach(request.Token, masterId, ProtoModel.TransferStage.Commit);
             GetCart(masterId).Remove(product.Id);
 
             return new ProtoService.TakeItemResponse
@@ -656,35 +604,12 @@ namespace Application.Core.Login.ServerData
                 Code = (int)MTSResponseCode.Success,
                 MasterId = masterId,
                 Item = product.Item,
+                Position = position,
                 MyMTSInfo = LoadPlayerInfo(masterId),
                 CartItems = LoadCart(masterId),
                 PageData = LoadPage(request.Query.Tab, request.Query.Type, request.Query.Page),
             };
         }
-
-        ProtoService.TakeItemResponse AbortTakeItem(ProtoService.TakeItemRequest request)
-        {
-            var masterId = request.Query.MasterId;
-
-            // 待领取的那一行本来就是玩家自己的东西，放弃领取不需要动它
-            _transfers.Drop(request.Token, masterId);
-
-            return new ProtoService.TakeItemResponse
-            {
-                Code = (int)MTSResponseCode.Success,
-                MasterId = masterId,
-                MyMTSInfo = LoadPlayerInfo(masterId),
-                CartItems = LoadCart(masterId),
-                PageData = LoadPage(request.Query.Tab, request.Query.Type, request.Query.Page),
-            };
-        }
-
-        static ProtoService.TakeItemResponse FailTakeItem(MTSResponseCode code, int masterId) => new()
-        {
-            Code = (int)code,
-            MasterId = masterId,
-        };
-
         public ProtoService.BuyResponse Buy(ProtoService.BuyRequest request)
         {
             var product = Find(request.ProductId);
@@ -899,37 +824,16 @@ namespace Application.Core.Login.ServerData
         /// </para>
         /// </summary>
         /// <summary>
-        /// 与求购单成交（op 3 / op 12）。卖方交付的物品 <c>PREPARE</c> 时先暂存进卖方自己的
-        /// 待领取列表，<c>COMMIT</c> 时才扣款、付款并把那一行转给买家。
+        /// 与求购单成交（op 3 / op 12）。
+        /// <para>
+        /// 卖方的交付物从中心服背包副本里扣（<c>itemId + quantity</c>），买家的收款/付款在这里一次做完，
+        /// 物品直接进买家背包（买家也在 MTS 里时）或进他的待领取列表（买家离线时）。
+        /// 全程单进程，扣物品、付钱、移交三件事要么全成，要么全不成。
+        /// </para>
         /// </summary>
         public ProtoService.MTSOperationResponse FulfillWanted(ProtoService.FulfillWantedRequest request)
         {
-            return request.Stage switch
-            {
-                ProtoModel.TransferStage.Commit => CommitFulfillWanted(request),
-                ProtoModel.TransferStage.Abort => AbortFulfillWanted(request),
-                _ => PrepareFulfillWanted(request),
-            };
-        }
-
-        ProtoService.MTSOperationResponse PrepareFulfillWanted(ProtoService.FulfillWantedRequest request)
-        {
             var sellerId = request.Query.MasterId;
-
-            // 重放守卫：同一个 token 再来一次说明上一趟已经暂存过了，不能再 Park 一份
-            if (_transfers.Get(request.Token, sellerId) != null)
-            {
-                return new ProtoService.MTSOperationResponse
-                {
-                    Code = (int)MTSResponseCode.Success,
-                    MasterId = sellerId,
-                    MyMTSInfo = LoadPlayerInfo(sellerId),
-                    PageData = LoadPage(MTSConstants.WANTED_TAB, 0, 0),
-                };
-            }
-
-            if (request.Item == null)
-                return OpFail(MTSResponseCode.InvalidRequest, sellerId);
 
             var product = Find(request.ProductId);
             if (product == null || product.InTransfer || product.Tab != MTSConstants.WANTED_TAB)
@@ -940,120 +844,68 @@ namespace Application.Core.Login.ServerData
                 return OpFail(MTSResponseCode.Buy_CannotBuyOwn, sellerId);
 
             var buyerId = product.SellerId;
-            var quantity = product.Item?.Quantity ?? 0;
-            if (quantity <= 0)
+            var quantity = request.Quantity > 0 ? request.Quantity : (product.Item?.Quantity ?? 0);
+            if (quantity <= 0 || request.ItemId <= 0)
                 return OpFail(MTSResponseCode.InvalidRequest, sellerId);
 
-            // 这里只校验、不扣钱：资金往来放到 COMMIT，免得 PREPARE 之后走 ABORT 还要退款
-            if (!TryChangeNx(buyerId, 0, out var buyerBalance) || buyerBalance < product.Price * quantity)
+            var seller = _server.CharacterManager.FindPlayerById(sellerId);
+            if (seller?.Character?.Data?.Bag == null)
+                return OpFail(MTSResponseCode.InvalidRequest, sellerId);
+
+            var delivered = MtsBagStorage.TakeById(seller.Character, request.InventoryType, request.ItemId, quantity);
+            if (delivered == null)
+                return OpFail(MTSResponseCode.InvalidRequest, sellerId);
+            delivered.Position = 0;
+
+            var total = product.Price * quantity;
+            if (!TryChangeNx(buyerId, -total, out _))
+            {
+                // 钱不够：物品原样还回卖方背包
+                PutBack(seller.Character, request.InventoryType, delivered);
                 return OpFail(MTSResponseCode.Buy_CostNotEnough, sellerId);
-
-            // 卖方交付的物品先落进他自己的待领取列表；走不到 COMMIT 时这就是玩家的退路
-            var parked = ParkItem(sellerId, ResolveName(sellerId), request.Item, MTSConstants.WANTED_TAB, product.Type);
-
-            if (_transfers.Prepare(request.Token, sellerId, product.Id, NowMs()) == null)
-            {
-                SetRemoved(parked);
-                return OpFail(MTSResponseCode.InProgress, sellerId);
             }
-            _transfers.AttachParked(request.Token, sellerId, parked.Id);
+
+            if (!TryChangeNx(sellerId, total, out var sellerBalance))
+            {
+                TryChangeNx(buyerId, total, out _);
+                PutBack(seller.Character, request.InventoryType, delivered);
+                return OpFail(MTSResponseCode.NotFound, sellerId);
+            }
+
+            SetRemoved(product);
+
+            // 买家在 MTS 里就直接进背包，否则留在他的待领取列表里
+            var buyer = _server.CharacterManager.FindPlayerById(buyerId);
+            if (buyer?.Character?.Data?.Bag == null
+                || MtsBagStorage.Add(buyer.Character, request.InventoryType, delivered) <= 0)
+            {
+                ParkItem(buyerId, ResolveName(sellerId), delivered, product.Tab, product.Type);
+            }
+
+            _logger.LogInformation("求购成交：卖方 {SellerId} 交付 {Quantity} 件，单价 {Price}，买家 {BuyerId}",
+                sellerId, quantity, product.Price, buyerId);
 
             return new ProtoService.MTSOperationResponse
             {
                 Code = (int)MTSResponseCode.Success,
                 MasterId = sellerId,
+                UpdatedValue = sellerBalance,
                 MyMTSInfo = LoadPlayerInfo(sellerId),
                 PageData = LoadPage(MTSConstants.WANTED_TAB, 0, 0),
             };
         }
 
-        ProtoService.MTSOperationResponse CommitFulfillWanted(ProtoService.FulfillWantedRequest request)
+        /// <summary>
+        /// 失败回滚：把已经取出的物品放回原背包；实在放不回去就转进待领取列表
+        /// </summary>
+        void PutBack(ProtoModel.CharacterProto chr, int inventoryType, ProtoModel.ItemProto item)
         {
-            var sellerId = request.Query.MasterId;
-
-            var entry = _transfers.Get(request.Token, sellerId);
-            if (entry == null)
-                return OpFail(MTSResponseCode.InProgress, sellerId);
-
-            if (entry.Stage != ProtoModel.TransferStage.Commit)
+            if (MtsBagStorage.Add(chr, inventoryType, item) <= 0)
             {
-                var wanted = Find(entry.ProductId);
-                if (wanted == null || wanted.InTransfer || wanted.Tab != MTSConstants.WANTED_TAB)
-                {
-                    _transfers.Drop(request.Token, sellerId);
-                    return OpFail(MTSResponseCode.NotFound, sellerId);
-                }
-
-                var parked = Find(entry.ParkedId);
-                if (parked == null)
-                {
-                    // 卖方在中间把暂存的那一行从待领取领回去了
-                    _transfers.Drop(request.Token, sellerId);
-                    return OpFail(MTSResponseCode.NotFound, sellerId);
-                }
-
-                var buyerId = wanted.SellerId;
-                var total = wanted.Price * (parked.Item?.Quantity ?? 0);
-                if (!TryChangeNx(buyerId, -total, out _))
-                    return OpFail(MTSResponseCode.Buy_CostNotEnough, sellerId);
-
-                if (!TryChangeNx(sellerId, total, out _))
-                {
-                    // 卖方账号读不出来，回滚买家的扣款
-                    TryChangeNx(buyerId, total, out _);
-                    return OpFail(MTSResponseCode.NotFound, sellerId);
-                }
-
-                // 求购单消失，交付的那一行转成买家的待领取
-                var salePrice = wanted.Price;
-                SetRemoved(wanted);
-                parked.SellerId = buyerId;
-                parked.Tab = wanted.Tab;
-                parked.Type = wanted.Type;
-                SetDirty(parked);
-
-                _transfers.Reach(request.Token, sellerId, ProtoModel.TransferStage.Commit);
-                _logger.LogInformation("求购成交：卖方 {SellerId} 交付 {Quantity} 件，单价 {Price}，买家 {BuyerId}",
-                    sellerId, parked.Item?.Quantity ?? 0, salePrice, buyerId);
+                _logger.LogError("拍卖行回滚失败：物品 {ItemId} 放不回角色 {CharacterId} 的背包，已转入待领取",
+                    item.Itemid, chr.Id);
+                ParkItem(chr.Id, ResolveName(chr.Id), item, MTSConstants.SALE_TAB, 0);
             }
-
-            TryChangeNx(sellerId, 0, out var balance);
-
-            return new ProtoService.MTSOperationResponse
-            {
-                Code = (int)MTSResponseCode.Success,
-                MasterId = sellerId,
-                Product = Find(entry.ParkedId),
-                UpdatedValue = balance,
-                MyMTSInfo = LoadPlayerInfo(sellerId),
-                PageData = LoadPage(MTSConstants.WANTED_TAB, 0, 0),
-            };
-        }
-
-        ProtoService.MTSOperationResponse AbortFulfillWanted(ProtoService.FulfillWantedRequest request)
-        {
-            var sellerId = request.Query.MasterId;
-
-            var entry = _transfers.Get(request.Token, sellerId);
-            if (entry != null && entry.Stage != ProtoModel.TransferStage.Commit)
-            {
-                // 频道侧已把物品退回背包，暂存行必须删掉，否则玩家会多出一份
-                var parked = Find(entry.ParkedId);
-                if (parked != null)
-                {
-                    SetRemoved(parked);
-                }
-            }
-
-            _transfers.Drop(request.Token, sellerId);
-
-            return new ProtoService.MTSOperationResponse
-            {
-                Code = (int)MTSResponseCode.Success,
-                MasterId = sellerId,
-                MyMTSInfo = LoadPlayerInfo(sellerId),
-                PageData = LoadPage(MTSConstants.WANTED_TAB, 0, 0),
-            };
         }
 
         /// <summary>
@@ -1096,25 +948,10 @@ namespace Application.Core.Login.ServerData
         /// </summary>
         public ProtoService.SaleItemResponse RegisterAuction(ProtoService.SaleItemRequest request)
         {
-            return request.Stage switch
-            {
-                ProtoModel.TransferStage.Commit => CommitSaleItem(request),
-                ProtoModel.TransferStage.Abort => AbortSaleItem(request),
-                _ => PrepareAuction(request),
-            };
-        }
-
-        ProtoService.SaleItemResponse PrepareAuction(ProtoService.SaleItemRequest request)
-        {
-            if (_transfers.Get(request.Token, request.MasterId) != null)
-            {
-                return OkSaleItem(request.MasterId, MTSConstants.AUCTION_TAB, request.Type);
-            }
-
             // 加价幅度至少 1，否则出价举步维艰
             var increment = request.BidIncrement <= 0 ? 1 : request.BidIncrement;
 
-            if (request.Item == null || request.Price <= 0 || request.BuyNow <= 0 || request.BuyNow < request.Price + increment)
+            if (request.Price <= 0 || request.BuyNow <= 0 || request.BuyNow < request.Price + increment)
             {
                 return FailSaleItem(MTSResponseCode.InvalidRequest, request.MasterId);
             }
@@ -1125,33 +962,42 @@ namespace Application.Core.Login.ServerData
                 return FailSaleItem(MTSResponseCode.LimitReached, request.MasterId);
             }
 
+            var code = TakeForListing(request, out var taken);
+            if (code != MTSResponseCode.Success)
+            {
+                return FailSaleItem(code, request.MasterId);
+            }
+
             // 客户端 CRegisterAuctionEntryDlg 的可选时长来自 SET_ITC 下发的 24 / 168，这里再夹一次
             var hours = Math.Clamp(request.DurationHours <= 0 ? MTSConstants.AUCTION_MIN_HOURS : request.DurationHours,
                 MTSConstants.AUCTION_MIN_HOURS, MTSConstants.AUCTION_MAX_HOURS);
+            var now = NowMs();
 
-            var parked = ParkItem(request.MasterId, request.SellerName, request.Item, MTSConstants.AUCTION_TAB, request.Type);
-
-            parked.Price = request.Price;
-            parked.BuyNow = request.BuyNow;
-            parked.BidIncrement = increment;
-            parked.BidderId = 0;
-            parked.DurationHours = hours;
-            parked.SellEnds = NowMs() + hours * 3600L * 1000L;
-            SetDirty(parked);
-
-            if (_transfers.Prepare(request.Token, request.MasterId, parked.Id, NowMs()) == null)
+            var model = new ProtoModel.MTSItemProto
             {
-                SetRemoved(parked);
-                return FailSaleItem(MTSResponseCode.InProgress, request.MasterId);
-            }
-            _transfers.AttachParked(request.Token, request.MasterId, parked.Id);
+                Id = Interlocked.Increment(ref _localId),
+                Item = taken,
+                SellerId = request.MasterId,
+                SellerName = request.SellerName,
+                Price = request.Price,
+                BuyNow = request.BuyNow,
+                BidIncrement = increment,
+                BidderId = 0,
+                DurationHours = hours,
+                ReleaseDate = now,
+                SellEnds = now + hours * 3600L * 1000L,
+                Tab = MTSConstants.AUCTION_TAB,
+                Type = request.Type,
+                InTransfer = false,
+            };
+            SetDirty(model);
 
             return new ProtoService.SaleItemResponse
             {
                 Code = (int)MTSResponseCode.Success,
                 MasterId = request.MasterId,
                 MyMTSInfo = LoadPlayerInfo(request.MasterId),
-                PageData = LoadPage(MTSConstants.AUCTION_TAB, request.Type, 0),
+                PageData = LoadPage(MTSConstants.AUCTION_TAB, model.Type, 0),
             };
         }
 

@@ -1,11 +1,14 @@
 using Application.Core.Channel.Commands;
+using Application.Core.Game.Trades;
 using Application.Resources.Messages;
+using Application.Shared.Login;
 using Application.Shared.MapObjects.Players;
 using Application.Shared.Net.Logging;
 using Application.Utility.Performance;
 using DotNetty.Transport.Channels;
 using Microsoft.Extensions.Logging;
 using scripting.npc;
+using System.Runtime.ConstrainedExecution;
 using tools;
 
 namespace Application.Core.Channel.Net
@@ -25,7 +28,9 @@ namespace Application.Core.Channel.Net
         public Player? Character { get; private set; }
 
         public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
+        public int CharacterId => Character?.Id ?? 0;
 
+        public ITradeServer? TradeServer { get; set; }
         public WorldChannel CurrentServer { get; }
 
         public int Channel => CurrentServer.Id;
@@ -39,6 +44,9 @@ namespace Application.Core.Channel.Net
         public override void SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;
+
+            CurrentServer.Node.UpdateAccountState(AccountId, (sbyte)LoginStage.PlayerServerTransition);
+            CurrentServer.Node.SetCharacteridInTransition(GetSessionRemoteHost(), CharacterId);
         }
 
         bool _isDisconnecting = false;
@@ -180,7 +188,7 @@ namespace Application.Core.Channel.Net
         protected override void ChannelRead0(IChannelHandlerContext ctx, InPacket msg)
         {
             base.ChannelRead0(ctx, msg);
-            if (Character == null || Character.getCashShop().isOpened())
+            if (Character == null || Character.IsInExtraServer())
             {
                 CurrentServer.Send(w =>
                 {
@@ -261,7 +269,7 @@ namespace Application.Core.Channel.Net
 
             try
             {
-                await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel);
+                await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.LeaveChannel);
                 await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
             }
             catch (IOException e)
@@ -276,10 +284,7 @@ namespace Application.Core.Channel.Net
         /// <param name="c"></param>
         public async Task LeaveCashShop()
         {
-            if (Character == null)
-                return;
-
-            if (!Character.getCashShop().isOpened())
+            if (TradeServer == null)
             {
                 await Disconnect(false, false);
                 return;
@@ -287,13 +292,15 @@ namespace Application.Core.Channel.Net
             var socket = CurrentServer.getIP();
             if (socket == null)
             {
-                await OnlinedCharacter.enableCSActions();
+                await CurrentServer.NodeService.CashShopManager.EnableActions(this);
                 return;
             }
-            Character.getCashShop().open(false);
-
-            await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.PreEnterChannel);
-            await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, false));
+            // 这里不同步角色数据：商城 / 拍卖行期间背包、现金仓都是中心服改的，
+            // 频道这份只有显示用的陈旧镜像，推上去也只能被中心服整份丢掉。
+            // 重连时 PlayerLoggedinHandler → LoginService.PlayerLogin 会重新取一份完整的。
+            // 账号切服状态由 PlayerPreEnterChannelCommand 在发 CHANGE_CHANNEL 之前设置。
+            TradeServer = null;
+            await CurrentServer.Send(new PlayerPreEnterChannelCommand(CharacterId, socket, false));
         }
 
         public void SetPlayer(Player? player)

@@ -134,6 +134,7 @@ namespace Application.Core.Login
             services.AddSingleton<BuffManager>();
             services.AddSingleton<ChatRoomManager>();
             services.AddSingleton<CashShopDataManager>();
+            services.AddSingleton<CashShopManager>();
             services.AddSingleton<InvitationManager>();
 
             services.AddSingleton<ShopManager>();

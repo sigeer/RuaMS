@@ -32,6 +32,6 @@ public class TouchingCashShopHandler : ChannelHandlerBase
 {
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        await c.SendPacket(PacketCreator.showCash(c.OnlinedCharacter));
+        await c.CurrentServer.NodeService.CashShopManager.EnableActions(c);
     }
 }

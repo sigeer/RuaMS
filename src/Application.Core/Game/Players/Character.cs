@@ -73,9 +73,7 @@ public partial class Player
     private ILogger? _log;
     public ILogger Log => _log ??= LogFactory.GetCharacterLog(AccountId, Id);
 
-    private int currentPage, currentType = 0, currentTab = 1;
 
-    private int ci = 0;
 
     // 替换Family，搁置
     // public ISchool? SchoolModel { get; set; }
@@ -96,7 +94,6 @@ public partial class Player
 
     private string? chalktext = null;
     private string? commandtext = null;
-    private string? search = null;
 
     public AtomicInteger MesoValue { get; set; }
 
@@ -128,7 +125,6 @@ public partial class Player
 
     private Trade? trade = null;
     public MonsterBook Monsterbook { get; set; }
-    public CashShop CashShopModel { get; set; }
     public AtomicInteger RewardNxCredit { get; set; } = new AtomicInteger();
     public PlayerSavedLocation SavedLocations { get; set; }
 
@@ -199,11 +195,6 @@ public partial class Player
     public Job getJobStyle()
     {
         return getJobStyle((byte)((this.getStr() > this.getDex()) ? 0x80 : 0x40));
-    }
-
-    public void setSessionTransitionState()
-    {
-        Client.SetCharacterOnSessionTransitionState(this.getId());
     }
 
     public bool getCS()
@@ -1354,8 +1345,6 @@ public partial class Player
     }
     public void resetCsCoupon() => _csAttempt = 0;
 
-    public Task enableCSActions() => Client.SendPacket(PacketCreator.enableCSUse(this));
-
     public async Task closePlayerScriptInteractions()
     {
         if (Client.NPCConversationManager != null)
@@ -1426,44 +1415,6 @@ public partial class Player
     {
         return Rings.Where(x => x.ItemId > 1112012 && !ItemId.isWeddingRing(x.ItemId)).ToList();
     }
-
-    public void changeCI(int type)
-    {
-        this.ci = type;
-    }
-    public int getCurrentCI()
-    {
-        return ci;
-    }
-
-    public void changePage(int page)
-    {
-        this.currentPage = page;
-    }
-    public int getCurrentPage()
-    {
-        return currentPage;
-    }
-    public void changeTab(int tab)
-    {
-        this.currentTab = tab;
-    }
-
-    public int getCurrentTab()
-    {
-        return currentTab;
-    }
-
-    public void changeType(int type)
-    {
-        this.currentType = type;
-    }
-    public int getCurrentType()
-    {
-        return currentType;
-    }
-
-
 
     public Door? getPlayerDoor()
     {
@@ -1842,11 +1793,6 @@ public partial class Player
     }
 
 
-
-    public string? getSearch()
-    {
-        return search;
-    }
 
     public Shop? getShop()
     {
@@ -2900,11 +2846,6 @@ public partial class Player
         this.Name = name;
     }
 
-    public void setSearch(string? find)
-    {
-        search = find;
-    }
-
     public void setSkinColor(SkinColor skinColor)
     {
         this.SkinColorModel = skinColor;
@@ -3114,11 +3055,6 @@ public partial class Player
         return Link?.Name;
     }
 
-    public CashShop getCashShop()
-    {
-        return CashShopModel;
-    }
-
     public async Task blockPortal(string? scriptName)
     {
         if (scriptName != null && !blockedPortals.Contains(scriptName))
@@ -3316,7 +3252,11 @@ public partial class Player
         // 切换频道/退出商城的保存不能放在断开连接时处理
         await Client.CurrentServer.Send(async w =>
         {
-            await SyncCharAsync(SyncCharacterTrigger.Logoff);
+            if (Client.TradeServer == null)
+            {
+                await SyncCharAsync(SyncCharacterTrigger.LeaveChannel);
+            }
+            
 
             RemoveWorldWatcher();
             setClient(new OfflineClient());

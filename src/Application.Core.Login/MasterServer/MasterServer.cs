@@ -98,6 +98,8 @@ namespace Application.Core.Login
         public BuffManager BuffManager => _buffManager.Value;
         readonly Lazy<CashShopDataManager> _cashShopDataManager;
         public CashShopDataManager CashShopDataManager => _cashShopDataManager.Value;
+        readonly Lazy<CashShopManager> _cashShopManager;
+        public CashShopManager CashShopManager => _cashShopManager.Value;
         readonly Lazy<TeamManager> _teamManager;
         public TeamManager TeamManager => _teamManager.Value;
         readonly Lazy<GuildManager> _guildManager;
@@ -202,6 +204,7 @@ namespace Application.Core.Login
             _accountManager = new(() => ServiceProvider.GetRequiredService<AccountManager>());
             _buffManager = new(() => ServiceProvider.GetRequiredService<BuffManager>());
             _cashShopDataManager = new(() => ServiceProvider.GetRequiredService<CashShopDataManager>());
+            _cashShopManager = new(() => ServiceProvider.GetRequiredService<CashShopManager>());
             _teamManager = new(() => ServiceProvider.GetRequiredService<TeamManager>());
             _guildManager = new(() => ServiceProvider.GetRequiredService<GuildManager>());
             _chatRoomManager = new(() => ServiceProvider.GetRequiredService<ChatRoomManager>());

@@ -65,6 +65,7 @@ namespace Application.Core.Channel.Net
                 {(short)RecvOpcode.MULTI_CHAT, sp.GetRequiredService<MultiChatHandler>()},
                 {(short)RecvOpcode.USE_DOOR, sp.GetRequiredService<DoorHandler>()},
                 {(short)RecvOpcode.ENTER_MTS, sp.GetRequiredService<EnterMTSHandler>()},
+                {(short)RecvOpcode.MTS_Check, sp.GetRequiredService<MtsCheckHandler>()},
                 {(short)RecvOpcode.MTS_OPERATION, sp.GetRequiredService<MTSHandler>()},
                 {(short)RecvOpcode.ENTER_CASHSHOP, sp.GetRequiredService<EnterCashShopHandler>()},
 

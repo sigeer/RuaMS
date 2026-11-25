@@ -21,6 +21,7 @@
 
 
 
+using Application.Core.Game.Trades;
 using Application.Resources.Messages;
 using tools;
 
@@ -62,32 +63,25 @@ public class EnterCashShopHandler : ChannelHandlerBase
                 return;
             }
 
-            if (mc.getCashShop().isOpened())
+            if (mc.IsInExtraServer())
             {
                 return;
             }
 
-            await mc.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.EnterCashShop);
+            await mc.Client.CurrentServer.EnterExtralWorld(mc, new CashShopServer());
 
-            await mc.closePlayerInteractions();
-            mc.closePartySearchInteractions();
-
-            await mc.unregisterChairBuff();
-            mc.Client.CurrentServer.NodeService.DataService.SaveBuff(mc);
-
-            await mc.Client.CurrentServer.EnterExtralWorld(mc);
-
-            await mc.CancelAllBuffs();
-            mc.cancelAllDebuffs();
-            await mc.forfeitExpirableQuests();
+            // 余额、现金仓、格数、愿望单都在中心服，进商城先整体查一次
+            var cashShopManager = mc.Client.CurrentServer.NodeService.CashShopManager;
+            var cashState = cashShopManager.GetState(mc.Client);
 
             await mc.SendPacket(PacketCreator.openCashShop(mc.Client, false));
-            await mc.SendPacket(PacketCreator.showCashInventory(mc.Client));
-            await mc.SendPacket(PacketCreator.showGifts(mc.Client.CurrentServer.NodeService.ItemService.LoadPlayerGifts(mc)));
-            await mc.SendPacket(PacketCreator.showWishList(mc, false));
-            await mc.SendPacket(PacketCreator.showCash(mc));
-
-            mc.getCashShop().open(true);
+            await mc.SendPacket(PacketCreator.showCashInventory(mc.Client.AccountId, cashState));
+            await mc.SendPacket(PacketCreator.showGifts(await cashShopManager.LoadPlayerGifts(mc.Client)));
+            await mc.SendPacket(PacketCreator.showWishList(cashState.WishList, false));
+            await mc.SendPacket(PacketCreator.showCash(
+                cashState.Cash?.NxCredit ?? 0,
+                cashState.Cash?.MaplePoint ?? 0,
+                cashState.Cash?.NxPrepaid ?? 0));
         });
     }
 }

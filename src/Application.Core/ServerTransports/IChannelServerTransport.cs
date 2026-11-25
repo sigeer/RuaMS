@@ -142,6 +142,37 @@ namespace Application.Core.ServerTransports
         Task SendRemovePLife(ProtoService.RemovePLifeRequest removePLifeRequest);
         ProtoService.BuyCashItemResponse SendBuyCashItem(ProtoService.BuyCashItemRequest buyCashItemRequest);
 
+        /// <summary>
+        /// 商城的全部状态（余额、现金仓、格数、愿望单）：频道不缓存，按需查询
+        /// </summary>
+        ProtoService.CashShopStateResponse GetCashShopState(ProtoService.CashShopStateRequest request);
+
+        /// <summary>
+        /// 增减点数（拾取、Duey、礼包、GM 命令）
+        /// </summary>
+        ProtoService.GainCashResponse GainCash(ProtoService.GainCashRequest request);
+
+        #region 现金商城
+        /// <summary>现金仓 → 背包（op 0x0D）</summary>
+        Task<ProtoService.TakeCashItemResponse> TakeCashItem(ProtoService.TakeCashItemRequest request);
+        /// <summary>背包 → 现金仓（op 0x0E）</summary>
+        Task<ProtoService.PutCashItemResponse> PutCashItem(ProtoService.PutCashItemRequest request);
+        /// <summary>金币购买商城任务物品（op 0x20）：扣金币、落背包都在中心服</summary>
+        Task<ProtoService.BuyQuestItemResponse> BuyQuestItem(ProtoService.BuyQuestItemRequest request);
+        /// <summary>把频道生成好的物品落进中心服（现金仓或背包）</summary>
+        Task<ProtoService.AddCashItemsResponse> AddCashItems(ProtoService.AddCashItemsRequest request);
+        /// <summary>用频道这份现金仓整份覆盖中心服的</summary>
+        Task<ProtoService.UseCashShopSurpriseResponse> UseCashShopSurprise(ProtoService.UseCashShopSurpriseRequest request);
+        /// <summary>愿望单（op 0x05）</summary>
+        Task<ProtoService.UpdateWishListResponse> UpdateCashWishList(ProtoService.UpdateWishListRequest request);
+        /// <summary>背包扩容（op 0x06）</summary>
+        Task<ProtoService.GainSlotResponse> GainInventorySlots(ProtoService.GainInventorySlotsRequest request);
+        /// <summary>仓库扩容（op 0x07）</summary>
+        Task<ProtoService.GainSlotResponse> GainStorageSlots(ProtoService.GainStorageSlotsRequest request);
+        /// <summary>角色栏位扩容（op 0x08）</summary>
+        Task<ProtoService.GainSlotResponse> GainCharacterSlots(ProtoService.GainCharacterSlotsRequest request);
+        #endregion
+
         ProtoModel.RemoteHiredMerchantProto LoadPlayerHiredMerchant(ProtoService.GetPlayerHiredMerchantRequest getPlayerShopRequest);
         void SyncPlayerShop(ProtoService.SyncPlayerShopRequest request);
         ProtoService.CommitRetrievedResponse CommitRetrievedFromFredrick(ProtoService.CommitRetrievedRequest commitRetrievedRequest);

@@ -19,16 +19,27 @@ namespace Application.Core.Channel.Commands
 
         public async Task Execute(WorldChannel w)
         {
-            var chr = fromChannel
-                ? w.getPlayerStorage().getCharacterById(_chrId)
-                : w.PlayersAway.GetValueOrDefault(_chrId);
-            if (chr != null)
+            if (fromChannel)
             {
-                if (fromChannel)
-                    chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
+                var chr = w.getPlayerStorage().getCharacterById(_chrId);
+                if (chr == null)
+                {
+                    return;
+                }
+                chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
 
                 chr.Client.SetCharacterOnSessionTransitionState(_chrId);
                 await chr.SendPacket(PacketCreator.getChannelChange(_channelSocket));
+            }
+            else
+            {
+                var client = w.PlayersAway.GetValueOrDefault(_chrId);
+                if (client == null)
+                {
+                    return;
+                }
+                client.SetCharacterOnSessionTransitionState(_chrId);
+                await client.SendPacket(PacketCreator.getChannelChange(_channelSocket));
             }
         }
     }

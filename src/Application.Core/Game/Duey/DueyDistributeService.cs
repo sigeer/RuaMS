@@ -28,7 +28,7 @@ namespace Application.Core.Channel.DueyService
                 Item = _mapper.Map<ProtoModel.ItemProto>(item),
             });
         }
-        public async Task Distribute(Player chr, List<Item> items, int meso, int cashType, int cashValue, string? title = null)
+        public async Task Distribute(Player chr, List<Item> items, int meso, string? title = null, int nxCredit = 0, int maplePoint = 0, int nxPrepaid = 0)
         {
             bool needNotice = false;
 
@@ -56,7 +56,7 @@ namespace Application.Core.Channel.DueyService
                 }
             }
 
-            chr.getCashShop().gainCash(cashType, cashValue);
+            chr.GainCash(nxCredit, maplePoint, nxPrepaid);
 
             if (needNotice)
             {

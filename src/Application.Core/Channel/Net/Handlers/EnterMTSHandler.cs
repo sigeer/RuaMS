@@ -22,6 +22,7 @@
 
 using Application.Core.Channel.Net.Packets;
 using Application.Core.Channel.ServerData;
+using Application.Core.Game.Trades;
 using Application.Resources.Messages;
 using Application.Shared.Items;
 using tools;
@@ -42,12 +43,6 @@ public class EnterMTSHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        if (!YamlConfig.config.server.USE_MTS)
-        {
-            await c.SendPacket(PacketCreator.enableActions());
-            return;
-        }
-
         var mc = c.OnlinedCharacter;
         if (mc == null)
         {
@@ -74,27 +69,16 @@ public class EnterMTSHandler : ChannelHandlerBase
             return;
         }
 
-        if (mc.getCashShop().isOpened())
+        if (mc.IsInExtraServer())
         {
             return;
         }
 
-        await mc.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.EnterCashShop);
-        await mc.closePlayerInteractions();
-        mc.closePartySearchInteractions();
-
-        await mc.unregisterChairBuff();
-        mc.Client.CurrentServer.NodeService.DataService.SaveBuff(mc);
-
-        await mc.Client.CurrentServer.EnterExtralWorld(mc);
-
-        await mc.CancelAllBuffs();
-        mc.cancelAllDebuffs();
-        await mc.forfeitExpirableQuests();
-
+        await mc.Client.CurrentServer.EnterExtralWorld(mc, new MtsServer());
         await mc.SendPacket(MTSPacketCreator.OpenMTS(mc.Client));
-        mc.getCashShop().open(true);
 
-        await _mtsManager.Query(mc, MTSConstants.SALE_TAB, 0, 0);
+        // 拍卖行的会话标记与浏览状态都挂在 MtsServer 上（TradeServer 非空 = 已在拍卖行）
+
+        await _mtsManager.Query(mc.Client, MTSConstants.SALE_TAB, 0, 0);
     }
 }

@@ -1,40 +1,240 @@
 syntax = "proto3";
 
 import "Model/Cash.proto";
+import "Model/Item.proto";
 import "Model/Ring.proto";
 
 package ProtoService;
 
+// 商城的全部状态：余额、现金仓、仓库格数、角色格数、愿望单。
+// 频道不缓存这些值（商城期间它们都由中心服持有），需要显示或判断时用主键查一次。
+message CashShopStateRequest {
+	int32 masterId = 1;
+}
 
+message CashShopStateResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 金币 + 三种现金点数。账本在中心服，频道只拿来显示
+	ProtoModel.PlayerCashProto cash = 3;
+	// 现金仓条目（中心服只存「买的是哪一件」的轻量条目，频道按 SN 物化）
+	repeated ProtoModel.ItemProto cashItems = 6;
+	// 仓库格数（挂在账号上）
+	int32 storageSlots = 7;
+	// 角色栏位数（挂在账号上）
+	int32 characterSlots = 8;
+	repeated int32 wishList = 9;
+	// 未读礼物的条数（回信会消耗一个）
+	int32 notes = 10;
+	// 背包格数上限（op 0x06 扩容后要回显）
+	int32 equipSlots = 11;
+	int32 useSlots = 12;
+	int32 setupSlots = 13;
+	int32 etcSlots = 14;
+}
+
+// 增减点数（拾取、Duey、礼包发放、GM 命令）。账本在中心服，频道不缓存。
+// 三种点数一次提交：礼包经常同时发点券和抵用券，没必要分几次请求。
+// 任一超出范围就整笔拒绝，不会出现「点券发了、抵用券没发」。
+message GainCashRequest {
+	int32 masterId = 1;
+	// 曾经的「点券类型 + 数额」，已由下面三个独立字段取代
+	reserved 2, 3;
+	int32 nxCredit = 4;
+	int32 maplePoint = 5;
+	int32 nxPrepaid = 6;
+}
+
+message GainCashResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	ProtoModel.PlayerCashProto cash = 3;
+}
 
 message BuyCashItemRequest {
 	int32 masterId = 1;
 	int32 cashItemSn = 2;
 	int32 cashItemId = 3;
 	ProtoModel.GiftInfoProto giftInfo = 4;
+	// 本次扣费的点券类型与金额（点数余额在中心服的 AccountGame 上）
+	int32 cashType = 6;
+	int32 price = 7;
+	// 本次买到的商品。礼包在这里展开成子条目（盒子的 cashItemId 本身不是真物品，
+	// 不会单独成条）；送礼时为空，物品由 GiftManager 记到收礼人头上。
+	// 频道不生成本次购买的任何 Item / ItemProto，只把商品信息送上来，
+	// 由中心服造 ItemProto 落仓。
+	repeated CashItemPlaceholderProto items = 8;
 }
 
-
-
-message BuySlotRequest {
-	int32 masterId = 1;
-	int32 slotType = 2;
-	int32 slotValue = 3;
+// 「买的是哪一件」——只有商品信息，没有装备属性 / 宠物状态。
+// 中心服照它造一条 ItemProto 存进现金仓；真物品等玩家回到主世界时由频道按 SN 生成。
+message CashItemPlaceholderProto {
+	int32 sn = 1;
+	int32 itemId = 2;
+	int32 quantity = 3;
+	// 到期时间（毫秒）：有效期是按模板算的，中心服没有模板，由频道算好带过来，
+	// 免得玩家在商城待久了，回到主世界后有效期被重新起算
+	int64 expiration = 4;
+	// 现金 id（= 客户端认的 cashId）。一般留 0 由中心服生成；
+	// 戒指这类 id 有外部含义的（要等于 ring id）才由频道指定。
+	int64 cashId = 5;
 }
-
-
 
 message BuyCashItemResponse {
 	int32 code = 1;
 	int32 masterId = 2;
 	int32 sn = 3;
 	CreateGiftResponse giftInfo = 5;
+	// 扣费后的余额，频道侧直接拿来刷新界面
+	ProtoModel.PlayerCashProto cash = 6;
+	// 中心服实际落仓的条目（带着它生成的 cashId）。频道用这份回「已购买」封包，
+	// 之后客户端发来的「现金仓 → 背包」也是用这些 id。
+	// 送礼时这里是「戒指回赠送礼人的那一份」，礼物本身走 GiftManager 记到收礼人头上。
+	repeated CashItemPlaceholderProto created = 9;
 }
-
-
 
 message CreateGiftResponse {
 	int32 code = 1;
 	string recipient = 2;
 	ProtoModel.RingProto ringSource = 3;
+}
+
+// 现金仓 <-> 背包（op 0x0D / 0x0E）。
+// 商城期间频道侧的 Player 还在，背包和现金仓都会被读写，所以两边一起改：
+// 中心服决定落点并改自己那份，频道侧按返回值镜像，保证之后的同步不会互相覆盖。
+message TakeCashItemRequest {
+	int32 masterId = 1;
+	int64 cashId = 2;
+}
+
+message TakeCashItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 曾经的「落点格」和「落点所在背包页」。落点已经写在 item.Position 里
+	// （中心服放进背包时就填好了），背包页也能由 item.Itemid 推出，频道一个都没读过
+	reserved 3, 4;
+	// 取出来的那件（中心服存的轻量条目）。频道只拿它写 0x68 的物品编码，
+	// 不再生成物品也不碰 Player；UniqueId 就是客户端的 cashId
+	ProtoModel.ItemProto item = 5;
+}
+
+message PutCashItemRequest {
+	int32 masterId = 1;
+	int64 cashId = 2;
+	// 频道侧按客户端给的类型做了范围校验，中心服则按现金 id 在四个常规页里自己找，
+	// 不信任客户端声明的页（改过的包可以随便填）
+}
+
+message PutCashItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 物品进现金仓后的位置
+	int32 position = 3;
+	// 中心服收进现金仓的那件（op 0x6A 要回显）
+	ProtoModel.ItemProto item = 4;
+}
+
+// 现金扭蛋：消耗一件现金仓里的「现金商城惊喜」，换一件随机现金道具。
+//
+// 频道只负责选奖品（随机池在 WZ 模板里），消耗与新增都在中心服完成，
+// 两边不会因为谁先写而产生歧义。
+message UseCashShopSurpriseRequest {
+	int32 masterId = 1;
+	// 被消耗的那件的现金 id
+	int64 cashId = 2;
+	// 抽中的商品
+	CashItemPlaceholderProto reward = 3;
+}
+
+message UseCashShopSurpriseResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 消耗后剩下的数量，0 表示这件已被移除
+	int32 remainingQuantity = 3;
+	// 中心服落仓的奖品条目（带它生成的 cashId）
+	CashItemPlaceholderProto reward = 4;
+}
+
+// 直接把频道生成好的物品放进中心服的现金仓 / 背包。
+// 用于「戒指送礼回赠自己那份」「金币购买任务物品」这类生成了物品但没走 BuyCashItem 的场景。
+message AddCashItemsRequest {
+	int32 masterId = 1;
+	repeated ProtoModel.ItemProto items = 2;
+	// true = 进现金仓，false = 进背包（按物品自己的背包页）
+	bool toCashShop = 3;
+}
+
+// 金币购买商城里的任务物品（op 0x20）。
+// 扣金币、检查背包、落背包全部在中心服完成：退出商城时频道那份不保存，
+// 只在频道扣金币等于没扣。
+message BuyQuestItemRequest {
+	int32 masterId = 1;
+	int32 cashItemSn = 2;
+	int32 itemId = 3;
+	int32 price = 4;
+}
+
+message BuyQuestItemResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 物品在背包里的落点
+	int32 position = 3;
+	// 扣费后的余额（金币也在里面）
+	ProtoModel.PlayerCashProto cash = 4;
+	// 中心服落进背包的那件（带着它生成的 UniqueId），频道按它生成本地镜像
+	ProtoModel.ItemProto item = 5;
+}
+
+message AddCashItemsResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 进背包时按顺序回填的落点
+	repeated int32 positions = 3;
+}
+
+// 愿望单（op 0x05）：中心服存 Character.Data.WishItems
+message UpdateWishListRequest {
+	int32 masterId = 1;
+	repeated int32 snList = 2;
+}
+
+message UpdateWishListResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	repeated int32 snList = 3;
+}
+
+// 背包扩容（op 0x06）
+message GainInventorySlotsRequest {
+	int32 masterId = 1;
+	// 1=点券 2=抵用券 4=信用卡
+	int32 cashType = 2;
+	int32 slots = 3;
+	int32 price = 4;
+	// 1=装备 2=消耗 3=设置 4=其他
+	int32 inventoryType = 5;
+}
+
+// 仓库扩容（op 0x07）
+message GainStorageSlotsRequest {
+	int32 masterId = 1;
+	int32 cashType = 2;
+	int32 slots = 3;
+	int32 price = 4;
+}
+
+// 角色栏位扩容（op 0x08）
+message GainCharacterSlotsRequest {
+	int32 masterId = 1;
+	int32 cashType = 2;
+	int32 price = 3;
+}
+
+message GainSlotResponse {
+	int32 code = 1;
+	int32 masterId = 2;
+	// 扩容后的上限
+	int32 slots = 3;
+	// 扣费后的余额，频道侧直接拿来刷新界面
+	ProtoModel.PlayerCashProto cash = 4;
 }

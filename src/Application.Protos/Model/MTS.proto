@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+import "Model/Cash.proto";
 import "Model/Item.proto";
 
 package ProtoModel;
@@ -52,8 +53,12 @@ message MTSQueryProto {
 
 
 message PlayerMTSInfoProto {
+	reserved 3, 4, 5;
 	repeated MTSItemProto onSale = 1;
 	repeated MTSItemProto inTransfer = 2;
+	// 金币 + 三种现金点数：MTS 期间账本在中心服，频道侧不持有 Player，
+	// 所以随信息一起下发（和现金商城共用同一份结构）
+	ProtoModel.PlayerCashProto cash = 6;
 }
 
 

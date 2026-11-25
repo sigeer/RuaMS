@@ -46,5 +46,23 @@ namespace Application.Shared.Items
         /// 该商品正在被领取（并发的第二笔请求，或占位已过期）
         /// </summary>
         InProgress,
+
+        /// <summary>
+        /// 背包放不下（中心服侧领取失败，物品仍留在待领取列表）
+        /// </summary>
+        InventoryFull,
+
+        /// <summary>
+        /// 等级不足（客户端规则：10 级以上才能上架）
+        /// </summary>
+        LevelTooLow,
+        /// <summary>
+        /// 金币不足（上架手续费）
+        /// </summary>
+        NotEnoughMeso,
+        /// <summary>
+        /// 物品不可交易（不可交易标记 / 不可出售）
+        /// </summary>
+        ItemNotTradable,
     }
 }

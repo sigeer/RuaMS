@@ -94,8 +94,8 @@
 | `0xF5` | `sub_92A793`（`0x92a793`），由 `sub_929FE1`(`0x929fe1`) / `sub_92A577`(`0x92a577`) 调用 | `Encode1(0)` | 与 `0xF4` 同构的第三个分支 |
 | `0xF7` | `sub_537E40`（`0x537e40`） | `Encode1(flags)`+`Encode1(a2)`+`Encode1(a3)`+`Encode1(a1)`+`Encode4(tick)`+`EncodeStr`×6 | 位置在 `CField::ApplyUserLook`/`UpdateQuestLayer` 邻域，属 `CField` 家族。无调用者（vtable 未落在已命名槽） |
 | `0xF8` | `CWvsContext::Update`（`0xa03350`） | `EncodeStr(name)`+`Encode4(tick)`+`Encode4(x)` | 见 `SP_3543 您已游戏 D 小时` / `SP_889 [MapleTip]` —— **防沉迷/在线时长上报** |
-| `0xFB` | `sub_59EBDA`（`0x59ebda`），由 `sub_5B8688`（`0x5b8688`，`a2==1000`）调用 | 裸包 | `CITC`（物品交易中心/MTS）家族，`this[6]` 做了"只发一次"标记 |
-| `0xFC` | `sub_59EECE`（`0x59eece`），由 `sub_59EC2C`（`0x59ec2c`，`a2==1001`）调用 | 裸包 | 与 `0xFB` 同族；`this[6]` 已置位则返回 0 |
+| `0xFB` | `sub_59EBDA`（`0x59ebda`），由 `sub_5B8688`（`0x5b8688`，`a2==1000`）调用 | 裸包 | `CITC`（物品交易中心/MTS）主窗口的**「充值」按钮**（`SP_4736_UI_ITCIMG_BTCHARGE`），`this[6]` 做了"只发一次"标记。服务端未实现 |
+| `0xFC` | `sub_59EECE`（`0x59eece`），由 `sub_59EC2C`（`0x59ec2c`，`a2==1001`）调用 | 裸包 | 同窗口的**「查询」按钮**（`SP_4737_UI_ITCIMG_BTCHECK`），与 `0xFB` 同一套「只发一次」保护。**已补定义**（`RecvOpcode.MTS_Check` + `MtsCheckHandler` → `ShowMTSCash`），详见 `docs/ida/MTS_拍卖行_封包分析.md` §3.4 |
 
 > §4 的"语义"列只写**客户端能证明**的部分（调用了哪些 API、有哪条 `SP_xxx` 字符串、被谁调用）。窗口类名未能从 RTTI/符号定位的一律标"未定位"，不做猜测。
 

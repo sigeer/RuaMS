@@ -24,7 +24,7 @@ public class TimeoutTask : AbstractRunnable
                 if (w.Node.GetCurrentTimeDateTimeOffset() - chr.getClient().LastPacket > TimeSpan.FromMilliseconds(YamlConfig.config.server.TIMEOUT_DURATION))
                 {
                     Log.Logger.Information("Chr {CharacterName} auto-disconnected due to inactivity", chr.getName());
-                    chr.getClient().Disconnect(true, chr.getCashShop().isOpened());
+                    chr.getClient().Disconnect(true, chr.IsInExtraServer());
                 }
             }
         });

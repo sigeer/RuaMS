@@ -135,24 +135,13 @@ namespace Application.Core.Login.Datas
                 var oldLevel = origin.Character.Level;
                 var oldJob = origin.Character.JobId;
 
-                origin.Character = obj.Character;
-
-                _masterServer.AccountGameManager.UpdateAccountGame(obj.AccountGame);
-
                 _logger.LogDebug("玩家{PlayerName}已缓存, 操作:{TriggerDetail}",
                     obj.Character.Name, GetTriggerDetail(trigger, origin.Channel, obj.Channel));
-                if (trigger == SyncCharacterTrigger.Logoff)
+                // 下线由这次同步直接处理；切频道 / 离开商城不做：
+                // 账号切服状态由频道的 PlayerPreEnterChannelCommand 在发 CHANGE_CHANNEL 前统一设置
+                if (trigger == SyncCharacterTrigger.LeaveChannel)
                 {
                     _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.LOGIN_NOTLOGGEDIN);
-                }
-                else if (trigger == SyncCharacterTrigger.PreEnterChannel)
-                {
-                    _masterServer.AccountManager.UpdateAccountState(obj.Character.AccountId, LoginStage.PlayerServerTransition);
-                    if (YamlConfig.config.server.USE_IP_VALIDATION)
-                    {
-                        var accInfo = _masterServer.AccountManager.GetAccountDto(obj.Character.AccountId)!;
-                        _masterServer.SetCharacteridInTransition(accInfo.GetSessionRemoteHost(), obj.Character.Id);
-                    }
                 }
                 SetState(origin);
 
@@ -203,12 +192,8 @@ namespace Application.Core.Login.Datas
         {
             switch (trigger)
             {
-                case SyncCharacterTrigger.Logoff:
-                    return "离线";
-                case SyncCharacterTrigger.EnterCashShop:
-                    return $"进入商城（从频道{oldChannel}）";
-                case SyncCharacterTrigger.PreEnterChannel:
-                    return $"正在进入频道";
+                case SyncCharacterTrigger.LeaveChannel:
+                    return "离开频道";
                 case SyncCharacterTrigger.LevelChanged:
                     return "等级变化";
                 case SyncCharacterTrigger.JobChanged:
@@ -220,6 +205,41 @@ namespace Application.Core.Login.Datas
                 default:
                     return "未知";
             }
+        }
+
+        /// <summary>
+        /// 合并频道推上来的 <c>AccountGame</c>。
+        /// <para>
+        /// 两者都有东西：账号上的是仓库（频道持有一份，商城和普通游戏都会改）、
+        /// 中心服独有的是余额与现金仓（频道已经不缓存它们了，见 <c>CashShopServer</c>）。
+        /// 所以只取频道的仓库/快捷栏，钱和现金仓一律保留中心服自己的。
+        /// </para>
+        /// </summary>
+        void MergeAccountGame(ProtoModel.AccountGameProto incoming, int accountId)
+        {
+            var master = _masterServer.AccountGameManager.GetAccountGameData(accountId);
+            if (master == null)
+            {
+                // 中心服还没有这份数据（首次同步），除了余额之外的字段照单全收
+                incoming.NxCredit = 0;
+                incoming.MaplePoint = 0;
+                incoming.NxPrepaid = 0;
+                incoming.Data?.CashExplorerItems.Clear();
+                incoming.Data?.CashCygnusItems.Clear();
+                incoming.Data?.CashAranItems.Clear();
+                incoming.Data?.CashOverallItems.Clear();
+                _masterServer.AccountGameManager.UpdateAccountGame(incoming);
+                return;
+            }
+
+            if (incoming.Data != null)
+            {
+                master.Data ??= new ProtoModel.AccountGameDataProto();
+                master.Data.Storage = incoming.Data.Storage;
+                master.Data.QuickSlot = incoming.Data.QuickSlot;
+            }
+
+            _masterServer.AccountGameManager.UpdateAccountGame(master);
         }
 
         async Task BatchUpdateCore(List<ProtoModel.PlayerSaveProto> list)

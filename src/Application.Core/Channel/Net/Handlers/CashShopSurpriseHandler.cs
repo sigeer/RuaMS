@@ -4,10 +4,8 @@
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,7 +17,7 @@
 */
 
 
-using Application.Core.Channel.Services;
+using Application.Core.Channel.ServerData;
 using Application.Core.Server;
 using client.inventory;
 using tools;
@@ -35,11 +33,11 @@ namespace Application.Core.Channel.Net.Handlers;
 public class CashShopSurpriseHandler : ChannelHandlerBase
 {
 
-    readonly ItemService _itemService;
+    readonly CashShopManager _cashShopManager;
 
-    public CashShopSurpriseHandler(ItemService itemService)
+    public CashShopSurpriseHandler(CashShopManager cashShopManager)
     {
-        _itemService = itemService;
+        _cashShopManager = cashShopManager;
     }
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
@@ -48,24 +46,21 @@ public class CashShopSurpriseHandler : ChannelHandlerBase
             await c.tryacquireClient();
             try
             {
-                CashShop cs = c.OnlinedCharacter.getCashShop();
-                if (!cs.isOpened())
+                if (!c.OnlinedCharacter.IsInExtraServer())
                 {
                     return;
                 }
 
                 long cashId = p.readLong();
-                var result = _itemService.OpenCashShopSurprise(cs, cashId);
+                var result = await _cashShopManager.OpenCashShopSurpriseSynced(c, cashId);
                 if (result == null)
                 {
                     await c.SendPacket(PacketCreator.onCashItemGachaponOpenFailed());
                     return;
                 }
 
-                Item usedCashShopSurprise = result.usedCashShopSurprise;
-                Item reward = result.reward;
-                await c.SendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, usedCashShopSurprise.getCashId(),
-                        usedCashShopSurprise.getQuantity(), reward, reward.getItemId(), reward.getQuantity(), true));
+                await c.SendPacket(PacketCreator.onCashGachaponOpenSuccess(c.AccountEntity!.Id, result.Used.UniqueId,
+                        result.RemainingQuantity, result.Reward, result.Reward.Itemid, result.Reward.Quantity, true));
             }
             finally
             {

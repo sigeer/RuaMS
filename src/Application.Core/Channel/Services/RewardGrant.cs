@@ -1,5 +1,3 @@
-using client.inventory;
-
 namespace Application.Core.Channel.Services
 {
     /// <summary>
@@ -12,9 +10,10 @@ namespace Application.Core.Channel.Services
     internal sealed class RewardGrant
     {
         /// <summary>
-        /// 进现金仓的道具（回滚时从现金仓移除）
+        /// 进现金仓的道具。现金仓在中心服，所以这里存的是轻量条目：
+        /// 提交成功后才一起送上去（见 <c>ItemService.PushRewardCashItems</c>）。
         /// </summary>
-        public List<Item> CashItems { get; } = [];
+        public List<ProtoModel.ItemProto> CashItems { get; } = [];
         /// <summary>
         /// 进普通背包的道具（回滚时按 itemId + 数量移除）
         /// </summary>

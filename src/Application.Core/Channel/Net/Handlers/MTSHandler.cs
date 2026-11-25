@@ -45,17 +45,15 @@ public class MTSHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        var chr = c.OnlinedCharacter;
-
-        // 只有身处拍卖行（商城界面已打开）时才允许这些操作
-        if (!chr.getCashShop().isOpened())
+        // MTS 里不碰 Player：进入时由 EnterMTSHandler 标记，离开时由 LeaveCashShop 清掉
+        if (!_manager.IsOpened(c))
         {
             return;
         }
 
         if (p.available() == 0)
         {
-            await chr.SendPacket(MTSPacketCreator.ShowMTSCash(chr.getCashShop().NxPrepaid, chr.getCashShop().MaplePoint));
+            await _manager.RefreshPage(c);
             return;
         }
 
@@ -90,7 +88,7 @@ public class MTSHandler : ChannelHandlerBase
                     {
                         p.readString();
                     }
-                    await _manager.RegisterWanted(chr, itemId, price, quantity, 0);
+                    await _manager.RegisterWanted(c, itemId, price, quantity, 0);
                     break;
                 }
             case 11:
@@ -99,19 +97,19 @@ public class MTSHandler : ChannelHandlerBase
                     // 面对自己的求购单谈不上“成交”，客户端也没给这条路准备专用的成功/失败操作码，
                     // 因此只回一次列表刷新——它带收尾字节，能把客户端“请求在途”标志清掉。
                     p.readInt();
-                    await _manager.Query(chr, chr.getCurrentTab(), chr.getCurrentType(), chr.getCurrentPage());
+                    await _manager.RefreshPage(c);
                     break;
                 }
             case 12: // 与求购单成交（int 商品id，sub_59FA94）
                 await _manager.FulfillWanted(c, p.readInt(), false);
                 break;
             case 13: // 求购列表：撤销（int 商品id）
-                await _manager.CancelWanted(chr, p.readInt());
+                await _manager.CancelWanted(c, p.readInt());
                 break;
             case 14:
                 // 全二进制 19 处 COutPacket(253) 构造点里没有 14（见 docs/ida/MTS_拍卖行_封包分析.md §4），
                 // 保留分支只为在日志里暴露异常客户端
-                _logger.LogWarning("收到客户端从不会构造的拍卖行操作码 14，玩家 {CharacterName}", chr.getName());
+                _logger.LogWarning("收到客户端从不会构造的拍卖行操作码 14，角色 {CharacterId}", c.CharacterId);
                 break;
             case 18:
                 // 拍卖上架：物品编码 + int slot + int quantity + int 起拍价 + int 一口价
@@ -126,7 +124,7 @@ public class MTSHandler : ChannelHandlerBase
                     int productId = p.readInt();
                     int basePrice = p.readInt();
                     int extra = p.readInt();
-                    await _manager.BidAuction(chr, productId, basePrice + extra);
+                    await _manager.BidAuction(c, productId, basePrice + extra);
                     break;
                 }
             case 20:
@@ -143,7 +141,7 @@ public class MTSHandler : ChannelHandlerBase
                     p.readByte();
                     int searchType = p.readInt();
                     string search = p.readString();
-                    await _manager.Query(chr, tab, type, page, searchType, search);
+                    await _manager.Query(c, tab, type, page, searchType, search);
                     break;
                 }
             case 6:
@@ -154,20 +152,20 @@ public class MTSHandler : ChannelHandlerBase
                     p.readInt();
                     int searchType = p.readInt();
                     string search = p.readString();
-                    await _manager.Search(chr, tab, type, searchType, search);
+                    await _manager.Search(c, tab, type, searchType, search);
                     break;
                 }
             case 7:
-                await _manager.CancelSaleItem(chr, p.readInt());
+                await _manager.CancelSaleItem(c, p.readInt());
                 break;
             case 8:
                 await _manager.TakeItem(c, p.readInt());
                 break;
             case 9:
-                await _manager.AddCartItem(chr, p.readInt());
+                await _manager.AddCartItem(c, p.readInt());
                 break;
             case 10:
-                await _manager.RemoveCartItem(chr, p.readInt());
+                await _manager.RemoveCartItem(c, p.readInt());
                 break;
             case 16:
                 // 商品列表内直接购买（客户端先弹“Are you sure you want to buy this?”）
@@ -178,7 +176,7 @@ public class MTSHandler : ChannelHandlerBase
                 await _manager.Buy(c, p.readInt(), true);
                 break;
             default:
-                _logger.LogWarning("未处理的拍卖行操作码 {Op}，玩家 {CharacterName}", op, chr.getName());
+                _logger.LogWarning("未处理的拍卖行操作码 {Op}，角色 {CharacterId}", op, c.CharacterId);
                 break;
         }
     }
@@ -242,19 +240,6 @@ public class MTSHandler : ChannelHandlerBase
         }
 
         var invType = ItemConstants.getInventoryType(itemid);
-        var item = c.OnlinedCharacter.getInventory(invType).getItem(slot);
-        if (item == null || item.getItemId() != itemid)
-        {
-            _logger.LogWarning("玩家 {CharacterName} 尝试上架不存在或位置不符的物品 {ItemId}@{Slot}", c.OnlinedCharacter.getName(), itemid, slot);
-            await c.SendPacket(PacketCreator.enableActions());
-            return;
-        }
-
-        if (item.getQuantity() < quantity)
-        {
-            await c.SendPacket(PacketCreator.enableActions());
-            return;
-        }
 
         if (auction)
         {

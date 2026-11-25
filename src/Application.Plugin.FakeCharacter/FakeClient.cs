@@ -1,6 +1,7 @@
 using Application.Core.Channel;
 using Application.Core.Client;
 using Application.Core.Game.Players;
+using Application.Core.Game.Trades;
 using Application.Shared.MapObjects.Players;
 using Application.Shared.Models;
 using Application.Shared.Net;
@@ -20,6 +21,10 @@ namespace Application.Plugin.FakeCharacter
         public Player? Character { get; private set; }
 
         public Player OnlinedCharacter => Character!;
+
+        public int CharacterId => Character?.Id ?? 0;
+
+        public ITradeServer? TradeServer { get; set; }
 
         public IClientCulture CurrentCulture { get; set; } = ClientCulture.SystemCulture;
         public NPCConversationManager? NPCConversationManager { get; set; }

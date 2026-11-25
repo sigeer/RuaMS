@@ -9,6 +9,8 @@ using Application.Core.Model;
 using Application.Core.Models;
 using Application.Core.Server;
 using Application.Shared.Battle.Skills;
+using Application.Templates.Character;
+using Application.Templates.Item.Pet;
 using client.inventory;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
@@ -77,11 +79,7 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.ExcludeItems, src => src.PetInfo.ExcludedItems.ToHashSet())
                 .AfterMapping((rs, dest) =>
                 {
-                    dest.setOwner(rs.Owner);
-                    dest.setQuantity((short)rs.Quantity);
-                    dest.Flag = (short)rs.Flag;
-                    dest.setExpiration(rs.Expiration);
-                    dest.setGiftFrom(rs.GiftFrom);
+                    SetItemCommon(rs, dest);
 
                     dest.Name = rs.PetInfo!.Name;
                 });
@@ -115,6 +113,7 @@ namespace Application.Core.Mappers
                 .Map(dest => dest.Expiration, source => source.getExpiration())
                 .Map(dest => dest.GiftFrom, source => source.getGiftFrom())
                 .Map(dest => dest.Position, source => source.getPosition())
+                .Map(dest => dest.Sn, source => source.getSN())
                 .Include<Pet, ProtoModel.ItemProto>()
                 .Include<Equip, ProtoModel.ItemProto>();
 
@@ -125,11 +124,7 @@ namespace Application.Core.Mappers
                     .ConstructUsing(source => new Equip(ItemInformationProvider.getInstance().GetEquipTemplate(source.Itemid)!, (short)source.Position, source.UniqueId))
                     .AfterMapping((rs, dest, ctx) =>
                     {
-                        dest.setOwner(rs.Owner);
-                        dest.setQuantity((short)rs.Quantity);
-                        dest.Flag = (short)rs.Flag;
-                        dest.setExpiration(rs.Expiration);
-                        dest.setGiftFrom(rs.GiftFrom);
+                        SetItemCommon(rs, dest);
 
                         dest.setAcc(rs.EquipInfo!.Acc);
                         dest.setAvoid(rs.EquipInfo!.Avoid);
@@ -276,30 +271,45 @@ namespace Application.Core.Mappers
             if (src == null)
                 return null;
 
-            if (ItemConstants.getInventoryType(src.Itemid) == InventoryType.EQUIP)
+            var itemTemplate = ItemInformationProvider.getInstance().GetItemTemplate(src.Itemid);
+            if (itemTemplate == null)
             {
-                if (src.EquipInfo != null)
-                {
-                    return src.Adapt<Equip>();
-                }
-                else
-                {
-                    var equip = ItemInformationProvider.getInstance().getEquipById(src.Itemid, (short)src.Position);
-                    return equip;
-                }
+                // 能被写进包里的一定有模板；缺了说明数据本身坏了，静默返回 null 只会让封包
+                // 长度与实际条目数对不上（客户端读串位），所以直接抛
+                throw new BusinessResException($"ItemId={src.Itemid} 资源未找到，无法生成物品（UniqueId={src.UniqueId}）");
             }
 
-            if (src.PetInfo != null)
-                return src.Adapt<Pet>();
+            Item dest;
+            if (itemTemplate is EquipTemplate && src.EquipInfo != null)
+            {
+                dest = src.Adapt<Equip>();
+            }
 
-            var dest = new Item(ItemInformationProvider.getInstance().GetItemTemplate(src.Itemid)!, (short)src.Position, (short)src.Quantity, src.UniqueId);
+            else if (itemTemplate is PetItemTemplate && src.PetInfo != null)
+            {
+                dest = src.Adapt<Pet>();
+            }
+            else
+            {
+                // 商城买下的物品中心服只存 SN，这里才第一次生成真物品。
+                // UniqueId 必须沿用 proto 里那个：它就是客户端的 cashId，
+                // 0x68 靠它从现金仓里删掉对应条目
+                dest = ItemInformationProvider.getInstance().GenerateVirtualItemById(src.Itemid, src.Quantity, uniqueId: src.UniqueId);
+                dest.setPosition((short)src.Position);
+            }
+            SetItemCommon(src, dest);
+            return dest;
+        }
+
+        static void SetItemCommon(ProtoModel.ItemProto src, Item dest)
+        {
             dest.setOwner(src.Owner);
             dest.Flag = (short)src.Flag;
             dest.setExpiration(src.Expiration);
             dest.setGiftFrom(src.GiftFrom);
             dest.Properties = src.Properties;
             dest.LockExpiration = src.LockExpiration;
-            return dest;
+            dest.setSN(src.Sn);
         }
 
         public static DropEntry MapDrop(ProtoModel.DropItemProto src)

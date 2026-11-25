@@ -61,10 +61,12 @@ message ProductRequest {
 message FulfillWantedRequest {
 	ProtoModel.MTSQueryProto query = 1;
 	int32 productId = 2;
-	// 成交时卖方交付的物品（op 3 由客户端带上；op 12 服务端按求购单的物品id 从背包里取）
-	ProtoModel.ItemProto item = 3;
-	int64 token = 4;
-	ProtoModel.TransferStage stage = 5;
+	// 上一版由频道把物品整件传上来；现在背包由中心服持有，只带「从哪取多少」即可
+	reserved 3, 4, 5;
+	// 1=装备 2=消耗 3=设置 4=其他 5=现金
+	int32 inventoryType = 6;
+	int32 itemId = 7;
+	int32 quantity = 8;
 }
 
 
@@ -84,7 +86,8 @@ message MTSQueryResponse {
 
 message SaleItemRequest {
 	int32 masterId = 1;
-	ProtoModel.ItemProto item = 2;
+	// MTS 期间背包由中心服持有（频道侧的 Player 已脱离世界），所以只告诉中心服从哪个格子取
+	reserved 2;
 	// 普通出售：售价；拍卖：起拍价
 	int32 price = 3;
 	string sellerName = 4;
@@ -96,8 +99,11 @@ message SaleItemRequest {
 	int32 buyNow = 8;
 	// 拍卖专用：加价幅度
 	int32 bidIncrement = 9;
-	int64 token = 10;
-	ProtoModel.TransferStage stage = 11;
+	reserved 10, 11;
+	// 1=装备 2=消耗 3=设置 4=其他 5=现金
+	int32 inventoryType = 12;
+	int32 slot = 13;
+	int32 quantity = 14;
 }
 
 
@@ -186,11 +192,8 @@ message ChangePageResponse {
 message TakeItemRequest {
 	ProtoModel.MTSQueryProto query = 1;
 	int32 productId = 2;
-	// PREPARE：只校验归属并占位、返回商品（频道侧先确认背包能放下）
-	// COMMIT ：真正从待领取列表移除（同 token 重放返回同一结论）
-	// ABORT  ：放弃本次领取，释放占位
-	int64 token = 3;
-	ProtoModel.TransferStage stage = 4;
+	// 单进程完成：中心服把物品直接放进持有者的背包副本，并返回落点
+	reserved 3, 4;
 }
 
 
@@ -202,6 +205,8 @@ message TakeItemResponse {
 	ProtoModel.PlayerMTSInfoProto myMTSInfo = 4;
 	ProtoModel.PagedItemsProto cartItems = 5;
 	ProtoModel.PagedItemsProto pageData = 6;
+	// 物品在背包里落到的格子（op 39 要显示给客户端）
+	int32 position = 7;
 }
 
 

@@ -61,7 +61,7 @@ public class ChangeMapHandler : ChannelHandlerBase
             return;
         }
 
-        if (chr.getCashShop().isOpened())
+        if (chr.IsInExtraServer())
         {
             await c.Disconnect(false, false);
             return;
