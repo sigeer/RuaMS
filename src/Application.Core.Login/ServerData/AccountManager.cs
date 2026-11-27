@@ -73,12 +73,13 @@ namespace Application.Core.Login.Datas
 
 
 
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
+        public Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte newState)
         {
             var d = GetAccountLoginStatus(accId);
             d.State = newState;
             d.ProcessTime = _server.GetCurrentTimeDateTimeOffset();
-            return d;
+
+            return Task.FromResult(d);
         }
 
         public void SetClientLanguage(int accId, int language)

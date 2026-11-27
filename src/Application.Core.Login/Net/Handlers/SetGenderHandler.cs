@@ -59,7 +59,7 @@ public class SetGenderHandler : LoginHandlerBase
             else
             {
                 _sessionCoordinator.closeSession(c);
-                c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+                await c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }
     }

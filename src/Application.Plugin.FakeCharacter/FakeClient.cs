@@ -120,9 +120,14 @@ namespace Application.Plugin.FakeCharacter
             return "0.0.0.0";
         }
 
-        public Task LeaveCashShop()
+        public Task LeaveTradeServer()
         {
             return Task.CompletedTask;
+        }
+
+        public Task<bool> EnterTradeServer(ITradeServer tradeServer)
+        {
+            return Task.FromResult(false);
         }
 
         public void PongReceived()
@@ -151,8 +156,9 @@ namespace Application.Plugin.FakeCharacter
             AccountEntity = accountEntity;
         }
 
-        public void SetCharacterOnSessionTransitionState(int cid)
+        public Task SetCharacterOnSessionTransitionState(int cid)
         {
+            return Task.CompletedTask;
         }
 
         public void SetPlayer(Player? player)
@@ -161,6 +167,11 @@ namespace Application.Plugin.FakeCharacter
         }
 
         public Task tryacquireClient()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task LeaveWorld(bool saveBuff = true)
         {
             return Task.CompletedTask;
         }

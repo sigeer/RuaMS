@@ -150,11 +150,6 @@ namespace Application.Core.Channel.InProgress
         }
 
 
-        public void SendAccountLogout(int accountId)
-        {
-            _server.UpdateAccountState(accountId, LoginStage.LOGIN_NOTLOGGEDIN);
-        }
-
         public IPEndPoint GetChannelEndPoint(int channel)
         {
             return _server.GetChannelIPEndPoint(channel);
@@ -165,9 +160,10 @@ namespace Application.Core.Channel.InProgress
             await _server.CharacterManager.BatchUpdateMap(data);
         }
 
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
+        public async Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte state)
         {
-            return _server.UpdateAccountState(accId, state);
+            // 频道侧发起的登出要连带把角色踢下线（商城/拍卖行里断线时频道已经没有 Player 可同步）
+            return await _server.UpdateAccountStateFromChannel(accId, state);
         }
 
         public void SetCharacteridInTransition(string v, int cid)

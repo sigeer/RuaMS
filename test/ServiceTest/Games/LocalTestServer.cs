@@ -105,7 +105,7 @@ namespace ServiceTest.Games
             acc.CurrentMac = "12345678";
             acc.CurrentHwid = "12345678";
             acc.CurrentIP = "127.0.0.1";
-            mainServer.UpdateAccountState(1, LoginStage.LOGIN_SERVER_TRANSITION);
+            await mainServer.UpdateAccountState(1, LoginStage.LOGIN_SERVER_TRANSITION);
             var obj = loginService.PlayerLogin("12345678", cid);
             if (obj == null)
             {

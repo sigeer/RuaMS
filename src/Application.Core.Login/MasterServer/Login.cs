@@ -20,9 +20,30 @@ namespace Application.Core.Login
             return AccountManager.GetAccountDto(accId);
         }
 
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte newState)
+        public async Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte newState)
         {
-            return AccountManager.UpdateAccountState(accId, newState);
+            return await AccountManager.UpdateAccountState(accId, newState);
+        }
+
+        /// <summary>
+        /// 频道服务器发起的账号状态变更。
+        /// <para>
+        /// 只有这条路径才需要顺带把角色踢下线：玩家在商城/拍卖行里直接断线时，频道侧已经没有
+        /// <c>Player</c> 可以同步，中心服缓存的 <c>Channel</c> 会停在非 0 值（只能由这里兜底清理）。
+        /// 登录服自己发起的 <see cref="UpdateAccountState"/> 不能这么做 —— 那只是登录连接的状态，
+        /// 玩家可能正在游戏里。
+        /// </para>
+        /// </summary>
+        public async Task<AccountLoginStatus> UpdateAccountStateFromChannel(int accId, sbyte newState)
+        {
+            var data = await UpdateAccountState(accId, newState);
+
+            if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
+            {
+                await CharacterManager.LogoffAccountCharacters(accId);
+            }
+
+            return data;
         }
 
         public List<CharacterLiveObject> LoadAccountCharactersView(int id)

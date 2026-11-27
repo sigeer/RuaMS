@@ -23,6 +23,7 @@ using net.server.services.task.channel;
 using scripting.Event;
 using scripting.npc;
 using scripting.reactor;
+using System.Collections.Concurrent;
 using System.Net;
 using tools;
 
@@ -49,8 +50,11 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
     private Dictionary<int, int> storedVars = new();
     /// <summary>
     /// 处于现金商城
+    /// <para>
+    /// 同时被包处理线程（进商城）和命令循环线程（离开商城）读写，必须用并发容器。
+    /// </para>
     /// </summary>
-    public Dictionary<int, IChannelClient> PlayersAway { get; set; } = new();
+    public ConcurrentDictionary<int, IChannelClient> PlayersAway { get; set; } = new();
 
     private Dictionary<int, MiniDungeon> dungeons = new();
 
@@ -104,8 +108,6 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
     #endregion
     public CommandLoop<WorldChannel> CommandLoop { get; }
     public EventRecallManager EventRecallManager { get; }
-
-    public ChannelClientStorage ClientStorage { get; }
     public ChannelService Service { get; }
     public IServerBase<IChannelServerTransport> Node { get; }
     public IActorInstance<WorldChannelServer> NodeActor { get; }
@@ -134,7 +136,6 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
         ChannelConfig = config;
         WorldServerMessage = "";
 
-        ClientStorage = new ChannelClientStorage(this);
         Service = ActivatorUtilities.CreateInstance<ChannelService>(LifeScope.ServiceProvider, this);
 
         this.world = 0;
@@ -356,8 +357,8 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
 
     public async Task addPlayer(Player chr)
     {
-        if (PlayersAway.Remove(chr.Id))
-            GameMetrics.OnlinePlayerCount.Add(-1);
+        if (PlayersAway.TryRemove(chr.Id, out _))
+            GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", InstanceName));
 
         Players.AddPlayer(chr);
         GameMetrics.OnlinePlayerCount.Add(1, new KeyValuePair<string, object?>("Channel", InstanceName));
@@ -466,20 +467,6 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
         }
     }
 
-    public async Task<bool> RemovePlayer(int chrId)
-    {
-        var chr = Players.RemovePlayer(chrId);
-        if (chr != null)
-        {
-            await chr.getMap().removePlayer(chr);
-
-            GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", InstanceName));
-            return true;
-        }
-
-        return false;
-    }
-
     public int getChannelCapacity()
     {
         return (int)(Math.Ceiling(((float)Players.getAllCharacters().Count / ChannelConfig.MaxSize) * 800));
@@ -516,48 +503,6 @@ public partial class WorldChannel : ISocketServer, IMessageBroadcaster<Player>, 
     public EventScriptManager getEventSM()
     {
         return EventScriptManager;
-    }
-
-    public async Task broadcastGMPacket(Packet packet)
-    {
-        foreach (var chr in Players.getAllCharacters())
-        {
-            if (chr.isGM())
-            {
-                await chr.SendPacket(packet);
-            }
-        }
-    }
-    public async Task EnterExtralWorld(Player chr, ITradeServer server)
-    {
-        // either they in CS or MTS
-        if (PlayersAway.TryAdd(chr.Id, chr.Client))
-        {
-            GameMetrics.OnlinePlayerCount.Add(1);
-
-            await chr.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.LeaveChannel);
-
-            await chr.closePlayerInteractions();
-            chr.closePartySearchInteractions();
-
-            await chr.unregisterChairBuff();
-            chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
-
-            await chr.CancelAllBuffs();
-            chr.cancelAllDebuffs();
-            await chr.forfeitExpirableQuests();
-
-            await RemovePlayer(chr.Id);
-            chr.Client.TradeServer = server;
-        }
-    }
-
-    public async Task RemovePlayerDeep(Player chr)
-    {
-        if (PlayersAway.Remove(chr.Id))
-            GameMetrics.OnlinePlayerCount.Add(-1);
-
-        await RemovePlayer(chr.Id);
     }
 
     public bool IsAwayFromWorld(int id) => PlayersAway.ContainsKey(id);

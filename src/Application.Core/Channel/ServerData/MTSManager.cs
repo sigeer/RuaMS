@@ -28,7 +28,7 @@ namespace Application.Core.Channel.ServerData
 
         /// <summary>
         /// 是否在拍卖行里。会话状态统一记在 <see cref="IChannelClient.TradeServer"/> 上，
-        /// 进出时由 <see cref="Handlers.EnterMTSHandler"/> / <see cref="ChannelClient.LeaveCashShop"/> 维护。
+        /// 进出时由 <see cref="Handlers.EnterMTSHandler"/> / <see cref="ChannelClient.LeaveTradeServer"/> 维护。
         /// </summary>
         public bool IsOpened(IChannelClient c) => c.TradeServer is MtsServer;
 

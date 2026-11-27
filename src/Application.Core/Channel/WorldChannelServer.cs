@@ -461,9 +461,9 @@ namespace Application.Core.Channel
         }
 
 
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
+        public async Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte state)
         {
-            return Transport.UpdateAccountState(accId, state);
+            return await Transport.UpdateAccountState(accId, state);
         }
 
         public void SetCharacteridInTransition(string v, int cid)

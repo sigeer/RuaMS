@@ -55,10 +55,11 @@ namespace Application.Core.Login.Servers
             return Task.FromResult(new Empty());
         }
 
-        public override Task<ProtoModel.AccountLoginStateProto> UpdateAccountState(ProtoService.UpdateAccountStateRequest request, ServerCallContext context)
+        public override async Task<ProtoModel.AccountLoginStateProto> UpdateAccountState(ProtoService.UpdateAccountStateRequest request, ServerCallContext context)
         {
-            var data = _server.AccountManager.UpdateAccountState(request.AccId, (sbyte)request.State);
-            return Task.FromResult(new ProtoModel.AccountLoginStateProto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.ProcessTime) });
+            // 这个 gRPC 只由频道服务器调用，所以登出时要连带清理角色在线状态
+            var data = await _server.UpdateAccountStateFromChannel(request.AccId, (sbyte)request.State);
+            return new ProtoModel.AccountLoginStateProto { State = data.State, AccId = request.AccId, Time = Timestamp.FromDateTimeOffset(data.ProcessTime) };
         }
     }
 }

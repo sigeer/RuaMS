@@ -3222,8 +3222,14 @@ public partial class Player
         this.partyQuest = pq;
     }
 
+    bool _disposed;
     public virtual async ValueTask DisposeAsync()
     {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
         if (extraRecoveryTask != null)
         {
             await extraRecoveryTask.CancelAsync(true);
@@ -3245,24 +3251,10 @@ public partial class Player
         partyQuest = null;
 
         Bag.Dispose();
+
+        RemoveWorldWatcher();
+        setClient(OfflineClient.Default);
     }
-
-    public async Task logOff()
-    {
-        // 切换频道/退出商城的保存不能放在断开连接时处理
-        await Client.CurrentServer.Send(async w =>
-        {
-            if (Client.TradeServer == null)
-            {
-                await SyncCharAsync(SyncCharacterTrigger.LeaveChannel);
-            }
-            
-
-            RemoveWorldWatcher();
-            setClient(new OfflineClient());
-        });
-    }
-
 
     public void setLoginTime(DateTimeOffset time)
     {

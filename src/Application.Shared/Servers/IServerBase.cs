@@ -28,6 +28,6 @@ namespace Application.Shared.Servers
         void ForceUpdateServerTime();
         void SetCharacteridInTransition(string clientSession, int cid);
         bool HasCharacteridInTransition(string clientSession);
-        AccountLoginStatus UpdateAccountState(int accId, sbyte state);
+        Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte state);
     }
 }

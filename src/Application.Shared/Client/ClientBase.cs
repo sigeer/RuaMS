@@ -20,11 +20,6 @@ namespace Application.Shared.Client
 
         public abstract string AccountName { get; }
         public int Language { get; set; }
-
-        /// <summary>
-        /// q
-        /// </summary>
-        /// <param name="cid"></param>
-        public abstract void SetCharacterOnSessionTransitionState(int cid);
+        public abstract Task SetCharacterOnSessionTransitionState(int cid);
     }
 }

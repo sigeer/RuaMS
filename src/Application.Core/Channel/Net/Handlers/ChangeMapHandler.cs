@@ -57,7 +57,7 @@ public class ChangeMapHandler : ChannelHandlerBase
         bool enteringMapFromCashShop = p.available() == 0;
         if (enteringMapFromCashShop)
         {
-            await c.LeaveCashShop();
+            await c.LeaveTradeServer();
             return;
         }
 

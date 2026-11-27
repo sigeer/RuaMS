@@ -53,10 +53,6 @@ namespace Application.Core.Channel.Services
         public async Task SaveChar(Player player, SyncCharacterTrigger trigger = SyncCharacterTrigger.Unknown)
         {
             var dto = Deserialize(player);
-            if (trigger == SyncCharacterTrigger.LeaveChannel)
-            {
-                dto.Channel = 0;
-            }
             // 切换频道、进商城、离开商城时断线都要马上同步：
             // 这几步之后频道侧的数据会被丢弃或重新拉取，走批量队列会有竞态
             if (trigger == SyncCharacterTrigger.LeaveChannel)

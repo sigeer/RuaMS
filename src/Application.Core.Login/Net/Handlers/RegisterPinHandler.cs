@@ -47,7 +47,7 @@ public class RegisterPinHandler : LoginHandlerBase
         if (c2 == 0)
         {
             _sessionCoordinator.closeSession(c);
-            c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+            await c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
         else
         {
@@ -62,7 +62,7 @@ public class RegisterPinHandler : LoginHandlerBase
                 }
 
                 _sessionCoordinator.closeSession(c);
-                c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+                await c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             }
         }
     }

@@ -73,7 +73,7 @@ namespace Application.Core.Login.Net.Handlers
             }
 
             _server.UnregisterLoginState(c);
-            c.SetCharacterOnSessionTransitionState(charId);
+            await c.SetCharacterOnSessionTransitionState(charId);
 
             c.AccountEntity.CurrentIP = c.RemoteAddress;
             c.AccountEntity.CurrentMac = macs;

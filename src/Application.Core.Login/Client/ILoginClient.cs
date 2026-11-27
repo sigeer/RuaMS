@@ -11,15 +11,15 @@ namespace Application.Core.Login.Client
         int CurrentHistoryId { get; set; }
         Task Disconnect();
 
-        void updateLoginState(sbyte newState);
+        Task updateLoginState(sbyte newState);
         bool CanBypassPin();
         bool CheckPin(string other);
         bool CanBypassPic();
         bool CheckPic(string other);
 
         bool isLoggedIn();
-        LoginResultCode Login(string login, string pwd, Hwid nibbleHwid);
-        LoginResultCode FinishLogin();
+        Task<LoginResultCode> Login(string login, string pwd, Hwid nibbleHwid);
+        Task<LoginResultCode> FinishLogin();
         bool CheckChar(int accid);
         Task SendCharList();
         List<CharacterLiveObject> LoadCharactersView();

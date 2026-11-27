@@ -28,7 +28,7 @@ namespace Application.Core.Channel.Net
         public Player? Character { get; private set; }
 
         public Player OnlinedCharacter => Character ?? throw new BusinessCharacterOfflineException();
-        public int CharacterId => Character?.Id ?? 0;
+        public int CharacterId { get; private set; }
 
         public ITradeServer? TradeServer { get; set; }
         public WorldChannel CurrentServer { get; }
@@ -41,11 +41,11 @@ namespace Application.Core.Channel.Net
         public override string AccountName => AccountEntity?.Name ?? "";
         public override int AccountGMLevel => AccountEntity?.GMLevel ?? 0;
         public IClientCulture CurrentCulture { get; set; } = new ClientCulture(0);
-        public override void SetCharacterOnSessionTransitionState(int cid)
+        public override async Task SetCharacterOnSessionTransitionState(int cid)
         {
             IsServerTransition = true;
 
-            CurrentServer.Node.UpdateAccountState(AccountId, (sbyte)LoginStage.PlayerServerTransition);
+            await CurrentServer.Node.UpdateAccountState(AccountId, (sbyte)LoginStage.PlayerServerTransition);
             CurrentServer.Node.SetCharacteridInTransition(GetSessionRemoteHost(), CharacterId);
         }
 
@@ -55,103 +55,60 @@ namespace Application.Core.Channel.Net
             if (_isDisconnecting)
                 return;
 
-            _isDisconnecting = true;
-            //once per Client instance
-            if (Character != null && Character.isLoggedin() && Character.getClient() != null)
+            try
             {
+                _isDisconnecting = true;
+
+                if (!IsServerTransition)
+                {
+                    // 登出不能依赖 LeaveWorld 成功：它内部有多个可抛点（移出地图、事件副本、背包清理、存 buff），
+                    // 一旦抛在这里而跳过 UpdateAccountState，账号会停在已登录态、角色在中心服一直是「在线」。
+                    try
+                    {
+                        await LeaveWorld(false);
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError(e, "LeaveWorld failed");
+                    }
+
+                    await CurrentServer.Node.Transport.UpdateAccountState(AccountId, LoginStage.LOGIN_NOTLOGGEDIN);
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Account stuck");
+            }
+            finally
+            {
+                // 商城/拍卖行里的角色已经不在 Players 里，LeaveWorld 走过去也会直接返回，
+                // 所以这里必须单独摘除，否则 PlayersAway 会一直留着这个已经断开的会话
+                // （canUninstall 永远 false、在线数居高不下、关服时还会对已释放的 client 调 ForceDisconnect）。
+                // 只摘自己这一条：同一角色的新会话可能已经重新登记，晚到的旧 client 不能把它删掉。
+                if (CurrentServer.PlayersAway.TryRemove(new KeyValuePair<int, IChannelClient>(CharacterId, this)))
+                {
+                    AddOnlinePlayerCount(-1);
+                }
+
                 try
                 {
-                    await RemovePlayer(Character, IsServerTransition);
-
-                    if (Channel != -1 && !isShutdown)
-                    {
-                        if (!IsServerTransition)
-                        {
-                            if (!fromCashShop)
-                            {
-                                await Character.forfeitExpirableQuests();    //This is for those quests that you have to stay logged in for a certain amount of time
-
-                                //if (guild != null)
-                                //{
-                                //    // 通过MasterServer广播
-                                //    guild.setOnline(Character.Id, false, CurrentServer.getId());
-                                //    // 都断开连接了这个包还有必要发？
-                                //    Character.sendPacket(GuildPackets.showGuildInfo(Character));
-                                //}
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    log.LogError(e, "Account stuck");
+                    await DisposeAsync();
                 }
                 finally
                 {
-                    await CurrentServer.RemovePlayerDeep(Character);
-
-                    if (!IsServerTransition)
-                        await Character.logOff();
+                    // DisposeAsync 里可能再次触发 Disconnect（CloseSessionInternal），所以复位要放在它之后；
+                    // 但它自己抛异常时也必须复位，否则这个 client 之后的所有 Disconnect 都会静默失效
+                    _isDisconnecting = false;
                 }
             }
-
-            CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
-
-            // 为什么不直接  updateLoginState(AccountStage.LOGIN_NOTLOGGEDIN);
-            // 如果正在切换频道，这边把状态改成了LOGIN_NOTLOGGEDIN，PlayerLoggedin无法找到正在切换频道的账户
-
-            // 为什么要用CurrentServer.HasCharacteridInTransition判断而不是IsServerTransition
-            // 比如切换频道，IsServerTransition=true，如果使用HasCharacteridInTransition则可以很好的知道PlayerLoggedinHandler的流程情况，
-            // 反之如果只是卡顿，旧client在这里退出了登录，新client在PlayerLoggedinHandler里也会变成登出态
-            if (!IsServerTransition && IsOnlined)
-            {
-                CurrentServer.Node.Transport.SendAccountLogout(AccountEntity.Id);
-            }
-            else
-            {
-                //比如切换频道  但是还没有成功进入新频道
-                if (YamlConfig.config.server.USE_IP_VALIDATION && !CurrentServer.Node.HasCharacteridInTransition(GetSessionRemoteHost()))
-                {
-                    CurrentServer.Node.Transport.SendAccountLogout(AccountEntity.Id);
-                    IsServerTransition = false;
-                }
-            }
-            await DisposeAsync();
-
-            _isDisconnecting = false;
         }
 
         /// <summary>
-        /// 清理，取消各种玩家状态
+        /// 在线人数统计。加上 Channel 标签，和 <see cref="WorldChannel.addPlayer"/> 里的 +1 保持一致。
         /// </summary>
-        /// <param name="player"></param>
-        /// <param name="serverTransition"></param>
-        private static async Task RemovePlayer(Player player, bool serverTransition)
+        void AddOnlinePlayerCount(int delta)
         {
-            await player.CancelAllBuffs();
-            player.cancelAllDebuffs();
-            await player.unregisterChairBuff();
-
-            await player.closePlayerInteractions();
-            player.closePartySearchInteractions();
-
-            // 道馆的占位与场景回收由 EventInstance 负责：玩家离开事件地图会 unregister，
-            // 副本随之销毁（dispose 时清掉该层的全部地图实例），这里不再单独处理道馆。
-            if (!serverTransition)
-            {
-                var eim = player.getEventInstance();
-                if (eim != null)
-                {
-                    await eim.playerDisconnected(player);
-                }
-
-                await player.Bag.ClearWhenLogout();
-            }
-
-            if (player.getMap() != null)
-            {
-                await player.getMap().removePlayer(player);
-            }
+            GameMetrics.OnlinePlayerCount.Add(delta, new KeyValuePair<string, object?>("Channel", CurrentServer.InstanceName));
         }
 
         public override async ValueTask DisposeAsync()
@@ -179,8 +136,6 @@ namespace Application.Core.Channel.Net
         {
             if (AccountEntity == null)
                 return;
-
-            CurrentServer.ClientStorage.RemoveClient(AccountEntity!.Id);
 
             await Disconnect(false);
         }
@@ -267,52 +222,116 @@ namespace Application.Core.Channel.Net
                 return;
             }
 
+            await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
+        }
+
+        public async Task<bool> EnterTradeServer(ITradeServer server)
+        {
+            // 没有角色时 CharacterId 为 0，写进 PlayersAway 会留下一条永远清不掉的脏数据。
+            if (CharacterId == 0)
+                return false;
+
+            // 已经在商城/拍卖行里（或残留了旧会话），不能再挂第二份
+            if (!CurrentServer.PlayersAway.TryAdd(CharacterId, this))
+                return false;
+
+            AddOnlinePlayerCount(1);
+            TradeServer = server;
+
+            // 进入商城/拍卖行等同于一次切服：之后会重新拉取角色数据，所以这里不注销
+            // 事件副本、也不清理 ExpireOnLogout 物品（由 LeaveWorld 按 IsServerTransition 判断）。
+            IsServerTransition = true;
             try
             {
-                await Character.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.LeaveChannel);
-                await CurrentServer.Send(new PlayerPreEnterChannelCommand(Character.Id, socket, true));
+                await LeaveWorld();
+                return true;
             }
-            catch (IOException e)
+            catch
             {
-                log.LogError(e.ToString());
+                // 角色没能脱离世界就回滚，否则会留下「标记在商城、人还在世界里」的半完成状态
+                if (CurrentServer.PlayersAway.TryRemove(CharacterId, out _))
+                {
+                    AddOnlinePlayerCount(-1);
+                }
+                TradeServer = null;
+
+                // LeaveWorld 可能已经完成了一半（人已离开地图、但没进商城），这种会话不能留着：
+                // 复位切服标记后断开客户端，让它走一次正常的登出清理（否则账号会停在已登录态、角色停在旧频道）
+                IsServerTransition = false;
+                await Disconnect(false, false);
+                throw;
+            }
+            finally
+            {
+                IsServerTransition = false;
             }
         }
 
         /// <summary>
         /// 离开商城
         /// </summary>
-        /// <param name="c"></param>
-        public async Task LeaveCashShop()
+        public async Task LeaveTradeServer()
         {
             if (TradeServer == null)
             {
+                // 会话标记已经丢了（比如重连时拿到的是旧连接），这个客户端没有别的出路
                 await Disconnect(false, false);
                 return;
             }
-            var socket = CurrentServer.getIP();
-            if (socket == null)
-            {
-                await CurrentServer.NodeService.CashShopManager.EnableActions(this);
-                return;
-            }
-            // 这里不同步角色数据：商城 / 拍卖行期间背包、现金仓都是中心服改的，
-            // 频道这份只有显示用的陈旧镜像，推上去也只能被中心服整份丢掉。
-            // 重连时 PlayerLoggedinHandler → LoginService.PlayerLogin 会重新取一份完整的。
-            // 账号切服状态由 PlayerPreEnterChannelCommand 在发 CHANGE_CHANNEL 之前设置。
-            TradeServer = null;
-            await CurrentServer.Send(new PlayerPreEnterChannelCommand(CharacterId, socket, false));
+
+            await CurrentServer.Send(new PlayerPreEnterChannelCommand(CharacterId, CurrentServer.getIP(), false));
         }
+
+        /// <summary>
+        /// 离开主世界（切换频道，进入商城，拍卖行）
+        /// </summary>
+        /// <param name="saveBuff">是否保存 buff（正常登出不保存）</param>
+        public async Task LeaveWorld(bool saveBuff = true)
+        {
+            var chr = CurrentServer.Players.RemovePlayer(CharacterId);
+            if (chr != null)
+            {
+                AddOnlinePlayerCount(-1);
+
+                await chr.getMap().removePlayer(chr);
+
+                if (!chr.Client.IsServerTransition)
+                {
+                    var eim = chr.getEventInstance();
+                    if (eim != null)
+                    {
+                        await eim.playerDisconnected(chr);
+                    }
+
+                    await chr.Bag.ClearWhenLogout();
+                }
+
+                await chr.SyncCharAsync(trigger: Shared.Events.SyncCharacterTrigger.LeaveChannel);
+
+                await chr.closePlayerInteractions();
+                chr.closePartySearchInteractions();
+
+                await chr.unregisterChairBuff();
+                if (saveBuff)
+                {
+                    CurrentServer.NodeService.DataService.SaveBuff(chr);
+                }
+
+                await chr.CancelAllBuffs();
+                chr.cancelAllDebuffs();
+            }
+        }
+
 
         public void SetPlayer(Player? player)
         {
             Character = player;
+            CharacterId = Character?.Id ?? 0;
         }
 
         public void SetAccount(AccountInfoModel accountEntity)
         {
             AccountEntity = accountEntity;
-
-            CurrentServer.ClientStorage.Register(accountEntity.Id, this);
         }
 
         public WorldChannel getChannelServer() => CurrentServer;

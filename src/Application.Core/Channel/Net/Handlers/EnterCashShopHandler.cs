@@ -68,17 +68,22 @@ public class EnterCashShopHandler : ChannelHandlerBase
                 return;
             }
 
-            await mc.Client.CurrentServer.EnterExtralWorld(mc, new CashShopServer());
+            if (!await c.EnterTradeServer(new CashShopServer()))
+            {
+                // 没能脱离世界就别把商城界面打开，否则玩家卡在「界面已开、人还在图里」的状态
+                await c.SendPacket(PacketCreator.enableActions());
+                return;
+            }
 
             // 余额、现金仓、格数、愿望单都在中心服，进商城先整体查一次
-            var cashShopManager = mc.Client.CurrentServer.NodeService.CashShopManager;
-            var cashState = cashShopManager.GetState(mc.Client);
+            var cashShopManager = c.CurrentServer.NodeService.CashShopManager;
+            var cashState = cashShopManager.GetState(c);
 
-            await mc.SendPacket(PacketCreator.openCashShop(mc.Client, false));
-            await mc.SendPacket(PacketCreator.showCashInventory(mc.Client.AccountId, cashState));
-            await mc.SendPacket(PacketCreator.showGifts(await cashShopManager.LoadPlayerGifts(mc.Client)));
-            await mc.SendPacket(PacketCreator.showWishList(cashState.WishList, false));
-            await mc.SendPacket(PacketCreator.showCash(
+            await c.SendPacket(PacketCreator.openCashShop(c, false));
+            await c.SendPacket(PacketCreator.showCashInventory(c.AccountId, cashState));
+            await c.SendPacket(PacketCreator.showGifts(await cashShopManager.LoadPlayerGifts(c)));
+            await c.SendPacket(PacketCreator.showWishList(cashState.WishList, false));
+            await c.SendPacket(PacketCreator.showCash(
                 cashState.Cash?.NxCredit ?? 0,
                 cashState.Cash?.MaplePoint ?? 0,
                 cashState.Cash?.NxPrepaid ?? 0));

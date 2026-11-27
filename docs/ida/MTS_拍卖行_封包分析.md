@@ -204,10 +204,11 @@ else → YesNo(SP_4749 ... FOR sub_5C3947(this)) → op 20;
 裸包、无 payload。服务端 `EnterMTSHandler` 收到后：
 
 1. 复用商城的进入校验（`cannotEnterCashShop` / 事件地图 / 迷你副本）；
-2. `EnterExtralWorld`（与商城同一套“额外世界”流程，把角色移出当前地图但保留频道）；
+2. `ChannelClient.EnterTradeServer(new MtsServer())`（与商城同一套“额外世界”流程：把角色移进
+   `WorldChannel.PlayersAway`，并同步一份 `Channel = -1` 的角色数据）；
 3. `SendPacket(MTSPacketCreator.OpenMTS(...))` → `PacketCreator.openCashShop(c, true)`，即 `SET_ITC`；
-4. `getCashShop().open(true)` 打上“已在商城界面”标记，这样客户端发 `CHANGE_MAP`(空包) 时
-   走 `ChangeMapHandler` 的 `p.available() == 0` → `LeaveCashShop()` 分支；
+4. `TradeServer` 非空即表示“已在商城界面”标记，这样客户端发 `CHANGE_MAP`(空包) 时
+   走 `ChangeMapHandler` 的 `p.available() == 0` → `LeaveTradeServer()` 分支；
 5. 主动拉一次第 1 页（tab=1）。
 
 ### 3.2 `SET_ITC = 0x7E` 布局（`sub_59EF9D`，`CITC` 的“由包构造”）
@@ -233,7 +234,7 @@ writeLong / DecodeBuffer(8)                  // 8 字节 FILETIME（拍卖行开
 
 ```csharp
 bool enteringMapFromCashShop = p.available() == 0;
-if (enteringMapFromCashShop) { await c.LeaveCashShop(); return; }
+if (enteringMapFromCashShop) { await c.LeaveTradeServer(); return; }
 ```
 
 因此**不需要**为拍卖行单独加退出包。
@@ -757,7 +758,7 @@ else
 | 商品数据、税费、购物车 | `Core.Login/ServerData/MTSManager.cs`（`DataStorageBase<int, MTSItemProto, MtsItemEntity>`） |
 | gRPC | `Application.Protos/Service/MTSOperation.proto` + `Core.Login/Servers/MTSGrpcService.cs` |
 | 频道 ↔ 中心 | `ServerTransports/IChannelServerTransport.cs` 的 `#region MTS`（`DefaultChannelServerTransport` 走 gRPC，`LocalChannelServerTransport` 直连） |
-| `CHANGE_MAP 0x26` 空包 | `Channel/Net/Handlers/ChangeMapHandler.cs`（`p.available() == 0` → `LeaveCashShop`） |
+| `CHANGE_MAP 0x26` 空包 | `Channel/Net/Handlers/ChangeMapHandler.cs`（`p.available() == 0` → `LeaveTradeServer`） |
 
 税费公式 `GetTaxes(price) = 100 + price / 10`（即 `sub_5B219C` 里的 `售价 + 税费`）。
 
@@ -953,15 +954,16 @@ else
 
 ### 12.2 MTS 的背包归属：中心服持有
 
-进入 MTS 之后，频道侧的 `Player` 已经脱离世界（`WorldChannel.EnterExtralWorld` 把它移进
+进入 MTS 之后，频道侧的 `Player` 已经脱离世界（`ChannelClient.EnterTradeServer` 把它移进
 `PlayersAway`，不再参与任何世界内逻辑）。而 **MTS 和现金商城互斥** —— 两者都检查
 `Player.IsInExtraServer()`（即 `IChannelClient.TradeServer` 非空），进入时各自把它设成
-`new CashShopServer()` / `new MtsServer()`，离开时由 `ChannelClient.LeaveCashShop` 清空 ——
+`new CashShopServer()` / `new MtsServer()`，离开时客户端会新建连接（`LeaveTradeServer` 只是把
+`PlayerPreEnterChannelCommand` 发给频道、让客户端连到新的频道连接），新连接上的 `TradeServer` 天然为 null ——
 所以 MTS 期间不会发生现金仓存取（`CashOperationHandler` 的 `0x0D` / `0x0E`）这类频道侧改背包的操作。
 
 因此 MTS 期间的背包所有者只有一个：**中心服缓存的 `CharacterLiveObject.Character.Data.Bag`**。
 所有上架、领取、成交都直接改它；玩家离开 MTS 时频道会重新向中心服请求角色数据
-（`ChannelClient.LeaveCashShop` → 重连 → `PlayerLoggedinHandler` → `LoginService.PlayerLogin`
+（`ChannelClient.LeaveTradeServer` → 重连 → `PlayerLoggedinHandler` → `LoginService.PlayerLogin`
 返回带 `Character.Data.Bag` 的 `PlayerGetterProto`），背包自然是最新的。
 
 这条链路让四个操作都变成**单进程内的内存操作 + 一次落库**，不再有跨进程的两阶段提交。
@@ -1009,21 +1011,26 @@ else
 
 #### 12.2.3 离开 MTS 时的同步
 
-**正常离开不同步角色数据。** 出 MTS 走 `ChannelClient.LeaveCashShop`：清 `TradeServer` 后直接把
-`PlayerPreEnterChannelCommand` 发下去，由命令在发 `CHANGE_CHANNEL` 之前设置账号切服状态
-（`UpdateAccountState(..., PlayerServerTransition)` + `SetCharacteridInTransition`）。
+**正常离开不同步角色数据。** 出 MTS 走 `ChannelClient.LeaveTradeServer`：把
+`PlayerPreEnterChannelCommand` 发下去，命令从 `PlayersAway` 取出会话、把在线计数 -1，
+再在发 `CHANGE_CHANNEL` 之前设置账号切服状态
+（`SetCharacterOnSessionTransitionState` → `UpdateAccountState(..., PlayerServerTransition)` +
+`SetCharacteridInTransition`）。客户端随后新建连接，旧连接 `Disconnect` 时
+`IsServerTransition == true`，连 `LeaveWorld` 都不会走。
 重连时 `PlayerLoggedinHandler` → `LoginService.PlayerLogin` 本来就返回中心服那份
 `PlayerGetterProto`，背包自然是最新的，频道那份旧镜像根本不需要上传。
 
-理由：`LeaveMts` / `LeaveCashShop` 原来在 `CharacterManager.Update` 里命中的是 `keepMasterState`
-分支 —— `origin.Character` 不赋值、`MergeAccountGame` 跳过、频道号不变也不触发 module 回调，
-整个 `PlayerSaveProto` 传过去后被整份丢弃，只起到「设置状态位」的作用。状态位现在由命令直接设置，
-这两个 trigger 已经删除（枚举里留空位，4 / 6）。
+理由：原来离开商城 / 拍卖行用的 `SyncCharacterTrigger.LeaveMts` / `LeaveCashShop` 在中心服命中
+`keepMasterState` 分支 —— `origin.Character` 不赋值、`MergeAccountGame` 跳过、频道号不变也不触发
+module 回调，整个 `PlayerSaveProto` 传过去后被整份丢弃，只起到「设置状态位」的作用。
+状态位现在由命令直接设置，这两个 trigger 已经删除（枚举 4 / 6 留空）。
 
-**在 MTS 里直接断线仍然要同步**（没有重连流程可依赖）：`Character.logOff` 按
-`TradeServer is MtsServer` 选 `SyncCharacterTrigger.LogoffMts`，在 `CharacterManager.Update` 里命中
-`keepMasterState`，保留中心服自己的 `Character.Data.Bag`，其余字段（地图、经验）取频道那份，
-同时把账号置为 `LOGIN_NOTLOGGEDIN`。
+**关闭游戏窗口 / 断线由中心服兜底。** 客户端在 MTS 里直接退出时没有重连流程，频道侧会走
+`Disconnect` → `LeaveWorld(false)` → `SyncCharAsync(LeaveChannel)`，`DataService` 按
+`TradeServer != null` 把 `dto.Channel` 写成 `-1`；随后的 `UpdateAccountState(LOGIN_NOTLOGGEDIN)`
+在中心服触发 `CharacterManager.LogoffAccountCharacters(accId)`，把该账号所有 `Channel != 0`
+的角色置 0 并走一遍 `OnPlayerServerChanged`（公会/队伍离线、`ChannelNode`、在线列表一并清掉）。
+所以 MTS / 商城里断线的角色不会残留在在线列表里。
 
 > 没有采用「在角色模型上挂一个 MtsBagOwned 标记」的做法：会话类型本来就该由会话本身表达，
 > 也不会在角色数据里留下需要清理的状态。

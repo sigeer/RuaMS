@@ -86,7 +86,7 @@ public class AfterLoginHandler : LoginHandlerBase
         else if (c2 == 0 && c3 == 5)
         {
             _sessionCoordinator.closeSession(c);
-            c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+            await c.updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
         }
     }
 }

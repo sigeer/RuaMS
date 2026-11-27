@@ -76,16 +76,16 @@ namespace Application.Core.Login.Client
             }
         }
 
-        public override void SetCharacterOnSessionTransitionState(int cid)
+        public override async Task SetCharacterOnSessionTransitionState(int cid)
         {
-            updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
+            await updateLoginState(LoginStage.LOGIN_SERVER_TRANSITION);
             CurrentServer.SetCharacteridInTransition(GetSessionRemoteHost(), cid);
         }
         public async Task Disconnect()
         {
             _sessionCoordinator.closeSession(this, false);
 
-            updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
+            await updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);
             CurrentServer.UnregisterLoginState(this);
 
             await DisposeAsync();
@@ -97,7 +97,7 @@ namespace Application.Core.Login.Client
         }
 
 
-        public void updateLoginState(sbyte newState)
+        public async Task updateLoginState(sbyte newState)
         {
             if (AccountEntity == null)
                 return;
@@ -107,7 +107,7 @@ namespace Application.Core.Login.Client
                 _sessionCoordinator.updateOnlineClient(this);
             }
 
-            AccountLoginStatus = CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
+            AccountLoginStatus = await CurrentServer.UpdateAccountState(AccountEntity.Id, newState);
 
             if (newState == LoginStage.LOGIN_NOTLOGGEDIN)
             {
@@ -190,17 +190,21 @@ namespace Application.Core.Login.Client
             return false;
         }
 
-        private int GetLoginState()
+        private async Task<int> GetLoginState()
         {
             if (AccountEntity == null)
                 return 0;
 
-            var localState = CurrentServer.AccountManager.GetAccountLoginStatus(AccountEntity.Id);
+            var accId = AccountEntity.Id;
+            var localState = CurrentServer.AccountManager.GetAccountLoginStatus(accId);
             if (localState.State == LoginStage.LOGIN_SERVER_TRANSITION || localState.State == LoginStage.PlayerServerTransition)
             {
                 if (localState.ProcessTime.AddSeconds(30) < CurrentServer.GetCurrentTimeDateTimeOffset())
                 {
-                    updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
+                    // 切服窗口已过期：这个账号不可能还停在新频道里，顺手把残留的在线角色一起清掉。
+                    // updateLoginState 会把 AccountEntity 置空，所以 accId 要提前取出来。
+                    await updateLoginState(LoginStage.LOGIN_NOTLOGGEDIN);   // ACCID = 0, issue found thanks to Tochi & K u ssss o & Thora & Omo Oppa
+                    await CurrentServer.CharacterManager.LogoffAccountCharacters(accId);
                     return LoginStage.LOGIN_NOTLOGGEDIN;
                 }
             }
@@ -208,7 +212,7 @@ namespace Application.Core.Login.Client
             return localState.State;
         }
         int loginattempt = 0;
-        public LoginResultCode Login(string login, string pwd, Hwid nibbleHwid)
+        public async Task<LoginResultCode> Login(string login, string pwd, Hwid nibbleHwid)
         {
             LoginResultCode loginok = LoginResultCode.Fail_AccountNotExsited;
 
@@ -236,7 +240,7 @@ namespace Application.Core.Login.Client
             string passhash = dbModel.Password;
             var tos = dbModel.Tos;
 
-            if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
+            if (await GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
             {
                 loginok = LoginResultCode.Fail_AlreadyLoggedIn;
             }
@@ -287,13 +291,13 @@ namespace Application.Core.Login.Client
             }
         }
 
-        public LoginResultCode FinishLogin()
+        public async Task<LoginResultCode> FinishLogin()
         {
-            if (GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
+            if (await GetLoginState() > LoginStage.LOGIN_NOTLOGGEDIN)
             {
                 return LoginResultCode.Fail_AlreadyLoggedIn;
             }
-            updateLoginState(LoginStage.LOGIN_LOGGEDIN);
+            await updateLoginState(LoginStage.LOGIN_LOGGEDIN);
 
             return LoginResultCode.Success;
         }

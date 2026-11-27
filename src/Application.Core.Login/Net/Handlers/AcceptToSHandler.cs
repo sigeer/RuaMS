@@ -27,7 +27,7 @@ public class AcceptToSHandler : LoginHandlerBase
             await c.Disconnect();//IClient dc's but just because I am cool I do this (:
             return;
         }
-        if (c.FinishLogin() == LoginResultCode.Success)
+        if (await c.FinishLogin() == LoginResultCode.Success)
         {
             await c.SendPacket(LoginPacketCreator.GetAuthSuccess(c));
         }

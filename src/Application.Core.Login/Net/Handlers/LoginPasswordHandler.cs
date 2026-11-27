@@ -59,7 +59,7 @@ public class LoginPasswordHandler : LoginHandlerBase
         Hwid hwid = new Hwid(hwidNibbles.ToHexString());
 
 
-        var loginok = c.Login(login, pwd, hwid);
+        var loginok = await c.Login(login, pwd, hwid);
 
 
         if (YamlConfig.config.server.AUTOMATIC_REGISTER && loginok == LoginResultCode.Fail_AccountNotExsited)
@@ -68,7 +68,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             {
                 //Jayd: Added birthday, tempban
                 _server.AccountManager.CreateAccount(login, pwd);
-                loginok = c.Login(login, pwd, hwid);
+                loginok = await c.Login(login, pwd, hwid);
             }
             catch (Exception e)
             {
@@ -100,7 +100,7 @@ public class LoginPasswordHandler : LoginHandlerBase
             await c.SendPacket(LoginPacketCreator.GetLoginFailed((int)loginok));
             return;
         }
-        if (c.FinishLogin() == LoginResultCode.Success && c.CheckChar(c.AccountEntity!.Id))
+        if (await c.FinishLogin() == LoginResultCode.Success && c.CheckChar(c.AccountEntity!.Id))
         {
             await c.SendPacket(LoginPacketCreator.GetAuthSuccess(c));//why the fk did I do c.getAccountName()?
             _server.RegisterLoginState(c);

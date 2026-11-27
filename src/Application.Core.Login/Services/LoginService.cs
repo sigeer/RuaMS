@@ -72,7 +72,7 @@ namespace Application.Core.Login.Services
         public async Task SetPlayerLogedIn(int playerId, int channel)
         {
             var accId = await _masterServer.CharacterManager.CompleteLogin(playerId, channel);
-            _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
+            await _masterServer.AccountManager.UpdateAccountState(accId, LoginStage.LOGIN_LOGGEDIN);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Application.Core.Game
 {
     public class OfflineClient : IChannelClient
     {
+        public static OfflineClient Default = new OfflineClient();
         public WorldChannel CurrentServer => throw new BusinessCharacterOfflineException();
         public WorldChannelServer CurrentServerContainer => throw new BusinessCharacterOfflineException();
         public ISocketServer CurrentServerBase => throw new BusinessCharacterOfflineException();
@@ -170,7 +171,12 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public Task LeaveCashShop()
+        public Task LeaveTradeServer()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> EnterTradeServer(ITradeServer tradeServer)
         {
             throw new NotImplementedException();
         }
@@ -209,7 +215,7 @@ namespace Application.Core.Game
             throw new BusinessCharacterOfflineException();
         }
 
-        public void SetCharacterOnSessionTransitionState(int cid)
+        public Task SetCharacterOnSessionTransitionState(int cid)
         {
             throw new BusinessCharacterOfflineException();
         }
@@ -304,11 +310,6 @@ namespace Application.Core.Game
 
         public Task SendPacket(Packet p) => throw new NotImplementedException();
 
-        void IClientBase.SetCharacterOnSessionTransitionState(int cid)
-        {
-            throw new NotImplementedException();
-        }
-
 
 
         void IChannelClient.SetPlayer(Player? player)
@@ -323,6 +324,11 @@ namespace Application.Core.Game
 
 
         public Task ProcessPacket(InPacket packet)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task LeaveWorld(bool saveBuff = true)
         {
             throw new NotImplementedException();
         }

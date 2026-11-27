@@ -84,7 +84,7 @@ public class ViewAllCharRegisterPicHandler : LoginHandlerBase
             }
 
             _server.UnregisterLoginState(c);
-            c.SetCharacterOnSessionTransitionState(charId);
+            await c.SetCharacterOnSessionTransitionState(charId);
 
             try
             {

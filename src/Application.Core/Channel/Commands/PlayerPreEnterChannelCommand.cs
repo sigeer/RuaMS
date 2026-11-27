@@ -1,3 +1,4 @@
+using Application.Utility.Performance;
 using System.Net;
 using tools;
 
@@ -26,20 +27,19 @@ namespace Application.Core.Channel.Commands
                 {
                     return;
                 }
-                chr.Client.CurrentServer.NodeService.DataService.SaveBuff(chr);
-
-                chr.Client.SetCharacterOnSessionTransitionState(_chrId);
+                await chr.Client.SetCharacterOnSessionTransitionState(_chrId);
+                await chr.Client.LeaveWorld(true);
                 await chr.SendPacket(PacketCreator.getChannelChange(_channelSocket));
             }
             else
             {
-                var client = w.PlayersAway.GetValueOrDefault(_chrId);
-                if (client == null)
+                if (w.PlayersAway.TryRemove(_chrId, out var client))
                 {
-                    return;
+                    GameMetrics.OnlinePlayerCount.Add(-1, new KeyValuePair<string, object?>("Channel", w.InstanceName));
+
+                    await client.SetCharacterOnSessionTransitionState(_chrId);
+                    await client.SendPacket(PacketCreator.getChannelChange(_channelSocket));
                 }
-                client.SetCharacterOnSessionTransitionState(_chrId);
-                await client.SendPacket(PacketCreator.getChannelChange(_channelSocket));
             }
         }
     }

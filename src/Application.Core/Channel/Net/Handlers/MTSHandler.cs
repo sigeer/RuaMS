@@ -45,7 +45,7 @@ public class MTSHandler : ChannelHandlerBase
 
     public override async Task HandlePacket(InPacket p, IChannelClient c)
     {
-        // MTS 里不碰 Player：进入时由 EnterMTSHandler 标记，离开时由 LeaveCashShop 清掉
+        // MTS 里不碰 Player：进入时由 EnterMTSHandler 标记，离开时由 LeaveTradeServer 清掉
         if (!_manager.IsOpened(c))
         {
             return;

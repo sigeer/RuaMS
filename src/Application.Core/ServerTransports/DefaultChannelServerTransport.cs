@@ -155,14 +155,9 @@ namespace Application.Core.ServerTransports
             await InternalSession.SendAsync(ChannelSendCode.CreateTeam, request);
         }
 
-        public void SendAccountLogout(int accountId)
+        public async Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte state)
         {
-            _syncClient.UpdateAccountState(new ProtoService.UpdateAccountStateRequest { AccId = accountId, State = LoginStage.LOGIN_NOTLOGGEDIN });
-        }
-
-        public AccountLoginStatus UpdateAccountState(int accId, sbyte state)
-        {
-            var res = _syncClient.UpdateAccountState(new ProtoService.UpdateAccountStateRequest { AccId = accId, State = state });
+            var res = await _syncClient.UpdateAccountStateAsync(new ProtoService.UpdateAccountStateRequest { AccId = accId, State = state });
             return new AccountLoginStatus(res.State, res.Time.ToDateTimeOffset());
         }
 

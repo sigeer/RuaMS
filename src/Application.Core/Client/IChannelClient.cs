@@ -34,7 +34,12 @@ namespace Application.Core.Client
 
         bool CheckBirthday(DateTime date);
         bool CheckBirthday(int date);
-        Task LeaveCashShop();
+        /// <summary>
+        /// 进入商城 / 拍卖行。返回 false 表示这个会话没法进（没有角色，或已经在里面了），调用方不应继续下发界面包。
+        /// </summary>
+        Task<bool> EnterTradeServer(ITradeServer server);
+        Task LeaveTradeServer();
+        Task LeaveWorld(bool saveBuff = true);
         Task ChangeChannel(int channel);
     }
 }

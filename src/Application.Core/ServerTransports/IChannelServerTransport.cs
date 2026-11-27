@@ -54,9 +54,8 @@ namespace Application.Core.ServerTransports
         #endregion
 
         #region login
-        void SendAccountLogout(int accountId);
         IPEndPoint GetChannelEndPoint(int channel);
-        AccountLoginStatus UpdateAccountState(int accId, sbyte state);
+        Task<AccountLoginStatus> UpdateAccountState(int accId, sbyte state);
         void SetCharacteridInTransition(string v, int cid);
         bool HasCharacteridInTransition(string clientSession);
         ProtoModel.PlayerGetterProto? GetPlayerData(string clientSession, int cid);

@@ -74,11 +74,17 @@ public class EnterMTSHandler : ChannelHandlerBase
             return;
         }
 
-        await mc.Client.CurrentServer.EnterExtralWorld(mc, new MtsServer());
-        await mc.SendPacket(MTSPacketCreator.OpenMTS(mc.Client));
+        if (!await c.EnterTradeServer(new MtsServer()))
+        {
+            // 没能脱离世界就别把拍卖行界面打开，否则玩家卡在「界面已开、人还在图里」的状态
+            await c.SendPacket(PacketCreator.enableActions());
+            return;
+        }
+
+        await c.SendPacket(MTSPacketCreator.OpenMTS(c));
 
         // 拍卖行的会话标记与浏览状态都挂在 MtsServer 上（TradeServer 非空 = 已在拍卖行）
 
-        await _mtsManager.Query(mc.Client, MTSConstants.SALE_TAB, 0, 0);
+        await _mtsManager.Query(c, MTSConstants.SALE_TAB, 0, 0);
     }
 }
